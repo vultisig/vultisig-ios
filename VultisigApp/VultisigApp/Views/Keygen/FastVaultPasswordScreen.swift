@@ -68,7 +68,7 @@ struct FastVaultPasswordScreen: View {
     // MARK: - Body
 
     var body: some View {
-        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -87,6 +87,7 @@ struct FastVaultPasswordScreen: View {
                 }
             }
         }
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
         .alert("wrongPassword".localized, isPresented: $viewModel.isWrongPassword) {
             Button("ok".localized, role: .cancel) { }
         }

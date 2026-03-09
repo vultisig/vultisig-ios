@@ -36,16 +36,13 @@ struct CircleWithdrawView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             VStack(spacing: 0) {
                 scrollableContent
                 footerView
             }
         }
+        .screenTitle(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
         .withLoading(isLoading: $isLoading)
         .task {
             await loadFastVaultStatus()

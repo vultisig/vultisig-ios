@@ -21,13 +21,14 @@ struct OnboardingSummaryScreen: View {
     }
 
     var body: some View {
-        Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
+        Screen {
             VStack(spacing: 0) {
                 successAnimation
                 bottomContent
                     .padding(.horizontal, 16)
             }
         }
+        .screenEdgeInsets(.init(leading: 0, trailing: 0))
         .onLoad(perform: onLoad)
         .crossPlatformSheet(isPresented: $presentChainSelection) {
             VaultSelectChainScreen(

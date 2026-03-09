@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsFAQView: View {
     var body: some View {
-        Screen(title: "faq".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
@@ -22,6 +22,8 @@ struct SettingsFAQView: View {
                 }
             }
         }
+        .screenTitle("faq".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
     }
 }
 
