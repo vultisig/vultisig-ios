@@ -6,16 +6,9 @@ labels: enhancement
 assignees: ''
 ---
 
-<!-- Fill in the AGENT block: priority = critical|high|medium|low, size = tiny|small|medium -->
 <!-- AGENT
 type: "feature"
-priority: ""
-size: ""
 platform: [ios, macos]
-files:
-  read: []
-  write: []
-verify: ["xcodebuild -scheme VultisigApp -destination 'platform=iOS Simulator,name=iPhone 16'"]
 -->
 
 # [Add] <what to build> [<screen/area>]
@@ -43,6 +36,6 @@ verify: ["xcodebuild -scheme VultisigApp -destination 'platform=iOS Simulator,na
 - <!-- Related but separate work — future issue -->
 
 ## Acceptance Criteria
-- [ ] `xcodebuild -scheme VultisigApp` succeeds
+- [ ] Build succeeds
 - [ ] <!-- Specific behavior check 1 -->
 - [ ] <!-- Specific behavior check 2 -->
