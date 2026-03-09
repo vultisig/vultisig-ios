@@ -226,7 +226,7 @@ final class FastVaultKeysignService {
             } catch {
                 // Ignore polling errors (matches Windows behavior)
             }
-            try await Task.sleep(for: .seconds(1))
+            try await Task.sleep(for: .milliseconds(200))
         }
 
         throw FastVaultKeysignError.keysignFailed("Timeout waiting for \(expected) parties in session \(sessionID)")

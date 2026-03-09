@@ -234,6 +234,14 @@ final class AgentConversationsViewModel: ObservableObject {
         return await authService.refreshIfNeeded(vaultPubKey: vault.pubKeyECDSA)
     }
 
+    func disconnect(vault: Vault) async {
+        await authService.disconnect(vaultPubKey: vault.pubKeyECDSA)
+        isConnected = false
+        conversations = []
+        starters = []
+        passwordRequired = true
+    }
+
     func dismissError() {
         error = nil
     }

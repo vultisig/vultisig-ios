@@ -48,10 +48,21 @@ final class AgentAuthService {
             warningLog("[AgentAuth] Local vault metadata does not indicate Fast Vault. Falling back to backend password validation")
         }
 
-        let fastVaultAccessValidation = await FastVaultService.shared.validateAccess(
+        // Run preflight validation and message generation concurrently —
+        // they're independent: preflight is a network call, message gen is CPU-only.
+        async let preflightResult = FastVaultService.shared.validateAccess(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: password
         )
+        let authMessage = try generateAuthMessage(vault: vault)
+        debugLog("[AgentAuth] Auth message generated")
+
+        // EIP-191 hash the message (instant, CPU-only)
+        let messageHash = ethereumSignHash(authMessage)
+        debugLog("[AgentAuth] Auth message hashed")
+
+        // Now await the preflight result
+        let fastVaultAccessValidation = await preflightResult
         switch fastVaultAccessValidation {
         case .valid:
             debugLog("[AgentAuth] FastVault password preflight succeeded")
@@ -65,18 +76,11 @@ final class AgentAuthService {
             }
             warningLog("[AgentAuth] Agent auth requires Fast Vault support")
             throw AgentAuthError.fastVaultRequired
-        case .requestFailed(let statusCode, let responseBody):
-            warningLog("[AgentAuth] FastVault password preflight returned HTTP \(statusCode). Proceeding to keysign. Body: \(responseBody ?? "empty")")
+        case .requestFailed(let statusCode, _):
+            warningLog("[AgentAuth] FastVault password preflight returned HTTP \(statusCode). Proceeding to keysign.")
         case .networkFailure(let message):
             warningLog("[AgentAuth] FastVault password preflight failed due to network/backend issue. Proceeding to keysign. Error: \(message)")
         }
-
-        let authMessage = try generateAuthMessage(vault: vault)
-        debugLog("[AgentAuth] Auth message generated")
-
-        // EIP-191 hash the message
-        let messageHash = ethereumSignHash(authMessage)
-        debugLog("[AgentAuth] Auth message hashed")
 
         // Fast vault keysign — runs the full DKLS MPC ceremony
         debugLog("[AgentAuth] Starting FastVault keysign ceremony")
@@ -317,8 +321,7 @@ final class AgentAuthService {
         }
 
         if httpResponse.statusCode != 200 {
-            let responseBody = String(data: data, encoding: .utf8) ?? "n/a"
-            errorLog("[AgentAuth] Verifier returned \(httpResponse.statusCode): \(responseBody)")
+            errorLog("[AgentAuth] Verifier auth failed with HTTP \(httpResponse.statusCode)")
             throw AgentAuthError.authFailed
         }
 
