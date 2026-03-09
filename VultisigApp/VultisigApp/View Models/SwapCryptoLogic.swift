@@ -435,7 +435,8 @@ struct SwapCryptoLogic {
                                                                    publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
                                                                    publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                                                                    hexChainCode: vault.hexChainCode,
-                                                                   isDerived: isDerived) else {
+                                                                   isDerived: isDerived,
+                                                                   publicKeyMLDSA44: vault.publicKeyMLDSA44) else {
                 return nil
             }
             return coin

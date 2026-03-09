@@ -14,6 +14,7 @@ enum KeysignStatus {
     case CreatingInstance
     case KeysignECDSA
     case KeysignEdDSA
+    case KeysignMLDSA
     case KeysignFinished
     case KeysignFailed
     case KeysignVaultMismatch
@@ -28,6 +29,7 @@ class KeysignViewModel: ObservableObject {
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
+    @Published var dilithiumSignatures = [String: DilithiumKeysignResponse]()
     @Published var txid: String = .empty
     @Published var approveTxid: String?
     @Published var decodedMemo: String?
@@ -228,6 +230,24 @@ class KeysignViewModel: ObservableObject {
                 if self.signatures.isEmpty {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
+            case .MLDSA:
+                status = .KeysignMLDSA
+                let dilithiumKeysign = DilithiumKeysign(
+                    keysignCommittee: self.keysignCommittee,
+                    mediatorURL: self.mediatorURL,
+                    sessionID: self.sessionID,
+                    messageToSign: self.messsageToSign,
+                    vault: self.vault,
+                    encryptionKeyHex: self.encryptionKeyHex,
+                    chainPath: chainPath,
+                    isInitiateDevice: self.isInitiateDevice,
+                    publicKey: vault.publicKeyMLDSA44 ?? ""
+                )
+                try await dilithiumKeysign.DilithiumKeysignWithRetry()
+                self.dilithiumSignatures = dilithiumKeysign.getSignatures()
+                if self.dilithiumSignatures.isEmpty {
+                    throw HelperError.runtimeError("fail to sign transaction")
+                }
             }
             await broadcastTransaction()
             if let customMessagePayload {
@@ -276,6 +296,8 @@ class KeysignViewModel: ObservableObject {
             pubkey = vault.pubKeyECDSA
         case .EdDSA:
             pubkey = vault.pubKeyEdDSA
+        case .MLDSA:
+            pubkey = vault.publicKeyMLDSA44 ?? ""
         }
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
@@ -327,6 +349,8 @@ class KeysignViewModel: ObservableObject {
             case .EdDSA:
                 keysignReq.pubKey = self.vault.pubKeyEdDSA
                 self.status = .KeysignEdDSA
+            case .MLDSA:
+                throw HelperError.runtimeError("MLDSA keysign is not supported in GG20 mode")
             }
             if let service = self.tssService {
                 let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
@@ -369,6 +393,8 @@ class KeysignViewModel: ObservableObject {
                 return try service.keysignECDSA(req)
             case .EdDSA:
                 return try service.keysignEdDSA(req)
+            case .MLDSA:
+                throw HelperError.runtimeError("MLDSA keysign is not supported via TSS service")
             }
         }
         return try await t.value
@@ -462,6 +488,10 @@ class KeysignViewModel: ObservableObject {
 
         case .Cosmos:
             let helper = try CosmosHelper.getHelper(forChain: keysignPayload.coin.chain)
+            if keysignPayload.coin.chain == .qbtc {
+                let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, dilithiumSignatures: dilithiumSignatures)
+                return .regular(transaction)
+            }
             let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
 
@@ -577,7 +607,7 @@ class KeysignViewModel: ObservableObject {
                     } catch {
                         self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
-                case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+                case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
                     let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
                     let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {

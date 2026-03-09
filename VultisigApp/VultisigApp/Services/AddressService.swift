@@ -126,6 +126,10 @@ struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
         }
 
+        if chain == .qbtc {
+            return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+        }
+
         return chain.coinType.validate(address: address)
     }
 
@@ -140,6 +144,9 @@ struct AddressService {
             }
             if firstCoin.chain == .thorChainStagenet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+            }
+            if firstCoin.chain == .qbtc {
+                return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
             }
             return firstCoin.coinType.validate(address: address)
         }

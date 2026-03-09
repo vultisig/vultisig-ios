@@ -1517,6 +1517,15 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .qbtc,
+            ticker: "QBTC",
+            logo: "qbtc",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .ripple,
             ticker: "XRP",
             logo: "xrp",

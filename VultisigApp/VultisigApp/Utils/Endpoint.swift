@@ -634,6 +634,15 @@ class Endpoint {
 
     static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
 
+    static func fetchQbtcAccountBalance(address: String) -> String {
+        "https://api.vultisig.com/qbtc-rpc/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchQbtcAccountNumber(_ address: String) -> String {
+        "https://api.vultisig.com/qbtc-rpc/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+
+    static let broadcastQbtcTransaction = "https://api.vultisig.com/qbtc-rpc/cosmos/tx/v1beta1/txs"
+
     static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -851,6 +860,8 @@ class Endpoint {
             return "https://liquidscan.io/tx/\(txid)"
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
+        case .qbtc:
+            return ""
         }
     }
 
@@ -938,6 +949,8 @@ class Endpoint {
             return "https://liquidscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
+        case .qbtc:
+            return nil
         }
     }
 
@@ -1024,6 +1037,8 @@ class Endpoint {
             return "https://liquidscan.io/token/\(contractAddress)"
         case .sei:
             return "https://seiscan.io/token/\(contractAddress)"
+        case .qbtc:
+            return nil
         }
     }
 
@@ -1107,6 +1122,8 @@ class Endpoint {
             return "https://liquidscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
+        case .qbtc:
+            return nil
         case .none:
             return nil
         }

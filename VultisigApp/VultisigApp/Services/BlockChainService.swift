@@ -521,7 +521,7 @@ private extension BlockChainService {
             let adjustedPriority = maxPriorityFeePerGas > maxFeePerGas ? maxFeePerGas : maxPriorityFeePerGas
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: adjustedPriority, nonce: nonce, gasLimit: gasLimit)
 
-        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash:
+        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash, .qbtc:
             let service = try CosmosService.getService(forChain: coin.chain)
             let account = try await service.fetchAccountNumber(coin.address)
 
