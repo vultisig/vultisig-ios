@@ -545,8 +545,6 @@
 "noTransactionsYetSubtitle" = "Još niste napravili zamjene, slanja ili odobrenja iz ovog trezora.";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
-"zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
-"zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "of" = "od";
 "ok" = "U redu";
 "on" = "na";
@@ -1051,3 +1049,5 @@
 "yourSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag";
 "yourVaultIsReadyToUse" = "Vaš trezor je spreman za korištenje";
 "yourVaultSetup" = "Vaša postavka trezora";
+"zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
+"zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";

@@ -553,8 +553,6 @@
 "noTransactionsYetSubtitle" = "You haven't made any swaps, sends, or approvals from this vault.";
 "notWhitelistedOnNode" = "You are not whitelisted on this node";
 "noVaultsFoundInZip" = "No vaults found in the ZIP file.";
-"zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
-"zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "of" = "of";
 "ok" = "OK";
 "on" = "on";
@@ -1067,3 +1065,5 @@
 "yourSeedphraseSubtitle" = "Enter it, create a vault, never look back";
 "yourVaultIsReadyToUse" = "Your vault is ready to use";
 "yourVaultSetup" = "Your vault setup";
+"zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
+"zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";

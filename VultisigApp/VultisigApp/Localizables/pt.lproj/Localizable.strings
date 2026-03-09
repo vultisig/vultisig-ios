@@ -545,8 +545,6 @@
 "noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
-"zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
-"zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "of" = "de";
 "ok" = "OK";
 "on" = "na";
@@ -1051,3 +1049,5 @@
 "yourSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás";
 "yourVaultIsReadyToUse" = "Seu cofre está pronto para uso";
 "yourVaultSetup" = "Sua configuração de cofre";
+"zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
+"zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
