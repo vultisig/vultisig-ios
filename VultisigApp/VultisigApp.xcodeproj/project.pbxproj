@@ -1214,6 +1214,7 @@
 		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
 		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
 		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
+		A1B2C3D52C03982001234500 /* ZipImportDuplicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42C03982001234500 /* ZipImportDuplicateTests.swift */; };
 		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
 		DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8B69982CD4602500F53E14 /* PayloadService.swift */; };
 		DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */; };
@@ -2513,6 +2514,7 @@
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
+		A1B2C3D42C03982001234500 /* ZipImportDuplicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipImportDuplicateTests.swift; sourceTree = "<group>"; };
 		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
 		DE8B69982CD4602500F53E14 /* PayloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayloadService.swift; sourceTree = "<group>"; };
 		DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
@@ -6568,6 +6570,7 @@
 			children = (
 				DE8AD7492BC7A86200339775 /* EncryptionTest.swift */,
 				E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */,
+				A1B2C3D42C03982001234500 /* ZipImportDuplicateTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -8058,6 +8061,7 @@
 				B5293CDB2DBC00C300C6C66A /* StringExtensionTests.swift in Sources */,
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
+				A1B2C3D52C03982001234500 /* ZipImportDuplicateTests.swift in Sources */,
 				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
 				DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,

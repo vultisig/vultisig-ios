@@ -545,6 +545,8 @@
 "noTransactionsYetSubtitle" = "Non hai ancora effettuato swap, invii o approvazioni da questo vault.";
 "notWhitelistedOnNode" = "Non sei nella whitelist di questo nodo";
 "noVaultsFoundInZip" = "Nessun vault trovato nel file ZIP.";
+"zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";
+"zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
 "of" = "Di";
 "ok" = "OK";
 "on" = "su";

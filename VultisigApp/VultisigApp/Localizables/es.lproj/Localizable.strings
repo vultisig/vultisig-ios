@@ -545,6 +545,8 @@
 "noTransactionsYetSubtitle" = "Aún no has realizado swaps, envíos ni aprobaciones desde esta bóveda.";
 "notWhitelistedOnNode" = "No estás en la lista blanca de este nodo";
 "noVaultsFoundInZip" = "No se encontraron bóvedas en el archivo ZIP.";
+"zipImportPartialSuccess" = "Se importaron %d bóveda(s). Se omitieron %d duplicado(s): %@.";
+"zipImportAllDuplicates" = "Las %d bóveda(s) ya existen y fueron omitidas: %@.";
 "of" = "de";
 "ok" = "DE ACUERDO";
 "on" = "en";

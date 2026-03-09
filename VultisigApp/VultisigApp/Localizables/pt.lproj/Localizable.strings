@@ -545,6 +545,8 @@
 "noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
+"zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
+"zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "of" = "de";
 "ok" = "OK";
 "on" = "na";

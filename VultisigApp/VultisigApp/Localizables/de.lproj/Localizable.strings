@@ -545,6 +545,8 @@
 "noTransactionsYetSubtitle" = "Du hast noch keine Swaps, Sends oder Genehmigungen aus diesem Vault durchgeführt.";
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
+"zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
+"zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "of" = "von";
 "ok" = "OK";
 "on" = "auf";

@@ -546,6 +546,8 @@
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
+"zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
+"zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "of" = "的";
 "ok" = "确定";
 "on" = "在";
