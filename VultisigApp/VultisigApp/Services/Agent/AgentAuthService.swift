@@ -221,25 +221,28 @@ final class AgentAuthService {
 
     private func generateAuthMessage(vault: Vault) throws -> String {
         let address = deriveEthereumAddress(vault: vault)
-        let expiresAt = ISO8601DateFormatter().string(from: Date().addingTimeInterval(15 * 60))
 
-        let message: [String: Any] = [
-            "message": "Sign into Vultisig Plugin Marketplace",
-            "nonce": generateNonce(),
-            "expiresAt": expiresAt,
-            "address": address
-        ]
+        // Match desktop JS: new Date().toISOString() → "2026-03-09T07:21:09.257Z"
+        let expiresDate = Date().addingTimeInterval(15 * 60)
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let expiresAt = isoFormatter.string(from: expiresDate)
 
-        guard let data = try? JSONSerialization.data(withJSONObject: message, options: [.sortedKeys]),
-              let jsonString = String(data: data, encoding: .utf8) else {
-            throw AgentAuthError.authFailed
-        }
+        let nonce = generateNonce()
+
+        // CRITICAL: Must match desktop JSON.stringify key insertion order:
+        // { message, nonce, expiresAt, address }
+        // Do NOT use JSONSerialization with .sortedKeys — that produces alphabetical
+        // order which changes the EIP-191 hash and breaks signature verification.
+        let jsonString = "{\"message\":\"Sign into Vultisig Plugin Marketplace\",\"nonce\":\"\(nonce)\",\"expiresAt\":\"\(expiresAt)\",\"address\":\"\(address)\"}"
+
         return jsonString
     }
 
-    /// Derive Ethereum address from vault's ECDSA public key using WalletCore HD derivation
+    /// Derive Ethereum address from vault's ECDSA public key using HD derivation.
+    /// Matches verifier: address.GetAddress(pubKey, chainCode, Ethereum) which calls
+    /// tss.GetDerivedPubKey(rootKey, chainCode, derivePath) then GetEVMAddress(derivedKey).
     private func deriveEthereumAddress(vault: Vault) -> String {
-        // Derive the chain-specific public key using HD key derivation (same as CoinFactory)
         let derivedPubKeyHex = PublicKeyHelper.getDerivedPubKey(
             hexPubKey: vault.pubKeyECDSA,
             hexChainCode: vault.hexChainCode,
