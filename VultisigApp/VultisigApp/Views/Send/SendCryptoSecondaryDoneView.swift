@@ -203,7 +203,8 @@ struct SendCryptoSecondaryDoneView: View {
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: FeeDisplay(crypto: "0.001 RUNE", fiat: "US$ 0.00"),
-            keysignPayload: nil
+            keysignPayload: nil,
+            pubKeyECDSA: ""
         )
     ).environmentObject(AppViewModel())
 }
@@ -244,7 +245,8 @@ struct SendCryptoSecondaryDoneView: View {
                     chainID: "thorchain-1",
                     accountNumber: "139521"
                 ))
-            )
+            ),
+            pubKeyECDSA: ""
         )
     ).environmentObject(AppViewModel())
 }
@@ -302,7 +304,8 @@ struct SendCryptoSecondaryDoneView: View {
                         )
                     ]
                 ))
-            )
+            ),
+            pubKeyECDSA: ""
         )
     ).environmentObject(AppViewModel())
 }

@@ -34,6 +34,8 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("thorchainChainnet") var enableThorchainChainnet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
     @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
+    @AppStorage("agentEnabled") var agentEnabled: Bool = false
+    @AppStorage("txHistoryEnabled") var txHistoryEnabled: Bool = false
 
     init() {
         self.selectedCurrency = SettingsCurrency.current

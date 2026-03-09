@@ -41,8 +41,16 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
+    
     var tabs: [HomeTab] {
-        !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) ? [.wallet, .defi] : [.wallet]
+        var baseTabs: [HomeTab] = [.wallet]
+        if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
+            baseTabs.append(.defi)
+        }
+        if SettingsViewModel.shared.agentEnabled {
+            baseTabs.append(.agent)
+        }
+        return baseTabs
     }
 
     init(showingVaultSelector: Bool = false) {
@@ -137,6 +145,8 @@ struct HomeScreen: View {
                             vault: selectedVault,
                             showBalanceInHeader: $defiShowPortfolioHeader
                         )
+                    case .agent:
+                        AgentConversationsView()
                     case .camera:
                         EmptyView()
                     }
@@ -149,6 +159,7 @@ struct HomeScreen: View {
             }
 
             header(vault: selectedVault)
+                .showIf(selectedTab != .agent)
         }
     }
 
@@ -200,6 +211,12 @@ struct HomeScreen: View {
                     router.navigate(to: VaultRoute.createVault(showBackButton: true))
                 case .mainAction(let action):
                     router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: selectedVault))
+                case .transactionHistory:
+                    router.navigate(to: TransactionHistoryRoute.list(
+                        pubKeyECDSA: selectedVault.pubKeyECDSA,
+                        vaultName: selectedVault.name,
+                        chainFilter: nil
+                    ))
                 }
 
                 vaultRoute = nil
@@ -304,6 +321,7 @@ struct HomeScreen: View {
             activeTab: $selectedTab,
             showBalance: $showPortfolioHeader,
             vaultSelectorAction: { showVaultSelector.toggle() },
+            historyAction: { vaultRoute = .transactionHistory },
             settingsAction: { vaultRoute = .settings },
             onRefresh: { shouldRefresh = true }
         )
@@ -318,6 +336,8 @@ extension HomeScreen {
             showOpaqueHeader = defiShowPortfolioHeader
         case .wallet:
             showOpaqueHeader = walletShowPortfolioHeader
+        case .agent:
+            showOpaqueHeader = false
         case .camera:
             return
         }

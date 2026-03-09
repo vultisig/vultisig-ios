@@ -9,6 +9,7 @@ enum VaultMainRoute: Equatable, Hashable {
     case settings
     case createVault
     case mainAction(VaultAction)
+    case transactionHistory
 }
 
 enum VaultAction: Equatable, Hashable {

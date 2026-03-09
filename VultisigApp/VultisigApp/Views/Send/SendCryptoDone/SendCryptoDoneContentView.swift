@@ -30,7 +30,8 @@ struct SendCryptoDoneContentView: View {
             chain: input.coin.chain,
             coinTicker: input.coin.ticker,
             amount: input.amountCrypto,
-            toAddress: input.toAddress
+            toAddress: input.toAddress,
+            pubKeyECDSA: input.pubKeyECDSA.isEmpty ? nil : input.pubKeyECDSA
         ))
     }
 
@@ -85,6 +86,23 @@ struct SendCryptoDoneContentView: View {
         .onAppear {
             // Start polling for transaction status
             statusViewModel.startPolling()
+
+            // Record to transaction history
+            if input.pubKeyECDSA.isNotEmpty {
+                TransactionHistoryRecorder.shared.recordSend(
+                    txHash: input.hash,
+                    pubKeyECDSA: input.pubKeyECDSA,
+                    coin: input.coin,
+                    amountCrypto: input.amountCrypto,
+                    amountFiat: input.amountFiat,
+                    fromAddress: input.fromAddress,
+                    toAddress: input.toAddress,
+                    feeCrypto: input.fee.crypto,
+                    feeFiat: input.fee.fiat,
+                    chain: input.coin.chain,
+                    explorerLink: input.explorerLink
+                )
+            }
         }
         .onDisappear {
             // Stop polling when view disappears
