@@ -144,6 +144,7 @@ struct MacScannerView: View {
                 qrCodeOutline
             }
             Spacer()
+            uploadQRCodeButton
         }
         .frame(maxHeight: .infinity)
         .padding(padding)
@@ -280,15 +281,18 @@ struct MacScannerView: View {
     }
 
     private func getScanner(_ session: AVCaptureSession) -> some View {
-        VStack(spacing: 0) {
-            Spacer()
-            qrCodeOutline
-            Spacer()
-            uploadQRCodeButton
+        ZStack {
+            MacCameraPreview(session: session)
+            VStack(spacing: 0) {
+                Spacer()
+                qrCodeOutline
+                Spacer()
+                uploadQRCodeButton
+            }
+            .frame(maxHeight: .infinity)
+            .padding(40)
         }
-        .frame(maxHeight: .infinity)
-        .padding(40)
-        .background(MacCameraPreview(session: session))
+        .clipShape(Rectangle())
     }
 }
 
