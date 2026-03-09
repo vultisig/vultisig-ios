@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftData
 
 @MainActor
@@ -13,6 +14,7 @@ final class StoredPendingTransactionStorage {
     static let shared = StoredPendingTransactionStorage()
 
     private let modelContext: ModelContext
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "pending-tx-storage")
 
     private init() {
         self.modelContext = Storage.shared.modelContext
@@ -25,7 +27,8 @@ final class StoredPendingTransactionStorage {
         status: TransactionStatus,
         coinTicker: String? = nil,
         amount: String? = nil,
-        toAddress: String? = nil
+        toAddress: String? = nil,
+        pubKeyECDSA: String? = nil
     ) throws {
         let config = ChainStatusConfig.config(for: chain)
 
@@ -58,7 +61,8 @@ final class StoredPendingTransactionStorage {
                 estimatedTime: config.estimatedTime,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
             modelContext.insert(transaction)
         }
@@ -112,7 +116,7 @@ final class StoredPendingTransactionStorage {
 
         if !oldTransactions.isEmpty {
             try modelContext.save()
-            print("StoredPendingTransactionStorage: Cleaned up \(oldTransactions.count) old transactions")
+            logger.info("Cleaned up \(oldTransactions.count) old transactions")
         }
     }
 }
