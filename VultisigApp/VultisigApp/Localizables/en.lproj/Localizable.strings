@@ -38,6 +38,7 @@
 "agentDeleteConversation" = "Delete Conversation";
 "agentDeleteConversationMessage" = "This action cannot be undone.";
 "agentDeleteConversationTitle" = "Delete this conversation?";
+"agentDisconnect" = "Disconnect";
 "agentEnterFastVaultPassword" = "Enter Fast Vault Password";
 "agentEnterVaultPassword" = "Enter Vault Password";
 "agentEstFee" = "EST. FEE: 0.001 %@";
@@ -46,6 +47,7 @@
 "agentGeneratingKeysign" = "Generating keysign payload...";
 "agentLoadingConversations" = "Loading conversations...";
 "agentMessagePlaceholder" = "Message Vulti...";
+"agentMoreOptions" = "More options";
 "agentNewChat" = "New Chat";
 "agentNoPastConversations" = "No Past Conversations";
 "agentPasswordDescription" = "Your password is needed to sign into the agent service using your vault.";

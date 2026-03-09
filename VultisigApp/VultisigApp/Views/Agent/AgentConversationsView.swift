@@ -71,13 +71,13 @@ struct AgentConversationsView: View {
                             guard let vault = appViewModel.selectedVault else { return }
                             Task { await viewModel.disconnect(vault: vault) }
                         } label: {
-                            Label("Disconnect", systemImage: "power")
+                            Label("agentDisconnect".localized, systemImage: "power")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
                             .rotationEffect(.degrees(90))
                             .foregroundStyle(Theme.colors.textPrimary)
-                            .accessibilityLabel("More options")
+                            .accessibilityLabel("agentMoreOptions".localized)
                     }
                 }
             }

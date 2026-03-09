@@ -256,7 +256,9 @@ final class AgentConversationsViewModel: ObservableObject {
         isConnected = false
         conversations = []
         starters = []
-        passwordRequired = true
+        // Don't set passwordRequired here — let checkAuthAndLoad() set it
+        // on the next screen load when it finds no valid token.
+        // Setting it here would immediately re-open the password sheet.
     }
 
     func dismissError() {

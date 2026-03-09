@@ -37,6 +37,7 @@
 "agentDeleteConversation" = "Izbriši razgovor";
 "agentDeleteConversationMessage" = "Ova radnja se ne može poništiti.";
 "agentDeleteConversationTitle" = "Izbrisati ovaj razgovor?";
+"agentDisconnect" = "Odspoji";
 "agentEnterFastVaultPassword" = "Unesite Fast Vault lozinku";
 "agentEnterVaultPassword" = "Unesite lozinku trezora";
 "agentEstFee" = "PROC. NAKNADA: 0.001 %@";
@@ -45,6 +46,7 @@
 "agentGeneratingKeysign" = "Generiranje keysign podataka...";
 "agentLoadingConversations" = "Učitavanje razgovora...";
 "agentMessagePlaceholder" = "Poruka za Vulti...";
+"agentMoreOptions" = "Više opcija";
 "agentNewChat" = "Novi razgovor";
 "agentNoPastConversations" = "Nema prošlih razgovora";
 "agentPasswordDescription" = "Vaša lozinka je potrebna za prijavu u agentsku uslugu koristeći vaš trezor.";
