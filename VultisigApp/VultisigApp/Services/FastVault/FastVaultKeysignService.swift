@@ -210,9 +210,16 @@ final class FastVaultKeysignService {
     }
 
     /// GET /{sessionID} — poll until expected number of parties join (mirrors Windows waitForParties)
+    /// Uses burst-then-backoff: fast initial polls, then exponential backoff with jitter.
     private func waitForParties(serverAddr: String, sessionID: String, expected: Int, timeoutSeconds: TimeInterval = 120) async throws -> [String] {
         let urlString = "\(serverAddr)/\(sessionID)"
         let startTime = Date()
+
+        let burstCount = 5                      // fast polls before backing off
+        let burstDelay: UInt64 = 200             // ms
+        let maxDelay: UInt64 = 3_000             // ms cap
+        var currentDelay: UInt64 = burstDelay
+        var pollCount = 0
 
         while Date().timeIntervalSince(startTime) < timeoutSeconds {
             do {
@@ -226,7 +233,17 @@ final class FastVaultKeysignService {
             } catch {
                 // Ignore polling errors (matches Windows behavior)
             }
-            try await Task.sleep(for: .milliseconds(200))
+
+            pollCount += 1
+            if pollCount > burstCount {
+                // Exponential backoff with ±25% jitter, capped at maxDelay
+                currentDelay = min(currentDelay * 2, maxDelay)
+                let jitter = UInt64.random(in: 0...(currentDelay / 4))
+                let delay = currentDelay - (currentDelay / 8) + jitter
+                try await Task.sleep(for: .milliseconds(delay))
+            } else {
+                try await Task.sleep(for: .milliseconds(burstDelay))
+            }
         }
 
         throw FastVaultKeysignError.keysignFailed("Timeout waiting for \(expected) parties in session \(sessionID)")

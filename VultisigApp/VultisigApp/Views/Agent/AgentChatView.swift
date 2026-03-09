@@ -30,17 +30,17 @@ struct AgentChatView: View {
         .background(Theme.colors.bgPrimary.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .confirmationDialog(
-            "Delete this conversation?",
+            "agentDeleteConversationTitle".localized,
             isPresented: $showDeleteConfirm,
             titleVisibility: .visible
         ) {
-            Button("Delete", role: .destructive) {
+            Button("delete".localized, role: .destructive) {
                 guard let vault = appViewModel.selectedVault else { return }
                 viewModel.deleteCurrentConversation(vault: vault)
             }
-            Button("Cancel", role: .cancel) {}
+            Button("cancel".localized, role: .cancel) {}
         } message: {
-            Text("This action cannot be undone.")
+            Text("agentDeleteConversationMessage".localized)
         }
         .onChange(of: viewModel.conversationDeleted) { _, deleted in
             if deleted {
@@ -68,11 +68,11 @@ struct AgentChatView: View {
             guard let tx = notif.object as? AgentTxReady, let vault = appViewModel.selectedVault else { return }
             viewModel.rejectTxProposal(tx, vault: vault)
         }
-        .alert("Error", isPresented: .init(
+        .alert("error".localized, isPresented: .init(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.dismissError() } }
         )) {
-            Button("OK") { viewModel.dismissError() }
+            Button("ok".localized) { viewModel.dismissError() }
         } message: {
             Text(viewModel.error ?? "")
         }
@@ -137,7 +137,7 @@ struct AgentChatView: View {
                         Button(role: .destructive) {
                             showDeleteConfirm = true
                         } label: {
-                            Label("Delete Conversation", systemImage: "trash")
+                            Label("agentDeleteConversation".localized, systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
@@ -197,7 +197,7 @@ struct AgentChatView: View {
 
     private var inputBar: some View {
         HStack(spacing: 12) {
-            TextField("Message Vulti...", text: $inputText, axis: .vertical)
+            TextField("agentMessagePlaceholder".localized, text: $inputText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .lineLimit(1...5)
                 .padding(.horizontal, 16)
@@ -287,11 +287,11 @@ struct AgentChatView: View {
                     )
                 )
 
-            Text("Ask Vulti Anything")
+            Text("agentAskAnything".localized)
                 .font(Theme.fonts.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            Text("Try one of these suggestions below or type your own question.")
+            Text("agentSuggestionsSubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)

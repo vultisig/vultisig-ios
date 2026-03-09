@@ -22,17 +22,17 @@ struct AgentConversationsView: View {
         }
         .background(Theme.colors.bgPrimary.ignoresSafeArea())
         .confirmationDialog(
-            "Delete all conversations?",
+            "agentDeleteAllTitle".localized,
             isPresented: $showDeleteAllConfirm,
             titleVisibility: .visible
         ) {
-            Button("Delete All", role: .destructive) {
+            Button("agentDeleteAll".localized, role: .destructive) {
                 guard let vault = appViewModel.selectedVault else { return }
                 Task { await viewModel.deleteAllConversations(vault: vault) }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("cancel".localized, role: .cancel) {}
         } message: {
-            Text("This will permanently delete all your conversations. This cannot be undone.")
+            Text("agentDeleteAllMessage".localized)
         }
         .onAppear {
             loadData()
@@ -65,7 +65,7 @@ struct AgentConversationsView: View {
                         Button(role: .destructive) {
                             showDeleteAllConfirm = true
                         } label: {
-                            Label("Delete All Conversations", systemImage: "trash")
+                            Label("agentDeleteAllConversations".localized, systemImage: "trash")
                         }
                         Button {
                             guard let vault = appViewModel.selectedVault else { return }
@@ -97,7 +97,7 @@ struct AgentConversationsView: View {
                         ProgressView()
                             .controlSize(.large)
                             .tint(Theme.colors.turquoise)
-                        Text("Loading conversations...")
+                        Text("agentLoadingConversations".localized)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textTertiary)
                             .padding(.top, 8)
@@ -117,18 +117,18 @@ struct AgentConversationsView: View {
                                 )
                             )
 
-                        Text("No Past Conversations")
+                        Text("agentNoPastConversations".localized)
                             .font(Theme.fonts.title3)
                             .foregroundStyle(Theme.colors.textPrimary)
 
-                        Text("Start a new chat to begin interacting with Vulti.")
+                        Text("agentStartNewChat".localized)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
 
                         // New chat button
-                        PrimaryButton(title: "New Chat") {
+                        PrimaryButton(title: "agentNewChat".localized) {
                             navigateToChat(with: nil)
                         }
                     }
@@ -146,7 +146,7 @@ struct AgentConversationsView: View {
     private var conversationList: some View {
         VStack(spacing: 0) {
             // New chat button
-            PrimaryButton(title: "New Chat") {
+            PrimaryButton(title: "agentNewChat".localized) {
                 navigateToChat(with: nil)
             }
             .padding(.bottom, 16)
@@ -178,7 +178,7 @@ struct AgentConversationsView: View {
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(conv.title ?? "New Chat")
+                    Text(conv.title ?? "agentNewChat".localized)
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)

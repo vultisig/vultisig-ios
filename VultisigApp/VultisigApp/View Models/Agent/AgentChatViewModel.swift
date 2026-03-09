@@ -444,7 +444,7 @@ final class AgentChatViewModel: ObservableObject {
             streamingMessageId = nil
             let normalized = normalizeErrorMessage(errorMsg)
             if normalized == "agent stopped" {
-                appendAssistantMessage("Agent stopped. Send a new message when you're ready.")
+                appendAssistantMessage("agentStopped".localized)
             } else {
                 error = normalized
             }
@@ -718,7 +718,7 @@ final class AgentChatViewModel: ObservableObject {
 
     func acceptTxProposal(_ proposal: AgentTxReady, vault _: Vault) {
         debugLog("[AgentChat] User accepted transaction proposal")
-        appendAssistantMessage("Transaction accepted. Launching keysign...")
+        appendAssistantMessage("agentTransactionAccepted".localized)
 
         // TODO: This is where we will route the keysign payload to the Vultisig router in Phase 13.
         isLoading = false
@@ -751,7 +751,7 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             // Always append the txid to chat so it's visible to the user
-            self.appendAssistantMessage("✅ Transaction broadcast!\nTxID: `\(txid)`")
+            self.appendAssistantMessage(String(format: "agentTransactionBroadcast".localized, txid))
 
             self.sendActionResult(result, vault: vault)
         }
@@ -765,14 +765,12 @@ final class AgentChatViewModel: ObservableObject {
         }
 
         debugLog("[AgentChat] confirmSignTx continuing for \(pendingSendTx.coin.ticker) on \(pendingSendTx.coin.chain.name)")
-        let canUseHeadlessFastVault = vault.isFastVault && cachedFastVaultPassword != nil
-        if canUseHeadlessFastVault {
-            // Fully headless: use cached password from signIn, no sheets at all
+        if vault.isFastVault {
+            // FastVault: either use cached password or prompt — never fall to pairing sheet
             if let password = cachedFastVaultPassword, !password.isEmpty {
                 debugLog("[AgentChat] Using cached FastVault password for keysign")
                 executeFastVaultKeysign(password: password, vault: vault)
             } else {
-                // Fallback: prompt for password if not cached
                 debugLog("[AgentChat] FastVault password not cached, showing prompt")
                 self.showFastVaultPasswordPrompt = true
             }
@@ -780,7 +778,7 @@ final class AgentChatViewModel: ObservableObject {
             Task {
                 await MainActor.run {
                     self.isLoading = true
-                    self.appendAssistantMessage("Generating keysign payload...")
+                    self.appendAssistantMessage("agentGeneratingKeysign".localized)
                 }
 
                 do {
@@ -823,12 +821,13 @@ final class AgentChatViewModel: ObservableObject {
         // Cache password for future transactions in this session
         if cachedFastVaultPassword == nil {
             cachedFastVaultPassword = password
+            schedulePasswordClear()
         }
 
         Task {
             await MainActor.run {
                 self.isLoading = true
-                self.appendAssistantMessage("Signing and broadcasting transaction...")
+                self.appendAssistantMessage("agentSigningBroadcasting".localized)
             }
 
             do {
@@ -881,7 +880,7 @@ final class AgentChatViewModel: ObservableObject {
 
                 // 5. Broadcast Transaction
                 await MainActor.run {
-                    self.appendAssistantMessage("Transaction signed! Broadcasting to network...")
+                    self.appendAssistantMessage("agentTransactionSigned".localized)
                 }
 
                 let keysignViewModel = KeysignViewModel()
