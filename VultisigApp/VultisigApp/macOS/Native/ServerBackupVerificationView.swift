@@ -283,7 +283,7 @@ struct ServerBackupVerificationScreen: View {
                 ecdsaKey: vault.pubKeyECDSA,
                 OTPCode: verificationCode
             )
-            
+
             otpVerified = isSuccess
             if isSuccess {
                 tabIndex = 3
