@@ -77,6 +77,7 @@ struct AgentConversationsView: View {
                         Image(systemName: "ellipsis")
                             .rotationEffect(.degrees(90))
                             .foregroundStyle(Theme.colors.textPrimary)
+                            .accessibilityLabel("More options")
                     }
                 }
             }

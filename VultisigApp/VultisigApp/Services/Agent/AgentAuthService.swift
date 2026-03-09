@@ -48,10 +48,16 @@ final class AgentAuthService {
             warningLog("[AgentAuth] Local vault metadata does not indicate Fast Vault. Falling back to backend password validation")
         }
 
+        // Snapshot @Model Vault fields into value types before concurrent work.
+        // Vault is a SwiftData @Model (reference type, main-actor-bound);
+        // capturing it in an async let child task risks off-actor access.
+        let pubKeyECDSA = vault.pubKeyECDSA
+        let isFastVault = vault.isFastVault
+
         // Run preflight validation and message generation concurrently —
         // they're independent: preflight is a network call, message gen is CPU-only.
         async let preflightResult = FastVaultService.shared.validateAccess(
-            pubKeyECDSA: vault.pubKeyECDSA,
+            pubKeyECDSA: pubKeyECDSA,
             password: password
         )
         let authMessage = try generateAuthMessage(vault: vault)
@@ -70,7 +76,7 @@ final class AgentAuthService {
             warningLog("[AgentAuth] FastVault password preflight failed")
             throw AgentAuthError.invalidFastVaultPassword
         case .vaultNotFound:
-            if vault.isFastVault {
+            if isFastVault {
                 warningLog("[AgentAuth] FastVault backend does not recognize this vault")
                 throw AgentAuthError.fastVaultUnavailable("This vault is not available for Fast Vault signing on the backend.")
             }
