@@ -19,13 +19,15 @@ struct TransactionHistoryScreen: View {
     }
 
     var body: some View {
-        Screen(title: "transactionHistory".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen {
             VStack(spacing: 0) {
                 tabBar
                 assetFilterChips
                 content
             }
         }
+        .screenTitle("transactionHistory".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .onAppear {
             viewModel.load()
         }
