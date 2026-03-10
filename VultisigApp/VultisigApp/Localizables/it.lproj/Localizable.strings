@@ -37,6 +37,7 @@
 "agentDeleteConversation" = "Elimina conversazione";
 "agentDeleteConversationMessage" = "Questa azione non può essere annullata.";
 "agentDeleteConversationTitle" = "Eliminare questa conversazione?";
+"agentDisconnect" = "Disconnetti";
 "agentEnterFastVaultPassword" = "Inserisci password Fast Vault";
 "agentEnterVaultPassword" = "Inserisci password del Vault";
 "agentEstFee" = "COMM. STIM.: 0.001 %@";
@@ -45,6 +46,7 @@
 "agentGeneratingKeysign" = "Generazione payload keysign...";
 "agentLoadingConversations" = "Caricamento conversazioni...";
 "agentMessagePlaceholder" = "Messaggio a Vulti...";
+"agentMoreOptions" = "Più opzioni";
 "agentNewChat" = "Nuova chat";
 "agentNoPastConversations" = "Nessuna conversazione passata";
 "agentPasswordDescription" = "La tua password è necessaria per accedere al servizio agente usando il tuo vault.";

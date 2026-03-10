@@ -37,6 +37,7 @@
 "agentDeleteConversation" = "删除对话";
 "agentDeleteConversationMessage" = "此操作无法撤销。";
 "agentDeleteConversationTitle" = "删除此对话？";
+"agentDisconnect" = "断开连接";
 "agentEnterFastVaultPassword" = "输入 Fast Vault 密码";
 "agentEnterVaultPassword" = "输入金库密码";
 "agentEstFee" = "预估费用：0.001 %@";
@@ -45,6 +46,7 @@
 "agentGeneratingKeysign" = "正在生成 keysign 数据...";
 "agentLoadingConversations" = "正在加载对话...";
 "agentMessagePlaceholder" = "向 Vulti 发送消息...";
+"agentMoreOptions" = "更多选项";
 "agentNewChat" = "新对话";
 "agentNoPastConversations" = "没有历史对话";
 "agentPasswordDescription" = "需要您的密码才能使用您的金库登录代理服务。";

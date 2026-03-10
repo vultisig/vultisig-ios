@@ -60,18 +60,24 @@ struct AgentConversationsView: View {
                     Circle()
                         .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
                         .frame(width: 10, height: 10)
-                    if !viewModel.conversations.isEmpty {
-                        Menu {
-                            Button(role: .destructive) {
-                                showDeleteAllConfirm = true
-                            } label: {
-                                Label("agentDeleteAllConversations".localized, systemImage: "trash")
-                            }
+                    
+                    Menu {
+                        Button(role: .destructive) {
+                            showDeleteAllConfirm = true
                         } label: {
-                            Image(systemName: "ellipsis")
-                                .rotationEffect(.degrees(90))
-                                .foregroundStyle(Theme.colors.textPrimary)
+                            Label("agentDeleteAllConversations".localized, systemImage: "trash")
                         }
+                        Button {
+                            guard let vault = appViewModel.selectedVault else { return }
+                            Task { await viewModel.disconnect(vault: vault) }
+                        } label: {
+                            Label("agentDisconnect".localized, systemImage: "power")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .rotationEffect(.degrees(90))
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .accessibilityLabel("agentMoreOptions".localized)
                     }
                 }
             }
@@ -222,11 +228,6 @@ struct AgentConversationsView: View {
 
     // MARK: - Shared formatters (one allocation per view lifetime, not per row)
 
-    private static let iso8601Formatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return f
-    }()
     private static let relativeDateFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .abbreviated
@@ -234,11 +235,8 @@ struct AgentConversationsView: View {
     }()
 
     private func formatDate(_ dateStr: String) -> String {
-        guard let date = Self.iso8601Formatter.date(from: dateStr) else {
-            // Fallback: try without fractional seconds
-            let plain = ISO8601DateFormatter()
-            guard let d = plain.date(from: dateStr) else { return dateStr }
-            return Self.relativeDateFormatter.localizedString(for: d, relativeTo: Date())
+        guard let date = AgentBackendClient.parseISO8601(dateStr) else {
+            return dateStr
         }
         return Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
     }

@@ -18,11 +18,15 @@ final class AgentBackendClient {
     }
 
     // MARK: - Shared formatters (allocated once, reused on every call)
+    //
+    // JSONEncoder / JSONDecoder are stateless (no custom dateStrategy, keyStrategy, etc.)
+    // so a single shared instance is safe for concurrent use.
 
     static let sharedEncoder = JSONEncoder()
     static let sharedDecoder = JSONDecoder()
 
     /// Primary ISO-8601 formatter — matches timestamps WITH fractional seconds (e.g. 2026-03-06T12:34:56.789Z)
+    /// Safe as a static let: write-once at init, never mutated, read-only from all callers.
     static let sharedISO8601: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -30,8 +34,6 @@ final class AgentBackendClient {
     }()
 
     /// Fallback — matches timestamps WITHOUT fractional seconds (e.g. 2026-03-06T12:34:56Z)
-    /// Bug 5 fix: the backend sometimes omits fractional seconds; without a fallback those
-    /// dates silently became Date() and scrambled message ordering in loaded chats.
     private static let sharedISO8601NoFrac: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]

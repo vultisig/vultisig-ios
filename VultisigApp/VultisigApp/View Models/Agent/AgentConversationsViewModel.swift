@@ -29,6 +29,9 @@ final class AgentConversationsViewModel: ObservableObject {
     private var startersRefreshTimer: Timer?
     private var lastStartersRefresh: Date?
 
+    /// Generation token — incremented on disconnect to invalidate in-flight loaders.
+    private var loadGeneration: Int = 0
+
     private func debugLog(_ message: String) {
         #if DEBUG
         logger.debug("\(message, privacy: .public)")
@@ -39,7 +42,10 @@ final class AgentConversationsViewModel: ObservableObject {
 
     func checkAuthAndLoad(vault: Vault) async {
         isLoading = true
+        let gen = loadGeneration
         let token = await getValidToken(vault: vault)
+
+        guard gen == loadGeneration else { return }  // disconnected while awaiting
 
         if token == nil {
             isLoading = false
@@ -56,12 +62,14 @@ final class AgentConversationsViewModel: ObservableObject {
     }
 
     func loadConversations(vault: Vault, prefetchedToken: AgentAuthToken? = nil) async {
+        let gen = loadGeneration
         let token: AgentAuthToken?
         if let t = prefetchedToken {
             token = t
         } else {
             token = await getValidToken(vault: vault)
         }
+        guard gen == loadGeneration else { return }
         debugLog("[AgentConvos] Loading conversations with \(token != nil ? "available" : "missing") token")
 
         guard let token else {
@@ -80,11 +88,13 @@ final class AgentConversationsViewModel: ObservableObject {
                 take: 50,
                 token: token.token
             )
+            guard gen == loadGeneration else { return }
             conversations = response.conversations
             debugLog("[AgentConvos] Loaded \(response.conversations.count) conversations")
             logger.info("Loaded \(response.conversations.count) conversations")
             self.isConnected = true
         } catch let error as AgentBackendClient.AgentBackendError {
+            guard gen == loadGeneration else { return }
             if case .unauthorized = error {
                 self.passwordRequired = true
             } else {
@@ -92,6 +102,7 @@ final class AgentConversationsViewModel: ObservableObject {
                 self.error = error.localizedDescription
             }
         } catch {
+            guard gen == loadGeneration else { return }
             logger.error("Failed to load conversations: \(error.localizedDescription)")
             self.error = error.localizedDescription
         }
@@ -109,12 +120,14 @@ final class AgentConversationsViewModel: ObservableObject {
             return
         }
 
+        let gen = loadGeneration
         let token: AgentAuthToken?
         if let t = prefetchedToken {
             token = t
         } else {
             token = await getValidToken(vault: vault)
         }
+        guard gen == loadGeneration else { return }
         guard let token else {
             self.isConnected = false
             self.passwordRequired = true
@@ -132,6 +145,7 @@ final class AgentConversationsViewModel: ObservableObject {
                 request: request,
                 token: token.token
             )
+            guard gen == loadGeneration else { return }
 
             if response.starters.isEmpty {
                 starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
@@ -141,6 +155,7 @@ final class AgentConversationsViewModel: ObservableObject {
 
             lastStartersRefresh = Date()
         } catch let error as AgentBackendClient.AgentBackendError {
+            guard gen == loadGeneration else { return }
             if case .unauthorized = error {
                 self.isConnected = false
                 self.passwordRequired = true
@@ -149,6 +164,7 @@ final class AgentConversationsViewModel: ObservableObject {
                 starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
             }
         } catch {
+            guard gen == loadGeneration else { return }
             logger.warning("Failed to load starters, using fallback: \(error.localizedDescription)")
             starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
         }
@@ -232,6 +248,17 @@ final class AgentConversationsViewModel: ObservableObject {
             return token
         }
         return await authService.refreshIfNeeded(vaultPubKey: vault.pubKeyECDSA)
+    }
+
+    func disconnect(vault: Vault) async {
+        loadGeneration += 1  // Invalidate any in-flight loaders
+        await authService.disconnect(vaultPubKey: vault.pubKeyECDSA)
+        isConnected = false
+        conversations = []
+        starters = []
+        // Don't set passwordRequired here — let checkAuthAndLoad() set it
+        // on the next screen load when it finds no valid token.
+        // Setting it here would immediately re-open the password sheet.
     }
 
     func dismissError() {
