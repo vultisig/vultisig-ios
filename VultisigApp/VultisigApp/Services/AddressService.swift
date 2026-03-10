@@ -34,6 +34,11 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
+        // Special handling for qBTC
+        if AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc") {
+            return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
+        }
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
@@ -93,6 +98,16 @@ struct AddressService {
             } else {
                 let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 return try await service.resolveTNS(name: input, chain: chain)
+            }
+        }
+
+        if chain == .qbtc {
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc")
+
+            if isValid {
+                return input
+            } else {
+                throw Errors.invalidAddress
             }
         }
 
