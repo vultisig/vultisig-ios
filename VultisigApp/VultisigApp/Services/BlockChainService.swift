@@ -521,7 +521,11 @@ private extension BlockChainService {
             let adjustedPriority = maxPriorityFeePerGas > maxFeePerGas ? maxFeePerGas : maxPriorityFeePerGas
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: adjustedPriority, nonce: nonce, gasLimit: gasLimit)
 
-        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash, .qbtc:
+        case .qbtc:
+            // qBTC doesn't use Cosmos account numbers — return placeholder for now
+            return .Cosmos(accountNumber: 0, sequence: 0, gas: QBTCHelper.gasLimit, transactionType: 0, ibcDenomTrace: nil)
+
+        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash:
             let service = try CosmosService.getService(forChain: coin.chain)
             let account = try await service.fetchAccountNumber(coin.address)
 

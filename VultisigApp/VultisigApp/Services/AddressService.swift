@@ -96,6 +96,14 @@ struct AddressService {
             }
         }
 
+        if chain == .qbtc {
+            if validateQBTCAddress(input) {
+                return input
+            } else {
+                throw Errors.invalidAddress
+            }
+        }
+
         let isValid = chain.coinType.validate(address: input)
 
         if isValid {
@@ -127,7 +135,7 @@ struct AddressService {
         }
 
         if chain == .qbtc {
-            return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+            return validateQBTCAddress(address)
         }
 
         return chain.coinType.validate(address: address)
@@ -146,7 +154,7 @@ struct AddressService {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
             }
             if firstCoin.chain == .qbtc {
-                return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+                return validateQBTCAddress(address)
             }
             return firstCoin.coinType.validate(address: address)
         }
@@ -156,6 +164,14 @@ struct AddressService {
 }
 
 private extension AddressService {
+
+    /// Validates a qBTC address: "bqs" prefix, Base58-decodable payload, 25 bytes total
+    static func validateQBTCAddress(_ address: String) -> Bool {
+        guard address.hasPrefix("bqs") else { return false }
+        let payload = String(address.dropFirst(3))
+        guard let decoded = Base58.decodeNoCheck(string: payload), decoded.count == 25 else { return false }
+        return true
+    }
 
     enum Errors: Error {
         case invalidAddress

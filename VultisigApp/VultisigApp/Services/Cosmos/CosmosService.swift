@@ -16,7 +16,6 @@ enum CosmosService {
     case terraClassic
     case noble
     case akash
-    case qbtc
 
     // MARK: - Factory Methods
 
@@ -44,8 +43,6 @@ enum CosmosService {
             return .noble
         case .akash:
             return .akash
-        case .qbtc:
-            return .qbtc
         default:
             throw CosmosServiceError.unsupportedChain
         }
@@ -71,8 +68,6 @@ enum CosmosService {
             return .noble
         case .akash:
             return .akash
-        case .qbtc:
-            return .qbtc
         }
     }
 

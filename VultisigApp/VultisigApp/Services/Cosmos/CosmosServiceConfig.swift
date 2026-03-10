@@ -54,8 +54,6 @@ struct CosmosServiceConfig {
             return Endpoint.fetchNobleAccountBalance(address: address)
         case .akash:
             return Endpoint.fetchAkashAccountBalance(address: address)
-        case .qbtc:
-            return Endpoint.fetchQbtcAccountBalance(address: address)
         default:
             return ""
         }
@@ -79,8 +77,6 @@ struct CosmosServiceConfig {
             return Endpoint.fetchNobleAccountNumber(address)
         case .akash:
             return Endpoint.fetchAkashAccountNumber(address)
-        case .qbtc:
-            return Endpoint.fetchQbtcAccountNumber(address)
         default:
             return ""
         }
@@ -104,8 +100,6 @@ struct CosmosServiceConfig {
             return Endpoint.broadcastNobleTransaction
         case .akash:
             return Endpoint.broadcastAkashTransaction
-        case .qbtc:
-            return Endpoint.broadcastQbtcTransaction
         default:
             return ""
         }
@@ -164,7 +158,7 @@ struct CosmosServiceConfig {
 
     static func getConfig(forChain chain: Chain) throws -> CosmosServiceConfig {
         switch chain {
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
             return CosmosServiceConfig(chain: chain)
         default:
             throw CosmosServiceError.unsupportedChain

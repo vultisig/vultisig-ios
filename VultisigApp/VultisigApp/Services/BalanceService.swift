@@ -253,7 +253,16 @@ class BalanceService {
             let service = try EvmService.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin, address: address)
 
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .qbtc:
+            let balanceString = try await QBTCService.shared.fetchBalance(address: address)
+            // qBTC API returns balance as a decimal string (e.g. "0.5")
+            // Convert to the raw integer amount (satoshi-like units, 8 decimals)
+            let balanceDecimal = Decimal(string: balanceString) ?? 0
+            let multiplier = NSDecimalNumber(decimal: pow(Decimal(10), coin.decimals))
+            let rawAmount = NSDecimalNumber(decimal: balanceDecimal).multiplying(by: multiplier)
+            return rawAmount.stringValue
+
+        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
             let cosmosService = try CosmosService.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin, address: address)
 

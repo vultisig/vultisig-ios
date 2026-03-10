@@ -1278,7 +1278,6 @@
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
 		FCB47344D1011A902B285619 /* CosmosTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */; };
 		FD4041B37F8AA80055E6D433 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */; };
-		13DDA2ED4E1E6D61E5F0EA77 /* QBTCService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01B804976064D52B1730F30 /* QBTCService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2576,7 +2575,6 @@
 		FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
 		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
 		VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainLP.swift; sourceTree = "<group>"; };
-		F01B804976064D52B1730F30 /* QBTCService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QBTCService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -4784,7 +4782,6 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				F01B804976064D52B1730F30 /* QBTCService.swift */,
 				B51A0AEF2ED6C03F002EFA48 /* FourByteRepository.swift */,
 				13924F432ED88EB200F458D5 /* AppMigration */,
 				13A74CCC2ED3D91C00B97173 /* MayaChainAPI */,
@@ -6853,7 +6850,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13DDA2ED4E1E6D61E5F0EA77 /* QBTCService.swift in Sources */,
 				D9CD3A3F19909C27507EE93B /* BannerViewModifier.swift in Sources */,
 				13E4280C2ED494700097AD11 /* BondMayaTransactionViewModel.swift in Sources */,
 				130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */,

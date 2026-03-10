@@ -634,14 +634,17 @@ class Endpoint {
 
     static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
 
-    static func fetchQbtcAccountBalance(address: String) -> String {
-        "https://api.vultisig.com/qbtc-rpc/cosmos/bank/v1beta1/balances/\(address)"
+    static func fetchQbtcBalance(address: String) -> String {
+        "https://api.bitcoinqs.org:8080/balance/\(address)"
     }
-    static func fetchQbtcAccountNumber(_ address: String) -> String {
-        "https://api.vultisig.com/qbtc-rpc/cosmos/auth/v1beta1/accounts/\(address)"
+    static func fetchQbtcUtxos(address: String) -> String {
+        "https://api.bitcoinqs.org:8080/utxos/\(address)"
+    }
+    static func fetchQbtcTransactions(address: String) -> String {
+        "https://api.bitcoinqs.org:8080/transactions/\(address)"
     }
 
-    static let broadcastQbtcTransaction = "https://api.vultisig.com/qbtc-rpc/cosmos/tx/v1beta1/txs"
+    static let broadcastQbtcTransaction = "https://api.bitcoinqs.org:8080/worker"
 
     static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
