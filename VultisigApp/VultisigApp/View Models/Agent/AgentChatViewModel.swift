@@ -23,10 +23,12 @@ final class AgentChatViewModel: ObservableObject {
     @Published var isConnected = false
 
     @Published var pendingSendTx: SendTransaction?
+    @Published var pendingSwapTx: SwapTransaction?
     @Published var shouldShowPairingSheet = false
     @Published var showFastVaultPasswordPrompt = false
     @Published var activeKeysignPayload: KeysignPayload?
     var activeSignTxCallId: String?
+    private let swapLogic = SwapCryptoLogic()
 
     // MARK: - Private
 
@@ -250,9 +252,12 @@ final class AgentChatViewModel: ObservableObject {
 
             await primeMCPSession(vault: vault, token: token, convId: id)
 
-            // Convert backend messages to chat messages
-            messages = conv.messages.map { msg in
-                AgentChatMessage(
+            // Convert backend messages to chat messages, filtering out internal
+            // action-result echoes (e.g. "[Action result: Refresh Balances ...]")
+            // that are only useful for backend context, not user display.
+            messages = conv.messages.compactMap { msg in
+                if msg.content.hasPrefix("[Action result:") { return nil }
+                return AgentChatMessage(
                     id: msg.id,
                     role: msg.role == "user" ? .user : .assistant,
                     content: msg.content,
@@ -541,6 +546,10 @@ final class AgentChatViewModel: ObservableObject {
 
             if action.type == "build_send_tx" {
                 self.createPendingSendTx(from: action.params, vault: vault)
+            } else if action.type == "build_swap_tx" {
+                // Like Windows: auto-execute locally — build keysign payload, store, report
+                self.buildSwapTxAsync(action: action, vault: vault)
+                continue // Skip auto-execute — we handle it ourselves
             } else if action.type == "sign_tx" {
                 self.activeSignTxCallId = "tool-call-\(action.id)"
                 self.confirmSignTx(vault: vault)
@@ -676,22 +685,34 @@ final class AgentChatViewModel: ObservableObject {
         stopFlushTimer()
         streamingBuffer = ""
 
+        // Backend echoes tool action results as conversation messages (e.g.
+        // "[Action result: Refresh Balances succeeded — data: {...}]").
+        // These are useful for history but should NOT appear as visible
+        // bubbles during live streaming — they render as ugly JSON blobs.
+        let isActionResultEcho = backendMsg.content.hasPrefix("[Action result:")
+
         if let streamId = streamingMessageId,
            let idx = messages.firstIndex(where: { $0.id == streamId }) {
-            let oldMsg = messages[idx]
-            // isStreaming = false → view will now render full Markdown
-            messages[idx] = AgentChatMessage(
-                id: backendMsg.id,
-                role: oldMsg.role,
-                content: backendMsg.content,
-                timestamp: oldMsg.timestamp,
-                toolCall: oldMsg.toolCall,
-                txStatus: oldMsg.txStatus,
-                tokenResults: oldMsg.tokenResults,
-                txProposal: oldMsg.txProposal,
-                isStreaming: false
-            )
-        } else if !backendMsg.content.trimmingCharacters(in: .whitespaces).isEmpty {
+            if isActionResultEcho {
+                // Discard the seed message entirely — it was only a placeholder
+                messages.remove(at: idx)
+            } else {
+                let oldMsg = messages[idx]
+                // isStreaming = false → view will now render full Markdown
+                messages[idx] = AgentChatMessage(
+                    id: backendMsg.id,
+                    role: oldMsg.role,
+                    content: backendMsg.content,
+                    timestamp: oldMsg.timestamp,
+                    toolCall: oldMsg.toolCall,
+                    txStatus: oldMsg.txStatus,
+                    tokenResults: oldMsg.tokenResults,
+                    txProposal: oldMsg.txProposal,
+                    isStreaming: false
+                )
+            }
+        } else if !isActionResultEcho,
+                  !backendMsg.content.trimmingCharacters(in: .whitespaces).isEmpty {
             let msg = AgentChatMessage(
                 id: backendMsg.id,
                 role: .assistant,
@@ -716,12 +737,62 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = false
     }
 
-    func acceptTxProposal(_ proposal: AgentTxReady, vault _: Vault) {
+    func acceptTxProposal(_ proposal: AgentTxReady, vault: Vault) {
         debugLog("[AgentChat] User accepted transaction proposal")
         appendAssistantMessage("agentTransactionAccepted".localized)
 
-        // TODO: This is where we will route the keysign payload to the Vultisig router in Phase 13.
-        isLoading = false
+        // 1. Find the source coin in the vault
+        guard let coin = vault.coins.first(where: {
+            $0.chain.name.lowercased() == proposal.fromChain.lowercased() &&
+            $0.ticker.lowercased() == proposal.fromSymbol.lowercased()
+        }) else {
+            warningLog("[AgentChat] Coin \(proposal.fromSymbol) on \(proposal.fromChain) not found in vault")
+            self.error = "Coin \(proposal.fromSymbol) on \(proposal.fromChain) not found in vault."
+            isLoading = false
+            return
+        }
+
+        // 2. Create a SendTransaction so the pairing/keysign sheets have context
+        let tx = SendTransaction()
+        tx.coin = coin
+        tx.fromAddress = proposal.sender
+        tx.toAddress = proposal.destination
+        let localizedAmount = proposal.amount.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
+        tx.amount = localizedAmount
+        tx.vault = vault
+        self.pendingSendTx = tx
+
+        // 3. Decode the pre-built keysign payload from the backend
+        guard let payloadString = proposal.keysignPayload,
+              let payloadData = payloadString.data(using: .utf8) else {
+            warningLog("[AgentChat] Missing or invalid keysignPayload in tx_ready")
+            self.error = "Missing keysign payload from backend."
+            isLoading = false
+            return
+        }
+
+        do {
+            let payload = try JSONDecoder().decode(KeysignPayload.self, from: payloadData)
+            self.activeKeysignPayload = payload
+            debugLog("[AgentChat] Decoded keysign payload for swap: \(coin.ticker) on \(coin.chain.name)")
+
+            // 4. Trigger keysign — same logic as confirmSignTx
+            if vault.isFastVault {
+                if let password = cachedFastVaultPassword, !password.isEmpty {
+                    debugLog("[AgentChat] Using cached FastVault password for swap keysign")
+                    executeFastVaultKeysign(password: password, vault: vault)
+                } else {
+                    debugLog("[AgentChat] FastVault password not cached, showing prompt for swap")
+                    self.showFastVaultPasswordPrompt = true
+                }
+            } else {
+                self.shouldShowPairingSheet = true
+            }
+        } catch {
+            warningLog("[AgentChat] Failed to decode keysign payload: \(error.localizedDescription)")
+            self.error = "Failed to decode swap keysign payload: \(error.localizedDescription)"
+            isLoading = false
+        }
     }
 
     func rejectTxProposal(_: AgentTxReady, vault: Vault) {
@@ -742,6 +813,7 @@ final class AgentChatViewModel: ObservableObject {
         MainActor.assumeIsolated {
             self.shouldShowPairingSheet = false
             self.pendingSendTx = nil
+            self.pendingSwapTx = nil
             self.activeSignTxCallId = nil
 
             // Update the tool-call message bubble if we have a matching ID
@@ -759,8 +831,27 @@ final class AgentChatViewModel: ObservableObject {
 
     func confirmSignTx(vault: Vault) {
         debugLog("[AgentChat] confirmSignTx called")
+
+        // We intentionally DO NOT reuse `activeKeysignPayload` here for swaps.
+        // Solana's blockhash expires quickly, and DEX quotes expire too.
+        // We must rebuild the payload right before signing to get a fresh blockhash and quote.
+
         guard let pendingSendTx else {
             warningLog("[AgentChat] confirmSignTx aborted because pendingSendTx is nil")
+            let result = AgentActionResult(
+                action: "sign_tx",
+                actionId: activeSignTxCallId?.replacingOccurrences(of: "tool-call-", with: ""),
+                success: false,
+                error: "no_pending_transaction: the swap transaction was not prepared. Please resend build_swap_tx with address and memo params before sign_tx."
+            )
+            sendActionResult(result, vault: vault)
+
+            if let callId = activeSignTxCallId,
+               let idx = messages.firstIndex(where: { $0.id == callId }) {
+                messages[idx].toolCall?.status = .error
+                messages[idx].toolCall?.error = "Transaction not ready"
+            }
+            activeSignTxCallId = nil
             return
         }
 
@@ -782,20 +873,30 @@ final class AgentChatViewModel: ObservableObject {
                 }
 
                 do {
-                    let logic = SendCryptoVerifyLogic()
+                    let payload: KeysignPayload
 
-                    await BalanceService.shared.updateBalance(for: pendingSendTx.coin)
-                    let feeResult = try await logic.calculateFee(tx: pendingSendTx)
-                    pendingSendTx.fee = feeResult.fee
-                    pendingSendTx.gas = feeResult.gas
-
-                    let result = logic.validateBalanceWithFee(tx: pendingSendTx)
-                    if !result.isValid {
-                        throw HelperError.runtimeError(result.errorMessage ?? "Insufficient balance to cover fee.")
+                    if let swapTx = self.pendingSwapTx {
+                        debugLog("[AgentChat] Rebuilding swap keysign payload via SwapCryptoLogic for fresh blockhash (Pairing)")
+                        await BalanceService.shared.updateBalance(for: swapTx.fromCoin)
+                        let quote = try await self.swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
+                        swapTx.quote = quote
+                        let chainSpecific = try await self.swapLogic.fetchChainSpecific(tx: swapTx)
+                        swapTx.gas = chainSpecific.gas
+                        swapTx.thorchainFee = try await self.swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
+                        payload = try await self.swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
+                    } else {
+                        let logic = SendCryptoVerifyLogic()
+                        await BalanceService.shared.updateBalance(for: pendingSendTx.coin)
+                        let feeResult = try await logic.calculateFee(tx: pendingSendTx)
+                        pendingSendTx.fee = feeResult.fee
+                        pendingSendTx.gas = feeResult.gas
+                        let result = logic.validateBalanceWithFee(tx: pendingSendTx)
+                        if !result.isValid {
+                            throw HelperError.runtimeError(result.errorMessage ?? "Insufficient balance to cover fee.")
+                        }
+                        try await logic.validateUtxosIfNeeded(tx: pendingSendTx)
+                        payload = try await logic.buildKeysignPayload(tx: pendingSendTx, vault: vault)
                     }
-
-                    try await logic.validateUtxosIfNeeded(tx: pendingSendTx)
-                    let payload = try await logic.buildKeysignPayload(tx: pendingSendTx, vault: vault)
 
                     await MainActor.run {
                         self.isLoading = false
@@ -831,28 +932,44 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             do {
-                let logic = SendCryptoVerifyLogic()
+                let keysignPayload: KeysignPayload
 
-                // 1. Fetch fees
-                await BalanceService.shared.updateBalance(for: tx.coin)
-                let feeResult = try await logic.calculateFee(tx: tx)
-                tx.fee = feeResult.fee
-                tx.gas = feeResult.gas
+                if let swapTx = self.pendingSwapTx {
+                    // SWAP: We must rebuild to fetch a fresh blockhash and quote for Solana/DEXes
+                    debugLog("[AgentChat] Rebuilding swap keysign payload via SwapCryptoLogic for fresh blockhash (FastVault)")
+                    await BalanceService.shared.updateBalance(for: swapTx.fromCoin)
 
-                debugLog("[AgentChat] Validating balance for fast vault transaction")
+                    // Fetch quote first
+                    let quote = try await self.swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
+                    swapTx.quote = quote
 
-                let validationResult = logic.validateBalanceWithFee(tx: tx)
-                if !validationResult.isValid {
-                    let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
-                    warningLog("[AgentChat] Balance validation failed: \(errStr)")
-                    let localizedErr = NSLocalizedString(errStr, comment: "")
-                    throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
+                    // Fetch chain-specific fees (this fetches the blockhash for Solana)
+                    let chainSpecific = try await self.swapLogic.fetchChainSpecific(tx: swapTx)
+                    swapTx.gas = chainSpecific.gas
+                    swapTx.thorchainFee = try await self.swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
+
+                    keysignPayload = try await self.swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
+                } else {
+                    // SEND: use existing send infrastructure
+                    let logic = SendCryptoVerifyLogic()
+                    await BalanceService.shared.updateBalance(for: tx.coin)
+                    let feeResult = try await logic.calculateFee(tx: tx)
+                    tx.fee = feeResult.fee
+                    tx.gas = feeResult.gas
+
+                    debugLog("[AgentChat] Validating balance for fast vault transaction")
+
+                    let validationResult = logic.validateBalanceWithFee(tx: tx)
+                    if !validationResult.isValid {
+                        let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
+                        warningLog("[AgentChat] Balance validation failed: \(errStr)")
+                        let localizedErr = NSLocalizedString(errStr, comment: "")
+                        throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
+                    }
+
+                    try await logic.validateUtxosIfNeeded(tx: tx)
+                    keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
                 }
-
-                try await logic.validateUtxosIfNeeded(tx: tx)
-
-                // 2. Validate form
-                let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
 
                 // 3. Generate Keysign Messages (Matches KeysignDiscoveryViewModel flow)
                 let finalPayload = keysignPayload.coin.chain == .solana ?
@@ -1013,6 +1130,215 @@ final class AgentChatViewModel: ObservableObject {
             debugLog("[AgentChat] Pending send tx prepared for \(coin.ticker) on \(coin.chain.name)")
         } else {
             warningLog("[AgentChat] Coin \(symbolStr) on \(chainStr) was not found in the current vault")
+        }
+    }
+
+    /// Creates a `SwapTransaction` from `build_swap_tx` action params.
+    /// Uses the app's existing swap infrastructure (SwapCryptoLogic) to fetch
+    /// quotes and build keysign payloads — supports THORChain, Jupiter, 1inch, etc.
+    private func createPendingSwapTx(from params: [String: AnyCodable]?, vault: Vault) {
+        debugLog("[AgentChat] createPendingSwapTx called with \(params != nil ? "present" : "missing") params")
+        guard let params = params,
+              let fromChain = params["from_chain"]?.value as? String else {
+            warningLog("[AgentChat] createPendingSwapTx is missing from_chain param")
+            return
+        }
+
+        let fromSymbol = (params["from_symbol"]?.value as? String)
+            ?? (params["from_ticker"]?.value as? String) ?? ""
+        let toChain = (params["to_chain"]?.value as? String) ?? fromChain
+        let toSymbol = (params["to_symbol"]?.value as? String)
+            ?? (params["to_ticker"]?.value as? String) ?? ""
+
+        // Find source coin in vault
+        guard let fromCoin = vault.coins.first(where: {
+            $0.chain.name.lowercased() == fromChain.lowercased() &&
+            (fromSymbol.isEmpty || $0.ticker.lowercased() == fromSymbol.lowercased())
+        }) else {
+            warningLog("[AgentChat] Swap source coin \(fromSymbol) on \(fromChain) not found in vault")
+            return
+        }
+
+        // Find destination coin — check vault first, then try to resolve by contract
+        let toContract = params["to_contract"]?.value as? String
+        let toCoin: Coin
+        if let found = vault.coins.first(where: {
+            $0.chain.name.lowercased() == toChain.lowercased() &&
+            (toSymbol.isEmpty || $0.ticker.lowercased() == toSymbol.lowercased())
+        }) {
+            toCoin = found
+        } else if let contract = toContract, !contract.isEmpty,
+                  let found = vault.coins.first(where: {
+                      $0.contractAddress.lowercased() == contract.lowercased()
+                  }) {
+            toCoin = found
+        } else {
+            warningLog("[AgentChat] Swap destination coin \(toSymbol) on \(toChain) not found in vault")
+            return
+        }
+
+        // Convert base-unit amount to human-readable
+        let humanAmount: String
+        if let rawAmount = params["amount"]?.value as? String {
+            let decimals = (params["from_decimals"]?.value as? Int) ?? fromCoin.decimals
+            if let baseValue = Decimal(string: rawAmount), decimals > 0 {
+                let divisor = pow(Decimal(10), decimals)
+                let readable = baseValue / divisor
+                humanAmount = "\(readable)"
+            } else {
+                humanAmount = rawAmount
+            }
+        } else {
+            humanAmount = "0"
+        }
+
+        // Create SwapTransaction using the app's existing infrastructure
+        let swapTx = SwapTransaction()
+        swapTx.fromCoin = fromCoin
+        swapTx.toCoin = toCoin
+        swapTx.fromCoins = vault.coins
+        swapTx.toCoins = vault.coins
+        let localizedAmount = humanAmount.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
+        swapTx.fromAmount = localizedAmount
+
+        // Also keep a SendTransaction for UI context (pairing sheet display)
+        let sendTx = SendTransaction()
+        sendTx.coin = fromCoin
+        sendTx.fromAddress = fromCoin.address
+        sendTx.toAddress = fromCoin.address // Placeholder — swap logic resolves the real address
+        sendTx.amount = localizedAmount
+        sendTx.vault = vault
+        self.pendingSendTx = sendTx
+        self.pendingSwapTx = swapTx
+
+        debugLog("[AgentChat] Pending swap tx prepared: \(fromCoin.ticker) → \(toCoin.ticker), amount=\(humanAmount)")
+    }
+
+    /// Mirrors Windows `buildTxAsync` flow: auto-execute `build_swap_tx` locally,
+    /// build keysign payload via SwapCryptoLogic, store it, and report result to backend.
+    private func buildSwapTxAsync(action: AgentBackendAction, vault: Vault) {
+        Task {
+            let params = action.params ?? [:]
+
+            guard let fromChain = params["from_chain"]?.value as? String else {
+                warningLog("[AgentChat] buildSwapTxAsync missing from_chain")
+                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "missing from_chain param")
+                sendActionResult(result, vault: vault)
+                return
+            }
+
+            let fromSymbol = (params["from_symbol"]?.value as? String)
+                ?? (params["from_ticker"]?.value as? String) ?? ""
+            let toChain = (params["to_chain"]?.value as? String) ?? fromChain
+            let toSymbol = (params["to_symbol"]?.value as? String)
+                ?? (params["to_ticker"]?.value as? String) ?? ""
+
+            // Find coins
+            guard let fromCoin = vault.coins.first(where: {
+                $0.chain.name.lowercased() == fromChain.lowercased() &&
+                (fromSymbol.isEmpty || $0.ticker.lowercased() == fromSymbol.lowercased())
+            }) else {
+                warningLog("[AgentChat] Swap source coin \(fromSymbol) on \(fromChain) not found")
+                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "source coin \(fromSymbol) on \(fromChain) not found in vault")
+                sendActionResult(result, vault: vault)
+                return
+            }
+
+            let toContract = params["to_contract"]?.value as? String
+            let toCoin: Coin
+            if let found = vault.coins.first(where: {
+                $0.chain.name.lowercased() == toChain.lowercased() &&
+                (toSymbol.isEmpty || $0.ticker.lowercased() == toSymbol.lowercased())
+            }) {
+                toCoin = found
+            } else if let contract = toContract, !contract.isEmpty,
+                      let found = vault.coins.first(where: {
+                          $0.contractAddress.lowercased() == contract.lowercased()
+                      }) {
+                toCoin = found
+            } else {
+                warningLog("[AgentChat] Swap destination coin \(toSymbol) on \(toChain) not found")
+                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "destination coin \(toSymbol) on \(toChain) not found in vault")
+                sendActionResult(result, vault: vault)
+                return
+            }
+
+            // Convert base-unit amount to human-readable
+            let humanAmount: String
+            if let rawAmount = params["amount"]?.value as? String {
+                let decimals = (params["from_decimals"]?.value as? Int) ?? fromCoin.decimals
+                if let baseValue = Decimal(string: rawAmount), decimals > 0 {
+                    let divisor = pow(Decimal(10), decimals)
+                    humanAmount = "\(baseValue / divisor)"
+                } else {
+                    humanAmount = rawAmount
+                }
+            } else {
+                humanAmount = "0"
+            }
+
+            let localizedAmount = humanAmount.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
+
+            // Build SwapTransaction
+            let swapTx = SwapTransaction()
+            swapTx.fromCoin = fromCoin
+            swapTx.toCoin = toCoin
+            swapTx.fromCoins = vault.coins
+            swapTx.toCoins = vault.coins
+            swapTx.fromAmount = localizedAmount
+
+            debugLog("[AgentChat] Building swap keysign payload: \(fromCoin.ticker) → \(toCoin.ticker), amount=\(humanAmount)")
+
+            do {
+                // Fetch quote from DEX aggregator (Jupiter, THORChain, etc.)
+                await BalanceService.shared.updateBalance(for: fromCoin)
+                let quote = try await swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
+                swapTx.quote = quote
+
+                // Fetch chain-specific fees
+                let chainSpecific = try await swapLogic.fetchChainSpecific(tx: swapTx)
+                swapTx.gas = chainSpecific.gas
+                swapTx.thorchainFee = try await swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
+
+                // Build keysign payload
+                let keysignPayload = try await swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
+                debugLog("[AgentChat] Swap keysign payload built successfully")
+
+                // Store for sign_tx to use later (like Windows pendingTx)
+                await MainActor.run {
+                    self.activeKeysignPayload = keysignPayload
+                    self.pendingSwapTx = swapTx
+
+                    // Also set a SendTransaction for UI context
+                    let sendTx = SendTransaction()
+                    sendTx.coin = fromCoin
+                    sendTx.fromAddress = fromCoin.address
+                    sendTx.toAddress = keysignPayload.toAddress
+                    sendTx.amount = localizedAmount
+                    sendTx.memo = keysignPayload.memo ?? ""
+                    sendTx.vault = vault
+                    self.pendingSendTx = sendTx
+                }
+
+                // Report success to backend (like Windows reportActionResult)
+                let resultData: [String: AnyCodable] = [
+                    "status": AnyCodable("ready"),
+                    "from_chain": AnyCodable(fromCoin.chain.name),
+                    "from_symbol": AnyCodable(fromCoin.ticker),
+                    "to_chain": AnyCodable(toCoin.chain.name),
+                    "to_symbol": AnyCodable(toCoin.ticker),
+                    "amount": AnyCodable(humanAmount),
+                    "sender": AnyCodable(fromCoin.address),
+                    "destination": AnyCodable(keysignPayload.toAddress)
+                ]
+                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: true, data: resultData)
+                sendActionResult(result, vault: vault)
+
+            } catch {
+                errorLog("[AgentChat] buildSwapTxAsync failed: \(error.localizedDescription)")
+                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: error.localizedDescription)
+                sendActionResult(result, vault: vault)
+            }
         }
     }
 
