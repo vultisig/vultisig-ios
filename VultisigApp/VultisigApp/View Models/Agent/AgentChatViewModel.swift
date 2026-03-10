@@ -37,6 +37,7 @@ final class AgentChatViewModel: ObservableObject {
     private var currentTask: Task<Void, Never>?
     private var pendingMessage: String?
     private var cachedFastVaultPassword: String?
+    private var passwordClearTimer: Timer?
 
     // SSE delta buffering — accumulate characters and flush at ~25 Hz
     private var streamingBuffer: String = ""
@@ -276,6 +277,7 @@ final class AgentChatViewModel: ObservableObject {
             isConnected = true
             passwordRequired = false
             cachedFastVaultPassword = password  // Cache for headless keysign reuse
+            schedulePasswordClear()
 
             if let pending = pendingMessage {
                 debugLog("[AgentChat] Sending pending message after login")
@@ -338,7 +340,7 @@ final class AgentChatViewModel: ObservableObject {
 
     func disconnect(vault: Vault) async {
         await authService.disconnect(vaultPubKey: vault.pubKeyECDSA)
-        cachedFastVaultPassword = nil
+        clearCachedPassword()
         isConnected = false
     }
 
@@ -351,6 +353,23 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = false
         streamingMessageId = nil
         streamingBuffer = ""
+    }
+
+    // MARK: - Password Lifecycle
+
+    /// Auto-clear the cached Fast Vault password after a bounded window (5 min).
+    /// Limits secret lifetime in process memory across crashes, snapshots, etc.
+    private func schedulePasswordClear() {
+        passwordClearTimer?.invalidate()
+        passwordClearTimer = Timer.scheduledTimer(withTimeInterval: 5 * 60, repeats: false) { [weak self] _ in
+            DispatchQueue.main.async { self?.clearCachedPassword() }
+        }
+    }
+
+    private func clearCachedPassword() {
+        cachedFastVaultPassword = nil
+        passwordClearTimer?.invalidate()
+        passwordClearTimer = nil
     }
 
     func dismissError() {
@@ -746,14 +765,12 @@ final class AgentChatViewModel: ObservableObject {
         }
 
         debugLog("[AgentChat] confirmSignTx continuing for \(pendingSendTx.coin.ticker) on \(pendingSendTx.coin.chain.name)")
-        let canUseHeadlessFastVault = vault.isFastVault || cachedFastVaultPassword != nil
-        if canUseHeadlessFastVault {
-            // Fully headless: use cached password from signIn, no sheets at all
+        if vault.isFastVault {
+            // FastVault: either use cached password or prompt — never fall to pairing sheet
             if let password = cachedFastVaultPassword, !password.isEmpty {
                 debugLog("[AgentChat] Using cached FastVault password for keysign")
                 executeFastVaultKeysign(password: password, vault: vault)
             } else {
-                // Fallback: prompt for password if not cached
                 debugLog("[AgentChat] FastVault password not cached, showing prompt")
                 self.showFastVaultPasswordPrompt = true
             }
@@ -804,6 +821,7 @@ final class AgentChatViewModel: ObservableObject {
         // Cache password for future transactions in this session
         if cachedFastVaultPassword == nil {
             cachedFastVaultPassword = password
+            schedulePasswordClear()
         }
 
         Task {

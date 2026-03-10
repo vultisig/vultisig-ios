@@ -48,10 +48,28 @@ final class AgentAuthService {
             warningLog("[AgentAuth] Local vault metadata does not indicate Fast Vault. Falling back to backend password validation")
         }
 
-        let fastVaultAccessValidation = await FastVaultService.shared.validateAccess(
-            pubKeyECDSA: vault.pubKeyECDSA,
+        // Snapshot @Model Vault fields into value types before concurrent work.
+        // Vault is a SwiftData @Model (reference type, main-actor-bound);
+        // capturing it in an async let child task risks off-actor access.
+        let pubKeyECDSA = vault.pubKeyECDSA
+        let hexChainCode = vault.hexChainCode
+        let isFastVault = vault.isFastVault
+
+        // Run preflight validation and message generation concurrently —
+        // they're independent: preflight is a network call, message gen is CPU-only.
+        async let preflightResult = FastVaultService.shared.validateAccess(
+            pubKeyECDSA: pubKeyECDSA,
             password: password
         )
+        let authMessage = try generateAuthMessage(pubKeyECDSA: pubKeyECDSA, hexChainCode: hexChainCode)
+        debugLog("[AgentAuth] Auth message generated")
+
+        // EIP-191 hash the message (instant, CPU-only)
+        let messageHash = ethereumSignHash(authMessage)
+        debugLog("[AgentAuth] Auth message hashed")
+
+        // Now await the preflight result
+        let fastVaultAccessValidation = await preflightResult
         switch fastVaultAccessValidation {
         case .valid:
             debugLog("[AgentAuth] FastVault password preflight succeeded")
@@ -59,24 +77,17 @@ final class AgentAuthService {
             warningLog("[AgentAuth] FastVault password preflight failed")
             throw AgentAuthError.invalidFastVaultPassword
         case .vaultNotFound:
-            if vault.isFastVault {
+            if isFastVault {
                 warningLog("[AgentAuth] FastVault backend does not recognize this vault")
                 throw AgentAuthError.fastVaultUnavailable("This vault is not available for Fast Vault signing on the backend.")
             }
             warningLog("[AgentAuth] Agent auth requires Fast Vault support")
             throw AgentAuthError.fastVaultRequired
-        case .requestFailed(let statusCode, let responseBody):
-            warningLog("[AgentAuth] FastVault password preflight returned HTTP \(statusCode). Proceeding to keysign. Body: \(responseBody ?? "empty")")
+        case .requestFailed(let statusCode, _):
+            warningLog("[AgentAuth] FastVault password preflight returned HTTP \(statusCode). Proceeding to keysign.")
         case .networkFailure(let message):
             warningLog("[AgentAuth] FastVault password preflight failed due to network/backend issue. Proceeding to keysign. Error: \(message)")
         }
-
-        let authMessage = try generateAuthMessage(vault: vault)
-        debugLog("[AgentAuth] Auth message generated")
-
-        // EIP-191 hash the message
-        let messageHash = ethereumSignHash(authMessage)
-        debugLog("[AgentAuth] Auth message hashed")
 
         // Fast vault keysign — runs the full DKLS MPC ceremony
         debugLog("[AgentAuth] Starting FastVault keysign ceremony")
@@ -90,8 +101,8 @@ final class AgentAuthService {
         // Authenticate with verifier
         debugLog("[AgentAuth] Authenticating with verifier")
         let authResponse = try await authenticate(
-            publicKey: vault.pubKeyECDSA,
-            chainCodeHex: vault.hexChainCode,
+            publicKey: pubKeyECDSA,
+            chainCodeHex: hexChainCode,
             signature: signature,
             message: authMessage
         )
@@ -109,8 +120,8 @@ final class AgentAuthService {
         )
 
         // Cache and persist
-        tokens[vault.pubKeyECDSA] = token
-        persistToken(vaultPubKey: vault.pubKeyECDSA, token: token)
+        tokens[pubKeyECDSA] = token
+        persistToken(vaultPubKey: pubKeyECDSA, token: token)
 
         debugLog("[AgentAuth] Agent auth signed in successfully")
         logger.info("Agent auth signed in successfully")
@@ -219,8 +230,8 @@ final class AgentAuthService {
         return hex
     }
 
-    private func generateAuthMessage(vault: Vault) throws -> String {
-        let address = deriveEthereumAddress(vault: vault)
+    private func generateAuthMessage(pubKeyECDSA: String, hexChainCode: String) throws -> String {
+        let address = deriveEthereumAddress(pubKeyECDSA: pubKeyECDSA, hexChainCode: hexChainCode)
 
         // Match desktop JS: new Date().toISOString() → "2026-03-09T07:21:09.257Z"
         let expiresDate = Date().addingTimeInterval(15 * 60)
@@ -242,10 +253,10 @@ final class AgentAuthService {
     /// Derive Ethereum address from vault's ECDSA public key using HD derivation.
     /// Matches verifier: address.GetAddress(pubKey, chainCode, Ethereum) which calls
     /// tss.GetDerivedPubKey(rootKey, chainCode, derivePath) then GetEVMAddress(derivedKey).
-    private func deriveEthereumAddress(vault: Vault) -> String {
+    private func deriveEthereumAddress(pubKeyECDSA: String, hexChainCode: String) -> String {
         let derivedPubKeyHex = PublicKeyHelper.getDerivedPubKey(
-            hexPubKey: vault.pubKeyECDSA,
-            hexChainCode: vault.hexChainCode,
+            hexPubKey: pubKeyECDSA,
+            hexChainCode: hexChainCode,
             derivePath: CoinType.ethereum.derivationPath()
         )
 
@@ -317,8 +328,7 @@ final class AgentAuthService {
         }
 
         if httpResponse.statusCode != 200 {
-            let responseBody = String(data: data, encoding: .utf8) ?? "n/a"
-            errorLog("[AgentAuth] Verifier returned \(httpResponse.statusCode): \(responseBody)")
+            errorLog("[AgentAuth] Verifier auth failed with HTTP \(httpResponse.statusCode)")
             throw AgentAuthError.authFailed
         }
 
