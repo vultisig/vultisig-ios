@@ -100,7 +100,7 @@ struct AgentPasswordPromptScreen: View {
 }
 
 #Preview {
-    AgentPasswordPromptScreen(usesFastVault: true) { password in
+    AgentPasswordPromptScreen(usesFastVault: true) { _ in
         logger.debug("Password submitted")
         return nil
     }
