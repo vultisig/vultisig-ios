@@ -34,12 +34,12 @@ struct CustomToolbarItem {
 
 @resultBuilder
 struct CustomToolbarItemsBuilder {
-    static func buildExpression(_ item: CustomToolbarItem) -> CustomToolbarItem {
-        item
+    static func buildExpression(_ item: CustomToolbarItem) -> [CustomToolbarItem] {
+        [item]
     }
 
-    static func buildBlock(_ items: CustomToolbarItem...) -> [CustomToolbarItem] {
-        items
+    static func buildBlock(_ items: [CustomToolbarItem]...) -> [CustomToolbarItem] {
+        items.flatMap { $0 }
     }
 
     static func buildOptional(_ item: [CustomToolbarItem]?) -> [CustomToolbarItem] {
@@ -56,10 +56,6 @@ struct CustomToolbarItemsBuilder {
 
     static func buildArray(_ items: [[CustomToolbarItem]]) -> [CustomToolbarItem] {
         items.flatMap { $0 }
-    }
-
-    static func buildBlock() -> [CustomToolbarItem] {
-        []
     }
 }
 
