@@ -44,7 +44,7 @@ struct TokenSelectionScreen: View {
             emptyStateBuilder: { EmptyView() }
         )
         .onAppear {
-            tokenViewModel.loadData(groupedChain: group, vault: vault)
+            tokenViewModel.loadData(groupedChain: group)
         }
         .onDisappear {
             tokenViewModel.cancelLoading()
