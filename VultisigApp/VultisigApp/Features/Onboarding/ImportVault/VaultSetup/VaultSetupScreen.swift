@@ -62,7 +62,7 @@ struct VaultSetupScreen: View {
             return viewModel.emailField.valid
         case 2:
             return viewModel.passwordField.valid
-            && viewModel.passwordConfirmField.valid
+                && viewModel.passwordConfirmField.valid
         default:
             return false
         }
@@ -92,8 +92,8 @@ struct VaultSetupScreen: View {
 
                 PrimaryButton(
                     title: isLastStep && isCurrentStepValid
-                    ? "createVault".localized
-                    : "next".localized
+                        ? "createVault".localized
+                        : "next".localized
                 ) {
                     onContinue()
                 }
@@ -217,10 +217,10 @@ struct VaultSetupScreen: View {
                 isValid: isValidBinding(for: viewModel.emailField)
             )
             .focused($focusedField, equals: .email)
-#if os(iOS)
-            .textInputAutocapitalization(.never)
-            .keyboardType(.emailAddress)
-#endif
+            #if os(iOS)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.emailAddress)
+            #endif
         }
     }
 
