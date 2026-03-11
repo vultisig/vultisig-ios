@@ -345,7 +345,7 @@ final class AgentChatViewModel: ObservableObject, AgentLogging {
     internal func schedulePasswordClear() {
         passwordClearTimer?.invalidate()
         passwordClearTimer = Timer.scheduledTimer(withTimeInterval: 5 * 60, repeats: false) { [weak self] _ in
-            DispatchQueue.main.async { self?.clearCachedPassword() }
+            Task { @MainActor in self?.clearCachedPassword() }
         }
     }
 

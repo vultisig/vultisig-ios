@@ -64,10 +64,11 @@ final class AgentStreamManager: AgentLogging {
             viewModel.conversationTitle = title
 
         case .actions(let actions):
-            let effectiveVault = vault ?? AppViewModel.shared.selectedVault
-            if let v = effectiveVault {
-                viewModel.handleActions(actions, vault: v)
+            guard let v = vault else {
+                warningLog("[AgentChat] Skipping actions: no bound vault for this stream")
+                break
             }
+            viewModel.handleActions(actions, vault: v)
 
         case .suggestions:
             // Suggestions are displayed in the conversation starters, not inline

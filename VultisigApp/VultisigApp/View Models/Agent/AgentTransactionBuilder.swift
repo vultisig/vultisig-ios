@@ -161,6 +161,7 @@ final class AgentTransactionBuilder: AgentLogging {
               let amountStr = params["amount"]?.value as? String,
               let addressStr = params["address"]?.value as? String else {
             warningLog("[AgentChat] createPendingSendTx is missing required params")
+            clearPendingState(viewModel: viewModel)
             return
         }
 
@@ -187,6 +188,7 @@ final class AgentTransactionBuilder: AgentLogging {
             debugLog("[AgentChat] Pending send tx prepared for \(coin.ticker) on \(coin.chain.name)")
         } else {
             warningLog("[AgentChat] Coin \(symbolStr) on \(chainStr) was not found in the current vault")
+            clearPendingState(viewModel: viewModel)
         }
     }
 
@@ -198,6 +200,7 @@ final class AgentTransactionBuilder: AgentLogging {
         guard let viewModel = viewModel else { return }
         guard let params = params else {
             warningLog("[AgentChat] createPendingSwapTx is missing params")
+            clearPendingState(viewModel: viewModel)
             return
         }
 
@@ -212,6 +215,7 @@ final class AgentTransactionBuilder: AgentLogging {
             debugLog("[AgentChat] Pending swap tx prepared: \(parsed.fromCoin.ticker) → \(parsed.toCoin.ticker), amount=\(parsed.humanAmount)")
         } catch {
             warningLog("[AgentChat] createPendingSwapTx failed: \(error.localizedDescription)")
+            clearPendingState(viewModel: viewModel)
         }
     }
 
@@ -252,17 +256,45 @@ final class AgentTransactionBuilder: AgentLogging {
                     "destination": AnyCodable(keysignPayload.toAddress)
                 ]
                 let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: true, data: resultData)
+                self.updateToolCallBubble(actionId: action.id, success: true, data: resultData, viewModel: viewModel)
                 viewModel.sendActionResult(result, vault: vault)
 
             } catch let error as SwapParseError {
                 warningLog("[AgentChat] buildSwapTxAsync failed: \(error.localizedDescription)")
+                self.clearPendingState(viewModel: viewModel)
                 let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: error.localizedDescription)
+                self.updateToolCallBubble(actionId: action.id, success: false, error: error.localizedDescription, viewModel: viewModel)
                 viewModel.sendActionResult(result, vault: vault)
             } catch {
                 errorLog("[AgentChat] buildSwapTxAsync failed: \(error.localizedDescription)")
+                self.clearPendingState(viewModel: viewModel)
                 let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: error.localizedDescription)
+                self.updateToolCallBubble(actionId: action.id, success: false, error: error.localizedDescription, viewModel: viewModel)
                 viewModel.sendActionResult(result, vault: vault)
             }
         }
+    }
+
+    // MARK: - Helpers
+
+    private func updateToolCallBubble(
+        actionId: String,
+        success: Bool,
+        data: [String: AnyCodable]? = nil,
+        error: String? = nil,
+        viewModel: AgentChatViewModel
+    ) {
+        let toolCallId = "tool-call-\(actionId)"
+        if let idx = viewModel.messages.firstIndex(where: { $0.id == toolCallId }) {
+            viewModel.messages[idx].toolCall?.status = success ? .success : .error
+            if let data { viewModel.messages[idx].toolCall?.resultData = data }
+            if let error { viewModel.messages[idx].toolCall?.error = error }
+        }
+    }
+
+    private func clearPendingState(viewModel: AgentChatViewModel) {
+        viewModel.pendingSendTx = nil
+        viewModel.pendingSwapTx = nil
+        viewModel.activeKeysignPayload = nil
     }
 }

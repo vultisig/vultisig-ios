@@ -23,9 +23,10 @@ final class AgentKeysignCoordinator: AgentLogging {
 
         let callId = viewModel.activeSignTxCallId
 
-        // Send the result to AI
+        // Send the result to AI — include actionId so backend correlates the response
         let result = AgentActionResult(
             action: "sign_tx",
+            actionId: callId?.replacingOccurrences(of: "tool-call-", with: ""),
             success: true,
             data: ["txid": AnyCodable(txid)]
         )
@@ -35,6 +36,7 @@ final class AgentKeysignCoordinator: AgentLogging {
             viewModel.pendingSendTx = nil
             viewModel.pendingSwapTx = nil
             viewModel.activeSignTxCallId = nil
+            viewModel.isLoading = false
 
             // Update the tool-call message bubble if we have a matching ID
             if let callId = callId, let idx = viewModel.messages.firstIndex(where: { $0.id == callId }) {
@@ -112,6 +114,8 @@ final class AgentKeysignCoordinator: AgentLogging {
                     await MainActor.run {
                         viewModel.isLoading = false
                         viewModel.error = error.localizedDescription
+                        // Settle the outstanding sign_tx tool call
+                        self.settleSignTxFailure(viewModel: viewModel, error: error, vault: vault)
                     }
                 }
             }
@@ -122,13 +126,8 @@ final class AgentKeysignCoordinator: AgentLogging {
         guard let viewModel = viewModel else { return }
         guard let tx = viewModel.pendingSendTx else {
             warningLog("[AgentChat] executeFastVaultKeysign aborted because pendingSendTx is nil")
+            settleSignTxFailure(viewModel: viewModel, error: HelperError.runtimeError("No pending transaction"), vault: vault)
             return
-        }
-
-        // Cache password for future transactions in this session
-        if viewModel.cachedFastVaultPassword == nil {
-            viewModel.cachedFastVaultPassword = password
-            viewModel.schedulePasswordClear()
         }
 
         Task {
@@ -171,6 +170,14 @@ final class AgentKeysignCoordinator: AgentLogging {
 
                 let result = try await FastVaultKeysignService.shared.keysign(input: input)
                 debugLog("[AgentChat] Keysign returned \(result.signatures.count) signature(s)")
+
+                // Cache password only after successful keysign — prevents mistyped passwords from persisting
+                if viewModel.cachedFastVaultPassword == nil {
+                    await MainActor.run {
+                        viewModel.cachedFastVaultPassword = password
+                        viewModel.schedulePasswordClear()
+                    }
+                }
 
                 // 5. Broadcast Transaction
                 await MainActor.run {
@@ -268,8 +275,31 @@ final class AgentKeysignCoordinator: AgentLogging {
                     viewModel.isLoading = false
                     viewModel.appendAssistantMessage("❌ Error: \(error.localizedDescription)")
                     viewModel.error = error.localizedDescription
+                    // Settle the outstanding sign_tx tool call
+                    self.settleSignTxFailure(viewModel: viewModel, error: error, vault: vault)
                 }
             }
         }
+    }
+
+    // MARK: - Helpers
+
+    /// Settle an outstanding sign_tx tool call as failed — updates UI bubble, notifies backend, clears state.
+    private func settleSignTxFailure(viewModel: AgentChatViewModel, error: Error, vault: Vault) {
+        guard let callId = viewModel.activeSignTxCallId else { return }
+
+        if let idx = viewModel.messages.firstIndex(where: { $0.id == callId }) {
+            viewModel.messages[idx].toolCall?.status = .error
+            viewModel.messages[idx].toolCall?.error = error.localizedDescription
+        }
+
+        let result = AgentActionResult(
+            action: "sign_tx",
+            actionId: callId.replacingOccurrences(of: "tool-call-", with: ""),
+            success: false,
+            error: error.localizedDescription
+        )
+        viewModel.sendActionResult(result, vault: vault)
+        viewModel.activeSignTxCallId = nil
     }
 }
