@@ -176,30 +176,58 @@ class CardanoHelper {
             throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
         }
 
+        let isTokenTransfer = !keysignPayload.coin.isNativeToken
+
         // Prevent from accidentally sending all balance
         var safeGuardMaxAmount = false
-        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
+        if !isTokenTransfer,
+           let rawBalance = Int64(keysignPayload.coin.rawBalance),
            sendMaxAmount,
            rawBalance > 0,
            rawBalance == Int64(keysignPayload.toAmount) {
             safeGuardMaxAmount = true
         }
 
-        // For Cardano, we don't use UTXOs from Blockchair since it doesn't support Cardano
-        // Instead, we create a simplified input structure
+        // Parse token info from contractAddress (format: policyId + assetNameHex)
+        let tokenPolicyId: String?
+        let tokenAssetNameHex: String?
+        if isTokenTransfer {
+            // contractAddress = policyId (56 hex chars) + assetNameHex
+            let contract = keysignPayload.coin.contractAddress
+            guard contract.count > 56 else {
+                throw HelperError.runtimeError("Invalid Cardano token contract address")
+            }
+            tokenPolicyId = String(contract.prefix(56))
+            tokenAssetNameHex = String(contract.dropFirst(56))
+        } else {
+            tokenPolicyId = nil
+            tokenAssetNameHex = nil
+        }
+
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.changeAddress = keysignPayload.coin.address
-                $0.amount = UInt64(keysignPayload.toAmount)
-                $0.useMaxAmount = safeGuardMaxAmount
+
+                if isTokenTransfer {
+                    // For token transfers, must attach minimum ADA to satisfy Cardano's UTXO rules
+                    // Protocol requires each output to carry enough ADA to cover its size
+                    $0.amount = UInt64(CardanoHelper.defaultMinUTXOValue)
+                    $0.tokenAmount = CardanoTokenBundle.with {
+                        $0.token = [
+                            CardanoTokenAmount.with {
+                                $0.policyID = tokenPolicyId!
+                                $0.assetNameHex = tokenAssetNameHex!
+                                $0.amount = Data(hexString: String(keysignPayload.toAmount, radix: 16))!
+                            }
+                        ]
+                    }
+                } else {
+                    $0.amount = UInt64(keysignPayload.toAmount)
+                    $0.useMaxAmount = safeGuardMaxAmount
+                }
             }
             $0.ttl = ttl
-
-            // TODO: Implement memo support when WalletCore adds Cardano metadata support
-            // Investigation shows WalletCore Signer.cpp already reserves space for auxiliary_data (line 305)
-            // but protobuf definitions (Cardano.proto) don't expose metadata/memo fields yet
-            // Would need: CardanoAuxiliaryData, CardanoTransactionMetadata, CardanoTransactionMetadataValue types
         }
 
         // Add UTXOs to the input
@@ -211,6 +239,17 @@ class CardanoHelper {
                 }
                 $0.amount = UInt64(inputUtxo.amount)
                 $0.address = keysignPayload.coin.address
+
+                // Include token data on UTXOs for multi-asset support
+                if let tokens = inputUtxo.cardanoTokens, !tokens.isEmpty {
+                    $0.tokenAmount = tokens.map { token in
+                        CardanoTokenAmount.with {
+                            $0.policyID = token.policyId
+                            $0.assetNameHex = token.assetNameHex
+                            $0.amount = Data(hexString: String(UInt64(token.amount) ?? 0, radix: 16))!
+                        }
+                    }
+                }
             }
             input.utxos.append(utxo)
         }

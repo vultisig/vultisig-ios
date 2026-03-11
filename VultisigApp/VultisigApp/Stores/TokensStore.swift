@@ -517,6 +517,51 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .cardano,
+            ticker: "IAG",
+            logo: "iag",
+            decimals: 6,
+            priceProviderId: "iagon",
+            contractAddress: "5d16cc1a177b5d9ba9cfa9793b07e60f1fb70fea1f8aef064415d114494147",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "MIN",
+            logo: "min",
+            decimals: 6,
+            priceProviderId: "minswap",
+            contractAddress: "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c64d494e",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "SNEK",
+            logo: "snek",
+            decimals: 0,
+            priceProviderId: "snek",
+            contractAddress: "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f534e454b",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "SUNDAE",
+            logo: "sundae",
+            decimals: 6,
+            priceProviderId: "sundaeswap",
+            contractAddress: "9a9693a9a37912a5097918f97918d15240c92ab729a0b7c4aa144d7753554e444145",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "WMTX",
+            logo: "wmtx",
+            decimals: 6,
+            priceProviderId: "world-mobile-token",
+            contractAddress: "e5a42a1a1d3d1da71b0449663c32798725888d2eb0843c4dabeca05a576f726c644d6f62696c65546f6b656e58",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .blast,
             ticker: "AI",
             logo: "anyinu",

@@ -762,14 +762,6 @@ class Endpoint {
     // Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
 
-    static func fetchCardanoBalance() -> String {
-        return "\(cardanoServiceRpc)/address_info"
-    }
-
-    static func fetchCardanoUTXOs() -> String {
-        return "\(cardanoServiceRpc)/address_utxos"
-    }
-
     static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
         case .bitcoin:

@@ -236,7 +236,11 @@ class BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
 
         case .cardano:
-            return try await cardano.getBalance(address: address)
+            if coin.isNativeToken {
+                return try await cardano.getBalance(address: address)
+            } else {
+                return try await cardano.getTokenBalance(address: address, contractAddress: coin.contractAddress)
+            }
 
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
