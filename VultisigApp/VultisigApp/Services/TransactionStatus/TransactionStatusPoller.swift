@@ -21,7 +21,7 @@ final class TransactionStatusPoller {
         txHash: String,
         chain: Chain,
         pubKeyECDSA: String,
-        onUpdate: @escaping (TransactionHistoryStatus) -> Void
+        onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) {
         guard activeTasks[txHash] == nil else { return }
 
@@ -48,7 +48,7 @@ final class TransactionStatusPoller {
                             status: historyStatus,
                             errorMessage: errorMessage
                         )
-                        onUpdate(historyStatus)
+                        onUpdate(historyStatus, errorMessage)
                         break
                     }
 

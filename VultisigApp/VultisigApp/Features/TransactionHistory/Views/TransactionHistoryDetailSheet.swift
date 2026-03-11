@@ -179,7 +179,7 @@ struct TransactionHistoryDetailSheet: View {
             detailRow(title: "status".localized, value: statusText, valueColor: statusColor)
             if transaction.status == .error, let errorMessage = transaction.errorMessage, !errorMessage.isEmpty {
                 Separator().opacity(0.2)
-                detailRow(title: "failureReason".localized, value: errorMessage, valueColor: Theme.colors.alertError)
+                detailRowMultiline(title: "failureReason".localized, value: errorMessage, valueColor: Theme.colors.alertError)
             }
             Separator().opacity(0.2)
             detailRow(title: "from".localized, value: truncatedAddress(transaction.fromAddress))
@@ -216,6 +216,23 @@ struct TransactionHistoryDetailSheet: View {
                 .foregroundStyle(valueColor ?? Theme.colors.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Theme.colors.bgSurface2)
+                .cornerRadius(8)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .padding(.vertical, 16)
+    }
+
+    private func detailRowMultiline(title: String, value: String, valueColor: Color? = nil) -> some View {
+        HStack(alignment: .top) {
+            Text(title)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            Text(value)
+                .foregroundStyle(valueColor ?? Theme.colors.textPrimary)
+                .multilineTextAlignment(.trailing)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)

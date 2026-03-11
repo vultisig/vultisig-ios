@@ -74,13 +74,13 @@ class TransactionHistoryViewModel: ObservableObject {
                 txHash: tx.txHash,
                 chain: chain,
                 pubKeyECDSA: pubKeyECDSA
-            ) { [weak self] newStatus in
-                self?.updateTransaction(txHash: tx.txHash, status: newStatus)
+            ) { [weak self] newStatus, errorMessage in
+                self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)
             }
         }
     }
 
-    private func updateTransaction(txHash: String, status: TransactionHistoryStatus) {
+    private func updateTransaction(txHash: String, status: TransactionHistoryStatus, errorMessage: String? = nil) {
         guard let index = transactions.firstIndex(where: { $0.txHash == txHash }) else { return }
 
         let old = transactions[index]
@@ -112,7 +112,7 @@ class TransactionHistoryViewModel: ObservableObject {
             createdAt: old.createdAt,
             completedAt: Date(),
             estimatedTime: old.estimatedTime,
-            errorMessage: old.errorMessage
+            errorMessage: errorMessage ?? old.errorMessage
         )
     }
 
