@@ -10,7 +10,7 @@ import OSLog
 import SwiftUI
 
 @MainActor
-final class AgentChatViewModel: ObservableObject {
+final class AgentChatViewModel: ObservableObject, AgentLogging {
 
     // MARK: - Published State
 
@@ -28,42 +28,22 @@ final class AgentChatViewModel: ObservableObject {
     @Published var showFastVaultPasswordPrompt = false
     @Published var activeKeysignPayload: KeysignPayload?
     var activeSignTxCallId: String?
-    private let swapLogic = SwapCryptoLogic()
 
     // MARK: - Private
 
     private let backendClient = AgentBackendClient()
     private let authService = AgentAuthService.shared
-    private let logger = Logger(subsystem: "com.vultisig", category: "AgentChatViewModel")
-    private var streamingMessageId: String?
+    let logger = Logger(subsystem: "com.vultisig", category: "AgentChatViewModel")
     private var currentTask: Task<Void, Never>?
     private var pendingMessage: String?
-    private var cachedFastVaultPassword: String?
+    internal var cachedFastVaultPassword: String?
     private var passwordClearTimer: Timer?
 
-    // SSE delta buffering — accumulate characters and flush at ~25 Hz
-    private var streamingBuffer: String = ""
-    private var flushTimer: Timer?
+    private(set) lazy var streamManager = AgentStreamManager(viewModel: self)
+    private(set) lazy var transactionBuilder = AgentTransactionBuilder(viewModel: self)
+    private(set) lazy var keysignCoordinator = AgentKeysignCoordinator(viewModel: self)
 
     var conversationId: String?
-
-    private func debugLog(_ message: String) {
-        #if DEBUG
-        logger.debug("\(message, privacy: .public)")
-        #endif
-    }
-
-    private func warningLog(_ message: String) {
-        #if DEBUG
-        logger.warning("\(message, privacy: .public)")
-        #endif
-    }
-
-    private func errorLog(_ message: String) {
-        #if DEBUG
-        logger.error("\(message, privacy: .public)")
-        #endif
-    }
 
     // MARK: - Hardcoded Fallback Starters
 
@@ -93,7 +73,7 @@ final class AgentChatViewModel: ObservableObject {
         messages.append(userMsg)
         isLoading = true
         error = nil
-        streamingMessageId = nil
+        streamManager.reset()
 
         currentTask = Task {
             guard let token = await requireAccessToken(vault: vault) else {
@@ -200,7 +180,7 @@ final class AgentChatViewModel: ObservableObject {
         currentTask = Task {
             do {
                 guard let token = await requireAccessToken(vault: vault) else {
-                    discardPendingStreamingSeedMessage()
+                    streamManager.discardPendingStreamingSeedMessage()
                     isLoading = false
                     return
                 }
@@ -352,19 +332,17 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Cancel
 
     func cancelRequest() {
-        stopFlushTimer()
+        streamManager.cancel()
         currentTask?.cancel()
         currentTask = nil
         isLoading = false
-        streamingMessageId = nil
-        streamingBuffer = ""
     }
 
     // MARK: - Password Lifecycle
 
     /// Auto-clear the cached Fast Vault password after a bounded window (5 min).
     /// Limits secret lifetime in process memory across crashes, snapshots, etc.
-    private func schedulePasswordClear() {
+    internal func schedulePasswordClear() {
         passwordClearTimer?.invalidate()
         passwordClearTimer = Timer.scheduledTimer(withTimeInterval: 5 * 60, repeats: false) { [weak self] _ in
             DispatchQueue.main.async { self?.clearCachedPassword() }
@@ -407,125 +385,10 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - SSE Event Handling
 
     private func handleSSEEvent(_ event: AgentSSEEvent, vault: Vault? = nil) {
-        switch event {
-        case .textDelta(let delta):
-            handleTextDelta(delta)
-
-        case .title(let title):
-            conversationTitle = title
-
-        case .actions(let actions):
-            let effectiveVault = vault ?? AppViewModel.shared.selectedVault
-            if let v = effectiveVault {
-                handleActions(actions, vault: v)
-            }
-
-        case .suggestions:
-            // Suggestions are displayed in the conversation starters, not inline
-            break
-
-        case .txReady(let txReady):
-            handleTxReady(txReady)
-
-        case .tokens(let tokenResults):
-            // Attach token results to the current streaming message
-            if let streamId = streamingMessageId,
-               let idx = messages.firstIndex(where: { $0.id == streamId }) {
-                messages[idx].tokenResults = tokenResults
-            }
-
-        case .message(let backendMsg):
-            finalizeStreamingMessage(with: backendMsg)
-
-        case .error(let errorMsg):
-            // Bug fix: stop the flush timer so it doesn't keep running after the stream ends
-            stopFlushTimer()
-            streamingBuffer = ""
-            // Mark the in-flight message as finished so it renders Markdown
-            if let streamId = streamingMessageId,
-               let idx = messages.firstIndex(where: { $0.id == streamId }) {
-                messages[idx].isStreaming = false
-            }
-            streamingMessageId = nil
-            let normalized = normalizeErrorMessage(errorMsg)
-            if normalized == "agent stopped" {
-                appendAssistantMessage("agentStopped".localized)
-            } else {
-                error = normalized
-            }
-            isLoading = false
-
-        case .done:
-            // Bug fix: stop the flush timer and finalize any buffered text
-            stopFlushTimer()
-            if !streamingBuffer.isEmpty,
-               let streamId = streamingMessageId,
-               let idx = messages.firstIndex(where: { $0.id == streamId }) {
-                messages[idx].content = streamingBuffer
-                messages[idx].isStreaming = false
-            } else if let streamId = streamingMessageId,
-                      let idx = messages.firstIndex(where: { $0.id == streamId }) {
-                messages[idx].isStreaming = false
-            }
-            streamingBuffer = ""
-            streamingMessageId = nil
-            isLoading = false
-        }
+        streamManager.handleSSEEvent(event, vault: vault)
     }
 
-    private func handleTextDelta(_ delta: String) {
-        streamingBuffer += delta
-
-        if streamingMessageId == nil {
-            // No pre-seeded message: create one and start streaming
-            let msgId = "streaming-\(Date().timeIntervalSince1970)"
-            streamingMessageId = msgId
-            debugLog("[AgentChat] Created new streaming message id: \(msgId)")
-            let streamMsg = AgentChatMessage(
-                id: msgId,
-                role: .assistant,
-                content: "",
-                timestamp: Date(),
-                isStreaming: true
-            )
-            messages.append(streamMsg)
-            isLoading = false
-        } else if let streamId = streamingMessageId,
-                  let idx = messages.firstIndex(where: { $0.id == streamId }),
-                  !messages[idx].isStreaming {
-            // Bug fix: pre-seeded seed message (from auto-execute) was not marked isStreaming.
-            // Mark it now so the view switches to plain-text mode immediately.
-            messages[idx].isStreaming = true
-        }
-
-        // Always ensure the timer is running (pre-seeded paths skip the block above)
-        startFlushTimer()
-    }
-
-    private func startFlushTimer() {
-        guard flushTimer == nil else { return }
-        // ~25 Hz flush rate — smooth without hammering main thread.
-        // Use a DispatchQueue.main scheduled timer so the closure runs on MainActor
-        // without needing an explicit @MainActor annotation on the block.
-        flushTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 25.0, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async { self?.flushStreamingBuffer() }
-        }
-    }
-
-    private func stopFlushTimer() {
-        flushTimer?.invalidate()
-        flushTimer = nil
-    }
-
-    @MainActor
-    private func flushStreamingBuffer() {
-        guard !streamingBuffer.isEmpty,
-              let streamId = streamingMessageId,
-              let idx = messages.firstIndex(where: { $0.id == streamId }) else { return }
-        messages[idx].content = streamingBuffer
-    }
-
-    private func handleActions(_ actions: [AgentBackendAction], vault: Vault) {
+    internal func handleActions(_ actions: [AgentBackendAction], vault: Vault) {
         var autoExecuteActions: [AgentBackendAction] = []
 
         for action in actions {
@@ -545,14 +408,14 @@ final class AgentChatViewModel: ObservableObject {
             messages.append(toolCallMsg)
 
             if action.type == "build_send_tx" {
-                self.createPendingSendTx(from: action.params, vault: vault)
+                transactionBuilder.createPendingSendTx(from: action.params, vault: vault)
             } else if action.type == "build_swap_tx" {
                 // Like Windows: auto-execute locally — build keysign payload, store, report
-                self.buildSwapTxAsync(action: action, vault: vault)
+                transactionBuilder.buildSwapTxAsync(action: action, vault: vault)
                 continue // Skip auto-execute — we handle it ourselves
             } else if action.type == "sign_tx" {
                 self.activeSignTxCallId = "tool-call-\(action.id)"
-                self.confirmSignTx(vault: vault)
+                keysignCoordinator.confirmSignTx(vault: vault)
             }
 
             if action.autoExecute {
@@ -570,7 +433,7 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-    private func handleAutoExecuteAction(_ action: AgentBackendAction, vault: Vault) {
+    internal func handleAutoExecuteAction(_ action: AgentBackendAction, vault: Vault) {
         let toolCallId = "tool-call-\(action.id)"
 
         Task { @MainActor in
@@ -585,7 +448,7 @@ final class AgentChatViewModel: ObservableObject {
             // Plant a seed message marked isStreaming: true before streaming the result back
             self.isLoading = true
             let seedId = "streaming-\(Date().timeIntervalSince1970)"
-            self.streamingMessageId = seedId
+            streamManager.setStreamingMessageId(seedId)
             self.messages.append(AgentChatMessage(
                 id: seedId,
                 role: .assistant,
@@ -599,7 +462,7 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-    private func handleAutoExecuteActions(_ actions: [AgentBackendAction], vault: Vault) {
+    internal func handleAutoExecuteActions(_ actions: [AgentBackendAction], vault: Vault) {
         // Execute all actions locally (no backend round-trip per action), then
         // send a SINGLE aggregated action result. This prevents N×backend calls
         // (e.g. "remove all 22 chains" becomes 1 request instead of 22).
@@ -655,18 +518,10 @@ final class AgentChatViewModel: ObservableObject {
 
             // Plant an empty "seed" assistant message and register it as the
             // current streaming message BEFORE calling sendActionResult.
-            //
-            // This achieves two things:
-            //   1. isLoading = true → spinner shows during the gap
-            //   2. streamingMessageId is set so the second SSE stream's
-            //      text_delta events stream character-by-character into the
-            //      seed message (real-time typing effect). If the backend
-            //      sends a `message` event instead, finalizeStreamingMessage
-            //      replaces the seed cleanly with the real content.
             await MainActor.run {
                 self.isLoading = true
                 let seedId = "streaming-\(Date().timeIntervalSince1970)"
-                self.streamingMessageId = seedId
+                streamManager.setStreamingMessageId(seedId)
                 self.messages.append(AgentChatMessage(
                     id: seedId,
                     role: .assistant,
@@ -679,53 +534,7 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-    private func finalizeStreamingMessage(with backendMsg: AgentBackendMessage) {
-        debugLog("[AgentChat] Finalizing streaming message id: \(backendMsg.id)")
-        // Stop timer and apply any remaining buffered text before replacing with final content
-        stopFlushTimer()
-        streamingBuffer = ""
-
-        // Backend echoes tool action results as conversation messages (e.g.
-        // "[Action result: Refresh Balances succeeded — data: {...}]").
-        // These are useful for history but should NOT appear as visible
-        // bubbles during live streaming — they render as ugly JSON blobs.
-        let isActionResultEcho = backendMsg.content.hasPrefix("[Action result:")
-
-        if let streamId = streamingMessageId,
-           let idx = messages.firstIndex(where: { $0.id == streamId }) {
-            if isActionResultEcho {
-                // Discard the seed message entirely — it was only a placeholder
-                messages.remove(at: idx)
-            } else {
-                let oldMsg = messages[idx]
-                // isStreaming = false → view will now render full Markdown
-                messages[idx] = AgentChatMessage(
-                    id: backendMsg.id,
-                    role: oldMsg.role,
-                    content: backendMsg.content,
-                    timestamp: oldMsg.timestamp,
-                    toolCall: oldMsg.toolCall,
-                    txStatus: oldMsg.txStatus,
-                    tokenResults: oldMsg.tokenResults,
-                    txProposal: oldMsg.txProposal,
-                    isStreaming: false
-                )
-            }
-        } else if !isActionResultEcho,
-                  !backendMsg.content.trimmingCharacters(in: .whitespaces).isEmpty {
-            let msg = AgentChatMessage(
-                id: backendMsg.id,
-                role: .assistant,
-                content: backendMsg.content,
-                timestamp: AgentBackendClient.parseISO8601(backendMsg.createdAt) ?? Date()
-            )
-            messages.append(msg)
-        }
-        streamingMessageId = nil
-        isLoading = false
-    }
-
-    private func handleTxReady(_ txReady: AgentTxReady) {
+    internal func handleTxReady(_ txReady: AgentTxReady) {
         let msg = AgentChatMessage(
             id: "tx-proposal-\(Date().timeIntervalSince1970)",
             role: .assistant,
@@ -780,7 +589,7 @@ final class AgentChatViewModel: ObservableObject {
             if vault.isFastVault {
                 if let password = cachedFastVaultPassword, !password.isEmpty {
                     debugLog("[AgentChat] Using cached FastVault password for swap keysign")
-                    executeFastVaultKeysign(password: password, vault: vault)
+                    keysignCoordinator.executeFastVaultKeysign(password: password, vault: vault)
                 } else {
                     debugLog("[AgentChat] FastVault password not cached, showing prompt for swap")
                     self.showFastVaultPasswordPrompt = true
@@ -801,548 +610,14 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func handleTxBroadcasted(txid: String, vault: Vault) {
-        let callId = activeSignTxCallId
-
-        // Send the result to AI
-        let result = AgentActionResult(
-            action: "sign_tx",
-            success: true,
-            data: ["txid": AnyCodable(txid)]
-        )
-
-        MainActor.assumeIsolated {
-            self.shouldShowPairingSheet = false
-            self.pendingSendTx = nil
-            self.pendingSwapTx = nil
-            self.activeSignTxCallId = nil
-
-            // Update the tool-call message bubble if we have a matching ID
-            if let callId, let idx = self.messages.firstIndex(where: { $0.id == callId }) {
-                self.messages[idx].toolCall?.status = .success
-                self.messages[idx].toolCall?.resultData = ["txid": AnyCodable(txid)]
-            }
-
-            // Always append the txid to chat so it's visible to the user
-            self.appendAssistantMessage(String(format: "agentTransactionBroadcast".localized, txid))
-
-            self.sendActionResult(result, vault: vault)
-        }
-    }
-
-    func confirmSignTx(vault: Vault) {
-        debugLog("[AgentChat] confirmSignTx called")
-
-        // We intentionally DO NOT reuse `activeKeysignPayload` here for swaps.
-        // Solana's blockhash expires quickly, and DEX quotes expire too.
-        // We must rebuild the payload right before signing to get a fresh blockhash and quote.
-
-        guard let pendingSendTx else {
-            warningLog("[AgentChat] confirmSignTx aborted because pendingSendTx is nil")
-            let result = AgentActionResult(
-                action: "sign_tx",
-                actionId: activeSignTxCallId?.replacingOccurrences(of: "tool-call-", with: ""),
-                success: false,
-                error: "no_pending_transaction: the swap transaction was not prepared. Please resend build_swap_tx with address and memo params before sign_tx."
-            )
-            sendActionResult(result, vault: vault)
-
-            if let callId = activeSignTxCallId,
-               let idx = messages.firstIndex(where: { $0.id == callId }) {
-                messages[idx].toolCall?.status = .error
-                messages[idx].toolCall?.error = "Transaction not ready"
-            }
-            activeSignTxCallId = nil
-            return
-        }
-
-        debugLog("[AgentChat] confirmSignTx continuing for \(pendingSendTx.coin.ticker) on \(pendingSendTx.coin.chain.name)")
-        if vault.isFastVault {
-            // FastVault: either use cached password or prompt — never fall to pairing sheet
-            if let password = cachedFastVaultPassword, !password.isEmpty {
-                debugLog("[AgentChat] Using cached FastVault password for keysign")
-                executeFastVaultKeysign(password: password, vault: vault)
-            } else {
-                debugLog("[AgentChat] FastVault password not cached, showing prompt")
-                self.showFastVaultPasswordPrompt = true
-            }
-        } else {
-            Task {
-                await MainActor.run {
-                    self.isLoading = true
-                    self.appendAssistantMessage("agentGeneratingKeysign".localized)
-                }
-
-                do {
-                    let payload: KeysignPayload
-
-                    if let swapTx = self.pendingSwapTx {
-                        debugLog("[AgentChat] Rebuilding swap keysign payload via SwapCryptoLogic for fresh blockhash (Pairing)")
-                        await BalanceService.shared.updateBalance(for: swapTx.fromCoin)
-                        let quote = try await self.swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
-                        swapTx.quote = quote
-                        let chainSpecific = try await self.swapLogic.fetchChainSpecific(tx: swapTx)
-                        swapTx.gas = chainSpecific.gas
-                        swapTx.thorchainFee = try await self.swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
-                        payload = try await self.swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
-                    } else {
-                        let logic = SendCryptoVerifyLogic()
-                        await BalanceService.shared.updateBalance(for: pendingSendTx.coin)
-                        let feeResult = try await logic.calculateFee(tx: pendingSendTx)
-                        pendingSendTx.fee = feeResult.fee
-                        pendingSendTx.gas = feeResult.gas
-                        let result = logic.validateBalanceWithFee(tx: pendingSendTx)
-                        if !result.isValid {
-                            throw HelperError.runtimeError(result.errorMessage ?? "Insufficient balance to cover fee.")
-                        }
-                        try await logic.validateUtxosIfNeeded(tx: pendingSendTx)
-                        payload = try await logic.buildKeysignPayload(tx: pendingSendTx, vault: vault)
-                    }
-
-                    await MainActor.run {
-                        self.isLoading = false
-                        self.activeKeysignPayload = payload
-                        self.shouldShowPairingSheet = true
-                    }
-                } catch {
-                    await MainActor.run {
-                        self.isLoading = false
-                        self.error = error.localizedDescription
-                    }
-                }
-            }
-        }
+        keysignCoordinator.handleTxBroadcasted(txid: txid, vault: vault)
     }
 
     func executeFastVaultKeysign(password: String, vault: Vault) {
-        guard let tx = pendingSendTx else {
-            warningLog("[AgentChat] executeFastVaultKeysign aborted because pendingSendTx is nil")
-            return
-        }
-
-        // Cache password for future transactions in this session
-        if cachedFastVaultPassword == nil {
-            cachedFastVaultPassword = password
-            schedulePasswordClear()
-        }
-
-        Task {
-            await MainActor.run {
-                self.isLoading = true
-                self.appendAssistantMessage("agentSigningBroadcasting".localized)
-            }
-
-            do {
-                let keysignPayload: KeysignPayload
-
-                if let swapTx = self.pendingSwapTx {
-                    // SWAP: We must rebuild to fetch a fresh blockhash and quote for Solana/DEXes
-                    debugLog("[AgentChat] Rebuilding swap keysign payload via SwapCryptoLogic for fresh blockhash (FastVault)")
-                    await BalanceService.shared.updateBalance(for: swapTx.fromCoin)
-
-                    // Fetch quote first
-                    let quote = try await self.swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
-                    swapTx.quote = quote
-
-                    // Fetch chain-specific fees (this fetches the blockhash for Solana)
-                    let chainSpecific = try await self.swapLogic.fetchChainSpecific(tx: swapTx)
-                    swapTx.gas = chainSpecific.gas
-                    swapTx.thorchainFee = try await self.swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
-
-                    keysignPayload = try await self.swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
-                } else {
-                    // SEND: use existing send infrastructure
-                    let logic = SendCryptoVerifyLogic()
-                    await BalanceService.shared.updateBalance(for: tx.coin)
-                    let feeResult = try await logic.calculateFee(tx: tx)
-                    tx.fee = feeResult.fee
-                    tx.gas = feeResult.gas
-
-                    debugLog("[AgentChat] Validating balance for fast vault transaction")
-
-                    let validationResult = logic.validateBalanceWithFee(tx: tx)
-                    if !validationResult.isValid {
-                        let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
-                        warningLog("[AgentChat] Balance validation failed: \(errStr)")
-                        let localizedErr = NSLocalizedString(errStr, comment: "")
-                        throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
-                    }
-
-                    try await logic.validateUtxosIfNeeded(tx: tx)
-                    keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
-                }
-
-                // 3. Generate Keysign Messages (Matches KeysignDiscoveryViewModel flow)
-                let finalPayload = keysignPayload.coin.chain == .solana ?
-                try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload) : keysignPayload
-                let keysignFactory = KeysignMessageFactory(payload: finalPayload)
-                let preSignedImageHash = try keysignFactory.getKeysignMessages()
-                let keysignMessages = preSignedImageHash.sorted()
-
-                guard !keysignMessages.isEmpty else {
-                    throw HelperError.runtimeError("No message need to be signed")
-                }
-
-                // 4. FastVault Keysign execution
-                let input = FastVaultKeysignInput(
-                    vault: vault,
-                    keysignMessages: keysignMessages,
-                    derivePath: finalPayload.coin.coinType.derivationPath(),
-                    isECDSA: finalPayload.coin.chain.signingKeyType == .ECDSA,
-                    vaultPassword: password,
-                    chain: finalPayload.coin.chain.name
-                )
-
-                let result = try await FastVaultKeysignService.shared.keysign(input: input)
-                debugLog("[AgentChat] Keysign returned \(result.signatures.count) signature(s)")
-
-                // 5. Broadcast Transaction
-                await MainActor.run {
-                    self.appendAssistantMessage("agentTransactionSigned".localized)
-                }
-
-                let keysignViewModel = KeysignViewModel()
-                keysignViewModel.vault = vault
-                keysignViewModel.keysignPayload = finalPayload
-                keysignViewModel.signatures = result.signatures
-
-                debugLog("[AgentChat] Broadcasting signed transaction for \(finalPayload.coin.ticker) on \(finalPayload.coin.chain.name)")
-
-                // For UTXO chains (DOGE, BTC, LTC, DASH, ZEC, BCH), broadcastTransaction()
-                // uses a completion-handler internally, so the txid isn't set when the
-                // async function returns. We wait for the NotificationCenter post instead,
-                // with a 30-second timeout.
-                let isUTXO = finalPayload.coin.chain.chainType == .UTXO
-
-                if isUTXO {
-                    // Start an async waitUntil-style listener before calling broadcast
-                    let txid = await withCheckedContinuation { (continuation: CheckedContinuation<String, Never>) in
-                        var token: NSObjectProtocol?
-                        var completed = false
-                        token = NotificationCenter.default.addObserver(
-                            forName: .agentDidBroadcastTx,
-                            object: nil,
-                            queue: .main
-                        ) { notification in
-                            guard !completed else { return }
-                            completed = true
-                            if let t = notification.userInfo?["txid"] as? String {
-                                continuation.resume(returning: t)
-                            } else {
-                                continuation.resume(returning: "")
-                            }
-                            if let token { NotificationCenter.default.removeObserver(token) }
-                        }
-
-                        // Kick off broadcast AFTER registering listener
-                        Task { @MainActor in
-                            await keysignViewModel.broadcastTransaction()
-                            debugLog("[AgentChat] UTXO broadcastTransaction() returned")
-
-                            // If we already have a result (error path or immediate success), resume
-                            if !completed {
-                                if !keysignViewModel.keysignError.isEmpty {
-                                    completed = true
-                                    if let token { NotificationCenter.default.removeObserver(token) }
-                                    continuation.resume(returning: "")
-                                } else {
-                                    // Schedule a 30-second timeout
-                                    Task {
-                                        try? await Task.sleep(for: .seconds(30))
-                                        if !completed {
-                                            completed = true
-                                            warningLog("[AgentChat] UTXO broadcast timed out after 30 seconds")
-                                            if let token { NotificationCenter.default.removeObserver(token) }
-                                            continuation.resume(returning: "")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if !txid.isEmpty {
-                        debugLog("[AgentChat] UTXO broadcast succeeded")
-                        self.handleTxBroadcasted(txid: txid, vault: vault)
-                    } else if !keysignViewModel.keysignError.isEmpty {
-                        errorLog("[AgentChat] Broadcast error: \(keysignViewModel.keysignError)")
-                        throw HelperError.runtimeError(keysignViewModel.keysignError)
-                    } else {
-                        throw HelperError.runtimeError("Broadcast timed out or returned no txid. Check your balance and network, then try again.")
-                    }
-                } else {
-                    // Non-UTXO chains set txid synchronously inside broadcastTransaction()
-                    await keysignViewModel.broadcastTransaction()
-                    debugLog("[AgentChat] Non-UTXO broadcastTransaction() finished")
-
-                    if !keysignViewModel.txid.isEmpty {
-                        debugLog("[AgentChat] Broadcast returned a txid")
-                        self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)
-                    } else if !keysignViewModel.keysignError.isEmpty {
-                        errorLog("[AgentChat] Broadcast error from KeysignViewModel: \(keysignViewModel.keysignError)")
-                        throw HelperError.runtimeError(keysignViewModel.keysignError)
-                    } else {
-                        errorLog("[AgentChat] Broadcast returned empty txid and empty keysignError")
-                        throw HelperError.runtimeError("Broadcast completed but no txid or error returned. Check your balance and try again.")
-                    }
-                }
-            } catch {
-                errorLog("[AgentChat] executeFastVaultKeysign failed: \(error.localizedDescription)")
-                await MainActor.run {
-                    self.isLoading = false
-                    self.appendAssistantMessage("❌ Error: \(error.localizedDescription)")
-                    self.error = error.localizedDescription
-                }
-            }
-        }
+        keysignCoordinator.executeFastVaultKeysign(password: password, vault: vault)
     }
 
-    private func createPendingSendTx(from params: [String: AnyCodable]?, vault: Vault) {
-        debugLog("[AgentChat] createPendingSendTx called with \(params != nil ? "present" : "missing") params")
-        guard let params = params,
-              let chainStr = params["chain"]?.value as? String,
-              let symbolStr = params["symbol"]?.value as? String,
-              let amountStr = params["amount"]?.value as? String,
-              let addressStr = params["address"]?.value as? String else {
-            warningLog("[AgentChat] createPendingSendTx is missing required params")
-            return
-        }
-
-        debugLog("[AgentChat] Preparing pending send tx for \(symbolStr) on \(chainStr)")
-
-        // Find coin in vault
-        if let coin = vault.coins.first(where: {
-            $0.chain.name.lowercased() == chainStr.lowercased() &&
-            $0.ticker.lowercased() == symbolStr.lowercased()
-        }) {
-            let tx = SendTransaction()
-            tx.coin = coin
-            tx.fromAddress = coin.address
-            tx.toAddress = addressStr
-            let localizedAmount = amountStr.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
-            tx.amount = localizedAmount
-            tx.vault = vault // Explicitly assign Vault to allow isFastVault detection
-
-            if let memoStr = params["memo"]?.value as? String {
-                tx.memo = memoStr
-            }
-
-            self.pendingSendTx = tx
-            debugLog("[AgentChat] Pending send tx prepared for \(coin.ticker) on \(coin.chain.name)")
-        } else {
-            warningLog("[AgentChat] Coin \(symbolStr) on \(chainStr) was not found in the current vault")
-        }
-    }
-
-    /// Creates a `SwapTransaction` from `build_swap_tx` action params.
-    /// Uses the app's existing swap infrastructure (SwapCryptoLogic) to fetch
-    /// quotes and build keysign payloads — supports THORChain, Jupiter, 1inch, etc.
-    private func createPendingSwapTx(from params: [String: AnyCodable]?, vault: Vault) {
-        debugLog("[AgentChat] createPendingSwapTx called with \(params != nil ? "present" : "missing") params")
-        guard let params = params,
-              let fromChain = params["from_chain"]?.value as? String else {
-            warningLog("[AgentChat] createPendingSwapTx is missing from_chain param")
-            return
-        }
-
-        let fromSymbol = (params["from_symbol"]?.value as? String)
-            ?? (params["from_ticker"]?.value as? String) ?? ""
-        let toChain = (params["to_chain"]?.value as? String) ?? fromChain
-        let toSymbol = (params["to_symbol"]?.value as? String)
-            ?? (params["to_ticker"]?.value as? String) ?? ""
-
-        // Find source coin in vault
-        guard let fromCoin = vault.coins.first(where: {
-            $0.chain.name.lowercased() == fromChain.lowercased() &&
-            (fromSymbol.isEmpty || $0.ticker.lowercased() == fromSymbol.lowercased())
-        }) else {
-            warningLog("[AgentChat] Swap source coin \(fromSymbol) on \(fromChain) not found in vault")
-            return
-        }
-
-        // Find destination coin — check vault first, then try to resolve by contract
-        let toContract = params["to_contract"]?.value as? String
-        let toCoin: Coin
-        if let found = vault.coins.first(where: {
-            $0.chain.name.lowercased() == toChain.lowercased() &&
-            (toSymbol.isEmpty || $0.ticker.lowercased() == toSymbol.lowercased())
-        }) {
-            toCoin = found
-        } else if let contract = toContract, !contract.isEmpty,
-                  let found = vault.coins.first(where: {
-                      $0.contractAddress.lowercased() == contract.lowercased()
-                  }) {
-            toCoin = found
-        } else {
-            warningLog("[AgentChat] Swap destination coin \(toSymbol) on \(toChain) not found in vault")
-            return
-        }
-
-        // Convert base-unit amount to human-readable
-        let humanAmount: String
-        if let rawAmount = params["amount"]?.value as? String {
-            let decimals = (params["from_decimals"]?.value as? Int) ?? fromCoin.decimals
-            if let baseValue = Decimal(string: rawAmount), decimals > 0 {
-                let divisor = pow(Decimal(10), decimals)
-                let readable = baseValue / divisor
-                humanAmount = "\(readable)"
-            } else {
-                humanAmount = rawAmount
-            }
-        } else {
-            humanAmount = "0"
-        }
-
-        // Create SwapTransaction using the app's existing infrastructure
-        let swapTx = SwapTransaction()
-        swapTx.fromCoin = fromCoin
-        swapTx.toCoin = toCoin
-        swapTx.fromCoins = vault.coins
-        swapTx.toCoins = vault.coins
-        let localizedAmount = humanAmount.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
-        swapTx.fromAmount = localizedAmount
-
-        // Also keep a SendTransaction for UI context (pairing sheet display)
-        let sendTx = SendTransaction()
-        sendTx.coin = fromCoin
-        sendTx.fromAddress = fromCoin.address
-        sendTx.toAddress = fromCoin.address // Placeholder — swap logic resolves the real address
-        sendTx.amount = localizedAmount
-        sendTx.vault = vault
-        self.pendingSendTx = sendTx
-        self.pendingSwapTx = swapTx
-
-        debugLog("[AgentChat] Pending swap tx prepared: \(fromCoin.ticker) → \(toCoin.ticker), amount=\(humanAmount)")
-    }
-
-    /// Mirrors Windows `buildTxAsync` flow: auto-execute `build_swap_tx` locally,
-    /// build keysign payload via SwapCryptoLogic, store it, and report result to backend.
-    private func buildSwapTxAsync(action: AgentBackendAction, vault: Vault) {
-        Task {
-            let params = action.params ?? [:]
-
-            guard let fromChain = params["from_chain"]?.value as? String else {
-                warningLog("[AgentChat] buildSwapTxAsync missing from_chain")
-                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "missing from_chain param")
-                sendActionResult(result, vault: vault)
-                return
-            }
-
-            let fromSymbol = (params["from_symbol"]?.value as? String)
-                ?? (params["from_ticker"]?.value as? String) ?? ""
-            let toChain = (params["to_chain"]?.value as? String) ?? fromChain
-            let toSymbol = (params["to_symbol"]?.value as? String)
-                ?? (params["to_ticker"]?.value as? String) ?? ""
-
-            // Find coins
-            guard let fromCoin = vault.coins.first(where: {
-                $0.chain.name.lowercased() == fromChain.lowercased() &&
-                (fromSymbol.isEmpty || $0.ticker.lowercased() == fromSymbol.lowercased())
-            }) else {
-                warningLog("[AgentChat] Swap source coin \(fromSymbol) on \(fromChain) not found")
-                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "source coin \(fromSymbol) on \(fromChain) not found in vault")
-                sendActionResult(result, vault: vault)
-                return
-            }
-
-            let toContract = params["to_contract"]?.value as? String
-            let toCoin: Coin
-            if let found = vault.coins.first(where: {
-                $0.chain.name.lowercased() == toChain.lowercased() &&
-                (toSymbol.isEmpty || $0.ticker.lowercased() == toSymbol.lowercased())
-            }) {
-                toCoin = found
-            } else if let contract = toContract, !contract.isEmpty,
-                      let found = vault.coins.first(where: {
-                          $0.contractAddress.lowercased() == contract.lowercased()
-                      }) {
-                toCoin = found
-            } else {
-                warningLog("[AgentChat] Swap destination coin \(toSymbol) on \(toChain) not found")
-                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: "destination coin \(toSymbol) on \(toChain) not found in vault")
-                sendActionResult(result, vault: vault)
-                return
-            }
-
-            // Convert base-unit amount to human-readable
-            let humanAmount: String
-            if let rawAmount = params["amount"]?.value as? String {
-                let decimals = (params["from_decimals"]?.value as? Int) ?? fromCoin.decimals
-                if let baseValue = Decimal(string: rawAmount), decimals > 0 {
-                    let divisor = pow(Decimal(10), decimals)
-                    humanAmount = "\(baseValue / divisor)"
-                } else {
-                    humanAmount = rawAmount
-                }
-            } else {
-                humanAmount = "0"
-            }
-
-            let localizedAmount = humanAmount.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
-
-            // Build SwapTransaction
-            let swapTx = SwapTransaction()
-            swapTx.fromCoin = fromCoin
-            swapTx.toCoin = toCoin
-            swapTx.fromCoins = vault.coins
-            swapTx.toCoins = vault.coins
-            swapTx.fromAmount = localizedAmount
-
-            debugLog("[AgentChat] Building swap keysign payload: \(fromCoin.ticker) → \(toCoin.ticker), amount=\(humanAmount)")
-
-            do {
-                // Fetch quote from DEX aggregator (Jupiter, THORChain, etc.)
-                await BalanceService.shared.updateBalance(for: fromCoin)
-                let quote = try await swapLogic.fetchQuote(tx: swapTx, vault: vault, referredCode: "")
-                swapTx.quote = quote
-
-                // Fetch chain-specific fees
-                let chainSpecific = try await swapLogic.fetchChainSpecific(tx: swapTx)
-                swapTx.gas = chainSpecific.gas
-                swapTx.thorchainFee = try await swapLogic.thorchainFee(for: chainSpecific, tx: swapTx, vault: vault)
-
-                // Build keysign payload
-                let keysignPayload = try await swapLogic.buildSwapKeysignPayload(tx: swapTx, vault: vault)
-                debugLog("[AgentChat] Swap keysign payload built successfully")
-
-                // Store for sign_tx to use later (like Windows pendingTx)
-                await MainActor.run {
-                    self.activeKeysignPayload = keysignPayload
-                    self.pendingSwapTx = swapTx
-
-                    // Also set a SendTransaction for UI context
-                    let sendTx = SendTransaction()
-                    sendTx.coin = fromCoin
-                    sendTx.fromAddress = fromCoin.address
-                    sendTx.toAddress = keysignPayload.toAddress
-                    sendTx.amount = localizedAmount
-                    sendTx.memo = keysignPayload.memo ?? ""
-                    sendTx.vault = vault
-                    self.pendingSendTx = sendTx
-                }
-
-                // Report success to backend (like Windows reportActionResult)
-                let resultData: [String: AnyCodable] = [
-                    "status": AnyCodable("ready"),
-                    "from_chain": AnyCodable(fromCoin.chain.name),
-                    "from_symbol": AnyCodable(fromCoin.ticker),
-                    "to_chain": AnyCodable(toCoin.chain.name),
-                    "to_symbol": AnyCodable(toCoin.ticker),
-                    "amount": AnyCodable(humanAmount),
-                    "sender": AnyCodable(fromCoin.address),
-                    "destination": AnyCodable(keysignPayload.toAddress)
-                ]
-                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: true, data: resultData)
-                sendActionResult(result, vault: vault)
-
-            } catch {
-                errorLog("[AgentChat] buildSwapTxAsync failed: \(error.localizedDescription)")
-                let result = AgentActionResult(action: "build_swap_tx", actionId: action.id, success: false, error: error.localizedDescription)
-                sendActionResult(result, vault: vault)
-            }
-        }
-    }
-
-    private func appendAssistantMessage(_ content: String) {
+    internal func appendAssistantMessage(_ content: String) {
         guard !content.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         let msg = AgentChatMessage(
             id: "msg-\(Date().timeIntervalSince1970)",
@@ -1406,22 +681,9 @@ final class AgentChatViewModel: ObservableObject {
         return token
     }
 
-    private func discardPendingStreamingSeedMessage() {
-        guard let streamId = streamingMessageId,
-              let idx = messages.firstIndex(where: { $0.id == streamId }),
-              messages[idx].content.isEmpty,
-              messages[idx].isStreaming else {
-            streamingMessageId = nil
-            return
-        }
-
-        messages.remove(at: idx)
-        streamingMessageId = nil
-    }
-
     private func handleError(_ error: Error) {
         warningLog("[AgentChat] handleError: \(error.localizedDescription)")
-        streamingMessageId = nil
+        streamManager.reset()
         isLoading = false
 
         if case AgentBackendClient.AgentBackendError.unauthorized = error {
@@ -1448,7 +710,7 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-    private func normalizeErrorMessage(_ error: String) -> String {
+    internal func normalizeErrorMessage(_ error: String) -> String {
         let lower = error.lowercased()
         let cancelPatterns = ["context canceled", "context cancelled", "user cancelled", "user canceled", "agent stopped"]
         for pattern in cancelPatterns {
