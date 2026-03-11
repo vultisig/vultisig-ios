@@ -13,173 +13,69 @@ class CardanoService {
 
     static let shared = CardanoService()
 
-    private init() {}
+    private let httpClient: HTTPClientProtocol
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func getBalance(address: String) async throws -> String {
-        let url = URL(string: Endpoint.fetchCardanoBalance())!
+        let response = try await httpClient.request(
+            CardanoAPI.getAddressInfo(address: address),
+            responseType: CardanoAddressInfoResponse.self
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // Koios API expects JSON body with addresses array
-        let requestBody = [
-            "_addresses": [address]
-        ]
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return "0"
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return "0"
-            }
-
-            // Parse Koios API response - it returns a direct array, not wrapped in "data"
-            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-                return "0"
-            }
-
-            guard let addressInfo = dataArray.first else {
-                return "0"
-            }
-
-            guard let balanceString = addressInfo["balance"] as? String else {
-                return "0"
-            }
-
-            return balanceString
-
-        } catch {
-            return "0"
-        }
+        return response.data.addresses.first?.balance ?? "0"
     }
 
     /// Fetch the balance of a specific Cardano native token
     /// contractAddress format: policyId + assetNameHex (the "unit" in Koios terminology)
     func getTokenBalance(address: String, contractAddress: String) async throws -> String {
-        let url = URL(string: Endpoint.fetchCardanoBalance())!
+        let response = try await httpClient.request(
+            CardanoAPI.getAddressInfo(address: address),
+            responseType: CardanoAddressInfoResponse.self
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let requestBody = [
-            "_addresses": [address]
-        ]
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                return "0"
-            }
-
-            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-                  let addressInfo = dataArray.first,
-                  let assetList = addressInfo["asset_list"] as? [[String: Any]] else {
-                return "0"
-            }
-
-            let unit = contractAddress.lowercased()
-
-            for asset in assetList {
-                guard let policyId = asset["policy_id"] as? String,
-                      let assetName = asset["asset_name"] as? String,
-                      let quantity = asset["quantity"] as? String else {
-                    continue
-                }
-
-                let assetUnit = (policyId + assetName).lowercased()
-                if assetUnit == unit {
-                    return quantity
-                }
-            }
-
-            return "0"
-        } catch {
-            logger.error("Failed to fetch Cardano token balance: \(error.localizedDescription)")
+        guard let addressInfo = response.data.addresses.first else {
             return "0"
         }
+
+        let unit = contractAddress.lowercased()
+        let assets = addressInfo.utxoSet.flatMap(\.assetList)
+
+        for asset in assets {
+            let assetUnit = (asset.policyId + asset.assetName).lowercased()
+            if assetUnit == unit {
+                return asset.quantity
+            }
+        }
+
+        return "0"
     }
 
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        let url = URL(string: Endpoint.fetchCardanoUTXOs())!
+        let response = try await httpClient.request(
+            CardanoAPI.getAddressInfo(address: coin.address),
+            responseType: CardanoAddressInfoResponse.self
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // Koios API expects JSON body with addresses array
-        let requestBody = [
-            "_addresses": [coin.address]
-        ]
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return []
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return []
-            }
-
-            // Parse Koios API response for UTXOs
-            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-                return []
-            }
-
-            var utxos: [UtxoInfo] = []
-
-            for utxoData in dataArray {
-                guard let txHash = utxoData["tx_hash"] as? String,
-                      let txIndex = utxoData["tx_index"] as? Int,
-                      let value = utxoData["value"] as? String,
-                      let valueInt = Int64(value) else {
-                    continue
-                }
-
-                var tokenAssets: [CardanoTokenAsset]?
-                if let assetList = utxoData["asset_list"] as? [[String: Any]], !assetList.isEmpty {
-                    tokenAssets = assetList.compactMap { asset in
-                        guard let policyId = asset["policy_id"] as? String,
-                              let assetName = asset["asset_name"] as? String,
-                              let quantity = asset["quantity"] as? String else {
-                            return nil
-                        }
-                        return CardanoTokenAsset(
-                            policyId: policyId,
-                            assetNameHex: assetName,
-                            amount: quantity
-                        )
-                    }
-                }
-
-                let utxo = UtxoInfo(
-                    hash: txHash,
-                    amount: valueInt,
-                    index: UInt32(txIndex),
-                    cardanoTokens: tokenAssets
-                )
-                utxos.append(utxo)
-            }
-
-            return utxos
-
-        } catch {
+        guard let addressInfo = response.data.addresses.first else {
             return []
+        }
+
+        return addressInfo.utxoSet.compactMap { utxo in
+            guard let valueInt = Int64(utxo.value) else { return nil }
+
+            let tokenAssets: [CardanoTokenAsset]? = utxo.assetList.isEmpty ? nil : utxo.assetList.map {
+                CardanoTokenAsset(policyId: $0.policyId, assetNameHex: $0.assetName, amount: $0.quantity)
+            }
+
+            return UtxoInfo(
+                hash: utxo.txHash,
+                amount: valueInt,
+                index: UInt32(utxo.txIndex),
+                cardanoTokens: tokenAssets
+            )
         }
     }
 
@@ -193,30 +89,16 @@ class CardanoService {
     /// Fetch current Cardano slot from Koios API
     /// This is used for dynamic TTL calculation to ensure all TSS devices use the same slot reference
     func getCurrentSlot() async throws -> UInt64 {
-        let url = URL(string: "https://api.koios.rest/api/v1/tip")!
+        let response = try await httpClient.request(
+            CardanoAPI.getTip,
+            responseType: CardanoTipResponse.self
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "CardanoServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        guard let tip = response.data.tips.first else {
+            throw CardanoServiceError.failedToParseSlot
         }
 
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode)"])
-        }
-
-        // Koios API returns an array with one object
-        guard let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-              let tipInfo = jsonArray.first,
-              let absSlot = tipInfo["abs_slot"] as? UInt64 else {
-            throw NSError(domain: "CardanoServiceError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to parse slot from response"])
-        }
-
-        return absSlot
+        return tip.absSlot
     }
 
     /// Calculate TTL as current slot + 720 slots (approximately 12 minutes)
@@ -236,22 +118,11 @@ class CardanoService {
         guard amountInLovelaces >= minUTXOValue else {
             let minAmountADA = minUTXOValue.toADAString
             let sendAmountADA = amountInLovelaces.toADAString
-            throw NSError(
-                domain: "CardanoServiceError",
-                code: 5,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Amount \(sendAmountADA) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
-                ]
-            )
+            throw CardanoServiceError.belowMinimumUTXO(sendAmount: sendAmountADA, minimumAmount: minAmountADA)
         }
     }
 
     /// Comprehensive validation for Cardano transactions including change/remaining balance validation
-    /// - Parameters:
-    ///   - sendAmount: Amount to send in lovelaces
-    ///   - totalBalance: Total available balance in lovelaces
-    ///   - estimatedFee: Estimated transaction fee in lovelaces
-    /// - Throws: Error if transaction would violate minimum UTXO requirements
     func validateTransaction(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt) throws {
         let validation = CardanoHelper.validateUTXORequirements(
             sendAmount: sendAmount,
@@ -260,16 +131,11 @@ class CardanoService {
         )
 
         if !validation.isValid {
-            throw NSError(
-                domain: "CardanoServiceError",
-                code: 9,
-                userInfo: [
-                    NSLocalizedDescriptionKey: validation.errorMessage ?? "Cardano UTXO validation failed"
-                ]
+            throw CardanoServiceError.utxoValidationFailed(
+                validation.errorMessage ?? "Cardano UTXO validation failed"
             )
         }
 
-        // Also check for proactive "Send Max" recommendations
         let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
             totalBalance: totalBalance,
             estimatedFee: estimatedFee
@@ -283,17 +149,16 @@ class CardanoService {
     /// Validate Cardano chain specific parameters
     func validateChainSpecific(_ chainSpecific: BlockChainSpecific) async throws {
         guard case .Cardano(let byteFee, _, let ttl) = chainSpecific else {
-            throw NSError(domain: "CardanoServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid chain specific type for Cardano"])
+            throw CardanoServiceError.invalidChainSpecific
         }
 
         guard byteFee > 0 else {
-            throw NSError(domain: "CardanoServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Cardano byte fee must be positive"])
+            throw CardanoServiceError.invalidByteFee
         }
 
-        // TTL is an absolute slot number, so compare with current slot, not UNIX timestamp
         let currentSlot = try await getCurrentSlot()
         guard ttl > currentSlot else {
-            throw NSError(domain: "CardanoServiceError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Cardano TTL must be greater than current slot"])
+            throw CardanoServiceError.expiredTTL
         }
     }
 
@@ -301,76 +166,85 @@ class CardanoService {
     /// - Parameter signedTransaction: The signed transaction in CBOR hex format
     /// - Returns: The transaction hash
     func broadcastTransaction(signedTransaction: String) async throws -> String {
-        let url = Endpoint.cardanoBroadcast()
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // Construct JSON-RPC request
-        let requestBody: [String: Any] = [
-            "jsonrpc": "2.0",
-            "method": "submitTransaction",
-            "params": [
-                "transaction": ["cbor": signedTransaction]
-            ],
-            "id": 1
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "CardanoServiceError", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        let response: HTTPResponse<Data>
+        do {
+            response = try await httpClient.request(
+                CardanoAPI.broadcastTransaction(cborHex: signedTransaction)
+            )
+        } catch let error as HTTPError {
+            // For HTTP errors, try to parse the response body for RPC error codes
+            if case .statusCode(_, let data) = error, let data {
+                if let txId = try? handleBroadcastResponse(data: data, signedTransaction: signedTransaction) {
+                    return txId
+                }
+            }
+            throw error
         }
 
-        // Try to parse JSON response first, as it might contain specific error codes we want to handle (like 3117)
-        // even if the HTTP status code is an error (e.g., 400)
-        if let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+        return try handleBroadcastResponse(data: response.data, signedTransaction: signedTransaction)
+    }
 
-            // Check for RPC error
-            if let error = jsonResponse["error"] as? [String: Any] {
-                if let code = error["code"] as? Int, code == 3117 {
-                    // Error 3117: "The transaction contains unknown UTxO references as inputs."
-                    // This usually means the transaction was already broadcasted by another device in TSS.
-                    // We should calculate the hash locally and return it as success.
-                    if let txData = Data(hexString: signedTransaction) {
-                        let txId = CardanoHelper.calculateCardanoTransactionHash(from: txData)
-                        logger.info("Transaction already in mempool (3117). Returning local hash: \(txId)")
-                        return txId
-                    }
-                }
+    // MARK: - Private
 
-                // If it's another error and status code is bad, we'll throw later or here
-                if let message = error["message"] as? String {
-                     // If we have a specific error message from RPC, prefer it over generic HTTP error
-                     throw NSError(domain: "CardanoServiceError", code: 9, userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(message)"])
+    private func handleBroadcastResponse(data: Data, signedTransaction: String) throws -> String {
+        guard let response = try? JSONDecoder().decode(CardanoBroadcastResponse.self, from: data) else {
+            let jsonString = String(data: data, encoding: .utf8) ?? "invalid data"
+            throw CardanoServiceError.invalidBroadcastResponse(jsonString)
+        }
+
+        // Check for RPC error
+        if let error = response.error {
+            if error.code == 3117 {
+                // Error 3117: Transaction already broadcasted by another TSS device
+                if let txData = Data(hexString: signedTransaction) {
+                    let txId = CardanoHelper.calculateCardanoTransactionHash(from: txData)
+                    logger.info("Transaction already in mempool (3117). Returning local hash: \(txId)")
+                    return txId
                 }
             }
 
-            // Extract result (transaction hash)
-            // Response structure: { "result": { "transaction": { "id": "hash" } } }
-            if let result = jsonResponse["result"] as? [String: Any],
-               let transaction = result["transaction"] as? [String: Any],
-               let txId = transaction["id"] as? String {
-                return txId
-            }
+            throw CardanoServiceError.rpcError(error.message)
         }
 
-        // If we haven't returned yet, check HTTP status code
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Try to get error message from response
-            var errorDetail = "HTTP \(httpResponse.statusCode)"
-            if let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
-                errorDetail += ": \(responseString)"
-            }
-            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
+        if let txId = response.result?.transaction.id {
+            return txId
         }
 
-        // If we got here, it means status was 200 OK but we failed to parse JSON or find result
-        // Try to parse JSON again for debugging message if possible
         let jsonString = String(data: data, encoding: .utf8) ?? "invalid data"
-        throw NSError(domain: "CardanoServiceError", code: 10, userInfo: [NSLocalizedDescriptionKey: "Missing result in RPC response: \(jsonString)"])
+        throw CardanoServiceError.invalidBroadcastResponse(jsonString)
+    }
+}
+
+// MARK: - Error
+
+enum CardanoServiceError: Error, LocalizedError {
+    case failedToParseSlot
+    case belowMinimumUTXO(sendAmount: String, minimumAmount: String)
+    case utxoValidationFailed(String)
+    case invalidChainSpecific
+    case invalidByteFee
+    case expiredTTL
+    case rpcError(String)
+    case invalidBroadcastResponse(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .failedToParseSlot:
+            return "Failed to parse slot from Koios response"
+        case .belowMinimumUTXO(let sendAmount, let minimumAmount):
+            return "Amount \(sendAmount) ADA is below the minimum UTXO requirement of \(minimumAmount) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
+        case .utxoValidationFailed(let message):
+            return message
+        case .invalidChainSpecific:
+            return "Invalid chain specific type for Cardano"
+        case .invalidByteFee:
+            return "Cardano byte fee must be positive"
+        case .expiredTTL:
+            return "Cardano TTL must be greater than current slot"
+        case .rpcError(let message):
+            return "RPC Error: \(message)"
+        case .invalidBroadcastResponse(let response):
+            return "Missing result in RPC response: \(response)"
+        }
     }
 }
