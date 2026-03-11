@@ -104,7 +104,7 @@ struct VaultSetupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar {
+        .crossPlatformToolbar(showsBackButton: currentStep == 0) {
             if currentStep > 0 {
                 CustomToolbarItem(placement: .leading) {
                     ToolbarButton(image: "chevron.left") {
