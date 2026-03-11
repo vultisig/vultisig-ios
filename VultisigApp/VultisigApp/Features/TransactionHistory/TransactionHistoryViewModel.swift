@@ -236,5 +236,4 @@ class TransactionHistoryViewModel: ObservableObject {
 
         return coins.filter { $0.ticker.localizedCaseInsensitiveContains(filterSearchText) }
     }
-
 }

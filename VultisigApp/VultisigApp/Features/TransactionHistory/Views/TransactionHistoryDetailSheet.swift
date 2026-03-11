@@ -16,15 +16,15 @@ struct TransactionHistoryDetailSheet: View {
     }
 
     var container: some View {
-#if os(iOS)
-        NavigationStack {
+        #if os(iOS)
+            NavigationStack {
+                content
+            }
+        #else
             content
-        }
-#else
-        content
-            .presentationSizingFitted()
-            .applySheetSize(700, 550)
-#endif
+                .presentationSizingFitted()
+                .applySheetSize(700, 550)
+        #endif
     }
 
     var content: some View {
@@ -46,11 +46,11 @@ struct TransactionHistoryDetailSheet: View {
         .background(Theme.colors.bgSurface1)
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    dismiss()
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "x") {
+                        dismiss()
+                    }
                 }
-            }
             #endif
         }
     }

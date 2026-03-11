@@ -39,7 +39,7 @@ final class TransactionStatusPoller {
 
                     if let result, let historyStatus = self?.mapToHistoryStatus(result) {
                         var errorMessage: String? = nil
-                        if case .failed(let reason) = result.status {
+                        if case let .failed(reason) = result.status {
                             errorMessage = reason
                         }
                         self?.recorder.updateStatus(
