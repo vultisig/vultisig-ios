@@ -371,6 +371,7 @@ struct VaultSetupScreen: View {
     private func navigateBack() {
         guard currentStep > 0 else { return }
         focusedField = nil
+        showPasswordTooltip = false
         navigatingForward = false
         withAnimation(.easeInOut(duration: 0.3)) {
             currentStep -= 1
