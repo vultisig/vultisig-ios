@@ -57,7 +57,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
@@ -113,7 +114,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
@@ -160,7 +162,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
