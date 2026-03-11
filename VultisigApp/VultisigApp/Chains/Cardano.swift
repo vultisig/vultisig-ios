@@ -210,8 +210,9 @@ class CardanoHelper {
                 $0.changeAddress = keysignPayload.coin.address
 
                 if isTokenTransfer {
-                    // For token transfers, amount is the ADA to send along (0 = auto min UTXO)
-                    $0.amount = 0
+                    // For token transfers, must attach minimum ADA to satisfy Cardano's UTXO rules
+                    // Protocol requires each output to carry enough ADA to cover its size
+                    $0.amount = UInt64(CardanoHelper.defaultMinUTXOValue)
                     $0.tokenAmount = CardanoTokenBundle.with {
                         $0.token = [
                             CardanoTokenAmount.with {
