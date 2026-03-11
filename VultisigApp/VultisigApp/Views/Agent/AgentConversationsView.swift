@@ -60,7 +60,7 @@ struct AgentConversationsView: View {
                     Circle()
                         .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
                         .frame(width: 10, height: 10)
-                    
+
                     Menu {
                         Button(role: .destructive) {
                             showDeleteAllConfirm = true

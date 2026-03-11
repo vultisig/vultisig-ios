@@ -41,7 +41,7 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
-    
+
     var tabs: [HomeTab] {
         var baseTabs: [HomeTab] = [.wallet]
         if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
