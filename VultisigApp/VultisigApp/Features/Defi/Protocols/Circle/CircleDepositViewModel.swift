@@ -37,27 +37,31 @@ final class CircleDepositViewModel: ObservableObject, Form {
 
     init(vault: Vault) {
         self.vault = vault
+        fetchUsdcCoin()
     }
 
     func onLoad() async {
         isLoading = true
         defer { isLoading = false }
 
-        let (chain, _) = CircleViewLogic.getChainDetails()
+        guard let usdcCoin else { return }
+        await BalanceService.shared.updateBalance(for: usdcCoin)
 
+        tx.reset(coin: usdcCoin)
+
+        setupForm()
+        amountField.validators.append(AmountBalanceValidator(balance: usdcCoin.balanceDecimal))
+
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+    }
+
+    func fetchUsdcCoin() {
+        let (chain, _) = CircleViewLogic.getChainDetails()
         guard let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
             return
         }
 
-        await BalanceService.shared.updateBalance(for: coin)
-
         usdcCoin = coin
-        tx.reset(coin: coin)
-
-        setupForm()
-        amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
-
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
 
     func onContinue() async {

@@ -18,7 +18,7 @@ struct CircleDepositView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
             if let coinMeta = viewModel.coinMeta {
                 AmountFunctionTransactionScreen(
                     title: "circleDepositTitle".localized,

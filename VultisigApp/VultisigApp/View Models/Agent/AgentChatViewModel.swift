@@ -716,7 +716,7 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = false
     }
 
-    func acceptTxProposal(_ proposal: AgentTxReady, vault _: Vault) {
+    func acceptTxProposal(_: AgentTxReady, vault _: Vault) {
         debugLog("[AgentChat] User accepted transaction proposal")
         appendAssistantMessage("agentTransactionAccepted".localized)
 
