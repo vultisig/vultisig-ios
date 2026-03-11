@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct CircleDepositView: View {
-    @StateObject var viewModel: CircleDepositViewModel
+    @StateObject private var viewModel: CircleDepositViewModel
     @Environment(\.router) var router
 
-    @State var percentageSelected: Double?
+    @State private var percentageSelected: Double?
 
     init(vault: Vault) {
         _viewModel = StateObject(wrappedValue: CircleDepositViewModel(vault: vault))
@@ -42,7 +42,8 @@ struct CircleDepositView: View {
     }
 
     func handleVerify() async {
-        await viewModel.onContinue()
+        let success = await viewModel.onContinue()
+        guard success else { return }
         await MainActor.run {
             router.navigate(to: SendRoute.verify(tx: viewModel.tx, vault: viewModel.vault))
         }

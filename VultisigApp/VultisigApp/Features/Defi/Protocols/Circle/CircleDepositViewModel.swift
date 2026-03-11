@@ -64,10 +64,10 @@ final class CircleDepositViewModel: ObservableObject, Form {
         usdcCoin = coin
     }
 
-    func onContinue() async {
+    func onContinue() async -> Bool {
         guard let coin = usdcCoin,
               let toAddress = vault.circleWalletAddress else {
-            return
+            return false
         }
 
         isLoading = true
@@ -79,5 +79,6 @@ final class CircleDepositViewModel: ObservableObject, Form {
         tx.amount = amountField.value
 
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        return true
     }
 }
