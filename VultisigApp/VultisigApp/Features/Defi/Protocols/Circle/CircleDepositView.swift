@@ -63,64 +63,62 @@ struct CircleDepositView: View {
     }
 
     var scrollableContent: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                VStack(spacing: 0) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("circleDepositAmount", comment: "Amount"))
-                            .font(CircleConstants.Fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textSecondary)
+        VStack(spacing: CircleConstants.Design.verticalSpacing) {
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("circleDepositAmount", comment: "Amount"))
+                        .font(CircleConstants.Fonts.subtitle)
+                        .foregroundStyle(Theme.colors.textSecondary)
 
-                        Divider()
-                            .background(Theme.colors.textTertiary.opacity(0.2))
-                    }
+                    Divider()
+                        .background(Theme.colors.textTertiary.opacity(0.2))
+                }
 
-                    Spacer()
-                        .frame(height: 24)
+                Spacer()
 
-                    VStack(spacing: 8) {
-                        HStack(spacing: 4) {
-                            amountTextField
+                VStack(spacing: 8) {
+                    HStack(spacing: 4) {
+                        amountTextField
+                            .fixedSize()
 
-                            Text("USDC")
-                                .font(Theme.fonts.bodyLMedium)
-                                .foregroundStyle(Theme.colors.textSecondary)
-                        }
-
-                        Text("\(Int(min(percentage, 100)))%")
-                            .font(CircleConstants.Fonts.subtitle)
+                        Text("USDC")
+                            .font(Theme.fonts.bodyLMedium)
                             .foregroundStyle(Theme.colors.textSecondary)
                     }
 
-                    Spacer()
-                        .frame(height: 24)
+                    Text("\(Int(min(percentage, 100)))%")
+                        .font(CircleConstants.Fonts.subtitle)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
 
-                    VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                        percentageCheckpoints
+                Spacer()
 
-                        HStack {
-                            Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
-                                .font(CircleConstants.Fonts.subtitle)
-                                .foregroundStyle(Theme.colors.textSecondary)
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                    percentageCheckpoints
 
-                            Spacer()
+                    HStack {
+                        Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
+                            .font(CircleConstants.Fonts.subtitle)
+                            .foregroundStyle(Theme.colors.textSecondary)
 
-                            Text("\(usdcCoin?.balanceString ?? "0") USDC")
-                                .font(CircleConstants.Fonts.subtitle)
-                                .bold()
-                                .foregroundStyle(Theme.colors.textPrimary)
-                        }
+                        Spacer()
+
+                        Text("\(usdcCoin?.balanceString ?? "0") USDC")
+                            .font(CircleConstants.Fonts.subtitle)
+                            .bold()
+                            .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
-                .padding(CircleConstants.Design.cardPadding)
-                .overlay(
-                    RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
-                        .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
-                )
-                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
             }
-            .padding(.top, CircleConstants.Design.verticalSpacing)
+            .padding(CircleConstants.Design.cardPadding)
+            .overlay(
+                RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
+                    .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+            )
+            .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
+        .padding(.top, CircleConstants.Design.verticalSpacing)
+        .frame(maxHeight: .infinity)
     }
 
     var amountTextField: some View {
