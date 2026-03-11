@@ -94,7 +94,7 @@ class KeysignViewModel: ObservableObject {
         self.keysignPayload = keysignPayload
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
-        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
+        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
 
@@ -152,6 +152,7 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
+
         switch vault.libType {
         case .GG20, .none:
             await startKeysignGG20()
@@ -549,6 +550,8 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
+                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
+                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -563,6 +566,8 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
+                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
+                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -644,6 +649,10 @@ class KeysignViewModel: ObservableObject {
 
         // Save to pending transactions for status tracking
         savePendingTransaction()
+
+        if !txid.isEmpty && txid != "Transaction already broadcasted." {
+            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": txid])
+        }
     }
 
     private func savePendingTransaction() {
