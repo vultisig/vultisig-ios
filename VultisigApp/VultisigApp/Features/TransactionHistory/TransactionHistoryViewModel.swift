@@ -84,7 +84,7 @@ class TransactionHistoryViewModel: ObservableObject {
         guard let index = transactions.firstIndex(where: { $0.txHash == txHash }) else { return }
 
         let old = transactions[index]
-        transactions[index] = TransactionHistoryData(
+        let updated = TransactionHistoryData(
             id: old.id,
             txHash: old.txHash,
             approveTxHash: old.approveTxHash,
@@ -114,6 +114,11 @@ class TransactionHistoryViewModel: ObservableObject {
             estimatedTime: old.estimatedTime,
             errorMessage: errorMessage ?? old.errorMessage
         )
+        transactions[index] = updated
+
+        if selectedDetail?.id == updated.id {
+            selectedDetail = updated
+        }
     }
 
     // MARK: - Filtered Transactions
