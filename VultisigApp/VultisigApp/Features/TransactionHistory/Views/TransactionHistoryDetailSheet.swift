@@ -177,6 +177,10 @@ struct TransactionHistoryDetailSheet: View {
     private var detailRows: some View {
         VStack(spacing: 0) {
             detailRow(title: "status".localized, value: statusText, valueColor: statusColor)
+            if transaction.status == .error, let errorMessage = transaction.errorMessage, !errorMessage.isEmpty {
+                Separator().opacity(0.2)
+                detailRow(title: "failureReason".localized, value: errorMessage, valueColor: Theme.colors.alertError)
+            }
             Separator().opacity(0.2)
             detailRow(title: "from".localized, value: truncatedAddress(transaction.fromAddress))
             Separator().opacity(0.2)
@@ -223,9 +227,23 @@ struct TransactionHistoryDetailSheet: View {
 
     // MARK: - Explorer Button
 
+    private var providerExplorerURL: URL? {
+        let hash = transaction.txHash
+        if let provider = transaction.swapProvider?.lowercased() {
+            if provider.contains("lifi") || provider.contains("li.fi") {
+                return URL(string: "https://scan.li.fi/tx/\(hash)")
+            } else if provider.contains("thorchain") || provider.contains("thorswap") {
+                return URL(string: "https://track.ninerealms.com/\(hash)")
+            } else if provider.contains("maya") {
+                return URL(string: "https://www.mayascan.org/tx/\(hash)")
+            }
+        }
+        return URL(string: transaction.explorerLink)
+    }
+
     private var explorerButton: some View {
         PrimaryButton(title: "viewOnExplorer", type: .secondary) {
-            if let url = URL(string: transaction.explorerLink) {
+            if let url = providerExplorerURL {
                 openURL(url)
             }
         }

@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Fehler beim Abrufen der Sequenznummer";
 "failToStartKesign" = "Fehler bei der Signatur";
 "failToStartKeygen" = "Schlüsselgenerierung kann wegen fehlender Informationen nicht gestartet werden";
+"failureReason" = "Fehlergrund";
 "faq" = "FAQ";
 "faqAnswer1" = "Es handelt sich um eine sichere, multi-authentifizierende Brieftasche, die auf der MPC-Technologie basiert, die zur Verwaltung digitaler Vermögenswerte verwendet wird. Transaktionen erfordern die Genehmigung von mehreren Geräten.";
 "faqAnswer2" = "Vultisig bietet eine verbesserte Sicherheit mit Authentifizierung mit mehreren Geräten, Unterstützung für viele Blockchains, einfache Wiederherstellungsoptionen und keine Saatgutphrasen oder Benutzerverfolgung.";

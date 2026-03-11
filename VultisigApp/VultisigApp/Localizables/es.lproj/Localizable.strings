@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "No se pudo obtener el número de secuencia";
 "failToStartKesign" = "Error de firma";
 "failToStartKeygen" = "No se pudo iniciar la generación de clave debido a información faltante";
+"failureReason" = "Motivo del error";
 "faq" = "Preguntas Frecuentes";
 "faqAnswer1" = "Es una billetera segura y multiautenticación basada en la tecnología MPC que se utiliza para administrar los activos digitales. Las transacciones requieren la aprobación de múltiples dispositivos.";
 "faqAnswer2" = "Vultisig ofrece seguridad mejorada con autenticación de múltiples dispositivos, soporte para muchas blockchains, opciones de recuperación fáciles y sin frases de semillas o seguimiento de usuarios.";

@@ -38,10 +38,15 @@ final class TransactionStatusPoller {
                     )
 
                     if let result, let historyStatus = self?.mapToHistoryStatus(result) {
+                        var errorMessage: String? = nil
+                        if case .failed(let reason) = result.status {
+                            errorMessage = reason
+                        }
                         self?.recorder.updateStatus(
                             txHash: txHash,
                             pubKeyECDSA: pubKeyECDSA,
-                            status: historyStatus
+                            status: historyStatus,
+                            errorMessage: errorMessage
                         )
                         onUpdate(historyStatus)
                         break

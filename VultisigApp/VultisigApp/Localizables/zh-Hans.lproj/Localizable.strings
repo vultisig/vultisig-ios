@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "无法获取序列号";
 "failToStartKesign" = "签名错误";
 "failToStartKeygen" = "由于缺少信息，无法启动密钥生成";
+"failureReason" = "失败原因";
 "faq" = "常见问题";
 "faqAnswer1" = "这是一个基于 MPC 技术的安全多身份验证钱包，用于管理数字资产。交易需要多个设备的批准";
 "faqAnswer2" = "Vultisig 提供多设备身份验证的增强安全性，支持多个区块链，易于恢复选项，无助记词或用户跟踪";

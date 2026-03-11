@@ -111,7 +111,8 @@ class TransactionHistoryViewModel: ObservableObject {
             explorerLink: old.explorerLink,
             createdAt: old.createdAt,
             completedAt: Date(),
-            estimatedTime: old.estimatedTime
+            estimatedTime: old.estimatedTime,
+            errorMessage: old.errorMessage
         )
     }
 
