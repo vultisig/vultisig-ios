@@ -206,7 +206,53 @@ struct CoinService {
         return tokens
     }
 
+    /// Migrate coins with old contract addresses to their new addresses.
+    /// This handles the contract address change from PR #3837 (e.g. x/staking-x/tcy → x/staking-tcy).
+    static func migrateOldContractAddresses(vault: Vault) {
+        let migrations: [(oldAddress: String, newAddress: String)] = [
+            ("x/staking-x/tcy", "x/staking-tcy"),
+            ("x/staking-x/ruji", "x/staking-ruji")
+        ]
+
+        for migration in migrations {
+            let oldCoins = vault.coins.filter {
+                $0.contractAddress.caseInsensitiveCompare(migration.oldAddress) == .orderedSame
+            }
+
+            for oldCoin in oldCoins {
+                // Check if a coin with the new address already exists
+                let newCoinExists = vault.coins.contains {
+                    $0.contractAddress.caseInsensitiveCompare(migration.newAddress) == .orderedSame &&
+                    $0.chain == oldCoin.chain
+                }
+
+                if newCoinExists {
+                    // Remove the old duplicate
+                    if let idx = vault.coins.firstIndex(of: oldCoin) {
+                        vault.coins.remove(at: idx)
+                    }
+                    Storage.shared.delete(oldCoin)
+                } else {
+                    // Update the old coin's contract address to the new one
+                    oldCoin.contractAddress = migration.newAddress
+                }
+            }
+        }
+
+        // Also migrate hidden tokens with old addresses
+        for migration in migrations {
+            for hiddenToken in vault.hiddenTokens {
+                if hiddenToken.contractAddress.caseInsensitiveCompare(migration.oldAddress) == .orderedSame {
+                    hiddenToken.contractAddress = migration.newAddress
+                }
+            }
+        }
+    }
+
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
+        // Migrate old contract addresses before processing discoveries
+        migrateOldContractAddresses(vault: vault)
+
         do {
             let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
 

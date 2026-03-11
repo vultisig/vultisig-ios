@@ -41,11 +41,33 @@ class HiddenToken {
         contractAddress.lowercased()
     }
 
+    /// Known old contract addresses that were migrated in PR #3837
+    /// Maps old address -> new address for THORChain staking tokens
+    private static let migratedContractAddresses: [String: String] = [
+        "x/staking-x/tcy": "x/staking-tcy",
+        "x/staking-x/ruji": "x/staking-ruji"
+    ]
+
     /// Check if this hidden token matches a CoinMeta
     func matches(_ coinMeta: CoinMeta) -> Bool {
-        return chain.caseInsensitiveCompare(coinMeta.chain.rawValue) == .orderedSame &&
-               normalizedTicker == coinMeta.ticker.lowercased() &&
-               normalizedContract == coinMeta.contractAddress.lowercased()
+        guard chain.caseInsensitiveCompare(coinMeta.chain.rawValue) == .orderedSame,
+              normalizedTicker == coinMeta.ticker.lowercased() else {
+            return false
+        }
+
+        // Exact contract address match
+        if normalizedContract == coinMeta.contractAddress.lowercased() {
+            return true
+        }
+
+        // Check if the hidden token has an old migrated contract address
+        // that maps to the current contract address
+        if let newAddress = Self.migratedContractAddresses[normalizedContract],
+           newAddress.lowercased() == coinMeta.contractAddress.lowercased() {
+            return true
+        }
+
+        return false
     }
 }
 
