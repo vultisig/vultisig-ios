@@ -121,8 +121,8 @@ struct CircleViewLogic {
             data: dataHex
         )
 
-        guard let coin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
-            throw CircleServiceError.keysignError("Missing ETH Coin")
+        guard let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
+            throw CircleServiceError.keysignError("Missing USDC Coin")
         }
 
         let chainSpecific = BlockChainSpecific.Ethereum(

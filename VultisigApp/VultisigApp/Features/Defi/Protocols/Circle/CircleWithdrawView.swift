@@ -292,6 +292,8 @@ struct CircleWithdrawView: View {
 
             await MainActor.run {
                 self.sendTransaction.reset(coin: usdcCoin)
+                self.sendTransaction.amount = amount
+                self.sendTransaction.toAddress = recipientCoin.address
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
 
