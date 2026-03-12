@@ -9,6 +9,7 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
 
 /*
  Cardano UTXO Validation & Send Max Recommendations
@@ -32,6 +33,8 @@ import BigInt
  ❌ Send 4.0 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 0.83 ADA (invalid - below 1.4 ADA)
  ✅ Send Max 5 ADA, Balance 5 ADA → WalletCore subtracts fee automatically (valid)
  */
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "cardano-helper")
 
 class CardanoHelper {
 
@@ -242,11 +245,20 @@ class CardanoHelper {
 
                 // Include token data on UTXOs for multi-asset support
                 if let tokens = inputUtxo.cardanoTokens, !tokens.isEmpty {
-                    $0.tokenAmount = tokens.map { token in
-                        CardanoTokenAmount.with {
+                    $0.tokenAmount = tokens.compactMap { token in
+                        guard let parsedAmount = UInt64(token.amount) else {
+                            logger.warning("Skipping token with invalid amount: \(token.amount)")
+                            return nil
+                        }
+                        let hexString = String(parsedAmount, radix: 16)
+                        guard let amountData = Data(hexString: hexString) else {
+                            logger.warning("Skipping token with invalid hex data: \(hexString)")
+                            return nil
+                        }
+                        return CardanoTokenAmount.with {
                             $0.policyID = token.policyId
                             $0.assetNameHex = token.assetNameHex
-                            $0.amount = Data(hexString: String(UInt64(token.amount) ?? 0, radix: 16))!
+                            $0.amount = amountData
                         }
                     }
                 }
