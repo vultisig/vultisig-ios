@@ -25,6 +25,11 @@ struct TransactionHistoryScreen: View {
                 assetFilterChips
                 content
             }
+            .padding(.bottom, 32)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .overlay(alignment: .bottom) {
+            bottomGradient
         }
         .onAppear {
             viewModel.load()
@@ -155,9 +160,6 @@ struct TransactionHistoryScreen: View {
         .refreshable {
             await viewModel.refresh()
         }
-        .overlay(alignment: .bottom) {
-            bottomGradient
-        }
     }
 
     private var bottomGradient: some View {
@@ -171,6 +173,7 @@ struct TransactionHistoryScreen: View {
         )
         .frame(height: 40)
         .allowsHitTesting(false)
+        .ignoresSafeArea()
     }
 
     private func cardView(for tx: TransactionHistoryData) -> some View {
