@@ -116,6 +116,17 @@ struct AgentGetStartersRequest: Codable {
     }
 }
 
+struct AgentFeedbackRequest: Codable {
+    let category: String
+    let details: String
+    let conversationId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case category, details
+        case conversationId = "conversation_id"
+    }
+}
+
 // MARK: - Response Types
 
 struct AgentSendMessageResponse: Codable {
@@ -549,6 +560,105 @@ enum AgentToolCallStatus {
     case running
     case success
     case error
+}
+
+// MARK: - Action Status Categories
+
+enum AgentActionCategory: String, CaseIterable {
+    case analyzing
+    case awaitingApproval
+    case executing
+    case success
+    case cronjob
+    case pluginInstalled
+    case error
+    case balanceDisplay
+    case history
+
+    var iconName: String {
+        switch self {
+        case .analyzing:       return "sparkle"
+        case .awaitingApproval: return "gearshape"
+        case .executing:       return "arrow.triangle.2.circlepath"
+        case .success:         return "checkmark.circle.fill"
+        case .cronjob:         return "arrow.clockwise"
+        case .pluginInstalled: return "powerplug.fill"
+        case .error:           return "exclamationmark.triangle.fill"
+        case .balanceDisplay:  return "doc.on.clipboard"
+        case .history:         return "clock"
+        }
+    }
+
+    var color: AgentActionColor {
+        switch self {
+        case .analyzing:       return .muted
+        case .awaitingApproval: return .teal
+        case .executing:       return .blue
+        case .success:         return .green
+        case .cronjob:         return .teal
+        case .pluginInstalled: return .green
+        case .error:           return .red
+        case .balanceDisplay:  return .neutral
+        case .history:         return .muted
+        }
+    }
+
+    /// Maps backend `actionType` strings to a category.
+    static func from(actionType: String) -> AgentActionCategory {
+        let lower = actionType.lowercased()
+
+        // Error keywords
+        if lower.contains("fail") || lower.contains("error") || lower.contains("invalid") || lower.contains("unavailable") {
+            return .error
+        }
+
+        // Success keywords
+        if lower.contains("completed") || lower.contains("sent") || lower.contains("funds_sent") {
+            return .success
+        }
+
+        // Executing keywords
+        if lower.contains("executing") || lower.contains("sending") || lower.contains("saving") || lower.contains("broadcasting") {
+            return .executing
+        }
+
+        // Approval keywords
+        if lower.contains("approve") || lower.contains("swap") || lower.contains("send") {
+            return .awaitingApproval
+        }
+
+        // Cronjob/recurring keywords
+        if lower.contains("recurring") || lower.contains("reminder") || lower.contains("cron") || lower.contains("schedule") {
+            return .cronjob
+        }
+
+        // Plugin keywords
+        if lower.contains("plugin") || lower.contains("install") {
+            return .pluginInstalled
+        }
+
+        // Balance keywords
+        if lower.contains("balance") {
+            return .balanceDisplay
+        }
+
+        // History keywords
+        if lower.contains("history") || lower.contains("transaction_history") {
+            return .history
+        }
+
+        // Default: analyzing/planning
+        return .analyzing
+    }
+}
+
+enum AgentActionColor {
+    case muted
+    case teal
+    case blue
+    case green
+    case red
+    case neutral
 }
 
 struct AgentTxStatusInfo {

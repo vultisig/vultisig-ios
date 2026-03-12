@@ -13,6 +13,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     var content: (Item) -> Content
     var accessory: Item?
     var onAccessory: (() -> Void)?
+    var badgeItems: Set<AnyHashable>
 
     private let tabWidth: CGFloat = 88
 
@@ -20,6 +21,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
         selectedItem: Binding<Item>,
         items: [Item],
         accessory: Item?,
+        badgeItems: Set<AnyHashable> = [],
         @ViewBuilder content: @escaping (Item) -> Content,
         onAccessory: (() -> Void)?
     ) {
@@ -28,6 +30,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
         self.content = content
         self.accessory = accessory
         self.onAccessory = onAccessory
+        self.badgeItems = badgeItems
     }
 
     var body: some View {
@@ -154,6 +157,19 @@ private extension VultiTabBar {
                         .frame(width: tabWidth)
                         .contentShape(Rectangle())
                         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedItem)
+                        .overlay(alignment: .top) {
+                            if badgeItems.contains(AnyHashable(item)) {
+                                Text("agentNew".localized)
+                                    .font(Theme.fonts.caption10)
+                                    .foregroundStyle(Theme.colors.bgPrimary)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Theme.colors.turquoise)
+                                    .cornerRadius(8)
+                                    .offset(x: 16, y: -6)
+                                    .transition(.scale.combined(with: .opacity))
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
                 }

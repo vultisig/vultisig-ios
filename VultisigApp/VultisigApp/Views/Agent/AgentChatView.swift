@@ -15,6 +15,7 @@ struct AgentChatView: View {
     @State private var inputText = ""
     @State private var showPasswordPrompt = false
     @State private var showDeleteConfirm = false
+    @State private var showFeedback = false
     @FocusState private var isInputFocused: Bool
     @Environment(\.router) private var router
 
@@ -94,7 +95,7 @@ struct AgentChatView: View {
         }
         .sheet(isPresented: $viewModel.showFastVaultPasswordPrompt) {
             if let tx = viewModel.pendingSendTx, let vault = appViewModel.selectedVault {
-                FastVaultEnterPasswordView(
+                AgentApproveTransactionView(
                     password: Binding(
                         get: { tx.fastVaultPassword },
                         set: { tx.fastVaultPassword = $0 }
@@ -111,6 +112,14 @@ struct AgentChatView: View {
                 viewModel.handleTxBroadcasted(txid: txid, vault: vault)
             }
         }
+        .sheet(isPresented: $showFeedback) {
+            AgentFeedbackView(
+                conversationId: viewModel.conversationId
+            ) { category, details in
+                guard let vault = appViewModel.selectedVault else { return }
+                await viewModel.submitFeedback(category: category, details: details, vault: vault)
+            }
+        }
     }
 
     // MARK: - Inline Header
@@ -120,12 +129,13 @@ struct AgentChatView: View {
             Text(viewModel.conversationTitle ?? "Vultisig")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
 
             HStack {
                 Button {
                     router.navigateBack()
                 } label: {
-                    Image(systemName: "chevron.left")
+                    Image(systemName: "line.3.horizontal")
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
@@ -134,10 +144,16 @@ struct AgentChatView: View {
 
                 if conversationId != nil || viewModel.conversationId != nil {
                     Menu {
+                        Button {
+                            showFeedback = true
+                        } label: {
+                            Label("agentGiveFeedback".localized, systemImage: "info.circle")
+                        }
+
                         Button(role: .destructive) {
                             showDeleteConfirm = true
                         } label: {
-                            Label("agentDeleteConversation".localized, systemImage: "trash")
+                            Label("agentDeleteChatSession".localized, systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
@@ -162,7 +178,12 @@ struct AgentChatView: View {
                         startersView
                     }
 
-                    ForEach(viewModel.messages) { message in
+                    ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
+                        // Date separator when day changes
+                        if index == 0 || !Calendar.current.isDate(message.timestamp, inSameDayAs: viewModel.messages[index - 1].timestamp) {
+                            dateSeparator(for: message.timestamp)
+                        }
+
                         AgentChatMessageView(message: message)
                             .id(message.id)
                     }
@@ -271,48 +292,63 @@ struct AgentChatView: View {
         viewModel.sendMessage(text, vault: vault)
     }
 
+    // MARK: - Date Separator
+
+    private func dateSeparator(for date: Date) -> some View {
+        HStack(spacing: 12) {
+            Rectangle()
+                .fill(Theme.colors.borderLight)
+                .frame(height: 1)
+            Text(Self.dateSeparatorFormatter.string(from: date))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .layoutPriority(1)
+            Rectangle()
+                .fill(Theme.colors.borderLight)
+                .frame(height: 1)
+        }
+        .padding(.vertical, 8)
+    }
+
+    private static let dateSeparatorFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM, yyyy"
+        return f
+    }()
+
     // MARK: - Starters UI
 
     private var startersView: some View {
-        VStack(spacing: 24) {
-            Spacer().frame(height: 40)
+        VStack(spacing: 16) {
+            Spacer()
 
-            Image(systemName: "sparkles")
-                .font(.system(size: 48))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Theme.colors.turquoise, Theme.colors.primaryAccent3],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            AgentOrbView(size: 64, animated: true)
 
-            Text("agentAskAnything".localized)
+            Text("agentWhatWouldYouDo".localized)
                 .font(Theme.fonts.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            Text("agentSuggestionsSubtitle".localized)
+            Text("agentStarterSubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-            // Starter suggestions
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(viewModel.starters, id: \.self) { starter in
-                    starterCard(starter)
-                }
-            }
-            .padding(.top, 8)
-
             Spacer()
+
+            // Horizontal scrolling pill chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.starters, id: \.self) { starter in
+                        starterChip(starter)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
         }
     }
 
-    private func starterCard(_ text: String) -> some View {
+    private func starterChip(_ text: String) -> some View {
         Button {
             inputText = text
             Task {
@@ -320,23 +356,18 @@ struct AgentChatView: View {
                 await MainActor.run { sendMessage() }
             }
         } label: {
-            HStack {
-                Text(text)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-
-                Spacer()
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.border, lineWidth: 1)
-            )
+            Text(text)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Theme.colors.bgSurface1)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.colors.border, lineWidth: 1)
+                )
         }
     }
 }

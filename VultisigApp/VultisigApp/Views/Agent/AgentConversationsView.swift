@@ -13,11 +13,15 @@ struct AgentConversationsView: View {
     @Environment(\.router) private var router
 
     @State private var showDeleteAllConfirm = false
+    @State private var searchText = ""
 
     var body: some View {
         VStack(spacing: 0) {
             inlineHeader
             Separator(color: Theme.colors.borderLight, opacity: 1)
+            if !viewModel.conversations.isEmpty {
+                searchBar
+            }
             content
         }
         .background(Theme.colors.bgPrimary.ignoresSafeArea())
@@ -46,45 +50,72 @@ struct AgentConversationsView: View {
         }
     }
 
-    // MARK: - Inline Header (root tab — no native NavBar)
+    // MARK: - Inline Header
 
     private var inlineHeader: some View {
         ZStack {
-            Text("Vultisig")
+            Text("agentSessionHistory".localized)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
 
             HStack {
-                Spacer()
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
-                        .frame(width: 10, height: 10)
-
-                    Menu {
-                        Button(role: .destructive) {
-                            showDeleteAllConfirm = true
-                        } label: {
-                            Label("agentDeleteAllConversations".localized, systemImage: "trash")
-                        }
-                        Button {
-                            guard let vault = appViewModel.selectedVault else { return }
-                            Task { await viewModel.disconnect(vault: vault) }
-                        } label: {
-                            Label("agentDisconnect".localized, systemImage: "power")
-                        }
+                Menu {
+                    Button(role: .destructive) {
+                        showDeleteAllConfirm = true
                     } label: {
-                        Image(systemName: "ellipsis")
-                            .rotationEffect(.degrees(90))
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .accessibilityLabel("agentMoreOptions".localized)
+                        Label("agentDeleteAllConversations".localized, systemImage: "trash")
                     }
+                    Button {
+                        guard let vault = appViewModel.selectedVault else { return }
+                        Task { await viewModel.disconnect(vault: vault) }
+                    } label: {
+                        Label("agentDisconnect".localized, systemImage: "power")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+
+                Spacer()
+
+                Button {
+                    navigateToChat(with: nil)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .frame(width: 28, height: 28)
+                        .background(Theme.colors.turquoise)
+                        .clipShape(Circle())
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Theme.colors.bgPrimary)
+    }
+
+    // MARK: - Search Bar
+
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            TextField("agentSearchConversations".localized, text: $searchText)
+                .textFieldStyle(.plain)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 
     // MARK: - Content
@@ -108,15 +139,7 @@ struct AgentConversationsView: View {
                     VStack(spacing: 24) {
                         Spacer().frame(height: 40)
 
-                        Image(systemName: "bubble.left.and.bubble.right.fill")
-                            .font(.system(size: 48))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Theme.colors.turquoise, Theme.colors.primaryAccent3],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                        AgentOrbView(size: 48, animated: false)
 
                         Text("agentNoPastConversations".localized)
                             .font(Theme.fonts.title3)
@@ -127,11 +150,6 @@ struct AgentConversationsView: View {
                             .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
-
-                        // New chat button
-                        PrimaryButton(title: "agentNewChat".localized) {
-                            navigateToChat(with: nil)
-                        }
                     }
                 } else {
                     conversationList
@@ -142,33 +160,30 @@ struct AgentConversationsView: View {
         }
     }
 
+    // MARK: - Filtered Conversations
+
+    private var filteredConversations: [AgentConversation] {
+        guard !searchText.isEmpty else { return viewModel.conversations }
+        return viewModel.conversations.filter { conv in
+            (conv.title ?? "").localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
     // MARK: - Conversation List
 
     private var conversationList: some View {
-        VStack(spacing: 0) {
-            // New chat button
-            PrimaryButton(title: "agentNewChat".localized) {
-                navigateToChat(with: nil)
-            }
-            .padding(.bottom, 16)
-
-            // Past conversations — LazyVStack for proper row virtualisation.
-            // (The outer ScrollView already handles scrolling; no inner List needed.)
-            LazyVStack(spacing: 0) {
-                ForEach(viewModel.conversations) { conv in
-                    conversationRow(conv)
-                        .padding(.bottom, 4)
-                        // Swipe-to-delete (replaces List's .onDelete)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                if let idx = viewModel.conversations.firstIndex(where: { $0.id == conv.id }) {
-                                    deleteConversations(at: IndexSet(integer: idx))
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+        LazyVStack(spacing: 0) {
+            ForEach(filteredConversations) { conv in
+                conversationRow(conv)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            if let idx = viewModel.conversations.firstIndex(where: { $0.id == conv.id }) {
+                                deleteConversations(at: IndexSet(integer: idx))
                             }
+                        } label: {
+                            Label("delete".localized, systemImage: "trash")
                         }
-                }
+                    }
             }
         }
     }
@@ -178,25 +193,18 @@ struct AgentConversationsView: View {
             router.navigate(to: AgentRoute.chat(conversationId: conv.id))
         } label: {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(conv.title ?? "agentNewChat".localized)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .lineLimit(1)
+                Text(conv.title ?? "agentNewChat".localized)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(1)
 
-                    Text(formatDate(conv.updatedAt))
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
             }
             .padding()
             .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
         }
+        .padding(.bottom, 4)
     }
 
     // MARK: - Actions
@@ -226,20 +234,6 @@ struct AgentConversationsView: View {
         }
     }
 
-    // MARK: - Shared formatters (one allocation per view lifetime, not per row)
-
-    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
-    private func formatDate(_ dateStr: String) -> String {
-        guard let date = AgentBackendClient.parseISO8601(dateStr) else {
-            return dateStr
-        }
-        return Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
-    }
 }
 
 #Preview {

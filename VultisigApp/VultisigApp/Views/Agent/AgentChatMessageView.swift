@@ -26,8 +26,16 @@ struct AgentChatMessageView: View {
     // MARK: - Message Bubble
 
     private var messageBubble: some View {
-        HStack(alignment: .top, spacing: 0) {
-            if message.role == .user { Spacer(minLength: 60) }
+        HStack(alignment: .bottom, spacing: 4) {
+            if message.role == .user {
+                Spacer(minLength: 60)
+                messageTimestamp
+            }
+
+            if message.role == .assistant {
+                AgentOrbView(size: 20, animated: message.isStreaming)
+                    .padding(.bottom, 4)
+            }
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
                 // Use verbatim text while streaming to skip Markdown re-parsing on every delta.
@@ -57,52 +65,31 @@ struct AgentChatMessageView: View {
             )
             .cornerRadius(16)
 
-            if message.role == .assistant { Spacer(minLength: 60) }
+            if message.role == .assistant {
+                messageTimestamp
+                Spacer(minLength: 60)
+            }
         }
     }
+
+    private var messageTimestamp: some View {
+        Text(Self.timeFormatter.string(from: message.timestamp))
+            .font(Theme.fonts.caption10)
+            .foregroundStyle(Theme.colors.textTertiary)
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f
+    }()
 
     // MARK: - Tool Call Status
 
     @ViewBuilder
     private var toolCallView: some View {
         if let toolCall = message.toolCall {
-            HStack(spacing: 8) {
-                statusIcon(for: toolCall.status)
-
-                Text(toolCall.title)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-
-                Spacer()
-
-                if let error = toolCall.error {
-                    Text(error)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.alertError)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-        }
-    }
-
-    private func statusIcon(for status: AgentToolCallStatus) -> some View {
-        Group {
-            switch status {
-            case .running:
-                Image(systemName: "sun.max")
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            case .success:
-                Image(systemName: "checkmark.circle.fill")
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.alertSuccess)
-            case .error:
-                Image(systemName: "xmark.circle.fill")
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.alertError)
-            }
+            AgentActionStatusView(toolCall: toolCall)
         }
     }
 
@@ -113,34 +100,37 @@ struct AgentChatMessageView: View {
         if let tx = message.txProposal {
             VStack(alignment: .leading, spacing: 12) {
 
-                // Route header
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "arrow.left.arrow.right.circle")
+                // Colored status line: icon + type label
+                HStack(spacing: 8) {
+                    Image(systemName: "gearshape")
                         .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.turquoise)
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(tx.txType ?? "SWAP") \(tx.amount) \(tx.fromSymbol) → \(tx.toSymbol ?? "")")
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textTertiary)
-
-                        if let provider = tx.provider {
-                            Text(String(format: "agentRoute".localized, provider).uppercased())
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textTertiary)
-                        }
-
-                        Text(String(format: "agentEstFee".localized, tx.fromSymbol))
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    }
+                    Text("\(tx.txType ?? "SWAP") \(tx.amount) \(tx.fromSymbol) → \(tx.toSymbol ?? "")".uppercased())
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.turquoise)
                 }
-                .padding(.bottom, 8)
+
+                // Route detail (indented)
+                if let provider = tx.provider {
+                    Text(String(format: "agentRoute".localized, provider).uppercased())
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.turquoise)
+                        .padding(.leading, 24)
+                }
+
+                // Fee detail (indented)
+                Text(String(format: "agentEstFee".localized, tx.fromSymbol))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.turquoise)
+                    .padding(.leading, 24)
 
                 Text(tx.needsApproval == true ? "agentShouldExecuteSwap".localized : "agentTransactionReady".localized)
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
+                    .padding(.top, 4)
 
+                // Approval buttons
                 HStack(spacing: 12) {
                     Spacer()
                     if tx.needsApproval == true {
@@ -149,9 +139,9 @@ struct AgentChatMessageView: View {
                         } label: {
                             Text("no".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
-                                .foregroundStyle(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.alertError)
                                 .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
+                                .padding(.vertical, 10)
                                 .background(Theme.colors.bgSurface1)
                                 .cornerRadius(20)
                         }
@@ -161,10 +151,10 @@ struct AgentChatMessageView: View {
                         } label: {
                             Text("yes".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
-                                .foregroundStyle(Theme.colors.bgPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                                 .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Theme.colors.turquoise)
+                                .padding(.vertical, 10)
+                                .background(Theme.colors.bgSurface1)
                                 .cornerRadius(20)
                         }
                     } else {
@@ -173,10 +163,10 @@ struct AgentChatMessageView: View {
                         } label: {
                             Text("signTransaction".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
-                                .foregroundStyle(Theme.colors.bgPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                                 .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Theme.colors.turquoise)
+                                .padding(.vertical, 10)
+                                .background(Theme.colors.bgSurface1)
                                 .cornerRadius(20)
                         }
                     }

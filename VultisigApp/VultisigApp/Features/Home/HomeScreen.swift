@@ -19,6 +19,9 @@ struct HomeScreen: View {
 
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
+    @AppStorage("agent_tab_new_badge_seen") private var agentTabBadgeSeen = false
+    @AppStorage("agent_authorized") private var agentAuthorized = false
+    @State private var showAgentAuthorization = false
     @State var vaultRoute: VaultMainRoute?
 
     @State var showScanner: Bool = false
@@ -126,6 +129,7 @@ struct HomeScreen: View {
                 selectedItem: $selectedTab,
                 items: tabs,
                 accessory: .camera,
+                badgeItems: agentTabBadgeItems
             ) { tab in
                 Group {
                     switch tab {
@@ -192,6 +196,12 @@ struct HomeScreen: View {
             .onChange(of: defiShowPortfolioHeader) { _, _ in updateHeader() }
             .onChange(of: selectedTab) { _, newValue in
                 updateHeader()
+                if newValue == .agent && !agentTabBadgeSeen {
+                    withAnimation { agentTabBadgeSeen = true }
+                }
+                if newValue == .agent && !agentAuthorized {
+                    showAgentAuthorization = true
+                }
                 if newValue == .camera {
                     onCamera()
                 }
@@ -312,6 +322,16 @@ struct HomeScreen: View {
                 // Retry action - reopen scanner
                 showScanner = true
             }
+            .crossPlatformSheet(isPresented: $showAgentAuthorization) {
+                AgentAuthorizationView(
+                    onAuthorize: {
+                        agentAuthorized = true
+                    },
+                    onDismiss: {
+                        selectedTab = .wallet
+                    }
+                )
+            }
     }
 
     @ViewBuilder
@@ -329,6 +349,13 @@ struct HomeScreen: View {
 }
 
 extension HomeScreen {
+    var agentTabBadgeItems: Set<AnyHashable> {
+        if SettingsViewModel.shared.agentEnabled && !agentTabBadgeSeen {
+            return [AnyHashable(HomeTab.agent)]
+        }
+        return []
+    }
+
     fileprivate func updateHeader() {
         let showOpaqueHeader: Bool
         switch selectedTab {

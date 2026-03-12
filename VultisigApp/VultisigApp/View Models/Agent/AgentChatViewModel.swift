@@ -382,6 +382,22 @@ final class AgentChatViewModel: ObservableObject, AgentLogging {
         }
     }
 
+    // MARK: - Feedback
+
+    func submitFeedback(category: String, details: String, vault: Vault) async {
+        guard let token = await requireAccessToken(vault: vault) else { return }
+        let request = AgentFeedbackRequest(
+            category: category,
+            details: details,
+            conversationId: conversationId
+        )
+        do {
+            try await backendClient.submitFeedback(request: request, token: token)
+        } catch {
+            handleError(error)
+        }
+    }
+
     // MARK: - SSE Event Handling
 
     private func handleSSEEvent(_ event: AgentSSEEvent, vault: Vault? = nil) {
@@ -548,7 +564,19 @@ final class AgentChatViewModel: ObservableObject, AgentLogging {
 
     func acceptTxProposal(_ proposal: AgentTxReady, vault: Vault) {
         debugLog("[AgentChat] User accepted transaction proposal")
-        appendAssistantMessage("agentTransactionAccepted".localized)
+        let approvedMsg = AgentChatMessage(
+            id: "tx-approved-\(Date().timeIntervalSince1970)",
+            role: .assistant,
+            content: "",
+            timestamp: Date(),
+            txStatus: AgentTxStatusInfo(
+                txHash: "",
+                chain: proposal.fromChain,
+                status: .confirmed,
+                label: "agentTransactionApproved".localized
+            )
+        )
+        messages.append(approvedMsg)
 
         // 1. Find the source coin in the vault
         guard let coin = vault.coins.first(where: {

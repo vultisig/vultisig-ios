@@ -101,6 +101,12 @@ final class AgentBackendClient {
         try await doRequest(.getStarters(request: request, token: token))
     }
 
+    // MARK: - Feedback
+
+    func submitFeedback(request: AgentFeedbackRequest, token: String) async throws {
+        let _: AgentEmptyResponse = try await doRequest(.submitFeedback(request: request, token: token))
+    }
+
     // MARK: - Send Message (non-streaming)
 
     func sendMessage(convId: String, request: AgentSendMessageRequest, token: String) async throws -> AgentSendMessageResponse {
@@ -383,6 +389,7 @@ private enum AgentBackendAPI: TargetType {
     case deleteConversation(id: String, publicKey: String, token: String)
     case getStarters(request: AgentGetStartersRequest, token: String)
     case sendMessage(convId: String, request: AgentSendMessageRequest, token: String)
+    case submitFeedback(request: AgentFeedbackRequest, token: String)
 
     var baseURL: URL {
         URL(string: Endpoint.agentBackendUrl)!
@@ -402,6 +409,8 @@ private enum AgentBackendAPI: TargetType {
         case .sendMessage(let convId, _, _):
             let safeId = convId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? convId
             return "/agent/conversations/\(safeId)/messages"
+        case .submitFeedback:
+            return "/agent/feedback"
         }
     }
 
@@ -428,6 +437,8 @@ private enum AgentBackendAPI: TargetType {
             return .requestCodable(request, .jsonEncoding)
         case .sendMessage(_, let request, _):
             return .requestCodable(request, .jsonEncoding)
+        case .submitFeedback(let request, _):
+            return .requestCodable(request, .jsonEncoding)
         }
     }
 
@@ -446,7 +457,8 @@ private enum AgentBackendAPI: TargetType {
              .getConversation(_, _, let token),
              .deleteConversation(_, _, let token),
              .getStarters(_, let token),
-             .sendMessage(_, _, let token):
+             .sendMessage(_, _, let token),
+             .submitFeedback(_, let token):
             return token
         }
     }
