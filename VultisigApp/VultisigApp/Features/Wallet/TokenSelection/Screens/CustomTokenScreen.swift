@@ -83,7 +83,7 @@ struct CustomTokenScreen: View {
             }
         }
         .onLoad {
-            tokenViewModel.loadData(groupedChain: group)
+            tokenViewModel.loadData(groupedChain: group, vault: vault)
         }
         .onChange(of: contractAddress) { _, newValue in
             validateAddress(newValue)
