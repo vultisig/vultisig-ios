@@ -6,5 +6,6 @@
 //
 
 protocol StakeInteractor {
+    @MainActor
     func fetchStakePositions(vault: Vault) async -> [StakePosition]
 }

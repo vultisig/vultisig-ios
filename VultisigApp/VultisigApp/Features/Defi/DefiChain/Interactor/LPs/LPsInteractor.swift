@@ -6,5 +6,6 @@
 //
 
 protocol LPsInteractor {
+    @MainActor
     func fetchLPPositions(vault: Vault) async -> [LPPosition]
 }

@@ -10,6 +10,7 @@ struct MayaChainBondInteractor: BondInteractor {
 
     let vultiNodeAddresses: [String] = []
 
+    @MainActor
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode]) {
         guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
             return ([], [])

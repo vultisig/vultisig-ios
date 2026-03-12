@@ -29,7 +29,7 @@ final class TransactionStatusPoller {
         taskTokens[txHash] = token
         let config = ChainStatusConfig.config(for: chain)
 
-        let task = Task { [weak self] in
+        let task = Task { @MainActor [weak self] in
             while !Task.isCancelled {
                 do {
                     let result = try await self?.service.checkTransactionStatus(

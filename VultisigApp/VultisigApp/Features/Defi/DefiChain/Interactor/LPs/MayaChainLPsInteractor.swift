@@ -14,6 +14,7 @@ struct MayaChainLPsInteractor: LPsInteractor {
         SettingsAPRPeriod.current.rawValue
     }
 
+    @MainActor
     func fetchLPPositions(vault: Vault) async -> [LPPosition] {
         guard let mayaCoin = vault.nativeCoin(for: .mayaChain) else { return [] }
         let vaultLPPositions = vault.defiPositions.first { $0.chain == .mayaChain }?.lps ?? []
