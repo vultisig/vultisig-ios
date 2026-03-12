@@ -410,8 +410,11 @@ extension ThorchainService {
 
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
 
-        guard let stake =
-                decoded.data.node?.stakingV2?.first else {
+        let rujiStake = decoded.data.node?.stakingV2?.first(where: {
+            $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
+        })
+
+        guard let stake = rujiStake else {
             return .empty
         }
 

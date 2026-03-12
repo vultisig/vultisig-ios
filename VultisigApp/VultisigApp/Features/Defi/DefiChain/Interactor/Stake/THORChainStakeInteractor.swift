@@ -10,7 +10,7 @@ struct THORChainStakeInteractor: StakeInteractor {
     private let stakingService = THORChainStakingService.shared
 
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
-        guard let runeCoin = vault.runeCoin else { return [] }
+        let runeCoin = vault.runeCoin
         let vaultStakePositions = vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []
 
         var positions: [StakePosition] = []
@@ -31,7 +31,7 @@ struct THORChainStakeInteractor: StakeInteractor {
 }
 
 private extension THORChainStakeInteractor {
-    func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta, vault: Vault) async -> StakePosition? {
+    func createStakePosition(for coin: Coin, runeCoin: Coin?, coinMeta: CoinMeta, vault: Vault) async -> StakePosition? {
         let ticker = coin.ticker.uppercased()
         switch ticker {
         case "TCY", "RUJI":

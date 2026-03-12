@@ -42,11 +42,14 @@ class THORChainStakingService {
     ///   - runeCoin: The RUNE coin (for price lookups)
     ///   - address: The THORChain address
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
-    func fetchStakingDetails(coin: Coin, runeCoin: Coin, address: String) async throws -> StakingDetails {
+    func fetchStakingDetails(coin: Coin, runeCoin: Coin?, address: String) async throws -> StakingDetails {
         switch coin.ticker.uppercased() {
         case "RUJI":
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
+            guard let runeCoin = runeCoin else {
+                throw StakingError.missingData // TCY needs RUNE for price calculations
+            }
             return try await fetchTcyStakingDetails(coin: coin, runeCoin: runeCoin, address: address)
         default:
             throw StakingError.unsupportedCoin
@@ -65,7 +68,11 @@ private extension THORChainStakingService {
         let response = try await httpClient.request(target, responseType: AccountRootData.self)
         let decoded = response.data
 
-        guard let stake = decoded.data.node?.stakingV2?.first else {
+        let rujiStake = decoded.data.node?.stakingV2?.first(where: {
+            $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
+        })
+
+        guard let stake = rujiStake else {
             return .empty
         }
 
