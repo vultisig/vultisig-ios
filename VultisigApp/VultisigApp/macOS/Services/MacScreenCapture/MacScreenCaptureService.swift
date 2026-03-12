@@ -122,20 +122,25 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
 
         let region = scanRegion.normalizedRect
-        guard !region.isEmpty else { return }
-
         let extent = ciImage.extent
-        let cropRect = CGRect(
-            x: region.origin.x * extent.width,
-            y: region.origin.y * extent.height,
-            width: region.size.width * extent.width,
-            height: region.size.height * extent.height
-        ).intersection(extent)
 
-        guard !cropRect.isEmpty else { return }
-        let croppedImage = ciImage.cropped(to: cropRect)
+        let imageToScan: CIImage
+        if region.isEmpty {
+            // Scan full frame when scan region is not yet set
+            imageToScan = ciImage
+        } else {
+            let cropRect = CGRect(
+                x: region.origin.x * extent.width,
+                y: region.origin.y * extent.height,
+                width: region.size.width * extent.width,
+                height: region.size.height * extent.height
+            ).intersection(extent)
 
-        guard let features = qrDetector?.features(in: croppedImage) as? [CIQRCodeFeature] else { return }
+            guard !cropRect.isEmpty else { return }
+            imageToScan = ciImage.cropped(to: cropRect)
+        }
+
+        guard let features = qrDetector?.features(in: imageToScan) as? [CIQRCodeFeature] else { return }
 
         for feature in features {
             if let qrString = feature.messageString, !qrString.isEmpty {

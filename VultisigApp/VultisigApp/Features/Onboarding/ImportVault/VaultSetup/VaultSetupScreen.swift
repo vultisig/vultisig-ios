@@ -5,8 +5,8 @@
 //  Created by Gaston Mazzeo on 02/12/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct VaultSetupScreen: View {
     let tssType: TssType
@@ -42,8 +42,13 @@ struct VaultSetupScreen: View {
         return icons
     }
 
-    private var totalSteps: Int { stepIcons.count }
-    private var isLastStep: Bool { currentStep >= totalSteps - 1 }
+    private var totalSteps: Int {
+        stepIcons.count
+    }
+
+    private var isLastStep: Bool {
+        currentStep >= totalSteps - 1
+    }
 
     private var isCurrentStepValid: Bool {
         isStepValid(at: currentStep)
@@ -57,7 +62,7 @@ struct VaultSetupScreen: View {
             return viewModel.emailField.valid
         case 2:
             return viewModel.passwordField.valid
-            && viewModel.passwordConfirmField.valid
+                && viewModel.passwordConfirmField.valid
         default:
             return false
         }
@@ -65,7 +70,7 @@ struct VaultSetupScreen: View {
 
     private func canNavigateToStep(_ target: Int) -> Bool {
         guard target >= 0, target < totalSteps, target != currentStep else { return false }
-        return (0..<target).allSatisfy { isStepValid(at: $0) }
+        return (0 ..< target).allSatisfy { isStepValid(at: $0) }
     }
 
     // MARK: - Body
@@ -87,8 +92,8 @@ struct VaultSetupScreen: View {
 
                 PrimaryButton(
                     title: isLastStep && isCurrentStepValid
-                    ? "createVault".localized
-                    : "next".localized
+                        ? "createVault".localized
+                        : "next".localized
                 ) {
                     onContinue()
                 }
@@ -99,11 +104,22 @@ struct VaultSetupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar {
+        .crossPlatformToolbar(showsBackButton: currentStep == 0) {
+            if currentStep > 0 {
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "chevron.left") {
+                        navigateToStep(currentStep - 1)
+                    } iconContent: { _ in
+                        Icon(named: "chevron.left", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                            .offset(x: -1)
+                    }
+                }
+            }
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 referralButton
             }
         }
+        .navigationBarBackButtonHidden(currentStep > 0)
         .onSubmit {
             onContinue()
         }
@@ -151,7 +167,6 @@ struct VaultSetupScreen: View {
 
     // MARK: - Step Content
 
-    @ViewBuilder
     private var stepContent: some View {
         Group {
             switch currentStep {
@@ -202,10 +217,10 @@ struct VaultSetupScreen: View {
                 isValid: isValidBinding(for: viewModel.emailField)
             )
             .focused($focusedField, equals: .email)
-#if os(iOS)
-            .textInputAutocapitalization(.never)
-            .keyboardType(.emailAddress)
-#endif
+            #if os(iOS)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.emailAddress)
+            #endif
         }
     }
 

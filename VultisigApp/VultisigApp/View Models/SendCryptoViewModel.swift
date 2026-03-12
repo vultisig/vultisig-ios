@@ -247,8 +247,8 @@ struct SendCryptoLogic {
                 tx.toAddress = resolvedAddress
             }
         } catch {
-            result.errorTitle = "error"
-            result.errorMessage = "validAddressDomainError"
+            result.errorTitle = "invalidAddress"
+            result.errorMessage = "validAddressError"
             result.showAddressAlert = true
             logger.log("Please enter a valid address for the selected blockchain.")
             result.isValid = false

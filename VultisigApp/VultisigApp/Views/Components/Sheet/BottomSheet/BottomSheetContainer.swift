@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct BottomSheetContainer<Content: BottomSheetContentView>: View {
-    @Environment(\.dismiss) var dismiss
+    @Binding var isPresented: Bool
     let content: Content
 
-    init(@ViewBuilder content: () -> Content) {
+    init(isPresented: Binding<Bool>, @ViewBuilder content: () -> Content) {
+        self._isPresented = isPresented
         self.content = content()
     }
 
@@ -35,7 +36,7 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
         HStack {
             Spacer()
             Button {
-                dismiss()
+                isPresented = false
             } label: {
                 Icon(named: "x", color: Theme.colors.textPrimary, size: 16)
                     .padding(8)

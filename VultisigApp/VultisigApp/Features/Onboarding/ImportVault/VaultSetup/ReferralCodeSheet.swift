@@ -17,27 +17,40 @@ struct ReferralCodeSheet: View {
     @State private var isValid: Bool?
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("referralCodeTitle".localized)
-                        .font(Theme.fonts.title2)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    description
-                }
-                textField
-                applyButton
-                Spacer()
+        content
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        #if os(iOS)
+            NavigationStack {
+                innerContent
             }
-            .padding(.horizontal, 24)
-            .crossPlatformToolbar(showsBackButton: false) {
-                CustomToolbarItem(placement: .trailing) {
-                    ToolbarButton(image: "x") {
-                        isPresented.toggle()
-                    }
-                    .supportsLiquidGlass { view, isSupported in
-                        view.padding(.top, isSupported ? 0 : 16)
-                    }
+        #else
+            innerContent
+        #endif
+    }
+
+    private var innerContent: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("referralCodeTitle".localized)
+                    .font(Theme.fonts.title2)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                description
+            }
+            textField
+            applyButton
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+                .supportsLiquidGlass { view, isSupported in
+                    view.padding(.top, isSupported ? 0 : 16)
                 }
             }
         }

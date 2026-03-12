@@ -490,9 +490,10 @@ class EncryptedBackupViewModel: ObservableObject {
         cleanup()
     }
 
-    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) -> (imported: [Vault], duplicates: Int) {
+    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) -> (imported: [Vault], duplicates: Int, skippedNames: [String]) {
         var imported: [Vault] = []
         var duplicates = 0
+        var skippedNames: [String] = []
 
         for vault in vaultsToImport {
             if isVaultUnique(backupVault: vault, vaults: existing + imported) {
@@ -501,21 +502,39 @@ class EncryptedBackupViewModel: ObservableObject {
                 imported.append(vault)
             } else {
                 duplicates += 1
+                skippedNames.append(vault.name)
+                logger.info("Skipped duplicate vault during zip import: \(vault.name)")
             }
         }
 
-        return (imported, duplicates)
+        return (imported, duplicates, skippedNames)
     }
 
-    private func showImportResults(_ results: (imported: [Vault], duplicates: Int)) {
+    func showImportResults(_ results: (imported: [Vault], duplicates: Int, skippedNames: [String])) {
         let successCount = results.imported.count
+        let duplicateCount = results.duplicates
 
-        if successCount > 0 {
+        if successCount > 0 && duplicateCount > 0 {
+            // Mixed: some imported, some skipped
+            let skipped = results.skippedNames.joined(separator: ", ")
+            alertTitle = String(
+                format: NSLocalizedString("zipImportPartialSuccess", comment: ""),
+                successCount, duplicateCount, skipped
+            )
+            showAlert = true
+            isVaultImported = true
+        } else if successCount > 0 {
             alertTitle = successCount == 1 ? "vaultImportedSuccessfully" : "vaultsImportedSuccessfully"
             showAlert = false
             isVaultImported = true
-        } else if results.duplicates > 0 {
-            showError("vaultAlreadyExists")
+        } else if duplicateCount > 0 {
+            let skipped = results.skippedNames.joined(separator: ", ")
+            alertTitle = String(
+                format: NSLocalizedString("zipImportAllDuplicates", comment: ""),
+                duplicateCount, skipped
+            )
+            showAlert = true
+            isVaultImported = false
         } else {
             showError("vaultRestoreFailed")
         }
@@ -667,7 +686,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
 
-    private func isVaultUnique(backupVault: Vault, vaults: [Vault]) -> Bool {
+    func isVaultUnique(backupVault: Vault, vaults: [Vault]) -> Bool {
         for vault in vaults {
             if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
                 vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
