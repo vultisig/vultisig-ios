@@ -47,8 +47,8 @@ final class DefiChainBondViewModel: ObservableObject {
     @MainActor
     func refresh() async {
         guard let interactor = interactor else {
-            canUnbond = false
-            canAddBond = false
+            self.canUnbond = false
+            self.canAddBond = false
             return
         }
 
