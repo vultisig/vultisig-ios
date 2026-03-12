@@ -39,7 +39,7 @@ class THORChainStakingService {
     /// Fetch staking details for a given coin and address
     /// - Parameters:
     ///   - coin: The coin being staked
-    ///   - runeCoin: The RUNE coin (for price lookups)
+    ///   - runeCoin: The RUNE coin (optional, required only for TCY price lookups)
     ///   - address: The THORChain address
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
     func fetchStakingDetails(coin: Coin, runeCoin: Coin?, address: String) async throws -> StakingDetails {
@@ -48,7 +48,9 @@ class THORChainStakingService {
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
             guard let runeCoin = runeCoin else {
-                throw StakingError.missingData // TCY needs RUNE for price calculations
+                let logger = Logger(subsystem: "com.vultisig.app", category: "THORChainStakingService")
+                logger.error("Missing RUNE coin for TCY staking details; cannot fetch TCY details for address: \(address, privacy: .public)")
+                throw StakingError.missingData
             }
             return try await fetchTcyStakingDetails(coin: coin, runeCoin: runeCoin, address: address)
         default:

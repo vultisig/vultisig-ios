@@ -35,6 +35,10 @@ private extension THORChainStakeInteractor {
         let ticker = coin.ticker.uppercased()
         switch ticker {
         case "TCY", "RUJI":
+            // Avoid noisy logs if TCY is tracked but RUNE is missing
+            if ticker == "TCY" && runeCoin == nil {
+                return nil
+            }
             do {
                 let details = try await stakingService.fetchStakingDetails(
                     coin: coin,
