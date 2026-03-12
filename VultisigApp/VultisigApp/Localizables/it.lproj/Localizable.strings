@@ -853,8 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "Fondi Insufficienti";
 "swapErrorInsufficientGasDescription" = "Token gas insufficiente per coprire la commissione di rete. Per favore aggiungi gas al tuo portafoglio.";
 "swapErrorInsufficientGasTitle" = "Gas Insufficiente";
-"swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
-"swapErrorSameAssetTitle" = "Same Asset";
+"swapErrorSameAssetDescription" = "Non è possibile scambiare lo stesso asset. Per favore seleziona un asset diverso.";
+"swapErrorSameAssetTitle" = "Stesso Asset";
 "swapErrorUnexpectedDescription" = "Si è verificato un errore imprevisto. Per favore riprova.";
 "swapErrorUnexpectedTitle" = "Errore Imprevisto";
 "swapFee" = "Commissione di scambio";
