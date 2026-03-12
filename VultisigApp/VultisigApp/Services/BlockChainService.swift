@@ -582,7 +582,13 @@ private extension BlockChainService {
                 gas = 7500
             }
 
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: gas, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+            return .Cosmos(
+                accountNumber: accountNumber,
+                sequence: sequence,
+                gas: gas,
+                transactionType: transactionType.rawValue,
+                ibcDenomTrace: ibcDenomTrace
+            )
 
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)

@@ -105,7 +105,7 @@ enum CosmosHelper {
         case .dydx:
             return try DydxHelperStruct.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .qbtc:
-            return try QBTCHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+            return try QBTCHelper.create().getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             let helper = try makeHelperStruct()
             return try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
@@ -131,7 +131,7 @@ enum CosmosHelper {
                               dilithiumSignatures: [String: DilithiumKeysignResponse]) throws -> SignedTransactionResult {
         switch self {
         case .qbtc:
-            return try QBTCHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: dilithiumSignatures)
+            return try QBTCHelper.create().getSignedTransaction(keysignPayload: keysignPayload, signatures: dilithiumSignatures)
         default:
             throw HelperError.runtimeError("Dilithium signatures are only supported for QBTC")
         }
