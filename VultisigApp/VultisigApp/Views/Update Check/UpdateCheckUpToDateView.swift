@@ -21,7 +21,7 @@ struct UpdateCheckUpToDateView: View {
                 upToDateDescription
             }
             #if os(macOS)
-            downloadViaWebsiteButton
+            downloadViaGitHubButton
             #endif
             Spacer()
         }
@@ -48,8 +48,8 @@ struct UpdateCheckUpToDateView: View {
     }
 
     #if os(macOS)
-    var downloadViaWebsiteButton: some View {
-        PrimaryButton(title: "downloadViaWebsite", type: .secondary) {
+    var downloadViaGitHubButton: some View {
+        PrimaryButton(title: "downloadViaGitHub", type: .secondary) {
             openURL(StaticURL.GitHubReleasesURL)
         }
         .frame(maxWidth: 200)

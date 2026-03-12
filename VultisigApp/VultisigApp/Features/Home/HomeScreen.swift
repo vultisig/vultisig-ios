@@ -97,7 +97,7 @@ struct HomeScreen: View {
 
             #if os(macOS)
             Link(destination: StaticURL.GitHubReleasesURL) {
-                Text(NSLocalizedString("downloadViaWebsite", comment: ""))
+                Text(NSLocalizedString("downloadViaGitHub", comment: ""))
             }
             #endif
 
