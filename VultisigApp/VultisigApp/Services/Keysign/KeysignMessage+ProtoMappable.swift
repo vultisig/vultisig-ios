@@ -554,6 +554,9 @@ extension UtxoInfo {
         self.amount = proto.amount
         self.hash = proto.hash
         self.index = proto.index
+        self.cardanoTokens = proto.cardanoTokens.isEmpty ? nil : proto.cardanoTokens.map {
+            CardanoTokenAsset(policyId: $0.policyID, assetNameHex: $0.assetNameHex, amount: $0.amount)
+        }
     }
 
     func mapToProtobuff() -> VSUtxoInfo {
@@ -561,6 +564,13 @@ extension UtxoInfo {
             $0.amount = amount
             $0.hash = hash
             $0.index = index
+            $0.cardanoTokens = (cardanoTokens ?? []).map { token in
+                VSCardanoTokenAsset.with {
+                    $0.policyID = token.policyId
+                    $0.assetNameHex = token.assetNameHex
+                    $0.amount = token.amount
+                }
+            }
         }
     }
 }

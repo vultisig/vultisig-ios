@@ -221,7 +221,7 @@ class CardanoHelper {
                             CardanoTokenAmount.with {
                                 $0.policyID = tokenPolicyId!
                                 $0.assetNameHex = tokenAssetNameHex!
-                                $0.amount = Data(hexString: String(keysignPayload.toAmount, radix: 16))!
+                                $0.amount = keysignPayload.toAmount.magnitude.serialize()
                             }
                         ]
                     }
@@ -246,19 +246,14 @@ class CardanoHelper {
                 // Include token data on UTXOs for multi-asset support
                 if let tokens = inputUtxo.cardanoTokens, !tokens.isEmpty {
                     $0.tokenAmount = tokens.compactMap { token in
-                        guard let parsedAmount = UInt64(token.amount) else {
+                        guard let parsedAmount = BigUInt(token.amount) else {
                             logger.warning("Skipping token with invalid amount: \(token.amount)")
-                            return nil
-                        }
-                        let hexString = String(parsedAmount, radix: 16)
-                        guard let amountData = Data(hexString: hexString) else {
-                            logger.warning("Skipping token with invalid hex data: \(hexString)")
                             return nil
                         }
                         return CardanoTokenAmount.with {
                             $0.policyID = token.policyId
                             $0.assetNameHex = token.assetNameHex
-                            $0.amount = amountData
+                            $0.amount = parsedAmount.serialize()
                         }
                     }
                 }
