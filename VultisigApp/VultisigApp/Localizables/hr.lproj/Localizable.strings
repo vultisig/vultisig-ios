@@ -263,7 +263,7 @@
 "dismiss" = "Odbaci";
 "done" = "Gotovo";
 "dontRemind" = "Ne podsjećaj me ponovno";
-"downloadViaWebsite" = "Preuzmi putem web stranice";
+"downloadViaGitHub" = "Preuzmi putem GitHub-a";
 "dropFileHere" = "Ispusti datoteku ovdje...";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "ECDSA ključ";
@@ -853,6 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorSameAssetDescription" = "Ne možete zamijeniti isti asset. Molimo odaberite drugi asset.";
+"swapErrorSameAssetTitle" = "Isti Asset";
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
