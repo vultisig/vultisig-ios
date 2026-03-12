@@ -94,16 +94,12 @@ struct MayaChainBondInteractor: BondInteractor {
         do {
             // Fetch bondable pools, user's LP positions, and all bonded units in parallel
             async let bondablePoolsTask = mayaChainAPIService.getPools()
-            async let memberDetailsTask = try? mayaChainAPIService.getMemberDetails(address: cacaoCoin.address)
-            async let allBondedUnitsTask = try? mayaChainAPIService.getAllBondedLPUnitsByPool(address: cacaoCoin.address)
+            async let memberDetailsTask = mayaChainAPIService.getMemberDetails(address: cacaoCoin.address)
+            async let allBondedUnitsTask = mayaChainAPIService.getAllBondedLPUnitsByPool(address: cacaoCoin.address)
 
             let bondablePools = try await bondablePoolsTask
-            let memberDetails = await memberDetailsTask
-            let allBondedUnits = await allBondedUnitsTask
-
-            guard let memberDetails, let allBondedUnits else {
-                return false
-            }
+            let memberDetails = try await memberDetailsTask
+            let allBondedUnits = try await allBondedUnitsTask
 
             // Get set of bondable pool names
             let bondablePoolNames = Set(bondablePools.filter { $0.bondable }.map { $0.asset })

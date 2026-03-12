@@ -266,10 +266,11 @@ extension MayaChainAPIService {
         var totalBondedByPool: [String: UInt64] = [:]
 
         for node in allNodes {
-            // Find the bond provider matching our address in this node
-            if let provider = node.bondProviders.providers.first(where: {
+            // Find all bond providers matching our address in this node
+            let matchingProviders = node.bondProviders.providers.filter {
                 $0.bondAddress == address
-            }) {
+            }
+            for provider in matchingProviders {
                 // Sum units for each pool
                 for (asset, unitsString) in provider.pools {
                     if let units = UInt64(unitsString) {

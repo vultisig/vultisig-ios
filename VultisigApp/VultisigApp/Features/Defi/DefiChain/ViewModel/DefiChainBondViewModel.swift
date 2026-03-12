@@ -56,11 +56,14 @@ final class DefiChainBondViewModel: ObservableObject {
             activeBondedNodes = vault.bondPositions.filter { $0.node.coin.chain == chain }
         }
 
-        self.canUnbond = await interactor.canUnbond()
-        self.canAddBond = await interactor.canAddBond(vault: vault)
+        async let canUnbondTask = interactor.canUnbond()
+        async let canAddBondTask = interactor.canAddBond(vault: vault)
+        async let fetchTask = interactor.fetchBondPositions(vault: vault)
 
-        let (active, available) = await interactor.fetchBondPositions(vault: vault)
+        self.canUnbond = await canUnbondTask
+        self.canAddBond = await canAddBondTask
 
+        let (active, available) = await fetchTask
         self.activeBondedNodes = active
         self.availableNodes = available
     }
