@@ -263,7 +263,7 @@
 "dismiss" = "关闭";
 "done" = "完成";
 "dontRemind" = "不再提醒";
-"downloadViaWebsite" = "通过网站下载";
+"downloadViaGitHub" = "通过 GitHub 下载";
 "dropFileHere" = "将文件拖放到此处...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA 密钥";

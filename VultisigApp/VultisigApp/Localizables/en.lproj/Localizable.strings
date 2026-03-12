@@ -269,7 +269,7 @@
 "dismiss" = "Dismiss";
 "done" = "Done";
 "dontRemind" = "Don’t remind me again";
-"downloadViaWebsite" = "Download via Website";
+"downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA Key";
