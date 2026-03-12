@@ -263,7 +263,7 @@
 "dismiss" = "Verwerfen";
 "done" = "Fertig";
 "dontRemind" = "Nicht erneut erinnern";
-"downloadViaWebsite" = "Über Website herunterladen";
+"downloadViaGitHub" = "Über GitHub herunterladen";
 "dropFileHere" = "Datei hier ablegen...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA-Schlüssel";
@@ -854,6 +854,8 @@
 "swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
 "swapErrorInsufficientGasDescription" = "Nicht genügend Gas-Token, um die Netzwerkgebühr zu decken. Bitte fügen Sie Gas zu Ihrem Wallet hinzu.";
 "swapErrorInsufficientGasTitle" = "Unzureichendes Gas";
+"swapErrorSameAssetDescription" = "Es ist nicht möglich, dasselbe Asset zu tauschen. Bitte wählen Sie ein anderes Asset.";
+"swapErrorSameAssetTitle" = "Gleiches Asset";
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";

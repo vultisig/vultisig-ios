@@ -263,7 +263,7 @@
 "dismiss" = "Descartar";
 "done" = "Hecho";
 "dontRemind" = "No volver a recordármelo";
-"downloadViaWebsite" = "Descargar desde el sitio web";
+"downloadViaGitHub" = "Descargar vía GitHub";
 "dropFileHere" = "Suelta el archivo aquí...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "Clave ECDSA";
@@ -854,6 +854,8 @@
 "swapErrorInsufficientFundsTitle" = "Fondos Insuficientes";
 "swapErrorInsufficientGasDescription" = "Token de gas insuficiente para cubrir la tarifa de red. Por favor, agrega gas a tu billetera.";
 "swapErrorInsufficientGasTitle" = "Gas Insuficiente";
+"swapErrorSameAssetDescription" = "No se puede intercambiar por el mismo activo. Por favor, selecciona un activo diferente.";
+"swapErrorSameAssetTitle" = "Mismo Activo";
 "swapErrorUnexpectedDescription" = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
 "swapErrorUnexpectedTitle" = "Error Inesperado";
 "swapFee" = "Tarifa de intercambio";
