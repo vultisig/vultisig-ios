@@ -42,7 +42,8 @@ class VaultDefaultCoinService {
                         publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
                         publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                         hexChainCode: vault.hexChainCode,
-                        isDerived: isDerived
+                        isDerived: isDerived,
+                        publicKeyMLDSA44: vault.publicKeyMLDSA44
                     )
                 }
 
