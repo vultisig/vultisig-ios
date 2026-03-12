@@ -160,10 +160,15 @@ class TransactionStatusViewModel: ObservableObject {
             // Update transaction history status on terminal states
             if let pubKeyECDSA, status.isTerminal {
                 let historyStatus: TransactionHistoryStatus = (status == .confirmed) ? .successful : .error
+                var errorMessage: String? = nil
+                if case .failed(let reason) = status {
+                    errorMessage = reason
+                }
                 TransactionHistoryRecorder.shared.updateStatus(
                     txHash: txHash,
                     pubKeyECDSA: pubKeyECDSA,
-                    status: historyStatus
+                    status: historyStatus,
+                    errorMessage: errorMessage
                 )
             }
         }

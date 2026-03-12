@@ -56,6 +56,9 @@ final class TransactionHistoryItem {
     // Estimated time for in-progress display
     var estimatedTime: String?
 
+    // Error details
+    var errorMessage: String?
+
     init(
         id: UUID = UUID(),
         txHash: String,
@@ -83,7 +86,8 @@ final class TransactionHistoryItem {
         explorerLink: String,
         createdAt: Date = Date(),
         completedAt: Date? = nil,
-        estimatedTime: String? = nil
+        estimatedTime: String? = nil,
+        errorMessage: String? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -112,5 +116,6 @@ final class TransactionHistoryItem {
         self.createdAt = createdAt
         self.completedAt = completedAt
         self.estimatedTime = estimatedTime
+        self.errorMessage = errorMessage
     }
 }

@@ -263,7 +263,7 @@
 "dismiss" = "Odbaci";
 "done" = "Gotovo";
 "dontRemind" = "Ne podsjećaj me ponovno";
-"downloadViaWebsite" = "Preuzmi putem web stranice";
+"downloadViaGitHub" = "Preuzmi putem GitHub-a";
 "dropFileHere" = "Ispusti datoteku ovdje...";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "ECDSA ključ";
@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Nije moguće dobiti redni broj";
 "failToStartKesign" = "Greška u potpisivanju";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";
+"failureReason" = "Razlog greške";
 "faq" = "ČPP";
 "faqAnswer1" = "To je sigurni novčanik s više udjele utemeljen na MPC tehnologiji koja se koristi za upravljanje digitalnom imovinom. Transakcije zahtijevaju odobrenje s više uređaja.";
 "faqAnswer2" = "Vultisig nudi poboljšanu sigurnost s autentifikacijom s više uređaja, podrškom za mnoge blockchains, jednostavnim mogućnostima oporavka i bez sjemenskih fraza ili praćenja korisnika.";
@@ -853,6 +854,8 @@
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorSameAssetDescription" = "Ne možete zamijeniti isti asset. Molimo odaberite drugi asset.";
+"swapErrorSameAssetTitle" = "Isti Asset";
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";

@@ -21,7 +21,7 @@ final class TransactionStatusPoller {
         txHash: String,
         chain: Chain,
         pubKeyECDSA: String,
-        onUpdate: @escaping (TransactionHistoryStatus) -> Void
+        onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) {
         guard activeTasks[txHash] == nil else { return }
 
@@ -38,12 +38,17 @@ final class TransactionStatusPoller {
                     )
 
                     if let result, let historyStatus = self?.mapToHistoryStatus(result) {
+                        var errorMessage: String? = nil
+                        if case let .failed(reason) = result.status {
+                            errorMessage = reason
+                        }
                         self?.recorder.updateStatus(
                             txHash: txHash,
                             pubKeyECDSA: pubKeyECDSA,
-                            status: historyStatus
+                            status: historyStatus,
+                            errorMessage: errorMessage
                         )
-                        onUpdate(historyStatus)
+                        onUpdate(historyStatus, errorMessage)
                         break
                     }
 
