@@ -853,6 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "Fondos Insuficientes";
 "swapErrorInsufficientGasDescription" = "Token de gas insuficiente para cubrir la tarifa de red. Por favor, agrega gas a tu billetera.";
 "swapErrorInsufficientGasTitle" = "Gas Insuficiente";
+"swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
+"swapErrorSameAssetTitle" = "Same Asset";
 "swapErrorUnexpectedDescription" = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
 "swapErrorUnexpectedTitle" = "Error Inesperado";
 "swapFee" = "Tarifa de intercambio";

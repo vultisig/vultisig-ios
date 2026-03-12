@@ -853,6 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "余额不足";
 "swapErrorInsufficientGasDescription" = "Gas 代币不足以支付网络费用。请向钱包添加 Gas。";
 "swapErrorInsufficientGasTitle" = "Gas 不足";
+"swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
+"swapErrorSameAssetTitle" = "Same Asset";
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorUnexpectedTitle" = "意外错误";
 "swapFee" = "交换费用";

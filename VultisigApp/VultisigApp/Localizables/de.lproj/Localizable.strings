@@ -853,6 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
 "swapErrorInsufficientGasDescription" = "Nicht genügend Gas-Token, um die Netzwerkgebühr zu decken. Bitte fügen Sie Gas zu Ihrem Wallet hinzu.";
 "swapErrorInsufficientGasTitle" = "Unzureichendes Gas";
+"swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
+"swapErrorSameAssetTitle" = "Same Asset";
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";
