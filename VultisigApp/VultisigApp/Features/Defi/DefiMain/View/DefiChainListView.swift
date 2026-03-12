@@ -35,7 +35,7 @@ struct DefiChainListView: View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             Button {
                 if group.name == "Circle" {
-                    enableUsdcIfNeeded()
+                    guard enableUsdcIfNeeded() else { return }
                     router.navigate(to: CircleRoute.main(vault: vault))
                 } else {
                     switch group.chain {
@@ -57,12 +57,15 @@ struct DefiChainListView: View {
           }
     }
 
-    private func enableUsdcIfNeeded() {
+    @discardableResult
+    private func enableUsdcIfNeeded() -> Bool {
         let usdcMeta = TokensStore.ethUSDC
         do {
             _ = try CoinService.addIfNeeded(asset: usdcMeta, to: vault, priceProviderId: usdcMeta.priceProviderId)
+            return true
         } catch {
             logger.error("Failed to enable USDC: \(error.localizedDescription)")
+            return false
         }
     }
 }
