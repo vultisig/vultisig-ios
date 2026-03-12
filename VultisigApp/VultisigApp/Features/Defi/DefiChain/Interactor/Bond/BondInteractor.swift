@@ -6,6 +6,7 @@
 //
 
 protocol BondInteractor {
+    @MainActor
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode])
     func canUnbond() async -> Bool
 }

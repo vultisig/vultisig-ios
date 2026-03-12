@@ -10,6 +10,7 @@ struct THORChainBondInteractor: BondInteractor {
 
     let vultiNodeAddresses: [String] = []
 
+    @MainActor
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode]) {
         guard let runeCoin = vault.runeCoin else {
             return ([], [])

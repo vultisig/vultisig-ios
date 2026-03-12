@@ -9,6 +9,7 @@ struct THORChainStakeInteractor: StakeInteractor {
     private let thorchainAPIService = THORChainAPIService()
     private let stakingService = THORChainStakingService.shared
 
+    @MainActor
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
         guard let runeCoin = vault.runeCoin else { return [] }
         let vaultStakePositions = vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []

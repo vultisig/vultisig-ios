@@ -10,6 +10,7 @@ import Foundation
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
+    @MainActor
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
         // Get CACAO coin (native token for MayaChain)
         guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {

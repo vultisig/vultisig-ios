@@ -80,7 +80,7 @@ class TransactionStatusViewModel: ObservableObject {
         }
 
         // Save initial state to SwiftData
-        Task {
+        Task { @MainActor in
             try? storage.save(
                 txHash: txHash,
                 chain: chain,
@@ -93,7 +93,7 @@ class TransactionStatusViewModel: ObservableObject {
         }
 
         // Start polling task
-        pollingTask = Task {
+        pollingTask = Task { @MainActor in
             while !Task.isCancelled && !status.isTerminal {
                 do {
                     let result = try await service.checkTransactionStatus(

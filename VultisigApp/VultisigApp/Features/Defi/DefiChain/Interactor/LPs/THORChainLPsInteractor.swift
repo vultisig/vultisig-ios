@@ -19,6 +19,7 @@ struct THORChainLPsInteractor: LPsInteractor {
         SettingsAPRPeriod.current.rawValue
     }
 
+    @MainActor
     func fetchLPPositions(vault: Vault) async -> [LPPosition] {
         guard let runeCoin = vault.runeCoin else { return [] }
         let vaultLPPositions = vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
