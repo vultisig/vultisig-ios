@@ -74,22 +74,29 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         loadError = nil
 
         // Supported secured asset tickers
-        let supportedTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+        let supportedTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB", "USDC", "USDT", "DAI", "GUSD", "USDP", "LINK", "AAVE", "WBTC"]
 
         // Get secured assets that actually exist in the vault
-        // They might be stored as "DOGE" or "DOGE-DOGE" format
         let securedAssetsInVault = vault.coins.filter { coin in
-            guard coin.chain == .thorChain && coin.balanceDecimal > 0 else { return false }
+            guard coin.chain == .thorChain && coin.balanceDecimal > 0 && !coin.isNativeToken else { return false }
 
             let ticker = coin.ticker.uppercased()
-            // Check if it matches a supported ticker directly (e.g., "DOGE")
+            let denom = coin.contractAddress.uppercased()
+            
+            // Check if it matches a supported ticker directly (e.g., "BTC")
             if supportedTickers.contains(ticker) {
                 return true
             }
-            // Check if it's in dash format (e.g., "DOGE-DOGE")
-            for supported in supportedTickers {
-                if ticker == "\(supported)-\(supported)" {
-                    return true
+            
+            // Check if it's in dash format (e.g., "BTC-BTC" or "ETH-USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48")
+            if denom.contains("-") {
+                let parts = denom.split(separator: "-")
+                if parts.count >= 2 {
+                    // Check if the symbol part (e.g., "USDC" or "BTC") is supported
+                    let actualTicker = String(parts[1]).uppercased()
+                    if supportedTickers.contains(actualTicker) {
+                        return true
+                    }
                 }
             }
             return false
@@ -107,16 +114,8 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             } else {
 
                 let vaultAssets = securedAssetsInVault.map { coin in
-                    let ticker = coin.ticker.uppercased()
-
-                    if ticker.contains("-") {
-                        let parts = ticker.split(separator: "-")
-                        if parts.count == 2 && parts[0] == parts[1] {
-                            return IdentifiableString(value: String(parts[0]))
-                        }
-                    }
-                    // Otherwise use the ticker as is
-                    return IdentifiableString(value: coin.ticker)
+                    // Store the contractAddress (denom) in the value to uniquely identify the coin
+                    return IdentifiableString(value: coin.contractAddress)
                 }
                 assetList.append(contentsOf: vaultAssets)
                 self.availableSecuredAssets = assetList
@@ -136,26 +135,24 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             securedAssetValid = false
             destinationAddress = ""
             destinationAddressValid = false
+            selectedSecuredAssetCoin = nil
             return
         }
 
         // Valid asset selected
         securedAssetValid = true
 
-        // Update destination address based on selected asset
+        // Update destination address based on selected asset (using the contractAddress/denom)
         updateDestinationAddressForAsset(asset.value)
 
         // Update the tx.coin to the selected secured asset for balance validation
         updateTxCoinForSelectedAsset(asset.value)
     }
 
-    private func updateDestinationAddressForAsset(_ assetName: String) {
-        // assetName is just the ticker (e.g., "BTC", "ETH", "DOGE")
-        let ticker = assetName.uppercased()
-
-        // Map secured asset ticker to its native chain
+    private func updateDestinationAddressForAsset(_ denom: String) {
+        // Map secured asset denom to its native chain
         // When withdrawing, we need to send to the original chain address
-        let targetChain = getChainForSecuredAsset(ticker)
+        let targetChain = getChainForSecuredAsset(denom)
 
         // Find the corresponding native coin in vault to get the user's own address for that chain
         if let coin = vault.coins.first(where: {
@@ -168,55 +165,81 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             // If no coin exists for that chain in the vault, show error
             destinationAddress = ""
             destinationAddressValid = false
-            customErrorMessage = String(format: NSLocalizedString("withdrawSecuredAssetError", comment: ""), ticker, ticker, targetChain.name)
+            customErrorMessage = String(format: NSLocalizedString("withdrawSecuredAssetError", comment: ""), formatAssetName(denom), formatAssetName(denom), targetChain.name)
         }
     }
 
-    /// Maps a secured asset ticker to its native blockchain chain
-    private func getChainForSecuredAsset(_ ticker: String) -> Chain {
-        switch ticker.uppercased() {
-        case "BTC":
-            return .bitcoin
-        case "ETH":
-            return .ethereum
-        case "BCH":
-            return .bitcoinCash
-        case "LTC":
-            return .litecoin
-        case "DOGE":
-            return .dogecoin
-        case "AVAX":
-            return .avalanche
-        case "BNB":
-            return .bscChain
-        default:
-            // Fallback to THORChain if unknown (shouldn't happen)
-            return .thorChain
+    /// Maps a secured asset denom (contractAddress) to its native blockchain chain
+    private func getChainForSecuredAsset(_ denom: String) -> Chain {
+        let cleanDenom = denom.uppercased()
+        
+        if cleanDenom.contains("-") {
+            let parts = cleanDenom.split(separator: "-")
+            if !parts.isEmpty {
+                let chainPart = String(parts[0])
+                switch chainPart {
+                case "BTC": return .bitcoin
+                case "ETH": return .ethereum
+                case "BCH": return .bitcoinCash
+                case "LTC": return .litecoin
+                case "DOGE": return .dogecoin
+                case "AVAX": return .avalanche
+                case "BNB", "BSC": return .bscChain
+                default: break
+                }
+            }
+        }
+        
+        // Fallback to ticker-based mapping for older coins or non-dash denoms
+        let ticker = denom.uppercased()
+        switch ticker {
+        case "BTC": return .bitcoin
+        case "ETH": return .ethereum
+        case "BCH": return .bitcoinCash
+        case "LTC": return .litecoin
+        case "DOGE": return .dogecoin
+        case "AVAX": return .avalanche
+        case "BNB": return .bscChain
+        default: return .thorChain
         }
     }
 
-    private func updateTxCoinForSelectedAsset(_ assetName: String) {
-        // assetName is just the ticker (e.g., "BTC", "ETH", "DOGE")
-        let ticker = assetName.uppercased()
-
-        // Find the secured asset coin - it could be stored as "DOGE" or "DOGE-DOGE"
+    private func updateTxCoinForSelectedAsset(_ denom: String) {
+        // Find the secured asset coin by its contractAddress (denom)
         if let securedAssetCoin = vault.coins.first(where: {
-            guard $0.chain == .thorChain else { return false }
-            let coinTicker = $0.ticker.uppercased()
-            // Check if it matches the ticker directly or in the "TICKER-TICKER" format
-            return coinTicker == ticker || coinTicker == "\(ticker)-\(ticker)"
+            $0.chain == .thorChain && $0.contractAddress.uppercased() == denom.uppercased()
         }) {
             selectedSecuredAssetCoin = securedAssetCoin
-
             // Set the coin and ensure isNativeToken is false for secured assets
             // This will make getTicker() use getNotNativeTicker() which handles secured assets correctly
-            let correctedCoin = securedAssetCoin
-            correctedCoin.isNativeToken = false
-
-            tx.coin = correctedCoin
+            tx.coin = securedAssetCoin
         } else {
             selectedSecuredAssetCoin = nil
         }
+    }
+    
+    /// Formats a secured asset denom for display (e.g., "ETH-USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48" -> "USDC (ETH)")
+    func formatAssetName(_ denom: String) -> String {
+        if denom == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
+            return denom
+        }
+        
+        let cleanDenom = denom.uppercased()
+        if cleanDenom.contains("-") {
+            let parts = cleanDenom.split(separator: "-")
+            if parts.count >= 2 {
+                let chainPart = String(parts[0])
+                let symbolPart = String(parts[1])
+                
+                if chainPart == symbolPart {
+                    return chainPart
+                } else {
+                    return "\(symbolPart) (\(chainPart))"
+                }
+            }
+        }
+        
+        return denom
     }
 
     private func setupValidation() {
@@ -404,7 +427,7 @@ struct SecuredAssetSelectorSection: View {
                 set: { model.selectedSecuredAsset = $0 }
             ),
             mandatoryMessage: "*",
-            descriptionProvider: { $0.value },
+            descriptionProvider: { model.formatAssetName($0.value) },
             onSelect: { asset in
                 model.selectSecuredAsset(asset)
             }
