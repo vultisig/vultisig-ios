@@ -930,15 +930,7 @@ class TokensStore {
             contractAddress: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
             isNativeToken: false
         ),
-        CoinMeta(
-            chain: .ethereum,
-            ticker: "USDC",
-            logo: "usdc",
-            decimals: 6,
-            priceProviderId: "usd-coin",
-            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            isNativeToken: false
-        ),
+        ethUSDC,
         CoinMeta(
             chain: .ethereum,
             ticker: "USDT",
@@ -2197,6 +2189,16 @@ class TokensStore {
         decimals: 18,
         priceProviderId: "wrapped-steth",
         contractAddress: "0x5979D7b546E38E414F7E9822514be443A4800529",
+        isNativeToken: false
+    )
+
+    static let ethUSDC: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "USDC",
+        logo: "usdc",
+        decimals: 6,
+        priceProviderId: "usd-coin",
+        contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         isNativeToken: false
     )
 }
