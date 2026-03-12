@@ -147,8 +147,18 @@ private extension THORChainStakingService {
 
     func fetchTcyStakedAmount(address: String) async throws -> TcyStakerResponse {
         let target = THORChainStakingAPI.getTcyStakedAmount(address: address)
-        let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
-        return response.data
+        do {
+            let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
+            return response.data
+        } catch let error as HTTPError {
+            // Thornode returns 400 Bad Request if the staker doesn't exist
+            if case .httpError(let statusCode) = error, statusCode == 400 {
+                return TcyStakerResponse(amount: "0")
+            }
+            throw error
+        } catch {
+            throw error
+        }
     }
 
     func fetchTcyDistributions(limit: Int) async throws -> [TcyDistribution] {

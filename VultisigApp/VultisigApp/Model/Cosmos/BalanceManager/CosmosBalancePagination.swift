@@ -9,9 +9,9 @@ import Foundation
 
 class CosmosBalancePagination: Codable {
     var next_key: String?
-    var total: String
+    var total: String?
 
-    init(next_key: String?, total: String) {
+    init(next_key: String?, total: String?) {
         self.next_key = next_key
         self.total = total
     }
