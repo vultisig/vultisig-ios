@@ -263,7 +263,7 @@
 "dismiss" = "Odbaci";
 "done" = "Gotovo";
 "dontRemind" = "Ne podsjećaj me ponovno";
-"downloadViaWebsite" = "Preuzmi putem web stranice";
+"downloadViaGitHub" = "Preuzmi putem GitHub-a";
 "dropFileHere" = "Ispusti datoteku ovdje...";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "ECDSA ključ";

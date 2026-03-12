@@ -263,7 +263,7 @@
 "dismiss" = "Descartar";
 "done" = "Concluído";
 "dontRemind" = "Não me lembre novamente";
-"downloadViaWebsite" = "Baixar pelo site";
+"downloadViaGitHub" = "Baixar via GitHub";
 "dropFileHere" = "Solte o arquivo aqui...";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "Chave ECDSA";
