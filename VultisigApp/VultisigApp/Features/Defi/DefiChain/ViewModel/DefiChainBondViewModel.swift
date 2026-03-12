@@ -12,7 +12,7 @@ final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var canUnbond: Bool = false
-    @Published private(set) var canAddBond: Bool = true
+    @Published private(set) var canAddBond: Bool = false
 
     private var totalBondedDecimal: Decimal {
         activeBondedNodes.map(\.amount).reduce(.zero, +)
@@ -46,7 +46,11 @@ final class DefiChainBondViewModel: ObservableObject {
 
     @MainActor
     func refresh() async {
-        guard let interactor = interactor else { return }
+        guard let interactor = interactor else {
+            canUnbond = false
+            canAddBond = false
+            return
+        }
 
         if hasBondPositions {
             activeBondedNodes = vault.bondPositions.filter { $0.node.coin.chain == chain }
@@ -57,12 +61,7 @@ final class DefiChainBondViewModel: ObservableObject {
 
         let (active, available) = await interactor.fetchBondPositions(vault: vault)
 
-        if !active.isEmpty {
-            self.activeBondedNodes = active
-        }
-
-        if !available.isEmpty {
-            self.availableNodes = available
-        }
+        self.activeBondedNodes = active
+        self.availableNodes = available
     }
 }
