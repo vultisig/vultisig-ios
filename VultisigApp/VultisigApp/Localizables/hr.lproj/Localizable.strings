@@ -853,6 +853,8 @@
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorSameAssetDescription" = "Ne možete zamijeniti isti asset. Molimo odaberite drugi asset.";
+"swapErrorSameAssetTitle" = "Isti Asset";
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
