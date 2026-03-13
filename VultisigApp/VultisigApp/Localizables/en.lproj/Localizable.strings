@@ -744,6 +744,7 @@
 "screenRecordingPermissionDenied" = "Screen recording permission is required to scan QR codes from your screen.";
 "search" = "Search";
 "search..." = "Search...";
+"searchAsset" = "Search asset";
 "second" = "Second";
 "secure" = "Secure";
 "Secured Assets" = "Secured Assets";

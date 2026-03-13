@@ -734,6 +734,7 @@
 "screenRecordingPermissionDenied" = "Potrebna je dozvola za snimanje zaslona kako bi se mogli skenirati QR kodovi s vašeg zaslona.";
 "search" = "Pretraži";
 "search..." = "Pretraži...";
+"searchAsset" = "Pretraži imovinu";
 "second" = "Drugi";
 "secure" = "Sigurno";
 "Secured Assets" = "Osigurana imovina";
