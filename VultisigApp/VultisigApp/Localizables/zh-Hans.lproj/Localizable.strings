@@ -59,6 +59,7 @@
 "agentPasswordDescription" = "需要您的密码才能使用您的金库登录代理服务。";
 "agentPasswordPlaceholder" = "Enter password";
 "agentRoute" = "路由：%@";
+"agentSessionHistory" = "Session history";
 "agentShouldExecuteSwap" = "是否执行兑换？";
 "agentSigningBroadcasting" = "正在签名并广播交易...";
 "agentStartNewChat" = "开始新对话以与 Vulti 互动。";

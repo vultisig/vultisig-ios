@@ -87,6 +87,7 @@ struct AgentMainScreen: View {
         } message: {
             Text(viewModel.error ?? "")
         }
+        .withLoading(text: "pleaseWait".localized, isLoading: $isAuthorizing)
         .sheet(isPresented: $viewModel.shouldShowPairingSheet) {
             if let tx = viewModel.pendingSendTx, let vault = appViewModel.selectedVault, let keysignPayload = viewModel.activeKeysignPayload {
                 NavigationStack {
@@ -118,7 +119,7 @@ struct AgentMainScreen: View {
             }
         }
     }
-    
+
     private var background: some View {
         ZStack(alignment: .top) {
             Theme.colors.bgPrimary

@@ -13,7 +13,7 @@ struct AgentRouter {
     func build(_ route: AgentRoute) -> some View {
         switch route {
         case .conversations:
-            AgentConversationsView()
+            AgentConversationsScreen()
         }
     }
 }

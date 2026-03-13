@@ -59,6 +59,7 @@
 "agentPasswordDescription" = "Vaša lozinka je potrebna za prijavu u agentsku uslugu koristeći vaš trezor.";
 "agentPasswordPlaceholder" = "Enter password";
 "agentRoute" = "RUTA: %@";
+"agentSessionHistory" = "Session history";
 "agentShouldExecuteSwap" = "Trebam li izvršiti zamjenu?";
 "agentSigningBroadcasting" = "Potpisivanje i slanje transakcije...";
 "agentStartNewChat" = "Započnite novi razgovor za interakciju s Vultijem.";

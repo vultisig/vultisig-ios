@@ -59,6 +59,7 @@
 "agentPasswordDescription" = "Ihr Passwort wird benötigt, um sich beim Agent-Service mit Ihrem Vault anzumelden.";
 "agentPasswordPlaceholder" = "Enter password";
 "agentRoute" = "ROUTE: %@";
+"agentSessionHistory" = "Session history";
 "agentShouldExecuteSwap" = "Soll ich den Swap ausführen?";
 "agentSigningBroadcasting" = "Transaktion wird signiert und gesendet...";
 "agentStartNewChat" = "Starten Sie einen neuen Chat, um mit Vulti zu interagieren.";

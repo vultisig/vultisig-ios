@@ -60,6 +60,7 @@
 "agentPasswordDescription" = "Your password is needed to sign into the agent service using your vault.";
 "agentPasswordPlaceholder" = "Enter password";
 "agentRoute" = "ROUTE: %@";
+"agentSessionHistory" = "Session history";
 "agentShouldExecuteSwap" = "Should I execute the swap?";
 "agentSigningBroadcasting" = "Signing and broadcasting transaction...";
 "agentStartNewChat" = "Start a new chat to begin interacting with Vulti.";
