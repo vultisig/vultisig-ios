@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "agent-orb.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -73,7 +73,7 @@ struct ChainDetailScreenContainer: View {
                         DefiChainMainScreen(vault: vault, group: group)
                     }
                 case .agent:
-                    AgentConversationsView()
+                    AgentConversationsScreen()
                 case .camera:
                     EmptyView()
                 }

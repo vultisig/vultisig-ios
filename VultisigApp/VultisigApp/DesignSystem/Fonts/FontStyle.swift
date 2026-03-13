@@ -13,6 +13,7 @@ enum FontStyle: String, CaseIterable {
     case brockmanRegular
     case brockmanSemibold
     case satoshiMedium
+    case lcdDotTR
 
     func size(_ size: CGFloat) -> Font {
         return Font.custom(fontName, size: size)
@@ -36,6 +37,8 @@ enum FontStyle: String, CaseIterable {
             "Brockmann-Semibold"
         case .satoshiMedium:
             "Satoshi-Medium"
+        case .lcdDotTR:
+            "lcddot-tr"
         }
     }
 }

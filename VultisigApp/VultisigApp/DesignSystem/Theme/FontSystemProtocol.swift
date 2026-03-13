@@ -41,4 +41,7 @@ public protocol FontSystemProtocol {
     var priceBodyL: Font { get }
     var priceFootnote: Font { get }
     var priceCaption: Font { get }
+
+    var agentSubtitleSmall: Font { get }
+    var agentSubtitleMedium: Font { get }
 }

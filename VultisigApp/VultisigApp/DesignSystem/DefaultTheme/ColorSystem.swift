@@ -54,6 +54,8 @@ struct ColorSystem: ColorSystemProtocol {
 
     var turquoise: Color { .init(hex: "33E6BF") }
 
+    var buttonsCTAPrimary: Color { .init(hex: "0B4EFF") }
+
     // Chain-specific colors
     var tronRed: Color { .init(hex: "FF0013") }
 }

@@ -9,5 +9,4 @@ import Foundation
 
 enum AgentRoute: Hashable {
     case conversations
-    case chat(conversationId: String?)
 }

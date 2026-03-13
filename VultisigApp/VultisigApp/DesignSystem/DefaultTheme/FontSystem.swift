@@ -41,4 +41,7 @@ struct FontSystem: FontSystemProtocol {
     var priceBodyL: Font { FontStyle.satoshiMedium.size(18) }
     var priceFootnote: Font { FontStyle.satoshiMedium.size(13) }
     var priceCaption: Font { FontStyle.satoshiMedium.size(12) }
+
+    var agentSubtitleSmall: Font { FontStyle.lcdDotTR.size(20) }
+    var agentSubtitleMedium: Font { FontStyle.lcdDotTR.size(22) }
 }
