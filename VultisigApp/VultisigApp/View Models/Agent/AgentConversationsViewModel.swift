@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 @MainActor
-final class AgentConversationsViewModel: ObservableObject {
+final class AgentConversationsViewModel: ObservableObject, AgentLogging {
 
     // MARK: - Published State
 
@@ -24,19 +24,13 @@ final class AgentConversationsViewModel: ObservableObject {
 
     private let backendClient = AgentBackendClient()
     private let authService = AgentAuthService.shared
-    private let logger = Logger(subsystem: "com.vultisig", category: "AgentConversationsVM")
+    let logger = Logger(subsystem: "com.vultisig", category: "AgentConversationsVM")
 
     private var startersRefreshTimer: Timer?
     private var lastStartersRefresh: Date?
 
     /// Generation token — incremented on disconnect to invalidate in-flight loaders.
     private var loadGeneration: Int = 0
-
-    private func debugLog(_ message: String) {
-        #if DEBUG
-        logger.debug("\(message, privacy: .public)")
-        #endif
-    }
 
     // MARK: - Load Conversations
 
