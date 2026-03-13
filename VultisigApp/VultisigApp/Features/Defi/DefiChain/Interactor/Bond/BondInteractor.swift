@@ -8,4 +8,5 @@
 protocol BondInteractor {
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode])
     func canUnbond() async -> Bool
+    func canAddBond(vault: Vault) async -> Bool
 }
