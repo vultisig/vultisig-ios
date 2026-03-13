@@ -730,7 +730,6 @@
 "scanningScreenForQR" = "正在扫描屏幕上的二维码...";
 "scanningScreenHint" = "在屏幕上任意位置显示二维码，系统将自动检测。";
 "scanQRCode" = "扫描二维码";
-"scanQRCodeTooltip" = "扫描 Vultisig 二维码以配对设备、签署交易或恢复金库。";
 "scanQRCodeTooltipBullet1" = "将手机稍微靠近或远离屏幕";
 "scanQRCodeTooltipBullet2" = "确保屏幕光线充足且无眩光";
 "scanQRCodeTooltipBullet3" = "保持两台设备稳定片刻";

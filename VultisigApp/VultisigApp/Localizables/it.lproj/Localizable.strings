@@ -730,7 +730,6 @@
 "scanningScreenForQR" = "Scansione dello schermo alla ricerca di codici QR...";
 "scanningScreenHint" = "Mostra un codice QR in qualsiasi punto dello schermo e verrà rilevato automaticamente.";
 "scanQRCode" = "Scansiona codice QR";
-"scanQRCodeTooltip" = "Scansiona un codice QR Vultisig per collegare dispositivi, firmare transazioni o ripristinare un vault.";
 "scanQRCodeTooltipBullet1" = "Move the phone slightly closer or farther from the screen";
 "scanQRCodeTooltipBullet2" = "Make sure the screen is well lit and free of glare";
 "scanQRCodeTooltipBullet3" = "Keep both devices steady for a moment";
