@@ -143,13 +143,20 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     /// Fetch user's LP positions from Maya API and cache for quick lookup
     private func fetchAndCacheUserLPPositions() async {
         do {
-            let memberDetails = try await mayaAPIService.getMemberDetails(address: coin.address)
+            async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
+            async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+
+            let memberDetails = try await memberDetailsTask
+            let allBondedUnits = try await allBondedUnitsTask
 
             var positions: [String: String] = [:]
             for pool in memberDetails.pools {
-                let units = pool.liquidityUnits
-                if let unitsInt = Int64(units), unitsInt > 0 {
-                    positions[pool.pool] = units
+                let totalUnits = UInt64(pool.liquidityUnits) ?? 0
+                let bondedUnits = allBondedUnits[pool.pool] ?? 0
+                let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+
+                if availableUnits > 0 {
+                    positions[pool.pool] = String(availableUnits)
                 }
             }
             let p = positions

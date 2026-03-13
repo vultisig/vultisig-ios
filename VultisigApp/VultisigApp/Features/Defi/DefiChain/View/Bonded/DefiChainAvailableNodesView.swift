@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DefiChainAvailableNodesView: View {
     let availableNodes: [BondNode]
+    let canAddBond: Bool
     var onBond: (BondNode) -> Void
 
     @State private var isExpanded = false
@@ -58,7 +59,7 @@ struct DefiChainAvailableNodesView: View {
             DefiButton(title: "requestToBond".localized, icon: "arrow-up-right-1", type: .secondary) {
                 onBond(node)
             }
-            .disabled(!node.state.canBond)
+            .disabled(!node.state.canBond || !canAddBond)
         }
     }
 }
@@ -70,6 +71,7 @@ struct DefiChainAvailableNodesView: View {
             BondNode(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
             BondNode(coin: .example, address: "thor1disabled000000000000000000000000000000", state: .disabled)
         ],
+        canAddBond: true,
         onBond: { _ in }
     )
 }
