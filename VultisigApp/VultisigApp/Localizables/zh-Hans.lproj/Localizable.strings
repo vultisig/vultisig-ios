@@ -69,7 +69,7 @@
 "agentTransactionBroadcast" = "✅ 交易已广播！\nTxID：`%@`";
 "agentTransactionReady" = "交易准备就绪，可以签名。";
 "agentTransactionSigned" = "交易已签名！正在广播到网络...";
-"agentWelcomeSubtitle" = "Your AI-powered assistant for managing your vault and executing transactions.";
+"agentWelcomeSubtitle" = "您的金库现在可以理解请求、自动执行操作并帮助管理您的加密资产。";
 "agentWelcomeTitle" = "Welcome to Vulti Agent";
 "agentWhatToDo" = "What would you like to do?";
 "agentWhatToDoSubtitle" = "Try one of these suggestions or type your own question.";

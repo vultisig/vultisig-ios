@@ -54,6 +54,8 @@ public protocol ColorSystemProtocol {
 
     var turquoise: Color { get }
 
+    var buttonsCTAPrimary: Color { get }
+
     // Chain-specific colors
     var tronRed: Color { get }
 }

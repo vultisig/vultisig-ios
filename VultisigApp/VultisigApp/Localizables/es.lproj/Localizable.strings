@@ -69,7 +69,7 @@
 "agentTransactionBroadcast" = "✅ ¡Transacción transmitida!\nTxID: `%@`";
 "agentTransactionReady" = "Transacción lista para firmar.";
 "agentTransactionSigned" = "¡Transacción firmada! Transmitiendo a la red...";
-"agentWelcomeSubtitle" = "Your AI-powered assistant for managing your vault and executing transactions.";
+"agentWelcomeSubtitle" = "Tu bóveda ahora puede entender solicitudes, automatizar acciones y ayudar a gestionar tus criptomonedas.";
 "agentWelcomeTitle" = "Welcome to Vulti Agent";
 "agentWhatToDo" = "What would you like to do?";
 "agentWhatToDoSubtitle" = "Try one of these suggestions or type your own question.";

@@ -39,6 +39,7 @@ struct AgentMainScreen: View {
                 }
                 bottomBar
             }
+            .padding(.bottom, 16)
         }
         .background(background)
         .onAppear { checkAuth() }
@@ -197,30 +198,17 @@ struct AgentMainScreen: View {
     }
 
     private var titleSection: some View {
-        VStack(spacing: 12) {
-            if isAuthorized {
-                Text("agentWhatToDo".localized)
-                    .font(Theme.fonts.title3)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .multilineTextAlignment(.center)
+        VStack(spacing: 16) {
+            Text(isAuthorized ? "agentWhatToDo".localized : "agentWelcomeTitle".localized)
+                .font(Theme.fonts.title3)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
 
-                Text("agentWhatToDoSubtitle".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-            } else {
-                Text("agentWelcomeTitle".localized)
-                    .font(Theme.fonts.title3)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .multilineTextAlignment(.center)
-
-                Text("agentWelcomeSubtitle".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-            }
+            Text(isAuthorized ? "agentWhatToDoSubtitle".localized : "agentWelcomeSubtitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: 295)
+                .multilineTextAlignment(.center)
         }
     }
 
@@ -305,63 +293,14 @@ struct AgentMainScreen: View {
     }
 
     private var unauthorizedBottomBar: some View {
-        VStack(spacing: 16) {
-            Button {
-                isPasswordFocused = true
-            } label: {
-                Text("agentAuthorizeAgent".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.turquoise)
-            }
-
-            HStack(spacing: 12) {
-                Button {
-                    password = ""
-                    authError = nil
-                    isPasswordFocused = false
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .frame(width: 40, height: 40)
-                }
-
-                SecureField("agentPasswordPlaceholder".localized, text: $password)
-                    .textFieldStyle(.plain)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Theme.colors.bgSurface1)
-                    .cornerRadius(20)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .focused($isPasswordFocused)
-                    .onSubmit { authorize() }
-
-                Button {
-                    authorize()
-                } label: {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(Theme.colors.bgPrimary)
-                        .frame(width: 36, height: 36)
-                        .background(
-                            password.isEmpty
-                                ? Theme.colors.textTertiary
-                                : Theme.colors.turquoise
-                        )
-                        .clipShape(Circle())
-                }
-                .disabled(password.isEmpty || isAuthorizing)
-            }
-
-            if let authError {
-                Text(authError)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.alertError)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Theme.colors.bgPrimary)
+        AgentPasswordTextField(
+            password: $password,
+            errorMessage: authError,
+            isAuthorizing: isAuthorizing,
+            isFocused: $isPasswordFocused,
+            onClear: { authError = nil },
+            onSubmit: { authorize() }
+        )
     }
 
     private var chatInputBar: some View {
