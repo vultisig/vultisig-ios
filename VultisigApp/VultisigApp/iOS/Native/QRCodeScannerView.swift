@@ -14,10 +14,10 @@
         @Binding var isPaused: Bool
         var handleImport: (String) -> Void
 
-        @State var isGalleryPresented = false
-        @State var isFilePresented = false
-        @State var showErrorPopup = false
-        @State var showTooltip = false
+        @State private var isGalleryPresented = false
+        @State private var isFilePresented = false
+        @State private var showErrorPopup = false
+        @State private var showTooltip = false
 
         private var idiom: UIUserInterfaceIdiom {
             UIDevice.current.userInterfaceIdiom
@@ -65,7 +65,7 @@
                 Spacer()
                 helpButton
             }
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
             .offset(y: 8)
         }
