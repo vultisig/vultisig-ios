@@ -554,6 +554,7 @@
 		1B407AF0A92A0C1FA4967DE8 /* TransactionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0394970AFE40C0213C84704C /* TransactionHistoryViewModel.swift */; };
 		1BD218EC6EBBA4C7C4DF4F31 /* AgentAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B621377F63B9A5B4DEE2D1 /* AgentAuthService.swift */; };
 		1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */; };
+		1E29B5BBDAEBABFFB0C06424 /* AgentKeysignCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */; };
 		1EFC82D483A7043778E87203 /* AgentChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8922E2B9288FCFE9626B80C1 /* AgentChatViewModel.swift */; };
 		21E1CA7DB5C8B9ADB07F0EFE /* TransactionHistoryRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E681A12253338A5053513178 /* TransactionHistoryRoute.swift */; };
 		2353311EA5E3A85FD0708F48 /* PushNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */; };
@@ -599,6 +600,9 @@
 		46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
+		49CB6ADB7BAE03968F64D688 /* AgentLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A3AF7D4C4F47BA17581C92 /* AgentLogging.swift */; };
+		4A370C3F7F0151F5BC40FC1F /* AgentTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61CDCEFBC18B3F5073DB943 /* AgentTransactionBuilder.swift */; };
+		4D50FC2F5E9F3BF92C034ADF /* AgentStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE724E2B902EF120C1EE5D8F /* AgentStreamManager.swift */; };
 		4F04ED93D3530E7DB36F6A5B /* CosmosTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */; };
 		5589A8E15B5CE4DB4C3090AB /* VaultNotificationToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA8B3D6314175F82FEC27D8 /* VaultNotificationToggleRow.swift */; };
 		570871242D51A5905F8DDAC7 /* ForegroundNotificationBannerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE5D50E07EFD9201F09BDC4 /* ForegroundNotificationBannerModifier.swift */; };
@@ -628,7 +632,7 @@
 		8D8CD1A7DF304D8074C03B4E /* SingleKeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		9176AD98C5FADC4D5D92F04E /* TransactionHistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546B9FEB444B04006FF576BE /* TransactionHistoryItem.swift */; };
-		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
+		927BE27A46C4476AA7DA2901 /* SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */; };
 		9358531DB65C84AF807A7CEB /* TransactionHistoryTypePill.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1119DA71589F5CCF4138189 /* TransactionHistoryTypePill.swift */; };
 		9802909F69AF78B4BCE010CE /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9B /* CircleView.swift */; };
 		9976DC2B005ADF44E38FE464 /* CircleApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */; };
@@ -1854,6 +1858,7 @@
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLiquidityProviderResponse.swift; sourceTree = "<group>"; };
 		13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPPosition.swift; sourceTree = "<group>"; };
+		16A3AF7D4C4F47BA17581C92 /* AgentLogging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentLogging.swift; path = Agent/AgentLogging.swift; sourceTree = "<group>"; };
 		180DFF02CBB6957B351A9616 /* DeviceRegistrationRequest.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceRegistrationRequest.swift; sourceTree = "<group>"; };
 		1884D10560CC1D55166D1D84 /* NotificationsIntroSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsIntroSheet.swift; sourceTree = "<group>"; };
 		1CF1829BAF85766FCAA71794 /* ZipImportDuplicateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ZipImportDuplicateTests.swift; sourceTree = "<group>"; };
@@ -1934,7 +1939,7 @@
 		8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefiCircleRow.swift; sourceTree = "<group>"; };
 		8E6A38BCCA67E47B84787AA0 /* ForegroundNotificationParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ForegroundNotificationParser.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
-		927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
+		927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
 		93EF791E371FD688E09C0829 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		95F9E808DB3DFACA1E3B84E4 /* ReferralCodeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeSheet.swift; sourceTree = "<group>"; };
 		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
@@ -2053,6 +2058,7 @@
 		A6182F5A2C9299DC0059BFDD /* MemoTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MemoTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6182F5C2C9299ED0059BFDD /* MemoTextField+imacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MemoTextField+imacOS.swift"; sourceTree = "<group>"; };
 		A61BC8182BA2687D00484689 /* TokensStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensStore.swift; sourceTree = "<group>"; };
+		A61CDCEFBC18B3F5073DB943 /* AgentTransactionBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentTransactionBuilder.swift; path = "Agent/AgentTransactionBuilder.swift"; sourceTree = "<group>"; };
 		A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+iOS.swift"; sourceTree = "<group>"; };
 		A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+macOS.swift"; sourceTree = "<group>"; };
 		A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+iOS.swift"; sourceTree = "<group>"; };
@@ -2478,6 +2484,7 @@
 		CB7D53492FDE4E0ABF45FAFC /* FastVaultPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastVaultPasswordScreen.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentKeysignCoordinator.swift; path = "Agent/AgentKeysignCoordinator.swift"; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryScreen.swift; path = VultisigApp/Views/Keygen/PeerDiscoveryScreen.swift; sourceTree = SOURCE_ROOT; };
@@ -2535,6 +2542,7 @@
 		DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSHelper.swift; sourceTree = "<group>"; };
 		DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSMessenger.swift; sourceTree = "<group>"; };
 		DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSKeygen.swift; sourceTree = "<group>"; };
+		DE724E2B902EF120C1EE5D8F /* AgentStreamManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentStreamManager.swift; path = "Agent/AgentStreamManager.swift"; sourceTree = "<group>"; };
 		DE727C0B2D000FC3007E9273 /* LibType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibType.swift; sourceTree = "<group>"; };
 		DE8291932D891AA20037E5FD /* MigrationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationRequest.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -2608,7 +2616,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		DE2EDA742E324604004713ED /* Exceptions for "TestData" folder in "VultisigAppTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				arb.json,
@@ -2639,7 +2647,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DE2EDA722E3245A4004713ED /* TestData */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TestData; sourceTree = "<group>"; };
+		DE2EDA722E3245A4004713ED /* TestData */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DE2EDA742E324604004713ED /* Exceptions for "TestData" folder in "VultisigAppTests" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = TestData;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5055,6 +5074,7 @@
 				A107C81612286300C1D9866B /* AgentBackendClient.swift */,
 				57243B95C68821519C8E9D22 /* AgentContextBuilder.swift */,
 				EA3B44655675C6DADF3F5E06 /* AgentToolExecutor.swift */,
+				16A3AF7D4C4F47BA17581C92 /* AgentLogging.swift */,
 			);
 			name = Agent;
 			sourceTree = "<group>";
@@ -6601,7 +6621,7 @@
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
-				927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */,
+				927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -6672,6 +6692,9 @@
 			children = (
 				8922E2B9288FCFE9626B80C1 /* AgentChatViewModel.swift */,
 				FF1C6F91653A1C18DD2662A7 /* AgentConversationsViewModel.swift */,
+				DE724E2B902EF120C1EE5D8F /* AgentStreamManager.swift */,
+				A61CDCEFBC18B3F5073DB943 /* AgentTransactionBuilder.swift */,
+				D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */,
 			);
 			name = Agent;
 			sourceTree = "<group>";
@@ -6834,7 +6857,7 @@
 			);
 			mainGroup = DE49A15A2B65F6D9000F3AFB;
 			packageReferences = (
-				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */,
+				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */,
 				DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */,
 				DEFF59022BD23A12005DFDF9 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
@@ -8142,6 +8165,10 @@
 				433B769997A138C579EDAEC9 /* TransactionHistoryAssetFilterView.swift in Sources */,
 				BF3AAB0F21EB5F954ED46D1A /* TransactionStatusPoller.swift in Sources */,
 				60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */,
+				4D50FC2F5E9F3BF92C034ADF /* AgentStreamManager.swift in Sources */,
+				4A370C3F7F0151F5BC40FC1F /* AgentTransactionBuilder.swift in Sources */,
+				1E29B5BBDAEBABFFB0C06424 /* AgentKeysignCoordinator.swift in Sources */,
+				49CB6ADB7BAE03968F64D688 /* AgentLogging.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8159,7 +8186,7 @@
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 				DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */,
-				927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */,
+				927BE27A46C4476AA7DA2901 /* SuiTokenPriceTests.swift in Sources */,
 				D2FE6763BED8CC3044A39FBA /* ZipImportDuplicateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8178,7 +8205,7 @@
 /* Begin PBXTargetDependency section */
 		B227A2B22F203CF800A32DBE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = B227A2B12F203CF800A32DBE /* SwiftLintBuildToolPlugin */;
+			productRef = B227A2B12F203CF800A32DBE /* plugin:SwiftLintBuildToolPlugin */;
 		};
 		DE49A1782B65F6DB000F3AFB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -8601,7 +8628,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */ = {
+		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Mediator;
 		};
@@ -8685,7 +8712,7 @@
 			package = A6D44A592D51950600C66726 /* XCRemoteSwiftPackageReference "rive-ios" */;
 			productName = RiveRuntime;
 		};
-		B227A2B12F203CF800A32DBE /* SwiftLintBuildToolPlugin */ = {
+		B227A2B12F203CF800A32DBE /* plugin:SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B227A2B02F203C8000A32DBE /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
 			productName = "plugin:SwiftLintBuildToolPlugin";

@@ -263,7 +263,7 @@
 "dismiss" = "Descartar";
 "done" = "Concluído";
 "dontRemind" = "Não me lembre novamente";
-"downloadViaWebsite" = "Baixar pelo site";
+"downloadViaGitHub" = "Baixar via GitHub";
 "dropFileHere" = "Solte o arquivo aqui...";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "Chave ECDSA";
@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Falha ao obter o número de sequência";
 "failToStartKesign" = "Erro de assinatura";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
+"failureReason" = "Motivo da falha";
 "faq" = "Perguntas frequentes";
 "faqAnswer1" = "É uma carteira segura e multi-autenticação com base na tecnologia MPC usada para gerenciar ativos digitais. As transações exigem a aprovação de vários dispositivos.";
 "faqAnswer2" = "O Vultisig oferece segurança aprimorada com autenticação de vários dispositivos, suporte para muitos blockchains, opções de recuperação fácil e sem frases de sementes ou rastreamento do usuário.";

@@ -269,7 +269,7 @@
 "dismiss" = "Dismiss";
 "done" = "Done";
 "dontRemind" = "Don’t remind me again";
-"downloadViaWebsite" = "Download via Website";
+"downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA Key";
@@ -344,6 +344,7 @@
 "failToGetSequenceNo" = "Unable to get sequence no";
 "failToStartKesign" = "Signing Error";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
+"failureReason" = "Failure Reason";
 "faq" = "FAQ";
 "faqAnswer1" = "It is a secure, multi-authentication wallet based on MPC technology that is used to manage digital assets. Transactions require approval from multiple devices.";
 "faqAnswer2" = "Vultisig offers enhanced security with multi-device authentication, support for many blockchains, easy recovery options, and no seed phrases or user tracking.";

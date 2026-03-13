@@ -253,6 +253,36 @@ extension MayaChainAPIService {
         return lpUnits
     }
 
+    /// Get all bonded LP units across all nodes for a bond address, grouped by pool
+    /// - Parameter address: The bond provider's address
+    /// - Returns: Dictionary of pool asset to total LP units bonded
+    func getAllBondedLPUnitsByPool(address: String) async throws -> [String: UInt64] {
+        let response = try await httpClient.request(
+            MayaChainBondsAPI.getAllNodes,
+            responseType: [MayaNodeResponse].self
+        )
+        let allNodes = response.data
+
+        var totalBondedByPool: [String: UInt64] = [:]
+
+        for node in allNodes {
+            // Find all bond providers matching our address in this node
+            let matchingProviders = node.bondProviders.providers.filter {
+                $0.bondAddress == address
+            }
+            for provider in matchingProviders {
+                // Sum units for each pool
+                for (asset, unitsString) in provider.pools {
+                    if let units = UInt64(unitsString) {
+                        totalBondedByPool[asset, default: 0] += units
+                    }
+                }
+            }
+        }
+
+        return totalBondedByPool
+    }
+
     /// Get all bonded LP positions for a bond address on a specific node
     /// - Parameters:
     ///   - nodeAddress: Maya node address

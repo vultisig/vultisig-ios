@@ -74,17 +74,17 @@ class TransactionHistoryViewModel: ObservableObject {
                 txHash: tx.txHash,
                 chain: chain,
                 pubKeyECDSA: pubKeyECDSA
-            ) { [weak self] newStatus in
-                self?.updateTransaction(txHash: tx.txHash, status: newStatus)
+            ) { [weak self] newStatus, errorMessage in
+                self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)
             }
         }
     }
 
-    private func updateTransaction(txHash: String, status: TransactionHistoryStatus) {
+    private func updateTransaction(txHash: String, status: TransactionHistoryStatus, errorMessage: String? = nil) {
         guard let index = transactions.firstIndex(where: { $0.txHash == txHash }) else { return }
 
         let old = transactions[index]
-        transactions[index] = TransactionHistoryData(
+        let updated = TransactionHistoryData(
             id: old.id,
             txHash: old.txHash,
             approveTxHash: old.approveTxHash,
@@ -111,8 +111,14 @@ class TransactionHistoryViewModel: ObservableObject {
             explorerLink: old.explorerLink,
             createdAt: old.createdAt,
             completedAt: Date(),
-            estimatedTime: old.estimatedTime
+            estimatedTime: old.estimatedTime,
+            errorMessage: errorMessage ?? old.errorMessage
         )
+        transactions[index] = updated
+
+        if selectedDetail?.id == updated.id {
+            selectedDetail = updated
+        }
     }
 
     // MARK: - Filtered Transactions
@@ -235,5 +241,4 @@ class TransactionHistoryViewModel: ObservableObject {
 
         return coins.filter { $0.ticker.localizedCaseInsensitiveContains(filterSearchText) }
     }
-
 }

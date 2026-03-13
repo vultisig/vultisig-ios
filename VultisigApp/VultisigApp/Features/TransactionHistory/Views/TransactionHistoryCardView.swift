@@ -31,10 +31,11 @@ struct TransactionHistoryCardView: View {
         }
         .padding(16)
         .padding(.bottom, transaction.swapProvider != nil ? 20 : 0)
-        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 16)
+                .inset(by: 1)
+                .fill(Theme.colors.bgSurface1)
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
         .overlay(alignment: .bottomTrailing) {
@@ -97,8 +98,13 @@ struct TransactionHistoryCardView: View {
                 Text("successful".localized)
                     .foregroundStyle(Theme.colors.alertSuccess)
             case .error:
-                Text("error".localized)
-                    .foregroundStyle(Theme.colors.alertError)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("error".localized)
+                    if let errorMessage = transaction.errorMessage {
+                        Text(errorMessage)
+                    }
+                }
+                .foregroundStyle(Theme.colors.alertError)
             case .inProgress:
                 Text("inProgress".localized)
                     .foregroundStyle(Theme.colors.textTertiary)
