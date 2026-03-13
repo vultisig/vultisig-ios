@@ -14,8 +14,6 @@ struct AgentRouter {
         switch route {
         case .conversations:
             AgentConversationsView()
-        case .chat(let conversationId):
-            AgentChatView(conversationId: conversationId)
         }
     }
 }

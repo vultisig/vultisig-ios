@@ -37,48 +37,38 @@ struct AgentConversationsView: View {
         .onAppear {
             loadData()
         }
-        .crossPlatformSheet(isPresented: $viewModel.passwordRequired) {
-            if let vault = appViewModel.selectedVault {
-                AgentPasswordPromptScreen(usesFastVault: true) { password in
-                    await viewModel.signIn(vault: vault, password: password)
-                }
-            }
-        }
     }
 
-    // MARK: - Inline Header (root tab — no native NavBar)
+    // MARK: - Inline Header
 
     private var inlineHeader: some View {
         ZStack {
-            Text("Vultisig")
+            Text("agentConversationsTitle".localized)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
             HStack {
-                Spacer()
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
-                        .frame(width: 10, height: 10)
+                Button {
+                    router.navigateBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
 
-                    Menu {
-                        Button(role: .destructive) {
-                            showDeleteAllConfirm = true
-                        } label: {
-                            Label("agentDeleteAllConversations".localized, systemImage: "trash")
-                        }
-                        Button {
-                            guard let vault = appViewModel.selectedVault else { return }
-                            Task { await viewModel.disconnect(vault: vault) }
-                        } label: {
-                            Label("agentDisconnect".localized, systemImage: "power")
-                        }
+                Spacer()
+
+                Menu {
+                    Button(role: .destructive) {
+                        showDeleteAllConfirm = true
                     } label: {
-                        Image(systemName: "ellipsis")
-                            .rotationEffect(.degrees(90))
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .accessibilityLabel("agentMoreOptions".localized)
+                        Label("agentDeleteAllConversations".localized, systemImage: "trash")
                     }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .rotationEffect(.degrees(90))
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .accessibilityLabel("agentMoreOptions".localized)
                 }
             }
         }
@@ -128,9 +118,8 @@ struct AgentConversationsView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
 
-                        // New chat button
                         PrimaryButton(title: "agentNewChat".localized) {
-                            navigateToChat(with: nil)
+                            router.navigateBack()
                         }
                     }
                 } else {
@@ -146,19 +135,15 @@ struct AgentConversationsView: View {
 
     private var conversationList: some View {
         VStack(spacing: 0) {
-            // New chat button
             PrimaryButton(title: "agentNewChat".localized) {
-                navigateToChat(with: nil)
+                router.navigateBack()
             }
             .padding(.bottom, 16)
 
-            // Past conversations — LazyVStack for proper row virtualisation.
-            // (The outer ScrollView already handles scrolling; no inner List needed.)
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.conversations) { conv in
                     conversationRow(conv)
                         .padding(.bottom, 4)
-                        // Swipe-to-delete (replaces List's .onDelete)
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
                                 if let idx = viewModel.conversations.firstIndex(where: { $0.id == conv.id }) {
@@ -175,7 +160,11 @@ struct AgentConversationsView: View {
 
     private func conversationRow(_ conv: AgentConversation) -> some View {
         Button {
-            router.navigate(to: AgentRoute.chat(conversationId: conv.id))
+            NotificationCenter.default.post(
+                name: .agentDidSelectConversation,
+                object: conv.id
+            )
+            router.navigateBack()
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -207,13 +196,6 @@ struct AgentConversationsView: View {
         Task {
             await viewModel.checkAuthAndLoad(vault: vault)
         }
-    }
-
-    private func navigateToChat(with starter: String?) {
-        if let starter {
-            UserDefaults.standard.set(starter, forKey: "agent_pending_starter")
-        }
-        router.navigate(to: AgentRoute.chat(conversationId: nil))
     }
 
     private func deleteConversations(at indexSet: IndexSet) {

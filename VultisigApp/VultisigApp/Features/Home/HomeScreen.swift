@@ -148,7 +148,7 @@ struct HomeScreen: View {
                             showBalanceInHeader: $defiShowPortfolioHeader
                         )
                     case .agent:
-                        AgentConversationsView()
+                        AgentMainScreen()
                     case .camera:
                         EmptyView()
                     }
