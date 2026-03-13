@@ -730,6 +730,7 @@
 "scanningScreenForQR" = "Skeniranje zaslona u potrazi za QR kodovima...";
 "scanningScreenHint" = "Prikažite QR kod bilo gdje na zaslonu i automatski će biti prepoznat.";
 "scanQRCode" = "Skeniraj QR kod";
+"scanQRCodeTooltip" = "Skeniraj Vultisig QR kod za uparivanje uređaja, potpisivanje transakcija ili obnavljanje vaulta.";
 "scanQRStartScreen" = "Skeniraj QR";
 "screenRecordingPermissionDenied" = "Potrebna je dozvola za snimanje zaslona kako bi se mogli skenirati QR kodovi s vašeg zaslona.";
 "search" = "Pretraži";

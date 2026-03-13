@@ -730,6 +730,7 @@
 "scanningScreenForQR" = "Escaneando tu pantalla en busca de códigos QR...";
 "scanningScreenHint" = "Muestra un código QR en cualquier lugar de tu pantalla y se detectará automáticamente.";
 "scanQRCode" = "Escanear código QR";
+"scanQRCodeTooltip" = "Escanea un código QR de Vultisig para emparejar dispositivos, firmar transacciones o restaurar un vault.";
 "scanQRStartScreen" = "Escanear QR";
 "screenRecordingPermissionDenied" = "Se requiere permiso de grabación de pantalla para escanear códigos QR desde tu pantalla.";
 "search" = "Buscar";

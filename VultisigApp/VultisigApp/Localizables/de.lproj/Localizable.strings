@@ -730,6 +730,7 @@
 "scanningScreenForQR" = "Bildschirm wird nach QR-Codes durchsucht...";
 "scanningScreenHint" = "Zeigen Sie einen QR-Code irgendwo auf Ihrem Bildschirm an – er wird automatisch erkannt.";
 "scanQRCode" = "QR-Code scannen";
+"scanQRCodeTooltip" = "Scanne einen Vultisig QR-Code, um Geräte zu koppeln, Transaktionen zu signieren oder einen Vault wiederherzustellen.";
 "scanQRStartScreen" = "QR scannen";
 "screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
 "search" = "Suche";

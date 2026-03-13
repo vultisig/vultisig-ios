@@ -730,6 +730,7 @@
 "scanningScreenForQR" = "正在扫描屏幕上的二维码...";
 "scanningScreenHint" = "在屏幕上任意位置显示二维码，系统将自动检测。";
 "scanQRCode" = "扫描二维码";
+"scanQRCodeTooltip" = "扫描 Vultisig 二维码以配对设备、签署交易或恢复金库。";
 "scanQRStartScreen" = "扫描二维码";
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "search" = "搜索";
