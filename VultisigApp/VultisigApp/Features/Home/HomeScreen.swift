@@ -33,6 +33,8 @@ struct HomeScreen: View {
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
+    @State private var showAgentOnboarding = false
+    @AppStorage("agent_onboarding_shown") private var agentOnboardingShown = false
 
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -190,10 +192,20 @@ struct HomeScreen: View {
             }
             .onChange(of: walletShowPortfolioHeader) { _, _ in updateHeader() }
             .onChange(of: defiShowPortfolioHeader) { _, _ in updateHeader() }
-            .onChange(of: selectedTab) { _, newValue in
+            .onChange(of: selectedTab) { oldValue, newValue in
                 updateHeader()
                 if newValue == .camera {
                     onCamera()
+                }
+                if newValue == .agent && !agentOnboardingShown {
+                    selectedTab = oldValue
+                    showAgentOnboarding = true
+                }
+            }
+            .crossPlatformSheet(isPresented: $showAgentOnboarding) {
+                AgentOnboardingSheet(isPresented: $showAgentOnboarding) {
+                    agentOnboardingShown = true
+                    selectedTab = .agent
                 }
             }
             .onChange(of: appViewModel.showCamera) { _, newValue in

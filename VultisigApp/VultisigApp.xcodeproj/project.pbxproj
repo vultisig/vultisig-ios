@@ -331,6 +331,7 @@
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
 		13913DEC2F645C1900CC10C2 /* lcddot-tr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 13913DEB2F645C1900CC10C2 /* lcddot-tr.ttf */; };
+		13913E462F64646C00CC10C2 /* AgentOnboardingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13913E452F64646C00CC10C2 /* AgentOnboardingSheet.swift */; };
 		13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F412ED88EB200F458D5 /* AppMigrationService.swift */; };
 		13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */; };
 		1392BDA32F27A1D2007F6140 /* WithError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1392BDA22F27A1D2007F6140 /* WithError.swift */; };
@@ -1640,6 +1641,7 @@
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
 		13913DEB2F645C1900CC10C2 /* lcddot-tr.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lcddot-tr.ttf"; sourceTree = "<group>"; };
+		13913E452F64646C00CC10C2 /* AgentOnboardingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOnboardingSheet.swift; sourceTree = "<group>"; };
 		13924F412ED88EB200F458D5 /* AppMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMigrationService.swift; sourceTree = "<group>"; };
 		13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDuplicateTokensMigration.swift; sourceTree = "<group>"; };
 		1392BDA22F27A1D2007F6140 /* WithError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithError.swift; sourceTree = "<group>"; };
@@ -2800,6 +2802,7 @@
 		0F65B87BD313EF18B0B2850D /* Agent */ = {
 			isa = PBXGroup;
 			children = (
+				13913E452F64646C00CC10C2 /* AgentOnboardingSheet.swift */,
 				AC43C18FD2125A5C2742AAB0 /* AgentConversationsView.swift */,
 				DC815DCE4E60C266CC64D148 /* AgentChatView.swift */,
 				F3FB37A5BFE7156A8C034D7B /* AgentChatMessageView.swift */,
@@ -8070,6 +8073,7 @@
 				AEF2CEAD64A344FB85D7E3DE /* PendingTransactionStorage.swift in Sources */,
 				9FA6AFD6FC9B88C620BEE525 /* BackgroundTransactionPoller.swift in Sources */,
 				12C88E627244748C55FB97F2 /* EVMTransactionStatusProvider.swift in Sources */,
+				13913E462F64646C00CC10C2 /* AgentOnboardingSheet.swift in Sources */,
 				76EBA303440DAF9FE8673F87 /* UTXOTransactionStatusProvider.swift in Sources */,
 				064D3D2833A07505317CC841 /* CosmosTransactionStatusProvider.swift in Sources */,
 				2587BEE0C4B62870DEAB2199 /* SolanaTransactionStatusProvider.swift in Sources */,

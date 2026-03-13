@@ -32,7 +32,7 @@ enum HomeTab: TabBarItem, CaseIterable {
         case .defi:
             "coins-add"
         case .agent:
-            "stars"
+            "agent-tab"
         case .camera:
             "camera-2"
         }

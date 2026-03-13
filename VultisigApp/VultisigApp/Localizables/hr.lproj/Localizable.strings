@@ -49,6 +49,11 @@
 "agentMoreOptions" = "Više opcija";
 "agentNewChat" = "Novi razgovor";
 "agentNoPastConversations" = "Nema prošlih razgovora";
+"agentOnboardingAuthorize" = "Authorize";
+"agentOnboardingDescription" = "Vulti Agent can analyze requests and prepare transactions. Nothing executes without your approval. You can revoke access in Settings.";
+"agentOnboardingLearnMore" = "Learn more";
+"agentOnboardingNotNow" = "Not now";
+"agentOnboardingTitle" = "Authorize Vulti Agent";
 "agentPasswordDescription" = "Vaša lozinka je potrebna za prijavu u agentsku uslugu koristeći vaš trezor.";
 "agentRoute" = "RUTA: %@";
 "agentShouldExecuteSwap" = "Trebam li izvršiti zamjenu?";

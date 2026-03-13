@@ -50,6 +50,11 @@
 "agentMoreOptions" = "More options";
 "agentNewChat" = "New Chat";
 "agentNoPastConversations" = "No Past Conversations";
+"agentOnboardingAuthorize" = "Authorize";
+"agentOnboardingDescription" = "Vulti Agent can analyze requests and prepare transactions. Nothing executes without your approval. You can revoke access in Settings.";
+"agentOnboardingLearnMore" = "Learn more";
+"agentOnboardingNotNow" = "Not now";
+"agentOnboardingTitle" = "Authorize Vulti Agent";
 "agentPasswordDescription" = "Your password is needed to sign into the agent service using your vault.";
 "agentRoute" = "ROUTE: %@";
 "agentShouldExecuteSwap" = "Should I execute the swap?";

@@ -49,6 +49,11 @@
 "agentMoreOptions" = "更多选项";
 "agentNewChat" = "新对话";
 "agentNoPastConversations" = "没有历史对话";
+"agentOnboardingAuthorize" = "Authorize";
+"agentOnboardingDescription" = "Vulti Agent can analyze requests and prepare transactions. Nothing executes without your approval. You can revoke access in Settings.";
+"agentOnboardingLearnMore" = "Learn more";
+"agentOnboardingNotNow" = "Not now";
+"agentOnboardingTitle" = "Authorize Vulti Agent";
 "agentPasswordDescription" = "需要您的密码才能使用您的金库登录代理服务。";
 "agentRoute" = "路由：%@";
 "agentShouldExecuteSwap" = "是否执行兑换？";
