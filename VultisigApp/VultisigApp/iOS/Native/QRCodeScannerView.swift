@@ -25,6 +25,12 @@
 
         var body: some View {
             ZStack {
+                LinearGradient(
+                    colors: [Theme.colors.bgPrimary, Theme.colors.bgSurface2],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 cameraView
                     .showIf(!isPaused)
                 content
@@ -93,14 +99,43 @@
         }
 
         var tooltip: some View {
-            Tooltip(text: "scanQRCodeTooltip".localized)
-                .padding(.horizontal, 16)
-                .onTapGesture {
-                    withAnimation(.interpolatingSpring) {
-                        showTooltip = false
+            VStack(alignment: .leading, spacing: 6) {
+                Text("scanQRCodeTooltipTitle".localized)
+                    .font(Theme.fonts.bodySMedium)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("scanQRCodeTooltipSubtitle".localized)
+                        .font(Theme.fonts.footnote)
+                    ForEach(tooltipBullets, id: \.self) { bullet in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text("•").font(Theme.fonts.footnote)
+                            Text(bullet.localized)
+                                .font(Theme.fonts.footnote)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
+            }
+            .foregroundStyle(Theme.colors.textDark)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.leading, 16)
+            .padding(.trailing, 16)
+            .padding(.top, 24)
+            .padding(.bottom, 12)
+            .background(Theme.colors.textPrimary)
+            .clipShape(TooltipShape())
+            .padding(.horizontal, 16)
+            .onTapGesture {
+                withAnimation(.interpolatingSpring) {
+                    showTooltip = false
+                }
+            }
         }
+
+        private let tooltipBullets = [
+            "scanQRCodeTooltipBullet1",
+            "scanQRCodeTooltipBullet2",
+            "scanQRCodeTooltipBullet3",
+        ]
 
         var cameraView: some View {
             ZStack {
@@ -123,10 +158,29 @@
         }
 
         var overlay: some View {
-            Image("QRScannerOutline")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .padding(60)
+            GeometryReader { proxy in
+                let scanW = proxy.size.width - 48
+                let scanH = scanW * 1.5
+                let scanRect = CGRect(
+                    x: 24,
+                    y: (proxy.size.height - scanH) / 2,
+                    width: scanW,
+                    height: scanH
+                )
+                ZStack {
+                    Path { path in
+                        path.addRect(proxy.frame(in: .local))
+                        path.addRoundedRect(in: scanRect, cornerSize: CGSize(width: 20, height: 20))
+                    }
+                    .fill(.black.opacity(0.55), style: FillStyle(eoFill: true))
+
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.colors.primaryAccent3, lineWidth: 2)
+                        .frame(width: scanW, height: scanH)
+                        .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+                }
+            }
+            .ignoresSafeArea()
         }
 
         var menubuttons: some View {
@@ -157,7 +211,7 @@
         }
 
         var uploadButton: some View {
-            PrimaryButtonView(title: "uploadQR", leadingIcon: "share")
+            PrimaryButtonView(title: "uploadQRCode", leadingIcon: "share")
         }
 
         private func getIcon(for icon: String) -> some View {

@@ -731,6 +731,11 @@
 "scanningScreenHint" = "Exiba um código QR em qualquer lugar da sua tela e ele será detectado automaticamente.";
 "scanQRCode" = "Escanear código QR";
 "scanQRCodeTooltip" = "Escaneie um código QR Vultisig para emparelhar dispositivos, assinar transações ou restaurar um vault.";
+"scanQRCodeTooltipBullet1" = "Move the phone slightly closer or farther from the screen";
+"scanQRCodeTooltipBullet2" = "Make sure the screen is well lit and free of glare";
+"scanQRCodeTooltipBullet3" = "Keep both devices steady for a moment";
+"scanQRCodeTooltipSubtitle" = "If the QR code isn't scanning right away:";
+"scanQRCodeTooltipTitle" = "Having trouble scanning?";
 "scanQRStartScreen" = "Escanear QR";
 "screenRecordingPermissionDenied" = "A permissão de gravação de tela é necessária para escanear códigos QR da sua tela.";
 "search" = "Pesquisar";
@@ -958,6 +963,7 @@
 "uploadFromFiles" = "Selecione arquivos";
 "uploadFromGallery" = "Carregar da galeria";
 "uploadQR" = "Carregue QR";
+"uploadQRCode" = "Upload QR Code";
 "uploadQRCodeImage" = "Carregar imagem do código QR";
 "uploadQRCodeImageKeygen" = "Carregar código QR para ingressar no Keygen";
 "uploadQRCodeImageKeysign" = "Carregar código QR para ingressar no Keysign";

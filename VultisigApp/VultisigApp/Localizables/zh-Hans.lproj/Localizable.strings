@@ -731,6 +731,11 @@
 "scanningScreenHint" = "在屏幕上任意位置显示二维码，系统将自动检测。";
 "scanQRCode" = "扫描二维码";
 "scanQRCodeTooltip" = "扫描 Vultisig 二维码以配对设备、签署交易或恢复金库。";
+"scanQRCodeTooltipBullet1" = "Move the phone slightly closer or farther from the screen";
+"scanQRCodeTooltipBullet2" = "Make sure the screen is well lit and free of glare";
+"scanQRCodeTooltipBullet3" = "Keep both devices steady for a moment";
+"scanQRCodeTooltipSubtitle" = "If the QR code isn't scanning right away:";
+"scanQRCodeTooltipTitle" = "Having trouble scanning?";
 "scanQRStartScreen" = "扫描二维码";
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "search" = "搜索";
@@ -959,6 +964,7 @@
 "uploadFromFiles" = "从\n文件上传";
 "uploadFromGallery" = "从\n图库上传";
 "uploadQR" = "上传二维码";
+"uploadQRCode" = "Upload QR Code";
 "uploadQRCodeImage" = "上传二维码图像";
 "uploadQRCodeImageKeygen" = "上传二维码以加入密钥生成";
 "uploadQRCodeImageKeysign" = "上传二维码以加入密钥签名";
