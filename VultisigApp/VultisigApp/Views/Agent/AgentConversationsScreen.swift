@@ -20,7 +20,9 @@ struct AgentConversationsScreen: View {
             conversationList
         }
         .background(Theme.colors.bgPrimary.ignoresSafeArea())
+        #if os(iOS)
         .navigationBarHidden(true)
+        #endif
         .confirmationDialog(
             "agentDeleteAllTitle".localized,
             isPresented: $showDeleteAllConfirm,
