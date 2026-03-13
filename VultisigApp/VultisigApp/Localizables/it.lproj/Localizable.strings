@@ -263,7 +263,7 @@
 "dismiss" = "Ignora";
 "done" = "Fatto";
 "dontRemind" = "Non ricordarmelo più";
-"downloadViaWebsite" = "Scarica dal sito web";
+"downloadViaGitHub" = "Scarica via GitHub";
 "dropFileHere" = "Rilascia il file qui...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "Chiave ECDSA";
@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Impossibile ottenere il numero di sequenza";
 "failToStartKesign" = "Errore di firma";
 "failToStartKeygen" = "Impossibile avviare la generazione della chiave a causa della mancanza di informazioni";
+"failureReason" = "Motivo dell'errore";
 "faq" = "FAQ";
 "faqAnswer1" = "È un portafoglio sicuro e multi-autenticazione basato sulla tecnologia MPC utilizzata per gestire le risorse digitali. Le transazioni richiedono l'approvazione da più dispositivi.";
 "faqAnswer2" = "Vultisig offre una maggiore sicurezza con autenticazione multi-dispositivo, supporto per molte blockchain, opzioni di recupero facili e nessuna frasi di semi o monitoraggio degli utenti.";
@@ -853,6 +854,8 @@
 "swapErrorInsufficientFundsTitle" = "Fondi Insufficienti";
 "swapErrorInsufficientGasDescription" = "Token gas insufficiente per coprire la commissione di rete. Per favore aggiungi gas al tuo portafoglio.";
 "swapErrorInsufficientGasTitle" = "Gas Insufficiente";
+"swapErrorSameAssetDescription" = "Non è possibile scambiare lo stesso asset. Per favore seleziona un asset diverso.";
+"swapErrorSameAssetTitle" = "Stesso Asset";
 "swapErrorUnexpectedDescription" = "Si è verificato un errore imprevisto. Per favore riprova.";
 "swapErrorUnexpectedTitle" = "Errore Imprevisto";
 "swapFee" = "Commissione di scambio";
