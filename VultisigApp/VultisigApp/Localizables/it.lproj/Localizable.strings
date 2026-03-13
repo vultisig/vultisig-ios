@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Impossibile ottenere il numero di sequenza";
 "failToStartKesign" = "Errore di firma";
 "failToStartKeygen" = "Impossibile avviare la generazione della chiave a causa della mancanza di informazioni";
+"failureReason" = "Motivo dell'errore";
 "faq" = "FAQ";
 "faqAnswer1" = "È un portafoglio sicuro e multi-autenticazione basato sulla tecnologia MPC utilizzata per gestire le risorse digitali. Le transazioni richiedono l'approvazione da più dispositivi.";
 "faqAnswer2" = "Vultisig offre una maggiore sicurezza con autenticazione multi-dispositivo, supporto per molte blockchain, opzioni di recupero facili e nessuna frasi di semi o monitoraggio degli utenti.";
