@@ -132,7 +132,6 @@ final class AgentToolExecutor {
 
     private struct ServerSideActionHandler: AgentActionHandler {
         let supportedActionTypes: Set<String> = [
-            "build_swap_tx",
             "build_send_tx",
             "build_custom_tx",
             "plugin_install",
