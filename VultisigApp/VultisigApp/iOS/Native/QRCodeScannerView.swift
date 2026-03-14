@@ -122,7 +122,7 @@
             .padding(.top, 24)
             .padding(.bottom, 12)
             .background(Theme.colors.textPrimary)
-            .clipShape(TooltipShape())
+            .clipShape(TooltipShape(arrowXFraction: 0.9))
             .padding(.horizontal, 16)
             .onTapGesture {
                 withAnimation(.interpolatingSpring) {
@@ -175,7 +175,7 @@
                     .fill(.black.opacity(0.55), style: FillStyle(eoFill: true))
 
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Theme.colors.primaryAccent3, lineWidth: 2)
+                        .stroke(LinearGradient.qrBorderGradient, lineWidth: 3)
                         .frame(width: scanW, height: scanH)
                         .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
                 }
