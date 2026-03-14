@@ -11,6 +11,7 @@ struct DefiChainActiveNodeView: View {
     let coin: Coin
     let activeNode: BondPosition
     let canUnbond: Bool
+    let canAddBond: Bool
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
 
@@ -32,7 +33,7 @@ struct DefiChainActiveNodeView: View {
     }
 
     var unbondDisabled: Bool { !activeNode.node.state.canUnbond || !canUnbond }
-    var bondDisabled: Bool { !activeNode.node.state.canBond }
+    var bondDisabled: Bool { !activeNode.node.state.canBond || !canAddBond }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -142,6 +143,7 @@ struct DefiChainActiveNodeView: View {
                 vault: .example
             ),
             canUnbond: false,
+            canAddBond: true,
             onUnbond: { _ in },
             onBond: { _ in }
         )
@@ -157,6 +159,7 @@ struct DefiChainActiveNodeView: View {
                 vault: .example
             ),
             canUnbond: true,
+            canAddBond: true,
             onUnbond: { _ in },
             onBond: { _ in }
         )

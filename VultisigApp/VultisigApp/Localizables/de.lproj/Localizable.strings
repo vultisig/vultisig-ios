@@ -739,6 +739,7 @@
 "screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
 "search" = "Suche";
 "search..." = "Suchen...";
+"searchAsset" = "Asset suchen";
 "second" = "zweiten";
 "secure" = "Sicher";
 "Secured Assets" = "Gesicherte Vermögenswerte";

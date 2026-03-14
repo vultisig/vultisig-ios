@@ -60,6 +60,8 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                 PrimaryButton(title: "bondToNode") {
                     onBond(nil)
                 }
+                .disabled(!viewModel.canAddBond)
+                .opacity(viewModel.canAddBond ? 1 : 0.5)
             }
         }
     }
@@ -67,6 +69,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
     var availableNodesSection: some View {
         DefiChainAvailableNodesView(
             availableNodes: viewModel.availableNodes,
+            canAddBond: viewModel.canAddBond,
             onBond: onBond
         )
     }
@@ -76,6 +79,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
             coin: coin,
             activeNodes: viewModel.activeBondedNodes,
             canUnbond: viewModel.canUnbond,
+            canAddBond: viewModel.canAddBond,
             onBond: onBond,
             onUnbond: onUnbond
         )
