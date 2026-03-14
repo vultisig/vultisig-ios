@@ -301,7 +301,21 @@ enum THORChainHelper {
     }
 
     private static func getTicker(coin: Coin) -> String {
-        coin.isNativeToken ? "RUNE" : getNotNativeTicker(coin: coin)
+        if coin.isNativeToken {
+            return "RUNE"
+        }
+
+        // For secured assets, we need the symbol that THORChain expects (including contract address for ERC20)
+        // For trade assets, this is the part after the first dash in the denom
+        if isSecuredAsset(coin: coin) && coin.contractAddress.contains("-") {
+            let parts = coin.contractAddress.split(separator: "-")
+            if parts.count >= 2 {
+                // Return everything after the first dash (e.g., "BTC" from "BTC-BTC" or "USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48" from "ETH-USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48")
+                return String(coin.contractAddress.dropFirst(parts[0].count + 1)).uppercased()
+            }
+        }
+
+        return getNotNativeTicker(coin: coin)
     }
 
     private static func getNotNativeTicker(coin: Coin) -> String {
@@ -310,7 +324,7 @@ enum THORChainHelper {
 
     /// Returns the list of secured asset tickers
     private static var securedAssetsTickers: [String] {
-        return ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+        return ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB", "USDC", "USDT", "DAI", "GUSD", "USDP", "LINK", "AAVE", "WBTC"]
     }
 
     /// Checks if a coin is a secured asset
@@ -319,22 +333,33 @@ enum THORChainHelper {
     }
 
     /// Gets the appropriate chain name for a coin in THORChain context
-    /// - For secured assets: returns the chain ticker (e.g., "BTC", "ETH", "DOGE")
-    /// - For BNB secured assets: returns "BSC"
+    /// - For secured assets: returns the native chain ticker (e.g., "BTC", "ETH", "AVAX")
     /// - For non-secured assets: returns "THOR"
     private static func getChainName(coin: Coin) -> String {
         guard isSecuredAsset(coin: coin) else {
             return "THOR"
         }
 
+        // For secured assets, try to parse the native chain from the contractAddress (denom)
+        // Trade assets on THORChain have denoms like "BTC-BTC" or "ETH-USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48"
+        if coin.contractAddress.contains("-") {
+            let parts = coin.contractAddress.split(separator: "-")
+            if !parts.isEmpty {
+                let chainPart = String(parts[0]).uppercased()
+                // THORChain uses "BSC" for BNB chain assets, but some denoms might use "BNB"
+                if chainPart == "BNB" || chainPart == "BSC" {
+                    return "BSC"
+                }
+                return chainPart
+            }
+        }
+
         let ticker = coin.ticker.uppercased()
 
-        // BNB uses BSC chain
+        // Fallback for older coins that might not have the dash-format contractAddress
         if ticker == "BNB" {
             return "BSC"
         }
-
-        // For other secured assets, use the coin's ticker THOR-DOGE will return DOGE
         return ticker
     }
 

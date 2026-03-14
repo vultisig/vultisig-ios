@@ -333,5 +333,38 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["815f5f2cc595263c742dd3e2d37cb9c90a659e7bae427d31b0fa6fd950c5a8ba"]
+    },
+    {
+        "name": "Withdraw Secured USDC ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "USDC",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "usdc",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"ETH-USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0ce3606eB48",
+                "logo": "usdc.png"
+            },
+            "to_address": "",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "SECURE-:0x1234567890123456789012345678901234567890",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["180f19d10e4a98474d02c6e45ab60e23358255b4e8a2c60fc0528c7ac78c230d"]
     }
 ]
