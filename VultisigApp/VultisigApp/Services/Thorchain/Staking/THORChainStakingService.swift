@@ -152,7 +152,7 @@ private extension THORChainStakingService {
             return response.data
         } catch let error as HTTPError {
             // Thornode returns 400 Bad Request if the staker doesn't exist
-            if case .httpError(let statusCode) = error, statusCode == 400 {
+            if case .statusCode(let code, _) = error, code == 400 {
                 return TcyStakerResponse(amount: "0")
             }
             throw error
