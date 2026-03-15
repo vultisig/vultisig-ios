@@ -39,14 +39,19 @@ class THORChainStakingService {
     /// Fetch staking details for a given coin and address
     /// - Parameters:
     ///   - coin: The coin being staked
-    ///   - runeCoin: The RUNE coin (for price lookups)
+    ///   - runeCoin: The RUNE coin (optional, required only for TCY price lookups)
     ///   - address: The THORChain address
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
-    func fetchStakingDetails(coin: Coin, runeCoin: Coin, address: String) async throws -> StakingDetails {
+    func fetchStakingDetails(coin: Coin, runeCoin: Coin?, address: String) async throws -> StakingDetails {
         switch coin.ticker.uppercased() {
         case "RUJI":
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
+            guard let runeCoin = runeCoin else {
+                let logger = Logger(subsystem: "com.vultisig.app", category: "THORChainStakingService")
+                logger.error("Missing RUNE coin for TCY staking details; cannot fetch TCY details for address: \(address, privacy: .public)")
+                throw StakingError.missingData
+            }
             return try await fetchTcyStakingDetails(coin: coin, runeCoin: runeCoin, address: address)
         default:
             throw StakingError.unsupportedCoin
@@ -65,7 +70,11 @@ private extension THORChainStakingService {
         let response = try await httpClient.request(target, responseType: AccountRootData.self)
         let decoded = response.data
 
-        guard let stake = decoded.data.node?.stakingV2?.first else {
+        let rujiStake = decoded.data.node?.stakingV2?.first(where: {
+            $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
+        })
+
+        guard let stake = rujiStake else {
             return .empty
         }
 
@@ -138,8 +147,18 @@ private extension THORChainStakingService {
 
     func fetchTcyStakedAmount(address: String) async throws -> TcyStakerResponse {
         let target = THORChainStakingAPI.getTcyStakedAmount(address: address)
-        let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
-        return response.data
+        do {
+            let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
+            return response.data
+        } catch let error as HTTPError {
+            // Thornode returns 400 Bad Request if the staker doesn't exist
+            if case .statusCode(let code, _) = error, code == 400 {
+                return TcyStakerResponse(amount: "0")
+            }
+            throw error
+        } catch {
+            throw error
+        }
     }
 
     func fetchTcyDistributions(limit: Int) async throws -> [TcyDistribution] {
