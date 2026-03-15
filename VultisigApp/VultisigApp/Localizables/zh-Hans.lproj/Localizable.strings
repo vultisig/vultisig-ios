@@ -734,6 +734,7 @@
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "search" = "搜索";
 "search..." = "搜索...";
+"searchAsset" = "搜索资产";
 "second" = "第二个";
 "secure" = "安全";
 "Secured Assets" = "担保资产";
