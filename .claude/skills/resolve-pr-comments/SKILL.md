@@ -31,7 +31,7 @@ swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
 
 ### 5. Push
 ```bash
-git add -A && git commit -m "address review comments" && git push
+git add <specific-changed-files> && git commit -m "address review comments" && git push
 ```
 
 ### 6. Resolve Threads
