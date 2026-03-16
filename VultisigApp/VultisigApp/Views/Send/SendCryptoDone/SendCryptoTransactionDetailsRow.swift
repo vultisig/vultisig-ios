@@ -43,12 +43,12 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                 if let secondaryDescription {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(description)
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .foregroundStyle(Theme.colors.textPrimary)
                             .lineLimit(1)
                             .truncationMode(.middle)
 
                         Text(secondaryDescription)
-                            .foregroundColor(Theme.colors.textTertiary)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .lineLimit(1)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
