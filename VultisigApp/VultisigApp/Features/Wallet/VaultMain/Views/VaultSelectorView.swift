@@ -28,6 +28,7 @@ struct VaultSelectorView: View {
             }
             .containerStyle(padding: 12, radius: 99, bgColor: Theme.colors.bgSurface1)
         }
+        .accessibilityIdentifier(AccessibilityID.Home.vaultSelector)
     }
 }
 

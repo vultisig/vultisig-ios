@@ -10,8 +10,10 @@ import SwiftUI
 protocol TabBarItem: Hashable, Identifiable {
     var name: String { get }
     var icon: String { get }
+    var accessibilityID: String? { get }
 }
 
 extension TabBarItem {
     var id: String { name }
+    var accessibilityID: String? { nil }
 }
