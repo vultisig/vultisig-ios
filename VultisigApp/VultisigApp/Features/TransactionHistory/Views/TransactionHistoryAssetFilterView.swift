@@ -16,7 +16,7 @@ struct TransactionHistoryAssetFilterView: View {
 
     var body: some View {
         AssetSelectionContainerSheet(
-            title: "",
+            title: "searchAsset".localized,
             isPresented: $isPresented,
             searchText: $viewModel.filterSearchText,
             elements: sections,

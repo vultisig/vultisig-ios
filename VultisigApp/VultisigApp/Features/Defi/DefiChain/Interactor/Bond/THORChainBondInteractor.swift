@@ -85,6 +85,10 @@ struct THORChainBondInteractor: BondInteractor {
         }
         return !network.vaults_migrating
     }
+
+    func canAddBond(vault: Vault) async -> Bool {
+        return true
+    }
 }
 
 private extension THORChainBondInteractor {

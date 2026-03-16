@@ -80,10 +80,46 @@ struct MayaChainBondInteractor: BondInteractor {
         }
     }
 
-    func canUnbond() -> Bool {
+    func canUnbond() async -> Bool {
         // Maya allows unbonding when vaults are not migrating
         // For now, return true - can be enhanced with actual migration check if needed
         true
+    }
+
+    func canAddBond(vault: Vault) async -> Bool {
+        guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
+            return false
+        }
+
+        do {
+            // Fetch bondable pools, user's LP positions, and all bonded units in parallel
+            async let bondablePoolsTask = mayaChainAPIService.getPools()
+            async let memberDetailsTask = mayaChainAPIService.getMemberDetails(address: cacaoCoin.address)
+            async let allBondedUnitsTask = mayaChainAPIService.getAllBondedLPUnitsByPool(address: cacaoCoin.address)
+
+            let bondablePools = try await bondablePoolsTask
+            let memberDetails = try await memberDetailsTask
+            let allBondedUnits = try await allBondedUnitsTask
+
+            // Get set of bondable pool names
+            let bondablePoolNames = Set(bondablePools.filter { $0.bondable }.map { $0.asset })
+
+            // Check if any bondable pool has available units > 0
+            for pool in memberDetails.pools {
+                let totalUnits = UInt64(pool.liquidityUnits) ?? 0
+                let bondedUnits = allBondedUnits[pool.pool] ?? 0
+                let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+
+                if availableUnits > 0 && bondablePoolNames.contains(pool.pool) {
+                    return true
+                }
+            }
+
+            return false
+        } catch {
+            print("Error checking Maya bond eligibility: \(error)")
+            return false
+        }
     }
 }
 

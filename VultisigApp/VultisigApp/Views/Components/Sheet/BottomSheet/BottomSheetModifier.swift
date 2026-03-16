@@ -53,7 +53,7 @@ private extension BottomSheetModifier {
     func nativeBottomSheet(content: Content) -> some View {
         content.crossPlatformSheet(isPresented: $isPresented) {
             VStack {
-                BottomSheetContainer {
+                BottomSheetContainer(isPresented: $isPresented) {
                     sheetContent
                 }
                 .overlay {

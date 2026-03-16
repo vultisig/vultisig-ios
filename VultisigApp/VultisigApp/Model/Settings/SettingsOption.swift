@@ -97,7 +97,7 @@ enum SettingsOption: String, Identifiable {
         case .referralCode:
             return "megaphone"
         case .faq:
-            return "message-circle-question"
+            return "bubble-question"
         case .education:
             return nil
         case .checkForUpdates:

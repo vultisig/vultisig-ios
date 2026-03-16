@@ -9,33 +9,15 @@ import Foundation
 import OSLog
 import WalletCore
 
-final class AgentAuthService {
+final class AgentAuthService: AgentLogging {
 
     static let shared = AgentAuthService()
 
-    private let logger = Logger(subsystem: "com.vultisig", category: "AgentAuthService")
+    let logger = Logger(subsystem: "com.vultisig", category: "AgentAuthService")
     private let keychainPrefix = "vultisig_agent_auth_"
 
     /// In-memory token cache
     private var tokens: [String: AgentAuthToken] = [:]
-
-    private func debugLog(_ message: String) {
-        #if DEBUG
-        logger.debug("\(message, privacy: .public)")
-        #endif
-    }
-
-    private func warningLog(_ message: String) {
-        #if DEBUG
-        logger.warning("\(message, privacy: .public)")
-        #endif
-    }
-
-    private func errorLog(_ message: String) {
-        #if DEBUG
-        logger.error("\(message, privacy: .public)")
-        #endif
-    }
 
     // MARK: - Public API
 
