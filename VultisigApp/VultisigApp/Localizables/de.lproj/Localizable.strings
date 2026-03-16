@@ -263,7 +263,7 @@
 "dismiss" = "Verwerfen";
 "done" = "Fertig";
 "dontRemind" = "Nicht erneut erinnern";
-"downloadViaWebsite" = "Über Website herunterladen";
+"downloadViaGitHub" = "Über GitHub herunterladen";
 "dropFileHere" = "Datei hier ablegen...";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA-Schlüssel";
@@ -338,6 +338,7 @@
 "failToGetSequenceNo" = "Fehler beim Abrufen der Sequenznummer";
 "failToStartKesign" = "Fehler bei der Signatur";
 "failToStartKeygen" = "Schlüsselgenerierung kann wegen fehlender Informationen nicht gestartet werden";
+"failureReason" = "Fehlergrund";
 "faq" = "FAQ";
 "faqAnswer1" = "Es handelt sich um eine sichere, multi-authentifizierende Brieftasche, die auf der MPC-Technologie basiert, die zur Verwaltung digitaler Vermögenswerte verwendet wird. Transaktionen erfordern die Genehmigung von mehreren Geräten.";
 "faqAnswer2" = "Vultisig bietet eine verbesserte Sicherheit mit Authentifizierung mit mehreren Geräten, Unterstützung für viele Blockchains, einfache Wiederherstellungsoptionen und keine Saatgutphrasen oder Benutzerverfolgung.";
@@ -733,6 +734,7 @@
 "screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
 "search" = "Suche";
 "search..." = "Suchen...";
+"searchAsset" = "Asset suchen";
 "second" = "zweiten";
 "secure" = "Sicher";
 "Secured Assets" = "Gesicherte Vermögenswerte";
@@ -853,6 +855,8 @@
 "swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
 "swapErrorInsufficientGasDescription" = "Nicht genügend Gas-Token, um die Netzwerkgebühr zu decken. Bitte fügen Sie Gas zu Ihrem Wallet hinzu.";
 "swapErrorInsufficientGasTitle" = "Unzureichendes Gas";
+"swapErrorSameAssetDescription" = "Es ist nicht möglich, dasselbe Asset zu tauschen. Bitte wählen Sie ein anderes Asset.";
+"swapErrorSameAssetTitle" = "Gleiches Asset";
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";

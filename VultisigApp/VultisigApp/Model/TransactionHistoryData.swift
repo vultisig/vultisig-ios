@@ -51,6 +51,7 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
     let createdAt: Date
     let completedAt: Date?
     let estimatedTime: String?
+    let errorMessage: String?
 }
 
 // MARK: - Conversions
@@ -86,6 +87,7 @@ extension TransactionHistoryData {
         self.createdAt = item.createdAt
         self.completedAt = item.completedAt
         self.estimatedTime = item.estimatedTime
+        self.errorMessage = item.errorMessage
     }
 
     func toItem() -> TransactionHistoryItem {
@@ -116,7 +118,8 @@ extension TransactionHistoryData {
             explorerLink: explorerLink,
             createdAt: createdAt,
             completedAt: completedAt,
-            estimatedTime: estimatedTime
+            estimatedTime: estimatedTime,
+            errorMessage: errorMessage
         )
     }
 }

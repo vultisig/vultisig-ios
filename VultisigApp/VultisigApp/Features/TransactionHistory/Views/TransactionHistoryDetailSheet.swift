@@ -16,15 +16,15 @@ struct TransactionHistoryDetailSheet: View {
     }
 
     var container: some View {
-#if os(iOS)
-        NavigationStack {
+        #if os(iOS)
+            NavigationStack {
+                content
+            }
+        #else
             content
-        }
-#else
-        content
-            .presentationSizingFitted()
-            .applySheetSize(700, 550)
-#endif
+                .presentationSizingFitted()
+                .applySheetSize(700, 550)
+        #endif
     }
 
     var content: some View {
@@ -46,11 +46,11 @@ struct TransactionHistoryDetailSheet: View {
         .background(Theme.colors.bgSurface1)
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    dismiss()
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "x") {
+                        dismiss()
+                    }
                 }
-            }
             #endif
         }
     }
@@ -177,6 +177,10 @@ struct TransactionHistoryDetailSheet: View {
     private var detailRows: some View {
         VStack(spacing: 0) {
             detailRow(title: "status".localized, value: statusText, valueColor: statusColor)
+            if transaction.status == .error, let errorMessage = transaction.errorMessage, !errorMessage.isEmpty {
+                Separator().opacity(0.2)
+                detailRowMultiline(title: "failureReason".localized, value: errorMessage, valueColor: Theme.colors.alertError)
+            }
             Separator().opacity(0.2)
             detailRow(title: "from".localized, value: truncatedAddress(transaction.fromAddress))
             Separator().opacity(0.2)
@@ -221,11 +225,42 @@ struct TransactionHistoryDetailSheet: View {
         .padding(.vertical, 16)
     }
 
+    private func detailRowMultiline(title: String, value: String, valueColor: Color? = nil) -> some View {
+        HStack(alignment: .top) {
+            Text(title)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            Text(value)
+                .foregroundStyle(valueColor ?? Theme.colors.textPrimary)
+                .multilineTextAlignment(.trailing)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Theme.colors.bgSurface2)
+                .cornerRadius(8)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .padding(.vertical, 16)
+    }
+
     // MARK: - Explorer Button
+
+    private var providerExplorerURL: URL? {
+        let hash = transaction.txHash
+        if let provider = transaction.swapProvider?.lowercased() {
+            if provider.contains("lifi") || provider.contains("li.fi") {
+                return URL(string: "https://scan.li.fi/tx/\(hash)")
+            } else if provider.contains("thorchain") || provider.contains("thorswap") {
+                return URL(string: "https://track.ninerealms.com/\(hash)")
+            } else if provider.contains("maya") {
+                return URL(string: "https://www.mayascan.org/tx/\(hash)")
+            }
+        }
+        return URL(string: transaction.explorerLink)
+    }
 
     private var explorerButton: some View {
         PrimaryButton(title: "viewOnExplorer", type: .secondary) {
-            if let url = URL(string: transaction.explorerLink) {
+            if let url = providerExplorerURL {
                 openURL(url)
             }
         }
