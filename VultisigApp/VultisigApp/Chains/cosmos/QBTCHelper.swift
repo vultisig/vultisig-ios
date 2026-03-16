@@ -65,6 +65,8 @@ struct QBTCHelper {
         )
         let hashHex = signDoc.sha256().toHexString()
 
+        logger.info("QBTC tx: signDoc=\(signDoc.count)B, hash=\(hashHex.prefix(16))...")
+
         guard let sig = signatures[hashHex] else {
             logger.error("No MLDSA signature found for hash: \(hashHex)")
             throw HelperError.runtimeError("QBTC: no signature found for hash \(hashHex)")
@@ -74,10 +76,21 @@ struct QBTCHelper {
             throw HelperError.runtimeError("QBTC: invalid signature hex")
         }
 
+        logger.info("QBTC tx: signature=\(sigData.count)B, body=\(bodyBytes.count)B, authInfo=\(authInfoBytes.count)B")
+        logger.info("QBTC DEBUG signDocHex: \(signDoc.toHexString())")
+        logger.info("QBTC DEBUG signDocSHA256: \(hashHex)")
+        logger.info("QBTC DEBUG pubKeyHex: \(keysignPayload.coin.hexPublicKey)")
+        logger.info("QBTC DEBUG sigHex: \(sigData.toHexString())")
+        
+        logger.info("QBTC command: go run ./cmd/verify-sig \(signDoc.toHexString()) \(sigData.toHexString()) \(keysignPayload.coin.hexPublicKey)")
+
         let txRaw = QBTCProtoBuilder.buildTxRaw(bodyBytes: bodyBytes, authInfoBytes: authInfoBytes, signature: sigData)
         let txBytesBase64 = txRaw.base64EncodedString()
         let broadcastJSON = "{\"tx_bytes\":\"\(txBytesBase64)\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
         let transactionHash = txRaw.sha256().toHexString().uppercased()
+
+        logger.info("QBTC tx: txRaw=\(txRaw.count)B, hash=\(transactionHash.prefix(16))...")
+        logger.info("QBTC DEBUG txBytesBase64: \(txBytesBase64)")
 
         return SignedTransactionResult(
             rawTransaction: broadcastJSON,

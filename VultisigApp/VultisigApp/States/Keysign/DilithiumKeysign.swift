@@ -100,6 +100,21 @@ final class DilithiumKeysign {
                 print("fail to free keyshare \(freeResult)")
             }
         }
+
+        // Extract actual public key from keyshare for debugging
+        var pkBuf = vscore.tss_buffer()
+        let pkResult = mldsa_keyshare_public_key(h, &pkBuf)
+        if pkResult == MLDSA_LIB_OK {
+            let keysharePublicKey = Array(UnsafeBufferPointer(start: pkBuf.ptr, count: Int(pkBuf.len)))
+            let keyshareHex = keysharePublicKey.toHexString()
+            let vaultHex = self.publicKey.lowercased()
+            let keysMatch = keyshareHex == vaultHex
+            print("QBTC DEBUG keyshare pubkey: \(keyshareHex.prefix(64))... (\(keysharePublicKey.count)B)")
+            print("QBTC DEBUG vault pubkey:    \(vaultHex.prefix(64))... (\(vaultHex.count/2)B)")
+            print("QBTC DEBUG keys match: \(keysMatch)")
+            vscore.tss_buffer_free(&pkBuf)
+        }
+
         let keyIDResult = mldsa_keyshare_key_id(h, &buf)
         if keyIDResult != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")
