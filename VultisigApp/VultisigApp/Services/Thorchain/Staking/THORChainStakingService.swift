@@ -48,8 +48,7 @@ class THORChainStakingService {
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
             guard let runeCoin = runeCoin else {
-                let logger = Logger(subsystem: "com.vultisig.app", category: "THORChainStakingService")
-                logger.error("Missing RUNE coin for TCY staking details; cannot fetch TCY details for address: \(address, privacy: .public)")
+                logger.error("Missing RUNE coin for TCY staking details; cannot fetch TCY details")
                 throw StakingError.missingData
             }
             return try await fetchTcyStakingDetails(coin: coin, runeCoin: runeCoin, address: address)

@@ -10,34 +10,54 @@ struct THORChainStakeInteractor: StakeInteractor {
     private let stakingService = THORChainStakingService.shared
 
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
+        // Snapshot SwiftData @Model fields before any await to avoid MainActor violations
         let runeCoin = vault.runeCoin
         let vaultStakePositions = vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []
+        let vaultCoins = vault.coins
 
-        var positions: [StakePosition] = []
+        var apiPositions: [StakePosition] = []
+        var fallbackPositions: [StakePosition] = []
+
         for coinMeta in vaultStakePositions {
-            guard let coin = vault.coins.first(where: { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }) else {
+            guard let coin = vaultCoins.first(where: { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }) else {
                 continue
             }
 
-            if let position = await createStakePosition(for: coin, runeCoin: runeCoin, coinMeta: coinMeta, vault: vault) {
-                positions.append(position)
+            let result = await createStakePosition(for: coin, runeCoin: runeCoin, coinMeta: coinMeta, vault: vault)
+            if let position = result.position {
+                if result.isAPIBacked {
+                    apiPositions.append(position)
+                } else {
+                    fallbackPositions.append(position)
+                }
             }
         }
 
-        let stakePositions = positions.sorted { $0.amount > $1.amount }
-        await savePositions(positions: stakePositions)
-        return stakePositions
+        let allPositions = (apiPositions + fallbackPositions).sorted { $0.amount > $1.amount }
+
+        // Only persist API-backed positions; fallback positions are ephemeral
+        if !apiPositions.isEmpty {
+            let sortedAPIPositions = apiPositions.sorted { $0.amount > $1.amount }
+            await savePositions(positions: sortedAPIPositions)
+        }
+
+        return allPositions
     }
 }
 
 private extension THORChainStakeInteractor {
-    func createStakePosition(for coin: Coin, runeCoin: Coin?, coinMeta: CoinMeta, vault: Vault) async -> StakePosition? {
+    struct StakePositionResult {
+        let position: StakePosition?
+        let isAPIBacked: Bool
+    }
+
+    func createStakePosition(for coin: Coin, runeCoin: Coin?, coinMeta: CoinMeta, vault: Vault) async -> StakePositionResult {
         let ticker = coin.ticker.uppercased()
         switch ticker {
         case "TCY", "RUJI":
             // Avoid noisy logs if TCY is tracked but RUNE is missing
             if ticker == "TCY" && runeCoin == nil {
-                return nil
+                return StakePositionResult(position: nil, isAPIBacked: false)
             }
             do {
                 let details = try await stakingService.fetchStakingDetails(
@@ -46,7 +66,7 @@ private extension THORChainStakeInteractor {
                     address: coin.address
                 )
 
-                return StakePosition(
+                let position = StakePosition(
                     coin: coinMeta,
                     type: .stake,
                     amount: details.stakedAmount,
@@ -57,10 +77,11 @@ private extension THORChainStakeInteractor {
                     rewardCoin: details.rewardsCoin,
                     vault: vault
                 )
+                return StakePositionResult(position: position, isAPIBacked: true)
             } catch {
                 print("Error fetching \(ticker) staking details: \(error.localizedDescription)")
-                // Fallback to using local staked balance
-                return StakePosition(
+                // Fallback to using local staked balance — ephemeral, not persisted
+                let position = StakePosition(
                     coin: coinMeta,
                     type: .stake,
                     amount: coin.stakedBalanceDecimal,
@@ -71,10 +92,11 @@ private extension THORChainStakeInteractor {
                     rewardCoin: nil,
                     vault: vault
                 )
+                return StakePositionResult(position: position, isAPIBacked: false)
             }
 
         case "YRUNE", "YTCY":
-            return StakePosition(
+            let position = StakePosition(
                 coin: coinMeta,
                 type: .index,
                 amount: coin.balanceDecimal,
@@ -85,9 +107,10 @@ private extension THORChainStakeInteractor {
                 rewardCoin: nil,
                 vault: vault
             )
+            return StakePositionResult(position: position, isAPIBacked: true)
         default:
             // Default case for other stake positions
-            return StakePosition(
+            let position = StakePosition(
                 coin: coinMeta,
                 type: .stake,
                 amount: coin.stakedBalanceDecimal,
@@ -98,6 +121,7 @@ private extension THORChainStakeInteractor {
                 rewardCoin: nil,
                 vault: vault
             )
+            return StakePositionResult(position: position, isAPIBacked: true)
         }
     }
 
