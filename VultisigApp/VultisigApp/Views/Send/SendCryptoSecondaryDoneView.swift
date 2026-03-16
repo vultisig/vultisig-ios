@@ -5,17 +5,17 @@
 //  Created by Amol Kumar on 2025-07-09.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SendCryptoSecondaryDoneView: View {
     @Environment(\.router) var router
     let input: SendCryptoContent
 
-    @State var navigateToAddressBook = false
+    @State private var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
-    @State var canShowAddressBook: Bool = false
-    @State var addressCountBeforeNavigation: Int = 0
+    @State private var canShowAddressBook: Bool = false
+    @State private var addressCountBeforeNavigation: Int = 0
 
     @StateObject private var statusViewModel: TransactionStatusViewModel
 
@@ -58,13 +58,17 @@ struct SendCryptoSecondaryDoneView: View {
             statusViewModel.stopPolling()
         }
         .onLoad {
-            let address = input.toAddress
-            let addressItemsDescriptor = FetchDescriptor<AddressBookItem>(
-                predicate: #Predicate { $0.address == address }
-            )
-            let addressItems = try? modelContext.fetch(addressItemsDescriptor)
+            let address = input.toAddress.lowercased()
+            let coinChainType = AddressBookChainType(coinMeta: input.coin.toCoinMeta())
+            let allItemsDescriptor = FetchDescriptor<AddressBookItem>()
+            let allItems = try? modelContext.fetch(allItemsDescriptor)
+            let isInAddressBook = allItems?.contains {
+                $0.address.lowercased() == address &&
+                AddressBookChainType(coinMeta: $0.coinMeta) == coinChainType
+            } ?? false
 
-            canShowAddressBook = addressItems?.isEmpty ?? false && !(appViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
+            // Suppress "add to address book" if destination belongs to any vault or is already in address book
+            canShowAddressBook = !isInAddressBook && input.toVaultName == nil && input.toAddressBookTitle == nil
         }
         .onChange(of: navigateToAddressBook) { _, shouldNavigate in
             if shouldNavigate {
@@ -123,7 +127,8 @@ struct SendCryptoSecondaryDoneView: View {
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",
-                    description: input.toAddress
+                    description: input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel ?? input.toAddress,
+                    bracketValue: (input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel) != nil ? input.toAddress : nil
                 ) {
                     addToAddressBookButton
                         .showIf(showAddressBookButton)

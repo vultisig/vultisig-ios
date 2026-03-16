@@ -38,37 +38,51 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                     .foregroundColor(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .frame(minWidth: 52, alignment: .leading)
 
-                Spacer()
-
-                if let icon {
-                    Image(icon)
-                        .resizable()
-                        .frame(width: 16, height: 16)
-                        .cornerRadius(32)
-                }
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    HStack(spacing: 2) {
+                if let secondaryDescription {
+                    VStack(alignment: .trailing, spacing: 2) {
                         Text(description)
                             .foregroundColor(Theme.colors.textPrimary)
                             .lineLimit(1)
                             .truncationMode(.middle)
 
-                        if let bracketValue {
-                            Text("(\(bracketValue))")
-                                .foregroundColor(Theme.colors.textTertiary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                    }
-
-                    if let secondaryDescription {
                         Text(secondaryDescription)
                             .foregroundColor(Theme.colors.textTertiary)
                             .lineLimit(1)
                     }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                } else {
+                    HStack(spacing: 2) {
+                        if let icon {
+                            Image(icon)
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                                .cornerRadius(32)
+                        }
 
+                        if let bracketValue {
+                            HStack(spacing: 4) {
+                                Text(description)
+                                    .foregroundStyle(Theme.colors.textPrimary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                    .layoutPriority(1)
+                                Text("(\(bracketValue))")
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Text(description)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
             accessoryView()

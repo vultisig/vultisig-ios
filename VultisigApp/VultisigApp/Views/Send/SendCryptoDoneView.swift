@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-03-17.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SendCryptoDoneView: View {
@@ -20,11 +21,14 @@ struct SendCryptoDoneView: View {
     let swapTransaction: SwapTransaction?
     let keysignPayload: KeysignPayload?
 
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
+
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
     @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
-    @State var showAlert = false
-    @State var alertTitle = "hashCopied"
+    @State private var showAlert = false
+    @State private var alertTitle = "hashCopied"
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -64,6 +68,25 @@ struct SendCryptoDoneView: View {
         sendContent(tx: tx)
     }
 
+    private var toVaultName: String? {
+        guard let tx = sendTransaction else { return nil }
+        let chain = tx.coin.chain
+        let address = tx.toAddress
+        return vaults.first { v in v.coins.contains { coin in coin.chain == chain && coin.address == address } }?.name
+    }
+
+    private var toAddressBookTitle: String? {
+        guard let tx = sendTransaction else { return nil }
+        let txChainType = AddressBookChainType(coinMeta: tx.coin.toCoinMeta())
+        let address = tx.toAddress.lowercased()
+        return addressBookItems.first { item in
+            AddressBookChainType(coinMeta: item.coinMeta) == txChainType &&
+            item.address.lowercased() == address
+        }?.title
+    }
+
+    private var toAddressLabel: String? { sendTransaction?.toAddressLabel }
+
     func sendContent(tx: SendTransaction) -> some View {
         SendCryptoDoneContentView(
             input: SendCryptoContent(
@@ -76,6 +99,9 @@ struct SendCryptoDoneView: View {
                 isSend: isSend,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
+                toVaultName: toVaultName,
+                toAddressBookTitle: toAddressBookTitle,
+                toAddressLabel: toAddressLabel,
                 fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA

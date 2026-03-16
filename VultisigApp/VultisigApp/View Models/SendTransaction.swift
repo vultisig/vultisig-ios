@@ -9,6 +9,8 @@ import BigInt
 class SendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
+    @Published var toAddressLabel: String? = nil
+    var lastResolvedAddress: String? = nil
     @Published var amount: String = .empty
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
@@ -207,6 +209,8 @@ class SendTransaction: ObservableObject, Hashable {
 
     func reset(coin: Coin) {
         self.toAddress = .empty
+        self.toAddressLabel = nil
+        self.lastResolvedAddress = nil
         self.amount = .empty
         self.amountInFiat = .empty
         self.memo = .empty

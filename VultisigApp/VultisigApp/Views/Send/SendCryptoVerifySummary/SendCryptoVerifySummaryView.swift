@@ -62,7 +62,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             .showIf(input.fromAddress.isNotEmpty)
 
             Group {
-                getValueCell(for: "to", with: input.toAddress)
+                getValueCell(
+                    for: "to",
+                    with: input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel ?? input.toAddress,
+                    bracketValue: (input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel) != nil ? input.toAddress : nil
+                )
                 Separator()
             }
             .showIf(input.toAddress.isNotEmpty)
@@ -132,9 +136,72 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         .padding(1)
     }
 
+    func getValueCell(
+        for title: String,
+        with value: String,
+        bracketValue: String? = nil,
+        secondRowText: String? = nil,
+        image: String? = nil,
+        isMultiLine: Bool = false,
+        color: Color? = nil
+    ) -> some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString(title, comment: ""))
+                .foregroundStyle(Theme.colors.textTertiary)
+                .frame(minWidth: 52, alignment: .leading)
+
+            if let secondRowText {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(value)
+                        .foregroundStyle(color ?? Theme.colors.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(secondRowText)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                HStack(spacing: 4) {
+                    if let image {
+                        Image(image)
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                    }
+
+                    if let bracketValue {
+                        HStack(spacing: 4) {
+                            Text(value)
+                                .foregroundStyle(color ?? Theme.colors.textPrimary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .layoutPriority(1)
+                            Text("(\(bracketValue))")
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text(value)
+                            .foregroundStyle(color ?? Theme.colors.textPrimary)
+                            .lineLimit(isMultiLine ? nil : 1)
+                            .truncationMode(.middle)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .font(Theme.fonts.bodyMMedium)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -148,66 +215,16 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .cornerRadius(32)
 
             Text(input.amount)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Text(input.coinTicker)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
         }
         .font(Theme.fonts.bodyLMedium)
     }
 
-    func getValueCell(
-        for title: String,
-        with value: String,
-        bracketValue: String? = nil,
-        secondRowText: String? = nil,
-        image: String? = nil,
-        isMultiLine: Bool = false,
-        color: Color? = nil
-    ) -> some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
-
-            Spacer()
-
-            if let image {
-                Image(image)
-                    .resizable()
-                    .frame(width: 16, height: 16)
-            }
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(value)
-                    .foregroundColor(color ?? Theme.colors.textPrimary)
-                    .lineLimit(isMultiLine ? nil : 1)
-                    .truncationMode(.middle)
-                    .multilineTextAlignment(.trailing)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                if let secondRowText {
-                    Text(secondRowText)
-                        .foregroundColor(Theme.colors.textTertiary)
-                }
-            }
-
-            if let bracketValue {
-                Group {
-                    Text("(") +
-                    Text(bracketValue) +
-                    Text(")")
-                }
-                .foregroundColor(Theme.colors.textTertiary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            }
-
-        }
-        .font(Theme.fonts.bodySMedium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 }
 
 #Preview("Without SignData") {

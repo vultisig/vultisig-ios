@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-03-15.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SendVerifyScreen: View {
@@ -12,7 +13,10 @@ struct SendVerifyScreen: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
 
-    @State var fastPasswordPresented = false
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
+
+    @State private var fastPasswordPresented = false
 
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
@@ -56,12 +60,33 @@ struct SendVerifyScreen: View {
         }
     }
 
+    private var toVaultName: String? {
+        let chain = tx.coin.chain
+        let address = tx.toAddress
+        let match = vaults.first { v in v.coins.contains { coin in coin.chain == chain && coin.address == address } }
+        return match?.name
+    }
+
+    private var toAddressBookTitle: String? {
+        let txChainType = AddressBookChainType(coinMeta: tx.coin.toCoinMeta())
+        let address = tx.toAddress.lowercased()
+        return addressBookItems.first { item in
+            AddressBookChainType(coinMeta: item.coinMeta) == txChainType &&
+            item.address.lowercased() == address
+        }?.title
+    }
+
+    private var toAddressLabel: String? { tx.toAddressLabel }
+
     var fields: some View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
                 fromName: vault.name,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
+                toVaultName: toVaultName,
+                toAddressBookTitle: toAddressBookTitle,
+                toAddressLabel: toAddressLabel,
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
