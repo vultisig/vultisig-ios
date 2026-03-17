@@ -33,7 +33,7 @@ struct CosmosHelperConfig {
         case .dydx:
             return CosmosHelperConfig(chain: chain, coinType: .dydx, denom: "adydx", gasLimit: 200000)
         case .qbtc:
-            return CosmosHelperConfig(chain: chain, coinType: .cosmos, denom: "qbtc", gasLimit: 200000)
+            return CosmosHelperConfig(chain: chain, coinType: .cosmos, denom: "qbtc", gasLimit: 300000)
         default:
             throw HelperError.runtimeError("Unsupported Cosmos chain: \(chain)")
         }
