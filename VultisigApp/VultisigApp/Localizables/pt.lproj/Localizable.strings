@@ -730,6 +730,11 @@
 "scanningScreenForQR" = "Escaneando sua tela em busca de códigos QR...";
 "scanningScreenHint" = "Exiba um código QR em qualquer lugar da sua tela e ele será detectado automaticamente.";
 "scanQRCode" = "Escanear código QR";
+"scanQRCodeTooltipBullet1" = "Mova o telefone um pouco mais perto ou mais longe da tela";
+"scanQRCodeTooltipBullet2" = "Certifique-se de que a tela está bem iluminada e sem reflexos";
+"scanQRCodeTooltipBullet3" = "Mantenha os dois dispositivos estáveis por um momento";
+"scanQRCodeTooltipSubtitle" = "Se o código QR não escanear imediatamente:";
+"scanQRCodeTooltipTitle" = "Tendo problemas para escanear?";
 "scanQRStartScreen" = "Escanear QR";
 "screenRecordingPermissionDenied" = "A permissão de gravação de tela é necessária para escanear códigos QR da sua tela.";
 "search" = "Pesquisar";
@@ -958,6 +963,7 @@
 "uploadFromFiles" = "Selecione arquivos";
 "uploadFromGallery" = "Carregar da galeria";
 "uploadQR" = "Carregue QR";
+"uploadQRCode" = "Carregar código QR";
 "uploadQRCodeImage" = "Carregar imagem do código QR";
 "uploadQRCodeImageKeygen" = "Carregar código QR para ingressar no Keygen";
 "uploadQRCodeImageKeysign" = "Carregar código QR para ingressar no Keysign";
