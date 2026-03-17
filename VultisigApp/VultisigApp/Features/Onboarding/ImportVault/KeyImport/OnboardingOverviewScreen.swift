@@ -96,7 +96,7 @@ struct OnboardingOverviewScreen: View {
                 }
             }
         }
-        .screenBackButtonHidden()
+        .screenNavigationBarHidden()
         .onAppear(perform: onAppear)
         .crossPlatformSheet(isPresented: $isVerificationLinkActive, isDismissable: false) {
             ServerBackupVerificationScreen(
