@@ -888,6 +888,7 @@
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "title" = "Titel";
 "to" = "Zu";
+"timeout" = "Zeitüberschreitung";
 "today" = "Heute";
 "tokens" = "Token";
 "totalFee" = "Gesamtgebühr";

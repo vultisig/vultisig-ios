@@ -104,7 +104,7 @@ struct ChainStatusConfig {
                 maxWaitTime: 300  // 5 min
             )
         case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic,
-             .dydx, .noble, .akash:
+             .dydx, .noble, .akash, .qbtc:
             return ChainStatusConfig(
                 estimatedTime: "~6 sec",
                 pollInterval: 3,

@@ -34,6 +34,11 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
+        // Special handling for qBTC
+        if AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc") {
+            return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
+        }
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
@@ -96,6 +101,16 @@ struct AddressService {
             }
         }
 
+        if chain == .qbtc {
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc")
+
+            if isValid {
+                return input
+            } else {
+                throw Errors.invalidAddress
+            }
+        }
+
         let isValid = chain.coinType.validate(address: input)
 
         if isValid {
@@ -126,6 +141,10 @@ struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
         }
 
+        if chain == .qbtc {
+            return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+        }
+
         return chain.coinType.validate(address: address)
     }
 
@@ -140,6 +159,9 @@ struct AddressService {
             }
             if firstCoin.chain == .thorChainStagenet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+            }
+            if firstCoin.chain == .qbtc {
+                return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
             }
             return firstCoin.coinType.validate(address: address)
         }

@@ -18,7 +18,9 @@ class CosmosTransactionBroadcastResponse: Codable {
 class CosmosTransactionBroadcastTx: Codable {
     var txhash: String?
     var code: Int?
+    var rawLog: String?
     enum CodingKeys: String, CodingKey {
         case txhash, code
+        case rawLog = "raw_log"
     }
 }

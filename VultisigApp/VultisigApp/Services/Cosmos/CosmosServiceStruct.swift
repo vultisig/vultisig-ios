@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-service")
 
 struct CosmosServiceStruct {
     let config: CosmosServiceConfig
@@ -138,12 +141,16 @@ struct CosmosServiceStruct {
                 return .failure(HelperError.runtimeError("Status code: \(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"))
             }
             let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: data)
-            if let code = response.txResponse?.code, code == 0 || code == 19 {
+            let code = response.txResponse?.code
+            let rawLog = response.txResponse?.rawLog
+            if let code, code == 0 || code == 19 {
                 if let txHash = response.txResponse?.txhash {
                     return .success(txHash)
                 }
             }
-            return .failure(HelperError.runtimeError(String(data: data, encoding: .utf8) ?? "Unknown error"))
+            let responseBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            logger.error("Cosmos broadcast failed: code=\(code ?? -1), rawLog=\(rawLog ?? "nil"), body=\(responseBody)")
+            return .failure(HelperError.runtimeError(responseBody))
 
         } catch {
             return .failure(error)
