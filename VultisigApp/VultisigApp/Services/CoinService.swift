@@ -146,7 +146,8 @@ struct CoinService {
             publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
             publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
             hexChainCode: vault.hexChainCode,
-            isDerived: isDerived
+            isDerived: isDerived,
+            publicKeyMLDSA44: vault.publicKeyMLDSA44
         )
 
         // Check if coin with same ID already exists

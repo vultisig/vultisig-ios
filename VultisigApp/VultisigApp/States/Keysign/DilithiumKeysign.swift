@@ -100,6 +100,7 @@ final class DilithiumKeysign {
                 print("fail to free keyshare \(freeResult)")
             }
         }
+
         let keyIDResult = mldsa_keyshare_key_id(h, &buf)
         if keyIDResult != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")

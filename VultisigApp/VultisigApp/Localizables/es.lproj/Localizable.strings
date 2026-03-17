@@ -888,6 +888,7 @@
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "title" = "Título";
 "to" = "A";
+"timeout" = "Tiempo de espera agotado";
 "today" = "Hoy";
 "tokens" = "Tokens";
 "totalFee" = "Comisión total";

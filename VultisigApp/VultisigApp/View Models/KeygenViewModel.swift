@@ -767,6 +767,8 @@ class KeygenViewModel: ObservableObject {
                 return try service.keygenECDSA(req)
             case .EdDSA:
                 return try service.keygenEdDSA(req)
+            case .MLDSA:
+                throw HelperError.runtimeError("MLDSA keygen is not supported via GG20 TSS service")
             }
         }
         return try await t.value
@@ -781,6 +783,8 @@ class KeygenViewModel: ObservableObject {
                 return try service.reshareECDSA(req)
             case .EdDSA:
                 return try service.resharingEdDSA(req)
+            case .MLDSA:
+                throw HelperError.runtimeError("MLDSA reshare is not supported via GG20 TSS service")
             }
         }
         return try await t.value

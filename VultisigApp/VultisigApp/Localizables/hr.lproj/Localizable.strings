@@ -888,6 +888,7 @@
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "title" = "Naslov";
 "to" = "Do";
+"timeout" = "Isteklo vrijeme";
 "today" = "Danas";
 "tokens" = "Tokeni";
 "totalFee" = "Ukupna naknada";

@@ -56,6 +56,8 @@ struct KeysignView: View {
                 SendCryptoKeysignView()
             case .KeysignEdDSA:
                 SendCryptoKeysignView()
+            case .KeysignMLDSA:
+                SendCryptoKeysignView()
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
