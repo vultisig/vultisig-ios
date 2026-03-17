@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import OSLog
 
 final class FastVaultService {
 
     static let shared = FastVaultService()
 
     private let endpoint = "https://api.vultisig.com/vault"
+    private let logger = Logger(subsystem: "com.vultisig", category: "FastVaultService")
 
     static func localPartyID(sessionID: String) -> String {
         guard let data = sessionID.data(using: .utf8) else {
@@ -22,19 +24,55 @@ final class FastVaultService {
         return "Server-\(hash)"
     }
 
-    func get(pubKeyECDSA: String, password: String) async -> Bool {
-        do {
-            let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
+    func validateAccess(pubKeyECDSA: String, password: String) async -> FastVaultAccessValidationResult {
+        let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
 
-            let pwd = password.data(using: .utf8)?.base64EncodedString()
-            guard let pwd else {
-                return false
-            }
-            _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": pwd])
-            return true
-        } catch {
-            return false
+        guard let url = URL(string: urlString) else {
+            return .networkFailure("FastVault get URL is invalid")
         }
+
+        guard let pwd = password.data(using: .utf8)?.base64EncodedString() else {
+            return .networkFailure("Failed to encode FastVault password")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue(pwd, forHTTPHeaderField: "x-password")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .networkFailure("FastVault get returned an invalid response")
+            }
+
+            let responseBody = String(data: data, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            switch httpResponse.statusCode {
+            case 200 ... 299:
+                return .valid
+            case 401, 403:
+                return .invalidPassword
+            case 404:
+                return .vaultNotFound
+            default:
+                return .requestFailed(
+                    statusCode: httpResponse.statusCode,
+                    responseBody: responseBody
+                )
+            }
+        } catch {
+            return .networkFailure(error.localizedDescription)
+        }
+    }
+
+    func get(pubKeyECDSA: String, password: String) async -> Bool {
+        let result = await validateAccess(pubKeyECDSA: pubKeyECDSA, password: password)
+        if case .valid = result {
+            return true
+        }
+        return false
     }
 
     func exist(pubKeyECDSA: String) async -> Bool {
@@ -68,7 +106,7 @@ final class FastVaultService {
         let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to Vultiserver successfully")
+            self.logger.info("Sent FastVault create request successfully")
         }
     }
 
@@ -86,7 +124,7 @@ final class FastVaultService {
         let req = KeyImportRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, chains: chains)
 
         Utils.sendRequest(urlString: "\(endpoint)/import", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to Vultiserver successfully")
+            self.logger.info("Sent FastVault import request successfully")
         }
     }
 
@@ -116,7 +154,7 @@ final class FastVaultService {
                                  lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
-            print("Send reshare request to Vultiserver successfully")
+            self.logger.info("Sent FastVault reshare request successfully")
         }
     }
 
@@ -128,18 +166,30 @@ final class FastVaultService {
         derivePath: String,
         isECDSA: Bool,
         vaultPassword: String,
-        chain: String,
-        completion: @escaping (Bool) -> Void
-    ) {
+        chain: String
+    ) async throws {
         let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword, chain: chain)
+        guard let url = URL(string: "\(endpoint)/sign") else {
+            throw FastVaultServiceError.invalidSignURL
+        }
 
-        Utils.sendRequest(
-            urlString: "\(endpoint)/sign",
-            method: "POST",
-            headers: [:],
-            body: request,
-            completion: completion
-        )
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw FastVaultServiceError.invalidResponse
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let responseBody = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            throw FastVaultServiceError.signFailed(
+                statusCode: httpResponse.statusCode,
+                responseBody: responseBody
+            )
+        }
     }
 
     func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> Bool {
@@ -147,7 +197,7 @@ final class FastVaultService {
         let urlString = Endpoint.FastVaultBackupVerification + parameters
 
         guard let url = URL(string: urlString) else {
-            print("Invalid URL string.")
+            logger.error("FastVault backup verification URL is invalid")
             return false
         }
 
@@ -164,7 +214,7 @@ final class FastVaultService {
                 return false
             }
         } catch {
-            print("Error fetching data: \(error.localizedDescription)")
+            logger.error("FastVault backup verification failed: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -185,7 +235,7 @@ final class FastVaultService {
         )
 
         Utils.sendRequest(urlString: "\(endpoint)/mldsa", method: "POST", headers: [:], body: req) { _ in
-            print("Send MLDSA keygen request to Vultiserver successfully")
+            self.logger.info("Sent FastVault MLDSA keygen request successfully")
         }
     }
 
@@ -202,7 +252,38 @@ final class FastVaultService {
                                  email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
-            print("Send migration request to Vultiserver successfully")
+            self.logger.info("Sent FastVault migration request successfully")
         }
     }
+}
+
+enum FastVaultServiceError: Error, LocalizedError {
+    case invalidSignURL
+    case invalidResponse
+    case signFailed(statusCode: Int, responseBody: String?)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidSignURL:
+            return "FastVault sign URL is invalid"
+        case .invalidResponse:
+            return "FastVault sign returned an invalid response"
+        case .signFailed(let statusCode, let responseBody):
+            let body: String
+            if let responseBody, !responseBody.isEmpty {
+                body = responseBody
+            } else {
+                body = "empty response body"
+            }
+            return "FastVault sign failed with status \(statusCode): \(body)"
+        }
+    }
+}
+
+enum FastVaultAccessValidationResult {
+    case valid
+    case invalidPassword
+    case vaultNotFound
+    case requestFailed(statusCode: Int, responseBody: String?)
+    case networkFailure(String)
 }

@@ -40,9 +40,10 @@ final class HTTPClient: HTTPClientProtocol {
         try Task.checkCancellation()
 
         let urlRequest = try buildURLRequest(from: target)
+        let shouldSuppressBodyLogging = containsSensitiveHeaders(in: urlRequest.allHTTPHeaderFields)
 
         // Log the request
-        logRequest(urlRequest, target: target)
+        logRequest(urlRequest, target: target, suppressBodyLogging: shouldSuppressBodyLogging)
 
         let startTime = CFAbsoluteTimeGetCurrent()
 
@@ -55,7 +56,7 @@ final class HTTPClient: HTTPClientProtocol {
             }
 
             let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logResponse(httpResponse, data: data, duration: duration)
+            logResponse(httpResponse, data: data, duration: duration, shouldLogBody: !shouldSuppressBodyLogging)
 
             try validateResponse(httpResponse, data: data, validationType: target.validationType)
 
@@ -63,7 +64,7 @@ final class HTTPClient: HTTPClientProtocol {
 
         } catch let error as HTTPError {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logError(error, duration: duration)
+            logError(error, duration: duration, shouldLogBody: !shouldSuppressBodyLogging)
             throw error
         } catch {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
@@ -86,7 +87,7 @@ final class HTTPClient: HTTPClientProtocol {
             } else {
                 httpError = HTTPError.networkError(error)
             }
-            logError(httpError, duration: duration)
+            logError(httpError, duration: duration, shouldLogBody: !shouldSuppressBodyLogging)
             throw httpError
         }
     }
@@ -248,19 +249,21 @@ private extension HTTPClient {
 private extension HTTPClient {
 
     /// Logs the outgoing HTTP request
-    func logRequest(_ request: URLRequest, target: TargetType) {
+    func logRequest(_ request: URLRequest, target: TargetType, suppressBodyLogging: Bool) {
         guard let url = request.url else { return }
 
         logger.info("🚀 HTTP Request: \(request.httpMethod ?? "GET") \(url.absoluteString)")
 
         // Log headers
         if let headers = request.allHTTPHeaderFields, !headers.isEmpty {
-            logger.debug("📋 Headers: \(headers)")
+            logger.debug("📋 Headers: \(self.formatHeaders(headers))")
         }
 
         // Log body (if present and reasonable size)
         if let body = request.httpBody {
-            if body.count < 1024, let bodyString = String(data: body, encoding: .utf8) {
+            if suppressBodyLogging {
+                logger.debug("📦 Body logging skipped for sensitive request")
+            } else if body.count < 1024, let bodyString = String(data: body, encoding: .utf8) {
                 logger.debug("📦 Body: \(bodyString)")
             } else {
                 logger.debug("📦 Body: \(body.count) bytes")
@@ -271,31 +274,37 @@ private extension HTTPClient {
     }
 
     /// Logs the HTTP response
-    func logResponse(_ response: HTTPURLResponse, data: Data, duration: TimeInterval) {
+    func logResponse(_ response: HTTPURLResponse, data: Data, duration: TimeInterval, shouldLogBody: Bool) {
         let statusIcon = getStatusIcon(for: response.statusCode)
         let durationMs = Int(duration * 1000)
 
         logger.info("\(statusIcon) HTTP Response: \(response.statusCode) - \(durationMs)ms - \(data.count) bytes")
 
         // Log response body for debugging (only if it's reasonable size and JSON/text)
-        if data.count < 2048,
+        if shouldLogBody,
+           data.count < 2048,
            let contentType = response.value(forHTTPHeaderField: "Content-Type"),
            contentType.contains("json") || contentType.contains("text"),
            let responseString = String(data: data, encoding: .utf8) {
             logger.debug("📥 Response: \(responseString)")
+        } else if !shouldLogBody, !data.isEmpty {
+            logger.debug("📥 Response body logging skipped for sensitive request")
         }
     }
 
     /// Logs HTTP errors
-    func logError(_ error: HTTPError, duration: TimeInterval) {
+    func logError(_ error: HTTPError, duration: TimeInterval, shouldLogBody: Bool) {
         let durationMs = Int(duration * 1000)
 
         switch error {
         case .statusCode(let code, let data):
             logger.error("❌ HTTP Error: \(code) - \(durationMs)ms")
-            if let data = data, data.count < 1024,
+            if shouldLogBody,
+               let data = data, data.count < 1024,
                let errorString = String(data: data, encoding: .utf8) {
                 logger.error("🔍 Error Details: \(errorString)")
+            } else if !shouldLogBody, data != nil {
+                logger.error("🔍 Error details logging skipped for sensitive request")
             }
         case .timeout:
             logger.error("⏰ HTTP Timeout after \(durationMs)ms")
@@ -320,6 +329,25 @@ private extension HTTPClient {
         default:
             return "❓"
         }
+    }
+
+    func containsSensitiveHeaders(in headers: [String: String]?) -> Bool {
+        guard let headers else { return false }
+        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key"]
+        return headers.keys.contains { key in
+            sensitiveHeaders.contains(key.lowercased())
+        }
+    }
+
+    func formatHeaders(_ headers: [String: String]) -> String {
+        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key"]
+        return headers
+            .sorted { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }
+            .map { key, value in
+                let displayValue = sensitiveHeaders.contains(key.lowercased()) ? "<redacted>" : value
+                return "\(key): \(displayValue)"
+            }
+            .joined(separator: ", ")
     }
 }
 

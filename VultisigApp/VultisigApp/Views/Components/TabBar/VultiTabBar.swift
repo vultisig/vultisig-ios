@@ -227,6 +227,10 @@ private extension VultiTabBar {
             Color.green.ignoresSafeArea()
                 .overlay(Text("Earn").foregroundColor(.white))
                 .tag(HomeTab.defi)
+        case .agent:
+            Color.purple.ignoresSafeArea()
+                .overlay(Text("Agent").foregroundColor(.white))
+                .tag(HomeTab.agent)
         case .camera:
             EmptyView()
         }

@@ -57,7 +57,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
@@ -113,7 +114,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
@@ -160,7 +162,8 @@ final class TransactionHistoryRecorder {
             explorerLink: explorerLink,
             createdAt: Date(),
             completedAt: nil,
-            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil
         )
         do {
             try storage.save(data)
@@ -229,9 +232,9 @@ final class TransactionHistoryRecorder {
 
     // MARK: - Update Status
 
-    func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus) {
+    func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus, errorMessage: String? = nil) {
         do {
-            try storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status)
+            try storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status, errorMessage: errorMessage)
         } catch {
             logger.error("Update status failed for txHash=\(txHash): \(error)")
         }

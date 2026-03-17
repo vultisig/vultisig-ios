@@ -15,11 +15,11 @@ struct CustomToolbarItem {
         case trailing
     }
 
-    public let placement: Placement
-    public let content: AnyView
-    public let hideSharedBackground: Bool
+    let placement: Placement
+    let content: AnyView
+    let hideSharedBackground: Bool
 
-    public init<Content: View>(
+    init<Content: View>(
         placement: Placement,
         hideSharedBackground: Bool = false,
         @ViewBuilder content: () -> Content
@@ -34,12 +34,12 @@ struct CustomToolbarItem {
 
 @resultBuilder
 struct CustomToolbarItemsBuilder {
-    static func buildExpression(_ item: CustomToolbarItem) -> CustomToolbarItem {
-        item
+    static func buildExpression(_ item: CustomToolbarItem) -> [CustomToolbarItem] {
+        [item]
     }
 
-    static func buildBlock(_ items: CustomToolbarItem...) -> [CustomToolbarItem] {
-        items
+    static func buildBlock(_ items: [CustomToolbarItem]...) -> [CustomToolbarItem] {
+        items.flatMap { $0 }
     }
 
     static func buildOptional(_ item: [CustomToolbarItem]?) -> [CustomToolbarItem] {
@@ -85,21 +85,21 @@ struct CrossPlatformToolbarModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         #if os(macOS)
-        MacOSToolbarView(
-            items: items,
-            navigationTitle: navigationTitle,
-            ignoresTopEdge: ignoresTopEdge,
-            showsBackButton: showsBackButton
-        ) {
-            content
-        }
+            MacOSToolbarView(
+                items: items,
+                navigationTitle: navigationTitle,
+                ignoresTopEdge: ignoresTopEdge,
+                showsBackButton: showsBackButton
+            ) {
+                content
+            }
         #else
-        IOSToolbarView(
-            items: items,
-            navigationTitle: navigationTitle
-        ) {
-            content
-        }
+            IOSToolbarView(
+                items: items,
+                navigationTitle: navigationTitle
+            ) {
+                content
+            }
         #endif
     }
 }

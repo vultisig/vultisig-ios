@@ -128,7 +128,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
 
         if let fastVaultPassword, let coin {
-            // when fast sign , always using relay server
+            // when fast sign, always using relay server
             serverAddr = Endpoint.vultisigRelay
 
             if vault.signers.count <= 3 {
@@ -136,23 +136,23 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 status = .WaitingForFast
             }
 
-            fastVaultService.sign(
-                publicKeyEcdsa: vault.pubKeyECDSA,
-                keysignMessages: self.keysignMessages,
-                sessionID: self.sessionID,
-                hexEncryptionKey: self.encryptionKeyHex!,
-                derivePath: coin.coinType.derivationPath(),
-                isECDSA: coin.chain.isECDSA,
-                vaultPassword: fastVaultPassword,
-                chain: coin.chain.name
-            ) { isSuccess in
-                if !isSuccess {
-                    self.logger.error("Fast Vault signing failed")
-                    self.status = .FailToStart
-                    self.errorMessage = "Fast Vault signing failed. Please check your password or try Paired Sign by long-pressing the button."
-                } else {
-                    self.logger.info("Fast Vault signing initiated successfully")
-                }
+            do {
+                try await fastVaultService.sign(
+                    publicKeyEcdsa: vault.pubKeyECDSA,
+                    keysignMessages: self.keysignMessages,
+                    sessionID: self.sessionID,
+                    hexEncryptionKey: self.encryptionKeyHex!,
+                    derivePath: coin.coinType.derivationPath(),
+                    isECDSA: coin.chain.isECDSA,
+                    vaultPassword: fastVaultPassword,
+                    chain: coin.chain.name
+                )
+                self.logger.info("Fast Vault signing initiated successfully")
+            } catch {
+                self.logger.error("Fast Vault signing failed: \(error.localizedDescription)")
+                self.status = .FailToStart
+                self.errorMessage = error.localizedDescription
+                return
             }
 
             cancellables.forEach { $0.cancel() }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Block dangerous operations: git force push, hard reset, mainnet RPCs, secrets, push to main
+# Block dangerous operations: git force push, hard reset, mainnet RPCs, secrets, push to main, PR merge, env exposure
 
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
@@ -18,6 +18,12 @@ if echo "$CMD" | grep -qE 'git push.*(origin|upstream).*(main|master)(\s|$)'; th
   exit 2
 fi
 
+# --- PR merge (agents must not merge) ---
+if echo "$CMD" | grep -qiE 'gh pr merge|git merge (main|master)'; then
+  echo "PR merge blocked. Let a human merge PRs." >&2
+  exit 2
+fi
+
 # --- Mainnet RPC calls ---
 MAINNET_RPCS="mainnet\.infura\.io|rpc\.ankr\.com/eth$|api\.etherscan\.io|btc\.getblock\.io|rpc\.mainnet|solana-mainnet|thornode\.ninerealms\.com|mayanode\.mayachain\.info"
 COMBINED="$CMD $FILE_PATH $CONTENT"
@@ -27,8 +33,14 @@ if echo "$COMBINED" | grep -qiE "$MAINNET_RPCS"; then
 fi
 
 # --- Secret/credential file edits ---
-if echo "$FILE_PATH" | grep -qiE '\.(env|pem|p12|credentials|secret)$'; then
+if echo "$CMD $FILE_PATH" | grep -qiE '(^|[[:space:]])([^[:space:]]+\.(env|pem|p12|key|pfx|keystore|jks|credentials|secret)|\.env(\.[^[:space:]]+)?)($|[[:space:]])'; then
   echo "Editing secret/credential files is blocked. Ask the user first." >&2
+  exit 2
+fi
+
+# --- Environment variable exposure ---
+if echo "$CMD" | grep -qiE '\b(printenv|export -p)\b|echo.*(TOKEN|API_KEY|SECRET|PASSWORD|CREDENTIAL)|env\s*$|env\s*\|'; then
+  echo "Environment variable exposure blocked. Agents must not read or print secrets." >&2
   exit 2
 fi
 

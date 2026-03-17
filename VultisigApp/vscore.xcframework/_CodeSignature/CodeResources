@@ -14,7 +14,7 @@
 		</data>
 		<key>ios-arm64/libvscore.a</key>
 		<data>
-		fFbMp5ijLmpCqH1SteFu8cn72q0=
+		Zm0ynzrUpNZ2T2v1lISvxtX2q5s=
 		</data>
 		<key>ios-arm64_x86_64-simulator/Headers/module.modulemap</key>
 		<data>
@@ -26,7 +26,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/libvscore.a</key>
 		<data>
-		cf5xSVaBltjq2XM9RDstTd6WJIc=
+		wIEtFQJo1N0tucQAtRVWfQuPPTM=
 		</data>
 		<key>macos-arm64_x86_64/Headers/module.modulemap</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>macos-arm64_x86_64/libvscore.a</key>
 		<data>
-		Sz+3dJELvE9ZjvkDWVZkquK3OlQ=
+		8RSg+m+HiYTVr0MhoLejm38Pvmo=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -61,7 +61,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			dQQIZozfaMrvI1SUFb0VtTnA354kB6sEOp9tzloBRTI=
+			KmTe+hOYqJEH6VIm/bYD/P6Qj26nq6ipjHSE+aj1ES8=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/Headers/module.modulemap</key>
@@ -82,7 +82,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			QnH/Vyx2upK2D4HMj5zTnAc/78k4IJBoQoCnb9w9J+8=
+			C6qHo/QA282xKb42j8uXNWxrPmH0/E0znquzvNIr5WI=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/Headers/module.modulemap</key>
@@ -103,7 +103,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			00I/0m39ODV5fURD8kD7AwzqMPms8OFNLeb2xdeing8=
+			6ow4sb1jaIY3TSZaGNFvVLf6HRjmI8QZMgvjBTD/fgM=
 			</data>
 		</dict>
 	</dict>

@@ -23,6 +23,7 @@ struct SwapCryptoLogic {
         case insufficientGas
         case swapAmountTooSmall
         case inboundAddress
+        case sameAsset
 
         var errorTitle: String {
             switch self {
@@ -36,6 +37,8 @@ struct SwapCryptoLogic {
                 return "swapErrorAmountTooSmallTitle".localized
             case .inboundAddress:
                 return "swapErrorInboundAddressTitle".localized
+            case .sameAsset:
+                return "swapErrorSameAssetTitle".localized
             }
         }
 
@@ -51,6 +54,8 @@ struct SwapCryptoLogic {
                 return "swapErrorAmountTooSmallDescription".localized
             case .inboundAddress:
                 return "swapErrorInboundAddressDescription".localized
+            case .sameAsset:
+                return "swapErrorSameAssetDescription".localized
             }
         }
     }
@@ -319,32 +324,26 @@ struct SwapCryptoLogic {
     private func getDiscountString(tx: SwapTransaction, shareBps: Int) -> String {
         guard shareBps > 0 else { return .empty }
 
-        let totalSaving = calculateTotalSaving(tx: tx)
-
-        guard totalSaving > 0 else { return .empty }
-
-        // Handle Ultimate tier (Int.max) - they get 100% waiver, no need to split
-        if tx.vultDiscountBps == Int.max {
-            // Ultimate tier gets full savings
-            if shareBps == tx.vultDiscountBps {
-                let formattedCcy = totalSaving.formatToFiat(includeCurrencySymbol: true)
-                return "-" + formattedCcy
-            } else {
-                // Referral discount not applicable when Ultimate tier
-                return .empty
-            }
+        // Handle Ultimate tier (Int.max) - they get 100% waiver
+        if shareBps == Int.max {
+            let totalSaving = calculateTotalSaving(tx: tx)
+            guard totalSaving > 0 else { return .empty }
+            let formattedCcy = totalSaving.formatToFiat(includeCurrencySymbol: true)
+            return "-" + formattedCcy
         }
 
-        // Split if referral exists
-        let totalDiscountBps = Decimal(tx.vultDiscountBps + tx.referralDiscountBps)
-        guard totalDiscountBps > 0 else { return .empty }
+        // Referral discount not applicable when Ultimate VULT tier
+        if tx.vultDiscountBps == Int.max {
+            return .empty
+        }
 
-        let share = Decimal(shareBps) / totalDiscountBps
-        let saving = totalSaving * share
+        let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
+        let saving = inputFiat * Decimal(shareBps) / 10000
 
-        // Handle tiny savings
+        guard saving > 0 else { return .empty }
+
         if saving < 0.01 {
-             return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
+            return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
         }
 
         let formattedCcy = saving.formatToFiat(includeCurrencySymbol: true)
@@ -510,9 +509,10 @@ struct SwapCryptoLogic {
 
     // MARK: - Core Operations (Quotes & Fees)
 
-    func fetchQuote(tx: SwapTransaction, vault: Vault, referredCode: String) async throws -> SwapQuote {
-        guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
-            throw Errors.unexpectedError // Or just return? Logic upstream handles this check usually
+    func fetchQuote(tx: SwapTransaction, vault: Vault, referredCode: String) async throws -> SwapQuote? {
+        guard !tx.fromAmountDecimal.isZero else { return nil }
+        guard tx.fromCoin != tx.toCoin else {
+            throw Errors.sameAsset
         }
 
         let vultTier = await VultTierService().fetchDiscountTier(for: vault)

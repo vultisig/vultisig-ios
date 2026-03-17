@@ -17,8 +17,21 @@ struct SendCryptoSecondaryDoneView: View {
     @State var canShowAddressBook: Bool = false
     @State var addressCountBeforeNavigation: Int = 0
 
+    @StateObject private var statusViewModel: TransactionStatusViewModel
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+
+    init(input: SendCryptoContent) {
+        self.input = input
+        _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
+            txHash: input.hash,
+            chain: input.coin.chain,
+            coinTicker: input.coin.ticker,
+            amount: input.amountCrypto,
+            toAddress: input.toAddress
+        ))
+    }
 
     var showAddressBookButton: Bool {
         input.isSend && canShowAddressBook
@@ -39,6 +52,12 @@ struct SendCryptoSecondaryDoneView: View {
             }
         }
         .screenTitle("transactionDetails".localized)
+        .onAppear {
+            statusViewModel.startPolling()
+        }
+        .onDisappear {
+            statusViewModel.stopPolling()
+        }
         .onLoad {
             let address = input.toAddress
             let addressItemsDescriptor = FetchDescriptor<AddressBookItem>(
@@ -76,7 +95,7 @@ struct SendCryptoSecondaryDoneView: View {
             coin: input.coin,
             cryptoAmount: input.amountCrypto,
             fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
-            status: .confirmed
+            status: statusViewModel.status
         )
     }
 
