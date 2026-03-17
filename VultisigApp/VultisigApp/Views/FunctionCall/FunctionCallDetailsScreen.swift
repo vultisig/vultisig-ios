@@ -33,7 +33,7 @@ struct FunctionCallDetailsScreen: View {
     }
 
     var body: some View {
-        Screen(title: "function".localized) {
+        Screen {
             VStack {
                 ScrollView {
                     VStack(spacing: 16) {
@@ -47,6 +47,7 @@ struct FunctionCallDetailsScreen: View {
                 button
             }
         }
+        .screenTitle("function".localized)
         .alert(isPresented: $functionCallViewModel.showAlert) {
             alert
         }

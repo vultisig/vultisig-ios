@@ -888,6 +888,7 @@
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "title" = "Título";
 "to" = "Para";
+"timeout" = "Tempo esgotado";
 "today" = "Hoje";
 "tokens" = "Tokens";
 "totalFee" = "Taxa total";

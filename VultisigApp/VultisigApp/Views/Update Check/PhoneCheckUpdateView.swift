@@ -11,9 +11,10 @@ struct PhoneCheckUpdateView: View {
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
 
     var body: some View {
-        Screen(title: "checkUpdate".localized) {
+        Screen {
             view.background(BlurredBackground())
         }
+        .screenTitle("checkUpdate".localized)
         .onAppear {
             setData()
         }

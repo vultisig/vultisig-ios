@@ -19,7 +19,7 @@ struct VaultPairDetailView: View {
     @Environment(\.displayScale) var displayScale
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 24) {
                     VaultPairDetailCard(
@@ -31,12 +31,8 @@ struct VaultPairDetailView: View {
                 }
             }
         }
-        .overlay(PopupCapsule(text: "keyCopied", showPopup: $showCapsule))
-        .onLoad {
-            imageName = viewModel.generateName(vault: vault)
-            viewModel.render(vault: vault, devicesInfo: devicesInfo, displayScale: displayScale)
-        }
-        .crossPlatformToolbar("vaultDetailsTitle".localized, showsBackButton: true) {
+        .screenTitle("vaultDetailsTitle".localized)
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 if let renderedImage = viewModel.renderedImage {
                     CrossPlatformShareButton(image: renderedImage, caption: imageName) { onShare in
@@ -47,6 +43,11 @@ struct VaultPairDetailView: View {
                         .frame(width: 20, height: 20)
                 }
             }
+        }
+        .overlay(PopupCapsule(text: "keyCopied", showPopup: $showCapsule))
+        .onLoad {
+            imageName = viewModel.generateName(vault: vault)
+            viewModel.render(vault: vault, devicesInfo: devicesInfo, displayScale: displayScale)
         }
     }
 }

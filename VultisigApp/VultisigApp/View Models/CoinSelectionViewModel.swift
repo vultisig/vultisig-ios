@@ -48,19 +48,20 @@ class CoinSelectionViewModel: ObservableObject {
         } else {
             selection = []
         }
-        groupAssets()
+        groupAssets(vault: vault)
     }
 
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins.map { $0.toCoinMeta() })
     }
 
-    private func groupAssets() {
+    private func groupAssets(vault: Vault) {
         groupedAssets = [:]
 
         // Filter out Sepolia and Thorchain Stagenet based on settings
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
         let enableThorchainChainnet = UserDefaults.standard.bool(forKey: "thorchainChainnet")
+        let hasMLDSAKey = vault.publicKeyMLDSA44 != nil && !vault.publicKeyMLDSA44!.isEmpty
 
         let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
             if asset.chain == .ethereumSepolia {
@@ -71,6 +72,9 @@ class CoinSelectionViewModel: ObservableObject {
             }
             if asset.chain == .thorChainStagenet {
                 return enableThorchainChainnet
+            }
+            if asset.chain.signingKeyType == .MLDSA {
+                return hasMLDSAKey
             }
             return true
         }

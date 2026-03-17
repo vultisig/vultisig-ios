@@ -25,7 +25,7 @@ struct VaultServerBackupScreen: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
-        Screen(title: "serverBackup".localized) {
+        Screen {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -46,6 +46,7 @@ struct VaultServerBackupScreen: View {
                 }
             }
         }
+        .screenTitle("serverBackup".localized)
         .onSubmit {
             if focusedFieldBinding == .email {
                 focusedFieldBinding = .password

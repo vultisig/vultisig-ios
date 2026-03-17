@@ -47,6 +47,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case mantle
     case hyperliquid
     case sei
+    case qbtc
 
     /// Maps removed chain raw values to their replacement chain.
     /// This prevents SwiftData from crashing when decoding legacy persisted data.
@@ -122,6 +123,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .mantle: return "Mantle"
         case .hyperliquid: return "Hyperliquid"
         case .sei: return "Sei"
+        case .qbtc: return "QBTC"
         }
     }
     var feeUnit: String {
@@ -150,6 +152,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .akash: return "uakt"
         case .tron: return "TRX"
         case .zcash: return "ZEC/vbyte"
+        case .qbtc: return "qbtc"
         }
     }
 
@@ -192,6 +195,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .mantle: return "MNT"
         case .hyperliquid: return "HYPE"
         case .sei: return "SEI"
+        case .qbtc: return "QBTC"
         }
     }
 
@@ -235,10 +239,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .mantle: return "MANTLE"
         case .hyperliquid: return "HYPE"
         case .sei: return "SEI"
+        case .qbtc: return "QBTC"
         }
     }
 
     var signingKeyType: KeyType {
+        if self == .qbtc {
+            return .MLDSA
+        }
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO, .Ripple, .Tron:
             return .ECDSA
@@ -261,7 +269,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Cardano
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             return .UTXO
-        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             return .Cosmos
         case .polkadot:
             return .Polkadot
@@ -350,6 +358,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "hyperliquid"
         case .sei:
             return "sei"
+        case .qbtc:
+            return "qbtc"
         }
     }
 
@@ -387,7 +397,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 999
         case .sei:
             return 1329
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .qbtc:
             return nil
         }
     }
@@ -467,6 +477,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.ethereum
         case .sei:
             return CoinType.ethereum
+        case .qbtc:
+            return CoinType.cosmos
         }
     }
 
@@ -522,7 +534,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .noble,
             .akash,
             .ethereumSepolia,
-            .sei:
+            .sei,
+            .qbtc:
             return false
         }
     }
@@ -539,7 +552,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .UTXO
         case .cardano:
             return .Cardano
-        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             return .Cosmos
         case .sui:
             return .Sui
@@ -570,7 +583,7 @@ extension Chain {
     /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce)
     var supportsPendingTransactions: Bool {
         switch self {
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
         default:
             return false
@@ -580,7 +593,7 @@ extension Chain {
     static var keyImportEnabledChains: [Chain] {
         allCases.filter {
             switch $0 {
-            case .cardano, .thorChainChainnet, .thorChainStagenet, .polygonV2:
+            case .cardano, .thorChainChainnet, .thorChainStagenet, .polygonV2, .qbtc:
                 return false
             default:
                 return true

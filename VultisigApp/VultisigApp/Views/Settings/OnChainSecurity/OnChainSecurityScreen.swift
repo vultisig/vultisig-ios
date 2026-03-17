@@ -15,12 +15,13 @@ struct OnChainSecurityScreen: View {
     @State var showSecurityScannerSheet: Bool = false
 
     var body: some View {
-        Screen(title: title) {
+        Screen {
             ScrollView {
                 securityScannerCell
             }
             .frame(maxWidth: .infinity)
         }
+        .screenTitle(title)
         .onLoad {
             securityScannerEnabled = service.isEnabled
         }

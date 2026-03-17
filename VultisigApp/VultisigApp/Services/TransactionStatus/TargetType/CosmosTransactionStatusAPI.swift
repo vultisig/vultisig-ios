@@ -54,6 +54,8 @@ enum CosmosTransactionStatusAPI: TargetType {
             return "https://api.noble.strange.love"
         case .akash:
             return "https://akash-rest.publicnode.com"
+        case .qbtc:
+            return "https://api.vultisig.com/qbtc-rpc"
         default:
             return "https://cosmos-rest.publicnode.com"
         }

@@ -398,6 +398,7 @@
 		13AB73742EB9240300DA106B /* ClosureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73732EB923FD00DA106B /* ClosureValidator.swift */; };
 		13AB73762EB925A100DA106B /* AmountBalanceValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
+		2A815BD9B4E8BD1F2B92DC8D /* ScreenEnvironmentKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */; };
 		13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC84022EA8518700C1399E /* THORChainAPICache.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
 		13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */; };
@@ -549,6 +550,7 @@
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */; };
 		13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */; };
+		1A6D4DC50E293E4ECC37C996 /* QBTCHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73A800403ED7DDBD637450B /* QBTCHelper.swift */; };
 		1B407AF0A92A0C1FA4967DE8 /* TransactionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0394970AFE40C0213C84704C /* TransactionHistoryViewModel.swift */; };
 		1BD218EC6EBBA4C7C4DF4F31 /* AgentAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B621377F63B9A5B4DEE2D1 /* AgentAuthService.swift */; };
 		1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */; };
@@ -614,6 +616,7 @@
 		6AE564F37876C2BB01674194 /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EC7383A8308BD94F081C10 /* CircleService.swift */; };
 		6C34A4859C2EE1D9C31F45CD /* DeviceUnregisterRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3F77846C9027CFB58F3364 /* DeviceUnregisterRequest.swift */; };
 		6DA260AA517A2E54FDB4A220 /* ForegroundNotificationBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FDC0FE2F5DEF7240D0D3B7 /* ForegroundNotificationBannerView.swift */; };
+		6E1C58B05A49BF4D7146E8A4 /* CoinFactory+QBTC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A067E30E53271AE034FC59F /* CoinFactory+QBTC.swift */; };
 		6DC8A8284C07E537AF83508E /* AgentConversationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1C6F91653A1C18DD2662A7 /* AgentConversationsViewModel.swift */; };
 		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
 		7024891B02B07FF1A3BCCFB4 /* ReviewYourVaultsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089EF1D434FDC5673F1F090A /* ReviewYourVaultsScreen.swift */; };
@@ -1697,6 +1700,7 @@
 		13AB73732EB923FD00DA106B /* ClosureValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClosureValidator.swift; sourceTree = "<group>"; };
 		13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountBalanceValidator.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
+		37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEnvironmentKeys.swift; sourceTree = "<group>"; };
 		13AC84022EA8518700C1399E /* THORChainAPICache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPICache.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationRouter+EnvironmentKey.swift"; sourceTree = "<group>"; };
@@ -1932,6 +1936,7 @@
 		927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
 		93EF791E371FD688E09C0829 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		95F9E808DB3DFACA1E3B84E4 /* ReferralCodeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeSheet.swift; sourceTree = "<group>"; };
+		9A067E30E53271AE034FC59F /* CoinFactory+QBTC.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CoinFactory+QBTC.swift"; sourceTree = "<group>"; };
 		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
 		9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		A0C582CC92369B7BB13C527B /* NotifyRequest.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotifyRequest.swift; sourceTree = "<group>"; };
@@ -2452,6 +2457,7 @@
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
 		B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyLogic.swift; sourceTree = "<group>"; };
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
+		B73A800403ED7DDBD637450B /* QBTCHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QBTCHelper.swift; sourceTree = "<group>"; };
 		B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SingleKeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleWithdrawView.swift; sourceTree = "<group>"; };
 		BC586168CA29D811C28C56A4 /* TransactionStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatus.swift; sourceTree = "<group>"; };
@@ -4440,6 +4446,26 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		13DD54992E56556D007335DA /* Screen */ = {
+			isa = PBXGroup;
+			children = (
+				13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */,
+				37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */,
+				137B2C882E3A84440074F648 /* Screen.swift */,
+			);
+			path = Screen;
+			sourceTree = "<group>";
+		};
+		13DF05732E3CEF580000188C /* TextField */ = {
+			isa = PBXGroup;
+			children = (
+				133EEA1B2E68859F00E18280 /* SecureTextField.swift */,
+				13DD54822E562946007335DA /* CommonTextField.swift */,
+				13DF05742E3CEF710000188C /* SearchTextField.swift */,
+			);
+			path = TextField;
+			sourceTree = "<group>";
+		};
 		13E1E7622E6DD6B900D68F5D /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
@@ -6034,6 +6060,7 @@
 				B5BCC26D2EC26DB1007B5A2F /* CosmosHelperStruct.swift */,
 				B5BCC26F2EC26DB3007B5A2F /* TerraHelperStruct.swift */,
 				B5BCC2712EC26DB5007B5A2F /* DydxHelperStruct.swift */,
+				B73A800403ED7DDBD637450B /* QBTCHelper.swift */,
 			);
 			path = cosmos;
 			sourceTree = "<group>";
@@ -6497,6 +6524,7 @@
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
 				B54B01962BDCEB8E00FDA472 /* Polkadot.swift */,
+				9A067E30E53271AE034FC59F /* CoinFactory+QBTC.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -7283,6 +7311,7 @@
 				13C0F79A2EC60C3A00C2A3B8 /* DefiBalanceService.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */,
+				2A815BD9B4E8BD1F2B92DC8D /* ScreenEnvironmentKeys.swift in Sources */,
 				137B2C892E3A84460074F648 /* Screen.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */,
@@ -8179,6 +8208,8 @@
 				433B769997A138C579EDAEC9 /* TransactionHistoryAssetFilterView.swift in Sources */,
 				BF3AAB0F21EB5F954ED46D1A /* TransactionStatusPoller.swift in Sources */,
 				60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */,
+				6E1C58B05A49BF4D7146E8A4 /* CoinFactory+QBTC.swift in Sources */,
+				1A6D4DC50E293E4ECC37C996 /* QBTCHelper.swift in Sources */,
 				4D50FC2F5E9F3BF92C034ADF /* AgentStreamManager.swift in Sources */,
 				4A370C3F7F0151F5BC40FC1F /* AgentTransactionBuilder.swift in Sources */,
 				1E29B5BBDAEBABFFB0C06424 /* AgentKeysignCoordinator.swift in Sources */,

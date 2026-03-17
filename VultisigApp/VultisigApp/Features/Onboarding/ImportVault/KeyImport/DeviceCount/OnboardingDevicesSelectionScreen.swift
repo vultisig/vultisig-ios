@@ -18,7 +18,7 @@ struct OnboardingDevicesSelectionScreen: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(showNavigationBar: false, backgroundType: .clear) {
+        Screen {
             VStack(spacing: 0) {
                 animationVM?.view()
                     .frame(maxWidth: 400)
@@ -31,9 +31,10 @@ struct OnboardingDevicesSelectionScreen: View {
             }
             .padding(.top, 64)
         }
+        .screenIgnoresTopEdge()
+        .screenBackground(.clear)
         .background(background)
         .onLoad(perform: onLoad)
-        .crossPlatformToolbar(.empty, ignoresTopEdge: true)
     }
 
     var tipView: some View {

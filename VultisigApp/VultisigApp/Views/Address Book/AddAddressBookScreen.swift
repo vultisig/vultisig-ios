@@ -36,13 +36,14 @@ struct AddAddressBookScreen: View {
     }
 
     var body: some View {
-        Screen(title: "addAddress".localized) {
+        Screen {
             VStack {
                 fields
                 Spacer()
                 button
             }
         }
+        .screenTitle("addAddress".localized)
         .onLoad(perform: setData)
         .alert(isPresented: $showAlert) {
             alert
