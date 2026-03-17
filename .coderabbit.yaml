@@ -1,32 +1,50 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-language: 'en-US'
-early_access: false
+# CodeRabbit configuration for Vultisig iOS
+# Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en
 reviews:
-  profile: 'chill'
+  profile: chill
   request_changes_workflow: false
   high_level_summary: true
   review_status: true
   collapse_walkthrough: true
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true
+    base_branches:
+      - main
+      - master
   path_instructions:
-    - path: '**/*.swift'
+    - path: "**/*.swift"
       instructions: |
-        Review for:
-        - Hardcoded colors/fonts (must use Theme.colors.* and Theme.fonts.*)
-        - .foregroundColor() usage (must use .foregroundStyle())
-        - Hardcoded user-facing strings (must use .localized)
-        - @Model access off MainActor
-        - Completion handlers instead of async/await
-        - Custom button styles instead of PrimaryButton
-        - SwiftLint violations
-    - path: '**/Localizable.strings'
+        Review Guidelines:
+        - SwiftUI with MVVM architecture
+        - async/await for all concurrency, no completion handlers
+        - Use Theme.colors.* and Theme.fonts.* — never hardcode colors/fonts
+        - Use PrimaryButton for all buttons — never custom button styles
+        - Use .foregroundStyle() not .foregroundColor()
+        - Business logic in ViewModels/Services, never in views
+        - Logger (OSLog) for logging, never print()
+        - No force unwraps (!) in production code
+        - @Model classes always on MainActor
+        - Use "key".localized for all user-facing strings
+    - path: "**/Localizable.strings"
       instructions: |
-        Verify keys are in camelCase and alphabetical order.
-        Ensure new keys appear in ALL 7 locale files.
-    - path: '**/*.pbxproj'
+        Localization changes must be applied to ALL 7 locale files.
+        Check: en.lproj/, de.lproj/, es.lproj/, hr.lproj/, it.lproj/, pt.lproj/, zh-Hans.lproj/
+        Keys must be camelCase and in alphabetical order.
+        Flag any untranslated strings (English text in non-English files).
+    - path: "**/*.pbxproj"
       instructions: |
-        Flag any direct pbxproj edits — these should use the /add-xcode-files skill.
+        Xcode-generated changes are allowed.
+        Flag only obvious anomalies (dangling/duplicate IDs, broken group references,
+        missing build-phase linkage, malformed sections), not normal generated diffs.
+  tools:
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 300000
 chat:
   auto_reply: true
