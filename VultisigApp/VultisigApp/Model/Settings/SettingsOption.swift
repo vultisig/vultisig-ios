@@ -119,6 +119,16 @@ enum SettingsOption: String, Identifiable {
         }
     }
 
+    var accessibilityID: String? {
+        switch self {
+        case .language: return AccessibilityID.Settings.languageCell
+        case .currency: return AccessibilityID.Settings.currencyCell
+        case .vaultSettings: return AccessibilityID.Settings.vaultSettingsCell
+        case .faq: return AccessibilityID.Settings.faqCell
+        default: return nil
+        }
+    }
+
     var type: SettingsOptionType {
         switch self {
         case .twitter:

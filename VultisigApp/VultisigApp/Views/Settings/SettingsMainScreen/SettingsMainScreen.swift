@@ -74,6 +74,7 @@ struct SettingsMainScreen: View {
                 }
             }
         }
+        .accessibilityIdentifier(AccessibilityID.Settings.container)
         .crossPlatformToolbar("settings".localized) {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "qr-code") {
@@ -115,6 +116,7 @@ struct SettingsMainScreen: View {
                 showSeparator: showSeparator
             )
         }
+        .accessibilityIdentifier(option.accessibilityID ?? "")
     }
 
     @ViewBuilder

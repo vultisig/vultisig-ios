@@ -86,5 +86,7 @@ struct HomePage {
 
     func assertTabsExist() {
         XCTAssertTrue(walletTab.exists, "Wallet tab not found")
+        XCTAssertTrue(defiTab.exists, "DeFi tab not found")
+        XCTAssertTrue(agentTab.exists, "Agent tab not found")
     }
 }

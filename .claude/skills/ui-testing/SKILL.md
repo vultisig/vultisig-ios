@@ -578,7 +578,7 @@ if CommandLine.arguments.contains("-disableAnimations") {
 | Type | Pattern | Example |
 |------|---------|---------|
 | Test classes | `{Feature}Tests.swift` | `HomeScreenTests.swift` |
-| Page objects | `{Screen}Page.swift` | `HomgPage.swift` |
+| Page objects | `{Screen}Page.swift` | `HomePage.swift` |
 | Test methods | `test{Behavior}` | `testNavigateToSettings` |
 | Accessibility IDs | `{screen}.{element}` | `"home.settingsButton"` |
 | Helpers | Descriptive name | `XCUIElement+Helpers.swift` |

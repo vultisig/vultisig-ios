@@ -30,10 +30,8 @@ final class HomeScreenTests: VultisigUITestCase {
     func testCreateVaultScreenShowsButtons() throws {
         launchApp()
 
-        // If there are no vaults, we should see the create vault screen
         guard isOnCreateVaultScreen else {
-            // If vaults exist, this test is not applicable — skip gracefully
-            return
+            throw XCTSkip("Vaults already exist; create-vault screen scenario not applicable")
         }
 
         createVaultPage.assertVisible()
@@ -48,8 +46,7 @@ final class HomeScreenTests: VultisigUITestCase {
         launchApp()
 
         guard isOnHomeScreen else {
-            // No vaults — home screen not reachable without vault creation
-            return
+            throw XCTSkip("No vault available; home screen scenario not applicable")
         }
 
         homePage.assertVisible()
@@ -59,7 +56,9 @@ final class HomeScreenTests: VultisigUITestCase {
     func testHomeScreenShowsWalletTab() throws {
         launchApp()
 
-        guard isOnHomeScreen else { return }
+        guard isOnHomeScreen else {
+            throw XCTSkip("No vault available; home screen scenario not applicable")
+        }
 
         homePage.assertVisible()
         homePage.assertTabsExist()
@@ -68,7 +67,9 @@ final class HomeScreenTests: VultisigUITestCase {
     func testNavigateToSettings() throws {
         launchApp()
 
-        guard isOnHomeScreen else { return }
+        guard isOnHomeScreen else {
+            throw XCTSkip("No vault available; home screen scenario not applicable")
+        }
 
         homePage.assertVisible()
         let settings = homePage.tapSettings()
@@ -79,7 +80,9 @@ final class HomeScreenTests: VultisigUITestCase {
     func testTapVaultSelector() throws {
         launchApp()
 
-        guard isOnHomeScreen else { return }
+        guard isOnHomeScreen else {
+            throw XCTSkip("No vault available; home screen scenario not applicable")
+        }
 
         homePage.assertVisible()
         homePage.tapVaultSelector()

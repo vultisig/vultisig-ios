@@ -15,6 +15,18 @@ final class CreateVaultSnapshotTests: XCTestCase {
     override func setUpWithError() throws {
         // Set to true to generate/update reference images, then back to false
         // isRecording = true
+
+        // Reset @AppStorage keys so snapshots are deterministic
+        let defaults = UserDefaults.standard
+        [
+            "showOnboarding",
+            "showCover",
+            "isAuthenticationEnabled",
+            "didAskForAuthentication",
+            "lastRecordedTime",
+            "vaultName",
+            "selectedPubKeyECDSA"
+        ].forEach { defaults.removeObject(forKey: $0) }
     }
 
     // MARK: - CreateVaultView

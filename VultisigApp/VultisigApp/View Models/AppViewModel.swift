@@ -68,6 +68,7 @@ class AppViewModel: ObservableObject {
         #if DEBUG
         if CommandLine.arguments.contains("-skipAuthentication") {
             isAuthenticated = true
+            isAuthenticationEnabled = true
             showSplashView = false
             didUserCancelAuthentication = false
             didAskForAuthentication = true

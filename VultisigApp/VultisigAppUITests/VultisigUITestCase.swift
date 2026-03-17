@@ -37,9 +37,13 @@ class VultisigUITestCase: XCTestCase {
 
     // MARK: - Common Flows
 
-    /// Launch app skipping auth, wait for either home or create vault
+    /// Launch app skipping auth and assert we land on a known entry screen
     func launchApp() {
         app.launchSkippingAuth()
+        XCTAssertTrue(
+            isOnHomeScreen || isOnCreateVaultScreen,
+            "App did not reach home or create-vault entry state after launch"
+        )
     }
 
     /// Launch app and assert we land on the home screen (requires vaults to exist)
