@@ -87,25 +87,16 @@ struct FunctionCallVerifyScreen: View {
     var pairedSignButton: some View {
         VStack {
             if tx.isFastVault {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(
-                    title: NSLocalizedString("signTransaction", comment: "")) {
-                        fastPasswordPresented = true
-                    } longPressAction: {
-                        // Clear password for paired sign (long press)
-                        tx.fastVaultPassword = .empty
-                        onSignPress()
-                    }
-                    .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                        FastVaultEnterPasswordView(
-                            password: $tx.fastVaultPassword,
-                            vault: vault,
-                            onSubmit: { onSignPress() }
-                        )
-                    }
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    fastPasswordPresented = true
+                }
+                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+                    FastVaultEnterPasswordView(
+                        password: $tx.fastVaultPassword,
+                        vault: vault,
+                        onSubmit: { onSignPress() }
+                    )
+                }
             } else {
                 PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     onSignPress()

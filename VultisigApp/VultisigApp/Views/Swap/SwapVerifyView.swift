@@ -199,16 +199,8 @@ struct SwapVerifyView: View {
     @ViewBuilder
     var signButton: some View {
         if tx.isFastVault {
-            Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
-                .font(Theme.fonts.bodySMedium)
-
-            LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+            PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
-            } longPressAction: {
-                // Clear password for paired sign (long press)
-                tx.fastVaultPassword = .empty
-                onSignPress()
             }
             .disabled(signButtonDisabled)
             .crossPlatformSheet(isPresented: $fastPasswordPresented) {

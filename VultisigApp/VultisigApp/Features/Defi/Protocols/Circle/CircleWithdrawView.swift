@@ -169,17 +169,8 @@ struct CircleWithdrawView: View {
     @ViewBuilder
     var withdrawButton: some View {
         if isFastVault {
-            VStack {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    fastVaultPassword = ""
-                    Task { await handleWithdraw() }
-                }
+            PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                fastPasswordPresented = true
             }
             .disabled(isButtonDisabled)
         } else {

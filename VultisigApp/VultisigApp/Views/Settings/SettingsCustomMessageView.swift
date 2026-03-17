@@ -151,14 +151,8 @@ struct SettingsCustomMessageView: View {
     var signButton: some View {
         VStack(spacing: 16) {
             if isFastVault {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
-                } longPressAction: {
-                    onSignPress()
                 }
                 .disabled(!signButtonEnabled)
                 .crossPlatformSheet(isPresented: $fastPasswordPresented) {
