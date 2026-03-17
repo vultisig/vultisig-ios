@@ -73,6 +73,7 @@ class TransactionHistoryViewModel: ObservableObject {
             poller.poll(
                 txHash: tx.txHash,
                 chain: chain,
+                createdAt: tx.createdAt,
                 pubKeyECDSA: pubKeyECDSA
             ) { [weak self] newStatus, errorMessage in
                 self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)

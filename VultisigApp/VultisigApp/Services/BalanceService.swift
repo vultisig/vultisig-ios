@@ -253,7 +253,7 @@ class BalanceService {
             let service = try EvmService.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin, address: address)
 
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             let cosmosService = try CosmosService.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin, address: address)
 

@@ -16,8 +16,17 @@ struct CoinFactory {
         publicKeyECDSA: String,
         publicKeyEdDSA: String,
         hexChainCode: String,
-        isDerived: Bool
+        isDerived: Bool,
+        publicKeyMLDSA44: String? = nil
     ) throws -> Coin {
+        // MLDSA chains use a completely separate address derivation path
+        if asset.chain.signingKeyType == .MLDSA {
+            guard let mldsaKey = publicKeyMLDSA44, !mldsaKey.isEmpty else {
+                throw Errors.invalidPublicKey(pubKey: "MLDSA public key required for \(asset.chain.name)")
+            }
+            return try createMLDSACoin(asset: asset, publicKeyMLDSA44: mldsaKey)
+        }
+
         let publicKey = try publicKey(
             chain: asset.chain,
             publicKeyECDSA: publicKeyECDSA,
@@ -159,6 +168,10 @@ extension CoinFactory {
             }
 
             return publicKey
+
+        case .MLDSA:
+            // MLDSA chains bypass WalletCore PublicKey — address derived separately
+            throw Errors.invalidPublicKey(pubKey: "MLDSA chains do not use WalletCore PublicKey")
         }
     }
 

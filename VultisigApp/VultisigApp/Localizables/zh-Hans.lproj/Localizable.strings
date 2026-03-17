@@ -888,6 +888,7 @@
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "title" = "标题";
 "to" = "至";
+"timeout" = "超时";
 "today" = "今天";
 "tokens" = "代币";
 "totalFee" = "总费用";
