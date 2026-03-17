@@ -898,6 +898,7 @@
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "title" = "Title";
 "to" = "To";
+"timeout" = "Timeout";
 "today" = "Today";
 "tokens" = "Tokens";
 "totalFee" = "Total Fee";
