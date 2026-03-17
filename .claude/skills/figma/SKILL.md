@@ -17,25 +17,25 @@ A Figma MCP server must be connected. Check which one is available:
 
 If no Figma MCP is connected, ask the user to connect one before proceeding.
 
-**Figma file key**: `puB2fsVpPrBx3Sup7gaa3v` (Vultisig App)
+**Figma file key**: `<FIGMA_FILE_KEY>` (provide at runtime or extract from Figma URL)
 
 ## Workflow
 
 ### Step 1: Fetch Figma Design
 
 Get the design spec (use whichever MCP server is connected):
-```
+```text
 # Figma Desktop MCP (currently configured)
 mcp__figma-desktop__get_design_context(
-  fileKey: "puB2fsVpPrBx3Sup7gaa3v",
+  fileKey: "<FIGMA_FILE_KEY>",
   nodeId: "<extracted-node-id>"
 )
 ```
 
 Also capture a screenshot for visual reference:
-```
+```text
 mcp__figma-desktop__get_screenshot(
-  fileKey: "puB2fsVpPrBx3Sup7gaa3v",
+  fileKey: "<FIGMA_FILE_KEY>",
   nodeId: "<extracted-node-id>"
 )
 ```
@@ -79,7 +79,7 @@ Before writing ANY code, create a mapping table:
 Follow these rules:
 - Match Figma EXACTLY — do not approximate values
 - Use `Theme.colors.*` and `Theme.fonts.*` when they resolve to the correct Figma values
-- For colors not in the theme, use SwiftUI `Color` with exact hex
+- If a required color is missing from theme tokens, add a new token in the design system and use `Theme.colors.*`
 - Use `PrimaryButton` for all buttons
 - Use `.foregroundStyle()` not `.foregroundColor()`
 - If the MCP returns localhost image/SVG URLs, download and add to Xcode Asset Catalog — do not reference localhost URLs directly
@@ -87,7 +87,7 @@ Follow these rules:
 ### Step 5: Theme Token Verification
 
 Check theme files for existing tokens:
-```
+```text
 VultisigApp/VultisigApp/DesignSystem/
 ```
 

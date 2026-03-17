@@ -8,6 +8,7 @@ SIBLING_REPOS=(
   "vultisig-android"
   "vultisig-windows"
   "vultiserver"
+  "commondata"
 )
 
 sync_repo() {

@@ -72,7 +72,7 @@ This sorts all 7 files in-place alphabetically by key.
 
 ## Workflow Summary
 
-```
+```text
 1. Choose camelCase key name
 2. Add "key" = "value"; to all 7 files
 3. Use "key".localized in Swift code

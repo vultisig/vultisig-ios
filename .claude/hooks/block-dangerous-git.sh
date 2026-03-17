@@ -33,7 +33,7 @@ if echo "$COMBINED" | grep -qiE "$MAINNET_RPCS"; then
 fi
 
 # --- Secret/credential file edits ---
-if echo "$FILE_PATH" | grep -qiE '\.(env|pem|p12|key|pfx|keystore|jks|credentials|secret)$'; then
+if echo "$CMD $FILE_PATH" | grep -qiE '(^|[[:space:]])([^[:space:]]+\.(env|pem|p12|key|pfx|keystore|jks|credentials|secret)|\.env(\.[^[:space:]]+)?)($|[[:space:]])'; then
   echo "Editing secret/credential files is blocked. Ask the user first." >&2
   exit 2
 fi

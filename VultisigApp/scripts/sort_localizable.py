@@ -28,6 +28,7 @@ def sort_file(filepath):
 
     comments = []
     entries = []
+    unknown_lines = []
 
     with open(filepath, "r", encoding="utf-8") as f:
         for line in f:
@@ -39,6 +40,14 @@ def sort_file(filepath):
             match = ENTRY_RE.match(line)
             if match:
                 entries.append((match.group(1), match.group(2)))
+            elif stripped and not stripped.startswith("//"):
+                unknown_lines.append(line.rstrip("\n"))
+
+    if unknown_lines:
+        print(f"  ERROR: {filepath} contains unsupported lines; aborting to avoid data loss")
+        for ul in unknown_lines:
+            print(f"    > {ul}")
+        return False
 
     if not entries:
         print(f"  SKIP: {filepath} (no entries found)")
@@ -78,7 +87,7 @@ def main():
             sorted_count += 1
 
     print(f"Done. {sorted_count}/{len(files)} files sorted.")
-    sys.exit(0)
+    sys.exit(0 if sorted_count == len(files) else 1)
 
 
 if __name__ == "__main__":

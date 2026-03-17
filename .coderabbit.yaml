@@ -37,8 +37,9 @@ reviews:
         Flag any untranslated strings (English text in non-English files).
     - path: "**/*.pbxproj"
       instructions: |
-        This file should only be modified via the /add-xcode-files skill script.
-        Flag any manual edits to this file.
+        Xcode-generated changes are allowed.
+        Flag only obvious anomalies (dangling/duplicate IDs, broken group references,
+        missing build-phase linkage, malformed sections), not normal generated diffs.
   tools:
     markdownlint:
       enabled: true
