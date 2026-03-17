@@ -172,7 +172,13 @@ struct SendDetailsAssetTab: View {
             return
         }
 
-        viewModel.onSelect(tab: .address)
+        // Only auto-advance to address if we're currently on the asset tab
+        // (i.e., user just finished selecting an asset).
+        // Don't force to address if user is switching to a different tab
+        // (e.g., tapping Edit on asset while on address tab).
+        if viewModel.selectedTab == .asset {
+            viewModel.onSelect(tab: .address)
+        }
         viewModel.assetSetupDone = true
     }
 }
