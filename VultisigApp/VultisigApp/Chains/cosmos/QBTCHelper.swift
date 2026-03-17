@@ -11,10 +11,7 @@
 import Foundation
 import WalletCore
 import CryptoSwift
-import OSLog
 import VultisigCommonData
-
-private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-helper")
 
 struct QBTCHelper {
 
@@ -65,10 +62,7 @@ struct QBTCHelper {
         )
         let hashHex = signDoc.sha256().toHexString()
 
-        logger.info("QBTC tx: signDoc=\(signDoc.count)B, hash=\(hashHex.prefix(16))...")
-
         guard let sig = signatures[hashHex] else {
-            logger.error("No MLDSA signature found for hash: \(hashHex)")
             throw HelperError.runtimeError("QBTC: no signature found for hash \(hashHex)")
         }
 
@@ -76,14 +70,10 @@ struct QBTCHelper {
             throw HelperError.runtimeError("QBTC: invalid signature hex")
         }
 
-        logger.info("QBTC tx: signature=\(sigData.count)B, body=\(bodyBytes.count)B, authInfo=\(authInfoBytes.count)B")
-
         let txRaw = QBTCProtoBuilder.buildTxRaw(bodyBytes: bodyBytes, authInfoBytes: authInfoBytes, signature: sigData)
         let txBytesBase64 = txRaw.base64EncodedString()
         let broadcastJSON = "{\"tx_bytes\":\"\(txBytesBase64)\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
         let transactionHash = txRaw.sha256().toHexString().uppercased()
-
-        logger.info("QBTC tx: txRaw=\(txRaw.count)B, hash=\(transactionHash.prefix(16))...")
 
         return SignedTransactionResult(
             rawTransaction: broadcastJSON,
