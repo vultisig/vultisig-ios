@@ -730,6 +730,11 @@
 "scanningScreenForQR" = "Skeniranje zaslona u potrazi za QR kodovima...";
 "scanningScreenHint" = "Prikažite QR kod bilo gdje na zaslonu i automatski će biti prepoznat.";
 "scanQRCode" = "Skeniraj QR kod";
+"scanQRCodeTooltipBullet1" = "Move the phone slightly closer or farther from the screen";
+"scanQRCodeTooltipBullet2" = "Make sure the screen is well lit and free of glare";
+"scanQRCodeTooltipBullet3" = "Keep both devices steady for a moment";
+"scanQRCodeTooltipSubtitle" = "If the QR code isn't scanning right away:";
+"scanQRCodeTooltipTitle" = "Having trouble scanning?";
 "scanQRStartScreen" = "Skeniraj QR";
 "screenRecordingPermissionDenied" = "Potrebna je dozvola za snimanje zaslona kako bi se mogli skenirati QR kodovi s vašeg zaslona.";
 "search" = "Pretraži";
@@ -958,6 +963,7 @@
 "uploadFromFiles" = "Odaberi iz datoteka";
 "uploadFromGallery" = "Prenesi iz galerije";
 "uploadQR" = "Učitaj QR";
+"uploadQRCode" = "Upload QR Code";
 "uploadQRCodeImage" = "Učitaj sliku QR koda";
 "uploadQRCodeImageKeygen" = "Prenesite QR kod za pridruživanje Keygen-u";
 "uploadQRCodeImageKeysign" = "Prenesite QR kod za pridruživanje Keysign-u";

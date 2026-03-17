@@ -62,6 +62,13 @@ Domain knowledge loads on-demand via skills:
 | `/batch-review` | Morning dashboard — PR statuses, CodeRabbit feedback, next actions |
 | `/batch-retry` | Retry failed batch tasks — cleanup, re-execute with failure context |
 | `/batch-fix-reviews` | Auto-fix CodeRabbit review comments, push fixes, re-request review |
+| `/localize` | Complete i18n workflow — add keys to all 7 locale files, translate, sort |
+| `/ship` | Commit + create PR in one step, with checks and Co-Authored-By |
+| `/orchestrate` | God-mode orchestrator — end-to-end feature delivery or exhaustive PR review |
+| `/create-issue` | Create GitHub issues with bug/feature templates and size guide |
+| `/check-platforms` | Search Android, Windows, backend repos for feature implementations |
+| `/reference-codebases` | Port features from sibling repos with pattern mapping |
+| `/figma` | Implement UI from Figma designs via MCP with mandatory property mapping |
 
 ## Knowledge Base
 
