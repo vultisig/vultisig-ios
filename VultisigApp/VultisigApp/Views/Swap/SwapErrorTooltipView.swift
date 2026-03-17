@@ -14,11 +14,14 @@ struct SwapErrorTooltipView: View {
 
     private let circleIconSize: CGFloat = 20
     private let circleIconPadding: CGFloat = 7
-    private var circleSize: CGFloat { circleIconSize + circleIconPadding * 2 }
+    private var circleSize: CGFloat {
+        circleIconSize + circleIconPadding * 2
+    }
+
     #if os(macOS)
-    private let tooltipGap: CGFloat = 30  // Slightly more offset on macOS
+        private let tooltipGap: CGFloat = 30 // Slightly more offset on macOS
     #else
-    private let tooltipGap: CGFloat = 24
+        private let tooltipGap: CGFloat = 24
     #endif
 
     var body: some View {
@@ -93,11 +96,12 @@ struct TooltipShape: Shape {
     let arrowWidth: CGFloat = 20
     let arrowHeight: CGFloat = 10
     let arrowCornerRadius: CGFloat = 2
+    var arrowXFraction: CGFloat = 0.5
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
 
-        let arrowCenterX = rect.midX
+        let arrowCenterX = rect.minX + rect.width * arrowXFraction
         let arrowLeft = arrowCenterX - arrowWidth / 2
         let arrowRight = arrowCenterX + arrowWidth / 2
         let bodyTop = rect.minY + arrowHeight
