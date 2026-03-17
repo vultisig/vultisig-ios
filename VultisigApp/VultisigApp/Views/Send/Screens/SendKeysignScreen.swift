@@ -31,7 +31,7 @@ struct SendKeysignScreen: View {
             )
         }
         .screenTitle("keysign".localized)
-        .navigationBarBackButtonHidden(true)
+        .screenBackButtonHidden()
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished else { return }
 

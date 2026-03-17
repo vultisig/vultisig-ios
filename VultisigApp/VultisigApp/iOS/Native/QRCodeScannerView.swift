@@ -60,7 +60,7 @@ struct QRCodeScannerView: View {
             Spacer()
             helpButton
         }
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .font(Theme.fonts.bodyLMedium)
         .offset(y: 8)
     }

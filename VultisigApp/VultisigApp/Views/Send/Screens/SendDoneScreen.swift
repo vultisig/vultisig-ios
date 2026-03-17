@@ -28,6 +28,6 @@ struct SendDoneScreen: View {
             )
         }
         .screenTitle("done".localized)
-        .navigationBarBackButtonHidden(true)
+        .screenBackButtonHidden()
     }
 }
