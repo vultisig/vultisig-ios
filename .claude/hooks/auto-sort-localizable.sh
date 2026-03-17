@@ -1,5 +1,5 @@
 #!/bin/bash
-# Auto-sort Localizable.strings after edits
+# Auto-sort ALL Localizable.strings after any edit to a .strings file
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
