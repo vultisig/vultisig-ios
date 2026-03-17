@@ -68,24 +68,16 @@ struct SendCryptoDoneView: View {
         sendContent(tx: tx)
     }
 
-    private var toVaultName: String? {
+    private var toAlias: String? {
         guard let tx = sendTransaction else { return nil }
-        let chain = tx.coin.chain
-        let address = tx.toAddress
-        return vaults.first { v in v.coins.contains { coin in coin.chain == chain && coin.address == address } }?.name
+        return SendAddressResolver.resolveAlias(
+            address: tx.toAddress,
+            coinMeta: tx.coin.toCoinMeta(),
+            ensLabel: tx.toAddressLabel,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
     }
-
-    private var toAddressBookTitle: String? {
-        guard let tx = sendTransaction else { return nil }
-        let txChainType = AddressBookChainType(coinMeta: tx.coin.toCoinMeta())
-        let address = tx.toAddress.lowercased()
-        return addressBookItems.first { item in
-            AddressBookChainType(coinMeta: item.coinMeta) == txChainType &&
-            item.address.lowercased() == address
-        }?.title
-    }
-
-    private var toAddressLabel: String? { sendTransaction?.toAddressLabel }
 
     func sendContent(tx: SendTransaction) -> some View {
         SendCryptoDoneContentView(
@@ -99,9 +91,7 @@ struct SendCryptoDoneView: View {
                 isSend: isSend,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
-                toVaultName: toVaultName,
-                toAddressBookTitle: toAddressBookTitle,
-                toAddressLabel: toAddressLabel,
+                toAlias: toAlias,
                 fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA

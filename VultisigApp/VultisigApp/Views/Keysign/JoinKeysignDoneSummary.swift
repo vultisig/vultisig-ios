@@ -16,6 +16,7 @@ struct JoinKeysignDoneSummary: View {
     @Environment(\.openURL) var openURL
     let summaryViewModel = JoinKeysignSummaryViewModel()
 
+    @Query private var vaults: [Vault]
     @Query private var addressBookItems: [AddressBookItem]
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -82,13 +83,14 @@ struct JoinKeysignDoneSummary: View {
         )
     }
 
-    private func toAddressBookTitle(for keysignPayload: KeysignPayload) -> String? {
-        let txChainType = AddressBookChainType(coinMeta: keysignPayload.coin.toCoinMeta())
-        let address = keysignPayload.toAddress.lowercased()
-        return addressBookItems.first { item in
-            AddressBookChainType(coinMeta: item.coinMeta) == txChainType &&
-            item.address.lowercased() == address
-        }?.title
+    private func toAlias(for keysignPayload: KeysignPayload) -> String? {
+        SendAddressResolver.resolveAlias(
+            address: keysignPayload.toAddress,
+            coinMeta: keysignPayload.coin.toCoinMeta(),
+            ensLabel: nil,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
     }
 
     @ViewBuilder
@@ -106,7 +108,7 @@ struct JoinKeysignDoneSummary: View {
                     isSend: true,
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
-                    toAddressBookTitle: toAddressBookTitle(for: keysignPayload),
+                    toAlias: toAlias(for: keysignPayload),
                     fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat),
                     keysignPayload: viewModel.keysignPayload,
                     pubKeyECDSA: vault.pubKeyECDSA

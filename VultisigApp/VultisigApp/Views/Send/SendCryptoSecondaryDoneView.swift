@@ -68,7 +68,7 @@ struct SendCryptoSecondaryDoneView: View {
             } ?? false
 
             // Suppress "add to address book" if destination belongs to any vault or is already in address book
-            canShowAddressBook = !isInAddressBook && input.toVaultName == nil && input.toAddressBookTitle == nil
+            canShowAddressBook = !isInAddressBook && input.toAlias == nil
         }
         .onChange(of: navigateToAddressBook) { _, shouldNavigate in
             if shouldNavigate {
@@ -127,8 +127,8 @@ struct SendCryptoSecondaryDoneView: View {
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",
-                    description: input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel ?? input.toAddress,
-                    bracketValue: (input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel) != nil ? input.toAddress : nil
+                    description: input.toAlias ?? input.toAddress,
+                    bracketValue: input.toAlias != nil ? input.toAddress : nil
                 ) {
                     addToAddressBookButton
                         .showIf(showAddressBookButton)

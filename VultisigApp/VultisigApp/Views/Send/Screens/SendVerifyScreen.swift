@@ -60,23 +60,15 @@ struct SendVerifyScreen: View {
         }
     }
 
-    private var toVaultName: String? {
-        let chain = tx.coin.chain
-        let address = tx.toAddress
-        let match = vaults.first { v in v.coins.contains { coin in coin.chain == chain && coin.address == address } }
-        return match?.name
+    private var toAlias: String? {
+        SendAddressResolver.resolveAlias(
+            address: tx.toAddress,
+            coinMeta: tx.coin.toCoinMeta(),
+            ensLabel: tx.toAddressLabel,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
     }
-
-    private var toAddressBookTitle: String? {
-        let txChainType = AddressBookChainType(coinMeta: tx.coin.toCoinMeta())
-        let address = tx.toAddress.lowercased()
-        return addressBookItems.first { item in
-            AddressBookChainType(coinMeta: item.coinMeta) == txChainType &&
-            item.address.lowercased() == address
-        }?.title
-    }
-
-    private var toAddressLabel: String? { tx.toAddressLabel }
 
     var fields: some View {
         SendCryptoVerifySummaryView(
@@ -84,9 +76,7 @@ struct SendVerifyScreen: View {
                 fromName: vault.name,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
-                toVaultName: toVaultName,
-                toAddressBookTitle: toAddressBookTitle,
-                toAddressLabel: toAddressLabel,
+                toAlias: toAlias,
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,

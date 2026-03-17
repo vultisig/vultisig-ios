@@ -64,8 +64,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             Group {
                 getValueCell(
                     for: "to",
-                    with: input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel ?? input.toAddress,
-                    bracketValue: (input.toVaultName ?? input.toAddressBookTitle ?? input.toAddressLabel) != nil ? input.toAddress : nil
+                    with: input.toAlias ?? input.toAddress,
+                    bracketValue: input.toAlias != nil ? input.toAddress : nil
                 )
                 Separator()
             }
@@ -146,7 +146,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         color: Color? = nil
     ) -> some View {
         HStack(spacing: 4) {
-            Text(NSLocalizedString(title, comment: ""))
+            Text(title.localized)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .frame(minWidth: 52, alignment: .leading)
 
