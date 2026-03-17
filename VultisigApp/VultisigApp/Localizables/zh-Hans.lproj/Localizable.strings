@@ -730,6 +730,11 @@
 "scanningScreenForQR" = "正在扫描屏幕上的二维码...";
 "scanningScreenHint" = "在屏幕上任意位置显示二维码，系统将自动检测。";
 "scanQRCode" = "扫描二维码";
+"scanQRCodeTooltipBullet1" = "将手机稍微靠近或远离屏幕";
+"scanQRCodeTooltipBullet2" = "确保屏幕光线充足且无眩光";
+"scanQRCodeTooltipBullet3" = "保持两台设备稳定片刻";
+"scanQRCodeTooltipSubtitle" = "如果二维码无法立即扫描：";
+"scanQRCodeTooltipTitle" = "扫描遇到问题？";
 "scanQRStartScreen" = "扫描二维码";
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "search" = "搜索";
@@ -959,6 +964,7 @@
 "uploadFromFiles" = "从\n文件上传";
 "uploadFromGallery" = "从\n图库上传";
 "uploadQR" = "上传二维码";
+"uploadQRCode" = "上传二维码";
 "uploadQRCodeImage" = "上传二维码图像";
 "uploadQRCodeImageKeygen" = "上传二维码以加入密钥生成";
 "uploadQRCodeImageKeysign" = "上传二维码以加入密钥签名";
