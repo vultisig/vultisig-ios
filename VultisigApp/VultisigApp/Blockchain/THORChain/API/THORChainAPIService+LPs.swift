@@ -16,7 +16,7 @@ extension THORChainAPIService {
     /// This service fetches up-to-date APRs for THORChain liquidity pools using Midgard v2 API.
     ///
     /// ## Data Sources:
-    /// - **Primary**: `https://midgard.ninerealms.com/v2` (public Midgard)
+    /// - **Primary**: `https://midgard.thorchain.network/v2` (public Midgard)
     /// - **Pool Stats**: `/v2/pools?status=available&period={period}`
     /// - **Depth History**: `/v2/history/depths/{asset}?interval=day&count={N}`
     ///

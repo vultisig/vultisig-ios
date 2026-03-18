@@ -22,9 +22,9 @@ enum THORChainStakingAPI: TargetType {
         case .getRujiStaking:
             return URL(string: "https://api.vultisig.com/ruji/api/graphql")!
         case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance, .getTcyStakers:
-            return URL(string: "https://thornode.ninerealms.com")!
+            return URL(string: "https://thornode.thorchain.network")!
         case .getTcyUserDistributions:
-            return URL(string: "https://midgard.ninerealms.com")!
+            return URL(string: "https://midgard.thorchain.network")!
         }
     }
 

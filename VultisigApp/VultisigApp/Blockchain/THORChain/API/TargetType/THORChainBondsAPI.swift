@@ -16,9 +16,9 @@ enum THORChainBondsAPI: TargetType {
     var baseURL: URL {
         switch self {
         case .getNodeDetails, .getChurnInterval:
-            return URL(string: "https://thornode.ninerealms.com")!
+            return URL(string: "https://thornode.thorchain.network")!
         case .getBondedNodes, .getChurns:
-            return URL(string: "https://midgard.ninerealms.com/v2")!
+            return URL(string: "https://midgard.thorchain.network/v2")!
         }
     }
 
