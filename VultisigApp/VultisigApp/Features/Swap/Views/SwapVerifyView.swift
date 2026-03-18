@@ -390,3 +390,55 @@ struct SwapVerifyView: View {
     )
     .environmentObject(SettingsViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension SwapVerifyView {
+    var container: some View {
+        content
+            .toolbar {
+                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
+                    refreshCounter
+                }
+            }
+    }
+
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                Spacer()
+                summary
+                checkboxes
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension SwapVerifyView {
+    var container: some View {
+        content
+            .padding(.horizontal, 25)
+            .padding(.vertical, 12)
+    }
+
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                Spacer()
+                summary
+                checkboxes
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+        }
+        .padding(.horizontal, -24)
+    }
+}
+#endif

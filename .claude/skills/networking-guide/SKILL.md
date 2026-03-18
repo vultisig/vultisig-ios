@@ -10,7 +10,7 @@ user-invocable: false
 
 All networking uses a custom HTTP client built on `URLSession` with async/await.
 
-**Key files (all under `VultisigApp/VultisigApp/Services/Network/`):**
+**Key files (all under `VultisigApp/VultisigApp/Core/Networking/`):**
 
 | File | Purpose |
 |------|---------|
@@ -205,7 +205,7 @@ enum MyFeatureError: Error, LocalizedError {
 
 ### THORChainAPI (GET-only, plain requests)
 
-**File:** `Services/THORChainAPI/TargetType/THORChainAPI.swift`
+**File:** `Blockchain/THORChain/API/TargetType/THORChainAPI.swift`
 
 ```swift
 enum THORChainAPI: TargetType {
@@ -231,7 +231,7 @@ enum THORChainAPI: TargetType {
 }
 ```
 
-**Service:** `Services/THORChainAPI/THORChainAPIService.swift`
+**Service:** `Blockchain/THORChain/API/THORChainAPIService.swift`
 
 ```swift
 struct THORChainAPIService {
@@ -256,7 +256,7 @@ struct THORChainAPIService {
 
 ### TronAPI (Mixed GET/POST, multiple HTTPTask variants)
 
-**File:** `Services/Tron/TronAPI.swift`
+**File:** `Blockchain/Tron/Service/TronAPI.swift`
 
 ```swift
 enum TronAPI: TargetType {
@@ -315,4 +315,4 @@ actor MyCache {
 }
 ```
 
-**Reference:** `Services/THORChainAPI/THORChainAPICache.swift`
+**Reference:** `Blockchain/THORChain/API/THORChainAPICache.swift`

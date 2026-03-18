@@ -75,3 +75,19 @@ struct AllDevicesUpgradeView: View {
 #Preview {
     AllDevicesUpgradeView(vault: Vault.example)
 }
+
+#if os(macOS)
+extension AllDevicesUpgradeView {
+    var content: some View {
+        VStack {
+            Spacer()
+            animation
+            Spacer()
+            description
+            button
+        }
+        .crossPlatformToolbar("Upgrade")
+        .padding(.bottom, 30)
+    }
+}
+#endif

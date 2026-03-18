@@ -172,3 +172,21 @@ struct KeysignView: View {
     .environmentObject(HomeViewModel())
     .environmentObject(GlobalStateViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension KeysignView {
+    var container: some View {
+        content
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear {
+                viewModel.stopMessagePuller()
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            .navigationBarBackButtonHidden(viewModel.status == .KeysignFinished ? true : false)
+    }
+}
+#endif

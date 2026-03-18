@@ -164,7 +164,7 @@ actor MyCache {
 }
 ```
 
-**Reference:** `Services/THORChainAPI/THORChainAPICache.swift`
+**Reference:** `Blockchain/THORChain/API/THORChainAPICache.swift`
 
 ---
 

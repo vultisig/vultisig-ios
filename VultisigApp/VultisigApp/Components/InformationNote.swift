@@ -53,3 +53,25 @@ struct InformationNote: View {
         InformationNote()
     }
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension InformationNote {
+    var overlay: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .stroke(Theme.colors.bgAlert, lineWidth: 1)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension InformationNote {
+    var overlay: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .stroke(Theme.colors.bgAlert, lineWidth: 2)
+    }
+}
+#endif

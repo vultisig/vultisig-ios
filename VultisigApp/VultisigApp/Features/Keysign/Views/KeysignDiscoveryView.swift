@@ -331,3 +331,168 @@ struct KeysignDiscoveryView: View {
     ) { _ in }
         .environmentObject(SettingsViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension KeysignDiscoveryView {
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
+    var container: some View {
+        content
+            .detectOrientation($orientation)
+    }
+
+    var view: some View {
+        VStack {
+            switch viewModel.status {
+            case .WaitingForDevices:
+                waitingForDevices
+            case .WaitingForFast:
+                lookingForDevices
+            case .FailToStart:
+                errorText
+            }
+        }
+        .blur(radius: isLoading ? 1 : 0)
+    }
+
+    var background: some View {
+        Background()
+    }
+
+    var orientedContent: some View {
+        portraitContent
+    }
+
+    var QRCodeContent: some View {
+        VStack {
+            paringQRCode
+            disclaimer
+        }
+    }
+
+    var qrCode: some View {
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: 500, maxHeight: 500)
+            .aspectRatio(contentMode: .fill)
+            .padding(24)
+    }
+
+    var deviceList: some View {
+        VStack(spacing: 12) {
+            PeerCell(id: idiom == .phone ? "iPhone" : "iPad", isThisDevice: true)
+            devices
+            EmptyPeerCell()
+        }
+        .padding(.bottom, 120)
+    }
+
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
+                }
+            }
+        }
+        .padding(idiom == .phone ? 0 : 8)
+    }
+
+    var switchLink: some View {
+        SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension KeysignDiscoveryView {
+    var container: some View {
+        content
+    }
+
+    var background: some View {
+        GeometryReader { proxy in
+            Background()
+                .onAppear {
+                    setSize(proxy)
+                }
+                .onChange(of: proxy.size) { _, _ in
+                    setSize(proxy)
+                }
+        }
+    }
+
+    var view: some View {
+        VStack {
+            switch viewModel.status {
+            case .WaitingForDevices:
+                waitingForDevices
+            case .WaitingForFast:
+                lookingForDevices
+            case .FailToStart:
+                errorText
+            }
+        }
+        .blur(radius: isLoading ? 1 : 0)
+        .padding(.horizontal, 25)
+    }
+
+    var orientedContent: some View {
+        portraitContent
+    }
+
+    var qrCode: some View {
+        qrCodeImage?
+            .resizable()
+            .padding(32)
+            .frame(width: getMinSize(), height: getMinSize())
+    }
+
+    var deviceList: some View {
+        VStack(spacing: 18) {
+            PeerCell(id: "Mac", isThisDevice: true)
+            devices
+            EmptyPeerCell()
+        }
+        .padding(.bottom, 120)
+    }
+
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
+                }
+            }
+        }
+    }
+
+    var switchLink: some View {
+        SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
+            .padding(.bottom, 24)
+    }
+
+    func getMinSize() -> CGFloat {
+        min(screenWidth/2.3, screenHeight/1.2)
+    }
+
+    private func setSize(_ proxy: GeometryProxy) {
+        screenWidth = proxy.size.width
+        screenHeight = proxy.size.height
+    }
+}
+#endif

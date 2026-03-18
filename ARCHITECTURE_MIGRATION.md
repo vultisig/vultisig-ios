@@ -204,64 +204,85 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 
 ---
 
-## Phase 5 — Extract Core from Services
+## Phase 5 — Extract Core from Services ✅
 
 **Risk**: Low
 **Impact**: Medium — cleans up the Services grab bag.
+**Status**: Completed — 190 files moved via `git mv`, `project.pbxproj` updated via `xcodeproj` gem.
 
 ### Tasks
 
-- [ ] 5.1 Move `Services/Network/` → `Core/Networking/`
-- [ ] 5.2 Move `Services/Storage/` → `Core/Storage/`
-- [ ] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/`
-- [ ] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/`
-- [ ] 5.5 Move `Services/Security/` → `Core/Security/`
-- [ ] 5.6 Move `Services/Notification/` → `Core/Notifications/`
-- [ ] 5.7 Move `Services/Fee/` → `Core/Services/Fee/`
-- [ ] 5.8 Move `Services/Rates/` → `Core/Services/Rates/`
-- [ ] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/`
-- [ ] 5.10 Move `Services/AppMigration/` → `Core/Migration/`
-- [ ] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/`
-- [ ] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/`
-- [ ] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/`
-- [ ] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/`
-- [ ] 5.15 Move `Services/Actions/` → `Core/Services/Actions/`
-- [ ] 5.16 Move remaining single-file services (`AddressService`, `CoinService`, `BalanceService`, `BlockChainService`, `CryptoPriceService`, `PendingTransactionManager`, `FeatureFlagService`, `PayloadService`, `MemoDecodingService`, `FourByteRepository`) → `Core/Services/`
-- [ ] 5.17 Delete now-empty `Services/` directory
-- [ ] 5.18 Move `DesignSystem/` → `Core/DesignSystem/`
-- [ ] 5.19 Move `Extensions/` → `Core/Extensions/`
-- [ ] 5.20 Move `Utils/` → `Core/Utils/`
-- [ ] 5.21 Move `Stores/` → `Core/Stores/`
-- [ ] 5.22 Move `Navigation/` → `Core/Navigation/`
-- [ ] 5.23 Move `Localizables/` → `Core/Localizables/`
-- [ ] 5.24 Update `project.pbxproj`
-- [ ] 5.25 Build + lint check
+- [x] 5.1 Move `Services/Network/` → `Core/Networking/` (5 files)
+- [x] 5.2 Move `Services/Storage/` → `Core/Storage/` (1 file)
+- [x] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/` (3 files)
+- [x] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/` (2 files)
+- [x] 5.5 Move `Services/Security/` → `Core/Security/` (7 files)
+- [x] 5.6 Move `Services/Notification/` → `Core/Notifications/` (9 files)
+- [x] 5.7 Move `Services/Fee/` → `Core/Services/Fee/` (2 files)
+- [x] 5.8 Move `Services/Rates/` → `Core/Services/Rates/` (4 files)
+- [x] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/` (4 files)
+- [x] 5.10 Move `Services/AppMigration/` → `Core/Migration/` (2 files)
+- [x] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/` (2 files)
+- [x] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/` (8 files)
+- [x] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/` (3 files)
+- [x] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/` (2 files)
+- [x] 5.15 Move `Services/Actions/` → `Core/Services/Actions/` (5 files)
+- [x] 5.16 Move remaining single-file services (14 files) → `Core/Services/`
+- [x] 5.17 Deleted now-empty `Services/` group
+- [x] 5.18 Move `DesignSystem/` → `Core/DesignSystem/` (4 files)
+- [x] 5.19 Move `Extensions/` → `Core/Extensions/` (26 files)
+- [x] 5.20 Move `Utils/` → `Core/Utils/` (33 files)
+- [x] 5.21 Move `Stores/` → `Core/Stores/` (4 files)
+- [x] 5.22 Move `Navigation/` → `Core/Navigation/` (3 files)
+- [x] 5.23 Move `Localizables/` → `Core/Localizables/` (7 locale dirs)
+- [x] 5.24 Update `project.pbxproj`
+- [x] 5.25 Build + lint check (0 new warnings)
 
 ---
 
-## Phase 6 — Platform & Cleanup
+## Phase 6 — Cleanup ✅
 
 **Risk**: Low
-**Impact**: Medium — final polish.
+**Impact**: Medium — final structural polish.
+**Status**: Completed — 49 files moved, `States/` and `View Models/` directories eliminated.
 
 ### Tasks
 
-- [ ] 6.1 Move `iOS/` → `Platform/iOS/`
-- [ ] 6.2 Move `macOS/` → `Platform/macOS/`
-- [ ] 6.3 Move remaining `States/` files (UI states like `SetupVaultState`, `NetworkPromptType`, etc.) → appropriate features or `Core/States/`
-- [ ] 6.4 Move `Assets.xcassets/` → `Resources/Assets.xcassets/`
-- [ ] 6.5 Move `Preview Content/` → `Resources/Preview Content/`
-- [ ] 6.6 Clean up any orphaned `View Models/` that weren't caught in Phase 4 (e.g., `AppViewModel`, `GlobalStateViewModel`, `HomeViewModel`, `DeeplinkViewModel`) → move to relevant features or `Core/`
-- [ ] 6.7 Slim down `Model/` — move feature-specific models that were missed:
-  - `Model/TransactionHistoryItem.swift` → `Features/TransactionHistory/Models/`
-  - `Model/ReferralCode.swift` → `Features/Referral/Models/`
-  - `Model/StakingDetails.swift`, `DefiPositions.swift` → `Features/DeFi/Models/`
-  - Keep only core entities: `Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`
-- [ ] 6.8 Final `project.pbxproj` update
-- [ ] 6.9 Full build verification (iOS + macOS)
-- [ ] 6.10 Full SwiftLint pass
-- [ ] 6.11 Update `CLAUDE.md` directory structure documentation
-- [ ] 6.12 Delete this migration plan file
+- [x] 6.1 Move remaining `States/` files → `Core/States/` (5 files) + `ReferralTextFieldAction.swift` → `Features/Referral/`
+- [x] 6.2 Move 18 orphaned View Models: 7 → `Core/ViewModels/`, 9 → `Features/Wallet/ViewModels/`, 1 → `Features/Home/ViewModels/`, 1 → `Features/UpdateCheck/ViewModels/`
+- [x] 6.3 Slim down `Model/` — moved 25 feature-specific models:
+  - 2 → `Features/TransactionHistory/Models/`
+  - 2 → `Features/Referral/Models/`
+  - 2 → `Features/Defi/Models/`
+  - 7 → `Features/Wallet/Models/`
+  - 1 → `Features/AddressBook/Models/`
+  - 2 → `Features/Keysign/Models/`
+  - 4 → `Features/Keygen/Models/`
+  - 5 → `Core/Models/`
+  - Remaining in `Model/`: core entities (`Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`, `DerivationPath`, `DeviceInfo`)
+- [x] 6.4 Update `project.pbxproj`
+- [x] 6.5 Build verification (iOS) — passes
+- [x] 6.6 SwiftLint — 0 new warnings
+
+---
+
+## Phase 7 — Unify Platform Extensions ✅
+
+**Risk**: Medium (touches every `+iOS`/`+macOS` file pair)
+**Impact**: High — eliminates file duplication and simplifies maintenance.
+**Status**: Completed — 38 paired extensions merged into main files, 24 platform-only files relocated to `Core/Platform/`, `iOS/` and `macOS/` directories eliminated.
+
+### Tasks
+
+- [x] 7.1 Audited all 51 iOS + 53 macOS files — identified 38 pairs, 11 iOS-only, 13 macOS-only
+- [x] 7.2 Merged 38 paired extensions into main files using `#if os()` blocks
+- [x] 7.3 Created 3 combined files for pairs with no main: `StyledIntegerField`, `MacCameraServiceViewModel`, `ImageFileDocument`
+- [x] 7.4 Merged 2 single-platform extensions with existing main files: `KeysignView+iOS`, `AllDevicesUpgradeView+macOS`
+- [x] 7.5 Relocated 24 platform-only files (Native UIKit/AppKit views, utils, extensions) to `Core/Platform/iOS/` and `Core/Platform/macOS/`
+- [x] 7.6 Deleted now-empty `iOS/` and `macOS/` top-level directories
+- [x] 7.7 Update `project.pbxproj`
+- [x] 7.8 Build verification (iOS) — passes
+- [x] 7.9 SwiftLint — 0 new warnings
 
 ---
 

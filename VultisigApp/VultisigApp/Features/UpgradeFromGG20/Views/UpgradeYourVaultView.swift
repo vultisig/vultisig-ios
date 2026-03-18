@@ -81,3 +81,20 @@ struct UpgradeYourVaultView: View {
         onUpgrade: {}
     )
 }
+
+#if os(iOS)
+extension UpgradeYourVaultView {
+    var container: some View {
+        content
+    }
+}
+#endif
+
+#if os(macOS)
+extension UpgradeYourVaultView {
+    var container: some View {
+        content
+            .frame(width: 500, height: 700)
+    }
+}
+#endif
