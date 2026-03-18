@@ -167,3 +167,57 @@ struct JoinKeysignView: View {
         .environmentObject(AppViewModel())
         .environmentObject(GlobalStateViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension JoinKeysignView {
+    var content: some View {
+        ZStack {
+            Background()
+            main
+        }
+        .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
+    }
+
+    var main: some View {
+        VStack {
+            Spacer()
+            states
+            Spacer()
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension JoinKeysignView {
+    var content: some View {
+        ZStack {
+            Background()
+            main
+        }
+    }
+
+    var main: some View {
+        VStack {
+            headerMac
+            Spacer()
+            states
+            Spacer()
+        }
+    }
+
+    var headerMac: some View {
+        JoinKeygenHeader(title: globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", hideBackButton: globalStateViewModel.showKeysignDoneView)
+    }
+}
+#endif

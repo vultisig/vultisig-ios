@@ -31,3 +31,33 @@ struct JoinKeysignDoneView: View {
     }
     .environmentObject(AppViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension JoinKeysignDoneSummary {
+    func copyHash(txid: String) {
+        let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
+        showAlert = true
+
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = urlStr
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+import Cocoa
+
+extension JoinKeysignDoneSummary {
+    func copyHash(txid: String) {
+        let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
+        showAlert = true
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(urlStr, forType: .string)
+    }
+}
+#endif

@@ -62,9 +62,9 @@ struct AsyncImageView: View {
         }
     }
 
-    #if os(iOS)
     func imageContainer(_ logoName: String) -> some View {
         ZStack {
+        #if os(iOS)
             if let image = UIImage(named: logoName) {
                 Image(uiImage: image)
                     .resizable()
@@ -73,9 +73,18 @@ struct AsyncImageView: View {
             } else {
                 fallbackText
             }
+            #else
+                if let image = NSImage(named: logoName) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: size.width, height: size.height)
+                } else {
+                    fallbackText
+                }
+            #endif
         }
     }
-    #endif
 
     var fallbackText: some View {
         Text(String(ticker.prefix(1)).uppercased())

@@ -1,9 +1,16 @@
 //
-//  MacCameraServiceViewModel+macOS.swift
+//  MacCameraServiceViewModel.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-08-15.
-//
+
+import SwiftUI
+
+#if os(iOS)
+import AVFoundation
+
+@MainActor
+class MacCameraServiceViewModel: NSObject, ObservableObject { }
+#endif
 
 #if os(macOS)
 import AVFoundation

@@ -301,3 +301,69 @@ struct JoinKeygenView: View {
         .environmentObject(ApplicationState())
         .environmentObject(HomeViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+import CodeScanner
+
+extension JoinKeygenView {
+    var content: some View {
+        ZStack {
+            Background()
+            shadow
+                .showIf(viewModel.status != .KeygenStarted)
+
+            if viewModel.areVaultsMismatched {
+                vaultsMismatchedError
+            } else {
+                main
+            }
+        }
+        .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(hideBackButton)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
+    }
+
+    var main: some View {
+        VStack(spacing: .zero) {
+            Spacer()
+            states
+            Spacer()
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension JoinKeygenView {
+    var content: some View {
+        ZStack {
+            Background()
+            shadow
+                .showIf(viewModel.status != .KeygenStarted)
+            main
+        }
+    }
+
+    var main: some View {
+        VStack(spacing: .zero) {
+            headerMac
+                .showIf(viewModel.status != .KeygenStarted)
+            Spacer()
+            states
+            Spacer()
+        }
+    }
+
+    var headerMac: some View {
+        JoinKeygenHeader(title: "joinKeygen", hideBackButton: hideBackButton)
+    }
+}
+#endif
