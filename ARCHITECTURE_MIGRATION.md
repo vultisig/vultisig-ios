@@ -108,83 +108,85 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 
 ---
 
-## Phase 4 — Migrate Features (one at a time)
+## Phase 4 — Migrate Features (one at a time) ✅
 
 **Risk**: Low per feature (incremental)
 **Impact**: High cumulative — moves from layer-based to feature-based.
+**Status**: Completed — 243 files moved via `git mv`, `project.pbxproj` updated via `xcodeproj` gem.
 
 For each feature: move its views from `Views/`, view models from `View Models/`, and any feature-specific services from `Services/` into `Features/<Name>/`.
 
 ### 4A — Send
 
-- [ ] 4A.1 Move `Views/Send/` → `Features/Send/Views/`
-- [ ] 4A.2 Move `View Models/SendCryptoViewModel.swift`, `SendCryptoVerifyViewModel.swift`, `SendCryptoVerifyLogic.swift` → `Features/Send/ViewModels/`
-- [ ] 4A.3 Move related services if any → `Features/Send/Services/`
-- [ ] 4A.4 Build + lint check
+- [x] 4A.1 Move `Views/Send/` → `Features/Send/Views/` (13 files)
+- [x] 4A.2 Move Send view models → `Features/Send/ViewModels/` (7 files)
+- [x] 4A.3 No dedicated Send services to move
+- [x] 4A.4 Build + lint check
 
 ### 4B — Swap
 
-- [ ] 4B.1 Move `Views/Swap/` → `Features/Swap/Views/`
-- [ ] 4B.2 Move `View Models/Swap/` → `Features/Swap/ViewModels/`
-- [ ] 4B.3 Build + lint check
+- [x] 4B.1 Move `Views/Swap/` → `Features/Swap/Views/` (9 files)
+- [x] 4B.2 Move `View Models/Swap/` + loose Swap VMs → `Features/Swap/ViewModels/` (4 files)
+- [x] 4B.3 Build + lint check
 
 ### 4C — Keygen
 
-- [ ] 4C.1 Move `Views/Keygen/` → `Features/Keygen/Views/`
-- [ ] 4C.2 Move `View Models/KeygenViewModel.swift`, `KeygenVerifyViewModel.swift` → `Features/Keygen/ViewModels/`
-- [ ] 4C.3 Move `Services/Keygen/` if it exists → `Features/Keygen/Services/`
-- [ ] 4C.4 Build + lint check
+- [x] 4C.1 Move `Views/Keygen/` → `Features/Keygen/Views/` (13 files)
+- [x] 4C.2 Move Keygen view models → `Features/Keygen/ViewModels/` (4 files)
+- [x] 4C.3 No `Services/Keygen/` exists
+- [x] 4C.4 Build + lint check
 
 ### 4D — Keysign
 
-- [ ] 4D.1 Move `Views/Keysign/` → `Features/Keysign/Views/`
-- [ ] 4D.2 Move `View Models/KeysignViewModel.swift` → `Features/Keysign/ViewModels/`
-- [ ] 4D.3 Move `Services/Keysign/` → `Features/Keysign/Services/`
-- [ ] 4D.4 Build + lint check
+- [x] 4D.1 Move `Views/Keysign/` → `Features/Keysign/Views/` (17 files)
+- [x] 4D.2 Move Keysign view models → `Features/Keysign/ViewModels/` (5 files)
+- [x] 4D.3 Move `Services/Keysign/` → `Features/Keysign/Services/` (14 files)
+- [x] 4D.4 Build + lint check
 
 ### 4E — Settings
 
-- [ ] 4E.1 Move `Views/Settings/` → `Features/Settings/Views/`
-- [ ] 4E.2 Move `View Models/SettingsViewModel.swift` and related → `Features/Settings/ViewModels/`
-- [ ] 4E.3 Move `Model/Settings/` → `Features/Settings/Models/`
-- [ ] 4E.4 Build + lint check
+- [x] 4E.1 Move `Views/Settings/` → `Features/Settings/Views/` (17 files)
+- [x] 4E.2 Move Settings view models → `Features/Settings/ViewModels/` (2 files)
+- [x] 4E.3 Move `Model/Settings/` → `Features/Settings/Models/` (1 file)
+- [x] 4E.4 Build + lint check
 
 ### 4F — Vault (main wallet screens)
 
-- [ ] 4F.1 Move `Views/Vault/` into `Features/Wallet/Views/`
-- [ ] 4F.2 Move `View Models/VaultDetailViewModel.swift`, `View Models/Vault/` → `Features/Wallet/ViewModels/`
-- [ ] 4F.3 Build + lint check
+- [x] 4F.1 Move `Views/Vault/` → `Features/Wallet/Views/` (11 files)
+- [x] 4F.2 Move Vault view models + `VaultPairDetailViewModel/` → `Features/Wallet/ViewModels/` (5 files)
+- [x] 4F.3 Build + lint check
 
 ### 4G — Referral
 
-- [ ] 4G.1 Move `Views/Referral/` → `Features/Referral/Views/`
-- [ ] 4G.2 Move `View Models/Referral/` → `Features/Referral/ViewModels/`
-- [ ] 4G.3 Build + lint check
+- [x] 4G.1 Move `Views/Referral/` → `Features/Referral/Views/` (13 files)
+- [x] 4G.2 Move `View Models/Referral/` → `Features/Referral/ViewModels/` (7 files)
+- [x] 4G.3 Build + lint check
 
 ### 4H — Address Book
 
-- [ ] 4H.1 Move `Views/Address Book/` → `Features/AddressBook/Views/`
-- [ ] 4H.2 Move `View Models/AddressBook/` → `Features/AddressBook/ViewModels/`
-- [ ] 4H.3 Move `Model/AddressBook/` → `Features/AddressBook/Models/`
-- [ ] 4H.4 Build + lint check
+- [x] 4H.1 Move `Views/Address Book/` → `Features/AddressBook/Views/` (7 files)
+- [x] 4H.2 Move `View Models/AddressBook/` → `Features/AddressBook/ViewModels/` (1 file)
+- [x] 4H.3 Move `Model/AddressBook/` → `Features/AddressBook/Models/` (1 file)
+- [x] 4H.4 Build + lint check
 
 ### 4I — Agent
 
-- [ ] 4I.1 Move `Views/Agent/` → `Features/Agent/Views/`
-- [ ] 4I.2 Move `View Models/Agent/` → `Features/Agent/ViewModels/`
-- [ ] 4I.3 Move `Services/Agent/` → `Features/Agent/Services/`
-- [ ] 4I.4 Build + lint check
+- [x] 4I.1 Move `Views/Agent/` → `Features/Agent/Views/` (5 files)
+- [x] 4I.2 Move `View Models/Agent/` → `Features/Agent/ViewModels/` (5 files)
+- [x] 4I.3 Move `Services/Agent/` → `Features/Agent/Services/` (6 files)
+- [x] 4I.4 Build + lint check
 
 ### 4J — FunctionCall
 
-- [ ] 4J.1 Move `Views/FunctionCall/` → `Features/FunctionCall/Views/`
-- [ ] 4J.2 Move `Model/FunctionCall/` → `Features/FunctionCall/Models/`
-- [ ] 4J.3 Build + lint check
+- [x] 4J.1 Move `Views/FunctionCall/` → `Features/FunctionCall/Views/` (6 files)
+- [x] 4J.2 Move `Model/FunctionCall/` → `Features/FunctionCall/Models/` (20 files)
+- [x] 4J.3 Move FunctionCall view models → `Features/FunctionCall/ViewModels/` (2 files)
+- [x] 4J.4 Build + lint check
 
 ### 4K — Reshare
 
-- [ ] 4K.1 Move `Views/Reshare/` → `Features/Reshare/Views/`
-- [ ] 4K.2 Build + lint check
+- [x] 4K.1 Move `Views/Reshare/` → `Features/Reshare/Views/` (3 files)
+- [x] 4K.2 Build + lint check
 
 ### 4L — Remaining Views cleanup
 
