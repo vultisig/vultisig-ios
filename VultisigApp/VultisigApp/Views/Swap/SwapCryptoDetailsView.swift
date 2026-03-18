@@ -62,9 +62,10 @@ struct SwapCryptoDetailsView: View {
     }
 
     var screenContent: some View {
-        Screen(showNavigationBar: false) {
+        Screen {
             view
         }
+        .screenNavigationBarHidden()
         .crossPlatformSheet(isPresented: $swapViewModel.showFromChainSelector) {
             SwapChainPickerView(
                 filterType: .swap,

@@ -8,25 +8,46 @@
 import SwiftUI
 
 struct Screen<Content: View>: View {
-    let title: String
-    let edgeInsets: ScreenEdgeInsets
-    let showNavigationBar: Bool
-    let backgroundType: BackgroundType
+    @Environment(\.screenTitle) private var envTitle
+    @Environment(\.screenEdgeInsets) private var envEdgeInsets
+    @Environment(\.screenBackgroundType) private var envBackgroundType
+    @Environment(\.screenNavigationBarHidden) private var envNavigationBarHidden
+    @Environment(\.screenBackButtonHidden) private var backButtonHidden
+    @Environment(\.screenIgnoresTopEdge) private var ignoresTopEdge
+    @Environment(\.screenToolbarItems) private var toolbarItems
+
+    // Legacy overrides from deprecated init
+    private var legacyTitle: String?
+    private var legacyNavigationBarHidden: Bool?
+    private var legacyEdgeInsets: ScreenEdgeInsets?
+    private var legacyBackgroundType: ScreenBackgroundType?
+
+    private var title: String { legacyTitle ?? envTitle }
+    private var edgeInsets: ScreenEdgeInsets { legacyEdgeInsets ?? envEdgeInsets }
+    private var backgroundType: ScreenBackgroundType { legacyBackgroundType ?? envBackgroundType }
+    private var navigationBarHidden: Bool { legacyNavigationBarHidden ?? envNavigationBarHidden }
 
     let content: () -> Content
 
+    init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    /// Deprecated initializer — use environment modifiers instead:
+    /// `.screenTitle()`, `.screenNavigationBarHidden()`, `.screenEdgeInsets()`, `.screenBackground()`
+    @available(*, deprecated, message: "Use Screen {} with .screenTitle(), .screenNavigationBarHidden(), .screenEdgeInsets(), .screenBackground() modifiers")
     init(
         title: String = "",
         showNavigationBar: Bool = true,
         edgeInsets: ScreenEdgeInsets = .noInsets,
-        backgroundType: BackgroundType = .plain,
+        backgroundType: ScreenBackgroundType = .plain,
         @ViewBuilder content: @escaping () -> Content
     ) {
-        self.title = title
-        self.showNavigationBar = showNavigationBar
-        self.edgeInsets = edgeInsets
-        self.backgroundType = backgroundType
         self.content = content
+        self.legacyTitle = title
+        self.legacyNavigationBarHidden = !showNavigationBar
+        self.legacyEdgeInsets = edgeInsets
+        self.legacyBackgroundType = backgroundType
     }
 
     var body: some View {
@@ -37,19 +58,29 @@ struct Screen<Content: View>: View {
 
     @ViewBuilder
     var container: some View {
-#if os(macOS)
-        VStack {
+        if navigationBarHidden {
             contentContainer
-                .if(showNavigationBar) {
-                    $0.crossPlatformToolbar(title)
-                }
-        }
-#else
-        contentContainer
-            .if(showNavigationBar) {
-                $0.crossPlatformToolbar(title)
+        } else {
+#if os(macOS)
+            VStack {
+                contentContainer
+                    .crossPlatformToolbar(
+                        title,
+                        ignoresTopEdge: ignoresTopEdge,
+                        showsBackButton: !backButtonHidden,
+                        items: toolbarItems
+                    )
             }
+#else
+            contentContainer
+                .crossPlatformToolbar(
+                    title,
+                    ignoresTopEdge: ignoresTopEdge,
+                    showsBackButton: !backButtonHidden,
+                    items: toolbarItems
+                )
 #endif
+        }
     }
 
     var contentContainer: some View {
@@ -80,12 +111,6 @@ struct Screen<Content: View>: View {
         case .clear:
             Color.clear
         }
-    }
-
-    enum BackgroundType {
-        case plain
-        case gradient
-        case clear
     }
 }
 

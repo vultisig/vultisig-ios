@@ -15,7 +15,7 @@ struct VaultAdvancedSettingsScreen: View {
     @State private var showDilithiumAlreadyGenerated = false
 
     var body: some View {
-        Screen(title: "advanced".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: 0) {
@@ -27,6 +27,7 @@ struct VaultAdvancedSettingsScreen: View {
                 }
             }
         }
+        .screenTitle("advanced".localized)
         .crossPlatformSheet(isPresented: $showDilithiumAlreadyGenerated) {
             DilithiumAlreadyGeneratedSheet(isPresented: $showDilithiumAlreadyGenerated)
         }

@@ -11,9 +11,10 @@ struct SettingsAdvancedView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
-        Screen(title: "advanced".localized) {
+        Screen {
             content
         }
+        .screenTitle("advanced".localized)
     }
 
     var content: some View {

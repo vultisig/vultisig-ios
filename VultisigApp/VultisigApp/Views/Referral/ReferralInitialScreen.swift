@@ -27,7 +27,7 @@ struct ReferralInitialScreen: View {
     }
 
     var body: some View {
-        Screen(title: "vultisig-referrals".localized) {
+        Screen {
             GeometryReader { geo in
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
@@ -50,6 +50,7 @@ struct ReferralInitialScreen: View {
                 }
             }
         }
+        .screenTitle("vultisig-referrals".localized)
         .overlay(referredViewModel.isLoading ? Loader() : nil)
         .onAppear {
             referralViewModel.currentVault = appViewModel.selectedVault

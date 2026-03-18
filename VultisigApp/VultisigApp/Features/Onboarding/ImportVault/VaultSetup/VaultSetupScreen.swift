@@ -76,7 +76,7 @@ struct VaultSetupScreen: View {
     // MARK: - Body
 
     var body: some View {
-        Screen(showNavigationBar: false, edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -104,7 +104,9 @@ struct VaultSetupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar(showsBackButton: currentStep == 0) {
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
+        .screenBackButtonHidden(currentStep > 0)
+        .screenToolbar {
             if currentStep > 0 {
                 CustomToolbarItem(placement: .leading) {
                     ToolbarButton(image: "chevron.left") {
