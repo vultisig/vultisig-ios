@@ -58,3 +58,29 @@ struct NetworkPromptCell: View {
 #Preview {
     NetworkPromptCell(network: .Internet, isSelected: true)
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension NetworkPromptCell {
+    var content: some View {
+        ZStack {
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                phoneCell
+            } else {
+                padCell
+            }
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension NetworkPromptCell {
+    var content: some View {
+        padCell
+    }
+}
+#endif

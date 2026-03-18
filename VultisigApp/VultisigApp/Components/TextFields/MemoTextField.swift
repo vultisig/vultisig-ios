@@ -58,3 +58,37 @@ struct MemoTextField: View {
 #Preview {
     MemoTextField(memo: .constant(""))
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension MemoTextField {
+    var container: some View {
+        content
+            .textInputAutocapitalization(.never)
+    }
+
+    func pasteAddress() {
+        if let clipboardContent = UIPasteboard.general.string {
+            memo = clipboardContent
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension MemoTextField {
+    var container: some View {
+        content
+    }
+
+    func pasteAddress() {
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            memo = clipboardContent
+        }
+    }
+}
+#endif

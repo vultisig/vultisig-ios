@@ -266,21 +266,23 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 
 ---
 
-## Phase 7 — Unify Platform Extensions
+## Phase 7 — Unify Platform Extensions ✅
 
 **Risk**: Medium (touches every `+iOS`/`+macOS` file pair)
 **Impact**: High — eliminates file duplication and simplifies maintenance.
-
-Merge `iOS/` and `macOS/` platform-specific view extensions back into their main files using `#if os(iOS)` / `#if os(macOS)` conditionals. This removes the separate platform directories entirely.
+**Status**: Completed — 38 paired extensions merged into main files, 24 platform-only files relocated to `Core/Platform/`, `iOS/` and `macOS/` directories eliminated.
 
 ### Tasks
 
-- [ ] 7.1 Audit all files in `iOS/` and `macOS/` — list each pair and its main counterpart
-- [ ] 7.2 For each pair, merge the platform-specific code into the main file using `#if os()` blocks
-- [ ] 7.3 Delete the now-empty `iOS/` and `macOS/` directories
-- [ ] 7.4 Update `project.pbxproj`
-- [ ] 7.5 Full build verification (iOS + macOS)
-- [ ] 7.6 Full SwiftLint pass
+- [x] 7.1 Audited all 51 iOS + 53 macOS files — identified 38 pairs, 11 iOS-only, 13 macOS-only
+- [x] 7.2 Merged 38 paired extensions into main files using `#if os()` blocks
+- [x] 7.3 Created 3 combined files for pairs with no main: `StyledIntegerField`, `MacCameraServiceViewModel`, `ImageFileDocument`
+- [x] 7.4 Merged 2 single-platform extensions with existing main files: `KeysignView+iOS`, `AllDevicesUpgradeView+macOS`
+- [x] 7.5 Relocated 24 platform-only files (Native UIKit/AppKit views, utils, extensions) to `Core/Platform/iOS/` and `Core/Platform/macOS/`
+- [x] 7.6 Deleted now-empty `iOS/` and `macOS/` top-level directories
+- [x] 7.7 Update `project.pbxproj`
+- [x] 7.8 Build verification (iOS) — passes
+- [x] 7.9 SwiftLint — 0 new warnings
 
 ---
 

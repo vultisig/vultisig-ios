@@ -1,9 +1,9 @@
 //
-//  StyledIntegerField+iOS.swift
+//  StyledIntegerField.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-09-11.
-//
+
+import SwiftUI
 
 #if os(iOS)
 import SwiftUI
@@ -12,6 +12,16 @@ extension StyledIntegerField {
     var container: some View {
         textField
             .keyboardType(.numberPad)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension StyledIntegerField {
+    var container: some View {
+        textField
     }
 }
 #endif

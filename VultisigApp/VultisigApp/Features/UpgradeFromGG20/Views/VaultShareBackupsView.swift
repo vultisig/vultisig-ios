@@ -81,3 +81,44 @@ struct VaultShareBackupsView: View {
 #Preview {
     VaultShareBackupsView(vault: Vault.example)
 }
+
+#if os(iOS)
+extension VaultShareBackupsView {
+    var content: some View {
+        ZStack {
+            VStack {
+                image
+                Spacer()
+            }
+
+            VStack(spacing: 0) {
+                Spacer()
+                description
+                button
+            }
+        }
+        .padding(36)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+extension VaultShareBackupsView {
+    var content: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            image
+            Spacer()
+            description
+            button
+        }
+        .padding(.bottom, 36)
+        .crossPlatformToolbar()
+    }
+}
+#endif

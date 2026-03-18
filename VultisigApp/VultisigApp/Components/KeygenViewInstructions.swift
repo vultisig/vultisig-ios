@@ -56,3 +56,43 @@ struct KeygenViewInstructions: View {
         KeygenViewInstructions()
     }
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension KeygenViewInstructions {
+    func setIndicator() {
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Theme.colors.bgButtonPrimary)
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Theme.colors.border)
+    }
+
+    var cards: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<7) { index in
+                getCard(for: index)
+            }
+        }
+        .tabViewStyle(PageTabViewStyle())
+        .frame(maxHeight: .infinity)
+        .foregroundColor(.blue)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension KeygenViewInstructions {
+    func setIndicator() {}
+
+    var cards: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<7) { index in
+                getCard(for: index)
+            }
+        }
+        .frame(maxHeight: .infinity)
+        .foregroundColor(.blue)
+    }
+}
+#endif

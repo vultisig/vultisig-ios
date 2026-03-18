@@ -208,3 +208,31 @@ struct ContentView: View {
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(DeeplinkViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension ContentView {
+    var container: some View {
+        content
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleTextColor(Theme.colors.textPrimary)
+            .onChange(of: vultExtensionViewModel.showImportView) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                navigationRouter.navigate(to: OnboardingRoute.importVaultShare)
+                vultExtensionViewModel.showImportView = false
+            }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension ContentView {
+    var container: some View {
+        content
+            .navigationTitle("Vultisig")
+    }
+}
+#endif

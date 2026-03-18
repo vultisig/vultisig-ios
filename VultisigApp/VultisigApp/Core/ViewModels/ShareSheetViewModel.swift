@@ -48,3 +48,27 @@ class ShareSheetViewModel: ObservableObject {
         qrCodeData = nil
     }
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension ShareSheetViewModel {
+    func setImage(_ renderer: ImageRenderer<QRShareSheetImage>) {
+        if let uiImage = renderer.uiImage {
+            renderedImage = Image(uiImage: uiImage)
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension ShareSheetViewModel {
+    func setImage(_ renderer: ImageRenderer<QRShareSheetImage>) {
+        if let nsImage = renderer.nsImage {
+            renderedImage = Image(nsImage: nsImage)
+        }
+    }
+}
+#endif
