@@ -4446,16 +4446,6 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		13DD54992E56556D007335DA /* Screen */ = {
-			isa = PBXGroup;
-			children = (
-				13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */,
-				37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */,
-				137B2C882E3A84440074F648 /* Screen.swift */,
-			);
-			path = Screen;
-			sourceTree = "<group>";
-		};
 		13DF05732E3CEF580000188C /* TextField */ = {
 			isa = PBXGroup;
 			children = (
@@ -6134,6 +6124,7 @@
 			isa = PBXGroup;
 			children = (
 				13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */,
+				37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */,
 				137B2C882E3A84440074F648 /* Screen.swift */,
 			);
 			name = Screen;
