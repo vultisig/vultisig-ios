@@ -1,6 +1,9 @@
 ---
 paths:
-  - "VultisigApp/**/Services/**/*.swift"
+  - "VultisigApp/**/Core/Services/**/*.swift"
+  - "VultisigApp/**/Core/Networking/**/*.swift"
+  - "VultisigApp/**/Features/*/Services/**/*.swift"
+  - "VultisigApp/**/Blockchain/**/*.swift"
 ---
 
 # Networking Rules
