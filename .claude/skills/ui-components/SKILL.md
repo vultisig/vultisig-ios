@@ -34,7 +34,7 @@ Theme.colors.alertWarning        // #FFC25C - Warning (orange)
 Theme.colors.turquoise           // #33E6BF - Brand turquoise
 ```
 
-**Reference:** `VultisigApp/VultisigApp/DesignSystem/DefaultTheme/ColorSystem.swift`
+**Reference:** `VultisigApp/VultisigApp/Core/DesignSystem/DefaultTheme/ColorSystem.swift`
 
 ### Fonts (`Theme.fonts.*`)
 
@@ -57,7 +57,7 @@ Theme.fonts.priceBodyL           // 18pt
 Theme.fonts.priceBodyS           // 14pt
 ```
 
-**Reference:** `VultisigApp/VultisigApp/DesignSystem/DefaultTheme/FontSystem.swift`
+**Reference:** `VultisigApp/VultisigApp/Core/DesignSystem/DefaultTheme/FontSystem.swift`
 
 ### Gradients
 
@@ -96,7 +96,7 @@ PrimaryButton(title: "Processing", isLoading: true, type: .primary, size: .mediu
 
 **Button Sizes:** `.medium` (full width, 14pt padding), `.small` (12pt), `.mini` (6pt), `.squared` (12pt radius)
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/Buttons/PrimaryButton/`
+**Reference:** `VultisigApp/VultisigApp/Components/Buttons/PrimaryButton/`
 
 ---
 
@@ -122,18 +122,18 @@ CommonTextField(
 
 Sizes: `.normal`, `.small`
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/TextField/CommonTextField.swift`
+**Reference:** `VultisigApp/VultisigApp/Components/TextField/CommonTextField.swift`
 
 ### Form Components
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| `AddressTextField` | `Views/Components/Forms/AddressTextField.swift` | Address input with QR/paste accessories |
-| `AmountTextField` | `Views/Components/Forms/AmountTextField.swift` | Amount with percentage + ticker |
-| `PercentageButtonsStack` | `Views/Components/Forms/PercentageButtonsStack.swift` | 25/50/75/100% quick-select |
-| `PercentageSliderView` | `Views/Components/Forms/PercentageSliderView.swift` | Percentage slider input |
-| `MemoTextField` | `Views/Components/TextFields/MemoTextField.swift` | Memo/note input |
-| `SearchTextField` | `Views/Components/TextField/SearchTextField.swift` | Search input |
+| `AddressTextField` | `Components/Forms/AddressTextField.swift` | Address input with QR/paste accessories |
+| `AmountTextField` | `Components/Forms/AmountTextField.swift` | Amount with percentage + ticker |
+| `PercentageButtonsStack` | `Components/Forms/PercentageButtonsStack.swift` | 25/50/75/100% quick-select |
+| `PercentageSliderView` | `Components/Forms/PercentageSliderView.swift` | Percentage slider input |
+| `MemoTextField` | `Components/TextFields/MemoTextField.swift` | Memo/note input |
+| `SearchTextField` | `Components/TextField/SearchTextField.swift` | Search input |
 
 ---
 
@@ -173,7 +173,7 @@ Screen(title: "Title", edgeInsets: ScreenEdgeInsets(bottom: 0)) { ... }
 Screen(title: "Title", backgroundType: .gradient) { ... }
 ```
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/Screen/Screen.swift`
+**Reference:** `VultisigApp/VultisigApp/Components/Screen/Screen.swift`
 
 ---
 
@@ -200,7 +200,7 @@ ToolbarButton(image: "trash", type: .destructive, action: onDelete)
 ToolbarButton(image: "x", iconSize: 16, action: onClose)
 ```
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/Toolbar/CrossPlatformToolbar/`
+**Reference:** `VultisigApp/VultisigApp/Components/Toolbar/CrossPlatformToolbar/`
 
 ---
 
@@ -227,7 +227,7 @@ Sheet content should include:
 .presentationDragIndicator(.visible)
 ```
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/Sheet/CrossPlatformSheet.swift`
+**Reference:** `VultisigApp/VultisigApp/Components/Sheet/CrossPlatformSheet.swift`
 
 ---
 
@@ -242,7 +242,7 @@ VStack { ... }
 ContainerView { ... }
 ```
 
-**Reference:** `VultisigApp/VultisigApp/Views/Components/Layout/ContainerView.swift`
+**Reference:** `VultisigApp/VultisigApp/Components/Layout/ContainerView.swift`
 
 ---
 
@@ -257,7 +257,7 @@ Icon(named: "checkmark", isSystem: true)  // SF Symbol
 
 ## Cell Types
 
-Available in `Views/Components/Cells/`:
+Available in `Components/Cells/`:
 
 | Cell | Purpose |
 |------|---------|
@@ -279,14 +279,14 @@ Available in `Views/Components/Cells/`:
 
 ## Banners & Loaders
 
-**Banners:** `Views/Components/Banners/`
+**Banners:** `Components/Banners/`
 - `InfoBannerView` - Info banner with icon, title, message
 - `BannerView` - Basic banner
 - `ActionBannerView` - Banner with action button
 - `OutlinedDisclaimer` - Outlined disclaimer box
 - `WarningView` - Warning message
 
-**Loaders:** `Views/Components/Loaders/`
+**Loaders:** `Components/Loaders/`
 - `Loader` - Main spinner
 - `CircularProgressIndicator` - Circular progress with percentage
 - `LoadingOverlayViewModifier` - Blocking loading overlay
@@ -300,7 +300,7 @@ SegmentedControl(...)      // Standard variant
 FilledSegmentedControl(...)  // Filled/solid variant
 ```
 
-**Reference:** `Views/Components/SegmentedControls/`
+**Reference:** `Components/SegmentedControls/`
 
 ---
 
@@ -323,7 +323,7 @@ FilledSegmentedControl(...)  // Filled/solid variant
 .sheetStyle(padding: 8)
 ```
 
-**References:** `Extensions/ViewExtension.swift`, `Views/Components/List/View+PlainListItem.swift`, `Views/Components/Sheet/View+SheetStyling.swift`
+**References:** `Core/Extensions/ViewExtension.swift`, `Components/List/View+PlainListItem.swift`, `Components/Sheet/View+SheetStyling.swift`
 
 ---
 
@@ -368,13 +368,13 @@ struct MyFeatureScreen: View {
 
 | Language | Directory |
 |----------|-----------|
-| English (base) | `VultisigApp/VultisigApp/Localizables/en.lproj/Localizable.strings` |
-| German | `VultisigApp/VultisigApp/Localizables/de.lproj/Localizable.strings` |
-| Spanish | `VultisigApp/VultisigApp/Localizables/es.lproj/Localizable.strings` |
-| Croatian | `VultisigApp/VultisigApp/Localizables/hr.lproj/Localizable.strings` |
-| Italian | `VultisigApp/VultisigApp/Localizables/it.lproj/Localizable.strings` |
-| Portuguese | `VultisigApp/VultisigApp/Localizables/pt.lproj/Localizable.strings` |
-| Simplified Chinese | `VultisigApp/VultisigApp/Localizables/zh-Hans.lproj/Localizable.strings` |
+| English (base) | `VultisigApp/VultisigApp/Core/Localizables/en.lproj/Localizable.strings` |
+| German | `VultisigApp/VultisigApp/Core/Localizables/de.lproj/Localizable.strings` |
+| Spanish | `VultisigApp/VultisigApp/Core/Localizables/es.lproj/Localizable.strings` |
+| Croatian | `VultisigApp/VultisigApp/Core/Localizables/hr.lproj/Localizable.strings` |
+| Italian | `VultisigApp/VultisigApp/Core/Localizables/it.lproj/Localizable.strings` |
+| Portuguese | `VultisigApp/VultisigApp/Core/Localizables/pt.lproj/Localizable.strings` |
+| Simplified Chinese | `VultisigApp/VultisigApp/Core/Localizables/zh-Hans.lproj/Localizable.strings` |
 
 ### Rules
 
@@ -384,7 +384,7 @@ struct MyFeatureScreen: View {
 4. **Alphabetical ordering** - Keep keys sorted alphabetically within each file
 5. **Use `sort_localizable.py`** after adding keys:
    ```bash
-   python3 VultisigApp/scripts/sort_localizable.py VultisigApp/VultisigApp/Localizables/en.lproj/Localizable.strings
+   python3 VultisigApp/scripts/sort_localizable.py VultisigApp/VultisigApp/Core/Localizables/en.lproj/Localizable.strings
    ```
 
 ### Example

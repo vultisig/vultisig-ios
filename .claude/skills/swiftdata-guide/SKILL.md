@@ -249,7 +249,7 @@ user-invocable: false
 
 ### DatabaseRate
 
-**File:** `Services/Rates/DatabaseRate.swift`
+**File:** `Core/Services/Rates/DatabaseRate.swift`
 
 ```swift
 @Model final class DatabaseRate {
@@ -264,7 +264,7 @@ user-invocable: false
 
 ## Storage Singleton
 
-**File:** `Services/Storage/Storage.swift`
+**File:** `Core/Storage/Storage.swift`
 
 ```swift
 final class Storage {
@@ -379,7 +379,7 @@ func updateBalances(vault: Vault) async {
 }
 ```
 
-**Reference:** `Services/BalanceService.swift`
+**Reference:** `Core/Services/BalanceService.swift`
 
 ---
 

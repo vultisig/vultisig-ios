@@ -89,3 +89,67 @@ struct AddressQRCodeView: View {
         isLoading: .constant(false)
     )
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension AddressQRCodeView {
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
+    var content: some View {
+        ZStack {
+            Background()
+            main
+        }
+        .navigationBarBackButtonHidden(true)
+        .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackSheetButton(showSheet: $showSheet)
+            }
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationQRShareButton(
+                    vault: vault,
+                    type: .Address,
+                    viewModel: shareSheetViewModel,
+                    title: groupedChain.name
+                )
+            }
+        }
+    }
+
+    var main: some View {
+        view
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension AddressQRCodeView {
+    var content: some View {
+        ZStack {
+            Background()
+            main
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+
+    var main: some View {
+        VStack {
+            headerMac
+            view
+        }
+    }
+
+    var headerMac: some View {
+        AddressQRCodeHeader(
+            vault: vault,
+            groupedChain: groupedChain,
+            shareSheetViewModel: shareSheetViewModel
+        )
+    }
+}
+#endif

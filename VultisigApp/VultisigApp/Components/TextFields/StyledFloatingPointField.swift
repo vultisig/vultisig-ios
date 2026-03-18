@@ -105,3 +105,24 @@ extension View {
         }
     }
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension StyledFloatingPointField {
+    var container: some View {
+        textField
+            .keyboardType(.decimalPad)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension StyledFloatingPointField {
+   var container: some View {
+       textField
+   }
+}
+#endif

@@ -300,3 +300,87 @@ extension SwapCryptoDetailsView {
 #Preview {
     SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), vault: .example)
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension SwapCryptoDetailsView {
+    var view: some View {
+       content
+            .toolbar {
+                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
+                    refreshCounter
+                }
+                if !swapViewModel.showFromChainSelector && !swapViewModel.showToChainSelector && !swapViewModel.showFromCoinSelector && !swapViewModel.showToCoinSelector {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        percentageButtons
+
+                        Spacer()
+
+                        Button {
+                            hideKeyboard()
+                        } label: {
+                            Text(NSLocalizedString("done", comment: "Done"))
+                        }
+                    }
+                }
+            }
+    }
+
+    var percentageButtons: some View {
+        SwapPercentageButtons(
+            show100: !tx.fromCoin.isNativeToken,
+            showAllPercentageButtons: $swapViewModel.showAllPercentageButtons
+        ) { percentage in
+            handlePercentageSelection(percentage)
+        }
+        .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)
+        .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
+    }
+
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                swapContent
+                summary
+            }
+        }
+        .refreshable {
+            swapViewModel.refreshData(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension SwapCryptoDetailsView {
+    var view: some View {
+       content
+            .padding(.horizontal, 25)
+    }
+
+    var percentageButtons: some View {
+        SwapPercentageButtons(
+            show100: !tx.fromCoin.isNativeToken,
+            showAllPercentageButtons: $swapViewModel.showAllPercentageButtons
+        ) { percentage in
+            handlePercentageSelection(percentage)
+        }
+    }
+
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                swapContent
+                    .zIndex(1)
+                percentageButtons
+                summary
+            }
+            .padding(.horizontal, 16)
+        }
+        .scrollClipDisabled()
+    }
+}
+#endif

@@ -89,3 +89,47 @@ struct VaultDetailQRCodeView: View {
 #Preview {
     VaultDetailQRCodeView(vault: Vault.example)
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension VaultDetailQRCodeView {
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
+    var buttons: some View {
+        VStack(spacing: 16) {
+            shareButton
+            saveButton
+        }
+    }
+
+    var shareButton: some View {
+        ZStack {
+            if idiom == .phone {
+                PrimaryButton(title: "share") {
+                    viewModel.shareImage(imageName)
+                }
+            } else {
+                shareLinkButton
+            }
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension VaultDetailQRCodeView {
+    var shareButton: some View {
+        shareLinkButton
+    }
+
+    var buttons: some View {
+        HStack(spacing: 16) {
+            shareButton
+            saveButton
+        }
+    }
+}
+#endif
