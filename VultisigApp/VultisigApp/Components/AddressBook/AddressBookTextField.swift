@@ -94,3 +94,93 @@ struct AddressBookTextField: View {
         AddressBookTextField(title: "title", text: .constant(""))
     }
 }
+
+#if os(iOS)
+import SwiftUI
+import CodeScanner
+
+extension AddressBookTextField {
+    var content: some View {
+        CommonTextField(
+            text: $text,
+            label: title.localized,
+            placeholder: "typeHere".localized,
+            isScrollable: isScrollable
+        ) {
+            if showActions {
+                HStack(spacing: 8) {
+                    scanButton
+                    pasteButton
+                }
+            }
+        }
+        .overlay {
+            ZStack {
+                if isUploading {
+                    overlay
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .crossPlatformSheet(isPresented: $showScanner) {
+            codeScanner
+        }
+    }
+    var codeScanner: some View {
+        AddressQRCodeScannerView(
+            showScanner: $showScanner,
+            onAddress: { handleScan(result: $0) }
+        )
+    }
+
+    func handleScan(result: String) {
+        text = Utils.sanitizeAddress(address: result)
+        showScanner = false
+    }
+
+    func pasteAddress() {
+        if let clipboardContent = UIPasteboard.general.string {
+            text = clipboardContent
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension AddressBookTextField {
+    var content: some View {
+        CommonTextField(
+            text: $text,
+            label: title.localized,
+            placeholder: "typeHere".localized
+        ) {
+            if showActions {
+                HStack(spacing: 8) {
+                    fileButton
+                    pasteButton
+                }
+            }
+        }
+        .overlay {
+            ZStack {
+                if isUploading {
+                    overlay
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
+            OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
+        }
+    }
+
+    func pasteAddress() {
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            text = clipboardContent
+        }
+    }
+}
+#endif

@@ -140,3 +140,38 @@ struct ImportVaultShareScreen: View {
         .environmentObject(VultExtensionViewModel())
         .environmentObject(AppViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension ImportVaultShareScreen {
+    var content: some View {
+        main
+            .toolbar {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationHelpButton()
+                }
+            }
+    }
+
+    var main: some View {
+        view
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension ImportVaultShareScreen {
+    var content: some View {
+        view
+            .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
+                Task {
+                    await backupViewModel.handleOnDrop(providers: providers)
+                }
+                return true
+            }
+    }
+}
+#endif

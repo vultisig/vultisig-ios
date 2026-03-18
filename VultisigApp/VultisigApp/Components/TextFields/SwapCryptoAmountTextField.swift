@@ -65,3 +65,26 @@ struct SwapCryptoAmountTextField: View {
     )
     .environmentObject(SettingsViewModel())
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension SwapCryptoAmountTextField {
+    func container(_ customBiding: Binding<String>) -> some View {
+        content(customBiding)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.decimalPad)
+            .textContentType(.oneTimeCode)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension SwapCryptoAmountTextField {
+    func container(_ customBiding: Binding<String>) -> some View {
+        content(customBiding)
+    }
+}
+#endif

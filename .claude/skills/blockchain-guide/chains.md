@@ -2,14 +2,14 @@
 
 ## Service Directories
 
-All under `VultisigApp/VultisigApp/Services/`:
+All under `VultisigApp/VultisigApp/Blockchain/`:
 
 | Directory | Chains |
 |-----------|--------|
 | `UTXO/` | Bitcoin, Bitcoin-Cash, Litecoin, Dogecoin, Dash, Zcash |
 | `Evm/` | Ethereum, Avalanche, Polygon, Base, Blast, Arbitrum, Optimism, BSC, Cronos, zkSync, Mantle, Hyperliquid, Sei |
 | `Thorchain/` | THORChain (3 networks) |
-| `THORChainAPI/` | THORChain REST API client |
+| `THORChain/API/` | THORChain REST API client |
 | `MayaChainAPI/` | MayaChain REST API client |
 | `Cosmos/` | Cosmos, Kujira, Osmosis, dYdX, Terra, Terra-Classic, Noble, Akash |
 | `Solana/` | Solana |
@@ -29,11 +29,11 @@ All under `VultisigApp/VultisigApp/Services/`:
 | `KyberSwap/` | KyberSwap DEX |
 | `LiFi/` | LiFi bridge aggregator |
 | `Fee/` | Fee calculation |
-| `Rates/` | Crypto exchange rates |
+| `Core/Services/Rates/` | Crypto exchange rates |
 
 ## BlockChainSpecific Enum
 
-**File:** `Services/Keysign/BlockChainSpecific.swift`
+**File:** `Features/Keysign/Services/BlockChainSpecific.swift`
 
 Each variant holds chain-specific transaction parameters:
 
@@ -56,7 +56,7 @@ enum BlockChainSpecific: Codable, Hashable {
 
 ## Endpoint Organization
 
-**File:** `Utils/Endpoint.swift` (~1500 lines)
+**File:** `Core/Utils/Endpoint.swift` (~1500 lines)
 
 Centralized endpoint management with categories:
 - **Base:** Vultisig API proxy (`api.vultisig.com`), relay router

@@ -40,3 +40,25 @@ struct OutlinedDisclaimer: View {
 #Preview {
     OutlinedDisclaimer(text: "String")
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension OutlinedDisclaimer {
+    var overlay: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .stroke(LinearGradient.primaryGradient, lineWidth: 1)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension OutlinedDisclaimer {
+    var overlay: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .stroke(LinearGradient.primaryGradient, lineWidth: 2)
+    }
+}
+#endif

@@ -1,0 +1,305 @@
+//
+//  SendGasSettingsView.swift
+//  VultisigApp
+//
+//  Created by Artur Guseinov on 28.08.2024.
+//
+
+import SwiftUI
+import BigInt
+
+protocol SendGasSettingsOutput {
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?)
+}
+
+struct SendGasSettingsView: View {
+
+    @Binding var isPresented: Bool
+    @StateObject var viewModel: SendGasSettingsViewModel
+
+    let output: SendGasSettingsOutput
+
+    var body: some View {
+        content
+            .task {
+                fetch()
+            }
+            .onChange(of: viewModel.selectedMode) { _, _ in
+                fetch()
+            }
+    }
+
+    var view: some View {
+        VStack(spacing: 16) {
+            feeModeRow
+
+            switch viewModel.chain.chainType {
+            case .UTXO, .Cardano:
+                networkRateRow
+            case .EVM:
+                baseFeeRow
+                gasLimitRow
+                totalFeeRow
+            default:
+                EmptyView()
+            }
+
+            Spacer()
+        }
+        .padding(.top, 16)
+    }
+
+    var networkRateRow: some View {
+        VStack {
+            title(text: "Network rate (sats/vbyte)")
+            textField(title: "Network rate", text: $viewModel.byteFee)
+        }
+    }
+
+    var baseFeeRow: some View {
+        VStack {
+            title(text: "Current Base Fee (Gwei)")
+            label(title: "Base Fee", text: viewModel.baseFee)
+        }
+    }
+
+    var gasLimitRow: some View {
+        VStack {
+            title(text: "Gas Limit")
+            textField(title: "Gas Limit", text: $viewModel.gasLimit)
+        }
+    }
+
+    var feeModeRow: some View {
+        VStack {
+            title(text: "Priority")
+
+            HStack {
+                ForEach(FeeMode.allCases, id: \.title) { mode in
+                    modeTab(mode: mode)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+
+    var totalFeeRow: some View {
+        VStack {
+            title(text: "Total Fee (Gwei)")
+            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat, disabled: true)
+        }
+    }
+
+    func title(text: String) -> some View {
+        HStack {
+            Text(text)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundColor(.white)
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+    }
+
+    func label(title: String, text: String) -> some View {
+        VStack {
+            HStack {
+                Text(text.isEmpty ? title : text)
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundColor(Theme.colors.textSecondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 16)
+
+                Spacer()
+            }
+
+        }
+        .background(
+            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+                .foregroundColor(Theme.colors.bgSurface1)
+        )
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+    }
+
+    func modeTab(mode: FeeMode) -> some View {
+        PrimaryButton(title: mode.title, type: viewModel.selectedMode == mode ? .primary : .secondary, size: .small) {
+            viewModel.selectedMode = mode
+        }
+    }
+
+    var backButton: some View {
+        Button(
+            action: {
+                isPresented = false
+            },
+            label: {
+                Image("x")
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+            }
+        )
+    }
+
+    var saveButton: some View {
+        Button("Save", action: {
+            save()
+            isPresented = false
+        })
+    }
+
+    func fetch() {
+        Task {
+            do {
+                try await viewModel.fetch(chain: viewModel.chain)
+            } catch {
+                print("Error fetching gas settings: \(error)")
+            }
+        }
+    }
+
+    func save() {
+        let gasLimit = BigInt(viewModel.gasLimit, radix: 10)
+        let byteFee = BigInt(viewModel.byteFee, radix: 10)
+
+        output.didSetFeeSettings(
+            chain: viewModel.chain,
+            mode: viewModel.selectedMode,
+            gasLimit: gasLimit,
+            byteFee: byteFee
+        )
+    }
+}
+
+#Preview {
+    struct Output: SendGasSettingsOutput {
+        // swiftlint:disable:next unused_parameter
+        func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) { }
+    }
+    let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .default)
+    return SendGasSettingsView(
+        isPresented: .constant(true),
+        viewModel: viewModel,
+        output: Output()
+    )
+}
+
+#if os(iOS)
+import SwiftUI
+
+extension SendGasSettingsView {
+    var content: some View {
+        NavigationView {
+            ZStack {
+                Background()
+                view
+            }
+            .navigationTitle("Advanced")
+            .navigationBarItems(leading: backButton, trailing: saveButton)
+            .navigationBarTitleTextColor(Theme.colors.textPrimary)
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
+        VStack {
+            HStack {
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textSecondary))
+                    .borderlessTextFieldStyle()
+                    .foregroundColor(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyMRegular)
+                    .submitLabel(.next)
+                    .disableAutocorrection(true)
+                    .textFieldStyle(TappableTextFieldStyle())
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.oneTimeCode)
+                    .disabled(disabled)
+
+                if let label {
+                    Text(label)
+                        .foregroundColor(Theme.colors.textSecondary)
+                        .font(Theme.fonts.bodyMRegular)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 16)
+        }
+        .background(
+            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+                .foregroundColor(Theme.colors.bgSurface1)
+        )
+        .padding(.horizontal, 16)
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension SendGasSettingsView {
+    var content: some View {
+        VStack {
+            view
+            buttons
+        }
+        .crossPlatformToolbar("advanced".localized, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
+        }
+        .applySheetSize()
+        .sheetStyle()
+    }
+
+    func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
+        VStack {
+            HStack {
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textSecondary))
+                    .borderlessTextFieldStyle()
+                    .foregroundColor(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyMRegular)
+                    .submitLabel(.next)
+                    .disableAutocorrection(true)
+                    .textFieldStyle(TappableTextFieldStyle())
+                    .colorScheme(.dark)
+                    .textContentType(.oneTimeCode)
+                    .disabled(disabled)
+
+                if let label {
+                    Text(label)
+                        .foregroundColor(Theme.colors.textSecondary)
+                        .font(Theme.fonts.bodyMRegular)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 16)
+        }
+        .background(
+            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+                .foregroundColor(Theme.colors.bgSurface1)
+        )
+        .padding(.horizontal, 16)
+    }
+
+    var buttons: some View {
+        VStack(spacing: 20) {
+            continueButton
+        }
+        .padding(40)
+    }
+
+    var continueButton: some View {
+        PrimaryButton(title: "save") {
+            save()
+            isPresented = false
+        }
+        .buttonStyle(.plain)
+    }
+}
+#endif

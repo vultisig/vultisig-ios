@@ -16,13 +16,13 @@ paths:
 
 | Language | Path |
 |----------|------|
-| English | `VultisigApp/VultisigApp/Localizables/en.lproj/Localizable.strings` |
-| German | `VultisigApp/VultisigApp/Localizables/de.lproj/Localizable.strings` |
-| Spanish | `VultisigApp/VultisigApp/Localizables/es.lproj/Localizable.strings` |
-| Croatian | `VultisigApp/VultisigApp/Localizables/hr.lproj/Localizable.strings` |
-| Italian | `VultisigApp/VultisigApp/Localizables/it.lproj/Localizable.strings` |
-| Portuguese | `VultisigApp/VultisigApp/Localizables/pt.lproj/Localizable.strings` |
-| Chinese (Simplified) | `VultisigApp/VultisigApp/Localizables/zh-Hans.lproj/Localizable.strings` |
+| English | `VultisigApp/VultisigApp/Core/Localizables/en.lproj/Localizable.strings` |
+| German | `VultisigApp/VultisigApp/Core/Localizables/de.lproj/Localizable.strings` |
+| Spanish | `VultisigApp/VultisigApp/Core/Localizables/es.lproj/Localizable.strings` |
+| Croatian | `VultisigApp/VultisigApp/Core/Localizables/hr.lproj/Localizable.strings` |
+| Italian | `VultisigApp/VultisigApp/Core/Localizables/it.lproj/Localizable.strings` |
+| Portuguese | `VultisigApp/VultisigApp/Core/Localizables/pt.lproj/Localizable.strings` |
+| Chinese (Simplified) | `VultisigApp/VultisigApp/Core/Localizables/zh-Hans.lproj/Localizable.strings` |
 
 ## Common Patterns
 
