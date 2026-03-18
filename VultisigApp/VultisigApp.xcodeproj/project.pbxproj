@@ -2801,6 +2801,16 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		066FD74C8CEE46C116ABCABF /* Migration */ = {
+			isa = PBXGroup;
+			children = (
+				13924F462ED88F4700F458D5 /* Migrations */,
+				13924F412ED88EB200F458D5 /* AppMigrationService.swift */,
+			);
+			name = Migration;
+			path = Migration;
+			sourceTree = "<group>";
+		};
 		067E738A363F1766270A7440 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
@@ -3457,18 +3467,6 @@
 			path = View;
 			sourceTree = "<group>";
 		};
-		135677B32E39369A002C10A2 /* Network */ = {
-			isa = PBXGroup;
-			children = (
-				135677AE2E39369A002C10A2 /* HTTPClient.swift */,
-				135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */,
-				135677B02E39369A002C10A2 /* HTTPError.swift */,
-				135677B12E39369A002C10A2 /* HTTPMethod.swift */,
-				135677B22E39369A002C10A2 /* TargetType.swift */,
-			);
-			path = Network;
-			sourceTree = "<group>";
-		};
 		135C148D2ED0E3F600459EFC /* Interactor */ = {
 			isa = PBXGroup;
 			children = (
@@ -3669,16 +3667,6 @@
 			path = Swaps;
 			sourceTree = "<group>";
 		};
-		138538DB2E61F576006DF7C7 /* VultiServer */ = {
-			isa = PBXGroup;
-			children = (
-				138538E12E61F67C006DF7C7 /* VultiServerService.swift */,
-				138538DE2E61F5C9006DF7C7 /* Model */,
-				138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */,
-			);
-			path = VultiServer;
-			sourceTree = "<group>";
-		};
 		138538DE2E61F5C9006DF7C7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -3736,15 +3724,6 @@
 				A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */,
 			);
 			path = Blockaid;
-			sourceTree = "<group>";
-		};
-		13924F432ED88EB200F458D5 /* AppMigration */ = {
-			isa = PBXGroup;
-			children = (
-				13924F462ED88F4700F458D5 /* Migrations */,
-				13924F412ED88EB200F458D5 /* AppMigrationService.swift */,
-			);
-			path = AppMigration;
 			sourceTree = "<group>";
 		};
 		13924F462ED88F4700F458D5 /* Migrations */ = {
@@ -3938,16 +3917,6 @@
 			path = LPs;
 			sourceTree = "<group>";
 		};
-		13AF0D162E4CE64B004D4FD2 /* Navigation */ = {
-			isa = PBXGroup;
-			children = (
-				13AF0D222E4CE7A6004D4FD2 /* VultisigRouter.swift */,
-				13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */,
-				13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */,
-			);
-			path = Navigation;
-			sourceTree = "<group>";
-		};
 		13AF0D1B2E4CE731004D4FD2 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
@@ -4049,17 +4018,6 @@
 				13B25BDC2E82C93D002BCF55 /* BoolMatrix.swift */,
 			);
 			path = Types;
-			sourceTree = "<group>";
-		};
-		13BD8D262E3D49600013B67E /* DesignSystem */ = {
-			isa = PBXGroup;
-			children = (
-				13BD8D2A2E3D49AD0013B67E /* Colors */,
-				13BD8D2E2E3D49AD0013B67E /* DefaultTheme */,
-				13BD8D312E3D49AD0013B67E /* Fonts */,
-				13BD8D3F2E3D49AD0013B67E /* Theme */,
-			);
-			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		13BD8D2A2E3D49AD0013B67E /* Colors */ = {
@@ -4612,6 +4570,31 @@
 			path = Providers;
 			sourceTree = "<group>";
 		};
+		1DA42C2C4B5A5496CEF17078 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */,
+				13EF34EC2EF46EB000F60DD3 /* ScannerResultManager.swift */,
+				B51A0AF12ED6C077002EFA48 /* ABIDecoder.swift */,
+				13B25BC42E82C915002BCF55 /* QRCodeGenerator */,
+				132FB6562E78705400599464 /* Platforms */,
+				1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */,
+				13AF0D532E4CF5AE004D4FD2 /* Formatters */,
+				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
+				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
+				A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */,
+				A690E00D2BC0ED290006DC0D /* URL.swift */,
+				DE8AD7462BC78FA400339775 /* Encryption.swift */,
+				A62758F32B97CE7E00ADE3A6 /* Styles */,
+				DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */,
+				A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */,
+				A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */,
+				A6C670C82C9E773300F59B6A /* VULTFileDocument.swift */,
+			);
+			name = Utils;
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		1DE5AB53BF1492862702BD62 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -4628,6 +4611,22 @@
 				793C5E86996C60EE7283A542 /* Service */,
 			);
 			path = Tron;
+			sourceTree = "<group>";
+		};
+		1EEE604925E3AE8A095D6B50 /* TransactionStatus */ = {
+			isa = PBXGroup;
+			children = (
+				A7D2B4750EBE796D6A026060 /* TransactionStatusProvider.swift */,
+				6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */,
+				B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */,
+				A7E88FD1F757A82DCD9EF240 /* BackgroundTransactionPoller.swift */,
+				18EE005289AE2A1BB168B097 /* Providers */,
+				B4A3249B8BCC2C8C0CE3D660 /* TargetType */,
+				CE39DC57FC5EC4DF4C5A0888 /* Models */,
+				6C8B2EC16FB39D6D6401EF80 /* TransactionStatusPoller.swift */,
+			);
+			name = TransactionStatus;
+			path = TransactionStatus;
 			sourceTree = "<group>";
 		};
 		1FD7F67D2F112A1D38165B30 /* Service */ = {
@@ -4658,6 +4657,16 @@
 			path = Send;
 			sourceTree = "<group>";
 		};
+		2542AB1BF5C69A31E518FBAA /* FastVault */ = {
+			isa = PBXGroup;
+			children = (
+				A51AE8BA2C931C2000EF9A7A /* FastVaultService.swift */,
+				615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */,
+			);
+			name = FastVault;
+			path = FastVault;
+			sourceTree = "<group>";
+		};
 		285815A88CBF3E83A2D9E12A /* Common */ = {
 			isa = PBXGroup;
 			children = (
@@ -4670,6 +4679,34 @@
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		29E6EA6384CB0643298B464C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				366FA5E697CF1DB229601D77 /* Fee */,
+				BD9EA304B4950F2F99B6DBB7 /* Rates */,
+				1EEE604925E3AE8A095D6B50 /* TransactionStatus */,
+				C44CBDB3101D5D02F0F8860C /* VultiServer */,
+				2542AB1BF5C69A31E518FBAA /* FastVault */,
+				DDE9053DABA047A05544C2AD /* Actions */,
+				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
+				B59173302C641F3D007100E3 /* CoinService.swift */,
+				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
+				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
+				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
+				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
+				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
+				DE8B69982CD4602500F53E14 /* PayloadService.swift */,
+				A598FD792CE2098800F26516 /* MemoDecodingService.swift */,
+				B51A0AEF2ED6C03F002EFA48 /* FourByteRepository.swift */,
+				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
+				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
+				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
+				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
+			);
+			name = Services;
+			path = Services;
 			sourceTree = "<group>";
 		};
 		2A7CCF4617A09CA61E44D836 /* Settings */ = {
@@ -4717,6 +4754,18 @@
 				DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		2D4022AECAFA3883AD3497CD /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				13BD8D2A2E3D49AD0013B67E /* Colors */,
+				13BD8D2E2E3D49AD0013B67E /* DefaultTheme */,
+				13BD8D312E3D49AD0013B67E /* Fonts */,
+				13BD8D3F2E3D49AD0013B67E /* Theme */,
+			);
+			name = DesignSystem;
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		2D4260B983F23D81A116D8F3 /* ViewModels */ = {
@@ -4798,6 +4847,16 @@
 			path = ActionBanner;
 			sourceTree = "<group>";
 		};
+		366FA5E697CF1DB229601D77 /* Fee */ = {
+			isa = PBXGroup;
+			children = (
+				B505BF8E2E686D1500A5698B /* FeeService.swift */,
+				A571F4672C7E48A1000F46D3 /* FeeMode.swift */,
+			);
+			name = Fee;
+			path = Fee;
+			sourceTree = "<group>";
+		};
 		37D60F79AEF4B0086F5C8338 /* Service */ = {
 			isa = PBXGroup;
 			children = (
@@ -4807,6 +4866,23 @@
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		3892208B160FB0022CC54813 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				014298C33F1D21BC1F80F96A /* NotificationAPI.swift */,
+				180DFF02CBB6957B351A9616 /* DeviceRegistrationRequest.swift */,
+				A0C582CC92369B7BB13C527B /* NotifyRequest.swift */,
+				93EF791E371FD688E09C0829 /* NotificationService.swift */,
+				FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */,
+				4B48C2DF897CAFC419193329 /* PushNotificationManaging.swift */,
+				5A3F77846C9027CFB58F3364 /* DeviceUnregisterRequest.swift */,
+				4108DBD8BB46387973946D79 /* ForegroundNotificationData.swift */,
+				8E6A38BCCA67E47B84787AA0 /* ForegroundNotificationParser.swift */,
+			);
+			name = Notifications;
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 		39FD8EF118F515C725488858 /* banxa */ = {
@@ -4848,6 +4924,22 @@
 			);
 			name = Views;
 			path = Views;
+			sourceTree = "<group>";
+		};
+		3CDE29178DB42D74A0FE5D8B /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				58D99A66B6B4E35805A71583 /* Biometry */,
+				1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */,
+				1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */,
+				1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */,
+				135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */,
+				135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */,
+				A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */,
+				A6SEC0172E1234567890AB02 /* Providers */,
+			);
+			name = Security;
+			path = Security;
 			sourceTree = "<group>";
 		};
 		3D45EF27AE8B001AA72C0911 /* SegmentedControls */ = {
@@ -4902,48 +4994,16 @@
 			path = Signing;
 			sourceTree = "<group>";
 		};
-		461BD0962B7EFA8000BFF703 /* Services */ = {
+		45B2AA5597A10A5738E40FE4 /* Protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				B51A0AEF2ED6C03F002EFA48 /* FourByteRepository.swift */,
-				13924F432ED88EB200F458D5 /* AppMigration */,
-				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
-				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
-				138538DB2E61F576006DF7C7 /* VultiServer */,
-				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
-				135677B32E39369A002C10A2 /* Network */,
-				DE8B69982CD4602500F53E14 /* PayloadService.swift */,
-				A58760522CBD3CD90070956A /* Keychain */,
-				A587604F2CBD2D580070956A /* Biometry */,
-				A51AE8BB2C931C2000EF9A7A /* FastVault */,
-				A5A6969C2C74D0DB0075AA45 /* Fee */,
-				A5E841C92C639550009325CB /* Rates */,
-				A563867E2C3A2121008B848E /* Protobuf */,
-				A50E79382BFE30170031DB47 /* Storage */,
-				A5D49F542BE26BA7001766C8 /* Actions */,
-				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
-				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
-				A598FD792CE2098800F26516 /* MemoDecodingService.swift */,
-				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
-				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
-				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
-				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
-				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
-				B59173302C641F3D007100E3 /* CoinService.swift */,
-				A6SEC0152E1234567890AB02 /* Security */,
-				EE0B29378FFAFF4BCC53B85C /* TransactionStatus */,
-				EB448FA7EDF6CBF9FDF53F3E /* Notification */,
-				FA38DBFD89B05708A7481A06 /* TransactionHistory */,
+				A58CC34A2C32FA760086D16B /* ProtoMappable.swift */,
+				A563867F2C3A213B008B848E /* ProtoMappableError.swift */,
+				A56386832C3A2167008B848E /* ProtoSerializer.swift */,
+				A56386812C3A2148008B848E /* ProtoCoinResolver.swift */,
 			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		468029352BC8E4CE005A9EEF /* Localizables */ = {
-			isa = PBXGroup;
-			children = (
-				468029302BC8E4CE005A9EEF /* Localizable.strings */,
-			);
-			path = Localizables;
+			name = Protobuf;
+			path = Protobuf;
 			sourceTree = "<group>";
 		};
 		469ED3972B98E885008D4951 /* BalanceManager */ = {
@@ -5056,6 +5116,16 @@
 			);
 			name = ViewModels;
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		58D99A66B6B4E35805A71583 /* Biometry */ = {
+			isa = PBXGroup;
+			children = (
+				A6C671142CA396D600F59B6A /* AuthenticationType.swift */,
+				A58760502CBD2D670070956A /* BiometryService.swift */,
+			);
+			name = Biometry;
+			path = Biometry;
 			sourceTree = "<group>";
 		};
 		594CE5503DF47111592B31F4 /* Reshare */ = {
@@ -5387,6 +5457,19 @@
 			path = Solana;
 			sourceTree = "<group>";
 		};
+		81619721F7CA8243B5852F14 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				135677AE2E39369A002C10A2 /* HTTPClient.swift */,
+				135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */,
+				135677B02E39369A002C10A2 /* HTTPError.swift */,
+				135677B12E39369A002C10A2 /* HTTPMethod.swift */,
+				135677B22E39369A002C10A2 /* TargetType.swift */,
+			);
+			name = Networking;
+			path = Networking;
+			sourceTree = "<group>";
+		};
 		842E6B2A525A7A386658BC78 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -5410,6 +5493,18 @@
 			);
 			name = Views;
 			path = Views;
+			sourceTree = "<group>";
+		};
+		859B9A2C33091F05B4840D8A /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				A61BC8182BA2687D00484689 /* TokensStore.swift */,
+				8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */,
+				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
+				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
+			);
+			name = Stores;
+			path = Stores;
 			sourceTree = "<group>";
 		};
 		87B4D75973139ADCCC758246 /* Models */ = {
@@ -5496,6 +5591,16 @@
 			path = Signing;
 			sourceTree = "<group>";
 		};
+		914D2EBDD985490C0E1866C5 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				A50E79392BFE30210031DB47 /* Storage.swift */,
+				A286CE8A896558D500DD1489 /* Keychain */,
+			);
+			name = Storage;
+			path = Storage;
+			sourceTree = "<group>";
+		};
 		933707EE007CA06696E1B4B6 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -5553,6 +5658,17 @@
 				BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */,
 			);
 			path = Circle;
+			sourceTree = "<group>";
+		};
+		A286CE8A896558D500DD1489 /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				A58760532CBD3CE00070956A /* Keychain.swift */,
+				A58760572CBD3F1A0070956A /* KeychainService.swift */,
+				A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */,
+			);
+			name = Keychain;
+			path = Keychain;
 			sourceTree = "<group>";
 		};
 		A32EC3D2F5515B4CF2653A80 /* Keysign */ = {
@@ -5615,96 +5731,6 @@
 			);
 			name = SheetPresentedCounterManager;
 			path = SheetPresentedCounterManager;
-			sourceTree = "<group>";
-		};
-		A50E79382BFE30170031DB47 /* Storage */ = {
-			isa = PBXGroup;
-			children = (
-				A50E79392BFE30210031DB47 /* Storage.swift */,
-			);
-			path = Storage;
-			sourceTree = "<group>";
-		};
-		A51AE8BB2C931C2000EF9A7A /* FastVault */ = {
-			isa = PBXGroup;
-			children = (
-				A51AE8BA2C931C2000EF9A7A /* FastVaultService.swift */,
-				615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */,
-			);
-			path = FastVault;
-			sourceTree = "<group>";
-		};
-		A563867E2C3A2121008B848E /* Protobuf */ = {
-			isa = PBXGroup;
-			children = (
-				A58CC34A2C32FA760086D16B /* ProtoMappable.swift */,
-				A563867F2C3A213B008B848E /* ProtoMappableError.swift */,
-				A56386832C3A2167008B848E /* ProtoSerializer.swift */,
-				A56386812C3A2148008B848E /* ProtoCoinResolver.swift */,
-			);
-			path = Protobuf;
-			sourceTree = "<group>";
-		};
-		A587604F2CBD2D580070956A /* Biometry */ = {
-			isa = PBXGroup;
-			children = (
-				A6C671142CA396D600F59B6A /* AuthenticationType.swift */,
-				A58760502CBD2D670070956A /* BiometryService.swift */,
-			);
-			path = Biometry;
-			sourceTree = "<group>";
-		};
-		A58760522CBD3CD90070956A /* Keychain */ = {
-			isa = PBXGroup;
-			children = (
-				A58760532CBD3CE00070956A /* Keychain.swift */,
-				A58760572CBD3F1A0070956A /* KeychainService.swift */,
-				A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */,
-			);
-			path = Keychain;
-			sourceTree = "<group>";
-		};
-		A5A6969C2C74D0DB0075AA45 /* Fee */ = {
-			isa = PBXGroup;
-			children = (
-				B505BF8E2E686D1500A5698B /* FeeService.swift */,
-				A571F4672C7E48A1000F46D3 /* FeeMode.swift */,
-			);
-			path = Fee;
-			sourceTree = "<group>";
-		};
-		A5D49F542BE26BA7001766C8 /* Actions */ = {
-			isa = PBXGroup;
-			children = (
-				B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */,
-				A5D49F552BE26BB9001766C8 /* ChainAction.swift */,
-				A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */,
-				A54676512C179A93004DD782 /* Coin+Swaps.swift */,
-				A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */,
-			);
-			path = Actions;
-			sourceTree = "<group>";
-		};
-		A5E841C92C639550009325CB /* Rates */ = {
-			isa = PBXGroup;
-			children = (
-				A5E841CA2C639556009325CB /* DatabaseRate.swift */,
-				A594A9EA2C64364600A3D09E /* Rate.swift */,
-				A5E841CC2C63A987009325CB /* RateProvider.swift */,
-				A594A9EC2C6436A800A3D09E /* DBMappable.swift */,
-			);
-			path = Rates;
-			sourceTree = "<group>";
-		};
-		A61BC8172BA2685E00484689 /* Stores */ = {
-			isa = PBXGroup;
-			children = (
-				A61BC8182BA2687D00484689 /* TokensStore.swift */,
-				8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */,
-				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
-				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
-			);
-			path = Stores;
 			sourceTree = "<group>";
 		};
 		A62758F32B97CE7E00ADE3A6 /* Styles */ = {
@@ -5982,39 +6008,6 @@
 			path = "View Models";
 			sourceTree = "<group>";
 		};
-		A65649D62B96602700E4B329 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				13398B152EE0F261002419F0 /* Wallet.swift */,
-				1348562C2EB519EA003D10BE /* Combine */,
-				13453ACB2E4A433000D76629 /* Bundle.swift */,
-				13D764392E4127AF00F048DE /* Array.swift */,
-				B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */,
-				465036BA2BCF968E00856B34 /* BigInt.swift */,
-				A65649D82B96602700E4B329 /* BigUIntExtension.swift */,
-				A65649D92B96602700E4B329 /* Int64Extension.swift */,
-				A65649DA2B96602700E4B329 /* DataExtension.swift */,
-				A5340A662CEC9503002ADD35 /* DateExtension.swift */,
-				A65649DB2B96602700E4B329 /* BitcoinTransactionExtension.swift */,
-				A65649DC2B96602700E4B329 /* StringExtension.swift */,
-				A65649DD2B96602700E4B329 /* VaultExtension.swift */,
-				A65649DE2B96602700E4B329 /* TssExtension.swift */,
-				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
-				DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */,
-				463408652BA9C1D200246248 /* CoinTypeExtension.swift */,
-				DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */,
-				A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */,
-				46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */,
-				46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */,
-				B52196412C1296DF0021D27A /* IntExtension.swift */,
-				B590DF892C2E88F900ED934E /* VoteOption.swift */,
-				B520B2FD2C3250230097C590 /* TextField.swift */,
-				B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */,
-				A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
 		A65649F32B966CCB00E4B329 /* States */ = {
 			isa = PBXGroup;
 			children = (
@@ -6152,20 +6145,6 @@
 			path = Animations;
 			sourceTree = "<group>";
 		};
-		A6SEC0152E1234567890AB02 /* Security */ = {
-			isa = PBXGroup;
-			children = (
-				1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */,
-				1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */,
-				1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */,
-				135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */,
-				135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */,
-				A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */,
-				A6SEC0172E1234567890AB02 /* Providers */,
-			);
-			path = Security;
-			sourceTree = "<group>";
-		};
 		A6SEC0172E1234567890AB02 /* Providers */ = {
 			isa = PBXGroup;
 			children = (
@@ -6203,6 +6182,27 @@
 				EBDEEE4DC928CF9BCF5A8DA6 /* TransactionHistoryTab.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		AD6BF6812A69CB17FBDCD938 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				81619721F7CA8243B5852F14 /* Networking */,
+				914D2EBDD985490C0E1866C5 /* Storage */,
+				3CDE29178DB42D74A0FE5D8B /* Security */,
+				3892208B160FB0022CC54813 /* Notifications */,
+				29E6EA6384CB0643298B464C /* Services */,
+				45B2AA5597A10A5738E40FE4 /* Protobuf */,
+				066FD74C8CEE46C116ABCABF /* Migration */,
+				2D4022AECAFA3883AD3497CD /* DesignSystem */,
+				E5AB00A01BFB0CE38326BA2A /* Extensions */,
+				1DA42C2C4B5A5496CEF17078 /* Utils */,
+				859B9A2C33091F05B4840D8A /* Stores */,
+				CA2C612D1623E874D8FD0B7C /* Navigation */,
+				EB636E62B0416060D8DDFFAF /* Localizables */,
+			);
+			name = Core;
+			path = Core;
 			sourceTree = "<group>";
 		};
 		B1E8E3D48BEA3292604DBF38 /* Signing */ = {
@@ -6348,6 +6348,18 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
+		BD9EA304B4950F2F99B6DBB7 /* Rates */ = {
+			isa = PBXGroup;
+			children = (
+				A5E841CA2C639556009325CB /* DatabaseRate.swift */,
+				A594A9EA2C64364600A3D09E /* Rate.swift */,
+				A5E841CC2C63A987009325CB /* RateProvider.swift */,
+				A594A9EC2C6436A800A3D09E /* DBMappable.swift */,
+			);
+			name = Rates;
+			path = Rates;
+			sourceTree = "<group>";
+		};
 		C393DF5B896DB2B75D7C2045 /* Signing */ = {
 			isa = PBXGroup;
 			children = (
@@ -6355,6 +6367,17 @@
 				A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */,
 			);
 			path = Signing;
+			sourceTree = "<group>";
+		};
+		C44CBDB3101D5D02F0F8860C /* VultiServer */ = {
+			isa = PBXGroup;
+			children = (
+				138538E12E61F67C006DF7C7 /* VultiServerService.swift */,
+				138538DE2E61F5C9006DF7C7 /* Model */,
+				138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */,
+			);
+			name = VultiServer;
+			path = VultiServer;
 			sourceTree = "<group>";
 		};
 		C482305375C4876B21F7854C /* Services */ = {
@@ -6389,6 +6412,17 @@
 				9690397CDD1E0CE7CD6E2A18 /* Circle */,
 			);
 			path = Protocols;
+			sourceTree = "<group>";
+		};
+		CA2C612D1623E874D8FD0B7C /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13AF0D222E4CE7A6004D4FD2 /* VultisigRouter.swift */,
+				13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */,
+				13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */,
+			);
+			name = Navigation;
+			path = Navigation;
 			sourceTree = "<group>";
 		};
 		CA5D2C06B4B37316FBB2E449 /* Services */ = {
@@ -6440,6 +6474,7 @@
 				0394970AFE40C0213C84704C /* TransactionHistoryViewModel.swift */,
 				1E33EE28C2420BB980A60F3D /* TransactionHistoryScreen.swift */,
 				5E57A0B88D3B8E54A910757C /* Views */,
+				D3F16245E7B3DF49987BD35C /* Services */,
 			);
 			path = TransactionHistory;
 			sourceTree = "<group>";
@@ -6586,6 +6621,16 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		D3F16245E7B3DF49987BD35C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				6889A906A43CE1C527937EF4 /* TransactionHistoryStorage.swift */,
+				EF76F00EB2557D6509D213EB /* TransactionHistoryRecorder.swift */,
+			);
+			name = Services;
+			path = Services;
+			sourceTree = "<group>";
+		};
 		D4549738A3166BB28C3DE460 /* FunctionCall */ = {
 			isa = PBXGroup;
 			children = (
@@ -6686,28 +6731,17 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
-		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
+		DDE9053DABA047A05544C2AD /* Actions */ = {
 			isa = PBXGroup;
 			children = (
-				13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */,
-				13EF34EC2EF46EB000F60DD3 /* ScannerResultManager.swift */,
-				B51A0AF12ED6C077002EFA48 /* ABIDecoder.swift */,
-				13B25BC42E82C915002BCF55 /* QRCodeGenerator */,
-				132FB6562E78705400599464 /* Platforms */,
-				1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */,
-				13AF0D532E4CF5AE004D4FD2 /* Formatters */,
-				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
-				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
-				A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */,
-				A690E00D2BC0ED290006DC0D /* URL.swift */,
-				DE8AD7462BC78FA400339775 /* Encryption.swift */,
-				A62758F32B97CE7E00ADE3A6 /* Styles */,
-				DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */,
-				A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */,
-				A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */,
-				A6C670C82C9E773300F59B6A /* VULTFileDocument.swift */,
+				B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */,
+				A5D49F552BE26BB9001766C8 /* ChainAction.swift */,
+				A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */,
+				A54676512C179A93004DD782 /* Coin+Swaps.swift */,
+				A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */,
 			);
-			path = Utils;
+			name = Actions;
+			path = Actions;
 			sourceTree = "<group>";
 		};
 		DE49A15A2B65F6D9000F3AFB = {
@@ -6744,18 +6778,11 @@
 			isa = PBXGroup;
 			children = (
 				13C880552E70A312009C67F1 /* Features */,
-				13AF0D162E4CE64B004D4FD2 /* Navigation */,
-				13BD8D262E3D49600013B67E /* DesignSystem */,
 				D9AD8ED82B6722AC0009F8D5 /* Model */,
 				A65649D52B965FC400E4B329 /* View Models */,
-				461BD0962B7EFA8000BFF703 /* Services */,
 				A627664E2C85273B002C666A /* iOS */,
 				A627664F2C852745002C666A /* macOS */,
 				A65649F32B966CCB00E4B329 /* States */,
-				A65649D62B96602700E4B329 /* Extensions */,
-				A61BC8172BA2685E00484689 /* Stores */,
-				DE1572AA2B7174C5009BC7C5 /* Utils */,
-				468029352BC8E4CE005A9EEF /* Localizables */,
 				A633B11D2B993BCD003D1738 /* Resources */,
 				DE49A16F2B65F6DB000F3AFB /* Preview Content */,
 				DE49A16C2B65F6DB000F3AFB /* Assets.xcassets */,
@@ -6764,6 +6791,7 @@
 				69FF89934C25DDF0E171C6A5 /* App */,
 				D38BA0B26789AF2274276907 /* Components */,
 				6FDBF91DC83C24A98DACAD37 /* Blockchain */,
+				AD6BF6812A69CB17FBDCD938 /* Core */,
 			);
 			path = VultisigApp;
 			sourceTree = "<group>";
@@ -6912,6 +6940,40 @@
 			path = Send;
 			sourceTree = "<group>";
 		};
+		E5AB00A01BFB0CE38326BA2A /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				13398B152EE0F261002419F0 /* Wallet.swift */,
+				1348562C2EB519EA003D10BE /* Combine */,
+				13453ACB2E4A433000D76629 /* Bundle.swift */,
+				13D764392E4127AF00F048DE /* Array.swift */,
+				B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */,
+				465036BA2BCF968E00856B34 /* BigInt.swift */,
+				A65649D82B96602700E4B329 /* BigUIntExtension.swift */,
+				A65649D92B96602700E4B329 /* Int64Extension.swift */,
+				A65649DA2B96602700E4B329 /* DataExtension.swift */,
+				A5340A662CEC9503002ADD35 /* DateExtension.swift */,
+				A65649DB2B96602700E4B329 /* BitcoinTransactionExtension.swift */,
+				A65649DC2B96602700E4B329 /* StringExtension.swift */,
+				A65649DD2B96602700E4B329 /* VaultExtension.swift */,
+				A65649DE2B96602700E4B329 /* TssExtension.swift */,
+				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
+				DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */,
+				463408652BA9C1D200246248 /* CoinTypeExtension.swift */,
+				DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */,
+				A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */,
+				46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */,
+				46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */,
+				B52196412C1296DF0021D27A /* IntExtension.swift */,
+				B590DF892C2E88F900ED934E /* VoteOption.swift */,
+				B520B2FD2C3250230097C590 /* TextField.swift */,
+				B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */,
+				A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */,
+			);
+			name = Extensions;
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		E641D875C40E476D9D568808 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -6941,20 +7003,13 @@
 			path = Polkadot;
 			sourceTree = "<group>";
 		};
-		EB448FA7EDF6CBF9FDF53F3E /* Notification */ = {
+		EB636E62B0416060D8DDFFAF /* Localizables */ = {
 			isa = PBXGroup;
 			children = (
-				014298C33F1D21BC1F80F96A /* NotificationAPI.swift */,
-				180DFF02CBB6957B351A9616 /* DeviceRegistrationRequest.swift */,
-				A0C582CC92369B7BB13C527B /* NotifyRequest.swift */,
-				93EF791E371FD688E09C0829 /* NotificationService.swift */,
-				FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */,
-				4B48C2DF897CAFC419193329 /* PushNotificationManaging.swift */,
-				5A3F77846C9027CFB58F3364 /* DeviceUnregisterRequest.swift */,
-				4108DBD8BB46387973946D79 /* ForegroundNotificationData.swift */,
-				8E6A38BCCA67E47B84787AA0 /* ForegroundNotificationParser.swift */,
+				468029302BC8E4CE005A9EEF /* Localizable.strings */,
 			);
-			path = Notification;
+			name = Localizables;
+			path = Localizables;
 			sourceTree = "<group>";
 		};
 		ED2645C0CFA113B0B991071A /* Models */ = {
@@ -6972,21 +7027,6 @@
 				B5E654EC2D2788CC003A037C /* Tron.swift */,
 			);
 			path = Signing;
-			sourceTree = "<group>";
-		};
-		EE0B29378FFAFF4BCC53B85C /* TransactionStatus */ = {
-			isa = PBXGroup;
-			children = (
-				A7D2B4750EBE796D6A026060 /* TransactionStatusProvider.swift */,
-				6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */,
-				B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */,
-				A7E88FD1F757A82DCD9EF240 /* BackgroundTransactionPoller.swift */,
-				18EE005289AE2A1BB168B097 /* Providers */,
-				B4A3249B8BCC2C8C0CE3D660 /* TargetType */,
-				CE39DC57FC5EC4DF4C5A0888 /* Models */,
-				6C8B2EC16FB39D6D6401EF80 /* TransactionStatusPoller.swift */,
-			);
-			path = TransactionStatus;
 			sourceTree = "<group>";
 		};
 		EE2DFBF4CC3E4E300A2D0524 /* Referral */ = {
@@ -7051,15 +7091,6 @@
 				46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */,
 			);
 			path = Service;
-			sourceTree = "<group>";
-		};
-		FA38DBFD89B05708A7481A06 /* TransactionHistory */ = {
-			isa = PBXGroup;
-			children = (
-				6889A906A43CE1C527937EF4 /* TransactionHistoryStorage.swift */,
-				EF76F00EB2557D6509D213EB /* TransactionHistoryRecorder.swift */,
-			);
-			path = TransactionHistory;
 			sourceTree = "<group>";
 		};
 		FB548723A8C72C66C4D9F51F /* Views */ = {

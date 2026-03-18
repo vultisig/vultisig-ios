@@ -204,38 +204,39 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 
 ---
 
-## Phase 5 — Extract Core from Services
+## Phase 5 — Extract Core from Services ✅
 
 **Risk**: Low
 **Impact**: Medium — cleans up the Services grab bag.
+**Status**: Completed — 190 files moved via `git mv`, `project.pbxproj` updated via `xcodeproj` gem.
 
 ### Tasks
 
-- [ ] 5.1 Move `Services/Network/` → `Core/Networking/`
-- [ ] 5.2 Move `Services/Storage/` → `Core/Storage/`
-- [ ] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/`
-- [ ] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/`
-- [ ] 5.5 Move `Services/Security/` → `Core/Security/`
-- [ ] 5.6 Move `Services/Notification/` → `Core/Notifications/`
-- [ ] 5.7 Move `Services/Fee/` → `Core/Services/Fee/`
-- [ ] 5.8 Move `Services/Rates/` → `Core/Services/Rates/`
-- [ ] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/`
-- [ ] 5.10 Move `Services/AppMigration/` → `Core/Migration/`
-- [ ] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/`
-- [ ] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/`
-- [ ] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/`
-- [ ] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/`
-- [ ] 5.15 Move `Services/Actions/` → `Core/Services/Actions/`
-- [ ] 5.16 Move remaining single-file services (`AddressService`, `CoinService`, `BalanceService`, `BlockChainService`, `CryptoPriceService`, `PendingTransactionManager`, `FeatureFlagService`, `PayloadService`, `MemoDecodingService`, `FourByteRepository`) → `Core/Services/`
-- [ ] 5.17 Delete now-empty `Services/` directory
-- [ ] 5.18 Move `DesignSystem/` → `Core/DesignSystem/`
-- [ ] 5.19 Move `Extensions/` → `Core/Extensions/`
-- [ ] 5.20 Move `Utils/` → `Core/Utils/`
-- [ ] 5.21 Move `Stores/` → `Core/Stores/`
-- [ ] 5.22 Move `Navigation/` → `Core/Navigation/`
-- [ ] 5.23 Move `Localizables/` → `Core/Localizables/`
-- [ ] 5.24 Update `project.pbxproj`
-- [ ] 5.25 Build + lint check
+- [x] 5.1 Move `Services/Network/` → `Core/Networking/` (5 files)
+- [x] 5.2 Move `Services/Storage/` → `Core/Storage/` (1 file)
+- [x] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/` (3 files)
+- [x] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/` (2 files)
+- [x] 5.5 Move `Services/Security/` → `Core/Security/` (7 files)
+- [x] 5.6 Move `Services/Notification/` → `Core/Notifications/` (9 files)
+- [x] 5.7 Move `Services/Fee/` → `Core/Services/Fee/` (2 files)
+- [x] 5.8 Move `Services/Rates/` → `Core/Services/Rates/` (4 files)
+- [x] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/` (4 files)
+- [x] 5.10 Move `Services/AppMigration/` → `Core/Migration/` (2 files)
+- [x] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/` (2 files)
+- [x] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/` (8 files)
+- [x] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/` (3 files)
+- [x] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/` (2 files)
+- [x] 5.15 Move `Services/Actions/` → `Core/Services/Actions/` (5 files)
+- [x] 5.16 Move remaining single-file services (14 files) → `Core/Services/`
+- [x] 5.17 Deleted now-empty `Services/` group
+- [x] 5.18 Move `DesignSystem/` → `Core/DesignSystem/` (4 files)
+- [x] 5.19 Move `Extensions/` → `Core/Extensions/` (26 files)
+- [x] 5.20 Move `Utils/` → `Core/Utils/` (33 files)
+- [x] 5.21 Move `Stores/` → `Core/Stores/` (4 files)
+- [x] 5.22 Move `Navigation/` → `Core/Navigation/` (3 files)
+- [x] 5.23 Move `Localizables/` → `Core/Localizables/` (7 locale dirs)
+- [x] 5.24 Update `project.pbxproj`
+- [x] 5.25 Build + lint check (0 new warnings)
 
 ---
 
