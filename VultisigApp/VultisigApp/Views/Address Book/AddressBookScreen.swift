@@ -25,7 +25,7 @@ struct AddressBookScreen: View {
     var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
 
     var body: some View {
-        Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0)) {
+        Screen {
             VStack {
                 Group {
                     if savedAddressesEmpty {
@@ -40,7 +40,9 @@ struct AddressBookScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .crossPlatformToolbar("addressBook".localized) {
+        .screenTitle("addressBook".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0))
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 navigationButton
                     .showIf(!savedAddressesEmpty)

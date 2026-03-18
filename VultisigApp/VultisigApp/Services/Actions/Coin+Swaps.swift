@@ -95,7 +95,7 @@ extension Coin {
             return [.thorchain]
         case .tron:
             return [.thorchain]
-        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei:
+        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei, .qbtc:
             return []
         }
     }

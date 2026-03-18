@@ -31,7 +31,7 @@ struct FormScreen<Content: View>: View {
     }
 
     var body: some View {
-        Screen(title: title) {
+        Screen {
             VStack(spacing: 12) {
                 GeometryReader { geo in
                     ScrollViewReader { proxy in
@@ -51,5 +51,6 @@ struct FormScreen<Content: View>: View {
                 }
             }
         }
+        .screenTitle(title)
     }
 }

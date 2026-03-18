@@ -20,7 +20,7 @@ struct NotificationsSettingsScreen: View {
     }
 
     var body: some View {
-        Screen(title: "notifications".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
                     mainToggleSection
@@ -31,6 +31,7 @@ struct NotificationsSettingsScreen: View {
                 }
             }
         }
+        .screenTitle("notifications".localized)
         .onLoad { Task { await checkForPermissions() } }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {

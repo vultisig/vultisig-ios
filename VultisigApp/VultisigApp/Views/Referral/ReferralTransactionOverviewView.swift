@@ -37,7 +37,7 @@ struct ReferralTransactionOverviewView: View {
         .onLoad {
             setData()
         }
-        .navigationBarBackButtonHidden(true)
+        .screenBackButtonHidden()
     }
 
     private func setData() {

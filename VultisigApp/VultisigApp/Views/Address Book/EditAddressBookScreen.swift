@@ -26,13 +26,14 @@ struct EditAddressBookScreen: View {
     @Environment(\.modelContext) var modelContext
 
     var body: some View {
-        Screen(title: "editAddress".localized) {
+        Screen {
             VStack {
                 fields
                 Spacer()
                 button
             }
         }
+        .screenTitle("editAddress".localized)
         .onLoad(perform: setData)
         .alert(isPresented: $showAlert) {
             alert

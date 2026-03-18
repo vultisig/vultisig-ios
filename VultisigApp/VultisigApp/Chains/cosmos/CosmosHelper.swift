@@ -19,6 +19,7 @@ enum CosmosHelper {
     case terraClassic
     case noble
     case akash
+    case qbtc
 
     // MARK: - Factory Methods
 
@@ -40,6 +41,8 @@ enum CosmosHelper {
             return .noble
         case .akash:
             return .akash
+        case .qbtc:
+            return .qbtc
         default:
             throw HelperError.runtimeError("Unsupported Cosmos chain: \(chain)")
         }
@@ -70,6 +73,8 @@ enum CosmosHelper {
             return .noble
         case .akash:
             return .akash
+        case .qbtc:
+            return .qbtc
         }
     }
 
@@ -99,6 +104,8 @@ enum CosmosHelper {
             return try TerraHelperStruct.getPreSignedImageHash(keysignPayload: keysignPayload, chain: chain)
         case .dydx:
             return try DydxHelperStruct.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .qbtc:
+            return try QBTCHelper.create().getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             let helper = try makeHelperStruct()
             return try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
@@ -112,9 +119,21 @@ enum CosmosHelper {
             return try TerraHelperStruct.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, chain: chain)
         case .dydx:
             return try DydxHelperStruct.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+        case .qbtc:
+            throw HelperError.runtimeError("QBTC uses MLDSA signatures — use QBTCHelper.getSignedTransaction directly")
         default:
             let helper = try makeHelperStruct()
             return try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+        }
+    }
+
+    func getSignedTransaction(keysignPayload: KeysignPayload,
+                              dilithiumSignatures: [String: DilithiumKeysignResponse]) throws -> SignedTransactionResult {
+        switch self {
+        case .qbtc:
+            return try QBTCHelper.create().getSignedTransaction(keysignPayload: keysignPayload, signatures: dilithiumSignatures)
+        default:
+            throw HelperError.runtimeError("Dilithium signatures are only supported for QBTC")
         }
     }
 
@@ -126,6 +145,8 @@ enum CosmosHelper {
             return try TerraHelperStruct.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures, chain: chain)
         case .dydx:
             return try DydxHelperStruct.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures)
+        case .qbtc:
+            throw HelperError.runtimeError("QBTC uses MLDSA signatures — use QBTCHelper.getSignedTransaction directly")
         default:
             let helper = try makeHelperStruct()
             return try helper.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures)

@@ -15,7 +15,7 @@ struct SendKeysignScreen: View {
     @StateObject var viewModel = SendKeysignViewModel()
 
     var body: some View {
-        Screen(title: "keysign".localized) {
+        Screen {
             KeysignView(
                 vault: input.vault,
                 keysignCommittee: input.keysignCommittee,
@@ -30,7 +30,8 @@ struct SendKeysignScreen: View {
                 isInitiateDevice: input.isInitiateDevice
             )
         }
-        .navigationBarBackButtonHidden(true)
+        .screenTitle("keysign".localized)
+        .screenBackButtonHidden()
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished else { return }
 

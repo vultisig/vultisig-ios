@@ -20,6 +20,7 @@ final class TransactionStatusPoller {
     func poll(
         txHash: String,
         chain: Chain,
+        createdAt: Date,
         pubKeyECDSA: String,
         onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) {
@@ -32,6 +33,19 @@ final class TransactionStatusPoller {
         let task = Task { [weak self] in
             while !Task.isCancelled {
                 do {
+                    let elapsed = Date().timeIntervalSince(createdAt)
+                    if elapsed >= config.maxWaitTime {
+                        let timeoutMessage = "timeout".localized
+                        self?.recorder.updateStatus(
+                            txHash: txHash,
+                            pubKeyECDSA: pubKeyECDSA,
+                            status: .error,
+                            errorMessage: timeoutMessage
+                        )
+                        onUpdate(.error, timeoutMessage)
+                        break
+                    }
+
                     let result = try await self?.service.checkTransactionStatus(
                         txHash: txHash,
                         chain: chain

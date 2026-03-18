@@ -21,7 +21,7 @@ struct ReferralMainScreen: View {
     private let referralSavePercentage: String = "10%"
 
     var body: some View {
-        Screen(title: "referral".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 14) {
                     createReferredBanner
@@ -32,6 +32,7 @@ struct ReferralMainScreen: View {
                 }
             }
         }
+        .screenTitle("referral".localized)
         .overlay(PopupCapsule(text: "referralCodeCopied", showPopup: $showReferralCodeCopied))
         .onLoad {
             vaultSelectionViewModel.selectedVault = appViewModel.selectedVault
