@@ -102,6 +102,7 @@ struct ChainDetailScreenContainer: View {
         }
         #endif
         .withAddressCopy(coin: $addressToCopy)
+        .background(Theme.colors.bgPrimary.ignoresSafeArea())
     }
 
     func onHistory() {
