@@ -31,6 +31,11 @@ struct SendPairScreen: View {
             }
         }
         .screenTitle("pair".localized)
+        .if(fastVaultPassword != nil) {
+            $0
+                .screenNavigationBarHidden(true)
+                .screenEdgeInsets(.zero)
+        }
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 NavigationQRShareButton(
