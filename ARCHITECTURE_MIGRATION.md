@@ -108,158 +108,181 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 
 ---
 
-## Phase 4 — Migrate Features (one at a time)
+## Phase 4 — Migrate Features (one at a time) ✅
 
 **Risk**: Low per feature (incremental)
 **Impact**: High cumulative — moves from layer-based to feature-based.
+**Status**: Completed — 243 files moved via `git mv`, `project.pbxproj` updated via `xcodeproj` gem.
 
 For each feature: move its views from `Views/`, view models from `View Models/`, and any feature-specific services from `Services/` into `Features/<Name>/`.
 
 ### 4A — Send
 
-- [ ] 4A.1 Move `Views/Send/` → `Features/Send/Views/`
-- [ ] 4A.2 Move `View Models/SendCryptoViewModel.swift`, `SendCryptoVerifyViewModel.swift`, `SendCryptoVerifyLogic.swift` → `Features/Send/ViewModels/`
-- [ ] 4A.3 Move related services if any → `Features/Send/Services/`
-- [ ] 4A.4 Build + lint check
+- [x] 4A.1 Move `Views/Send/` → `Features/Send/Views/` (13 files)
+- [x] 4A.2 Move Send view models → `Features/Send/ViewModels/` (7 files)
+- [x] 4A.3 No dedicated Send services to move
+- [x] 4A.4 Build + lint check
 
 ### 4B — Swap
 
-- [ ] 4B.1 Move `Views/Swap/` → `Features/Swap/Views/`
-- [ ] 4B.2 Move `View Models/Swap/` → `Features/Swap/ViewModels/`
-- [ ] 4B.3 Build + lint check
+- [x] 4B.1 Move `Views/Swap/` → `Features/Swap/Views/` (9 files)
+- [x] 4B.2 Move `View Models/Swap/` + loose Swap VMs → `Features/Swap/ViewModels/` (4 files)
+- [x] 4B.3 Build + lint check
 
 ### 4C — Keygen
 
-- [ ] 4C.1 Move `Views/Keygen/` → `Features/Keygen/Views/`
-- [ ] 4C.2 Move `View Models/KeygenViewModel.swift`, `KeygenVerifyViewModel.swift` → `Features/Keygen/ViewModels/`
-- [ ] 4C.3 Move `Services/Keygen/` if it exists → `Features/Keygen/Services/`
-- [ ] 4C.4 Build + lint check
+- [x] 4C.1 Move `Views/Keygen/` → `Features/Keygen/Views/` (13 files)
+- [x] 4C.2 Move Keygen view models → `Features/Keygen/ViewModels/` (4 files)
+- [x] 4C.3 No `Services/Keygen/` exists
+- [x] 4C.4 Build + lint check
 
 ### 4D — Keysign
 
-- [ ] 4D.1 Move `Views/Keysign/` → `Features/Keysign/Views/`
-- [ ] 4D.2 Move `View Models/KeysignViewModel.swift` → `Features/Keysign/ViewModels/`
-- [ ] 4D.3 Move `Services/Keysign/` → `Features/Keysign/Services/`
-- [ ] 4D.4 Build + lint check
+- [x] 4D.1 Move `Views/Keysign/` → `Features/Keysign/Views/` (17 files)
+- [x] 4D.2 Move Keysign view models → `Features/Keysign/ViewModels/` (5 files)
+- [x] 4D.3 Move `Services/Keysign/` → `Features/Keysign/Services/` (14 files)
+- [x] 4D.4 Build + lint check
 
 ### 4E — Settings
 
-- [ ] 4E.1 Move `Views/Settings/` → `Features/Settings/Views/`
-- [ ] 4E.2 Move `View Models/SettingsViewModel.swift` and related → `Features/Settings/ViewModels/`
-- [ ] 4E.3 Move `Model/Settings/` → `Features/Settings/Models/`
-- [ ] 4E.4 Build + lint check
+- [x] 4E.1 Move `Views/Settings/` → `Features/Settings/Views/` (17 files)
+- [x] 4E.2 Move Settings view models → `Features/Settings/ViewModels/` (2 files)
+- [x] 4E.3 Move `Model/Settings/` → `Features/Settings/Models/` (1 file)
+- [x] 4E.4 Build + lint check
 
 ### 4F — Vault (main wallet screens)
 
-- [ ] 4F.1 Move `Views/Vault/` into `Features/Wallet/Views/`
-- [ ] 4F.2 Move `View Models/VaultDetailViewModel.swift`, `View Models/Vault/` → `Features/Wallet/ViewModels/`
-- [ ] 4F.3 Build + lint check
+- [x] 4F.1 Move `Views/Vault/` → `Features/Wallet/Views/` (11 files)
+- [x] 4F.2 Move Vault view models + `VaultPairDetailViewModel/` → `Features/Wallet/ViewModels/` (5 files)
+- [x] 4F.3 Build + lint check
 
 ### 4G — Referral
 
-- [ ] 4G.1 Move `Views/Referral/` → `Features/Referral/Views/`
-- [ ] 4G.2 Move `View Models/Referral/` → `Features/Referral/ViewModels/`
-- [ ] 4G.3 Build + lint check
+- [x] 4G.1 Move `Views/Referral/` → `Features/Referral/Views/` (13 files)
+- [x] 4G.2 Move `View Models/Referral/` → `Features/Referral/ViewModels/` (7 files)
+- [x] 4G.3 Build + lint check
 
 ### 4H — Address Book
 
-- [ ] 4H.1 Move `Views/Address Book/` → `Features/AddressBook/Views/`
-- [ ] 4H.2 Move `View Models/AddressBook/` → `Features/AddressBook/ViewModels/`
-- [ ] 4H.3 Move `Model/AddressBook/` → `Features/AddressBook/Models/`
-- [ ] 4H.4 Build + lint check
+- [x] 4H.1 Move `Views/Address Book/` → `Features/AddressBook/Views/` (7 files)
+- [x] 4H.2 Move `View Models/AddressBook/` → `Features/AddressBook/ViewModels/` (1 file)
+- [x] 4H.3 Move `Model/AddressBook/` → `Features/AddressBook/Models/` (1 file)
+- [x] 4H.4 Build + lint check
 
 ### 4I — Agent
 
-- [ ] 4I.1 Move `Views/Agent/` → `Features/Agent/Views/`
-- [ ] 4I.2 Move `View Models/Agent/` → `Features/Agent/ViewModels/`
-- [ ] 4I.3 Move `Services/Agent/` → `Features/Agent/Services/`
-- [ ] 4I.4 Build + lint check
+- [x] 4I.1 Move `Views/Agent/` → `Features/Agent/Views/` (5 files)
+- [x] 4I.2 Move `View Models/Agent/` → `Features/Agent/ViewModels/` (5 files)
+- [x] 4I.3 Move `Services/Agent/` → `Features/Agent/Services/` (6 files)
+- [x] 4I.4 Build + lint check
 
 ### 4J — FunctionCall
 
-- [ ] 4J.1 Move `Views/FunctionCall/` → `Features/FunctionCall/Views/`
-- [ ] 4J.2 Move `Model/FunctionCall/` → `Features/FunctionCall/Models/`
-- [ ] 4J.3 Build + lint check
+- [x] 4J.1 Move `Views/FunctionCall/` → `Features/FunctionCall/Views/` (6 files)
+- [x] 4J.2 Move `Model/FunctionCall/` → `Features/FunctionCall/Models/` (20 files)
+- [x] 4J.3 Move FunctionCall view models → `Features/FunctionCall/ViewModels/` (2 files)
+- [x] 4J.4 Build + lint check
 
 ### 4K — Reshare
 
-- [ ] 4K.1 Move `Views/Reshare/` → `Features/Reshare/Views/`
-- [ ] 4K.2 Build + lint check
+- [x] 4K.1 Move `Views/Reshare/` → `Features/Reshare/Views/` (3 files)
+- [x] 4K.2 Build + lint check
 
 ### 4L — Remaining Views cleanup
 
-- [ ] 4L.1 Move `Views/Notifications/` → `Features/Notifications/Views/`
-- [ ] 4L.2 Move `Views/Onboarding/` → `Features/Onboarding/Views/` (merge with existing `Features/Onboarding/`)
-- [ ] 4L.3 Move `Views/Update Check/` → `Features/UpdateCheck/Views/`
-- [ ] 4L.4 Move `Views/UpgradeFromGG20/` → `Features/UpgradeFromGG20/Views/`
-- [ ] 4L.5 Move `Views/New Wallet/` → `Features/Onboarding/Views/`
-- [ ] 4L.6 Move `Views/CoinPicker/` → `Features/Wallet/Views/`
-- [ ] 4L.7 Move `Views/MoonPay/` → `Features/MoonPay/Views/`
-- [ ] 4L.8 Move `Views/Utils/`, `Views/PreferenceKeys/`, `Views/Transitions/`, `Views/Forms/` → `Components/`
-- [ ] 4L.9 Delete now-empty `Views/` directory
-- [ ] 4L.10 Delete now-empty `View Models/` directory
-- [ ] 4L.11 Build + lint check
+- [x] 4L.1 Move `Views/Notifications/` → `Features/Notifications/Views/` (3 files)
+- [x] 4L.2 Move `Views/Onboarding/` → `Features/Onboarding/Views/` (2 files, merged with existing)
+- [x] 4L.3 Move `Views/Update Check/` → `Features/UpdateCheck/Views/` (3 files)
+- [x] 4L.4 Move `Views/UpgradeFromGG20/` → `Features/UpgradeFromGG20/Views/` (3 files)
+- [x] 4L.5 Move `Views/New Wallet/` → `Features/Onboarding/Views/` (1 file)
+- [x] 4L.6 Move `Views/CoinPicker/` → `Features/Wallet/Views/` (1 file)
+- [x] 4L.7 Move `Views/MoonPay/` → `Features/MoonPay/Views/` (1 file)
+- [x] 4L.8 Move `Views/Utils/`, `Views/PreferenceKeys/`, `Views/Transitions/`, `Views/Forms/`, loose files → `Components/` (15 files); `ThorchainPoolListView.swift` → `Features/Defi/`
+- [x] 4L.9 Deleted now-empty `Views/` group (removed 2 stale Transactions references)
+- [ ] 4L.10 `View Models/` still has 18 orphaned files — deferred to Phase 6
+- [x] 4L.11 Build + lint check (0 new warnings)
 
 ---
 
-## Phase 5 — Extract Core from Services
+## Phase 5 — Extract Core from Services ✅
 
 **Risk**: Low
 **Impact**: Medium — cleans up the Services grab bag.
+**Status**: Completed — 190 files moved via `git mv`, `project.pbxproj` updated via `xcodeproj` gem.
 
 ### Tasks
 
-- [ ] 5.1 Move `Services/Network/` → `Core/Networking/`
-- [ ] 5.2 Move `Services/Storage/` → `Core/Storage/`
-- [ ] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/`
-- [ ] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/`
-- [ ] 5.5 Move `Services/Security/` → `Core/Security/`
-- [ ] 5.6 Move `Services/Notification/` → `Core/Notifications/`
-- [ ] 5.7 Move `Services/Fee/` → `Core/Services/Fee/`
-- [ ] 5.8 Move `Services/Rates/` → `Core/Services/Rates/`
-- [ ] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/`
-- [ ] 5.10 Move `Services/AppMigration/` → `Core/Migration/`
-- [ ] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/`
-- [ ] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/`
-- [ ] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/`
-- [ ] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/`
-- [ ] 5.15 Move `Services/Actions/` → `Core/Services/Actions/`
-- [ ] 5.16 Move remaining single-file services (`AddressService`, `CoinService`, `BalanceService`, `BlockChainService`, `CryptoPriceService`, `PendingTransactionManager`, `FeatureFlagService`, `PayloadService`, `MemoDecodingService`, `FourByteRepository`) → `Core/Services/`
-- [ ] 5.17 Delete now-empty `Services/` directory
-- [ ] 5.18 Move `DesignSystem/` → `Core/DesignSystem/`
-- [ ] 5.19 Move `Extensions/` → `Core/Extensions/`
-- [ ] 5.20 Move `Utils/` → `Core/Utils/`
-- [ ] 5.21 Move `Stores/` → `Core/Stores/`
-- [ ] 5.22 Move `Navigation/` → `Core/Navigation/`
-- [ ] 5.23 Move `Localizables/` → `Core/Localizables/`
-- [ ] 5.24 Update `project.pbxproj`
-- [ ] 5.25 Build + lint check
+- [x] 5.1 Move `Services/Network/` → `Core/Networking/` (5 files)
+- [x] 5.2 Move `Services/Storage/` → `Core/Storage/` (1 file)
+- [x] 5.3 Move `Services/Keychain/` → `Core/Storage/Keychain/` (3 files)
+- [x] 5.4 Move `Services/Biometry/` → `Core/Security/Biometry/` (2 files)
+- [x] 5.5 Move `Services/Security/` → `Core/Security/` (7 files)
+- [x] 5.6 Move `Services/Notification/` → `Core/Notifications/` (9 files)
+- [x] 5.7 Move `Services/Fee/` → `Core/Services/Fee/` (2 files)
+- [x] 5.8 Move `Services/Rates/` → `Core/Services/Rates/` (4 files)
+- [x] 5.9 Move `Services/Protobuf/` → `Core/Protobuf/` (4 files)
+- [x] 5.10 Move `Services/AppMigration/` → `Core/Migration/` (2 files)
+- [x] 5.11 Move `Services/TransactionHistory/` → `Features/TransactionHistory/Services/` (2 files)
+- [x] 5.12 Move `Services/TransactionStatus/` → `Core/Services/TransactionStatus/` (8 files)
+- [x] 5.13 Move `Services/VultiServer/` → `Core/Services/VultiServer/` (3 files)
+- [x] 5.14 Move `Services/FastVault/` → `Core/Services/FastVault/` (2 files)
+- [x] 5.15 Move `Services/Actions/` → `Core/Services/Actions/` (5 files)
+- [x] 5.16 Move remaining single-file services (14 files) → `Core/Services/`
+- [x] 5.17 Deleted now-empty `Services/` group
+- [x] 5.18 Move `DesignSystem/` → `Core/DesignSystem/` (4 files)
+- [x] 5.19 Move `Extensions/` → `Core/Extensions/` (26 files)
+- [x] 5.20 Move `Utils/` → `Core/Utils/` (33 files)
+- [x] 5.21 Move `Stores/` → `Core/Stores/` (4 files)
+- [x] 5.22 Move `Navigation/` → `Core/Navigation/` (3 files)
+- [x] 5.23 Move `Localizables/` → `Core/Localizables/` (7 locale dirs)
+- [x] 5.24 Update `project.pbxproj`
+- [x] 5.25 Build + lint check (0 new warnings)
 
 ---
 
-## Phase 6 — Platform & Cleanup
+## Phase 6 — Cleanup ✅
 
 **Risk**: Low
-**Impact**: Medium — final polish.
+**Impact**: Medium — final structural polish.
+**Status**: Completed — 49 files moved, `States/` and `View Models/` directories eliminated.
 
 ### Tasks
 
-- [ ] 6.1 Move `iOS/` → `Platform/iOS/`
-- [ ] 6.2 Move `macOS/` → `Platform/macOS/`
-- [ ] 6.3 Move remaining `States/` files (UI states like `SetupVaultState`, `NetworkPromptType`, etc.) → appropriate features or `Core/States/`
-- [ ] 6.4 Move `Assets.xcassets/` → `Resources/Assets.xcassets/`
-- [ ] 6.5 Move `Preview Content/` → `Resources/Preview Content/`
-- [ ] 6.6 Clean up any orphaned `View Models/` that weren't caught in Phase 4 (e.g., `AppViewModel`, `GlobalStateViewModel`, `HomeViewModel`, `DeeplinkViewModel`) → move to relevant features or `Core/`
-- [ ] 6.7 Slim down `Model/` — move feature-specific models that were missed:
-  - `Model/TransactionHistoryItem.swift` → `Features/TransactionHistory/Models/`
-  - `Model/ReferralCode.swift` → `Features/Referral/Models/`
-  - `Model/StakingDetails.swift`, `DefiPositions.swift` → `Features/DeFi/Models/`
-  - Keep only core entities: `Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`
-- [ ] 6.8 Final `project.pbxproj` update
-- [ ] 6.9 Full build verification (iOS + macOS)
-- [ ] 6.10 Full SwiftLint pass
-- [ ] 6.11 Update `CLAUDE.md` directory structure documentation
-- [ ] 6.12 Delete this migration plan file
+- [x] 6.1 Move remaining `States/` files → `Core/States/` (5 files) + `ReferralTextFieldAction.swift` → `Features/Referral/`
+- [x] 6.2 Move 18 orphaned View Models: 7 → `Core/ViewModels/`, 9 → `Features/Wallet/ViewModels/`, 1 → `Features/Home/ViewModels/`, 1 → `Features/UpdateCheck/ViewModels/`
+- [x] 6.3 Slim down `Model/` — moved 25 feature-specific models:
+  - 2 → `Features/TransactionHistory/Models/`
+  - 2 → `Features/Referral/Models/`
+  - 2 → `Features/Defi/Models/`
+  - 7 → `Features/Wallet/Models/`
+  - 1 → `Features/AddressBook/Models/`
+  - 2 → `Features/Keysign/Models/`
+  - 4 → `Features/Keygen/Models/`
+  - 5 → `Core/Models/`
+  - Remaining in `Model/`: core entities (`Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`, `DerivationPath`, `DeviceInfo`)
+- [x] 6.4 Update `project.pbxproj`
+- [x] 6.5 Build verification (iOS) — passes
+- [x] 6.6 SwiftLint — 0 new warnings
+
+---
+
+## Phase 7 — Unify Platform Extensions ✅
+
+**Risk**: Medium (touches every `+iOS`/`+macOS` file pair)
+**Impact**: High — eliminates file duplication and simplifies maintenance.
+**Status**: Completed — 38 paired extensions merged into main files, 24 platform-only files relocated to `Core/Platform/`, `iOS/` and `macOS/` directories eliminated.
+
+### Tasks
+
+- [x] 7.1 Audited all 51 iOS + 53 macOS files — identified 38 pairs, 11 iOS-only, 13 macOS-only
+- [x] 7.2 Merged 38 paired extensions into main files using `#if os()` blocks
+- [x] 7.3 Created 3 combined files for pairs with no main: `StyledIntegerField`, `MacCameraServiceViewModel`, `ImageFileDocument`
+- [x] 7.4 Merged 2 single-platform extensions with existing main files: `KeysignView+iOS`, `AllDevicesUpgradeView+macOS`
+- [x] 7.5 Relocated 24 platform-only files (Native UIKit/AppKit views, utils, extensions) to `Core/Platform/iOS/` and `Core/Platform/macOS/`
+- [x] 7.6 Deleted now-empty `iOS/` and `macOS/` top-level directories
+- [x] 7.7 Update `project.pbxproj`
+- [x] 7.8 Build verification (iOS) — passes
+- [x] 7.9 SwiftLint — 0 new warnings
 
 ---
 

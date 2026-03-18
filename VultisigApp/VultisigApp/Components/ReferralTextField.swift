@@ -103,3 +103,39 @@ struct ReferralTextField: View {
         errorMessage: .constant(nil)
     )
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension ReferralTextField {
+    func handleCopyCode() {
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = text
+    }
+
+    func handlePasteCode() {
+        if let clipboardContent = UIPasteboard.general.string {
+            text = clipboardContent
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension ReferralTextField {
+    func handleCopyCode() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+    }
+
+    func handlePasteCode() {
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            text = clipboardContent
+        }
+    }
+}
+#endif

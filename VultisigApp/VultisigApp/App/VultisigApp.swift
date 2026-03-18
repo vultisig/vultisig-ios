@@ -135,3 +135,88 @@ extension ModelContext {
         }
     }
 }
+
+#if os(iOS)
+import SwiftUI
+
+extension VultisigApp {
+    var content: some View {
+        ContentView(navigationRouter: navigationRouter)
+            .environmentObject(applicationState) // Shared monolithic mutable state
+            .environmentObject(vaultDetailViewModel)
+            .environmentObject(appViewModel)
+            .environmentObject(settingsViewModel)
+            .environmentObject(vultExtensionViewModel)
+            .environmentObject(phoneCheckUpdateViewModel)
+            .environmentObject(globalStateViewModel)
+            .environmentObject(sheetPresentedCounterManager)
+            .environmentObject(homeViewModel)
+            .environmentObject(coinSelectionViewModel)
+            .environmentObject(deeplinkViewModel)
+            .environmentObject(pushNotificationManager)
+            .onChange(of: scenePhase) {
+                switch scenePhase {
+                case .active:
+                    continueLogin()
+                case .background:
+                    resetLogin()
+                default:
+                    break
+                }
+            }
+            .onAppear {
+                // Run migrations on app launch
+                AppMigrationService().performMigrationsIfNeeded()
+
+                if ProcessInfo.processInfo.isiOSAppOnMac {
+                    continueLogin()
+                }
+
+                Task {
+                    await pushNotificationManager.checkPermissionStatus()
+                    if pushNotificationManager.isPermissionGranted {
+                        pushNotificationManager.registerForRemoteNotifications()
+                    }
+                }
+            }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension VultisigApp {
+    var content: some View {
+        ContentView(navigationRouter: navigationRouter)
+            .environmentObject(applicationState) // Shared monolithic mutable state
+            .environmentObject(vaultDetailViewModel)
+            .environmentObject(appViewModel)
+            .environmentObject(settingsViewModel)
+            .environmentObject(vultExtensionViewModel)
+            .environmentObject(phoneCheckUpdateViewModel)
+            .environmentObject(globalStateViewModel)
+            .environmentObject(sheetPresentedCounterManager)
+            .environmentObject(homeViewModel)
+            .environmentObject(coinSelectionViewModel)
+            .environmentObject(deeplinkViewModel)
+            .environmentObject(pushNotificationManager)
+            .buttonStyle(BorderlessButtonStyle())
+            .frame(minWidth: 900, minHeight: 600)
+            .onAppear {
+                // Run migrations on app launch
+                AppMigrationService().performMigrationsIfNeeded()
+
+                NSWindow.allowsAutomaticWindowTabbing = false
+                continueLogin()
+
+                Task {
+                    await pushNotificationManager.checkPermissionStatus()
+                    if pushNotificationManager.isPermissionGranted {
+                        pushNotificationManager.registerForRemoteNotifications()
+                    }
+                }
+            }
+    }
+}
+#endif

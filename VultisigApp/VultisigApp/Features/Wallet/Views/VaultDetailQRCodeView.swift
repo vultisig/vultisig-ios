@@ -1,0 +1,135 @@
+//
+//  VaultDetailQRCodeView.swift
+//  VultisigApp
+//
+//  Created by Amol Kumar on 2024-07-18.
+//
+
+import SwiftUI
+
+struct VaultDetailQRCodeView: View {
+    let vault: Vault
+
+    @State var imageName = ""
+    @State var isExporting: Bool = false
+
+    @StateObject var viewModel = VaultDetailQRCodeViewModel()
+    @Environment(\.displayScale) var displayScale
+
+    var body: some View {
+        Screen {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 15) {
+                    qrCode
+                    InfoBannerView(
+                        description: "shareVaultQRInformation".localized,
+                        type: .info,
+                        leadingIcon: "circle-info"
+                    )
+                    buttons
+                }
+                .onLoad {
+                    setData()
+                }
+            }
+        }
+        .screenTitle("shareVaultQR".localized)
+        .screenEdgeInsets(.init(bottom: .zero))
+    }
+
+    var qrCode: some View {
+        VaultDetailQRCode(vault: vault, viewModel: viewModel)
+    }
+
+    var saveButton: some View {
+        ZStack {
+            if let renderedImage = viewModel.renderedImage {
+                PrimaryButton(title: "save", type: .secondary) {
+                    isExporting = true
+                }
+                .fileExporter(
+                    isPresented: $isExporting,
+                    document: ImageFileDocument(image: renderedImage),
+                    contentType: .png,
+                    defaultFilename: imageName
+                ) { result in
+                    switch result {
+                    case .success(let url):
+                        print("Image saved to: \(url.path)")
+                    case .failure(let error):
+                        print("Error saving image: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+    }
+
+    var shareLinkButton: some View {
+        ZStack {
+            if let renderedImage = viewModel.renderedImage {
+                ShareLink(
+                    item: renderedImage,
+                    preview: SharePreview(imageName, image: renderedImage)
+                ) {
+                    PrimaryButtonView(title: "share", leadingIcon: "share")
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            } else {
+                ProgressView()
+            }
+        }
+    }
+
+    private func setData() {
+        imageName = viewModel.generateName(vault: vault)
+        viewModel.render(vault: vault, displayScale: displayScale)
+    }
+}
+
+#Preview {
+    VaultDetailQRCodeView(vault: Vault.example)
+}
+
+#if os(iOS)
+import SwiftUI
+
+extension VaultDetailQRCodeView {
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
+    var buttons: some View {
+        VStack(spacing: 16) {
+            shareButton
+            saveButton
+        }
+    }
+
+    var shareButton: some View {
+        ZStack {
+            if idiom == .phone {
+                PrimaryButton(title: "share") {
+                    viewModel.shareImage(imageName)
+                }
+            } else {
+                shareLinkButton
+            }
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+import SwiftUI
+
+extension VaultDetailQRCodeView {
+    var shareButton: some View {
+        shareLinkButton
+    }
+
+    var buttons: some View {
+        HStack(spacing: 16) {
+            shareButton
+            saveButton
+        }
+    }
+}
+#endif
