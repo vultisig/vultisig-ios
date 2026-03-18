@@ -82,58 +82,29 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 
 ---
 
-## Phase 3 — Unify Blockchain
+## Phase 3 — Unify Blockchain ✅
 
 **Risk**: Medium (touches chain services and signing logic)
 **Impact**: High — collocates each chain's signing, API, and models.
+**Status**: Completed — 163 files moved via `git mv`, `project.pbxproj` updated, build passes, no new SwiftLint warnings.
 
 ### Tasks
 
-- [ ] 3.1 Create `Blockchain/Common/` and move shared files:
-  - `Chains/CoinFactory.swift`, `CoinFactory+Cardano.swift`
-  - `Chains/common.swift`, `Chains/publickey.swift`, `Chains/erc20.swift`
-  - `Chains/SignedTransactionResult.swift`
-- [ ] 3.2 Move `Tss/` into `Blockchain/Tss/` (preserve as-is, critical boundary)
-- [ ] 3.3 Move `States/Keygen/` and `States/Keysign/` into `Blockchain/States/`
-- [ ] 3.4 Unify **EVM** chain:
-  - `Chains/EVM/` → `Blockchain/EVM/Signing/`
-  - `Services/Evm/` → `Blockchain/EVM/Service/`
-- [ ] 3.5 Unify **Cosmos** chain:
-  - `Chains/Cosmos/` → `Blockchain/Cosmos/Signing/`
-  - `Services/Cosmos/` → `Blockchain/Cosmos/Service/`
-  - `Model/Cosmos/` → `Blockchain/Cosmos/Models/`
-- [ ] 3.6 Unify **UTXO** chain:
-  - `Chains/UTXOChainsHelper.swift` → `Blockchain/UTXO/Signing/`
-  - `Services/UTXO/` → `Blockchain/UTXO/Service/`
-  - `Model/UTXO/` → `Blockchain/UTXO/Models/`
-- [ ] 3.7 Unify **Solana**:
-  - `Chains/Solana.swift`, `Chains/SolanaSwaps.swift` → `Blockchain/Solana/Signing/`
-  - `Services/Solana/` → `Blockchain/Solana/Service/`
-  - `Model/Solana/` → `Blockchain/Solana/Models/`
-- [ ] 3.8 Unify **THORChain**:
-  - `Chains/thorchain.swift`, `Chains/THORChainSwaps.swift` → `Blockchain/THORChain/Signing/`
-  - `Services/THORChainAPI/` → `Blockchain/THORChain/API/`
-  - `Services/Thorchain/` → `Blockchain/THORChain/Service/`
-- [ ] 3.9 Unify **Maya**:
-  - `Chains/maya.swift` → `Blockchain/Maya/Signing/`
-  - `Services/MayaChainAPI/` → `Blockchain/Maya/API/`
-- [ ] 3.10 Unify remaining chains (one subdirectory each):
-  - **Sui**: `Chains/Sui.swift` + `Services/Sui/` + `Model/Sui/`
-  - **Ton**: `Chains/Ton.swift` + `Services/Ton/` + `Model/Ton/`
-  - **Tron**: `Chains/Tron.swift` + `Services/Tron/`
-  - **Ripple**: `Chains/Ripple.swift` + `Services/Ripple/`
-  - **Polkadot**: `Chains/Polkadot.swift` + `Services/Polkadot/`
-  - **Cardano**: `Chains/Cardano.swift` + `Services/Cardano/`
-- [ ] 3.11 Move swap protocol services into relevant chain or `Blockchain/Swaps/`:
-  - `Services/1inch/` → `Blockchain/Swaps/OneInch/`
-  - `Services/KyberSwap/` → `Blockchain/Swaps/KyberSwap/`
-  - `Services/LiFi/` → `Blockchain/Swaps/LiFi/`
-  - `Services/SwapService/` → `Blockchain/Swaps/Common/`
-  - `Chains/OneInchSwaps.swift` → `Blockchain/Swaps/OneInch/`
-- [ ] 3.12 Delete now-empty `Chains/` and `States/Keygen/`, `States/Keysign/` directories
-- [ ] 3.13 Update `project.pbxproj`
-- [ ] 3.14 Verify build succeeds on both targets
-- [ ] 3.15 Run SwiftLint — no new warnings
+- [x] 3.1 Create `Blockchain/Common/` and move shared files (7 files including `CoinFactory+QBTC.swift`)
+- [x] 3.2 Move `Tss/` into `Blockchain/Tss/` (6 files, preserved as-is)
+- [x] 3.3 Move `States/Keygen/` and `States/Keysign/` into `Blockchain/States/` (15 files)
+- [x] 3.4 Unify **EVM** chain (6 files)
+- [x] 3.5 Unify **Cosmos** chain (23 files)
+- [x] 3.6 Unify **UTXO** chain (9 files, including `UTXOTransactionMempoolPreviousOutput.swift` from Model root)
+- [x] 3.7 Unify **Solana** (8 files)
+- [x] 3.8 Unify **THORChain** (41 files)
+- [x] 3.9 Unify **Maya** (14 files)
+- [x] 3.10 Unify remaining chains: Sui (5), Ton (3), Tron (4), Ripple (2), Polkadot (2), Cardano (2)
+- [x] 3.11 Move swap protocol services into `Blockchain/Swaps/` (16 files)
+- [x] 3.12 Delete now-empty `Chains/`, `Tss/`, `States/Keygen/`, `States/Keysign/`, and all emptied service/model subdirectories
+- [x] 3.13 Update `project.pbxproj`
+- [x] 3.14 Verify build succeeds (iOS)
+- [x] 3.15 Run SwiftLint — no new warnings
 
 ---
 
