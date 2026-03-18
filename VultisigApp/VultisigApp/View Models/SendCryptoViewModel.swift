@@ -242,7 +242,7 @@ struct SendCryptoLogic {
 
         do {
             let originalInput = tx.toAddress
-            let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            let resolvedAddress = try await AddressService.resolveInput(originalInput, chain: tx.coin.chain)
             await MainActor.run {
                 if originalInput != resolvedAddress {
                     tx.toAddress = resolvedAddress
