@@ -4410,26 +4410,6 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		13DD54992E56556D007335DA /* Screen */ = {
-			isa = PBXGroup;
-			children = (
-				13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */,
-				37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */,
-				137B2C882E3A84440074F648 /* Screen.swift */,
-			);
-			path = Screen;
-			sourceTree = "<group>";
-		};
-		13DF05732E3CEF580000188C /* TextField */ = {
-			isa = PBXGroup;
-			children = (
-				133EEA1B2E68859F00E18280 /* SecureTextField.swift */,
-				13DD54822E562946007335DA /* CommonTextField.swift */,
-				13DF05742E3CEF710000188C /* SearchTextField.swift */,
-			);
-			path = TextField;
-			sourceTree = "<group>";
-		};
 		13E1E7622E6DD6B900D68F5D /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
@@ -5861,6 +5841,7 @@
 			isa = PBXGroup;
 			children = (
 				13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */,
+				37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */,
 				137B2C882E3A84440074F648 /* Screen.swift */,
 			);
 			name = Screen;
@@ -5921,8 +5902,6 @@
 		D38BA0B26789AF2274276907 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				13DD54992E56556D007335DA /* Screen */,
-				13DF05732E3CEF580000188C /* TextField */,
 				138BE1682F4F65F600EFD661 /* VultiToggle.swift */,
 				68DA6D9187A26AFA1AE9202C /* Animations */,
 				3A02000CB4FDC32123479E81 /* Background */,
