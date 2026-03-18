@@ -2472,7 +2472,7 @@
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentKeysignCoordinator.swift; path = AgentKeysignCoordinator.swift; sourceTree = "<group>"; };
-		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
+		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = VultisigApp/Core/ViewModels/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Components/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryScreen.swift; path = VultisigApp/Features/Keygen/Views/PeerDiscoveryScreen.swift; sourceTree = SOURCE_ROOT; };
 		D9B6F47A0796793CADF498E8 /* TransactionStatusViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusViewModel.swift; sourceTree = "<group>"; };
@@ -2694,6 +2694,15 @@
 				13B1C2CA2E65FC3800050637 /* VaultServerBackupViewModel.swift */,
 				1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */,
 				1328E64D2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift */,
+				A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */,
+				A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */,
+				A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */,
+				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
+				A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */,
+				A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */,
+				A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */,
+				A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */,
+				D9B6F47A0796793CADF498E8 /* TransactionStatusViewModel.swift */,
 			);
 			name = ViewModels;
 			path = ViewModels;
@@ -2705,6 +2714,15 @@
 				B54B01962BDCEB8E00FDA472 /* Polkadot.swift */,
 			);
 			path = Signing;
+			sourceTree = "<group>";
+		};
+		026477AC2D6ECECBB0523E33 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */,
+			);
+			name = ViewModels;
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		03007882657BB91024A84855 /* Icons */ = {
@@ -3035,6 +3053,7 @@
 				135C7AE22EA1434A002F879A /* Service */,
 				130C40F92E7381E000509C61 /* Model */,
 				130C40F72E737FCD00509C61 /* HomeScreen.swift */,
+				026477AC2D6ECECBB0523E33 /* ViewModels */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -4313,6 +4332,7 @@
 				135C7ACB2EA12C69002F879A /* DefiChainSelection */,
 				13DB875E2E9FD786008E89B0 /* DefiMain */,
 				C91E9A67BFDFD073DCB7DB22 /* Protocols */,
+				62A54D6CD65DEB9675E703AC /* Models */,
 			);
 			path = Defi;
 			sourceTree = "<group>";
@@ -4328,6 +4348,7 @@
 				138C5E622E79DE2300C559C7 /* ChainSelection */,
 				7B1C49E12F04AD75C0429A4F /* Views */,
 				00999CD6D11EAC0373ECFCD9 /* ViewModels */,
+				2DFD4139D02F8B7E117388D9 /* Models */,
 			);
 			path = Wallet;
 			sourceTree = "<group>";
@@ -4517,6 +4538,7 @@
 				842E6B2A525A7A386658BC78 /* Views */,
 				F4763749CAC3E11AB980C281 /* ViewModels */,
 				10B355778A953C368FCFE7B3 /* Services */,
+				56E3D307B258594BB9039AB6 /* Models */,
 			);
 			name = Keysign;
 			path = Keysign;
@@ -4635,6 +4657,19 @@
 				B5A80F1A2D0645DD00DC9069 /* RippleService.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		236B79B4E57B5783B2F16F48 /* States */ = {
+			isa = PBXGroup;
+			children = (
+				46B106502BA7CAFE00564023 /* ChainType.swift */,
+				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
+				DE727C0B2D000FC3007E9273 /* LibType.swift */,
+				A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */,
+				A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */,
+			);
+			name = States;
+			path = States;
 			sourceTree = "<group>";
 		};
 		2502AAE488828212EA6EAF68 /* UTXO */ = {
@@ -4789,6 +4824,20 @@
 			path = Ripple;
 			sourceTree = "<group>";
 		};
+		2DFD4139D02F8B7E117388D9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
+				A67530612CAFBDC200B1E344 /* Folder.swift */,
+				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
+				FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */,
+				DE5F7E1E2C8155C50022030F /* VaultCreateRequest.swift */,
+				DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		2E1F889E52EFC8CFE6E023A0 /* Signing */ = {
 			isa = PBXGroup;
 			children = (
@@ -4802,6 +4851,7 @@
 			children = (
 				3B87FB35D2ADC5D505203639 /* Views */,
 				2D4260B983F23D81A116D8F3 /* ViewModels */,
+				46054A949DB90FF2565F0676 /* Models */,
 			);
 			name = Keygen;
 			path = Keygen;
@@ -4973,6 +5023,19 @@
 			path = Signing;
 			sourceTree = "<group>";
 		};
+		41E44EF741544EBB3A1E2FE3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */,
+				B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */,
+				BC586168CA29D811C28C56A4 /* TransactionStatus.swift */,
+				B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */,
+				A6404F762E03346600069BD1 /* ThorchainNetwork.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		4369EE8B9C0F48806D187BF1 /* TabBar */ = {
 			isa = PBXGroup;
 			children = (
@@ -5004,6 +5067,18 @@
 			);
 			name = Protobuf;
 			path = Protobuf;
+			sourceTree = "<group>";
+		};
+		46054A949DB90FF2565F0676 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B217D44D2EDE80B300503503 /* KeyImportRequest.swift */,
+				132E016C2F1AA3C6007E717C /* KeyImportSetupType.swift */,
+				84EDDEF72A877329900F12D6 /* CreateMldsaRequest.swift */,
+				DE8291932D891AA20037E5FD /* MigrationRequest.swift */,
+			);
+			name = Models;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		469ED3972B98E885008D4951 /* BalanceManager */ = {
@@ -5058,6 +5133,15 @@
 			path = Sheet;
 			sourceTree = "<group>";
 		};
+		4A4AB61E7B2CDD3FF2EE3D37 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
+			);
+			name = ViewModels;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		5135C7912B5881A91FEA7673 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -5106,6 +5190,16 @@
 			);
 			name = Views;
 			path = Views;
+			sourceTree = "<group>";
+		};
+		56E3D307B258594BB9039AB6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
+				DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */,
+			);
+			name = Models;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		57A158636114BFE3A6706D95 /* ViewModels */ = {
@@ -5184,6 +5278,16 @@
 				469ED39E2B98F5A9008D4951 /* AccountManager */,
 				469ED3972B98E885008D4951 /* BalanceManager */,
 			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		62A54D6CD65DEB9675E703AC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				137FA58B2EABC35A00843DB1 /* StakingDetails.swift */,
+				134E23F12EAA61C500952600 /* DefiPositions.swift */,
+			);
+			name = Models;
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -5353,6 +5457,7 @@
 			isa = PBXGroup;
 			children = (
 				7275B71B193B196907AD26B1 /* Views */,
+				4A4AB61E7B2CDD3FF2EE3D37 /* ViewModels */,
 			);
 			name = UpdateCheck;
 			path = UpdateCheck;
@@ -5983,44 +6088,6 @@
 			path = Send;
 			sourceTree = "<group>";
 		};
-		A65649D52B965FC400E4B329 /* View Models */ = {
-			isa = PBXGroup;
-			children = (
-				A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */,
-				D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */,
-				A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */,
-				A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */,
-				A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */,
-				A60CA7E62BB0EC6100FDEB5C /* AppViewModel.swift */,
-				A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */,
-				A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */,
-				A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */,
-				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
-				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
-				A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */,
-				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
-				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
-				136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */,
-				A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */,
-				A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */,
-				D9B6F47A0796793CADF498E8 /* TransactionStatusViewModel.swift */,
-			);
-			path = "View Models";
-			sourceTree = "<group>";
-		};
-		A65649F32B966CCB00E4B329 /* States */ = {
-			isa = PBXGroup;
-			children = (
-				DE727C0B2D000FC3007E9273 /* LibType.swift */,
-				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
-				46B106502BA7CAFE00564023 /* ChainType.swift */,
-				A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */,
-				A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */,
-				A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */,
-			);
-			path = States;
-			sourceTree = "<group>";
-		};
 		A69FBBA12C8AD9F500A4B78B /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -6200,6 +6267,9 @@
 				859B9A2C33091F05B4840D8A /* Stores */,
 				CA2C612D1623E874D8FD0B7C /* Navigation */,
 				EB636E62B0416060D8DDFFAF /* Localizables */,
+				236B79B4E57B5783B2F16F48 /* States */,
+				C06B72FDAC2B9FFF41BAABD0 /* ViewModels */,
+				41E44EF741544EBB3A1E2FE3 /* Models */,
 			);
 			name = Core;
 			path = Core;
@@ -6360,6 +6430,21 @@
 			path = Rates;
 			sourceTree = "<group>";
 		};
+		C06B72FDAC2B9FFF41BAABD0 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A60CA7E62BB0EC6100FDEB5C /* AppViewModel.swift */,
+				D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */,
+				A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */,
+				A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */,
+				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
+				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
+				136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */,
+			);
+			name = ViewModels;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		C393DF5B896DB2B75D7C2045 /* Signing */ = {
 			isa = PBXGroup;
 			children = (
@@ -6475,6 +6560,7 @@
 				1E33EE28C2420BB980A60F3D /* TransactionHistoryScreen.swift */,
 				5E57A0B88D3B8E54A910757C /* Views */,
 				D3F16245E7B3DF49987BD35C /* Services */,
+				E4742492B08620B5CC93BD43 /* Models */,
 			);
 			path = TransactionHistory;
 			sourceTree = "<group>";
@@ -6689,44 +6775,20 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				132E016C2F1AA3C6007E717C /* KeyImportSetupType.swift */,
-				137FA58B2EABC35A00843DB1 /* StakingDetails.swift */,
-				134E23F12EAA61C500952600 /* DefiPositions.swift */,
-				13AB0C052E5CA17100F52F24 /* ReferralCode.swift */,
-				13AB0C062E5CA17100F52F24 /* ReferredCode.swift */,
-				B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */,
-				B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */,
-				B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */,
-				DE8291932D891AA20037E5FD /* MigrationRequest.swift */,
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				B217CEA82ED5A00800503503 /* ChainPublicKey.swift */,
 				5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */,
 				DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */,
-				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
 				DE0893552C47C8FA007632F7 /* Chain+extensions.swift */,
 				B50F46742DA9A308007B16DE /* Chain+ibc.swift */,
 				DE49A19D2B671416000F3AFB /* Coin.swift */,
 				DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */,
-				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
 				461AD1BA2BC7239C00959278 /* DeviceInfo.swift */,
 				DE13BB9E2C239FC90014B754 /* CoinMeta.swift */,
-				A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */,
-				DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */,
-				DE5F7E1E2C8155C50022030F /* VaultCreateRequest.swift */,
-				84EDDEF72A877329900F12D6 /* CreateMldsaRequest.swift */,
-				B217D44D2EDE80B300503503 /* KeyImportRequest.swift */,
-				DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */,
-				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
-				A67530612CAFBDC200B1E344 /* Folder.swift */,
-				A6404F762E03346600069BD1 /* ThorchainNetwork.swift */,
-				FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */,
 				544EB5E7CBD182E832CC537C /* PendingTransaction.swift */,
-				BC586168CA29D811C28C56A4 /* TransactionStatus.swift */,
 				FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */,
-				546B9FEB444B04006FF576BE /* TransactionHistoryItem.swift */,
-				834B4865644FA4A2EACF956E /* TransactionHistoryData.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -6779,10 +6841,8 @@
 			children = (
 				13C880552E70A312009C67F1 /* Features */,
 				D9AD8ED82B6722AC0009F8D5 /* Model */,
-				A65649D52B965FC400E4B329 /* View Models */,
 				A627664E2C85273B002C666A /* iOS */,
 				A627664F2C852745002C666A /* macOS */,
-				A65649F32B966CCB00E4B329 /* States */,
 				A633B11D2B993BCD003D1738 /* Resources */,
 				DE49A16F2B65F6DB000F3AFB /* Preview Content */,
 				DE49A16C2B65F6DB000F3AFB /* Assets.xcassets */,
@@ -6940,6 +7000,16 @@
 			path = Send;
 			sourceTree = "<group>";
 		};
+		E4742492B08620B5CC93BD43 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				546B9FEB444B04006FF576BE /* TransactionHistoryItem.swift */,
+				834B4865644FA4A2EACF956E /* TransactionHistoryData.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		E5AB00A01BFB0CE38326BA2A /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -7016,6 +7086,7 @@
 			isa = PBXGroup;
 			children = (
 				13D179072E5787D100007B48 /* AddressBookChainType.swift */,
+				A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */,
 			);
 			name = Models;
 			path = Models;
@@ -7034,6 +7105,8 @@
 			children = (
 				FB548723A8C72C66C4D9F51F /* Views */,
 				A4216126DE0903006B0C4092 /* ViewModels */,
+				A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */,
+				FC85A47D63780B0B86C3A019 /* Models */,
 			);
 			name = Referral;
 			path = Referral;
@@ -7122,6 +7195,16 @@
 			);
 			name = AddressFieldAccessoryStack;
 			path = AddressFieldAccessoryStack;
+			sourceTree = "<group>";
+		};
+		FC85A47D63780B0B86C3A019 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				13AB0C052E5CA17100F52F24 /* ReferralCode.swift */,
+				13AB0C062E5CA17100F52F24 /* ReferredCode.swift */,
+			);
+			name = Models;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		FF364DD8DD1E624D4E555A75 /* New Wallet */ = {

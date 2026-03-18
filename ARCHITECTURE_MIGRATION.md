@@ -240,29 +240,47 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 
 ---
 
-## Phase 6 — Platform & Cleanup
+## Phase 6 — Cleanup ✅
 
 **Risk**: Low
-**Impact**: Medium — final polish.
+**Impact**: Medium — final structural polish.
+**Status**: Completed — 49 files moved, `States/` and `View Models/` directories eliminated.
 
 ### Tasks
 
-- [ ] 6.1 Move `iOS/` → `Platform/iOS/`
-- [ ] 6.2 Move `macOS/` → `Platform/macOS/`
-- [ ] 6.3 Move remaining `States/` files (UI states like `SetupVaultState`, `NetworkPromptType`, etc.) → appropriate features or `Core/States/`
-- [ ] 6.4 Move `Assets.xcassets/` → `Resources/Assets.xcassets/`
-- [ ] 6.5 Move `Preview Content/` → `Resources/Preview Content/`
-- [ ] 6.6 Clean up any orphaned `View Models/` that weren't caught in Phase 4 (e.g., `AppViewModel`, `GlobalStateViewModel`, `HomeViewModel`, `DeeplinkViewModel`) → move to relevant features or `Core/`
-- [ ] 6.7 Slim down `Model/` — move feature-specific models that were missed:
-  - `Model/TransactionHistoryItem.swift` → `Features/TransactionHistory/Models/`
-  - `Model/ReferralCode.swift` → `Features/Referral/Models/`
-  - `Model/StakingDetails.swift`, `DefiPositions.swift` → `Features/DeFi/Models/`
-  - Keep only core entities: `Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`
-- [ ] 6.8 Final `project.pbxproj` update
-- [ ] 6.9 Full build verification (iOS + macOS)
-- [ ] 6.10 Full SwiftLint pass
-- [ ] 6.11 Update `CLAUDE.md` directory structure documentation
-- [ ] 6.12 Delete this migration plan file
+- [x] 6.1 Move remaining `States/` files → `Core/States/` (5 files) + `ReferralTextFieldAction.swift` → `Features/Referral/`
+- [x] 6.2 Move 18 orphaned View Models: 7 → `Core/ViewModels/`, 9 → `Features/Wallet/ViewModels/`, 1 → `Features/Home/ViewModels/`, 1 → `Features/UpdateCheck/ViewModels/`
+- [x] 6.3 Slim down `Model/` — moved 25 feature-specific models:
+  - 2 → `Features/TransactionHistory/Models/`
+  - 2 → `Features/Referral/Models/`
+  - 2 → `Features/Defi/Models/`
+  - 7 → `Features/Wallet/Models/`
+  - 1 → `Features/AddressBook/Models/`
+  - 2 → `Features/Keysign/Models/`
+  - 4 → `Features/Keygen/Models/`
+  - 5 → `Core/Models/`
+  - Remaining in `Model/`: core entities (`Vault`, `Coin`, `Chain`, `KeyShare`, `CoinMeta`, `PendingTransaction`, `VaultSettings`, `DerivationPath`, `DeviceInfo`)
+- [x] 6.4 Update `project.pbxproj`
+- [x] 6.5 Build verification (iOS) — passes
+- [x] 6.6 SwiftLint — 0 new warnings
+
+---
+
+## Phase 7 — Unify Platform Extensions
+
+**Risk**: Medium (touches every `+iOS`/`+macOS` file pair)
+**Impact**: High — eliminates file duplication and simplifies maintenance.
+
+Merge `iOS/` and `macOS/` platform-specific view extensions back into their main files using `#if os(iOS)` / `#if os(macOS)` conditionals. This removes the separate platform directories entirely.
+
+### Tasks
+
+- [ ] 7.1 Audit all files in `iOS/` and `macOS/` — list each pair and its main counterpart
+- [ ] 7.2 For each pair, merge the platform-specific code into the main file using `#if os()` blocks
+- [ ] 7.3 Delete the now-empty `iOS/` and `macOS/` directories
+- [ ] 7.4 Update `project.pbxproj`
+- [ ] 7.5 Full build verification (iOS + macOS)
+- [ ] 7.6 Full SwiftLint pass
 
 ---
 
