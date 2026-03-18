@@ -80,7 +80,12 @@ struct SendDetailsAddressTab: View {
         }
         if !tx.toAddress.isEmpty {
             guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                viewModel.onSelect(tab: .address)
+                viewModel.addressSetupDone = false
+                // Only force back to address if the user is trying to advance
+                // to amount. Don't block switching to asset tab.
+                if viewModel.selectedTab == .amount {
+                    viewModel.onSelect(tab: .address)
+                }
                 return
             }
             viewModel.addressSetupDone = true

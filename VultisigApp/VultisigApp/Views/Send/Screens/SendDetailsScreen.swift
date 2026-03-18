@@ -238,6 +238,7 @@ struct SendDetailsScreen: View {
             }
             .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
                 handleScroll(newValue: newValue, oldValue: oldValue)
+                onSelectedTabChange(newTab: newValue)
             }
         }
     }
@@ -245,6 +246,13 @@ struct SendDetailsScreen: View {
     func onChange(focusedField: Field?) {
         if focusedField == .toAddress {
             handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)
+        }
+    }
+
+    func onSelectedTabChange(newTab: SendDetailsFocusedTab?) {
+        // Dismiss keyboard when switching away from address tab
+        if newTab != .address && newTab != .amount {
+            focusedField = nil
         }
     }
 
@@ -363,7 +371,14 @@ private func setMainData() async {
     private func validateAddress() {
         Task {
             guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                sendDetailsViewModel.onSelect(tab: .address)
+                sendDetailsViewModel.addressSetupDone = false
+                // Only force back to address tab if we're on amount tab
+                // (can't proceed to amount without valid address).
+                // Don't override if user is on asset tab — they should be
+                // free to switch assets even with an invalid address.
+                if sendDetailsViewModel.selectedTab == .amount {
+                    sendDetailsViewModel.onSelect(tab: .address)
+                }
                 return
             }
             sendDetailsViewModel.addressSetupDone = true
