@@ -14,9 +14,9 @@ enum THORChainLPsAPI: TargetType {
     var baseURL: URL {
         switch self {
         case .getLiquidityProviderDetails:
-            return URL(string: "https://thornode.ninerealms.com")!
+            return URL(string: "https://thornode.thorchain.network")!
         default:
-            return URL(string: "https://midgard.ninerealms.com")!
+            return URL(string: "https://midgard.thorchain.network")!
         }
     }
 

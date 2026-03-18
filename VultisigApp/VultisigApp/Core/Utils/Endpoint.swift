@@ -23,11 +23,11 @@ class Endpoint {
         var baseUrl: String {
             switch self {
             case .thorchain:
-                return "https://thornode.ninerealms.com/thorchain"
+                return "https://thornode.thorchain.network/thorchain"
             case .thorchainChainnet:
                 return "https://chainnet-thornode.thorchain.network/thorchain"
             case .thorchainStagenet:
-                return "https://stagenet-thornode.ninerealms.com/thorchain"
+                return "https://stagenet-thornode.thorchain.network/thorchain"
             case .maya:
                 return "https://mayanode.mayachain.info/mayachain"
             }
@@ -38,12 +38,12 @@ class Endpoint {
     static let vultisigNotification = "https://api.vultisig.com/notification"
     static let supportDocumentLink = "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup#recovering-a-lost-device"
     static let vultisigRelay = "https://api.vultisig.com/router"
-    static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainNineRealms = "https://thornode.thorchain.network/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
 
     // Transaction status endpoints (Midgard)
-    static let thorchainMidgard = "https://midgard.ninerealms.com"
-    static let thorchainMidgardStagenet = "https://stagenet-midgard.ninerealms.com"
+    static let thorchainMidgard = "https://midgard.thorchain.network"
+    static let thorchainMidgardStagenet = "https://stagenet-midgard.thorchain.network"
     static let mayachainMidgard = "https://midgard.mayachain.info"
 
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
@@ -137,21 +137,21 @@ class Endpoint {
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
 
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
-        "https://thornode.ninerealms.com/auth/accounts/\(address)"
+        "https://thornode.thorchain.network/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
+    static let fetchThorchainNetworkInfoNineRealms = "https://thornode.thorchain.network/thorchain/network"
 
     static func fetchThorchainDenomMetadata(denom: String) -> String {
-        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+        "https://thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
 
     static func fetchThorchainAllDenomMetadata() -> String {
-        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+        "https://thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
-    static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
+    static let thorchainNetworkInfo = "https://rpc.thorchain.network/status".asUrl
 
-    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
+    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.thorchain.network/thorchain/inbound_addresses"
 
     // Stagenet endpoints
     static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {
@@ -178,7 +178,7 @@ class Endpoint {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
     }
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
-        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        "https://thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchAccountBalanceThorchainChainnet(address: String) -> String {
         "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
@@ -189,7 +189,7 @@ class Endpoint {
 
     // Fetch pool info for any THORChain asset
     static func fetchPoolInfo(asset: String) -> String {
-        "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+        "https://thornode.thorchain.network/thorchain/pool/\(asset)"
     }
 
     static func fetchChainnetPoolInfo(asset: String) -> String {
@@ -197,16 +197,16 @@ class Endpoint {
     }
 
     static func fetchTcyStakedAmount(address: String) -> String {
-        "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
+        "https://thornode.thorchain.network/thorchain/tcy_staker/\(address)"
     }
 
     static func fetchTcyAutoCompoundStatus() -> String {
-        "https://rpc.ninerealms.com/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
+        "https://rpc.thorchain.network/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
     }
 
     static func fetchTcyAutoCompoundBalance(address: String) -> String {
         // Query user's sTCY balance using cosmos bank API - URL encode the denom
-        "https://rpc.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
+        "https://rpc.thorchain.network/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
     }
 
     static func fetchYRunePrice() -> String {
@@ -225,10 +225,10 @@ class Endpoint {
 
     // THORChain LP endpoints
     static func fetchThorchainPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+        "https://thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
-    static let fetchThorchainPools = "https://thornode.ninerealms.com/thorchain/pools"
+    static let fetchThorchainPools = "https://thornode.thorchain.network/thorchain/pools"
 
     // THORChain Stagenet LP endpoints
     static func fetchThorchainChainnetPoolLiquidityProvider(asset: String, address: String) -> String {
@@ -237,41 +237,41 @@ class Endpoint {
 
     static let fetchThorchainChainnetPools = "https://chainnet-thornode.thorchain.network/thorchain/pools"
 
-    // THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.ninerealms.com)
+    // THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.thorchain.network)
     static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/auth/accounts/\(address)"
+        "https://stagenet-thornode.thorchain.network/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/network"
+    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.thorchain.network/thorchain/network"
 
     static func fetchThorchainStagenetDenomMetadata(denom: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
 
     static func fetchThorchainStagenetAllDenomMetadata() -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
 
-    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
+    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.thorchain.network/status".asUrl
 
-    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/inbound_addresses"
+    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://stagenet-thornode.thorchain.network/thorchain/inbound_addresses"
 
-    static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.thorchain.network/cosmos/tx/v1beta1/txs"
 
     static func fetchAccountBalanceThorchainStagenet(address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
     }
 
     static func fetchStagenetPoolInfo(asset: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)"
+        "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)"
     }
 
     // THORChain Stagenet-2 LP endpoints
     static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+        "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
-    static let fetchThorchainStagenetPools = "https://stagenet-thornode.ninerealms.com/thorchain/pools"
+    static let fetchThorchainStagenetPools = "https://stagenet-thornode.thorchain.network/thorchain/pools"
 
     static func fetchSwapQuoteThorchain(
         chain: SwapChain,
@@ -599,8 +599,8 @@ class Endpoint {
 
     static func resolveTNS(name: String, chain: Chain = .thorChain) -> URL {
         let baseUrl = (chain == .thorChainChainnet || chain == .thorChainStagenet)
-            ? "https://stagenet-midgard.ninerealms.com"
-            : "https://midgard.ninerealms.com"
+            ? "https://stagenet-midgard.thorchain.network"
+            : "https://midgard.thorchain.network"
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
@@ -1175,8 +1175,8 @@ class Endpoint {
 
     // Referral
 
-    static let ReferralBase = "https://thornode.ninerealms.com/thorchain"
-    static let ReferralFees = "https://thornode.ninerealms.com/thorchain/network"
+    static let ReferralBase = "https://thornode.thorchain.network/thorchain"
+    static let ReferralFees = "https://thornode.thorchain.network/thorchain/network"
 
     static func checkNameAvailability(for code: String) -> String {
         ReferralBase + "/thorname/lookup/\(code)"
@@ -1191,7 +1191,7 @@ class Endpoint {
     }
 
     static func nameLookup(for name: String) -> String {
-        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)"
+        "https://midgard.thorchain.network/v2/thorname/lookup/\(name)"
     }
 }
 

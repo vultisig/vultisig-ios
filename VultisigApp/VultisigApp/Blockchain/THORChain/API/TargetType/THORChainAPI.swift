@@ -27,12 +27,12 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getNetworkFees,
                 .getConstants:
-            return URL(string: "https://thornode.ninerealms.com/thorchain")!
+            return URL(string: "https://thornode.thorchain.network/thorchain")!
         case .getThornameLookup,
              .getAddressLookup,
              .getHealth,
              .getNetworkInfo:
-            return URL(string: "https://midgard.ninerealms.com")!
+            return URL(string: "https://midgard.thorchain.network")!
         }
     }
 
