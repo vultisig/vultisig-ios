@@ -2245,8 +2245,6 @@
 		A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToChain.swift; sourceTree = "<group>"; };
 		A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinPickerView.swift; sourceTree = "<group>"; };
 		A6BFE1C82D95F538000B73C0 /* SwapCoinCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinCell.swift; sourceTree = "<group>"; };
-		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
-		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionCell.swift; sourceTree = "<group>"; };
 		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
 		A6C3ABC72C3E595000F13ED0 /* AddressBookScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookScreen.swift; sourceTree = "<group>"; };
@@ -2475,7 +2473,7 @@
 		D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentKeysignCoordinator.swift; path = AgentKeysignCoordinator.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
-		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
+		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Components/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryScreen.swift; path = VultisigApp/Features/Keygen/Views/PeerDiscoveryScreen.swift; sourceTree = SOURCE_ROOT; };
 		D9B6F47A0796793CADF498E8 /* TransactionStatusViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusViewModel.swift; sourceTree = "<group>"; };
 		DC815DCE4E60C266CC64D148 /* AgentChatView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AgentChatView.swift; path = AgentChatView.swift; sourceTree = "<group>"; };
@@ -2899,16 +2897,6 @@
 			path = AddressBook;
 			sourceTree = "<group>";
 		};
-		0CB754653CA5B091880EF5B1 /* Notifications */ = {
-			isa = PBXGroup;
-			children = (
-				1884D10560CC1D55166D1D84 /* NotificationsIntroSheet.swift */,
-				A8F5B728DE1B9BF68381E504 /* SetupPushNotificationsModifier.swift */,
-				2987AFF9D2BF542D8A798F9E /* VaultNotificationSetupSheet.swift */,
-			);
-			path = Notifications;
-			sourceTree = "<group>";
-		};
 		106C55BA4B521C4CE0B90E70 /* ImageView */ = {
 			isa = PBXGroup;
 			children = (
@@ -2987,15 +2975,6 @@
 				130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */,
 			);
 			path = Bonds;
-			sourceTree = "<group>";
-		};
-		13095A342E3264E1009F8785 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				13B6764D2E37D0DB002F016C /* ClipboardManager.swift */,
-				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		130C40E02E7303C800509C61 /* Banners */ = {
@@ -3634,14 +3613,6 @@
 			path = Screen;
 			sourceTree = "<group>";
 		};
-		137B2C792E3A4A970074F648 /* PreferenceKeys */ = {
-			isa = PBXGroup;
-			children = (
-				137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */,
-			);
-			path = PreferenceKeys;
-			sourceTree = "<group>";
-		};
 		137B2C852E3A84080074F648 /* OnChainSecurity */ = {
 			isa = PBXGroup;
 			children = (
@@ -4136,6 +4107,17 @@
 			path = Background;
 			sourceTree = "<group>";
 		};
+		13C2593A628B02D892ABD04E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A53065F52D57CAED000B82E6 /* OnboardingSummaryScreen.swift */,
+				A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */,
+				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		13C2866F2EE8B80F004D8AC8 /* ChainsSetup */ = {
 			isa = PBXGroup;
 			children = (
@@ -4152,6 +4134,7 @@
 				13DD00412EF2F3E40091F833 /* Navigation */,
 				13204DD82EEB1CB700297D01 /* Common */,
 				13C4A02D2EDDC54D0033BDB1 /* ImportVault */,
+				13C2593A628B02D892ABD04E /* Views */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -4247,6 +4230,10 @@
 				DED71A0EE33105D25C7BCA06 /* AddressBook */,
 				D4549738A3166BB28C3DE460 /* FunctionCall */,
 				594CE5503DF47111592B31F4 /* Reshare */,
+				BA7CE9EC3600406588F6DDA5 /* Notifications */,
+				70FDF3BFABBD17F54040DB54 /* UpdateCheck */,
+				B4A5A0D65E494B01E85C1CC0 /* UpgradeFromGG20 */,
+				31F4B35EA4E98860566B19D2 /* MoonPay */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -4455,27 +4442,6 @@
 				13DD00612EF2F5750091F833 /* VaultRouter.swift */,
 			);
 			path = Navigation;
-			sourceTree = "<group>";
-		};
-		13E1E7622E6DD6B900D68F5D /* Transitions */ = {
-			isa = PBXGroup;
-			children = (
-				13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */,
-			);
-			path = Transitions;
-			sourceTree = "<group>";
-		};
-		13E1E7652E6DD71000D68F5D /* Forms */ = {
-			isa = PBXGroup;
-			children = (
-				1348563C2EB529E0003D10BE /* Validators */,
-				13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */,
-				134856222EB51642003D10BE /* Form.swift */,
-				134856232EB51642003D10BE /* FormField.swift */,
-				134856242EB51642003D10BE /* FormFieldFormatter.swift */,
-				134856252EB51642003D10BE /* FormFieldValidator.swift */,
-			);
-			path = Forms;
 			sourceTree = "<group>";
 		};
 		13E428062ED4945A0097AD11 /* BondMaya */ = {
@@ -4813,6 +4779,15 @@
 			path = TextEditor;
 			sourceTree = "<group>";
 		};
+		31F4B35EA4E98860566B19D2 /* MoonPay */ = {
+			isa = PBXGroup;
+			children = (
+				8A29298460F36F4B50592655 /* Views */,
+			);
+			name = MoonPay;
+			path = MoonPay;
+			sourceTree = "<group>";
+		};
 		32E5A621B3625087A2154AD4 /* ActionBanner */ = {
 			isa = PBXGroup;
 			children = (
@@ -5062,6 +5037,17 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		561DE2014E8044F650211CB8 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */,
+				A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */,
+				A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		57A158636114BFE3A6706D95 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -5241,6 +5227,17 @@
 			path = Keygen;
 			sourceTree = "<group>";
 		};
+		6B4183D1BE0CE00AD4AEA5B9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				1884D10560CC1D55166D1D84 /* NotificationsIntroSheet.swift */,
+				A8F5B728DE1B9BF68381E504 /* SetupPushNotificationsModifier.swift */,
+				2987AFF9D2BF542D8A798F9E /* VaultNotificationSetupSheet.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		6CE3074DBCA13A6CFA8374EC /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -5282,6 +5279,26 @@
 			path = Blockchain;
 			sourceTree = "<group>";
 		};
+		70FDF3BFABBD17F54040DB54 /* UpdateCheck */ = {
+			isa = PBXGroup;
+			children = (
+				7275B71B193B196907AD26B1 /* Views */,
+			);
+			name = UpdateCheck;
+			path = UpdateCheck;
+			sourceTree = "<group>";
+		};
+		7275B71B193B196907AD26B1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */,
+				A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */,
+				A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		76E848F816368AE05C9352D8 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -5321,6 +5338,7 @@
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
 				A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */,
+				A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */,
 			);
 			name = Views;
 			path = Views;
@@ -5400,6 +5418,14 @@
 				B51160122E62879100534A43 /* TonService+Models.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		8A29298460F36F4B50592655 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Views;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		8A29ADF48AA9E53B28B63E82 /* Views */ = {
@@ -5608,14 +5634,6 @@
 			path = FastVault;
 			sourceTree = "<group>";
 		};
-		A53287B32C4DB835009FD3D3 /* CoinPicker */ = {
-			isa = PBXGroup;
-			children = (
-				A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */,
-			);
-			path = CoinPicker;
-			sourceTree = "<group>";
-		};
 		A563867E2C3A2121008B848E /* Protobuf */ = {
 			isa = PBXGroup;
 			children = (
@@ -5676,16 +5694,6 @@
 				A594A9EC2C6436A800A3D09E /* DBMappable.swift */,
 			);
 			path = Rates;
-			sourceTree = "<group>";
-		};
-		A6182F232C9224D10059BFDD /* Update Check */ = {
-			isa = PBXGroup;
-			children = (
-				A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */,
-				A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */,
-				A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */,
-			);
-			path = "Update Check";
 			sourceTree = "<group>";
 		};
 		A61BC8172BA2685E00484689 /* Stores */ = {
@@ -6020,15 +6028,6 @@
 			path = States;
 			sourceTree = "<group>";
 		};
-		A6966D1C2BA3DD9900903CA4 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				A53065F52D57CAED000B82E6 /* OnboardingSummaryScreen.swift */,
-				A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */,
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
 		A69FBBA12C8AD9F500A4B78B /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -6095,25 +6094,6 @@
 				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */,
 			);
 			path = Native;
-			sourceTree = "<group>";
-		};
-		A6BB9BBD2DA9A9870085E117 /* UpgradeFromGG20 */ = {
-			isa = PBXGroup;
-			children = (
-				A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */,
-				A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */,
-				A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */,
-			);
-			path = UpgradeFromGG20;
-			sourceTree = "<group>";
-		};
-		A6C0D55D2BB3B71300156689 /* Transactions */ = {
-			isa = PBXGroup;
-			children = (
-				A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */,
-				A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */,
-			);
-			path = Transactions;
 			sourceTree = "<group>";
 		};
 		A6ECA1A32C940FC900456110 /* View Model */ = {
@@ -6282,6 +6262,15 @@
 			path = TargetType;
 			sourceTree = "<group>";
 		};
+		B4A5A0D65E494B01E85C1CC0 /* UpgradeFromGG20 */ = {
+			isa = PBXGroup;
+			children = (
+				561DE2014E8044F650211CB8 /* Views */,
+			);
+			name = UpgradeFromGG20;
+			path = UpgradeFromGG20;
+			sourceTree = "<group>";
+		};
 		B50F263E2F182DBE0015DCCB /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
@@ -6348,6 +6337,15 @@
 				B5A80F172D0600BA00DC9069 /* Ripple.swift */,
 			);
 			path = Signing;
+			sourceTree = "<group>";
+		};
+		BA7CE9EC3600406588F6DDA5 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				6B4183D1BE0CE00AD4AEA5B9 /* Views */,
+			);
+			name = Notifications;
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 		C393DF5B896DB2B75D7C2045 /* Signing */ = {
@@ -6569,6 +6567,20 @@
 				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
 				DFA10BE12CA998A72929D8D0 /* SecurityScanner */,
 				603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */,
+				13B6764D2E37D0DB002F016C /* ClipboardManager.swift */,
+				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
+				137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */,
+				13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */,
+				1348563C2EB529E0003D10BE /* Validators */,
+				13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */,
+				134856222EB51642003D10BE /* Form.swift */,
+				134856232EB51642003D10BE /* FormField.swift */,
+				134856242EB51642003D10BE /* FormFieldFormatter.swift */,
+				134856252EB51642003D10BE /* FormFieldValidator.swift */,
+				A65518022BF849FC006BB924 /* CoverView.swift */,
+				131603442E609D6B001ED972 /* FileExporterSheet.swift */,
+				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
+				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 			);
 			name = Components;
 			path = Components;
@@ -6629,28 +6641,6 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
-		D9AD8ED72B67225F0009F8D5 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				13E1E7652E6DD71000D68F5D /* Forms */,
-				13E1E7622E6DD6B900D68F5D /* Transitions */,
-				131603442E609D6B001ED972 /* FileExporterSheet.swift */,
-				137B2C792E3A4A970074F648 /* PreferenceKeys */,
-				13095A342E3264E1009F8785 /* Utils */,
-				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
-				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
-				A65518022BF849FC006BB924 /* CoverView.swift */,
-				A53287B32C4DB835009FD3D3 /* CoinPicker */,
-				D9AD8EED2B6731290009F8D5 /* New Wallet */,
-				A6C0D55D2BB3B71300156689 /* Transactions */,
-				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
-				A6182F232C9224D10059BFDD /* Update Check */,
-				A6BB9BBD2DA9A9870085E117 /* UpgradeFromGG20 */,
-				0CB754653CA5B091880EF5B1 /* Notifications */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -6694,14 +6684,6 @@
 				834B4865644FA4A2EACF956E /* TransactionHistoryData.swift */,
 			);
 			path = Model;
-			sourceTree = "<group>";
-		};
-		D9AD8EED2B6731290009F8D5 /* New Wallet */ = {
-			isa = PBXGroup;
-			children = (
-				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
-			);
-			path = "New Wallet";
 			sourceTree = "<group>";
 		};
 		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
@@ -6764,7 +6746,6 @@
 				13C880552E70A312009C67F1 /* Features */,
 				13AF0D162E4CE64B004D4FD2 /* Navigation */,
 				13BD8D262E3D49600013B67E /* DesignSystem */,
-				D9AD8ED72B67225F0009F8D5 /* Views */,
 				D9AD8ED82B6722AC0009F8D5 /* Model */,
 				A65649D52B965FC400E4B329 /* View Models */,
 				461BD0962B7EFA8000BFF703 /* Services */,

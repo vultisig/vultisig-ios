@@ -190,17 +190,17 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 
 ### 4L — Remaining Views cleanup
 
-- [ ] 4L.1 Move `Views/Notifications/` → `Features/Notifications/Views/`
-- [ ] 4L.2 Move `Views/Onboarding/` → `Features/Onboarding/Views/` (merge with existing `Features/Onboarding/`)
-- [ ] 4L.3 Move `Views/Update Check/` → `Features/UpdateCheck/Views/`
-- [ ] 4L.4 Move `Views/UpgradeFromGG20/` → `Features/UpgradeFromGG20/Views/`
-- [ ] 4L.5 Move `Views/New Wallet/` → `Features/Onboarding/Views/`
-- [ ] 4L.6 Move `Views/CoinPicker/` → `Features/Wallet/Views/`
-- [ ] 4L.7 Move `Views/MoonPay/` → `Features/MoonPay/Views/`
-- [ ] 4L.8 Move `Views/Utils/`, `Views/PreferenceKeys/`, `Views/Transitions/`, `Views/Forms/` → `Components/`
-- [ ] 4L.9 Delete now-empty `Views/` directory
-- [ ] 4L.10 Delete now-empty `View Models/` directory
-- [ ] 4L.11 Build + lint check
+- [x] 4L.1 Move `Views/Notifications/` → `Features/Notifications/Views/` (3 files)
+- [x] 4L.2 Move `Views/Onboarding/` → `Features/Onboarding/Views/` (2 files, merged with existing)
+- [x] 4L.3 Move `Views/Update Check/` → `Features/UpdateCheck/Views/` (3 files)
+- [x] 4L.4 Move `Views/UpgradeFromGG20/` → `Features/UpgradeFromGG20/Views/` (3 files)
+- [x] 4L.5 Move `Views/New Wallet/` → `Features/Onboarding/Views/` (1 file)
+- [x] 4L.6 Move `Views/CoinPicker/` → `Features/Wallet/Views/` (1 file)
+- [x] 4L.7 Move `Views/MoonPay/` → `Features/MoonPay/Views/` (1 file)
+- [x] 4L.8 Move `Views/Utils/`, `Views/PreferenceKeys/`, `Views/Transitions/`, `Views/Forms/`, loose files → `Components/` (15 files); `ThorchainPoolListView.swift` → `Features/Defi/`
+- [x] 4L.9 Deleted now-empty `Views/` group (removed 2 stale Transactions references)
+- [ ] 4L.10 `View Models/` still has 18 orphaned files — deferred to Phase 6
+- [x] 4L.11 Build + lint check (0 new warnings)
 
 ---
 
