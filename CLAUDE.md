@@ -6,8 +6,8 @@ HIGH — Wallet app with TSS key management. Crypto/JNI changes require maintain
 
 ## Critical Boundaries
 
-- `VultisigApp/Services/Tss/` — TSS keygen/keysign bindings. Do not modify without explicit review.
-- `VultisigApp/Model/` — SwiftData models. Schema changes affect migrations.
+- `VultisigApp/Blockchain/Tss/` — TSS keygen/keysign bindings. Do not modify without explicit review.
+- `VultisigApp/Model/` — SwiftData @Model classes (core entities only: Vault, Coin, Chain, KeyShare, etc.). Schema changes affect migrations.
 - `VultisigApp.xcodeproj/project.pbxproj` — Use `/add-xcode-files` skill, never edit directly.
 
 ## Project Overview
@@ -18,15 +18,32 @@ Vultisig is a multi-chain cryptocurrency wallet for iOS and macOS built with Swi
 
 ```text
 VultisigApp/
-├── DesignSystem/       # Theme, colors, fonts (Theme.colors.*, Theme.fonts.*)
-├── Services/           # API clients, blockchain services, networking (HTTPClient, TargetType)
-├── Views/Components/   # Reusable UI (PrimaryButton, CommonTextField, Screen, Toolbar, Sheet)
-├── Features/           # Feature-based modules
-├── View Models/        # ObservableObject state containers
-├── Navigation/         # Routing (NavigationRouter, *Route enums, *Router)
-├── Model/              # SwiftData @Model classes (Vault, Coin, etc.)
-├── Stores/             # Shared data stores
-└── Extensions/         # Swift type extensions
+├── App/                # Entry point (VultisigApp.swift, ContentView.swift)
+├── Blockchain/         # Chain-specific code (EVM, Cosmos, UTXO, Solana, THORChain, etc.)
+│   ├── Common/         # CoinFactory, shared crypto helpers
+│   ├── Tss/            # TSS bindings (critical boundary)
+│   ├── States/         # Keygen + Keysign state models
+│   ├── Swaps/          # OneInch, KyberSwap, LiFi, Common
+│   └── <Chain>/        # Signing/, Service/, Models/ per chain
+├── Components/         # Reusable UI (PrimaryButton, CommonTextField, Screen, Toolbar, Sheet)
+├── Core/
+│   ├── DesignSystem/   # Theme, colors, fonts (Theme.colors.*, Theme.fonts.*)
+│   ├── Extensions/     # Swift type extensions
+│   ├── Localizables/   # 7 locale .strings files
+│   ├── Models/         # Cross-feature models
+│   ├── Navigation/     # NavigationRouter, routing
+│   ├── Networking/     # HTTPClient, TargetType
+│   ├── Platform/       # iOS/ and macOS/ native-only code (UIKit/AppKit)
+│   ├── Security/       # Biometry, Blockaid scanner
+│   ├── Services/       # Fee, Rates, TransactionStatus, VultiServer, FastVault, etc.
+│   ├── States/         # UI states (ChainType, KeyType, SetupVaultState, etc.)
+│   ├── Storage/        # Storage + Keychain
+│   ├── Stores/         # Shared data stores
+│   ├── Utils/          # Formatters, QRCode, encryption, etc.
+│   └── ViewModels/     # App-wide view models (AppViewModel, DeeplinkViewModel, etc.)
+├── Features/           # Feature modules (Send, Swap, Keygen, Keysign, Settings, Wallet, etc.)
+│   └── <Feature>/      # Views/, ViewModels/, Services/, Models/ per feature
+└── Model/              # Core SwiftData @Model classes (Vault, Coin, Chain, KeyShare, etc.)
 ```
 
 ## Mandatory Rules
@@ -34,13 +51,13 @@ VultisigApp/
 1. **Design System** — Always use `Theme.colors.*` and `Theme.fonts.*`. Never hardcode colors/fonts. Use price fonts (`priceTitle1`, `priceBodyL`, `priceBodyS`) for numbers and balances.
 2. **SwiftData** — Never access `@Model` classes off MainActor. Use value types across actor boundaries.
 3. **Networking** — Use `TargetType` protocol for all API endpoints. Use `HTTPClient` with async/await.
-4. **Localization** — Never hardcode user-facing strings. Use `"key".localized`. Add to ALL 7 `Localizable.strings` (en, de, es, hr, it, pt, zh-Hans) in `VultisigApp/Localizables/`. camelCase keys, alphabetical order. Run `sort_localizable.py` after.
+4. **Localization** — Never hardcode user-facing strings. Use `"key".localized`. Add to ALL 7 `Localizable.strings` (en, de, es, hr, it, pt, zh-Hans) in `VultisigApp/Core/Localizables/`. camelCase keys, alphabetical order. Run `sort_localizable.py` after.
 5. **Buttons** — Always use `PrimaryButton`. Never create custom button styles.
 6. **Deprecated APIs** — Use `.foregroundStyle()` not `.foregroundColor()`.
 7. **Concurrency** — Use async/await. Never use callbacks/completion handlers.
 8. **Screens** — Use `Screen` component for full-screen views. Suffix with `Screen`.
 9. **SwiftLint** — Never introduce new warnings. Run `swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/` after changes.
-10. **Cross-Platform** — Use `crossPlatformToolbar`, `crossPlatformSheet`, `#if os(macOS)`. No platform-specific view files.
+10. **Cross-Platform** — Use `crossPlatformToolbar`, `crossPlatformSheet`, `#if os(iOS)` / `#if os(macOS)` in main files. Platform-specific extensions are merged into their main files, not separate files. Native UIKit/AppKit code lives in `Core/Platform/`.
 11. **Architecture** — Business logic in ViewModels/Services, never in views. No UIKit unless necessary.
 
 ## Skills Reference

@@ -12,5 +12,6 @@ paths:
 - **Never import UIKit** in SwiftUI views unless absolutely necessary (e.g., platform bridging)
 - **One ViewModel per screen** — shared state goes in Services or Stores
 - **Navigation**: use NavigationRouter and Route enums, not ad-hoc navigation
-- **Models**: SwiftData `@Model` classes stay in `Model/`, value types for cross-boundary passing
-- **Feature organization**: group related files (View, ViewModel, Models) by feature when possible
+- **Models**: Core SwiftData `@Model` classes stay in `Model/`, feature-specific models in `Features/<Name>/Models/`, value types for cross-boundary passing
+- **Feature organization**: each feature lives in `Features/<Name>/` with `Views/`, `ViewModels/`, `Services/`, `Models/` subdirectories. Shared infrastructure lives in `Core/`. Chain-specific code lives in `Blockchain/`.
+- **Cross-platform**: use `#if os(iOS)` / `#if os(macOS)` blocks in main files. Native UIKit/AppKit code lives in `Core/Platform/iOS/` and `Core/Platform/macOS/`

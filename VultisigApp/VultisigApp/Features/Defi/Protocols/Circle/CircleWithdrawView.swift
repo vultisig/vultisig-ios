@@ -36,16 +36,13 @@ struct CircleWithdrawView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             VStack(spacing: 0) {
                 scrollableContent
                 footerView
             }
         }
+        .screenTitle("circleWithdrawTitle".localized)
         .withLoading(isLoading: $isLoading)
         .task {
             await loadFastVaultStatus()
@@ -68,7 +65,7 @@ struct CircleWithdrawView: View {
             }
 
             if vaultEthBalance <= 0 {
-                Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
+                Text("circleDashboardETHRequired".localized)
                     .font(.caption)
                     .foregroundStyle(Theme.colors.alertWarning)
                     .multilineTextAlignment(.center)
@@ -85,7 +82,7 @@ struct CircleWithdrawView: View {
         VStack(spacing: CircleConstants.Design.verticalSpacing) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
+                    Text("circleWithdrawAmount".localized)
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
 
@@ -116,7 +113,7 @@ struct CircleWithdrawView: View {
                     percentageCheckpoints
 
                     HStack {
-                        Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
+                        Text("circleDepositBalanceAvailable".localized)
                             .font(CircleConstants.Fonts.subtitle)
                             .foregroundStyle(Theme.colors.textSecondary)
 
@@ -170,11 +167,11 @@ struct CircleWithdrawView: View {
     var withdrawButton: some View {
         if isFastVault {
             VStack {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                Text("holdForPairedSign".localized)
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
 
-                LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                LongPressPrimaryButton(title: "circleWithdrawConfirm".localized) {
                     fastPasswordPresented = true
                 } longPressAction: {
                     fastVaultPassword = ""
@@ -183,7 +180,7 @@ struct CircleWithdrawView: View {
             }
             .disabled(isButtonDisabled)
         } else {
-            PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+            PrimaryButton(title: "circleWithdrawConfirm".localized) {
                 Task { await handleWithdraw() }
             }
             .disabled(isButtonDisabled)

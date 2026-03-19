@@ -2,7 +2,7 @@
 
 ## TSS Types
 
-**File:** `States/Keygen/TssType.swift`
+**File:** `Blockchain/States/Keygen/TssType.swift`
 
 ```swift
 enum TssType: String {
@@ -15,7 +15,7 @@ enum TssType: String {
 
 ## Library Types
 
-**File:** `States/LibType.swift`
+**File:** `Core/States/LibType.swift`
 
 ```swift
 enum LibType: Int, Codable, CaseIterable {
@@ -37,7 +37,7 @@ enum LibType: Int, Codable, CaseIterable {
 
 ### DKLS Keygen (ECDSA)
 
-**Files:** `Tss/DKLS/DKLSKeygen.swift`, `Tss/DKLS/DKLSHelper.swift`
+**Files:** `Blockchain/Tss/DKLS/DKLSKeygen.swift`, `Blockchain/Tss/DKLS/DKLSHelper.swift`
 
 - Generates secp256k1 key shares via distributed key generation
 - Multi-party computation with setup message exchange
@@ -45,7 +45,7 @@ enum LibType: Int, Codable, CaseIterable {
 
 ### Schnorr Keygen (EdDSA)
 
-**File:** `Tss/Schnorr/SchnorrKeygen.swift`
+**File:** `Blockchain/Tss/Schnorr/SchnorrKeygen.swift`
 
 - Generates Ed25519 key shares via Schnorr protocol
 - Compatible with Ed25519 standard
@@ -53,7 +53,7 @@ enum LibType: Int, Codable, CaseIterable {
 
 ### Dilithium Keygen (ML-DSA)
 
-**Files:** `Tss/Dilithium/DilithiumKeygen.swift`, `Tss/Dilithium/DilithiumHelper.swift`
+**Files:** `Blockchain/Tss/Dilithium/DilithiumKeygen.swift`, `Blockchain/Tss/Dilithium/DilithiumHelper.swift`
 
 - Generates ML-DSA-44 key shares (post-quantum)
 - Module-Lattice-Based Digital Signature Algorithm
@@ -63,26 +63,26 @@ enum LibType: Int, Codable, CaseIterable {
 
 ### DKLS Keysign (ECDSA)
 
-**File:** `Tss/DKLS/DKLSKeysign.swift`
+**File:** `Blockchain/Tss/DKLS/DKLSKeysign.swift`
 
 - Signs transactions for secp256k1 chains
 - Multi-party threshold signature
 
 ### Schnorr Keysign (EdDSA)
 
-**File:** `Tss/Schnorr/SchnorrKeysign.swift`
+**File:** `Blockchain/Tss/Schnorr/SchnorrKeysign.swift`
 
 - Signs transactions for Ed25519 chains
 
 ### Dilithium Keysign (ML-DSA)
 
-**File:** `Tss/Dilithium/DilithiumKeysign.swift`
+**File:** `Blockchain/Tss/Dilithium/DilithiumKeysign.swift`
 
 - Signs with ML-DSA-44 (post-quantum)
 
 ## KeygenViewModel
 
-**File:** `View Models/KeygenViewModel.swift`
+**File:** `Features/Keygen/ViewModels/KeygenViewModel.swift`
 
 Status tracking:
 ```swift
@@ -107,7 +107,7 @@ Flow: Creates vault -> generates ECDSA key -> generates EdDSA key -> (optional) 
 
 ## KeysignViewModel
 
-**File:** `View Models/KeysignViewModel.swift`
+**File:** `Features/Keysign/ViewModels/KeysignViewModel.swift`
 
 Status tracking:
 ```swift
@@ -130,7 +130,7 @@ Key methods:
 
 ## KeysignPayload
 
-**File:** `Services/Keysign/KeysignPayload.swift`
+**File:** `Features/Keysign/Services/KeysignPayload.swift`
 
 Complete signing request:
 ```swift

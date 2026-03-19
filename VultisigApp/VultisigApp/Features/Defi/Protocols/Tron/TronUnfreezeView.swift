@@ -36,11 +36,7 @@ struct TronUnfreezeView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("tronUnfreezeTitle", comment: "Unfreeze TRX"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             ZStack {
                 VStack(spacing: 0) {
                     scrollableContent
@@ -53,6 +49,7 @@ struct TronUnfreezeView: View {
                 }
             }
         }
+        .screenTitle(NSLocalizedString("tronUnfreezeTitle", comment: "Unfreeze TRX"))
         .task {
             await loadData()
         }
