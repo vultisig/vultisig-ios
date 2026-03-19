@@ -26,6 +26,10 @@ class SendCryptoViewModel: ObservableObject {
     // Logic delegation
     private let logic = SendCryptoLogic()
 
+    // Address resolution
+    @Published private(set) var addressResolved: Bool?
+    private var addressResolutionTask: Task<Void, Never>?
+
     // State for alerts
     @Published var showAddressAlert: Bool = false
     @Published var showAmountAlert: Bool = false
@@ -60,6 +64,31 @@ class SendCryptoViewModel: ObservableObject {
         tx.isFastVault = await logic.loadFastVault(vault: vault)
     }
 
+    func isValidAddressFormat(tx: SendTransaction) -> Bool {
+        guard !tx.toAddress.isEmpty else { return false }
+        let isValid = AddressService.validateAddress(address: tx.toAddress, chain: tx.coin.chain)
+        if isValid {
+            showAddressAlert = false
+            errorMessage = nil
+        }
+        return isValid
+    }
+
+    func debouncedResolveAddress(tx: SendTransaction) {
+        addressResolutionTask?.cancel()
+        addressResolved = nil
+        addressResolutionTask = Task {
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else { return }
+            addressResolved = await validateToAddress(tx: tx)
+        }
+    }
+
+    func cancelAddressResolution() {
+        addressResolutionTask?.cancel()
+        addressResolved = nil
+    }
+
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
         errorMessage = ""
         isLoading = true
@@ -76,13 +105,6 @@ class SendCryptoViewModel: ObservableObject {
 
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
         logic.convertToFiat(newValue: newValue, tx: tx, setMaxValue: setMaxValue)
-    }
-
-    func validateAddress(tx: SendTransaction, address: String) {
-        guard !isNamespaceResolved else {
-            return
-        }
-        _ = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
     func validateAmount(amount: String) {
@@ -242,7 +264,6 @@ struct SendCryptoLogic {
 
         do {
             let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
-            // Mutate tx address on MainActor
             await MainActor.run {
                 tx.toAddress = resolvedAddress
             }
@@ -253,16 +274,6 @@ struct SendCryptoLogic {
             logger.log("Please enter a valid address for the selected blockchain.")
             result.isValid = false
             return result
-        }
-
-        let isValid = AddressService.validateAddress(address: tx.toAddress, chain: tx.coin.chain)
-        if !isValid {
-             result.errorTitle = "error"
-             result.errorMessage = "validAddressError"
-             result.showAddressAlert = true
-             logger.log("Invalid address.")
-             result.isValid = false
-             return result
         }
 
         return result
