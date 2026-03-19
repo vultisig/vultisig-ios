@@ -129,7 +129,7 @@ class BittensorService: RpcService {
         } catch {
             // Suppress "Already Imported" errors (multi-device signing, second device gets this)
             let errorMessage = error.localizedDescription.lowercased()
-            if errorMessage.contains("already imported") || errorMessage.contains("transaction is temporarily banned") {
+            if errorMessage.contains("already imported") {
                 // Return the hash from the hex data itself
                 let extrinsicData = Data(hexString: hex.stripHexPrefix()) ?? Data()
                 let txHash = Hash.blake2b(data: extrinsicData, size: 32).toHexString()
