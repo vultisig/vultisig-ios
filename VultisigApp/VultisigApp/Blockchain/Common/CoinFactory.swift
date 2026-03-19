@@ -92,8 +92,13 @@ struct CoinFactory {
                 throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
             }
         case .bittensor:
-            // Use raw ed25519 pubkey (32 bytes) and encode with SS58 prefix 42
-            address = BittensorHelper.ss58Encode(publicKey: publicKey.data, prefix: BittensorHelper.ss58Prefix)
+            // Derive Polkadot address (prefix 0) via WalletCore, decode to get raw 32-byte pubkey,
+            // then re-encode with SS58 prefix 42 for Bittensor
+            let dotAddr = CoinType.polkadot.deriveAddressFromPublicKey(publicKey: publicKey)
+            guard let decoded = Base58.decode(string: dotAddr), decoded.count == 35 else {
+                throw Errors.invalidPublicKey(pubKey: "Failed to derive Bittensor address")
+            }
+            address = BittensorHelper.ss58Encode(publicKey: Data(decoded[1..<33]), prefix: BittensorHelper.ss58Prefix)
         default:
             address = chain.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
