@@ -18,14 +18,14 @@ Vultisig supports 40+ blockchains using threshold signature schemes (TSS) with t
 
 ## Key Coordination
 
-`BlockChainService` (`Services/BlockChainService.swift`) coordinates chain-specific operations:
+`BlockChainService` (`Core/Services/BlockChainService.swift`) coordinates chain-specific operations:
 - Fetches chain-specific transaction parameters (`BlockChainSpecific`)
 - Normalizes fees (UTXO x2.5, EVM x1.5 multipliers)
 - Manages caching and Solana blockhash refresh
 
 ## Chain Types
 
-`ChainType` enum (`States/ChainType.swift`):
+`ChainType` enum (`Core/States/ChainType.swift`):
 - `.UTXO` - Bitcoin, Litecoin, Dash, etc.
 - `.Cardano` - Special UTXO (EdDSA)
 - `.EVM` - Ethereum, Polygon, etc.
@@ -36,5 +36,5 @@ Vultisig supports 40+ blockchains using threshold signature schemes (TSS) with t
 
 - **Chain details:** See `chains.md` in this skill directory
 - **Keygen/Keysign flows:** See `keygen-keysign.md` in this skill directory
-- **Endpoint management:** `Utils/Endpoint.swift` (~1500 lines, centralized URLs)
+- **Endpoint management:** `Core/Utils/Endpoint.swift` (~1500 lines, centralized URLs)
 - **Vault model:** `Model/Vault.swift` (SwiftData, holds keys + coins)

@@ -11,7 +11,7 @@ All logging in the codebase uses Apple's `OSLog` framework via `Logger`. Never u
 
 ## Reference Implementation
 
-See `VultisigApp/VultisigApp/Services/Network/HTTPClient.swift` for the canonical example.
+See `VultisigApp/VultisigApp/Core/Networking/HTTPClient.swift` for the canonical example.
 
 ## Setup
 

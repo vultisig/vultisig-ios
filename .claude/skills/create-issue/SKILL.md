@@ -110,7 +110,7 @@ verify: ["swiftlint lint"]
 
 ## Key Repo Rules
 - Never edit `project.pbxproj` directly — use `/add-xcode-files`
-- Never modify `Services/Tss/` without explicit review
+- Never modify `Blockchain/Tss/` without explicit review
 - Use `"key".localized` for all user-facing strings
 - Update ALL 7 locale files for string changes
 

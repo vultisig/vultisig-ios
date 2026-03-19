@@ -1,0 +1,59 @@
+//
+//  THORChainLPsAPI.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 21/10/2025.
+//
+
+import Foundation
+
+enum THORChainLPsAPI: TargetType {
+    case getLiquidityProviderDetails(assetId: String, address: String)
+    case getPoolStats(period: String?)
+
+    var baseURL: URL {
+        switch self {
+        case .getLiquidityProviderDetails:
+            return URL(string: "https://thornode.thorchain.network")!
+        default:
+            return URL(string: "https://midgard.thorchain.network")!
+        }
+    }
+
+    var path: String {
+        switch self {
+        case .getLiquidityProviderDetails(let assetId, let address):
+            return "/thorchain/pool/\(assetId)/liquidity_provider/\(address)"
+        case .getPoolStats:
+            return "/v2/pools"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .getLiquidityProviderDetails, .getPoolStats:
+            return .get
+        }
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .getLiquidityProviderDetails:
+            return .requestPlain
+
+        case .getPoolStats(let period):
+            var params: [String: String] = ["status": "available"]
+            if let period = period {
+                params["period"] = period
+            } else {
+                // Default to 30d for consistency with thorchain.org
+                params["period"] = "30d"
+            }
+            return .requestParameters(params, .urlEncoding)
+        }
+    }
+
+    var headers: [String: String]? {
+        return ["X-Client-ID": "vultisig"]
+    }
+}

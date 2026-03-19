@@ -88,7 +88,7 @@ Follow these rules:
 
 Check theme files for existing tokens:
 ```text
-VultisigApp/VultisigApp/DesignSystem/
+VultisigApp/VultisigApp/Core/DesignSystem/
 ```
 
 Map Figma values to existing theme tokens. Only create new constants if no existing token matches.
