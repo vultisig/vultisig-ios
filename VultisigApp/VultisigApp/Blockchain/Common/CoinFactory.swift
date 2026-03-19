@@ -93,11 +93,13 @@ struct CoinFactory {
             }
         case .bittensor:
             // Derive Polkadot address (prefix 0) via WalletCore, decode to get raw 32-byte pubkey,
-            // then re-encode with SS58 prefix 42 for Bittensor
+            // then re-encode with SS58 prefix 42 for Bittensor.
+            // Use decodeNoCheck because SS58 uses blake2b checksum, not Bitcoin's double-SHA256.
             let dotAddr = CoinType.polkadot.deriveAddressFromPublicKey(publicKey: publicKey)
-            guard let decoded = Base58.decode(string: dotAddr), decoded.count == 35 else {
+            guard let decoded = Base58.decodeNoCheck(string: dotAddr), decoded.count >= 33 else {
                 throw Errors.invalidPublicKey(pubKey: "Failed to derive Bittensor address")
             }
+            // SS58 prefix-0: [0x00] + pubkey(32) + checksum(2) = 35 bytes. Skip prefix byte.
             address = BittensorHelper.ss58Encode(publicKey: Data(decoded[1..<33]), prefix: BittensorHelper.ss58Prefix)
         default:
             address = chain.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
