@@ -47,6 +47,7 @@ final class BlockChainService {
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let dot = PolkadotService.shared
+    private let tao = BittensorService.shared
     private let maya = MayachainService.shared
     private let ton = TonService.shared
     private let tron = TronService.shared
@@ -495,6 +496,21 @@ private extension BlockChainService {
                 transactionVersion: gasInfo.transactionVersion,
                 genesisHash: gasInfo.genesisHash,
                 gas: dynamicFee
+            )
+
+        case .bittensor:
+            let gasInfo = try await tao.getGasInfo(fromAddress: coin.address)
+            // Bittensor uses static fallback fee of 100_000 RAO (0.0001 TAO)
+            let fee = BittensorHelper.defaultFee
+
+            return .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash,
+                gas: fee
             )
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei:

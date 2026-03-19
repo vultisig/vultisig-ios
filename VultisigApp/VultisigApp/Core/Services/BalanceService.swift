@@ -19,6 +19,7 @@ class BalanceService {
     private let sui = SuiService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
+    private let tao = BittensorService.shared
     private let ton = TonService.shared
     private let ripple = RippleService.shared
     private let tron = TronService.shared
@@ -274,6 +275,9 @@ class BalanceService {
 
         case .polkadot:
             return try await dot.getBalance(address: address)
+
+        case .bittensor:
+            return try await tao.getBalance(address: address)
 
         case .ton:
             if coin.isNativeToken {

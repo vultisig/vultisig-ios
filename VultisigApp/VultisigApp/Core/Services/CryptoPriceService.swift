@@ -292,7 +292,7 @@ private extension CryptoPriceService {
             return "zksync"
         case .mantle:
             return "mantle"
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .hyperliquid, .sei, .qbtc:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .hyperliquid, .sei, .qbtc, .bittensor:
             return .empty
         }
     }

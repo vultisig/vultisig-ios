@@ -484,6 +484,10 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
 
         case .Polkadot:
+            if keysignPayload.coin.chain == .bittensor {
+                let transaction = try BittensorHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
+            }
             let transaction = try PolkadotHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
 
@@ -638,6 +642,9 @@ class KeysignViewModel: ObservableObject {
                 case .polkadot:
                     // Fast broadcast - extrinsic index will be discovered lazily during status checks
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
+
+                case .bittensor:
+                    self.txid = try await BittensorService.shared.broadcastTransaction(hex: tx.rawTransaction)
 
                 case .ton:
                     let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)

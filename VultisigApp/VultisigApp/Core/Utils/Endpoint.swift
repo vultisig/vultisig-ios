@@ -481,6 +481,22 @@ class Endpoint {
 
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
 
+    // Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
+    static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
+
+    // Bittensor API key for Taostats
+    static let bittensorApiKey = "tao-43f7c8f7-0a77-49aa-9f66-17fc112b3c10:3bc1d30d"
+
+    // Bittensor balance endpoint (Taostats API)
+    static func bittensorBalanceUrl(address: String) -> String {
+        return "https://api.taostats.io/api/account/latest/v1?address=\(address)&network=finney"
+    }
+
+    // Bittensor transaction status endpoint (Taostats API)
+    static func bittensorExtrinsicUrl(txHash: String) -> String {
+        return "https://api.taostats.io/api/extrinsic/v1?hash=\(txHash)"
+    }
+
     static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
 
     static func fetchTonBalance(address: String) -> String {
@@ -831,6 +847,8 @@ class Endpoint {
             return "https://suiscan.xyz/mainnet/tx/\(txid)"
         case .polkadot:
             return "https://assethub-polkadot.subscan.io/extrinsic/\(txid)"
+        case .bittensor:
+            return "https://taostats.io/extrinsic/\(txid)"
         case .zksync:
             return "https://explorer.zksync.io/tx/\(txid)"
         case .ton:
@@ -951,6 +969,8 @@ class Endpoint {
             return "https://seiscan.io/address/\(address)"
         case .qbtc:
             return nil
+        case .bittensor:
+            return "https://taostats.io/account/\(address)"
         }
     }
 
@@ -1009,6 +1029,8 @@ class Endpoint {
             return "https://suiscan.xyz/mainnet/coin/\(contractAddress)"
         case .polkadot:
             return "https://assethub-polkadot.subscan.io/account/\(coin.address)"
+        case .bittensor:
+            return "https://taostats.io/account/\(coin.address)"
         case .zksync:
             return "https://explorer.zksync.io/token/\(contractAddress)"
         case .ton:
@@ -1124,6 +1146,8 @@ class Endpoint {
             return "https://seiscan.io/address/\(address)"
         case .qbtc:
             return nil
+        case .bittensor:
+            return "https://taostats.io/account/\(address)"
         case .none:
             return nil
         }

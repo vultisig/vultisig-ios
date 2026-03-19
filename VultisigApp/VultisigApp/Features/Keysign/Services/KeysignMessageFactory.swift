@@ -91,6 +91,8 @@ struct KeysignMessageFactory {
             return try helper.getPreSignedImageHash(keysignPayload: payload)
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .bittensor:
+            return try BittensorHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ripple:
