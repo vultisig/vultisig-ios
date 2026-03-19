@@ -196,6 +196,8 @@
 "circleRowCreateWallet" = "Wallet erstellen";
 "circleRowGetStarted" = "Loslegen";
 "circleRowYieldAccount" = "Ertragskonto";
+"circleRewardsDescription" = "Belohnungen werden automatisch Ihrem Guthaben gutgeschrieben.";
+"circleRewardsTitle" = "Belohnungen";
 "circleSetupAccountTitle" = "Circle USDC Konto";
 "circleSetupCreateAccount" = "Konto erstellen";
 "circleSetupDepositDescription" = "Zahlen Sie Ihre $USDC auf ein Circle-Konto ein und verdienen Sie sicher in Ihrem Vultisig-Tresor.";
@@ -204,6 +206,7 @@
 "circleSetupOpenAccount" = "Konto eröffnen";
 "circleSetupUSDCDeposited" = "USDC eingezahlt";
 "circleTitle" = "Circle U.S. Dollar";
+"circleUSDCDeposited" = "USDC eingezahlt";
 "circleWithdraw" = "Abheben";
 "circleWithdrawAddressLabel" = "Adresse";
 "circleWithdrawAmountLabel" = "Betrag";

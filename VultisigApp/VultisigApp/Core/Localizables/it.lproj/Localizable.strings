@@ -196,6 +196,8 @@
 "circleRowCreateWallet" = "Crea Portafoglio";
 "circleRowGetStarted" = "Inizia";
 "circleRowYieldAccount" = "Conto Rendimento";
+"circleRewardsDescription" = "I premi vengono automaticamente accreditati sul tuo saldo.";
+"circleRewardsTitle" = "Premi";
 "circleSetupAccountTitle" = "Account Circle USDC";
 "circleSetupCreateAccount" = "Crea Account";
 "circleSetupDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
@@ -204,6 +206,7 @@
 "circleSetupOpenAccount" = "Apri Account";
 "circleSetupUSDCDeposited" = "USDC depositato";
 "circleTitle" = "Circle U.S. Dollar";
+"circleUSDCDeposited" = "USDC depositato";
 "circleWithdraw" = "Preleva";
 "circleWithdrawAddressLabel" = "Indirizzo";
 "circleWithdrawAmountLabel" = "Importo";

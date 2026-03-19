@@ -196,6 +196,8 @@
 "circleRowCreateWallet" = "创建钱包";
 "circleRowGetStarted" = "开始";
 "circleRowYieldAccount" = "收益账户";
+"circleRewardsDescription" = "奖励会自动计入您的余额。";
+"circleRewardsTitle" = "奖励";
 "circleSetupAccountTitle" = "Circle USDC 账户";
 "circleSetupCreateAccount" = "创建账户";
 "circleSetupDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
@@ -204,6 +206,7 @@
 "circleSetupOpenAccount" = "开设账户";
 "circleSetupUSDCDeposited" = "USDC 已存入";
 "circleTitle" = "Circle 美元";
+"circleUSDCDeposited" = "USDC 已存入";
 "circleWithdraw" = "提现";
 "circleWithdrawAddressLabel" = "地址";
 "circleWithdrawAmountLabel" = "金额";

@@ -196,6 +196,8 @@
 "circleRowCreateWallet" = "Izradi novčanik";
 "circleRowGetStarted" = "Započni";
 "circleRowYieldAccount" = "Račun za prinos";
+"circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
+"circleRewardsTitle" = "Nagrade";
 "circleSetupAccountTitle" = "Circle USDC Račun";
 "circleSetupCreateAccount" = "Izradi račun";
 "circleSetupDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
@@ -204,6 +206,7 @@
 "circleSetupOpenAccount" = "Otvori Račun";
 "circleSetupUSDCDeposited" = "USDC deponiran";
 "circleTitle" = "Circle američki dolar";
+"circleUSDCDeposited" = "USDC deponiran";
 "circleWithdraw" = "Povuci";
 "circleWithdrawAddressLabel" = "Adresa";
 "circleWithdrawAmountLabel" = "Iznos";

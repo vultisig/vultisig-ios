@@ -50,13 +50,7 @@ struct CircleView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                VStack {
-                    if let address = vault.circleWalletAddress, !address.isEmpty {
-                        CircleDashboardView(vault: vault, model: model)
-                    } else {
-                        CircleSetupView(vault: vault, model: model)
-                    }
-                }
+                CircleSetupView(vault: vault, model: model)
             }
         }
         .screenTitle(NSLocalizedString("circleTitle", comment: "Circle"))

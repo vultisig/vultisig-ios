@@ -203,6 +203,8 @@
 "circleRowCreateWallet" = "Create Wallet";
 "circleRowGetStarted" = "Get Started";
 "circleRowYieldAccount" = "Yield Account";
+"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
+"circleRewardsTitle" = "Rewards";
 "circleSetupAccountBalance" = "Circle Account Balance";
 "circleSetupAccountTitle" = "Circle USDC Account";
 "circleSetupDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
@@ -211,6 +213,7 @@
 "circleSetupOpenAccount" = "Open Account";
 "circleSetupUSDCDeposited" = "USDC deposited";
 "circleTitle" = "Circle";
+"circleUSDCDeposited" = "USDC deposited";
 "circleWithdrawAmount" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
