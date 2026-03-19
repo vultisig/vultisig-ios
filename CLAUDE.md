@@ -71,6 +71,7 @@ Domain knowledge loads on-demand via skills:
 | `ui-components` | Colors, fonts, gradients, PrimaryButton, CommonTextField, Screen, Toolbar, Sheet, cells, banners, loaders, view modifiers, localization details |
 | `swiftdata-guide` | All 14 @Model classes, Storage API, three-phase architecture, batch upsert, Swift 6 Sendable |
 | `blockchain-guide` | Chain services, BlockChainSpecific, TSS keygen/keysign, vault key management, 40+ chains |
+| `ui-testing` | XCUITest architecture, AccessibilityID enum, page objects, test helpers, test execution |
 | `/lint` | SwiftLint commands, config summary, common warnings, fix guidance |
 | `/build-check` | SwiftLint + xcodebuild full quality check |
 | `/add-xcode-files` | Add new .swift files to project.pbxproj |

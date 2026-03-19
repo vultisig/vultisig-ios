@@ -40,6 +40,7 @@ struct WelcomeView: View {
         PrimaryButton(title: viewModel.authenticationType.rawValue) {
             viewModel.authenticateUser()
         }
+        .accessibilityIdentifier(AccessibilityID.Splash.tryAgainButton)
     }
 }
 

@@ -65,6 +65,17 @@ class AppViewModel: ObservableObject {
     }
 
     func authenticateUser() {
+        #if DEBUG
+        if CommandLine.arguments.contains("-skipAuthentication") {
+            isAuthenticated = true
+            isAuthenticationEnabled = true
+            showSplashView = false
+            didUserCancelAuthentication = false
+            didAskForAuthentication = true
+            return
+        }
+        #endif
+
         let context = LAContext()
         var error: NSError?
 

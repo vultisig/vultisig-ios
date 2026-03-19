@@ -37,4 +37,17 @@ enum HomeTab: TabBarItem, CaseIterable {
             "camera-2"
         }
     }
+
+    var accessibilityID: String? {
+        switch self {
+        case .wallet:
+            AccessibilityID.Home.walletTab
+        case .defi:
+            AccessibilityID.Home.defiTab
+        case .agent:
+            AccessibilityID.Home.agentTab
+        case .camera:
+            AccessibilityID.Home.cameraButton
+        }
+    }
 }

@@ -165,12 +165,22 @@ extension VultisigApp {
                 }
             }
             .onAppear {
+                #if DEBUG
+                if CommandLine.arguments.contains("-disableAnimations") {
+                    UIView.setAnimationsEnabled(false)
+                }
+                #endif
+
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
                 }
+
+                #if DEBUG
+                guard !CommandLine.arguments.contains("-UITesting") else { return }
+                #endif
 
                 Task {
                     await pushNotificationManager.checkPermissionStatus()
