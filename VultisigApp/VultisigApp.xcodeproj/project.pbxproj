@@ -4478,7 +4478,6 @@
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
 				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
-				0CB5C1D02180CE57056115AB /* SendAddressResolver.swift */,
 				B59173302C641F3D007100E3 /* CoinService.swift */,
 				A6SEC0152E1234567890AB02 /* Security */,
 				EE0B29378FFAFF4BCC53B85C /* TransactionStatus */,
@@ -4599,6 +4598,7 @@
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
 				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
+				0CB5C1D02180CE57056115AB /* SendAddressResolver.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
