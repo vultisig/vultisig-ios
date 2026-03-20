@@ -12,7 +12,8 @@ import Foundation
 struct BittensorTransactionStatusProvider: TransactionStatusProvider {
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
-        let urlString = Endpoint.bittensorExtrinsicUrl(txHash: query.txHash)
+        let txHash = query.txHash.hasPrefix("0x") ? query.txHash : "0x\(query.txHash)"
+        let urlString = Endpoint.bittensorExtrinsicUrl(txHash: txHash)
         guard let url = URL(string: urlString) else {
             return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
         }

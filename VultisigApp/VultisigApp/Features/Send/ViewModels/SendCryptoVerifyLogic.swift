@@ -225,10 +225,22 @@ struct SendCryptoVerifyLogic {
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
+            // Refine amount: clamp to balance - fee for native tokens
+            // This prevents FundsUnavailable on max send when fee estimate differs from actual
+            var amount = tx.amountInRaw
+            if tx.coin.isNativeToken {
+                let fee = chainSpecific.gas
+                let balance = tx.coin.rawBalance.toBigInt()
+                let maxSendable = balance - fee
+                if amount > maxSendable && maxSendable > 0 {
+                    amount = maxSendable
+                }
+            }
+
             return try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
-                amount: tx.amountInRaw,
+                amount: amount,
                 memo: tx.memo,
                 chainSpecific: chainSpecific,
                 vault: vault

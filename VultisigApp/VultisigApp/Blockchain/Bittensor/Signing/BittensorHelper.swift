@@ -13,12 +13,12 @@ enum BittensorHelper {
     /// SS58 prefix for Bittensor (generic Substrate)
     static let ss58Prefix: UInt16 = 42
 
-    /// Balances.transfer_allow_death: pallet index 5, call index 3
+    /// Balances.transfer_allow_death: pallet index 5, call index 0 (allows full balance send)
     static let moduleIndex: UInt8 = 5
-    static let methodIndex: UInt8 = 3
+    static let methodIndex: UInt8 = 0
 
-    /// Static fallback fee: 100_000 RAO (0.0001 TAO). Real fees are ~13k-20k RAO.
-    static let defaultFee: BigInt = 100_000
+    /// Static fallback fee: 200_000 RAO (0.0002 TAO). Actual fees ~130k-150k RAO.
+    static let defaultFee: BigInt = 200_000
 
     // MARK: - SCALE Compact Encoding
 
@@ -116,7 +116,7 @@ enum BittensorHelper {
 
     /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519)
     static func ss58Decode(_ address: String) -> Data? {
-        guard let decoded = Base58.decode(string: address) else {
+        guard let decoded = Base58.decodeNoCheck(string: address) else {
             return nil
         }
 
@@ -151,12 +151,12 @@ enum BittensorHelper {
         let hash = Hash.blake2b(data: checksumInput, size: 64)
         let checksum = hash.prefix(2)
 
-        return Base58.encode(data: payload + checksum)
+        return Base58.encodeNoCheck(data: payload + checksum)
     }
 
     /// Validate a Bittensor SS58 address (prefix 42)
     static func isValidAddress(_ address: String) -> Bool {
-        guard let decoded = Base58.decode(string: address) else {
+        guard let decoded = Base58.decodeNoCheck(string: address) else {
             return false
         }
 
@@ -307,13 +307,11 @@ enum BittensorHelper {
 
         var data = Data()
 
-        // specVersion as u32 little-endian
-        var spec = specVersion
-        data.append(Data(bytes: &spec, count: 4))
+        // specVersion as u32 little-endian (explicit LE encoding)
+        withUnsafeBytes(of: specVersion.littleEndian) { data.append(contentsOf: $0) }
 
-        // transactionVersion as u32 little-endian
-        var txVer = transactionVersion
-        data.append(Data(bytes: &txVer, count: 4))
+        // transactionVersion as u32 little-endian (explicit LE encoding)
+        withUnsafeBytes(of: transactionVersion.littleEndian) { data.append(contentsOf: $0) }
 
         // genesisHash (32 bytes)
         guard let genesisData = Data(hexString: genesisHash), genesisData.count == 32 else {

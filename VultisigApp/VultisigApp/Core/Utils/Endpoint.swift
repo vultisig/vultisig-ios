@@ -848,7 +848,8 @@ class Endpoint {
         case .polkadot:
             return "https://assethub-polkadot.subscan.io/extrinsic/\(txid)"
         case .bittensor:
-            return "https://taostats.io/extrinsic/\(txid)"
+            let hash = txid.hasPrefix("0x") ? txid : "0x\(txid)"
+            return "https://taostats.io/extrinsic/\(hash)"
         case .zksync:
             return "https://explorer.zksync.io/tx/\(txid)"
         case .ton:
