@@ -21,7 +21,6 @@ struct BittensorTransactionStatusProvider: TransactionStatusProvider {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(Endpoint.bittensorApiKey, forHTTPHeaderField: "Authorization")
 
         let (data, _) = try await URLSession.shared.data(for: request)
 

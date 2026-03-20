@@ -16,51 +16,51 @@ class BittensorService: RpcService {
 
     // MARK: - Balance via Taostats API
 
+    // System.Account storage key prefix: twox128("System") ++ twox128("Account")
+    private static let systemAccountPrefix = "26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9"
+
     private func fetchBalance(address: String) async throws -> BigInt {
         let cacheKey = "bittensor-\(address)-balance"
         if let cachedData: BigInt = Utils.getCachedData(cacheKey: cacheKey, cache: cacheBittensorBalance, timeInSeconds: 60) {
             return cachedData
         }
 
-        let urlString = Endpoint.bittensorBalanceUrl(address: address)
-        guard let url = URL(string: urlString) else {
+        // Decode SS58 address to raw pubkey, compute storage key
+        guard let pubkey = BittensorHelper.ss58Decode(address) else {
+            return BigInt.zero
+        }
+        let blake2Hash = Hash.blake2b(data: pubkey, size: 16) // 128-bit
+        let storageKey = "0x" + Self.systemAccountPrefix + blake2Hash.toHexString() + pubkey.toHexString()
+
+        // Query via RPC — no API key needed
+        let result: String = try await sendRPCRequest(method: "state_getStorage", params: [storageKey]) { result in
+            guard let hex = result as? String else {
+                return ""
+            }
+            return hex
+        }
+
+        guard !result.isEmpty else {
             return BigInt.zero
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(Endpoint.bittensorApiKey, forHTTPHeaderField: "Authorization")
+        // Parse SCALE-encoded AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
+        let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
+        guard hex.count >= 64 else { return BigInt.zero }
 
-        let maxRetries = 3
-        let retryDelay: UInt64 = 1_000_000_000
-
-        for attempt in 1...maxRetries {
-            do {
-                let (data, _) = try await URLSession.shared.data(for: request)
-
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let dataArray = json["data"] as? [[String: Any]],
-                   let first = dataArray.first,
-                   let balanceFreeString = first["balance_free"] as? String {
-                    // balance_free is in RAO (smallest unit, 9 decimals)
-                    let balance = BigInt(balanceFreeString) ?? BigInt.zero
-                    self.cacheBittensorBalance.set(cacheKey, (data: balance, timestamp: Date()))
-                    return balance
-                }
-
-                // Empty data array = 0 balance
-                return BigInt.zero
-            } catch {
-                print("BittensorService > fetchBalance > Error: \(error), Attempt: \(attempt) of \(maxRetries)")
-                if attempt < maxRetries {
-                    try await Task.sleep(nanoseconds: retryDelay)
-                } else {
-                    return BigInt.zero
-                }
-            }
+        // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
+        let freeHex = String(hex[hex.index(hex.startIndex, offsetBy: 32)..<hex.index(hex.startIndex, offsetBy: 64)])
+        // Reverse byte pairs for LE → BE conversion
+        var beHex = ""
+        for i in stride(from: freeHex.count - 2, through: 0, by: -2) {
+            let start = freeHex.index(freeHex.startIndex, offsetBy: i)
+            let end = freeHex.index(start, offsetBy: 2)
+            beHex += String(freeHex[start..<end])
         }
-        return BigInt.zero
+
+        let balance = BigInt(beHex, radix: 16) ?? BigInt.zero
+        self.cacheBittensorBalance.set(cacheKey, (data: balance, timestamp: Date()))
+        return balance
     }
 
     // MARK: - RPC Methods (chain metadata)
