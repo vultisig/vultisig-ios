@@ -156,6 +156,10 @@ struct ContentView: View {
             return
         }
 
+        guard !appViewModel.didUserCancelAuthentication else {
+            return
+        }
+
         guard !appViewModel.showOnboarding && !vaults.isEmpty else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 appViewModel.showSplashView = false

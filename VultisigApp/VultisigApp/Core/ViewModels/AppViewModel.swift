@@ -30,6 +30,7 @@ class AppViewModel: ObservableObject {
     @Published var showCamera: Bool = false
 
     private let logic = AccountLogic()
+    private var didTriggerAuthThisSession = false
 
     static let shared = AppViewModel()
 
@@ -65,6 +66,8 @@ class AppViewModel: ObservableObject {
     }
 
     func authenticateUser() {
+        didTriggerAuthThisSession = true
+
         #if DEBUG
         if CommandLine.arguments.contains("-skipAuthentication") {
             isAuthenticated = true
@@ -133,6 +136,7 @@ class AppViewModel: ObservableObject {
 
     func revokeAuth() {
         showCover = true
+        didTriggerAuthThisSession = false
         let formatter = ISO8601DateFormatter()
         lastRecordedTime = formatter.string(from: Date())
     }
@@ -144,7 +148,7 @@ class AppViewModel: ObservableObject {
         let interval = Date().timeIntervalSince(date)
         lastRecordedTime = formatter.string(from: Date())
 
-        if interval>60*5 {
+        if interval>60*5 && !didTriggerAuthThisSession {
             resetLogin()
             continueLogin()
         }
