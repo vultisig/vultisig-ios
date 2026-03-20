@@ -21,6 +21,7 @@ class SheetPresentedCounterManager: ObservableObject {
     }
 
     func resetCounter() {
+        guard self.counter != 0 else { return }
         self.counter = 0
     }
 }

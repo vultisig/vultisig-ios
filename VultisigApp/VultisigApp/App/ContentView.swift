@@ -24,6 +24,7 @@ struct ContentView: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
+    @Environment(\.sheetPresentedCounterManager) var sheetPresentedCounterManager
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
@@ -100,6 +101,14 @@ struct ContentView: View {
             guard newValue else { return }
             navigateToHome()
             appViewModel.restartNavigation = false
+        }
+        .onChange(of: appViewModel.showSplashView) { oldValue, newValue in
+            // Clear any orphaned sheet blur counter when transitioning from splash to main content.
+            // No sheets can be presenting at this moment (home screen hasn't loaded yet),
+            // so any counter > 0 is stale from a previous session's view lifecycle.
+            if oldValue && !newValue {
+                sheetPresentedCounterManager.resetCounter()
+            }
         }
         .withError(error: $deeplinkError, errorType: .warning) {
             // Retry action - clear error to allow user to try again
