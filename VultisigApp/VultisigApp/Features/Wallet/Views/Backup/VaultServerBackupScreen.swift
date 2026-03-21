@@ -88,7 +88,7 @@ struct VaultServerBackupScreen: View {
             focusedFieldBinding = $0 ? .email : .password
         } content: {
             VStack(alignment: .leading, spacing: 20) {
-                Text("enterVaultEmail".localized)
+                Text("enterYourEmailDescription".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
 

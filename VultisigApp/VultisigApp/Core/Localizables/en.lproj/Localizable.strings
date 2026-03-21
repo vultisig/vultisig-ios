@@ -1000,7 +1000,7 @@
 "vaultDetailsTitle" = "Details";
 "vaultInfo" = "Vault Info";
 "vaultLibType" = "Vault Type";
-"vaultManagement" = "Vault Management";
+"vaultManagement" = "Vault";
 "vaultName" = "Vault Name";
 "vaultNameAlreadyInUse" = "Vault name already in use";
 "vaultNameExists" = "Vault name %s already exists";
