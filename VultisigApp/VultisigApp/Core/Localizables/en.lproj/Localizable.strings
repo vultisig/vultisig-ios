@@ -272,9 +272,9 @@
 "downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA Key";
+"ECDSAKey" = "ECDSA";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA Key";
+"EdDSAKey" = "EdDSA";
 "editAddress" = "Edit Address";
 "editFolder" = "Edit folder";
 "editFriendsReferral" = "Edit Friends Referral";
