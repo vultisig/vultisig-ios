@@ -484,9 +484,8 @@ class Endpoint {
     // Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
-    // Bittensor tx status (proxied via vultisig API — server adds Taostats key)
     static func bittensorExtrinsicUrl(txHash: String) -> String {
-        return "https://api.vultisig.com/tao/extrinsic/v1?hash=\(txHash)"
+        return "https://api.vultisig.com/tao-tx/v1?hash=\(txHash)"
     }
 
     static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
