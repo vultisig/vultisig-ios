@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "Scarica via GitHub";
 "dropFileHere" = "Rilascia il file qui...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "Chiave ECDSA";
+"ECDSAKey" = "ECDSA";
 "EdDSA" = "EDDSA";
-"EdDSAKey" = "Chiave EdDSA";
+"EdDSAKey" = "EdDSA";
 "editAddress" = "Modifica indirizzo";
 "editFolder" = "Modifica cartella";
 "editFriendsReferral" = "Modifica il referral di amici";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "Inserisci fino a 4 caratteri";
 "enterValidAmount" = "Inserisci un importo valido maggiore di zero.";
 "enterValidFolderName" = "Si prega di inserire un nome di cartella valido e riprovare.";
-"enterVaultEmail" = "Inserisci l'e -mail per ricevere la condivisione Vault.";
+"enterVaultEmail" = "Questa e-mail viene utilizzata per il backup nel cloud e non viene condivisa con terze parti";
 "enterVaultName" = "Inserisci il Nome del Caveau";
 "enterVaultPassword" = "Immettere la password impostata durante la creazione di questo Vault.";
 "enterYourEmail" = "Inserisci la tua e-mail";
@@ -984,7 +984,7 @@
 "vaultDetailsTitle" = "Dettagli";
 "vaultInfo" = "Informazioni sul Vault";
 "vaultLibType" = "Tipo di cassaforte";
-"vaultManagement" = "Gestione del caveau";
+"vaultManagement" = "Vault";
 "vaultName" = "Nome Cassaforte";
 "vaultNameAlreadyInUse" = "Nome Vault già in uso";
 "vaultNameExists" = "Il nome del deposito %s esiste già";

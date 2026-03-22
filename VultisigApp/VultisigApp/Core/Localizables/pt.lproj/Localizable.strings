@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "Baixar via GitHub";
 "dropFileHere" = "Solte o arquivo aqui...";
 "ECDSA" = "Ecdsa";
-"ECDSAKey" = "Chave ECDSA";
+"ECDSAKey" = "ECDSA";
 "EdDSA" = "Eddsa";
-"EdDSAKey" = "Chave EdDSA";
+"EdDSAKey" = "EdDSA";
 "editAddress" = "Editar endereço";
 "editFolder" = "Editar pasta";
 "editFriendsReferral" = "Edite o encaminhamento de amigos";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "Digite até 4 caracteres";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Insira um nome de pasta válido e tente novamente.";
-"enterVaultEmail" = "Digite o email para receber o compartilhamento do Vault.";
+"enterVaultEmail" = "Este e-mail é usado para backup na nuvem e não é compartilhado com terceiros";
 "enterVaultName" = "Digite o Nome do Cofre";
 "enterVaultPassword" = "Digite a senha definida ao criar este cofre.";
 "enterYourEmail" = "Digite seu e-mail";
@@ -984,7 +984,7 @@
 "vaultDetailsTitle" = "Detalhes";
 "vaultInfo" = "Informações do cofre";
 "vaultLibType" = "tipo de cofre";
-"vaultManagement" = "Gerenciamento de cofre";
+"vaultManagement" = "Cofre";
 "vaultName" = "Nome do Cofre";
 "vaultNameAlreadyInUse" = "Nome do Vault já em uso";
 "vaultNameExists" = "O nome do cofre %s já existe";

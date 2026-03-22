@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "Über GitHub herunterladen";
 "dropFileHere" = "Datei hier ablegen...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA-Schlüssel";
+"ECDSAKey" = "ECDSA";
 "EdDSA" = "EDDSA";
-"EdDSAKey" = "EdDSA-Schlüssel";
+"EdDSAKey" = "EdDSA";
 "editAddress" = "Adresse bearbeiten";
 "editFolder" = "Ordner bearbeiten";
 "editFriendsReferral" = "Überweisungen für Freunde bearbeiten";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "Bis zu 4 Zeichen eingeben";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Bitte gebe einen gültigen Ordnernamen ein und versuche es erneut.";
-"enterVaultEmail" = "Geben Sie die E -Mail ein, um die Tresorfreigabe zu erhalten.";
+"enterVaultEmail" = "Diese E-Mail wird für die Cloud-Sicherung verwendet und nicht an Dritte weitergegeben";
 "enterVaultName" = "Tresornamen Eingeben";
 "enterVaultPassword" = "Geben Sie das Passwort ein, das Sie beim Erstellen dieses Tresors festgelegt haben.";
 "enterYourEmail" = "Geben Sie Ihre E-Mail ein";
@@ -984,7 +984,7 @@
 "vaultDetailsTitle" = "Tresor-Details";
 "vaultInfo" = "Vault -Info";
 "vaultLibType" = "Tresortyp";
-"vaultManagement" = "Tresorverwaltung";
+"vaultManagement" = "Tresor";
 "vaultName" = "Tresorname";
 "vaultNameAlreadyInUse" = "Vault-Name wird bereits verwendet";
 "vaultNameExists" = "Tresorname %s existiert bereits";
