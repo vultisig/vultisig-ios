@@ -31,8 +31,8 @@ enum MayaChainHelper {
             mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "MAYA"
-                    $0.symbol = "CACAO"
-                    $0.ticker = "CACAO"
+                    $0.symbol = keysignPayload.coin.ticker
+                    $0.ticker = keysignPayload.coin.ticker
                     $0.synth = false
                 }
                 if keysignPayload.toAmount > 0 {
