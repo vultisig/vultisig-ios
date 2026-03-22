@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "通过 GitHub 下载";
 "dropFileHere" = "将文件拖放到此处...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "ECDSA 密钥";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "EdDSA 密钥";
 "editAddress" = "编辑地址";
 "editFolder" = "编辑文件夹";
 "editFriendsReferral" = "编辑好友推荐";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "输入最多 4 个字符";
 "enterValidAmount" = "请输入大于零的有效金额。";
 "enterValidFolderName" = "请输入有效的文件夹名称并重试";
-"enterVaultEmail" = "此电子邮件用于云备份，不会与任何第三方共享";
+"enterVaultEmail" = "输入接收保险库份额的电子邮件";
 "enterVaultName" = "输入保险库名称";
 "enterVaultPassword" = "输入您创建此保险库时设置的密码";
 "enterYourEmail" = "输入您的电子邮件";
@@ -985,7 +985,7 @@
 "vaultDetailsTitle" = "详情";
 "vaultInfo" = "保险库信息";
 "vaultLibType" = "保险库类型";
-"vaultManagement" = "保险库";
+"vaultManagement" = "保险库管理";
 "vaultName" = "保险库名称";
 "vaultNameAlreadyInUse" = "保险库名称已被使用";
 "vaultNameExists" = "保险库名称 %s 已存在";

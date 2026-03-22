@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "Preuzmi putem GitHub-a";
 "dropFileHere" = "Ispusti datoteku ovdje...";
 "ECDSA" = "Ecdsa";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "ECDSA ključ";
 "EdDSA" = "Eddsa";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "EdDSA ključ";
 "editAddress" = "Uredi adresu";
 "editFolder" = "Uredi mapu";
 "editFriendsReferral" = "Uredite preporuku prijatelja";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "Unesi do 4 znaka";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Unesite ispravan naziv mape i pokušajte ponovno.";
-"enterVaultEmail" = "Ova e-pošta se koristi za sigurnosnu kopiju u oblaku i ne dijeli se s trećim stranama";
+"enterVaultEmail" = "Unesite e -poštu da biste dobili udio trezora.";
 "enterVaultName" = "Unesite Naziv Spremišta";
 "enterVaultPassword" = "Unesite lozinku koju postavite prilikom izrade ovog trezora.";
 "enterYourEmail" = "Unesite svoju e-mail adresu";
@@ -984,7 +984,7 @@
 "vaultDetailsTitle" = "Detalji";
 "vaultInfo" = "Informacije o trezorima";
 "vaultLibType" = "tip svoda";
-"vaultManagement" = "Trezor";
+"vaultManagement" = "Upravljanje trezorima";
 "vaultName" = "Ime sefa";
 "vaultNameAlreadyInUse" = "Ime Vault-a već se koristi";
 "vaultNameExists" = "Naziv trezora %s već postoji";

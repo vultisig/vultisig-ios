@@ -266,9 +266,9 @@
 "downloadViaGitHub" = "Descargar vía GitHub";
 "dropFileHere" = "Suelta el archivo aquí...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "Clave ECDSA";
 "EdDSA" = "Eddsa";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "Clave EdDSA";
 "editAddress" = "Editar dirección";
 "editFolder" = "Editar carpeta";
 "editFriendsReferral" = "Editar la referencia de amigos";
@@ -307,7 +307,7 @@
 "enterUpto4Characters" = "Ingresa hasta 4 caracteres";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Por favor, ingrese un nombre de carpeta válido e inténtelo de nuevo.";
-"enterVaultEmail" = "Este correo electrónico se usa para el respaldo en la nube y no se comparte con terceros";
+"enterVaultEmail" = "Ingrese el correo electrónico para recibir la bóveda compartida.";
 "enterVaultName" = "Introduce el Nombre del Almacén";
 "enterVaultPassword" = "Ingrese la contraseña que establece al crear esta bóveda.";
 "enterYourEmail" = "Introduce tu correo electrónico";
@@ -984,7 +984,7 @@
 "vaultDetailsTitle" = "Detalles";
 "vaultInfo" = "Información de bóveda";
 "vaultLibType" = "tipo de bóveda";
-"vaultManagement" = "Bóveda";
+"vaultManagement" = "Gestión de bóveda";
 "vaultName" = "Nombre de la Caja Fuerte";
 "vaultNameAlreadyInUse" = "Nombre de Vault ya en uso";
 "vaultNameExists" = "El nombre de la bóveda %s ya existe";
