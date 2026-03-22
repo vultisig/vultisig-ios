@@ -222,7 +222,11 @@ final class TransactionHistoryRecorder {
                 txHash: approveTxHash,
                 pubKeyECDSA: vault.pubKeyECDSA,
                 coin: keysignPayload.coin,
-                amountCrypto: String(approvePayload.amount),
+                amountCrypto: {
+                    let raw = Decimal(string: approvePayload.amount.description) ?? .zero
+                    let power = Decimal(sign: .plus, exponent: -keysignPayload.coin.decimals, significand: 1)
+                    return (raw * power).formatForDisplay()
+                }(),
                 spender: approvePayload.spender,
                 chain: keysignPayload.coin.chain,
                 explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: approveTxHash)
