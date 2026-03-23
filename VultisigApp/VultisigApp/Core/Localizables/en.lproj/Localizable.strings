@@ -272,9 +272,9 @@
 "downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA Key";
+"ECDSAKey" = "ECDSA";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA Key";
+"EdDSAKey" = "EdDSA";
 "editAddress" = "Edit Address";
 "editFolder" = "Edit folder";
 "editFriendsReferral" = "Edit Friends Referral";
@@ -313,7 +313,7 @@
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";
-"enterVaultEmail" = "Enter the email to receive the vault share.";
+"enterVaultEmail" = "This email is used for cloud backup and shared with no third party";
 "enterVaultName" = "Enter Vault Name";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
 "enterYourEmail" = "Enter your email";
@@ -1000,7 +1000,7 @@
 "vaultDetailsTitle" = "Details";
 "vaultInfo" = "Vault Info";
 "vaultLibType" = "Vault Type";
-"vaultManagement" = "Vault Management";
+"vaultManagement" = "Vault";
 "vaultName" = "Vault Name";
 "vaultNameAlreadyInUse" = "Vault name already in use";
 "vaultNameExists" = "Vault name %s already exists";
