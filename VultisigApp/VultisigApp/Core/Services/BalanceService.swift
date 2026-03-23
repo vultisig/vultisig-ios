@@ -160,8 +160,7 @@ class BalanceService {
     /// Phase 3: Apply balance updates to coins in batch on MainActor
     @MainActor
     private func applyBalanceUpdates(_ updates: [CoinBalanceUpdate], to vault: Vault) throws {
-        // Create lookup dictionary for O(1) access (follows DefiPositionsStorageService pattern)
-        let coinsByID = Dictionary(uniqueKeysWithValues: vault.coins.map { ($0.id, $0) })
+        let coinsByID = Dictionary(vault.coins.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
 
         // Apply all updates
         for update in updates where update.hasUpdates {

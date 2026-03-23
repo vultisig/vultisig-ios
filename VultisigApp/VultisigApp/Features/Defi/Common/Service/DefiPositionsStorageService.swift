@@ -20,7 +20,7 @@ struct DefiPositionsStorageService {
         )
 
         let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
+        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
 
         for position in positions {
             if let existing = existingPositionsByID[position.id] {
@@ -62,7 +62,7 @@ struct DefiPositionsStorageService {
         }
 
         // Create lookup for existing positions
-        let existingPositionsByID = Dictionary(uniqueKeysWithValues: allExistingPositions.map { ($0.id, $0) })
+        let existingPositionsByID = Dictionary(allExistingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
         let newPositionIDs = Set(positions.map { $0.id })
 
         // Delete positions that are no longer present
@@ -98,7 +98,7 @@ struct DefiPositionsStorageService {
         )
 
         let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
+        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
 
         for position in positions {
             if let existing = existingPositionsByID[position.id] {
