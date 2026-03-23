@@ -135,7 +135,7 @@ class SolanaService {
         }
 
         let nonZeroFees = result
-            .compactMap { $0["prioritizationFee"] as? UInt64 }
+            .compactMap { ($0["prioritizationFee"] as? NSNumber)?.uint64Value }
             .filter { $0 > 0 }
             .sorted()
 
