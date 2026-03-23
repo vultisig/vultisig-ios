@@ -289,7 +289,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     private func handleForegroundNotification(_ notification: UNNotification) {
         let descriptor = FetchDescriptor<Vault>()
-        guard let vaults = try? Storage.shared.modelContext.fetch(descriptor) else { return }
+        guard let vaults = try? Storage.shared.modelContext?.fetch(descriptor) else { return }
 
         foregroundNotification = ForegroundNotificationParser.parse(
             notification: notification,
@@ -303,7 +303,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         let descriptor = FetchDescriptor<VaultSettings>(
             predicate: #Predicate<VaultSettings> { $0.notificationsEnabled == true }
         )
-        guard let results = try? Storage.shared.modelContext.fetch(descriptor) else { return }
+        guard let results = try? Storage.shared.modelContext?.fetch(descriptor) else { return }
 
         let identifiers = results.compactMap { settings -> (String, String)? in
             guard let vault = settings.vault else { return nil }

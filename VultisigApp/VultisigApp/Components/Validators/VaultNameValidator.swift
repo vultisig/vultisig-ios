@@ -13,7 +13,7 @@ struct VaultNameValidator: FormFieldValidator {
 
     init() {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        vaults = (try? Storage.shared.modelContext.fetch(fetchVaultDescriptor)) ?? []
+        vaults = (try? Storage.shared.modelContext?.fetch(fetchVaultDescriptor)) ?? []
     }
 
     func validate(value: String) throws {

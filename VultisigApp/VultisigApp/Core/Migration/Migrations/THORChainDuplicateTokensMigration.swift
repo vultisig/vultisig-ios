@@ -14,14 +14,12 @@ struct THORChainDuplicateTokensMigration: @MainActor AppMigration {
 
     @MainActor
     func migrate() throws {
-        let modelContext = Storage.shared.modelContext
+        guard let modelContext = Storage.shared.modelContext else { return }
 
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
         fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [\.coins]
 
-        guard let vaults = try modelContext?.fetch(fetchVaultDescriptor) else {
-            return
-        }
+        let vaults = try modelContext.fetch(fetchVaultDescriptor)
 
         for vault in vaults {
             if let runeCoin = vault.runeCoin {

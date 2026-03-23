@@ -19,7 +19,7 @@ struct DefiPositionsStorageService {
             }
         )
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
+        let existingPositions = (try Storage.shared.modelContext?.fetch(fetchDescriptor)) ?? []
         let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
 
         for position in positions {
@@ -31,7 +31,7 @@ struct DefiPositionsStorageService {
                 existing.lastUpdated = position.lastUpdated
             } else {
                 // Insert new position
-                Storage.shared.modelContext.insert(position)
+                Storage.shared.modelContext?.insert(position)
             }
         }
 
@@ -50,12 +50,12 @@ struct DefiPositionsStorageService {
                 position.id.contains(vaultPubKey)
             }
         )
-        let allExistingPositions = try Storage.shared.modelContext.fetch(allVaultPositionsDescriptor)
+        let allExistingPositions = (try Storage.shared.modelContext?.fetch(allVaultPositionsDescriptor)) ?? []
 
         // If no new positions, delete all existing ones for this vault
         if positions.isEmpty {
             for existingPosition in allExistingPositions {
-                Storage.shared.modelContext.delete(existingPosition)
+                Storage.shared.modelContext?.delete(existingPosition)
             }
             try Storage.shared.save()
             return
@@ -67,7 +67,7 @@ struct DefiPositionsStorageService {
 
         // Delete positions that are no longer present
         for existingPosition in allExistingPositions where !newPositionIDs.contains(existingPosition.id) {
-            Storage.shared.modelContext.delete(existingPosition)
+            Storage.shared.modelContext?.delete(existingPosition)
         }
 
         // Update or insert new positions
@@ -80,7 +80,7 @@ struct DefiPositionsStorageService {
                 existing.nextChurn = position.nextChurn
             } else {
                 // Insert new position
-                Storage.shared.modelContext.insert(position)
+                Storage.shared.modelContext?.insert(position)
             }
         }
 
@@ -97,7 +97,7 @@ struct DefiPositionsStorageService {
             }
         )
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
+        let existingPositions = (try Storage.shared.modelContext?.fetch(fetchDescriptor)) ?? []
         let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
 
         for position in positions {
@@ -112,7 +112,7 @@ struct DefiPositionsStorageService {
                 existing.unstakeMetadata = position.unstakeMetadata
             } else {
                 // Insert new position
-                Storage.shared.modelContext.insert(position)
+                Storage.shared.modelContext?.insert(position)
             }
         }
 

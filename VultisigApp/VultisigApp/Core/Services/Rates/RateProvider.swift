@@ -43,7 +43,6 @@ final class RateProvider {
     /// Should be updated manually - thread-safe backing storage
     private var _rates = Set<Rate>()
     private var ratesLock = os_unfair_lock()
-    private let initQueue = DispatchQueue(label: "com.vultisig.rateprovider.init")
 
     /// Thread-safe access to rates
     private var rates: Set<Rate> {
@@ -62,14 +61,16 @@ final class RateProvider {
     private init() {
         // Defer the database fetch to avoid re-entrant calls during SwiftData operations
         // This prevents the crash caused by calling fetch() while SwiftData is already
-        // processing another fetch/register operation
-        initQueue.async { [weak self] in
+        // processing another fetch/register operation.
+        // Must run on MainActor since SwiftData ModelContext is MainActor-isolated.
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            guard let modelContext = Storage.shared.modelContext else { return }
 
             let descriptor = FetchDescriptor<DatabaseRate>()
 
             do {
-                let objects = try Storage.shared.modelContext.fetch(descriptor)
+                let objects = try modelContext.fetch(descriptor)
                 let loadedRates = Set(objects.map { Rate(object: $0) })
 
                 // Thread-safe assignment via computed property
@@ -143,7 +144,7 @@ final class RateProvider {
                 predicate: #Predicate { $0.id == rateId }
             )
 
-            if let existingRate = try Storage.shared.modelContext.fetch(descriptor).first {
+            if let existingRate = try Storage.shared.modelContext?.fetch(descriptor).first {
                 // Update existing rate
                 existingRate.fiat = rate.fiat
                 existingRate.crypto = rate.crypto
@@ -154,6 +155,6 @@ final class RateProvider {
             }
         }
 
-        try Storage.shared.modelContext.save()
+        try Storage.shared.save()
     }
 }

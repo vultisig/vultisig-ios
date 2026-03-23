@@ -182,8 +182,11 @@ class AppViewModel: ObservableObject {
         }
 
         canLogin = true
-        showSplashView = false
-        showSplashView = true
+        // Only toggle showSplashView if it's not already showing,
+        // to avoid rapid state thrashing during CA commit
+        if !showSplashView {
+            showSplashView = true
+        }
     }
 
     private func resetLogin() {

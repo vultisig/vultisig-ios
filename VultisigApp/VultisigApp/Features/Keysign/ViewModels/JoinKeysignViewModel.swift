@@ -71,7 +71,7 @@ class JoinKeysignViewModel: ObservableObject {
     private func fetchVaults() -> [Vault] {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
-            return try Storage.shared.modelContext.fetch(fetchVaultDescriptor)
+            return (try Storage.shared.modelContext?.fetch(fetchVaultDescriptor)) ?? []
         } catch {
             logger.error("Failed to fetch vaults: \(error.localizedDescription)")
             return []

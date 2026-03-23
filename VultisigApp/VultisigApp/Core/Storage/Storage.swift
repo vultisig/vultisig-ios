@@ -12,23 +12,23 @@ final class Storage {
 
     static let shared = Storage()
 
-    var modelContext: ModelContext!
+    var modelContext: ModelContext?
 
     @MainActor func save() throws {
-        try modelContext.save()
+        try modelContext?.save()
     }
 
     @MainActor func insert<T>(_ model: T) where T: PersistentModel {
-        modelContext.insert(model)
+        modelContext?.insert(model)
     }
 
     @MainActor func insert<T>(_ models: [T]) where T: PersistentModel {
         for model in models {
-            modelContext.insert(model)
+            modelContext?.insert(model)
         }
     }
 
     @MainActor func delete<T>(_ model: T) where T: PersistentModel {
-        modelContext.delete(model)
+        modelContext?.delete(model)
     }
 }

@@ -13,12 +13,8 @@ import SwiftData
 final class StoredPendingTransactionStorage {
     static let shared = StoredPendingTransactionStorage()
 
-    private let modelContext: ModelContext
+    private var modelContext: ModelContext? { Storage.shared.modelContext }
     private let logger = Logger(subsystem: "com.vultisig.app", category: "pending-tx-storage")
-
-    private init() {
-        self.modelContext = Storage.shared.modelContext
-    }
 
     /// Save or update a pending transaction
     func save(
@@ -30,6 +26,7 @@ final class StoredPendingTransactionStorage {
         toAddress: String? = nil,
         pubKeyECDSA: String? = nil
     ) throws {
+        guard let modelContext else { return }
         let config = ChainStatusConfig.config(for: chain)
 
         // Check if transaction already exists
@@ -72,6 +69,7 @@ final class StoredPendingTransactionStorage {
 
     /// Get a specific pending transaction
     func get(txHash: String) throws -> StoredPendingTransaction? {
+        guard let modelContext else { return nil }
         let predicate = #Predicate<StoredPendingTransaction> { tx in
             tx.txHash == txHash
         }
@@ -81,6 +79,7 @@ final class StoredPendingTransactionStorage {
 
     /// Get all non-terminal pending transactions (for background polling)
     func getAllPending() throws -> [StoredPendingTransaction] {
+        guard let modelContext else { return [] }
         let predicate = #Predicate<StoredPendingTransaction> { tx in
             tx.status == "broadcasted" || tx.status == "pending"
         }
@@ -93,6 +92,7 @@ final class StoredPendingTransactionStorage {
 
     /// Delete a transaction
     func delete(txHash: String) throws {
+        guard let modelContext else { return }
         if let transaction = try get(txHash: txHash) {
             modelContext.delete(transaction)
             try modelContext.save()
@@ -101,6 +101,7 @@ final class StoredPendingTransactionStorage {
 
     /// Cleanup old transactions (older than 24 hours and terminal)
     func cleanupOld() throws {
+        guard let modelContext else { return }
         let oneDayAgo = Date().addingTimeInterval(-86400)
 
         let predicate = #Predicate<StoredPendingTransaction> { tx in

@@ -10,15 +10,12 @@ import SwiftData
 final class TransactionHistoryStorage {
     static let shared = TransactionHistoryStorage()
 
-    private let modelContext: ModelContext
-
-    private init() {
-        self.modelContext = Storage.shared.modelContext
-    }
+    private var modelContext: ModelContext? { Storage.shared.modelContext }
 
     // MARK: - Save
 
     func save(_ data: TransactionHistoryData) throws {
+        guard let modelContext else { return }
         guard !exists(txHash: data.txHash, pubKeyECDSA: data.pubKeyECDSA) else { return }
 
         let item = data.toItem()
@@ -29,6 +26,7 @@ final class TransactionHistoryStorage {
     // MARK: - Update Status
 
     func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus, errorMessage: String? = nil) throws {
+        guard let modelContext else { return }
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
         }
@@ -49,6 +47,7 @@ final class TransactionHistoryStorage {
     // MARK: - Fetch All
 
     func fetchAll(pubKeyECDSA: String) throws -> [TransactionHistoryData] {
+        guard let modelContext else { return [] }
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.pubKeyECDSA == pubKeyECDSA
         }
@@ -62,6 +61,7 @@ final class TransactionHistoryStorage {
     // MARK: - Fetch by Chain
 
     func fetchByChain(pubKeyECDSA: String, chainRawValue: String) throws -> [TransactionHistoryData] {
+        guard let modelContext else { return [] }
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.pubKeyECDSA == pubKeyECDSA && item.chainRawValue == chainRawValue
         }
@@ -75,6 +75,7 @@ final class TransactionHistoryStorage {
     // MARK: - Fetch by Type
 
     func fetchByType(pubKeyECDSA: String, type: TransactionHistoryType) throws -> [TransactionHistoryData] {
+        guard let modelContext else { return [] }
         let typeValue = type.rawValue
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.pubKeyECDSA == pubKeyECDSA && item.typeRawValue == typeValue
@@ -89,6 +90,7 @@ final class TransactionHistoryStorage {
     // MARK: - Exists Check
 
     func exists(txHash: String, pubKeyECDSA: String) -> Bool {
+        guard let modelContext else { return false }
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
         }
