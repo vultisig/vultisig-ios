@@ -69,63 +69,49 @@ struct AddressService {
 
     static func resolveInput(_ input: String, chain: Chain) async throws -> String {
         if chain == .mayaChain {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "maya")
-
-            if isValid {
-                return input
-            } else {
+            guard AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "maya") else {
                 throw Errors.invalidAddress
             }
+            return input
         }
 
         if chain == .thorChainChainnet {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor")
-
-            if isValid {
+            if AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor") {
                 return input
-            } else {
-                // Try TNS resolution for stagenet
-                let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
-                return try await service.resolveTNS(name: input, chain: chain)
             }
+            let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
         }
 
         if chain == .thorChainStagenet {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
-
-            if isValid {
+            if AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor") {
                 return input
-            } else {
-                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
-                return try await service.resolveTNS(name: input, chain: chain)
             }
+            let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
         }
 
         if chain == .qbtc {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc")
-
-            if isValid {
-                return input
-            } else {
+            guard AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc") else {
                 throw Errors.invalidAddress
             }
-        }
-
-        let isValid = chain.coinType.validate(address: input)
-
-        if isValid {
             return input
-
-        } else if input.isENSNameService() {
-            return try await AddressService.resolveENSDomaninAddress(input: input, chain: chain)
-
-        } else if chain == .thorChain {
-            let service = ThorchainServiceFactory.getService(for: .thorChain)
-            return try await service.resolveTNS(name: input, chain: chain)
-
-        } else {
-            throw Errors.invalidAddress
         }
+
+        if chain.coinType.validate(address: input) {
+            return input
+        }
+
+        if input.isENSNameService() {
+            return try await resolveAndValidate(await resolveENSDomaninAddress(input: input, chain: chain), chain: chain)
+        }
+
+        if chain == .thorChain {
+            let service = ThorchainServiceFactory.getService(for: .thorChain)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
+        }
+
+        throw Errors.invalidAddress
     }
 
     static func validateAddress(address: String, chain: Chain) -> Bool {
@@ -174,6 +160,14 @@ private extension AddressService {
 
     enum Errors: Error {
         case invalidAddress
+    }
+
+    static func resolveAndValidate(_ resolution: @autoclosure () async throws -> String, chain: Chain) async throws -> String {
+        let resolved = try await resolution()
+        guard validateAddress(address: resolved, chain: chain) else {
+            throw Errors.invalidAddress
+        }
+        return resolved
     }
 
     static func resolveENSDomaninAddress(input: String, chain: Chain) async throws -> String {

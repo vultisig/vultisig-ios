@@ -101,6 +101,7 @@ struct CreateVaultView: View {
         PrimaryButton(title: "getStarted") {
             router.navigate(to: OnboardingRoute.devicesSelection(tssType: .Keygen, keyImportInput: nil))
         }
+        .accessibilityIdentifier(AccessibilityID.Onboarding.createVaultButton)
         .opacity(showNewVaultButton ? 1 : 0)
         .offset(y: showNewVaultButton ? 0 : 20)
         .scaleEffect(showNewVaultButton ? 1 : 0.8)
@@ -115,6 +116,7 @@ struct CreateVaultView: View {
             type: .secondary,
             action: { showImportSelectionSheet = true }
         )
+        .accessibilityIdentifier(AccessibilityID.Onboarding.importVaultButton)
     }
 
     private var newTag: some View {

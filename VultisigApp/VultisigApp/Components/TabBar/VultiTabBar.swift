@@ -110,6 +110,9 @@ private extension VultiTabBar {
                     TabBarAccessoryButton(icon: accessory.icon) {
                         onAccessory?()
                     }
+                    .unwrap(accessory.accessibilityID) { view, id in
+                        view.accessibilityIdentifier(id)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -156,6 +159,9 @@ private extension VultiTabBar {
                         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedItem)
                     }
                     .buttonStyle(.plain)
+                    .unwrap(item.accessibilityID) { view, id in
+                        view.accessibilityIdentifier(id)
+                    }
                 }
             }
         }

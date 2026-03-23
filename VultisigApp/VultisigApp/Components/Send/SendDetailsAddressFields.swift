@@ -68,11 +68,6 @@ struct SendDetailsAddressFields: View {
         ) {
             handle(addressResult: $0)
         }
-        .onChange(of: tx.toAddress) { _, newValue in
-            DebounceHelper.shared.debounce {
-                validateAddress(newValue)
-            }
-        }
     }
 
     func handle(addressResult: AddressResult?) {
@@ -108,11 +103,5 @@ struct SendDetailsAddressFields: View {
             }
         }
 
-        // Always validate after potential chain switch
-        validateAddress(tx.toAddress)
-    }
-
-    func validateAddress(_ newValue: String) {
-        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }

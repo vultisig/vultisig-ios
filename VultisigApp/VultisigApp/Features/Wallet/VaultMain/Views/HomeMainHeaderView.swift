@@ -69,6 +69,7 @@ struct HomeMainHeaderView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .contentTransition(.numericText())
                 .animation(.interpolatingSpring, value: balanceText)
+                .accessibilityIdentifier(AccessibilityID.Home.balanceLabel)
         }
         .scaledToFit()
     }
@@ -81,8 +82,11 @@ struct HomeMainHeaderView: View {
 
             ToolbarButton(image: "clock.arrow.circlepath", action: historyAction) { _ in
                 Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
-            }.showIf(SettingsViewModel.shared.txHistoryEnabled)
+            }
+            .accessibilityIdentifier(AccessibilityID.Home.historyButton)
+            .showIf(SettingsViewModel.shared.txHistoryEnabled)
             ToolbarButton(image: "settings", action: settingsAction)
+                .accessibilityIdentifier(AccessibilityID.Home.settingsButton)
         }
     }
 
