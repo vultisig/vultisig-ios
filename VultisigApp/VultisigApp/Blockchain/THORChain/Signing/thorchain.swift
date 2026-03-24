@@ -61,11 +61,12 @@ enum THORChainHelper {
                     $0.memo = keysignPayload.memo ?? ""
                     $0.coins = [TW_Cosmos_Proto_THORChainCoin.with {
                         $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
-                            $0.chain = "THOR"
-                            $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+                            let coinIsSecured = isSecuredAsset(coin: swapPayload.fromCoin)
+                            $0.chain = getChainName(coin: swapPayload.fromCoin)
+                            $0.symbol = coinIsSecured ? securedAssetSymbol(coin: swapPayload.fromCoin) : swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.synth = false
-                            $0.secured = securedAssetsTickers.contains(swapPayload.fromCoin.ticker.uppercased())
+                            $0.secured = coinIsSecured
                         }
                         $0.amount = String(swapPayload.fromAmount)
                         $0.decimals = Int64(swapPayload.fromCoin.decimals)
@@ -308,34 +309,39 @@ enum THORChainHelper {
         return coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
     }
 
-    /// Returns the list of secured asset tickers
-    private static var securedAssetsTickers: [String] {
-        return ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+    /// Checks if a coin is a secured asset by matching its on-chain denom pattern
+    static func isSecuredAsset(coin: Coin) -> Bool {
+        guard coin.chain == .thorChain else { return false }
+        guard !coin.isNativeToken else { return false }
+        guard !coin.contractAddress.hasPrefix("x/") else { return false }
+        return coin.contractAddress.contains("-")
     }
 
-    /// Checks if a coin is a secured asset
-    private static func isSecuredAsset(coin: Coin) -> Bool {
-        return securedAssetsTickers.contains(coin.ticker.uppercased()) && !coin.isNativeToken
+    /// Returns the L1 chain from the secured asset denom (e.g., "eth-usdc-0xa0b..." → "ETH")
+    static func securedAssetChain(coin: Coin) -> String {
+        guard let chain = coin.contractAddress.split(separator: "-").first else {
+            return "THOR"
+        }
+        return String(chain).uppercased()
+    }
+
+    /// Returns the symbol from the secured asset denom (e.g., "eth-usdc-0xa0b..." → "USDC-0xA0B86991...")
+    static func securedAssetSymbol(coin: Coin) -> String {
+        guard let dashIndex = coin.contractAddress.firstIndex(of: "-") else {
+            return coin.ticker.uppercased()
+        }
+        let afterDash = coin.contractAddress[coin.contractAddress.index(after: dashIndex)...]
+        return afterDash.isEmpty ? coin.ticker.uppercased() : String(afterDash).uppercased()
     }
 
     /// Gets the appropriate chain name for a coin in THORChain context
-    /// - For secured assets: returns the chain ticker (e.g., "BTC", "ETH", "DOGE")
-    /// - For BNB secured assets: returns "BSC"
+    /// - For secured assets: returns the L1 chain from denom (e.g., "ETH", "BTC")
     /// - For non-secured assets: returns "THOR"
     private static func getChainName(coin: Coin) -> String {
         guard isSecuredAsset(coin: coin) else {
             return "THOR"
         }
-
-        let ticker = coin.ticker.uppercased()
-
-        // BNB uses BSC chain
-        if ticker == "BNB" {
-            return "BSC"
-        }
-
-        // For other secured assets, use the coin's ticker THOR-DOGE will return DOGE
-        return ticker
+        return securedAssetChain(coin: coin)
     }
 
     static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee {

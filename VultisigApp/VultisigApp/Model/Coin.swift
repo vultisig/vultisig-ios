@@ -280,6 +280,11 @@ class Coin: ObservableObject, Codable, Hashable {
         }
 
         if chain == .thorChain {
+            if THORChainHelper.isSecuredAsset(coin: self) {
+                let l1Chain = THORChainHelper.securedAssetChain(coin: self)
+                let symbol = THORChainHelper.securedAssetSymbol(coin: self)
+                return "\(l1Chain).\(symbol)"
+            }
             return "\(chain.swapAsset).\(ticker)"
         }
 
