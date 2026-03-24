@@ -17,6 +17,7 @@ class TransactionStatusService {
     private let thorchainProvider = THORChainTransactionStatusProvider()
     private let cardanoProvider = CardanoTransactionStatusProvider()
     private let polkadotProvider = PolkadotTransactionStatusProvider()
+    private let bittensorProvider = BittensorTransactionStatusProvider()
     private let suiProvider = SuiTransactionStatusProvider()
     private let tonProvider = TonTransactionStatusProvider()
     private let rippleProvider = RippleTransactionStatusProvider()
@@ -32,6 +33,11 @@ class TransactionStatusService {
     }
 
     private func getProvider(for chain: Chain) -> TransactionStatusProvider {
+        // Chain-specific overrides (same chainType, different provider)
+        if chain == .bittensor {
+            return bittensorProvider
+        }
+
         switch chain.chainType {
         case .EVM:
             return evmProvider

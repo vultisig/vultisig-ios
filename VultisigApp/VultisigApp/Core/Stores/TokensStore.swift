@@ -1392,6 +1392,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .bittensor,
+            ticker: "TAO",
+            logo: "bittensor",
+            decimals: 9,
+            priceProviderId: "bittensor",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .polygon,
             ticker: "AVAX",
             logo: "avax",

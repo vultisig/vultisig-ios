@@ -39,6 +39,11 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
         }
 
+        // Special handling for Bittensor (SS58 prefix 42)
+        if BittensorHelper.isValidAddress(address) {
+            return vault.coins.contains(where: { $0.chain == .bittensor && $0.isNativeToken }) ? .bittensor : nil
+        }
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
@@ -98,6 +103,14 @@ struct AddressService {
             return input
         }
 
+        if chain == .bittensor {
+            if BittensorHelper.isValidAddress(input) {
+                return input
+            } else {
+                throw Errors.invalidAddress
+            }
+        }
+
         if chain.coinType.validate(address: input) {
             return input
         }
@@ -131,6 +144,10 @@ struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
         }
 
+        if chain == .bittensor {
+            return BittensorHelper.isValidAddress(address)
+        }
+
         return chain.coinType.validate(address: address)
     }
 
@@ -148,6 +165,9 @@ struct AddressService {
             }
             if firstCoin.chain == .qbtc {
                 return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+            }
+            if firstCoin.chain == .bittensor {
+                return BittensorHelper.isValidAddress(address)
             }
             return firstCoin.coinType.validate(address: address)
         }
