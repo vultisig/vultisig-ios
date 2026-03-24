@@ -256,10 +256,12 @@ enum THORChainHelper {
     }
 
     private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> WalletCore.CosmosMessage {
-        let symbol = getTicker(coin: keysignPayload.coin)
+        let isSecured = isSecuredAsset(coin: keysignPayload.coin)
+        let symbol = isSecured
+            ? securedAssetSymbol(coin: keysignPayload.coin)
+            : getTicker(coin: keysignPayload.coin)
         let assetTicker = getTicker(coin: keysignPayload.coin)
         let chainName = getChainName(coin: keysignPayload.coin)
-        let isSecured = isSecuredAsset(coin: keysignPayload.coin)
 
         let coin = CosmosTHORChainCoin.with {
             $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
@@ -311,7 +313,12 @@ enum THORChainHelper {
 
     /// Checks if a coin is a secured asset by matching its on-chain denom pattern
     static func isSecuredAsset(coin: Coin) -> Bool {
-        guard coin.chain == .thorChain else { return false }
+        switch coin.chain {
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
+            break
+        default:
+            return false
+        }
         guard !coin.isNativeToken else { return false }
         guard !coin.contractAddress.hasPrefix("x/") else { return false }
         return coin.contractAddress.contains("-")
