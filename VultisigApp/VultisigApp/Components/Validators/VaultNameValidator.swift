@@ -9,22 +9,20 @@ import Foundation
 import SwiftData
 
 struct VaultNameValidator: FormFieldValidator {
-    let vaults: [Vault]
+    private let vaultNames: Set<String>
 
     init() {
-        let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        vaults = (try? Storage.shared.modelContext.fetch(fetchVaultDescriptor)) ?? []
+        let descriptor = FetchDescriptor<Vault>()
+        let vaults = (try? Storage.shared.modelContext.fetch(descriptor)) ?? []
+        vaultNames = Set(vaults.map { $0.name.lowercased() })
     }
 
     func validate(value: String) throws {
-        if value.isEmpty {
+        guard !value.isEmpty else {
             throw HelperError.runtimeError("enterVaultName".localized)
         }
-
-        for vault in vaults {
-            if vault.name.caseInsensitiveCompare(value) == .orderedSame {
-                throw HelperError.runtimeError("vaultNameExists".localized.replacingOccurrences(of: "%s", with: value))
-            }
+        guard !vaultNames.contains(value.lowercased()) else {
+            throw HelperError.runtimeError("vaultNameExists".localized.replacingOccurrences(of: "%s", with: value))
         }
     }
 }
