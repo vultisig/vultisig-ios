@@ -136,6 +136,12 @@ struct ChainStatusConfig {
                 pollInterval: 3,
                 maxWaitTime: 300  // 5 min
             )
+        case .bittensor:
+            return ChainStatusConfig(
+                estimatedTime: "~12 sec",
+                pollInterval: 4,
+                maxWaitTime: 300  // 5 min
+            )
         case .cardano:
             return ChainStatusConfig(
                 estimatedTime: "~20 sec",

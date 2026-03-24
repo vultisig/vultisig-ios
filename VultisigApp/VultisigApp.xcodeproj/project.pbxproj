@@ -1009,6 +1009,9 @@
 		B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */; };
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
+		536346117EE8452192A63F3A /* BittensorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485EA7DF05214655872AE569 /* BittensorHelper.swift */; };
+		38B68D7798424B0C95460C7E /* BittensorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9FC0438321437CA688D573 /* BittensorService.swift */; };
+		66745946183E4D33B56740CA /* BittensorTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
 		B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */; };
 		B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */; };
@@ -2243,6 +2246,9 @@
 		B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainStagenetService.swift; sourceTree = "<group>"; };
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
+		485EA7DF05214655872AE569 /* BittensorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorHelper.swift; sourceTree = "<group>"; };
+		FD9FC0438321437CA688D573 /* BittensorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorService.swift; sourceTree = "<group>"; };
+		E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
 		B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractSelectorDropDown.swift; sourceTree = "<group>"; };
 		B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledTextField.swift; sourceTree = "<group>"; };
@@ -4417,6 +4423,7 @@
 			children = (
 				134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */,
 				134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */,
+				E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */,
 				134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */,
 				134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */,
 				134DFE0C2F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift */,
@@ -5282,6 +5289,7 @@
 				1E0CD8BD6D73741534ABD2A1 /* Tron */,
 				2D754D9DE08F4985138C1F55 /* Ripple */,
 				E8F4CCA9B0165D8CA21FD6C9 /* Polkadot */,
+				658A11CF89284913ADBFC87A /* Bittensor */,
 				5E7D34DCD9FB09CC426442CF /* Cardano */,
 				138203E64B0FF80E0ADAC5CE /* Swaps */,
 			);
@@ -6624,6 +6632,32 @@
 			path = Polkadot;
 			sourceTree = "<group>";
 		};
+		658A11CF89284913ADBFC87A /* Bittensor */ = {
+			isa = PBXGroup;
+			children = (
+				059A67D562784BC3B1043230 /* Signing */,
+				37971FA6A2404F37BD21E511 /* Service */,
+			);
+			path = Bittensor;
+			sourceTree = "<group>";
+		};
+		059A67D562784BC3B1043230 /* Signing */ = {
+			isa = PBXGroup;
+			children = (
+				485EA7DF05214655872AE569 /* BittensorHelper.swift */,
+			);
+			path = Signing;
+			sourceTree = "<group>";
+		};
+		37971FA6A2404F37BD21E511 /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				FD9FC0438321437CA688D573 /* BittensorService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+
 		EB636E62B0416060D8DDFFAF /* Localizables */ = {
 			isa = PBXGroup;
 			children = (
@@ -7187,6 +7221,9 @@
 				B537CE092CE7068D002085CB /* CosmosIbcDenomTrace.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */,
+				536346117EE8452192A63F3A /* BittensorHelper.swift in Sources */,
+				38B68D7798424B0C95460C7E /* BittensorService.swift in Sources */,
+				66745946183E4D33B56740CA /* BittensorTransactionStatusProvider.swift in Sources */,
 				13C8805B2E70A375009C67F1 /* VaultSelectorView.swift in Sources */,
 				139716222EE897BE00F85588 /* ImportVaultSelectionSheet.swift in Sources */,
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
