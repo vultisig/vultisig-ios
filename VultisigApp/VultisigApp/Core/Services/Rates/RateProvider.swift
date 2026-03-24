@@ -43,8 +43,6 @@ final class RateProvider {
     /// Should be updated manually - thread-safe backing storage
     private var _rates = Set<Rate>()
     private var ratesLock = os_unfair_lock()
-    private let initQueue = DispatchQueue(label: "com.vultisig.rateprovider.init")
-
     /// Thread-safe access to rates
     private var rates: Set<Rate> {
         get {
@@ -60,20 +58,14 @@ final class RateProvider {
     }
 
     private init() {
-        // Defer the database fetch to avoid re-entrant calls during SwiftData operations
-        // This prevents the crash caused by calling fetch() while SwiftData is already
-        // processing another fetch/register operation
-        initQueue.async { [weak self] in
-            guard let self = self else { return }
-
+        // Defer fetch to avoid re-entrant SwiftData calls during init.
+        // Must run on MainActor — ModelContext is MainActor-isolated.
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             let descriptor = FetchDescriptor<DatabaseRate>()
-
             do {
                 let objects = try Storage.shared.modelContext.fetch(descriptor)
-                let loadedRates = Set(objects.map { Rate(object: $0) })
-
-                // Thread-safe assignment via computed property
-                self.rates = loadedRates
+                self.rates = Set(objects.map { Rate(object: $0) })
             } catch {
                 print("Failed to load rates: \(error.localizedDescription)")
             }
