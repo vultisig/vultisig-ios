@@ -438,6 +438,27 @@ struct SendCryptoLogic {
                 print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
             }
 
+        case .bittensor:
+            do {
+                tx.sendMaxAmount = percentage == 100
+                await balanceService.updateBalance(for: tx.coin)
+
+                let specific = try await blockchainService.fetchSpecific(tx: tx)
+                let gas = specific.gas
+
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+            } catch {
+                // Fallback: use static fee of 100_000 RAO
+                let gas = BittensorHelper.defaultFee
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+
+                print("Failed to get Bittensor fee, error: \(error.localizedDescription)")
+            }
+
         case .ton:
             do {
                 tx.sendMaxAmount = percentage == 100
