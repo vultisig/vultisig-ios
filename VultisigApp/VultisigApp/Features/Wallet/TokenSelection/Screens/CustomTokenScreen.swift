@@ -206,6 +206,41 @@ struct CustomTokenScreen: View {
 
                 }
 
+            } else if ChainType.Tron == group.chain.chainType {
+
+                let (name, symbol, decimals) = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
+
+                if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
+                    let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
+                    if let nativeToken = nativeTokenOptional {
+                        self.token = CoinMeta(
+                            chain: nativeToken.chain,
+                            ticker: symbol,
+                            logo: .empty,
+                            decimals: decimals,
+                            priceProviderId: .empty,
+                            contractAddress: contractAddress,
+                            isNativeToken: false
+                        )
+                        self.tokenName = name
+                        self.tokenSymbol = symbol
+                        self.tokenDecimals = decimals
+                        self.showTokenInfo = true
+                        self.isLoading = false
+                    }
+
+                } else {
+
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+
+                }
+
+            } else {
+
+                self.error = TokenNotFoundError()
+                self.isLoading = false
+
             }
 
         } catch let error as NSError {

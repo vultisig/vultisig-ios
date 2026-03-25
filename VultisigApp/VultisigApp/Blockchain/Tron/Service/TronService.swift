@@ -66,6 +66,12 @@ class TronService {
         )
     }
 
+    // MARK: - Token Info
+
+    func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
+        return try await apiService.getTokenInfo(contractAddress: contractAddress)
+    }
+
     // MARK: - Balance
 
     func getBalance(coin: CoinMeta, address: String) async throws -> String {

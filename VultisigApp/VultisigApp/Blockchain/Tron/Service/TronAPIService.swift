@@ -69,6 +69,94 @@ struct TronAPIService {
         return String(account.balance ?? 0)
     }
 
+    // MARK: - Token Info
+
+    func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
+        // Use a zero-padded dummy parameter (required by triggerConstantContract but not used by these view functions)
+        let emptyParameter = String(repeating: "0", count: 64)
+
+        // Fetch all three in parallel
+        async let nameResponse = httpClient.request(
+            TronAPI.triggerConstantContract(
+                ownerAddress: contractAddress,
+                contractAddress: contractAddress,
+                functionSelector: "name()",
+                parameter: emptyParameter
+            ),
+            responseType: TronTriggerConstantResponse.self
+        )
+
+        async let symbolResponse = httpClient.request(
+            TronAPI.triggerConstantContract(
+                ownerAddress: contractAddress,
+                contractAddress: contractAddress,
+                functionSelector: "symbol()",
+                parameter: emptyParameter
+            ),
+            responseType: TronTriggerConstantResponse.self
+        )
+
+        async let decimalsResponse = httpClient.request(
+            TronAPI.triggerConstantContract(
+                ownerAddress: contractAddress,
+                contractAddress: contractAddress,
+                functionSelector: "decimals()",
+                parameter: emptyParameter
+            ),
+            responseType: TronTriggerConstantResponse.self
+        )
+
+        let nameResult = try await nameResponse.data
+        let symbolResult = try await symbolResponse.data
+        let decimalsResult = try await decimalsResponse.data
+
+        // Decode name
+        let name: String
+        if let nameHex = nameResult.constant_result?.first {
+            name = Self.decodeAbiString(from: nameHex)
+        } else {
+            name = ""
+        }
+
+        // Decode symbol
+        let symbol: String
+        if let symbolHex = symbolResult.constant_result?.first {
+            symbol = Self.decodeAbiString(from: symbolHex)
+        } else {
+            symbol = ""
+        }
+
+        // Decode decimals
+        let decimals: Int
+        if let decimalsHex = decimalsResult.constant_result?.first {
+            decimals = Int(decimalsHex, radix: 16) ?? 0
+        } else {
+            decimals = 0
+        }
+
+        return (name, symbol, decimals)
+    }
+
+    /// Decodes an ABI-encoded string from a hex result.
+    /// ABI strings have: 32 bytes offset, 32 bytes length, then the string data.
+    private static func decodeAbiString(from hex: String) -> String {
+        guard let data = Data(hexString: hex), data.count >= 64 else {
+            return ""
+        }
+
+        let lengthData = data[32..<64]
+        let length = Int(BigInt(Data(lengthData)))
+
+        guard length > 0, data.count >= 64 + length else {
+            return ""
+        }
+
+        let stringData = data[64..<(64 + length)]
+        return String(data: stringData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters) ?? ""
+    }
+
+    // MARK: - Balance
+
     func getTRC20Balance(contractAddress: String, walletAddress: String) async throws -> BigInt {
         // Convert wallet address to hex parameter for balanceOf(address) call
         guard let addressData = Base58.decode(string: walletAddress) else {
