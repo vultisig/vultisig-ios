@@ -134,7 +134,7 @@
         private let tooltipBullets = [
             "scanQRCodeTooltipBullet1",
             "scanQRCodeTooltipBullet2",
-            "scanQRCodeTooltipBullet3",
+            "scanQRCodeTooltipBullet3"
         ]
 
         var cameraView: some View {
