@@ -263,9 +263,17 @@ struct SendCryptoLogic {
         }
 
         do {
-            let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            let originalInput = tx.toAddress
+            let resolvedAddress = try await AddressService.resolveInput(originalInput, chain: tx.coin.chain)
             await MainActor.run {
-                tx.toAddress = resolvedAddress
+                if originalInput != resolvedAddress {
+                    tx.toAddress = resolvedAddress
+                    tx.toAddressLabel = originalInput
+                    tx.lastResolvedAddress = resolvedAddress
+                } else if originalInput != tx.lastResolvedAddress {
+                    tx.toAddressLabel = nil
+                    tx.lastResolvedAddress = nil
+                }
             }
         } catch {
             result.errorTitle = "invalidAddress"
