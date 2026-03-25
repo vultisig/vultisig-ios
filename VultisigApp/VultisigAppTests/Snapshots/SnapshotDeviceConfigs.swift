@@ -37,18 +37,18 @@ extension UITraitCollection {
             .init(layoutDirection: .leftToRight),
             .init(preferredContentSizeCategory: .medium),
             .init(userInterfaceIdiom: .phone),
-            .init(displayScale: 3),
+            .init(displayScale: 3)
         ]
         switch orientation {
         case .landscape:
             return .init(traitsFrom: base + [
                 .init(horizontalSizeClass: .regular),
-                .init(verticalSizeClass: .compact),
+                .init(verticalSizeClass: .compact)
             ])
         case .portrait:
             return .init(traitsFrom: base + [
                 .init(horizontalSizeClass: .compact),
-                .init(verticalSizeClass: .regular),
+                .init(verticalSizeClass: .regular)
             ])
         }
     }
