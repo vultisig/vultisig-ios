@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-03-15.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SendVerifyScreen: View {
@@ -12,7 +13,10 @@ struct SendVerifyScreen: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
 
-    @State var fastPasswordPresented = false
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
+
+    @State private var fastPasswordPresented = false
 
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
@@ -57,12 +61,23 @@ struct SendVerifyScreen: View {
         }
     }
 
+    private var toAlias: String? {
+        SendAddressResolver.resolveAlias(
+            address: tx.toAddress,
+            coinMeta: tx.coin.toCoinMeta(),
+            ensLabel: tx.toAddressLabel,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
+    }
+
     var fields: some View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
                 fromName: vault.name,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
+                toAlias: toAlias,
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,

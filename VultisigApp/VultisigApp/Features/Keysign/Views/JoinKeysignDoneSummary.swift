@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-12-05.
 //
 
+import SwiftData
 import SwiftUI
 
 struct JoinKeysignDoneSummary: View {
@@ -14,6 +15,9 @@ struct JoinKeysignDoneSummary: View {
 
     @Environment(\.openURL) var openURL
     let summaryViewModel = JoinKeysignSummaryViewModel()
+
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
 
     @EnvironmentObject var appViewModel: AppViewModel
 
@@ -79,6 +83,16 @@ struct JoinKeysignDoneSummary: View {
         )
     }
 
+    private func toAlias(for keysignPayload: KeysignPayload) -> String? {
+        SendAddressResolver.resolveAlias(
+            address: keysignPayload.toAddress,
+            coinMeta: keysignPayload.coin.toCoinMeta(),
+            ensLabel: nil,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
+    }
+
     @ViewBuilder
     var sendContent: some View {
         if let keysignPayload = viewModel.keysignPayload {
@@ -94,6 +108,7 @@ struct JoinKeysignDoneSummary: View {
                     isSend: true,
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
+                    toAlias: toAlias(for: keysignPayload),
                     fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat),
                     keysignPayload: viewModel.keysignPayload,
                     pubKeyECDSA: vault.pubKeyECDSA

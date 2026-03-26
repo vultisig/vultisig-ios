@@ -182,8 +182,9 @@ class AppViewModel: ObservableObject {
         }
 
         canLogin = true
-        showSplashView = false
-        showSplashView = true
+        if !showSplashView {
+            showSplashView = true
+        }
     }
 
     private func resetLogin() {

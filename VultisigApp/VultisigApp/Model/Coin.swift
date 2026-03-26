@@ -221,6 +221,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "3000000"
         case .polkadot:
             return "250000000" // 0.025
+        case .bittensor:
+            return "100000" // 0.0001 TAO = 100_000 RAO
         case .ton:
             return TonHelper.defaultFee.description
         case .ripple:

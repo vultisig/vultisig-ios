@@ -263,9 +263,17 @@ struct SendCryptoLogic {
         }
 
         do {
-            let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            let originalInput = tx.toAddress
+            let resolvedAddress = try await AddressService.resolveInput(originalInput, chain: tx.coin.chain)
             await MainActor.run {
-                tx.toAddress = resolvedAddress
+                if originalInput != resolvedAddress {
+                    tx.toAddress = resolvedAddress
+                    tx.toAddressLabel = originalInput
+                    tx.lastResolvedAddress = resolvedAddress
+                } else if originalInput != tx.lastResolvedAddress {
+                    tx.toAddressLabel = nil
+                    tx.lastResolvedAddress = nil
+                }
             }
         } catch {
             result.errorTitle = "invalidAddress"
@@ -428,6 +436,27 @@ struct SendCryptoLogic {
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
 
                 print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
+            }
+
+        case .bittensor:
+            do {
+                tx.sendMaxAmount = percentage == 100
+                await balanceService.updateBalance(for: tx.coin)
+
+                let specific = try await blockchainService.fetchSpecific(tx: tx)
+                let gas = specific.gas
+
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+            } catch {
+                // Fallback: use static fee of 100_000 RAO
+                let gas = BittensorHelper.defaultFee
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+
+                print("Failed to get Bittensor fee, error: \(error.localizedDescription)")
             }
 
         case .ton:

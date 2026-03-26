@@ -9,6 +9,9 @@ import BigInt
 class SendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
+    @Published var toAddressLabel: String? = nil
+    // Internal tracking for ENS/TNS resolution - prevents stale label on re-validation
+    var lastResolvedAddress: String? = nil
     @Published var amount: String = .empty
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
@@ -207,6 +210,8 @@ class SendTransaction: ObservableObject, Hashable {
 
     func reset(coin: Coin) {
         self.toAddress = .empty
+        self.toAddressLabel = nil
+        self.lastResolvedAddress = nil
         self.amount = .empty
         self.amountInFiat = .empty
         self.memo = .empty
@@ -236,6 +241,7 @@ class SendTransaction: ObservableObject, Hashable {
         let (address, amount, message) = Utils.parseCryptoURI(uri)
 
         self.toAddress = address
+        self.toAddressLabel = nil
         self.amount = amount
         self.memo = message
     }
