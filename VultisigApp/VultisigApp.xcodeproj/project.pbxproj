@@ -557,6 +557,7 @@
 		1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */; };
 		1E29B5BBDAEBABFFB0C06424 /* AgentKeysignCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D14893510CF6C9AFBA3167F3 /* AgentKeysignCoordinator.swift */; };
 		1EFC82D483A7043778E87203 /* AgentChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8922E2B9288FCFE9626B80C1 /* AgentChatViewModel.swift */; };
+		1F82D177506703CE9B853D00 /* SendAddressResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481C226D2BE5E37744AD54D3 /* SendAddressResolver.swift */; };
 		20F64419F06B1745E7499269 /* GeneralQRImportMacView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99155325EA91C0D8966E2B11 /* GeneralQRImportMacView+macOS.swift */; };
 		21E1CA7DB5C8B9ADB07F0EFE /* TransactionHistoryRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E681A12253338A5053513178 /* TransactionHistoryRoute.swift */; };
 		2353311EA5E3A85FD0708F48 /* PushNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */; };
@@ -574,6 +575,7 @@
 		379D2FAE579688A3A6F4F23A /* AgentContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57243B95C68821519C8E9D22 /* AgentContextBuilder.swift */; };
 		381B08598606C73AB7BED741 /* TransactionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC586168CA29D811C28C56A4 /* TransactionStatus.swift */; };
 		38580E103C20D160F12F1B39 /* MacAddressScannerViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8A66504966BF6EFA6832ED /* MacAddressScannerViewModel+macOS.swift */; };
+		38B68D7798424B0C95460C7E /* BittensorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9FC0438321437CA688D573 /* BittensorService.swift */; };
 		3E02DB6F3E846E8630B17A35 /* FastVaultKeysignService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */; };
 		411422942A928D78FADAFCDF /* MacCameraServiceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F637961EABFB349F64A633BF /* MacCameraServiceViewModel.swift */; };
 		433B769997A138C579EDAEC9 /* TransactionHistoryAssetFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C77BD6311232B1382C49417 /* TransactionHistoryAssetFilterView.swift */; };
@@ -612,6 +614,7 @@
 		4D50FC2F5E9F3BF92C034ADF /* AgentStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE724E2B902EF120C1EE5D8F /* AgentStreamManager.swift */; };
 		4F04ED93D3530E7DB36F6A5B /* CosmosTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */; };
 		5345AEA7AE019738B2D62232 /* CreateVaultPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3726B7BEFE95832539A4AB83 /* CreateVaultPage.swift */; };
+		536346117EE8452192A63F3A /* BittensorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485EA7DF05214655872AE569 /* BittensorHelper.swift */; };
 		5589A8E15B5CE4DB4C3090AB /* VaultNotificationToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA8B3D6314175F82FEC27D8 /* VaultNotificationToggleRow.swift */; };
 		570871242D51A5905F8DDAC7 /* ForegroundNotificationBannerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE5D50E07EFD9201F09BDC4 /* ForegroundNotificationBannerModifier.swift */; };
 		5E0E7A608BD5D13124215706 /* AgentToolExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3B44655675C6DADF3F5E06 /* AgentToolExecutor.swift */; };
@@ -620,6 +623,7 @@
 		60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */; };
 		60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */; };
 		619C41B48AA7DDF05E5B0FB0 /* TransactionHistoryData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834B4865644FA4A2EACF956E /* TransactionHistoryData.swift */; };
+		66745946183E4D33B56740CA /* BittensorTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */; };
 		67ABEC97B9F8E51A42D82088 /* XCUIApplication+Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75F99629C313BA86A2C9797 /* XCUIApplication+Launch.swift */; };
 		6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */; };
 		6AE564F37876C2BB01674194 /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EC7383A8308BD94F081C10 /* CircleService.swift */; };
@@ -1009,9 +1013,6 @@
 		B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */; };
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
-		536346117EE8452192A63F3A /* BittensorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485EA7DF05214655872AE569 /* BittensorHelper.swift */; };
-		38B68D7798424B0C95460C7E /* BittensorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9FC0438321437CA688D573 /* BittensorService.swift */; };
-		66745946183E4D33B56740CA /* BittensorTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
 		B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */; };
 		B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */; };
@@ -1224,7 +1225,6 @@
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
 		FCB47344D1011A902B285619 /* CosmosTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */; };
 		FD4041B37F8AA80055E6D433 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */; };
-		1F82D177506703CE9B853D00 /* SendAddressResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481C226D2BE5E37744AD54D3 /* SendAddressResolver.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1839,6 +1839,8 @@
 		46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempool.swift; sourceTree = "<group>"; };
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
+		481C226D2BE5E37744AD54D3 /* SendAddressResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAddressResolver.swift; sourceTree = "<group>"; };
+		485EA7DF05214655872AE569 /* BittensorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorHelper.swift; sourceTree = "<group>"; };
 		4AFAF336EB817EBB89622FCD /* ImageFileDocument.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageFileDocument.swift; sourceTree = "<group>"; };
 		4B48C2DF897CAFC419193329 /* PushNotificationManaging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManaging.swift; sourceTree = "<group>"; };
 		4CB85BCD6C29C392A9B335FB /* TransactionHistoryCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryCardView.swift; sourceTree = "<group>"; };
@@ -2247,9 +2249,6 @@
 		B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainStagenetService.swift; sourceTree = "<group>"; };
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
-		485EA7DF05214655872AE569 /* BittensorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorHelper.swift; sourceTree = "<group>"; };
-		FD9FC0438321437CA688D573 /* BittensorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorService.swift; sourceTree = "<group>"; };
-		E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
 		B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractSelectorDropDown.swift; sourceTree = "<group>"; };
 		B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledTextField.swift; sourceTree = "<group>"; };
@@ -2445,6 +2444,7 @@
 		E313D70696CC56709CA322D3 /* AgentThinkingIndicator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentThinkingIndicator.swift; sourceTree = "<group>"; };
 		E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		E681A12253338A5053513178 /* TransactionHistoryRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryRoute.swift; sourceTree = "<group>"; };
 		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
 		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
@@ -2463,9 +2463,9 @@
 		FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
 		FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
 		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
+		FD9FC0438321437CA688D573 /* BittensorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BittensorService.swift; sourceTree = "<group>"; };
 		FF1C6F91653A1C18DD2662A7 /* AgentConversationsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentConversationsViewModel.swift; sourceTree = "<group>"; };
 		VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainLP.swift; sourceTree = "<group>"; };
-		481C226D2BE5E37744AD54D3 /* SendAddressResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAddressResolver.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -2666,6 +2666,14 @@
 				B590DF852C2E70B800ED934E /* FunctionCallVote.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		059A67D562784BC3B1043230 /* Signing */ = {
+			isa = PBXGroup;
+			children = (
+				485EA7DF05214655872AE569 /* BittensorHelper.swift */,
+			);
+			path = Signing;
 			sourceTree = "<group>";
 		};
 		066FD74C8CEE46C116ABCABF /* Migration */ = {
@@ -4739,6 +4747,14 @@
 			path = Fee;
 			sourceTree = "<group>";
 		};
+		37971FA6A2404F37BD21E511 /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				FD9FC0438321437CA688D573 /* BittensorService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
 		37D60F79AEF4B0086F5C8338 /* Service */ = {
 			isa = PBXGroup;
 			children = (
@@ -5126,6 +5142,15 @@
 				BD019C09C75338AAA65909F1 /* ViewExtension+iOS.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		658A11CF89284913ADBFC87A /* Bittensor */ = {
+			isa = PBXGroup;
+			children = (
+				059A67D562784BC3B1043230 /* Signing */,
+				37971FA6A2404F37BD21E511 /* Service */,
+			);
+			path = Bittensor;
 			sourceTree = "<group>";
 		};
 		65DE31824185E991F69E1CDC /* TextFields */ = {
@@ -6635,32 +6660,6 @@
 			path = Polkadot;
 			sourceTree = "<group>";
 		};
-		658A11CF89284913ADBFC87A /* Bittensor */ = {
-			isa = PBXGroup;
-			children = (
-				059A67D562784BC3B1043230 /* Signing */,
-				37971FA6A2404F37BD21E511 /* Service */,
-			);
-			path = Bittensor;
-			sourceTree = "<group>";
-		};
-		059A67D562784BC3B1043230 /* Signing */ = {
-			isa = PBXGroup;
-			children = (
-				485EA7DF05214655872AE569 /* BittensorHelper.swift */,
-			);
-			path = Signing;
-			sourceTree = "<group>";
-		};
-		37971FA6A2404F37BD21E511 /* Service */ = {
-			isa = PBXGroup;
-			children = (
-				FD9FC0438321437CA688D573 /* BittensorService.swift */,
-			);
-			path = Service;
-			sourceTree = "<group>";
-		};
-
 		EB636E62B0416060D8DDFFAF /* Localizables */ = {
 			isa = PBXGroup;
 			children = (
@@ -8358,7 +8357,7 @@
 				CODE_SIGN_ENTITLEMENTS = VultisigApp/VultisigApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8423,7 +8422,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8484,7 +8483,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -8510,7 +8509,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				ENABLE_TESTABILITY = NO;
@@ -8536,7 +8535,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -8557,7 +8556,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

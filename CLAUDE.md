@@ -81,6 +81,7 @@ Domain knowledge loads on-demand via skills:
 | `/batch-fix-reviews` | Auto-fix CodeRabbit review comments, push fixes, re-request review |
 | `/localize` | Complete i18n workflow — add keys to all 7 locale files, translate, sort |
 | `/ship` | Commit + create PR in one step, with checks and Co-Authored-By |
+| `/approve-pr` | Approve a PR and add it to the merge queue |
 | `/orchestrate` | God-mode orchestrator — end-to-end feature delivery or exhaustive PR review |
 | `/create-issue` | Create GitHub issues with bug/feature templates and size guide |
 | `/check-platforms` | Search Android, Windows, backend repos for feature implementations |
