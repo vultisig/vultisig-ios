@@ -5,18 +5,18 @@
 //  Created by Vultisig on 2025-02-03.
 //
 
-import SwiftUI
 import BigInt
-import WalletCore
 import Mediator
+import SwiftUI
+import WalletCore
 
 struct SwapCryptoLogic {
-
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
 
     // MARK: - Errors
+
     enum Errors: String, Error, LocalizedError {
         case unexpectedError
         case insufficientFunds
@@ -215,13 +215,18 @@ struct SwapCryptoLogic {
         // 1. Get Affiliate Fee directly from quote
         // Determine which quote type we have and extract fee string
         var affiliateFeeString: String?
-        let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
+        let feeDecimals = 8 // Default to 8 (THORChain standard)
         let feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
 
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
             affiliateFeeString = q.fees.affiliate
-            // Verify if fee asset matches toCoin or fromCoin if needed, currently assuming toCoin as per SwapQuote.swift
+        // Verify if fee asset matches toCoin or fromCoin if needed, currently assuming toCoin as per SwapQuote.swift
+        case let .kyberswap(q, _):
+            guard let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 else { return .empty }
+            let feeDecimal = feeCoin.decimal(for: swapFeeBigInt)
+            let fiatValue = feeCoin.fiat(decimal: feeDecimal)
+            return fiatValue.formatToFiat(includeCurrencySymbol: true)
         default:
             return .empty // Other providers might not have affiliate fees structured same way
         }
@@ -256,10 +261,14 @@ struct SwapCryptoLogic {
         // We need raw numbers for math, reusing logic for efficiency
         var feeAmt: Decimal = 0
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
             feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
+        case let .kyberswap(q, _):
+            if let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 {
+                feeAmt = tx.toCoin.decimal(for: swapFeeBigInt)
+            }
         default:
-             break
+            break
         }
 
         // Calculate BPS: (Fee Amt / Expected Output Amount * ?? )
@@ -281,11 +290,11 @@ struct SwapCryptoLogic {
         guard let quote = tx.quote else { return .empty }
 
         var outboundFeeString: String?
-        let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
+        let feeDecimals = 8 // Default to 8 (THORChain standard)
         let feeCoin: Coin = tx.toCoin // Outbound fee is in output asset
 
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
             outboundFeeString = q.fees.outbound
         default:
             return .empty
@@ -359,11 +368,11 @@ struct SwapCryptoLogic {
         // Actual Fee from Quote
         // Re-calculate local to avoid string parsing
         var actualFeeFiat: Decimal = 0
-         if let quote = tx.quote {
+        if let quote = tx.quote {
             switch quote {
-            case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
-                 let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-                 actualFeeFiat = tx.toCoin.fiat(decimal: feeAmt)
+            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
+                actualFeeFiat = tx.toCoin.fiat(decimal: feeAmt)
             default: break
             }
         }
@@ -418,7 +427,7 @@ struct SwapCryptoLogic {
 
     func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
         let firstVaultCoin = vault.coins
-            .filter { $0.chain == chain && $0.isNativeToken}
+            .filter { $0.chain == chain && $0.isNativeToken }
             .first
 
         if let firstVaultCoin {
@@ -435,7 +444,8 @@ struct SwapCryptoLogic {
                                                                    publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                                                                    hexChainCode: vault.hexChainCode,
                                                                    isDerived: isDerived,
-                                                                   publicKeyMLDSA44: vault.publicKeyMLDSA44) else {
+                                                                   publicKeyMLDSA44: vault.publicKeyMLDSA44)
+            else {
                 return nil
             }
             return coin
@@ -443,17 +453,17 @@ struct SwapCryptoLogic {
     }
 
     func pickerFromCoins(tx: SwapTransaction, fromChain: Chain?) -> [Coin] {
-        return tx.fromCoins.filter({ coin in
+        return tx.fromCoins.filter { coin in
             coin.chain == fromChain
-        }).sorted(by: {
+        }.sorted(by: {
             Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
         })
     }
 
     func pickerToCoins(tx: SwapTransaction, toChain: Chain?) -> [Coin] {
-        return tx.toCoins.filter({ coin in
+        return tx.toCoins.filter { coin in
             coin.chain == toChain
-        }).sorted(by: {
+        }.sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
     }
@@ -479,7 +489,7 @@ struct SwapCryptoLogic {
             // Same coin pays for amount + gas
             if fromFee + amount > fromBalance {
                 // If the amount alone fits but amount+fee doesn't, it's a gas issue
-                if amount <= fromBalance && fromFee > 0 {
+                if amount <= fromBalance, fromFee > 0 {
                     return .insufficientGas
                 }
                 return .insufficientFunds
@@ -498,14 +508,14 @@ struct SwapCryptoLogic {
 
     func validateForm(tx: SwapTransaction, isLoading: Bool) -> Bool {
         return tx.fromCoin != tx.toCoin
-        && tx.fromCoin != .example
-        && tx.toCoin != .example
-        && !tx.fromAmount.isEmpty
-        && !tx.toAmountDecimal.isZero
-        && tx.quote != nil
-        && tx.fee != .zero
-        && isSufficientBalance(tx: tx)
-        && !isLoading
+            && tx.fromCoin != .example
+            && tx.toCoin != .example
+            && !tx.fromAmount.isEmpty
+            && !tx.toAmountDecimal.isZero
+            && tx.quote != nil
+            && tx.fee != .zero
+            && isSufficientBalance(tx: tx)
+            && !isLoading
     }
 
     // MARK: - Core Operations (Quotes & Fees)
@@ -527,7 +537,7 @@ struct SwapCryptoLogic {
             tx.referralDiscountBps = referralDiscountBps
         }
 
-        let quote = try await swapService.fetchQuote(
+        return try await swapService.fetchQuote(
             amount: tx.fromAmountDecimal,
             fromCoin: tx.fromCoin,
             toCoin: tx.toCoin,
@@ -535,8 +545,6 @@ struct SwapCryptoLogic {
             referredCode: referredCode,
             vultTierDiscount: vultDiscountBps
         )
-
-        return quote
     }
 
     func fetchChainSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
@@ -545,8 +553,9 @@ struct SwapCryptoLogic {
 
     func thorchainFee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
         switch chainSpecific {
-        case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
+        case let .Ethereum(maxFeePerGas, priorityFee, _, gasLimit):
             return (maxFeePerGas + priorityFee) * gasLimit
+
         case .UTXO, .Cardano:
             let keysignFactory = KeysignPayloadFactory()
             do {
@@ -593,8 +602,7 @@ struct SwapCryptoLogic {
             return nil
         }
         // Approve exact amount - no buffer needed for KyberSwap precision
-        let payload = ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
-        return payload
+        return ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
     }
 
     func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
@@ -606,7 +614,7 @@ struct SwapCryptoLogic {
         let keysignFactory = KeysignPayloadFactory()
 
         switch quote {
-        case .mayachain(let quote):
+        case let .mayachain(quote):
             let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
             return try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
@@ -622,7 +630,7 @@ struct SwapCryptoLogic {
                 vault: vault
             )
 
-        case .thorchain(let quote):
+        case let .thorchain(quote):
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
             return try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
@@ -638,7 +646,7 @@ struct SwapCryptoLogic {
                 vault: vault
             )
 
-        case .thorchainChainnet(let quote):
+        case let .thorchainChainnet(quote):
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
             return try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
@@ -654,7 +662,7 @@ struct SwapCryptoLogic {
                 vault: vault
             )
 
-        case .thorchainStagenet(let quote):
+        case let .thorchainStagenet(quote):
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
             return try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
@@ -670,7 +678,7 @@ struct SwapCryptoLogic {
                 vault: vault
             )
 
-        case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
+        case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
             let payload = GenericSwapPayload(
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
