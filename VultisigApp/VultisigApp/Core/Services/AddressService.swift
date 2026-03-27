@@ -39,6 +39,11 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
         }
 
+        // Special handling for Bittensor (SS58 prefix 42)
+        if BittensorHelper.isValidAddress(address) {
+            return vault.coins.contains(where: { $0.chain == .bittensor && $0.isNativeToken }) ? .bittensor : nil
+        }
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
@@ -69,63 +74,57 @@ struct AddressService {
 
     static func resolveInput(_ input: String, chain: Chain) async throws -> String {
         if chain == .mayaChain {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "maya")
-
-            if isValid {
-                return input
-            } else {
+            guard AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "maya") else {
                 throw Errors.invalidAddress
             }
+            return input
         }
 
         if chain == .thorChainChainnet {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor")
-
-            if isValid {
+            if AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor") {
                 return input
-            } else {
-                // Try TNS resolution for stagenet
-                let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
-                return try await service.resolveTNS(name: input, chain: chain)
             }
+            let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
         }
 
         if chain == .thorChainStagenet {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
-
-            if isValid {
+            if AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor") {
                 return input
-            } else {
-                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
-                return try await service.resolveTNS(name: input, chain: chain)
             }
+            let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
         }
 
         if chain == .qbtc {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc")
+            guard AnyAddress.isValidBech32(string: input, coin: .cosmos, hrp: "qbtc") else {
+                throw Errors.invalidAddress
+            }
+            return input
+        }
 
-            if isValid {
+        if chain == .bittensor {
+            if BittensorHelper.isValidAddress(input) {
                 return input
             } else {
                 throw Errors.invalidAddress
             }
         }
 
-        let isValid = chain.coinType.validate(address: input)
-
-        if isValid {
+        if chain.coinType.validate(address: input) {
             return input
-
-        } else if input.isENSNameService() {
-            return try await AddressService.resolveENSDomaninAddress(input: input, chain: chain)
-
-        } else if chain == .thorChain {
-            let service = ThorchainServiceFactory.getService(for: .thorChain)
-            return try await service.resolveTNS(name: input, chain: chain)
-
-        } else {
-            throw Errors.invalidAddress
         }
+
+        if input.isENSNameService() {
+            return try await resolveAndValidate(await resolveENSDomaninAddress(input: input, chain: chain), chain: chain)
+        }
+
+        if chain == .thorChain {
+            let service = ThorchainServiceFactory.getService(for: .thorChain)
+            return try await resolveAndValidate(await service.resolveTNS(name: input, chain: chain), chain: chain)
+        }
+
+        throw Errors.invalidAddress
     }
 
     static func validateAddress(address: String, chain: Chain) -> Bool {
@@ -143,6 +142,10 @@ struct AddressService {
 
         if chain == .qbtc {
             return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
+        }
+
+        if chain == .bittensor {
+            return BittensorHelper.isValidAddress(address)
         }
 
         return chain.coinType.validate(address: address)
@@ -163,6 +166,9 @@ struct AddressService {
             if firstCoin.chain == .qbtc {
                 return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
             }
+            if firstCoin.chain == .bittensor {
+                return BittensorHelper.isValidAddress(address)
+            }
             return firstCoin.coinType.validate(address: address)
         }
 
@@ -174,6 +180,14 @@ private extension AddressService {
 
     enum Errors: Error {
         case invalidAddress
+    }
+
+    static func resolveAndValidate(_ resolution: @autoclosure () async throws -> String, chain: Chain) async throws -> String {
+        let resolved = try await resolution()
+        guard validateAddress(address: resolved, chain: chain) else {
+            throw Errors.invalidAddress
+        }
+        return resolved
     }
 
     static func resolveENSDomaninAddress(input: String, chain: Chain) async throws -> String {

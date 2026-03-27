@@ -32,7 +32,6 @@ struct SendDetailsScreen: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var countdownTimer: Timer?
-
     @Environment(\.router) var router
 
     var body: some View {
@@ -74,7 +73,28 @@ struct SendDetailsScreen: View {
                 }
             }
             .onChange(of: tx.toAddress) { _, _ in
-                validateAddress()
+                sendCryptoViewModel.cancelAddressResolution()
+
+                guard !tx.toAddress.isEmpty else {
+                    sendDetailsViewModel.addressSetupDone = false
+                    return
+                }
+
+                if sendCryptoViewModel.isValidAddressFormat(tx: tx) {
+                    sendDetailsViewModel.addressSetupDone = true
+                    sendDetailsViewModel.onSelect(tab: .amount)
+                } else {
+                    sendCryptoViewModel.debouncedResolveAddress(tx: tx)
+                }
+            }
+            .onChange(of: sendCryptoViewModel.addressResolved) { _, resolved in
+                guard let resolved else { return }
+                sendDetailsViewModel.addressSetupDone = resolved
+                if resolved {
+                    sendDetailsViewModel.onSelect(tab: .amount)
+                } else if sendDetailsViewModel.selectedTab == .amount {
+                    sendDetailsViewModel.onSelect(tab: .address)
+                }
             }
             .onDisappear {
                 sendCryptoViewModel.stopMediator()
@@ -361,29 +381,19 @@ private func setMainData() async {
         }
 
         if !tx.toAddress.isEmpty {
-            sendCryptoViewModel.validateAddress(tx: tx, address: tx.toAddress)
-            validateAddress()
+            if sendCryptoViewModel.isValidAddressFormat(tx: tx) {
+                sendDetailsViewModel.addressSetupDone = true
+                sendDetailsViewModel.onSelect(tab: .amount)
+            } else {
+                let resolved = await sendCryptoViewModel.validateToAddress(tx: tx)
+                sendDetailsViewModel.addressSetupDone = resolved
+                if resolved {
+                    sendDetailsViewModel.onSelect(tab: .amount)
+                }
+            }
         }
 
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-    }
-
-    private func validateAddress() {
-        Task {
-            guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                sendDetailsViewModel.addressSetupDone = false
-                // Only force back to address tab if we're on amount tab
-                // (can't proceed to amount without valid address).
-                // Don't override if user is on asset tab — they should be
-                // free to switch assets even with an invalid address.
-                if sendDetailsViewModel.selectedTab == .amount {
-                    sendDetailsViewModel.onSelect(tab: .address)
-                }
-                return
-            }
-            sendDetailsViewModel.addressSetupDone = true
-            sendDetailsViewModel.onSelect(tab: .amount)
-        }
     }
 
     @MainActor

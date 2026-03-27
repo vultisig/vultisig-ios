@@ -47,6 +47,7 @@ final class BlockChainService {
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let dot = PolkadotService.shared
+    private let tao = BittensorService.shared
     private let maya = MayachainService.shared
     private let ton = TonService.shared
     private let tron = TronService.shared
@@ -373,6 +374,15 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
 
+            let defaultFee = BigInt(SolanaHelper.defaultPriorityFeePrice)
+            let dynamicPriorityFee: BigInt
+            do {
+                let fee = try await sol.fetchRecentPrioritizationFees()
+                dynamicPriorityFee = max(BigInt(fee), defaultFee)
+            } catch {
+                dynamicPriorityFee = defaultFee
+            }
+
             if !coin.isNativeToken && fromAddress != nil {
                 let (associatedTokenAddressFrom, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
 
@@ -417,10 +427,10 @@ private extension BlockChainService {
                 // Empty string from RPC doesn't mean the account doesn't exist
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
 
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: dynamicPriorityFee, priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
 
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: dynamicPriorityFee, priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
 
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
@@ -495,6 +505,21 @@ private extension BlockChainService {
                 transactionVersion: gasInfo.transactionVersion,
                 genesisHash: gasInfo.genesisHash,
                 gas: dynamicFee
+            )
+
+        case .bittensor:
+            let gasInfo = try await tao.getGasInfo(fromAddress: coin.address)
+            // Bittensor uses static fallback fee of 100_000 RAO (0.0001 TAO)
+            let fee = BittensorHelper.defaultFee
+
+            return .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash,
+                gas: fee
             )
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei:

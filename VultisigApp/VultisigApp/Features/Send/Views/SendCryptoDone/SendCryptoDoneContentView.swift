@@ -13,7 +13,7 @@ struct SendCryptoDoneContentView: View {
     @Binding var showAlert: Bool
     var onDone: () -> Void = {}
 
-    @State var navigateToHome = false
+    @State private var navigateToHome = false
     @StateObject private var statusViewModel: TransactionStatusViewModel
 
     @EnvironmentObject var appViewModel: AppViewModel

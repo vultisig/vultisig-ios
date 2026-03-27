@@ -48,6 +48,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case hyperliquid
     case sei
     case qbtc
+    case bittensor
 
     /// Maps removed chain raw values to their replacement chain.
     /// This prevents SwiftData from crashing when decoding legacy persisted data.
@@ -124,6 +125,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .hyperliquid: return "Hyperliquid"
         case .sei: return "Sei"
         case .qbtc: return "QBTC"
+        case .bittensor: return "Bittensor"
         }
     }
     var feeUnit: String {
@@ -153,6 +155,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .tron: return "TRX"
         case .zcash: return "ZEC/vbyte"
         case .qbtc: return "qbtc"
+        case .bittensor: return "RAO"
         }
     }
 
@@ -196,6 +199,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .hyperliquid: return "HYPE"
         case .sei: return "SEI"
         case .qbtc: return "QBTC"
+        case .bittensor: return "TAO"
         }
     }
 
@@ -240,6 +244,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .hyperliquid: return "HYPE"
         case .sei: return "SEI"
         case .qbtc: return "QBTC"
+        case .bittensor: return "TAO"
         }
     }
 
@@ -271,7 +276,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .UTXO
         case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             return .Cosmos
-        case .polkadot:
+        case .polkadot, .bittensor:
             return .Polkadot
         case .ton:
             return .Ton
@@ -360,6 +365,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "sei"
         case .qbtc:
             return "qbtc"
+        case .bittensor:
+            return "bittensor"
         }
     }
 
@@ -397,7 +404,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 999
         case .sei:
             return 1329
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .qbtc:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .qbtc, .bittensor:
             return nil
         }
     }
@@ -447,7 +454,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.cronosChain
         case .sui:
             return CoinType.sui
-        case .polkadot:
+        case .polkadot, .bittensor:
             return CoinType.polkadot
         case .zksync:
             return CoinType.zksync
@@ -535,7 +542,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .akash,
             .ethereumSepolia,
             .sei,
-            .qbtc:
+            .qbtc,
+            .bittensor:
             return false
         }
     }
@@ -556,7 +564,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Cosmos
         case .sui:
             return .Sui
-        case .polkadot:
+        case .polkadot, .bittensor:
             return .Polkadot
         case .ton:
             return .Ton

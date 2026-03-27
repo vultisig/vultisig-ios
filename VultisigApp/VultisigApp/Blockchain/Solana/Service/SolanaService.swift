@@ -119,6 +119,38 @@ class SolanaService {
         }
     }
 
+    func fetchRecentPrioritizationFees() async throws -> UInt64 {
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getRecentPrioritizationFees",
+            "params": [] as [Any]
+        ]
+
+        let data = try await postRequest(with: requestBody, url: rpcURL)
+
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let result = json["result"] as? [[String: Any]] else {
+            throw HelperError.runtimeError("Failed to parse prioritization fees response")
+        }
+
+        let nonZeroFees = result
+            .compactMap { ($0["prioritizationFee"] as? NSNumber)?.uint64Value }
+            .filter { $0 > 0 }
+            .sorted()
+
+        guard !nonZeroFees.isEmpty else {
+            return SolanaHelper.defaultPriorityFeePrice
+        }
+
+        let mid = nonZeroFees.count / 2
+        if nonZeroFees.count % 2 == 0 {
+            return (nonZeroFees[mid - 1] + nonZeroFees[mid]) / 2
+        } else {
+            return nonZeroFees[mid]
+        }
+    }
+
     func fetchRecentBlockhash() async throws -> String? {
         do {
             var blockHash: String? = nil

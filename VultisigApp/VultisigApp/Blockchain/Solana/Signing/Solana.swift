@@ -11,19 +11,22 @@ import BigInt
 enum SolanaHelper {
 
     static let defaultFeeInLamports: BigInt = 1000000 // 0.001
-    static let priorityFeePrice: UInt64 = 1_000_000 // Priority fee price in lamports
+    static let defaultPriorityFeePrice: UInt64 = 1_000_000 // Fallback priority fee price in microlamports
     static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, _, let priorityLimit, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, let priorityFee, let priorityLimit, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
             throw HelperError.runtimeError("fail to get to address")
         }
+
+        // Use dynamic priority fee if provided, otherwise fall back to default
+        let effectivePriorityFeePrice = priorityFee > 0 ? UInt64(priorityFee) : SolanaHelper.defaultPriorityFeePrice
 
         // Use default priority limit if not provided (backward compatibility)
         let effectivePriorityLimit = priorityLimit > 0 ? priorityLimit : SolanaHelper.priorityFeeLimit
@@ -46,7 +49,7 @@ enum SolanaHelper {
                 $0.recentBlockhash = recentBlockHash
                 $0.sender = keysignPayload.coin.address
                 $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                    $0.price = SolanaHelper.priorityFeePrice
+                    $0.price = effectivePriorityFeePrice
                 }
                 $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
                     $0.limit = priorityFeeLimitValue
@@ -74,7 +77,7 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = SolanaHelper.priorityFeePrice
+                        $0.price = effectivePriorityFeePrice
                     }
                     $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
                         $0.limit = priorityFeeLimitValue
@@ -117,7 +120,7 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = SolanaHelper.priorityFeePrice
+                        $0.price = effectivePriorityFeePrice
                     }
                     $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
                         $0.limit = priorityFeeLimitValue

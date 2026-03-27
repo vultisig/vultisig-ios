@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-03-17.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SendCryptoDoneView: View {
@@ -20,11 +21,14 @@ struct SendCryptoDoneView: View {
     let swapTransaction: SwapTransaction?
     let keysignPayload: KeysignPayload?
 
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
+
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
     @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
-    @State var showAlert = false
-    @State var alertTitle = "hashCopied"
+    @State private var showAlert = false
+    @State private var alertTitle = "hashCopied"
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -64,6 +68,17 @@ struct SendCryptoDoneView: View {
         sendContent(tx: tx)
     }
 
+    private var toAlias: String? {
+        guard let tx = sendTransaction else { return nil }
+        return SendAddressResolver.resolveAlias(
+            address: tx.toAddress,
+            coinMeta: tx.coin.toCoinMeta(),
+            ensLabel: tx.toAddressLabel,
+            vaults: vaults,
+            addressBookItems: addressBookItems
+        )
+    }
+
     func sendContent(tx: SendTransaction) -> some View {
         SendCryptoDoneContentView(
             input: SendCryptoContent(
@@ -76,6 +91,7 @@ struct SendCryptoDoneView: View {
                 isSend: isSend,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
+                toAlias: toAlias,
                 fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA

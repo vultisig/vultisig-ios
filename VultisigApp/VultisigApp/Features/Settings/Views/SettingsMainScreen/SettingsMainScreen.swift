@@ -74,6 +74,7 @@ struct SettingsMainScreen: View {
                 }
             }
         }
+        .accessibilityIdentifier(AccessibilityID.Settings.container)
         .screenTitle("settings".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .screenToolbar {
@@ -117,6 +118,7 @@ struct SettingsMainScreen: View {
                 showSeparator: showSeparator
             )
         }
+        .accessibilityIdentifier(option.accessibilityID ?? "")
     }
 
     @ViewBuilder
