@@ -5,11 +5,10 @@
 //  Created by Enrique Souza on 11.06.2025.
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 struct KyberSwapService {
-
     static let shared = KyberSwapService()
 
     static let sourceIdentifier = "vultisig-ios"
@@ -19,8 +18,7 @@ struct KyberSwapService {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
 
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: EVMQuote, fee: BigInt?) {
-
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, affiliateBps: Int) async throws -> (quote: EVMQuote, fee: BigInt?) {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
 
@@ -32,16 +30,16 @@ struct KyberSwapService {
             saveGas: false,
             gasInclude: true,
             slippageTolerance: 100,
-            isAffiliate: isAffiliate,
-            sourceIdentifier: isAffiliate ? KyberSwapService.sourceIdentifier : nil,
-            referrerAddress: isAffiliate ? KyberSwapService.referrerAddress : nil
+            affiliateBps: affiliateBps,
+            sourceIdentifier: affiliateBps > 0 ? KyberSwapService.sourceIdentifier : nil,
+            referrerAddress: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
         var routeRequest = URLRequest(url: routeUrl)
         routeRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier
+            "x-client-id": KyberSwapService.sourceIdentifier,
         ]
 
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -59,7 +57,7 @@ struct KyberSwapService {
             chain: chain,
             routeResponse: routeResponse,
             from: from,
-            isAffiliate: isAffiliate
+            affiliateBps: affiliateBps
         )
     }
 
@@ -67,9 +65,8 @@ struct KyberSwapService {
         chain: String,
         routeResponse: KyberSwapRouteResponse,
         from: String,
-        isAffiliate: Bool
+        affiliateBps: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
-
         // First attempt with gas estimation enabled
         do {
             return try await buildTransaction(
@@ -77,9 +74,9 @@ struct KyberSwapService {
                 routeResponse: routeResponse,
                 from: from,
                 enableGasEstimation: true,
-                isAffiliate: isAffiliate
+                affiliateBps: affiliateBps
             )
-        } catch KyberSwapError.transactionWillRevert(let message) where message.contains("TransferHelper") {
+        } catch let KyberSwapError.transactionWillRevert(message) where message.contains("TransferHelper") {
             // TransferHelper error likely due to insufficient allowance during gas estimation
             // Retry without gas estimation
             return try await buildTransaction(
@@ -87,7 +84,7 @@ struct KyberSwapService {
                 routeResponse: routeResponse,
                 from: from,
                 enableGasEstimation: false,
-                isAffiliate: isAffiliate
+                affiliateBps: affiliateBps
             )
         }
     }
@@ -97,9 +94,8 @@ struct KyberSwapService {
         routeResponse: KyberSwapRouteResponse,
         from: String,
         enableGasEstimation: Bool,
-        isAffiliate: Bool
+        affiliateBps: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
-
         let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
 
         let buildPayload = KyberSwapBuildRequest(
@@ -110,8 +106,12 @@ struct KyberSwapService {
             deadline: Int(Date().timeIntervalSince1970) + 1200,
             enableGasEstimation: enableGasEstimation,
             source: KyberSwapService.sourceIdentifier,
-            referral: isAffiliate ? KyberSwapService.referrerAddress : nil,
-            ignoreCappedSlippage: false
+            referral: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil,
+            ignoreCappedSlippage: false,
+            feeAmount: affiliateBps > 0 ? affiliateBps : nil,
+            chargeFeeBy: affiliateBps > 0 ? "currency_out" : nil,
+            isInBps: affiliateBps > 0 ? true : nil,
+            feeReceiver: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
         var buildRequest = URLRequest(url: buildUrl)
@@ -119,7 +119,7 @@ struct KyberSwapService {
         buildRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier
+            "x-client-id": KyberSwapService.sourceIdentifier,
         ]
         buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
 
@@ -218,8 +218,8 @@ struct KyberSwapService {
 }
 
 // MARK: - Support Types
-private extension KyberSwapService {
 
+private extension KyberSwapService {
     struct KyberSwapRouteResponse: Codable {
         let code: Int
         let message: String
@@ -378,8 +378,12 @@ private extension KyberSwapService {
         let source: String?
         let referral: String?
         let ignoreCappedSlippage: Bool?
+        let feeAmount: Int?
+        let chargeFeeBy: String?
+        let isInBps: Bool?
+        let feeReceiver: String?
 
-        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = KyberSwapService.sourceIdentifier, referral: String? = nil, ignoreCappedSlippage: Bool? = false) {
+        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = KyberSwapService.sourceIdentifier, referral: String? = nil, ignoreCappedSlippage: Bool? = false, feeAmount: Int? = nil, chargeFeeBy: String? = nil, isInBps: Bool? = nil, feeReceiver: String? = nil) {
             self.routeSummary = routeSummary
             self.sender = sender
             self.recipient = recipient
@@ -389,6 +393,10 @@ private extension KyberSwapService {
             self.source = source
             self.referral = referral
             self.ignoreCappedSlippage = ignoreCappedSlippage
+            self.feeAmount = feeAmount
+            self.chargeFeeBy = chargeFeeBy
+            self.isInBps = isInBps
+            self.feeReceiver = feeReceiver
         }
     }
 
@@ -408,14 +416,14 @@ enum KyberSwapError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .apiError(let code, let message, let details):
+        case let .apiError(code, message, details):
             let detailsStr = details?.isEmpty == false ? " - \(details!.joined(separator: ", "))" : ""
             return "KyberSwap API Error \(code): \(message)\(detailsStr)"
-        case .transactionWillRevert(let message):
+        case let .transactionWillRevert(message):
             return "Transaction will revert: \(message)"
-        case .insufficientAllowance(let message):
+        case let .insufficientAllowance(message):
             return "Insufficient allowance: \(message)"
-        case .insufficientFunds(let message):
+        case let .insufficientFunds(message):
             return "Insufficient funds: \(message)"
         }
     }
