@@ -222,7 +222,7 @@ struct KyberSwapService {
 
 // MARK: - Support Types
 
-private extension KyberSwapService {
+extension KyberSwapService {
     struct KyberSwapRouteResponse: Codable {
         let code: Int
         let message: String

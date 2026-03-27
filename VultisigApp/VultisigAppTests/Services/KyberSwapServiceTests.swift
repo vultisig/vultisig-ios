@@ -117,18 +117,40 @@ final class KyberSwapServiceTests: XCTestCase {
 
         let fromAddress = ethCoin.address
 
+        let nativeTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        let usdcAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
         do {
             // Test the route endpoint to ensure complex data structures are preserved
+            // Use the null address matching what fetchQuotes passes in production
             let routeUrl = Endpoint.fetchKyberSwapRoute(
                 chain: "ethereum",
-                tokenIn: "", // ETH
-                tokenOut: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
+                tokenIn: nativeTokenAddress, // ETH null address (as used in production)
+                tokenOut: usdcAddress, // USDC
                 amountIn: "1000000000000000000", // 1 ETH
                 saveGas: false,
                 gasInclude: true,
                 slippageTolerance: 100,
                 affiliateBps: 0
             )
+
+            // Also verify that the affiliate fee path produces the correct URL shape
+            let routeUrlWithFee = Endpoint.fetchKyberSwapRoute(
+                chain: "ethereum",
+                tokenIn: nativeTokenAddress,
+                tokenOut: usdcAddress,
+                amountIn: "1000000000000000000",
+                saveGas: false,
+                gasInclude: true,
+                slippageTolerance: 100,
+                affiliateBps: 50,
+                sourceIdentifier: KyberSwapService.sourceIdentifier,
+                referrerAddress: KyberSwapService.referrerAddress
+            )
+            let feeUrlString = routeUrlWithFee.absoluteString
+            XCTAssertTrue(feeUrlString.contains("feeAmount=50"), "Affiliate fee URL should contain feeAmount param")
+            XCTAssertTrue(feeUrlString.contains("isInBps=true"), "Affiliate fee URL should contain isInBps param")
+            XCTAssertTrue(feeUrlString.contains("feeReceiver="), "Affiliate fee URL should contain feeReceiver param")
 
             var routeRequest = URLRequest(url: routeUrl)
             routeRequest.allHTTPHeaderFields = [
