@@ -8,13 +8,12 @@
 //  Builds Cosmos protobuf (SignDoc, TxRaw) manually.
 //
 
-import Foundation
-import WalletCore
 import CryptoSwift
+import Foundation
 import VultisigCommonData
+import WalletCore
 
 struct QBTCHelper {
-
     // MARK: - Configuration
 
     let chainID: String
@@ -35,7 +34,7 @@ struct QBTCHelper {
         QBTCHelper(
             chainID: "qbtc-testnet",
             denom: "qbtc",
-            gasLimit: 200_000
+            gasLimit: 300_000
         )
     }
 
@@ -93,7 +92,7 @@ struct QBTCHelper {
     }
 
     private func buildTxComponents(keysignPayload: KeysignPayload) throws -> (bodyBytes: Data, authInfoBytes: Data) {
-        guard case .Cosmos(_, let sequence, let gas, let transactionTypeRawValue, let ibcDenomTrace) = keysignPayload.chainSpecific else {
+        guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("QBTC: fail to get account number and sequence")
         }
 
@@ -111,7 +110,7 @@ struct QBTCHelper {
         authInfoBytes: Data,
         keysignPayload: KeysignPayload
     ) throws -> Data {
-        guard case .Cosmos(let accountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
+        guard case let .Cosmos(accountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("QBTC: fail to get account number")
         }
 
@@ -400,7 +399,6 @@ struct QBTCHelper {
 /// Shared protobuf helpers for manual wire-format encoding.
 /// Used by QBTCHelper because WalletCore cannot handle MLDSA keys.
 enum QBTCProtoBuilder {
-
     static func buildTxRaw(bodyBytes: Data, authInfoBytes: Data, signature: Data) -> Data {
         // TxRaw: field 1 = body_bytes, field 2 = auth_info_bytes, field 3 = signatures (repeated bytes)
         var txRaw = Data()
@@ -412,7 +410,6 @@ enum QBTCProtoBuilder {
 }
 
 extension Data {
-
     /// Appends a varint field (wire type 0). Skips if value is 0 (proto3 default).
     mutating func appendProtoVarint(fieldNumber: Int, value: UInt64) {
         guard value != 0 else { return }
