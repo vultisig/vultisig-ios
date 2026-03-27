@@ -138,7 +138,7 @@ struct SwapService {
             }
             return try await fetchKyberSwapQuote(
                 service: KyberSwapService.shared,
-                chain: KyberSwapService.shared.getChainName(for: fromCoin.chain),
+                chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
