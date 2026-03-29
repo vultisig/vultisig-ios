@@ -12,7 +12,7 @@ extension Coin {
     var thorswapMultiplier: Decimal {
         switch chain {
         case .mayaChain:
-            return 1e10
+            return pow(10, decimals)
         default:
             return 1e8
         }

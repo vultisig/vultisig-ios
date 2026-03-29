@@ -1198,7 +1198,7 @@ class TokensStore {
             ticker: "MAYA",
             logo: "maya",
             decimals: 4,
-            priceProviderId: "maya",
+            priceProviderId: "",
             contractAddress: "maya",
             isNativeToken: false
         ),
