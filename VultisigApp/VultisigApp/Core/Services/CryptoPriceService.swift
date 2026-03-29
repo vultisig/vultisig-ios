@@ -296,33 +296,34 @@ private extension CryptoPriceService {
         var rates: [Rate] = []
         for contract in contracts {
             let assetName = "MAYA.\(contract.uppercased())"
-            let price = await fetchMayaChainPoolPrice(assetName: assetName, cacaoPriceUSD: cacaoPriceUSD, coins: coins)
-            rates.append(Rate(fiat: "usd", crypto: contract, value: price))
+            if let price = await fetchMayaChainPoolPrice(assetName: assetName, cacaoPriceUSD: cacaoPriceUSD, coins: coins) {
+                rates.append(Rate(fiat: "usd", crypto: contract, value: price))
+            }
         }
 
         return rates
     }
 
-    func fetchMayaChainPoolPrice(assetName: String, cacaoPriceUSD: Double, coins: [CoinMeta]) async -> Double {
+    func fetchMayaChainPoolPrice(assetName: String, cacaoPriceUSD: Double, coins: [CoinMeta]) async -> Double? {
         let endpoint = Endpoint.fetchMayaChainPoolInfo(asset: assetName)
 
         guard let url = URL(string: endpoint) else {
             logger.warning("Invalid MAYAChain pool URL for \(assetName)")
-            return 0.0
+            return nil
         }
 
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
 
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return 0.0
+                return nil
             }
 
             let pool = try JSONDecoder().decode(MAYAChainPoolResponse.self, from: data)
             return calculateMayaPoolPrice(pool: pool, cacaoPriceUSD: cacaoPriceUSD, coins: coins, assetName: assetName)
         } catch {
             logger.warning("Failed to fetch MAYAChain pool price for \(assetName): \(error.localizedDescription)")
-            return 0.0
+            return nil
         }
     }
 
