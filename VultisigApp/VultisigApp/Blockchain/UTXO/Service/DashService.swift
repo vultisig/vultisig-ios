@@ -7,6 +7,11 @@ import Foundation
 
 actor DashService {
 
+    enum DashServiceError: Error {
+        case rpcError(code: Int, message: String)
+        case missingResult
+    }
+
     static let shared = DashService()
 
     private static let encoder = JSONEncoder()
@@ -29,19 +34,21 @@ actor DashService {
         let decoded = try Self.decoder.decode(DashRpcResponse<[DashUtxo]>.self, from: data)
 
         if let error = decoded.error {
-            print("Dash RPC error (\(error.code)): \(error.message)")
-            return []
+            throw DashServiceError.rpcError(code: error.code, message: error.message)
         }
 
         guard let utxos = decoded.result else {
-            return []
+            throw DashServiceError.missingResult
         }
 
-        return utxos.map { utxo in
-            UtxoInfo(
+        return utxos.compactMap { utxo in
+            guard utxo.outputIndex >= 0, let index = UInt32(exactly: utxo.outputIndex) else {
+                return nil
+            }
+            return UtxoInfo(
                 hash: utxo.txid,
                 amount: utxo.satoshis,
-                index: UInt32(utxo.outputIndex)
+                index: index
             )
         }
     }
