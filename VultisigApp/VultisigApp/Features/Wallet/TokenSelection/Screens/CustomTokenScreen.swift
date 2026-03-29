@@ -177,6 +177,9 @@ struct CustomTokenScreen: View {
                         self.tokenDecimals = decimals
                         self.showTokenInfo = true
                         self.isLoading = false
+                    } else {
+                        self.error = TokenNotFoundError()
+                        self.isLoading = false
                     }
 
                 } else {
@@ -226,6 +229,9 @@ struct CustomTokenScreen: View {
                         self.tokenSymbol = symbol
                         self.tokenDecimals = decimals
                         self.showTokenInfo = true
+                        self.isLoading = false
+                    } else {
+                        self.error = TokenNotFoundError()
                         self.isLoading = false
                     }
 
