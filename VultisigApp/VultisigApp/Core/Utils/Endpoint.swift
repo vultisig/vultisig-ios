@@ -8,7 +8,6 @@
 import Foundation
 
 class Endpoint {
-
     private static func encodePathComponent(_ value: String) -> String {
         let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
         return value.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? value
@@ -50,12 +49,12 @@ class Endpoint {
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
 
-    // Security/Fraud Detection Services - Proxied through Vultisig API
+    /// Security/Fraud Detection Services - Proxied through Vultisig API
     static let blockaidApiBase = "\(vultisigApiProxy)/blockaid/v0"
 
     // OFFICIAL BLOCKAID API ENDPOINTS (Working ✅)
 
-    // EVM Endpoints
+    /// EVM Endpoints
     static func blockaidEVMJSONRPCScan() -> String {
         return "\(blockaidApiBase)/evm/json-rpc/scan"
     }
@@ -76,17 +75,17 @@ class Endpoint {
         return "\(blockaidApiBase)/evm/user-operation/scan"
     }
 
-    // Site Scanning
+    /// Site Scanning
     static func blockaidSiteScan() -> String {
         return "\(blockaidApiBase)/site/scan"
     }
 
-    // Token Scanning
+    /// Token Scanning
     static func blockaidTokenScan() -> String {
         return "\(blockaidApiBase)/token/scan"
     }
 
-    // Multi-Chain Support
+    /// Multi-Chain Support
     static func blockaidBitcoinTransactionRaw() -> String {
         return "\(blockaidApiBase)/bitcoin/transaction/raw"
     }
@@ -119,17 +118,17 @@ class Endpoint {
         return "\(blockaidApiBase)/sui/transaction/scan"
     }
 
-    // Chain-Agnostic
+    /// Chain-Agnostic
     static func blockaidChainAgnosticTransaction() -> String {
         return "\(blockaidApiBase)/chain-agnostic/transaction"
     }
 
-    // Enterprise Features
+    /// Enterprise Features
     static func blockaidExchangeProtectionWithdrawal() -> String {
         return "\(blockaidApiBase)/exchange-protection/withdrawal"
     }
 
-    // Legacy endpoint methods (for backward compatibility)
+    /// Legacy endpoint methods (for backward compatibility)
     static func blockaidAddressScan() -> String {
         return blockaidEVMAddressScan()
     }
@@ -149,11 +148,12 @@ class Endpoint {
     static func fetchThorchainAllDenomMetadata() -> String {
         "https://thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
+
     static let thorchainNetworkInfo = "https://rpc.thorchain.network/status".asUrl
 
     static let fetchThorchainInboundAddressesNineRealms = "https://thornode.thorchain.network/thorchain/inbound_addresses"
 
-    // Stagenet endpoints
+    /// Stagenet endpoints
     static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {
         "https://chainnet-thornode.thorchain.network/auth/accounts/\(address)"
     }
@@ -177,17 +177,20 @@ class Endpoint {
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
     }
+
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchAccountBalanceThorchainChainnet(address: String) -> String {
         "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }
 
-    // Fetch pool info for any THORChain asset
+    /// Fetch pool info for any THORChain asset
     static func fetchPoolInfo(asset: String) -> String {
         "https://thornode.thorchain.network/thorchain/pool/\(asset)"
     }
@@ -223,21 +226,21 @@ class Endpoint {
 
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
 
-    // THORChain LP endpoints
+    /// THORChain LP endpoints
     static func fetchThorchainPoolLiquidityProvider(asset: String, address: String) -> String {
         "https://thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
     static let fetchThorchainPools = "https://thornode.thorchain.network/thorchain/pools"
 
-    // THORChain Stagenet LP endpoints
+    /// THORChain Stagenet LP endpoints
     static func fetchThorchainChainnetPoolLiquidityProvider(asset: String, address: String) -> String {
         "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
     static let fetchThorchainChainnetPools = "https://chainnet-thornode.thorchain.network/thorchain/pools"
 
-    // THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.thorchain.network)
+    /// THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.thorchain.network)
     static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
         "https://stagenet-thornode.thorchain.network/auth/accounts/\(address)"
     }
@@ -266,7 +269,7 @@ class Endpoint {
         "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)"
     }
 
-    // THORChain Stagenet-2 LP endpoints
+    /// THORChain Stagenet-2 LP endpoints
     static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
         "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
@@ -324,10 +327,9 @@ class Endpoint {
         fee: Double,
         isAffiliate: Bool
     ) -> URL {
-
         let isAffiliateParams = isAffiliate
-        ? "&referrer=\(referrer)&fee=\(fee)"
-        : "&referrer=\(referrer)&fee=0"
+            ? "&referrer=\(referrer)&fee=\(fee)"
+            : "&referrer=\(referrer)&fee=0"
 
         return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true&disableEstimate=true\(isAffiliateParams)".asUrl
     }
@@ -346,7 +348,7 @@ class Endpoint {
         var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
 
         if let integrator {
-           url = url + "&integrator=\(integrator)"
+            url = url + "&integrator=\(integrator)"
         }
 
         if let fee {
@@ -360,14 +362,15 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
 
-    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool, sourceIdentifier: String? = nil, referrerAddress: String? = nil) -> URL {
+    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, affiliateBps: Int, sourceIdentifier: String? = nil, referrerAddress: String? = nil) -> URL {
         let baseUrl = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
 
-        let affiliateParams = isAffiliate && sourceIdentifier != nil && referrerAddress != nil
-        ? "&source=\(sourceIdentifier!)&referral=\(referrerAddress!)"
-        : .empty
+        guard affiliateBps > 0, let sourceIdentifier, let referrerAddress else {
+            return baseUrl.asUrl
+        }
 
-        return (baseUrl + affiliateParams).asUrl
+        let feeParams = "&source=\(sourceIdentifier)&referral=\(referrerAddress)&feeAmount=\(affiliateBps)&chargeFeeBy=currency_out&isInBps=true&feeReceiver=\(referrerAddress)"
+        return (baseUrl + feeParams).asUrl
     }
 
     static func buildKyberSwapTransaction(chain: String) -> URL {
@@ -443,7 +446,7 @@ class Endpoint {
         "https://api-sui.cetus.zone/v2/sui/swap/count"
     }
 
-    // Cetus Aggregator API endpoints
+    /// Cetus Aggregator API endpoints
     static let cetusApiBase = "https://api-sui.cetus.zone"
 
     static func cetusAggregatorFindRoutes() -> String {
@@ -454,7 +457,7 @@ class Endpoint {
         "\(cetusApiBase)/v2/sui/swap/count"
     }
 
-    // Additional Cetus endpoints for future use
+    /// Additional Cetus endpoints for future use
     static func cetusPoolInfo() -> String {
         "\(cetusApiBase)/v2/sui/pools"
     }
@@ -471,7 +474,7 @@ class Endpoint {
 
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
 
-    // Polkadot RPC endpoint for JSON-RPC calls
+    /// Polkadot RPC endpoint for JSON-RPC calls
     static let polkadotServiceRpc = "https://api.vultisig.com/dot/"
 
     // Polkadot transaction status endpoint - AssetHub Polkadot (where DOT/USDT/USDC transactions happen)
@@ -481,7 +484,7 @@ class Endpoint {
 
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
 
-    // Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
+    /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
     static func bittensorExtrinsicUrl(txHash: String) -> String {
@@ -533,6 +536,7 @@ class Endpoint {
     static func blockchairBroadcast(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
     }
+
     static func bitcoinBroadcast() -> URL {
         "\(vultisigApiProxy)/bitcoin/".asUrl
     }
@@ -540,6 +544,7 @@ class Endpoint {
     static func dashBroadcast() -> URL {
         "\(vultisigApiProxy)/dash/".asUrl
     }
+
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
         "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
@@ -552,9 +557,11 @@ class Endpoint {
     static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
+
     static func coinGeckoCoinsList() -> URL {
         "\(vultisigApiProxy)/coingeicko/api/v3/coins/list?include_platform=true&status=active".asUrl
     }
+
     static func fetchLifiTokenPrice(network: String, address: String) -> URL {
         let url = "https://li.quest/v1/token?chain=\(network.lowercased())&token=\(address)"
         return url.asUrl
@@ -579,12 +586,12 @@ class Endpoint {
 
     static let circleApiBase = "\(vultisigApiProxy)/circle"
 
-    // GET /wallet?refId=...
+    /// GET /wallet?refId=...
     static func fetchCircleWallets(refId: String) -> String {
         "\(circleApiBase)/wallet?refId=\(refId)"
     }
 
-    // POST /create
+    /// POST /create
     static func createCircleWallet() -> String {
         "\(circleApiBase)/create"
     }
@@ -614,6 +621,7 @@ class Endpoint {
     static func fetchOsmosisAccountBalance(address: String) -> String {
         "https://osmosis-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchOsmosisAccountNumber(_ address: String) -> String {
         "https://osmosis-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -635,6 +643,7 @@ class Endpoint {
     static func fetchAkashAccountBalance(address: String) -> String {
         "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchAkashAccountNumber(_ address: String) -> String {
         "https://akash-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -644,6 +653,7 @@ class Endpoint {
     static func fetchQbtcAccountBalance(address: String) -> String {
         "https://api.vultisig.com/qbtc-rpc/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchQbtcAccountNumber(_ address: String) -> String {
         "https://api.vultisig.com/qbtc-rpc/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -653,6 +663,7 @@ class Endpoint {
     static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchNobleAccountNumber(_ address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -662,6 +673,7 @@ class Endpoint {
     static func fetchCosmosAccountBalance(address: String) -> String {
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchCosmosAccountNumber(_ address: String) -> String {
         "https://cosmos-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -683,6 +695,7 @@ class Endpoint {
     static func fetchTerraAccountBalance(address: String) -> String {
         "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
+
     static func fetchTerraAccountNumber(_ address: String) -> String {
         "https://terra-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -704,6 +717,7 @@ class Endpoint {
     static func fetchTerraClassicAccountBalance(address: String) -> String {
         "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
+
     static func fetchTerraClassicAccountNumber(_ address: String) -> String {
         "https://terra-classic-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -725,6 +739,7 @@ class Endpoint {
     static func fetchDydxAccountBalance(address: String) -> String {
         "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchDydxAccountNumber(_ address: String) -> String {
         "https://dydx-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -734,6 +749,7 @@ class Endpoint {
     static func fetchKujiraAccountBalance(address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+
     static func fetchKujiraAccountNumber(_ address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
@@ -775,7 +791,7 @@ class Endpoint {
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
 
-    // Cardano endpoints - Using Koios API (free, open source, no API key required)
+    /// Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
 
     static func fetchCardanoBalance() -> String {
@@ -865,7 +881,6 @@ class Endpoint {
             return "https://cardanoscan.io/transaction/\(txid)"
         case .mantle:
             return "https://explorer.mantle.xyz/tx/\(txid)"
-
         case .hyperliquid:
             return "https://liquidscan.io/tx/\(txid)"
         case .sei:
@@ -1172,7 +1187,7 @@ class Endpoint {
         "\(agentBackendUrl)/agent/starters"
     }
 
-    // Verifier auth
+    /// Verifier auth
     static func verifierAuth() -> String {
         "\(verifierUrl)/auth"
     }
@@ -1211,8 +1226,7 @@ class Endpoint {
     }
 }
 
-fileprivate extension String {
-
+private extension String {
     var asUrl: URL {
         return URL(string: self)!
     }
