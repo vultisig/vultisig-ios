@@ -1,15 +1,14 @@
 //
-//  SwapCryptoTransaction.swift
+//  SwapTransaction.swift
 //  VultisigApp
 //
 //  Created by Artur Guseinov on 08.04.2024.
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 class SwapTransaction: ObservableObject {
-
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
     @Published var gas: BigInt = .zero
@@ -48,7 +47,7 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
-        case .oneinch(_, let fee), .kyberswap(_, let fee), .lifi(_, let fee, _):
+        case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
         case nil:
             return .zero
@@ -60,13 +59,13 @@ class SwapTransaction: ObservableObject {
             return .zero
         }
         switch quote {
-        case .mayachain(let quote), .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote):
+        case let .mayachain(quote), let .thorchain(quote), let .thorchainChainnet(quote), let .thorchainStagenet(quote):
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
-        case .oneinch(let quote, _), .lifi(let quote, _, _):
+        case let .oneinch(quote, _), let .lifi(quote, _, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
-        case .kyberswap(let quote, _):
+        case let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }
@@ -81,18 +80,11 @@ class SwapTransaction: ObservableObject {
     }
 
     var isAffiliate: Bool {
-        let fiatAmount = RateProvider.shared.fiatBalance(
-            value: fromAmountDecimal,
-            coin: fromCoin.toCoinMeta(),
-            currency: .USD
-        )
-
-        return fiatAmount >= 100
+        return true
     }
 }
 
 extension SwapTransaction {
-
     var fromAmountDecimal: Decimal {
         return fromAmount.toDecimal()
     }
@@ -104,7 +96,7 @@ extension SwapTransaction {
     func buildThorchainSwapPayload(quote: ThorchainSwapQuote, provider: SwapProvider) -> THORChainSwapPayload {
         let vaultAddress = quote.inboundAddress ?? fromCoin.address
         let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
-        let swapPayload = THORChainSwapPayload(
+        return THORChainSwapPayload(
             fromAddress: fromCoin.address,
             fromCoin: fromCoin,
             toCoin: toCoin,
@@ -118,6 +110,5 @@ extension SwapTransaction {
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
             isAffiliate: isAffiliate
         )
-        return swapPayload
     }
 }

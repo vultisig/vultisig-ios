@@ -8,7 +8,6 @@
 import Foundation
 
 struct SwapService {
-
     static let shared = SwapService()
 
     func fetchQuote(
@@ -19,7 +18,6 @@ struct SwapService {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
-
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
 
         guard !providers.isEmpty else {
@@ -52,12 +50,12 @@ struct SwapService {
         // Await results in priority order
         for task in tasks {
             switch await task.value {
-            case .success(let quote):
+            case let .success(quote):
                 // Found a successful quote from the highest priority provider available
                 // Cancel remaining tasks to save resources
                 tasks.forEach { $0.cancel() }
                 return quote
-            case .failure(let error):
+            case let .failure(error):
                 // This provider failed, try the next one (which is already running)
                 lastError = error
                 continue
@@ -74,7 +72,7 @@ struct SwapService {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int,
+        vultTierDiscount: Int
     ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
@@ -119,8 +117,9 @@ struct SwapService {
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
-                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-                  throw SwapError.routeUnavailable
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID
+            else {
+                throw SwapError.routeUnavailable
             }
             return try await fetchOneInchQuote(
                 service: OneInchService.shared,
@@ -133,16 +132,17 @@ struct SwapService {
             )
         case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
-                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-                  throw SwapError.routeUnavailable
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID
+            else {
+                throw SwapError.routeUnavailable
             }
             return try await fetchKyberSwapQuote(
                 service: KyberSwapService.shared,
-                chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
+                chain: KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate
+                vultTierDiscount: vultTierDiscount
             )
         case .lifi:
             return try await fetchLiFiQuote(
@@ -157,7 +157,6 @@ struct SwapService {
 }
 
 private extension SwapService {
-
     func fetchCrossChainQuote(
         service: ThorchainSwapProvider,
         provider: SwapProvider,
@@ -168,7 +167,7 @@ private extension SwapService {
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
         do {
-            /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+            // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
             // THORChain expects integer amounts - truncate any floating point residuals
             let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
@@ -210,9 +209,10 @@ private extension SwapService {
                 if error.message.contains("not enough asset to pay for fees") {
                     throw SwapError.swapAmountTooSmall
                 } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
-                          error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                          error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                          error.message.localizedCaseInsensitiveContains("pool does not exist") {
+                    error.message.localizedCaseInsensitiveContains("bad to asset") ||
+                    error.message.localizedCaseInsensitiveContains("bad from asset") ||
+                    error.message.localizedCaseInsensitiveContains("pool does not exist")
+                {
                     // This typically means no liquidity pool exists for this token pair
                     throw SwapError.noLiquidityPool
                 } else {
@@ -258,8 +258,9 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        isAffiliate: Bool
+        vultTierDiscount: Int
     ) async throws -> SwapQuote {
+        let affiliateBps = vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount
         let rawAmount = fromCoin.raw(for: amount)
         let (quote, fee) = try await service.fetchQuotes(
             chain: chain,
@@ -267,7 +268,7 @@ private extension SwapService {
             destination: toCoin.isNativeToken ? "" : toCoin.contractAddress,
             amount: String(rawAmount),
             from: fromCoin.address,
-            isAffiliate: isAffiliate
+            affiliateBps: affiliateBps
         )
         return .kyberswap(quote, fee: fee)
     }

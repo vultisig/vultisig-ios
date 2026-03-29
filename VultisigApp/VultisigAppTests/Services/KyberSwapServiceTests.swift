@@ -5,13 +5,12 @@
 //  Created by Enrique Souza on 11.06.2025.
 //
 
-import XCTest
 import BigInt
 @testable import VultisigApp
+import XCTest
 
 @MainActor
 final class KyberSwapServiceTests: XCTestCase {
-
     var kyberSwapService: KyberSwapService!
 
     override func setUpWithError() throws {
@@ -45,19 +44,19 @@ final class KyberSwapServiceTests: XCTestCase {
         }
 
         let fromAddress = ethCoin.address
-        let ethAddress = ""  // ETH (empty address)
-        let usdcAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"  // USDC
+        let ethAddress = "" // ETH (empty address)
+        let usdcAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // USDC
 
         print("🔍 Using real vault address: \(fromAddress)")
 
         do {
             let (quote, fee) = try await kyberSwapService.fetchQuotes(
                 chain: "ethereum",
-                source: ethAddress,           // ETH
-                destination: usdcAddress,     // USDC
+                source: ethAddress, // ETH
+                destination: usdcAddress, // USDC
                 amount: "1000000000000000000", // 1 ETH
-                from: fromAddress,            // Real vault address
-                isAffiliate: false
+                from: fromAddress, // Real vault address
+                affiliateBps: 0
             )
 
             print("✅ KyberSwap API call succeeded with real vault address!")
@@ -75,25 +74,25 @@ final class KyberSwapServiceTests: XCTestCase {
 
         } catch let error as KyberSwapError {
             switch error {
-            case .insufficientFunds(let message):
+            case let .insufficientFunds(message):
                 print("✅ EXPECTED ERROR: Insufficient funds with real address - this is normal")
                 print("   Message: \(message)")
                 print("   Address: \(fromAddress)")
                 print("✅ TEST SUCCESS: Service properly handles insufficient funds with real vault address!")
 
-            case .apiError(let code, let message, let details):
+            case let .apiError(code, message, details):
                 print("✅ API Error caught properly:")
                 print("   Code: \(code)")
                 print("   Message: \(message)")
                 print("   Details: \(details?.joined(separator: ", ") ?? "none")")
                 print("   Address: \(fromAddress)")
 
-            case .transactionWillRevert(let message):
+            case let .transactionWillRevert(message):
                 print("✅ Transaction revert error caught:")
                 print("   Message: \(message)")
                 print("   Address: \(fromAddress)")
 
-            case .insufficientAllowance(let message):
+            case let .insufficientAllowance(message):
                 print("✅ Insufficient allowance error caught:")
                 print("   Message: \(message)")
                 print("   Address: \(fromAddress)")
@@ -118,24 +117,46 @@ final class KyberSwapServiceTests: XCTestCase {
 
         let fromAddress = ethCoin.address
 
+        let nativeTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        let usdcAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
         do {
             // Test the route endpoint to ensure complex data structures are preserved
+            // Use the null address matching what fetchQuotes passes in production
             let routeUrl = Endpoint.fetchKyberSwapRoute(
                 chain: "ethereum",
-                tokenIn: "",  // ETH
-                tokenOut: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
+                tokenIn: nativeTokenAddress, // ETH null address (as used in production)
+                tokenOut: usdcAddress, // USDC
                 amountIn: "1000000000000000000", // 1 ETH
                 saveGas: false,
                 gasInclude: true,
                 slippageTolerance: 100,
-                isAffiliate: false
+                affiliateBps: 0
             )
+
+            // Also verify that the affiliate fee path produces the correct URL shape
+            let routeUrlWithFee = Endpoint.fetchKyberSwapRoute(
+                chain: "ethereum",
+                tokenIn: nativeTokenAddress,
+                tokenOut: usdcAddress,
+                amountIn: "1000000000000000000",
+                saveGas: false,
+                gasInclude: true,
+                slippageTolerance: 100,
+                affiliateBps: 50,
+                sourceIdentifier: KyberSwapService.sourceIdentifier,
+                referrerAddress: KyberSwapService.referrerAddress
+            )
+            let feeUrlString = routeUrlWithFee.absoluteString
+            XCTAssertTrue(feeUrlString.contains("feeAmount=50"), "Affiliate fee URL should contain feeAmount param")
+            XCTAssertTrue(feeUrlString.contains("isInBps=true"), "Affiliate fee URL should contain isInBps param")
+            XCTAssertTrue(feeUrlString.contains("feeReceiver="), "Affiliate fee URL should contain feeReceiver param")
 
             var routeRequest = URLRequest(url: routeUrl)
             routeRequest.allHTTPHeaderFields = [
                 "accept": "application/json",
                 "content-type": "application/json",
-                "x-client-id": "vultisig-ios"
+                "x-client-id": "vultisig-ios",
             ]
 
             let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -187,7 +208,7 @@ final class KyberSwapServiceTests: XCTestCase {
         // Test different error scenarios
         let testCases = [
             ("Very large amount", "999999999999999999999999999999"), // Should trigger insufficient funds
-            ("Normal amount", "1000000000000000000")                // 1 ETH
+            ("Normal amount", "1000000000000000000"), // 1 ETH
         ]
 
         for (testName, amount) in testCases {
@@ -200,7 +221,7 @@ final class KyberSwapServiceTests: XCTestCase {
                     destination: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
                     amount: amount,
                     from: fromAddress,
-                    isAffiliate: false
+                    affiliateBps: 0
                 )
 
                 print("✅ \(testName): Success case handled properly")
@@ -210,23 +231,23 @@ final class KyberSwapServiceTests: XCTestCase {
                 print("✅ \(testName): KyberSwap error properly caught and typed")
 
                 switch error {
-                case .insufficientFunds(let message):
+                case let .insufficientFunds(message):
                     print("   Type: Insufficient Funds")
                     print("   Message: \(message)")
                     XCTAssertFalse(message.isEmpty, "Error message should not be empty")
 
-                case .apiError(let code, let message, let details):
+                case let .apiError(code, message, details):
                     print("   Type: API Error")
                     print("   Code: \(code)")
                     print("   Message: \(message)")
                     print("   Details: \(details?.joined(separator: ", ") ?? "none")")
                     XCTAssertNotEqual(code, 0, "Error code should not be 0 for actual errors")
 
-                case .transactionWillRevert(let message):
+                case let .transactionWillRevert(message):
                     print("   Type: Transaction Will Revert")
                     print("   Message: \(message)")
 
-                case .insufficientAllowance(let message):
+                case let .insufficientAllowance(message):
                     print("   Type: Insufficient Allowance")
                     print("   Message: \(message)")
                 }
@@ -261,7 +282,7 @@ final class KyberSwapServiceTests: XCTestCase {
                 destination: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
                 amount: "1000000000000000000",
                 from: fromAddress,
-                isAffiliate: false
+                affiliateBps: 0
             )
 
             // If successful, validate no critical nils
