@@ -99,15 +99,32 @@ struct KeysignPayloadFactory {
     }
 
     private func selectUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
-        let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.map({
-            UtxoInfo(
-                hash: $0.transactionHash ?? "",
-                amount: Int64($0.value ?? 0),
-                index: UInt32($0.index ?? -1)
+        let utxosInfo: [UtxoInfo]
+
+        if keysignPayload.coin.chain == .dash {
+            utxosInfo = try await DashService.shared.fetchUtxos(
+                address: keysignPayload.coin.address
             )
-        })
-        guard let utxosInfo = info else {
-            return []
+        } else {
+            // Existing Blockchair path for all other UTXO chains
+            let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.compactMap { item -> UtxoInfo? in
+                guard
+                    let txHash = item.transactionHash, !txHash.isEmpty,
+                    let value = item.value,
+                    let index = item.index, index >= 0
+                else {
+                    return nil
+                }
+                return UtxoInfo(
+                    hash: txHash,
+                    amount: Int64(value),
+                    index: UInt32(index)
+                )
+            }
+            guard let mapped = info else {
+                throw Errors.notEnoughUTXOError
+            }
+            utxosInfo = mapped
         }
 
         let dustThreshold = keysignPayload.coin.coinType.getFixedDustThreshold()

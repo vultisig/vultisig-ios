@@ -601,6 +601,7 @@
 		46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */; };
 		46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBC2BA7753900E68E08 /* Blockchair.swift */; };
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
+		475347731FCD706FD03E2747 /* DashService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884FB78FE9A167DB8E5779D8 /* DashService.swift */; };
 		46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */; };
 		46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE08942BD0DCA200AE8BDE /* EvmService.swift */; };
 		46E5BC2B48C51362FE1B0CE7 /* TransactionHistoryRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3649DFEAF4C207AD2307E8B7 /* TransactionHistoryRouter.swift */; };
@@ -1833,6 +1834,7 @@
 		46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmService.swift; sourceTree = "<group>"; };
 		46C8CBBC2BA7753900E68E08 /* Blockchair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchair.swift; sourceTree = "<group>"; };
 		46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchairService.swift; sourceTree = "<group>"; };
+		884FB78FE9A167DB8E5779D8 /* DashService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashService.swift; sourceTree = "<group>"; };
 		46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosService.swift; sourceTree = "<group>"; };
 		46DE08942BD0DCA200AE8BDE /* EvmService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EvmService.swift; sourceTree = "<group>"; };
 		46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingErrorExtension.swift; sourceTree = "<group>"; };
@@ -6744,6 +6746,7 @@
 			children = (
 				4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */,
 				46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */,
+				884FB78FE9A167DB8E5779D8 /* DashService.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -7210,6 +7213,7 @@
 				138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */,
 				A68C00A52DF7B78C00FDE2AD /* PickReferralCode.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
+				475347731FCD706FD03E2747 /* DashService.swift in Sources */,
 				A598FD7A2CE2098800F26516 /* MemoDecodingService.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */,

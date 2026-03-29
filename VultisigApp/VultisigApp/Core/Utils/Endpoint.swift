@@ -541,7 +541,7 @@ class Endpoint {
         "\(vultisigApiProxy)/bitcoin/".asUrl
     }
 
-    static func dashBroadcast() -> URL {
+    static func dashRpc() -> URL {
         "\(vultisigApiProxy)/dash/".asUrl
     }
 
