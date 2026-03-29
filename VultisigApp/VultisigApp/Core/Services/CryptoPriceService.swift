@@ -286,8 +286,13 @@ private extension CryptoPriceService {
     }
 
     func fetchMayaChainPoolPrices(contracts: [String], coins: [CoinMeta]) async -> [Rate] {
+        if RateProvider.shared.rate(for: TokensStore.cacao) == nil {
+            logger.info("CACAO price not cached, fetching before MAYAChain pool pricing")
+            try? await fetchPrices(ids: [TokensStore.cacao.priceProviderId])
+        }
+
         guard let cacaoRate = RateProvider.shared.rate(for: TokensStore.cacao) else {
-            logger.warning("CACAO price not available, cannot derive MAYAChain pool prices")
+            logger.warning("CACAO price unavailable, cannot derive MAYAChain pool prices")
             return []
         }
 
