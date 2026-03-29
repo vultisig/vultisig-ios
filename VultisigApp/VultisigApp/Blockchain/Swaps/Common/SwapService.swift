@@ -260,7 +260,7 @@ private extension SwapService {
         toCoin: Coin,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
-        let affiliateBps = max(0, 50 - vultTierDiscount)
+        let affiliateBps = vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount
         let rawAmount = fromCoin.raw(for: amount)
         let (quote, fee) = try await service.fetchQuotes(
             chain: chain,
