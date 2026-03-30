@@ -23,7 +23,7 @@ struct LongPressPrimaryButton: View {
             title: title,
             supportsLongPress: true,
             longPressProgress: $progress
-        ) {}
+        ) { action() }
             .onLongPressGesture(
                 minimumDuration: 0,
                 maximumDistance: 0,
