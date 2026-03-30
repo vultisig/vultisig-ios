@@ -302,6 +302,12 @@ struct ServerBackupVerificationScreen: View {
     }
 
     private func deleteVault() {
+        if tssType == .SingleKeygen {
+            isPresented = false
+            onBackToEmailSetup()
+            return
+        }
+
         modelContext.delete(vault)
         isLoading = true
 
