@@ -32,8 +32,8 @@ struct KeygenView: View {
     @State var progressCounter: Double = 1
     @State var showDoneText = false
     @State var showError = false
-    @State var showOTPVerification = false
-    @State var otpVerified = false
+    @State private var showOTPVerification = false
+    @State private var otpVerified = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
 
