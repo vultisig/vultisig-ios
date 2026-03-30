@@ -34,5 +34,6 @@ struct Blockchair: Codable {
         let transactionHash: String?
         let index: Int?
         let value: Int?
+        let blockId: Int?
 	}
 }

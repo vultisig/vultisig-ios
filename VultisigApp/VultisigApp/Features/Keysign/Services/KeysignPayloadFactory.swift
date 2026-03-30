@@ -107,11 +107,13 @@ struct KeysignPayloadFactory {
             )
         } else {
             // Existing Blockchair path for all other UTXO chains
+            let isDash = keysignPayload.coin.chain == .dash
             let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.compactMap { item -> UtxoInfo? in
                 guard
                     let txHash = item.transactionHash, !txHash.isEmpty,
                     let value = item.value,
-                    let index = item.index, index >= 0
+                    let index = item.index, index >= 0,
+                    !isDash || (item.blockId ?? 0) > 0
                 else {
                     return nil
                 }
