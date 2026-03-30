@@ -9,6 +9,16 @@ struct CoinGeckoCoin: Decodable {
     let platforms: [String: String]
 }
 
+struct MAYAChainPoolResponse: Decodable {
+    let balanceCacao: String
+    let balanceAsset: String
+
+    enum CodingKeys: String, CodingKey {
+        case balanceCacao = "balance_cacao"
+        case balanceAsset = "balance_asset"
+    }
+}
+
 class CacheCoinGeckoCoin {
     let coins: [CoinGeckoCoin]
     let timestamp: Date
@@ -181,6 +191,11 @@ private extension CryptoPriceService {
 
             try await RateProvider.shared.save(rates: rates)
 
+        } else if chain == .mayaChain {
+
+            let rates = await fetchMayaChainPoolPrices(contracts: contracts, coins: coins)
+            try await RateProvider.shared.save(rates: rates)
+
         } else if chain == .thorChain || chain == .thorChainChainnet || chain == .thorChainStagenet {
 
             let thorService = ThorchainServiceFactory.getService(for: chain)
@@ -268,6 +283,73 @@ private extension CryptoPriceService {
         }
 
         return Array(rates.joined())
+    }
+
+    func fetchMayaChainPoolPrices(contracts: [String], coins: [CoinMeta]) async -> [Rate] {
+        if RateProvider.shared.rate(for: TokensStore.cacao) == nil {
+            logger.info("CACAO price not cached, fetching before MAYAChain pool pricing")
+            try? await fetchPrices(ids: [TokensStore.cacao.priceProviderId])
+        }
+
+        guard let cacaoRate = RateProvider.shared.rate(for: TokensStore.cacao) else {
+            logger.warning("CACAO price unavailable, cannot derive MAYAChain pool prices")
+            return []
+        }
+
+        let cacaoPriceUSD = cacaoRate.value
+
+        var rates: [Rate] = []
+        for contract in contracts {
+            let assetName = "MAYA.\(contract.uppercased())"
+            if let price = await fetchMayaChainPoolPrice(assetName: assetName, cacaoPriceUSD: cacaoPriceUSD, coins: coins) {
+                rates.append(Rate(fiat: "usd", crypto: contract, value: price))
+            }
+        }
+
+        return rates
+    }
+
+    func fetchMayaChainPoolPrice(assetName: String, cacaoPriceUSD: Double, coins: [CoinMeta]) async -> Double? {
+        let endpoint = Endpoint.fetchMayaChainPoolInfo(asset: assetName)
+
+        guard let url = URL(string: endpoint) else {
+            logger.warning("Invalid MAYAChain pool URL for \(assetName)")
+            return nil
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                return nil
+            }
+
+            let pool = try JSONDecoder().decode(MAYAChainPoolResponse.self, from: data)
+            return calculateMayaPoolPrice(pool: pool, cacaoPriceUSD: cacaoPriceUSD, coins: coins, assetName: assetName)
+        } catch {
+            logger.warning("Failed to fetch MAYAChain pool price for \(assetName): \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    func calculateMayaPoolPrice(pool: MAYAChainPoolResponse, cacaoPriceUSD: Double, coins: [CoinMeta], assetName: String) -> Double {
+        guard let balanceCacao = Double(pool.balanceCacao),
+              let balanceAsset = Double(pool.balanceAsset),
+              balanceAsset > 0 else {
+            return 0.0
+        }
+
+        let ticker = assetName.components(separatedBy: ".").last ?? ""
+        let assetDecimals = coins.first(where: {
+            $0.chain == .mayaChain && $0.ticker.uppercased() == ticker
+        })?.decimals ?? 4
+
+        let cacaoDecimals: Double = 10
+        let cacaoNormalized = balanceCacao / pow(10, cacaoDecimals)
+        let assetNormalized = balanceAsset / pow(10, Double(assetDecimals))
+        let priceInCacao = cacaoNormalized / assetNormalized
+
+        return priceInCacao * cacaoPriceUSD
     }
 
     private func coinGeckoPlatform(chain: Chain) -> String {
