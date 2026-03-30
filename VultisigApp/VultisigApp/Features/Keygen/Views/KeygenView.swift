@@ -32,6 +32,8 @@ struct KeygenView: View {
     @State var progressCounter: Double = 1
     @State var showDoneText = false
     @State var showError = false
+    @State var showOTPVerification = false
+    @State var otpVerified = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
 
@@ -56,16 +58,40 @@ struct KeygenView: View {
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
             }
+            .crossPlatformSheet(isPresented: $showOTPVerification, isDismissable: false) {
+                ServerBackupVerificationScreen(
+                    tssType: tssType,
+                    vault: vault,
+                    email: fastSignConfig?.email ?? .empty,
+                    isPresented: $showOTPVerification,
+                    tabIndex: .constant(0),
+                    otpVerified: $otpVerified,
+                    onBackup: { },
+                    onBackToEmailSetup: { }
+                )
+            }
+            .onChange(of: otpVerified) { _, verified in
+                guard verified else { return }
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: tssType,
+                    backupType: .single(vault: vault),
+                    isNewVault: false
+                ))
+            }
     }
 
     private func handleNavigation() {
         switch tssType {
         case .SingleKeygen:
-            router.navigate(to: KeygenRoute.backupNow(
-                tssType: tssType,
-                backupType: .single(vault: vault),
-                isNewVault: false
-            ))
+            if fastSignConfig != nil {
+                showOTPVerification = true
+            } else {
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: tssType,
+                    backupType: .single(vault: vault),
+                    isNewVault: false
+                ))
+            }
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
