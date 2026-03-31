@@ -2,7 +2,7 @@
 """Sort Localizable.strings files alphabetically by key, in-place.
 
 Usage:
-    python3 sort_localizable.py                  # Sort all 7 locale files
+    python3 sort_localizable.py                  # Sort all 8 locale files
     python3 sort_localizable.py path/to/file.strings  # Sort specific file(s)
 """
 
@@ -15,7 +15,7 @@ LOCALIZABLES_DIR = os.path.join(
     "VultisigApp", "Localizables"
 )
 
-LOCALE_DIRS = ["en.lproj", "de.lproj", "es.lproj", "hr.lproj", "it.lproj", "pt.lproj", "zh-Hans.lproj"]
+LOCALE_DIRS = ["en.lproj", "de.lproj", "es.lproj", "hr.lproj", "it.lproj", "ko.lproj", "pt.lproj", "zh-Hans.lproj"]
 
 ENTRY_RE = re.compile(r'\s*"([^"]+)"\s*=\s*"((?:[^"\\]|\\.)*)"\s*;')
 
@@ -66,7 +66,7 @@ def sort_file(filepath):
 
 
 def get_all_locale_files():
-    """Return paths to all 7 Localizable.strings files."""
+    """Return paths to all 8 Localizable.strings files."""
     files = []
     for locale in LOCALE_DIRS:
         path = os.path.join(LOCALIZABLES_DIR, locale, "Localizable.strings")
