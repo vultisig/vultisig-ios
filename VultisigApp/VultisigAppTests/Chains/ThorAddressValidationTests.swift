@@ -6,7 +6,7 @@ final class ThorAddressValidationTests: XCTestCase {
     func testThorAddressValidationDebug() {
         let addresses = [
             "thor1prxy0sufdqfve6ygkwu9gswe60cle8gy02ex2w",
-            "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey",
+            "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey"
         ]
 
         for address in addresses {

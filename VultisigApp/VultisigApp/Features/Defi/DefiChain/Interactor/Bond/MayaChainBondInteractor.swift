@@ -80,6 +80,7 @@ struct MayaChainBondInteractor: BondInteractor {
         }
     }
 
+    // swiftlint:disable:next async_without_await
     func canUnbond() async -> Bool {
         // Maya allows unbonding when vaults are not migrating
         // For now, return true - can be enhanced with actual migration check if needed
