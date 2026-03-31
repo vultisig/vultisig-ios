@@ -39,7 +39,7 @@ struct KyberSwapService {
         routeRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier,
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
 
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -119,7 +119,7 @@ struct KyberSwapService {
         buildRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier,
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
         buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
 

@@ -211,8 +211,7 @@ private extension SwapService {
                 } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
                     error.message.localizedCaseInsensitiveContains("bad to asset") ||
                     error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                    error.message.localizedCaseInsensitiveContains("pool does not exist")
-                {
+                    error.message.localizedCaseInsensitiveContains("pool does not exist") {
                     // This typically means no liquidity pool exists for this token pair
                     throw SwapError.noLiquidityPool
                 } else {

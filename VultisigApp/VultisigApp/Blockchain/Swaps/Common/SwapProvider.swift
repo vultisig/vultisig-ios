@@ -21,7 +21,7 @@ enum SwapProvider: Equatable {
         case .mayachain:
             return 3
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
-            return 1
+            return 0
         default:
             return 0
         }
