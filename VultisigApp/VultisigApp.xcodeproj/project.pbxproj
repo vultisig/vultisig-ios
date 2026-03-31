@@ -2217,6 +2217,7 @@
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
 		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
 		B500DFE52EB50875009F5C68 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B500DFE62EB50875009F5C69 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B505BF8E2E686D1500A5698B /* FeeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeService.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
@@ -6916,6 +6917,7 @@
 				it,
 				hr,
 				"zh-Hans",
+				ko,
 			);
 			mainGroup = DE49A15A2B65F6D9000F3AFB;
 			packageReferences = (
@@ -8221,6 +8223,7 @@
 				468029542BC8E7FE005A9EEF /* es */,
 				468029552BC8F688005A9EEF /* hr */,
 				B500DFE52EB50875009F5C68 /* zh-Hans */,
+				B500DFE62EB50875009F5C69 /* ko */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

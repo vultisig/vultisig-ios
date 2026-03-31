@@ -473,6 +473,7 @@
 "keysign" = "密钥签名";
 "keysignDiscoveryDisclaimer" = "扫描二维码以签署交易";
 "keysignDiscoveryDisclaimerDevice" = "-需要设备扫描";
+"Korean" = "韩语";
 "label" = "标签";
 "language" = "语言";
 "languageChangeTitle" = "语言已更改";
@@ -886,9 +887,9 @@
 "thorAddressAutoFilled" = "THORChain 地址 (自动填充)";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
+"timeout" = "超时";
 "title" = "标题";
 "to" = "至";
-"timeout" = "超时";
 "today" = "今天";
 "tokens" = "代币";
 "totalFee" = "总费用";
