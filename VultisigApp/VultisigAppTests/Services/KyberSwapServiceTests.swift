@@ -156,7 +156,7 @@ final class KyberSwapServiceTests: XCTestCase {
             routeRequest.allHTTPHeaderFields = [
                 "accept": "application/json",
                 "content-type": "application/json",
-                "x-client-id": "vultisig-ios",
+                "x-client-id": "vultisig-ios"
             ]
 
             let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -208,7 +208,7 @@ final class KyberSwapServiceTests: XCTestCase {
         // Test different error scenarios
         let testCases = [
             ("Very large amount", "999999999999999999999999999999"), // Should trigger insufficient funds
-            ("Normal amount", "1000000000000000000"), // 1 ETH
+            ("Normal amount", "1000000000000000000") // 1 ETH
         ]
 
         for (testName, amount) in testCases {
