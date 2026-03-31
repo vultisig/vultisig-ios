@@ -473,6 +473,7 @@
 "keysign" = "Potpis ključa";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
+"Korean" = "Korejski";
 "label" = "Označiti";
 "language" = "Jezik";
 "languageChangeTitle" = "Jezik promijenjen";
@@ -886,9 +887,9 @@
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
+"timeout" = "Isteklo vrijeme";
 "title" = "Naslov";
 "to" = "Do";
-"timeout" = "Isteklo vrijeme";
 "today" = "Danas";
 "tokens" = "Tokeni";
 "totalFee" = "Ukupna naknada";

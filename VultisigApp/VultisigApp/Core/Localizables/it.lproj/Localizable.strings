@@ -473,6 +473,7 @@
 "keysign" = "Firma Chiave";
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
+"Korean" = "Coreano";
 "label" = "Etichetta";
 "language" = "Lingua";
 "languageChangeTitle" = "Lingua cambiata";
@@ -886,9 +887,9 @@
 "thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
+"timeout" = "Tempo scaduto";
 "title" = "Titolo";
 "to" = "A";
-"timeout" = "Tempo scaduto";
 "today" = "Oggi";
 "tokens" = "Token";
 "totalFee" = "Commissione totale";
