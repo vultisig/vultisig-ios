@@ -25,7 +25,6 @@ struct SwapDetailsSummary: View {
 
     var body: some View {
         content
-            .animation(.easeInOut, value: showFees)
     }
 
     var content: some View {
@@ -38,22 +37,24 @@ struct SwapDetailsSummary: View {
             }
 
             if swapViewModel.showTotalFees(tx: tx) {
-                totalFees
-            }
+                if hasExpandableFees {
+                    ExpandableView(isExpanded: $showFees) {
+                        totalFeesLabel
+                    } content: {
+                        HStack {
+                            Rectangle()
+                                .frame(width: 1)
+                                .foregroundColor(Theme.colors.primaryAccent4)
 
-            if hasExpandableFees {
-                otherFees
+                            expandableFees
+                        }
+                    }
+                } else {
+                    totalFeesLabel
+                }
             }
         }
         .padding(.top, 8)
-    }
-
-    var totalFees: some View {
-        Button {
-            showFees.toggle()
-        } label: {
-            totalFeesLabel
-        }
     }
 
     var totalFeesLabel: some View {
@@ -72,18 +73,7 @@ struct SwapDetailsSummary: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
-    }
-
-    var otherFees: some View {
-        HStack {
-            Rectangle()
-                .frame(width: 1)
-                .foregroundColor(Theme.colors.primaryAccent4)
-
-            expandableFees
-        }
-        .frame(maxHeight: showFees ? nil : 0)
-        .clipped()
+            .animation(.easeInOut, value: showFees)
     }
 
     var expandableFees: some View {
