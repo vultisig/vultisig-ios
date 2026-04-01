@@ -36,31 +36,31 @@ struct ErrorView: View {
 
     var body: some View {
         VStack {
-            Spacer()
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(color)
-                    .background(Image("CirclesBackground"))
-                    .padding(.bottom, 12)
-                Text(title)
-                    .foregroundStyle(color)
-                    .font(Theme.fonts.title2)
-                    .multilineTextAlignment(.center)
-                Text(description)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-                    .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? 40 : 0, alignment: .top)
-                    .multilineTextAlignment(.center)
-                PrimaryButton(
-                    title: buttonTitle,
-                    type: .secondary,
-                    action: action
-                )
+            ScrollView {
+                VStack(spacing: 12) {
+                    Image(systemName: icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundStyle(color)
+                        .background(Image("CirclesBackground"))
+                        .padding(.bottom, 12)
+                    Text(title)
+                        .foregroundStyle(color)
+                        .font(Theme.fonts.title2)
+                        .multilineTextAlignment(.center)
+                    Text(description)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(Theme.fonts.bodySMedium)
+                        .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? .infinity : 0, alignment: .top)
+                        .multilineTextAlignment(.center)
+                    PrimaryButton(
+                        title: buttonTitle,
+                        type: .secondary,
+                        action: action
+                    )
+                }
             }
-            Spacer()
             Text(Bundle.main.appVersionString)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
