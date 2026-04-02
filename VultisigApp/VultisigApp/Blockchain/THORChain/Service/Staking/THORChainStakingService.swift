@@ -5,8 +5,8 @@
 //  Created by Gaston Mazzeo on 24/10/2025.
 //
 
-import Foundation
 import BigInt
+import Foundation
 import OSLog
 
 /// Service for fetching staking details for THORChain ecosystem coins (RUJI and TCY)
@@ -23,7 +23,7 @@ class THORChainStakingService {
     private let thorchainAPIService = THORChainAPIService()
 
     private init() {
-        self.httpClient = HTTPClient()
+        httpClient = HTTPClient()
     }
 
     // MARK: - TCY Constants
@@ -52,7 +52,6 @@ class THORChainStakingService {
             throw StakingError.unsupportedCoin
         }
     }
-
 }
 
 // MARK: - RUJI Implementation
@@ -72,16 +71,17 @@ private extension THORChainStakingService {
         // 2. Parse staked amount
         let stakedAmount = BigInt(stake.bonded.amount) ?? .zero
         let stakedDecimal = Decimal(string: stakedAmount.description) ?? 0
-        let stakedFinal = stakedDecimal / pow(10, 8)  // RUJI has 8 decimals
+        let stakedFinal = stakedDecimal / pow(10, 8) // RUJI has 8 decimals
 
         // 3. Parse rewards
         let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? "0") ?? .zero
         let rewardsDecimal = Decimal(string: rewardsAmount.description) ?? 0
-        let rewardsFinal = rewardsDecimal / pow(10, 6)  // USDC has 6 decimals
+        let rewardsFinal = rewardsDecimal / pow(10, 6) // USDC has 6 decimals
 
-        // 4. Parse APR
+        // 4. Parse APR — zero out when there are no active rewards
         let aprString = stake.pool?.summary?.apr?.value ?? "0"
-        let apr = Double(aprString)
+        let rawApr = Double(aprString) ?? 0.0
+        let apr: Double? = rewardsAmount > .zero ? rawApr : 0.0
 
         // 5. Create USDC coin meta for rewards
         let usdcCoin = CoinMeta(
@@ -97,8 +97,8 @@ private extension THORChainStakingService {
         return StakingDetails(
             stakedAmount: stakedFinal,
             apr: apr,
-            estimatedReward: nil,  // Not available for RUJI
-            nextPayoutDate: nil,   // Not available for RUJI
+            estimatedReward: nil, // Not available for RUJI
+            nextPayoutDate: nil, // Not available for RUJI
             rewards: rewardsFinal,
             rewardsCoin: usdcCoin
         )
@@ -113,7 +113,7 @@ private extension THORChainStakingService {
         // 1. Fetch staked amount
         let stakedResponse = try await fetchTcyStakedAmount(address: address)
         let stakedAmount = Decimal(string: stakedResponse.amount) ?? 0
-        let stakedDecimal = stakedAmount / Decimal(sign: .plus, exponent: 8, significand: 1)  // Divide by 10^8 using Decimal
+        let stakedDecimal = stakedAmount / Decimal(sign: .plus, exponent: 8, significand: 1) // Divide by 10^8 using Decimal
         logger.info("TCY Staking - Raw: \(stakedResponse.amount), Decimal: \(String(describing: stakedAmount)), Final: \(String(describing: stakedDecimal))")
 
         // 2. Calculate APY and convert to APR
@@ -131,7 +131,7 @@ private extension THORChainStakingService {
             apr: apr,
             estimatedReward: estimatedReward,
             nextPayoutDate: nextPayout,
-            rewards: nil,  // TCY auto-distributes, no pending rewards
+            rewards: nil, // TCY auto-distributes, no pending rewards
             rewardsCoin: TokensStore.rune
         )
     }
@@ -164,7 +164,8 @@ private extension THORChainStakingService {
         // Check cache first
         if let cached = cachedTcyConstants,
            let timestamp = constantsCacheTimestamp,
-           Date().timeIntervalSince(timestamp) < constantsCacheDuration {
+           Date().timeIntervalSince(timestamp) < constantsCacheDuration
+        {
             return cached
         }
 
@@ -203,11 +204,9 @@ private extension THORChainStakingService {
         let apyDecimal = apy / 100.0
 
         // Calculate daily rate from APY
-        let dailyRate = pow(1 + apyDecimal, 1.0/365.0) - 1
+        let dailyRate = pow(1 + apyDecimal, 1.0 / 365.0) - 1
 
-        let apr = dailyRate * 365
-
-        return apr
+        return dailyRate * 365
     }
 
     /// Calculate next TCY payout time
@@ -217,7 +216,7 @@ private extension THORChainStakingService {
         let currentBlock = try await thorchainAPIService.getLastBlock()
 
         // 2. Distributions happen every 14,400 blocks
-        let blocksPerDay: Int64 = 14_400
+        let blocksPerDay: Int64 = 14400
         let nextDistributionBlock = ((Int64(currentBlock) / blocksPerDay) + 1) * blocksPerDay
 
         // 3. Calculate blocks remaining
@@ -239,7 +238,7 @@ private extension THORChainStakingService {
 
         // 2. Calculate next distribution block (every 14,400 blocks)
         // Using Math.ceil logic: nextBlock = 14400 * Math.ceil(currentBlock / 14400)
-        let blocksPerDay: UInt64 = 14_400
+        let blocksPerDay: UInt64 = 14400
         let currentBlockDouble = Double(currentBlock)
         let blocksPerDayDouble = Double(blocksPerDay)
         let nextBlock = UInt64(ceil(currentBlockDouble / blocksPerDayDouble) * blocksPerDayDouble)
@@ -334,8 +333,7 @@ private extension THORChainStakingService {
         }
 
         // Convert from satoshis to TCY
-        let totalTcy = totalSatoshis / Decimal(sign: .plus, exponent: 8, significand: 1)
-        return totalTcy
+        return totalSatoshis / Decimal(sign: .plus, exponent: 8, significand: 1)
     }
 
     /// Calculate TCY APY based on user's historical distributions
@@ -375,9 +373,7 @@ private extension THORChainStakingService {
         let stakedValueUSD = stakedAmount * Decimal(tcyPriceUSD)
 
         // 7. Calculate APY
-        let apy = stakedValueUSD > 0 ? Double(truncating: (annualUSD / stakedValueUSD) as NSDecimalNumber) * 100 : 0
-
-        return apy
+        return stakedValueUSD > 0 ? Double(truncating: (annualUSD / stakedValueUSD) as NSDecimalNumber) * 100 : 0
     }
 }
 
