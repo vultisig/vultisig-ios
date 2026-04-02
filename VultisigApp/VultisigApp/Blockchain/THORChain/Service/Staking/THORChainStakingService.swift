@@ -164,8 +164,7 @@ private extension THORChainStakingService {
         // Check cache first
         if let cached = cachedTcyConstants,
            let timestamp = constantsCacheTimestamp,
-           Date().timeIntervalSince(timestamp) < constantsCacheDuration
-        {
+           Date().timeIntervalSince(timestamp) < constantsCacheDuration {
             return cached
         }
 
