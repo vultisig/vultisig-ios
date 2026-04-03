@@ -39,32 +39,34 @@ struct SwapDetailsSummary: View {
             if swapViewModel.showTotalFees(tx: tx) {
                 if hasExpandableFees {
                     ExpandableView(isExpanded: $showFees) {
-                        totalFeesLabel
+                        totalFeesLabel()
                     } content: {
                         HStack {
                             Rectangle()
                                 .frame(width: 1)
-                                .foregroundColor(Theme.colors.primaryAccent4)
+                                .foregroundStyle(Theme.colors.primaryAccent4)
 
                             expandableFees
                         }
                     }
                 } else {
-                    totalFeesLabel
+                    totalFeesLabel(showChevron: false)
                 }
             }
         }
         .padding(.top, 8)
     }
 
-    var totalFeesLabel: some View {
+    private func totalFeesLabel(showChevron: Bool = true) -> some View {
         HStack {
             getSummaryCell(
                 leadingText: "totalFee",
                 trailingText: "\(swapViewModel.totalFeeString(tx: tx))"
             )
 
-            chevron
+            if showChevron {
+                chevron
+            }
         }
     }
 
