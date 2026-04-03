@@ -23,9 +23,9 @@ jobs:
           path: |
             VultisigApp/.build
             VultisigApp/SourcePackages
-          key: ${{ runner.os }}-spm-
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
-            ${{ runner.os }}-spm-   
+            ${{ runner.os }}-spm-
       - name: Set Default Scheme
         working-directory: VultisigApp
         run: |
@@ -65,6 +65,7 @@ jobs:
             DEBUG_INFORMATION_FORMAT=dwarf \
             SWIFT_COMPILATION_MODE=wholemodule \
             OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
+            ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
       - name: Build and Test for iOS
@@ -86,4 +87,5 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=YES \
+            ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
