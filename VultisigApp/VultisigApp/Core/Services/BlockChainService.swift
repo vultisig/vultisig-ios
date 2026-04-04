@@ -705,7 +705,12 @@ private extension BlockChainService {
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
             if tx.fromCoin.isNativeToken {
-                return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
+                do {
+                    return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
+                } catch {
+                    // If estimation fails, return nil to fall back to default gas limit
+                    return nil
+                }
             }
             return nil
         case .none:
