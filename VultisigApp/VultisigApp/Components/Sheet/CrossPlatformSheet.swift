@@ -27,6 +27,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 
     @State var counter: Int = 0
     @State private var internalIsPresented: Bool = false
+    @State private var dismissTask: Task<Void, Never>?
 
     init(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
@@ -79,7 +80,10 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
         }
         .onChange(of: internalIsPresented) { _, newValue in
             guard !newValue else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            dismissTask?.cancel()
+            dismissTask = Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
                 isPresented = false
             }
         }
@@ -121,6 +125,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
 
     @State var counter: Int = 0
     @State private var internalItem: Item?
+    @State private var dismissTask: Task<Void, Never>?
 
     init(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) {
         self._item = item
@@ -171,7 +176,10 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
         }
         .onChange(of: internalItem) { _, newValue in
             guard newValue == nil else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            dismissTask?.cancel()
+            dismissTask = Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
                 item = nil
             }
         }

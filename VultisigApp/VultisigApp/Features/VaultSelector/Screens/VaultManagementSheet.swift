@@ -106,13 +106,18 @@ struct VaultManagementSheet: View {
 
 private extension VaultManagementSheet {
     // This is to support detents animation
+    @State private var detentAnimationTask: Task<Void, Never>?
+
     func updateDetents(isEditing: Bool) {
+        detentAnimationTask?.cancel()
         updateDetents(whileAnimation: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        detentAnimationTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             detentSelection = isEditing ? .large : detents[safe: 0] ?? .medium
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                updateDetents(whileAnimation: false)
-            }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            updateDetents(whileAnimation: false)
         }
     }
     func updateDetents(whileAnimation: Bool) {
