@@ -62,8 +62,7 @@ enum SettingsLanguage: String, CaseIterable {
     static var current: SettingsLanguage {
         get {
             if let langString = UserDefaults.standard.string(forKey: "lang"),
-               let lang = SettingsLanguage(rawValue: langString)
-            {
+               let lang = SettingsLanguage(rawValue: langString) {
                 return lang
             } else {
                 return .English
@@ -96,8 +95,7 @@ enum SettingsCurrency: String, CaseIterable {
     static var current: SettingsCurrency {
         get {
             if let currencyString = UserDefaults.standard.string(forKey: "currency"),
-               let currency = SettingsCurrency(rawValue: currencyString)
-            {
+               let currency = SettingsCurrency(rawValue: currencyString) {
                 return currency
             } else {
                 return .USD
@@ -143,8 +141,7 @@ enum SettingsAPRPeriod: String, CaseIterable {
     static var current: SettingsAPRPeriod {
         get {
             if let periodString = UserDefaults.standard.string(forKey: "aprPeriod"),
-               let period = SettingsAPRPeriod(rawValue: periodString)
-            {
+               let period = SettingsAPRPeriod(rawValue: periodString) {
                 return period
             } else {
                 return .oneMonth // Default to 30d (industry standard)
