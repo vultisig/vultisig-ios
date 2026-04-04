@@ -1,6 +1,7 @@
 import Foundation
 
 class TokensStore {
+
     static let TokenSelectionAssets = [
         CoinMeta(
             chain: .akash,
@@ -1948,10 +1949,10 @@ class TokensStore {
         arbLEO,
         arbYUM,
         arbGLD,
-        arbWSTETH,
+        arbWSTETH
     ]
 
-    static let rune: CoinMeta = .init(
+    static let rune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUNE",
         logo: "rune",
@@ -1961,7 +1962,7 @@ class TokensStore {
         isNativeToken: true
     )
 
-    static let tcy: CoinMeta = .init(
+    static let tcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "TCY",
         logo: "tcy",
@@ -1971,7 +1972,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ruji: CoinMeta = .init(
+    static let ruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUJI",
         logo: "xruji",
@@ -1981,7 +1982,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let sruji: CoinMeta = .init(
+    static let sruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "sRUJI",
         logo: "xruji", // Use same logo as RUJI
@@ -1991,7 +1992,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let stcy: CoinMeta = .init(
+    static let stcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "sTCY",
         logo: "sTCY", // Use same logo as TCY
@@ -2001,7 +2002,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let yrune: CoinMeta = .init(
+    static let yrune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "yRUNE",
         logo: "yRUNE",
@@ -2011,7 +2012,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ytcy: CoinMeta = .init(
+    static let ytcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "yTCY",
         logo: "yTCY",
@@ -2023,7 +2024,7 @@ class TokensStore {
 
     // MARK: - THORChain LPs Tokens
 
-    static let avaxSol: CoinMeta = .init(
+    static let avaxSol: CoinMeta = CoinMeta(
         chain: .avalanche,
         ticker: "SOL",
         logo: "solana",
@@ -2033,7 +2034,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let baseCBBTC: CoinMeta = .init(
+    static let baseCBBTC: CoinMeta = CoinMeta(
         chain: .base,
         ticker: "cbBTC",
         logo: "btc",
@@ -2043,7 +2044,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let baseVVV: CoinMeta = .init(
+    static let baseVVV: CoinMeta = CoinMeta(
         chain: .base,
         ticker: "VVV",
         logo: "vvv",
@@ -2053,7 +2054,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let bscBTCB: CoinMeta = .init(
+    static let bscBTCB: CoinMeta = CoinMeta(
         chain: .bscChain,
         ticker: "BTCB",
         logo: "btc",
@@ -2063,7 +2064,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let bscTWT: CoinMeta = .init(
+    static let bscTWT: CoinMeta = CoinMeta(
         chain: .bscChain,
         ticker: "TWT",
         logo: "twt",
@@ -2073,7 +2074,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethDPI: CoinMeta = .init(
+    static let ethDPI: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "DPI",
         logo: "dpi",
@@ -2083,7 +2084,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethGUSD: CoinMeta = .init(
+    static let ethGUSD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "GUSD",
         logo: "gusd",
@@ -2093,7 +2094,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethLUSD: CoinMeta = .init(
+    static let ethLUSD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "LUSD",
         logo: "lusd",
@@ -2103,7 +2104,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethRAZE: CoinMeta = .init(
+    static let ethRAZE: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "RAZE",
         logo: "raze",
@@ -2113,7 +2114,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethTHOR: CoinMeta = .init(
+    static let ethTHOR: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "THOR",
         logo: "rune",
@@ -2123,7 +2124,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethUSDP: CoinMeta = .init(
+    static let ethUSDP: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "USDP",
         logo: "usdp",
@@ -2133,7 +2134,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethVTHOR: CoinMeta = .init(
+    static let ethVTHOR: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "vTHOR",
         logo: "vthor",
@@ -2143,7 +2144,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethXDEFI: CoinMeta = .init(
+    static let ethXDEFI: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "XDEFI",
         logo: "xdefi",
@@ -2153,7 +2154,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethXRUNE: CoinMeta = .init(
+    static let ethXRUNE: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "XRUNE",
         logo: "xrune",
@@ -2163,7 +2164,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let cacao: CoinMeta = .init(
+    static let cacao: CoinMeta = CoinMeta(
         chain: .mayaChain,
         ticker: "CACAO",
         logo: "cacao",
@@ -2175,7 +2176,7 @@ class TokensStore {
 
     // MARK: - Maya Chain LPs Tokens
 
-    static let ethWSTETH: CoinMeta = .init(
+    static let ethWSTETH: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "WSTETH",
         logo: "wsteth",
@@ -2185,7 +2186,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethLLD: CoinMeta = .init(
+    static let ethLLD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "LLD",
         logo: "lld",
@@ -2195,7 +2196,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethMoca: CoinMeta = .init(
+    static let ethMoca: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "MOCA",
         logo: "moca",
@@ -2205,7 +2206,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let arbLEO: CoinMeta = .init(
+    static let arbLEO: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "LEO",
         logo: "leo",
@@ -2215,7 +2216,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let arbYUM: CoinMeta = .init(
+    static let arbYUM: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "YUM",
         logo: "yum",
@@ -2225,7 +2226,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let arbGLD: CoinMeta = .init(
+    static let arbGLD: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "GLD",
         logo: "gld",
@@ -2235,7 +2236,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let arbWSTETH: CoinMeta = .init(
+    static let arbWSTETH: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "WSTETH",
         logo: "wsteth",
@@ -2245,7 +2246,7 @@ class TokensStore {
         isNativeToken: false
     )
 
-    static let ethUSDC: CoinMeta = .init(
+    static let ethUSDC: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "USDC",
         logo: "usdc",
