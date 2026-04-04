@@ -140,6 +140,15 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .arbitrum,
+            ticker: "USDS",
+            logo: "usds",
+            decimals: 18,
+            priceProviderId: "usds",
+            contractAddress: "0x6491c05A82219b8D1479057361ff1654749b876b",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .arbitrum,
             ticker: "ETH",
             logo: "eth",
             decimals: 18,
@@ -379,6 +388,15 @@ class TokensStore {
             decimals: 18,
             priceProviderId: "dai",
             contractAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .base,
+            ticker: "USDS",
+            logo: "usds",
+            decimals: 18,
+            priceProviderId: "usds",
+            contractAddress: "0x820C137fa70C8691f0e44dC420a5e53c168921Dc",
             isNativeToken: false
         ),
         CoinMeta(
@@ -802,6 +820,15 @@ class TokensStore {
             decimals: 18,
             priceProviderId: "dai",
             contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .ethereum,
+            ticker: "USDS",
+            logo: "usds",
+            decimals: 18,
+            priceProviderId: "usds",
+            contractAddress: "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1596,6 +1623,15 @@ class TokensStore {
             decimals: 6,
             priceProviderId: "tether",
             contractAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .solana,
+            ticker: "USDS",
+            logo: "usds",
+            decimals: 6,
+            priceProviderId: "usds",
+            contractAddress: "USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA",
             isNativeToken: false
         ),
         CoinMeta(
