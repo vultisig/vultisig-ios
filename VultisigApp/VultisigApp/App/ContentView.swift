@@ -28,6 +28,7 @@ struct ContentView: View {
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
+    @State private var dismissSplashTask: Task<Void, Never>?
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -161,7 +162,10 @@ struct ContentView: View {
         }
 
         guard !appViewModel.showOnboarding && !vaults.isEmpty else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            dismissSplashTask?.cancel()
+            dismissSplashTask = Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled else { return }
                 appViewModel.showSplashView = false
             }
             return
