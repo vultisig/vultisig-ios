@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
 extension ThorchainService {
     func fetchTcyStakedAmount(address: String, completion: @escaping (Decimal) -> Void) {
@@ -172,7 +175,7 @@ extension ThorchainService {
                 }
             }
         } catch {
-            print("Error fetching sRUJI auto-compound balance: \(error.localizedDescription)")
+            logger.error("Error fetching sRUJI auto-compound balance: \(error.localizedDescription)")
         }
 
         return .zero
