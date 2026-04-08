@@ -1,5 +1,5 @@
 //
-//  ThorchainService.swift
+//  ThorchainService+TCYStake.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 06/03/2024.
@@ -8,7 +8,6 @@
 import Foundation
 
 extension ThorchainService {
-
     func fetchTcyStakedAmount(address: String, completion: @escaping (Decimal) -> Void) {
         let urlString = Endpoint.fetchTcyStakedAmount(address: address)
         guard let url = URL(string: urlString) else {
@@ -31,7 +30,8 @@ extension ThorchainService {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let amountString = json["amount"] as? String,
-                   let amount = UInt64(amountString) {
+                   let amount = UInt64(amountString)
+                {
                     completion(Decimal(amount))
                 } else {
                     completion(.zero)
@@ -55,7 +55,8 @@ extension ThorchainService {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let amountString = json["amount"] as? String,
-               let amount = UInt64(amountString) {
+               let amount = UInt64(amountString)
+            {
                 return Decimal(amount)
             } else {
                 return .zero
@@ -128,19 +129,50 @@ extension ThorchainService {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let balances = json["balances"] as? [[String: Any]] {
-
+               let balances = json["balances"] as? [[String: Any]]
+            {
                 for balance in balances {
                     if let denom = balance["denom"] as? String,
                        denom == "x/staking-tcy",
                        let amountString = balance["amount"] as? String,
-                       let amount = UInt64(amountString) {
+                       let amount = UInt64(amountString)
+                    {
                         return Decimal(amount)
                     }
                 }
             }
         } catch {
             print("Error fetching auto-compound balance: \(error.localizedDescription)")
+        }
+
+        return .zero
+    }
+
+    /// Fetches the auto-compounding sRUJI balance for the given address from the cosmos bank module.
+    func fetchRujiAutoCompoundAmount(address: String) async -> Decimal {
+        let allBalancesUrl = Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)
+
+        guard let url = URL(string: allBalancesUrl) else {
+            return .zero
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let balances = json["balances"] as? [[String: Any]]
+            {
+                for balance in balances {
+                    if let denom = balance["denom"] as? String,
+                       denom == "x/staking-ruji",
+                       let amountString = balance["amount"] as? String,
+                       let amount = UInt64(amountString)
+                    {
+                        return Decimal(amount)
+                    }
+                }
+            }
+        } catch {
+            print("Error fetching sRUJI auto-compound balance: \(error.localizedDescription)")
         }
 
         return .zero
@@ -161,8 +193,8 @@ extension ThorchainService {
                let liquidBondSizeStr = status["liquid_bond_size"] as? String,
                let liquidBondSharesStr = status["liquid_bond_shares"] as? String,
                let liquidBondSize = UInt64(liquidBondSizeStr),
-               let liquidBondShares = UInt64(liquidBondSharesStr) {
-
+               let liquidBondShares = UInt64(liquidBondSharesStr)
+            {
                 let sizeDecimal = Decimal(liquidBondSize)
                 let sharesDecimal = Decimal(liquidBondShares)
                 let sharePrice = sharesDecimal > 0 ? sizeDecimal / sharesDecimal : .zero
@@ -176,5 +208,4 @@ extension ThorchainService {
             return (.zero, .zero)
         }
     }
-
 }

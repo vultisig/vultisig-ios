@@ -10,7 +10,6 @@ import OSLog
 import SwiftData
 
 class BalanceService {
-
     static let shared = BalanceService()
     private let logger = Logger(subsystem: "com.vultisig.app", category: "balance-service")
 
@@ -38,15 +37,23 @@ class BalanceService {
         let address: String
 
         init(from coin: Coin) {
-            self.coinId = coin.id
-            self.coinMeta = coin.toCoinMeta()
-            self.address = coin.address
+            coinId = coin.id
+            coinMeta = coin.toCoinMeta()
+            address = coin.address
         }
 
-        // Convenience accessors for commonly used CoinMeta properties
-        var chain: Chain { coinMeta.chain }
-        var ticker: String { coinMeta.ticker }
-        var isNativeToken: Bool { coinMeta.isNativeToken }
+        /// Convenience accessors for commonly used CoinMeta properties
+        var chain: Chain {
+            coinMeta.chain
+        }
+
+        var ticker: String {
+            coinMeta.ticker
+        }
+
+        var isNativeToken: Bool {
+            coinMeta.isNativeToken
+        }
     }
 
     /// Value type containing balance update data for a specific coin
@@ -146,7 +153,7 @@ class BalanceService {
 
         } catch {
             capturedError = error
-            self.logger.warning("Fetch Balance error for \(identifier.ticker): \(error.localizedDescription)")
+            logger.warning("Fetch Balance error for \(identifier.ticker): \(error.localizedDescription)")
         }
 
         return CoinBalanceUpdate(
@@ -295,8 +302,9 @@ class BalanceService {
 }
 
 private extension BalanceService {
-
-    private var enableAutoCompoundStakedBalance: Bool { false }
+    private var enableAutoCompoundStakedBalance: Bool {
+        false
+    }
 
     private func fetchBondedNodes(for identifier: CoinIdentifier) async throws -> [RuneBondNode]? {
         switch identifier.chain {
@@ -355,6 +363,8 @@ private extension BalanceService {
                 return totalStakedBalance.description
             case "RUJI":
                 return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: identifier.address))?.stakeAmount.description ?? "0"
+            case "SRUJI":
+                return (await ThorchainService.shared.fetchRujiAutoCompoundAmount(address: identifier.address)).description
             default:
                 break
             }
@@ -399,5 +409,4 @@ private extension BalanceService {
             return nil
         }
     }
-
 }
