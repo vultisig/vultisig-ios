@@ -173,6 +173,8 @@ extension ThorchainService {
                         return Decimal(amount)
                     }
                 }
+            } else {
+                logger.warning("Unexpected sRUJI balance response structure for \(address)")
             }
         } catch {
             logger.error("Error fetching sRUJI auto-compound balance: \(error.localizedDescription)")
@@ -196,8 +198,7 @@ extension ThorchainService {
                let liquidBondSizeStr = status["liquid_bond_size"] as? String,
                let liquidBondSharesStr = status["liquid_bond_shares"] as? String,
                let liquidBondSize = UInt64(liquidBondSizeStr),
-               let liquidBondShares = UInt64(liquidBondSharesStr)
-            {
+               let liquidBondShares = UInt64(liquidBondSharesStr) {
                 let sizeDecimal = Decimal(liquidBondSize)
                 let sharesDecimal = Decimal(liquidBondShares)
                 let sharePrice = sharesDecimal > 0 ? sizeDecimal / sharesDecimal : .zero
