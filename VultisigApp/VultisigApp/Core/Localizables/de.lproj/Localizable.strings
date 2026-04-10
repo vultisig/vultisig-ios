@@ -1098,3 +1098,6 @@
 "yourVaultSetup" = "Ihre Tresor-Einrichtung";
 "zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
+
+"functionSignature" = "Function Signature";
+"functionArguments" = "Function Arguments";

@@ -141,6 +141,22 @@ struct JoinKeysignDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
+            if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "functionSignature",
+                    description: signature,
+                    isVerticalStacked: true
+                )
+                if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
+                    Separator()
+                    getGeneralCell(
+                        title: "functionArguments",
+                        description: args,
+                        isVerticalStacked: true
+                    )
+                }
+            }
             Separator()
             getGeneralCell(
                 title: "Signature",

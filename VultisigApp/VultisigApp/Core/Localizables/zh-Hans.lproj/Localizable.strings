@@ -1099,3 +1099,6 @@
 "yourVaultSetup" = "您的保险库设置";
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
+
+"functionSignature" = "Function Signature";
+"functionArguments" = "Function Arguments";

@@ -367,13 +367,16 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+        let memo = keysignPayload?.memo ?? customMessagePayload?.message
+        guard let memo, !memo.isEmpty else {
             return
         }
 
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
-        if keysignPayload?.coin.chainType == .EVM, memo.hasPrefix("0x") {
+        let isEvm = keysignPayload?.coin.chainType == .EVM
+            || Chain(rawValue: customMessagePayload?.chain ?? "")?.chainType == .EVM
+        if isEvm, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
 

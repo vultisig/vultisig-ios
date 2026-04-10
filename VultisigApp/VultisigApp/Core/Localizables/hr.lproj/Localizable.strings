@@ -1098,3 +1098,6 @@
 "yourVaultSetup" = "Vaša postavka trezora";
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
+
+"functionSignature" = "Function Signature";
+"functionArguments" = "Function Arguments";

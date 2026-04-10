@@ -19,6 +19,9 @@ struct KeysignCustomMessageConfirmView: View {
                 button
             }
             .foregroundColor(Theme.colors.textPrimary)
+            .task {
+                await viewModel.loadFunctionName()
+            }
         }
     }
 
@@ -34,6 +37,14 @@ struct KeysignCustomMessageConfirmView: View {
                 method
                 Separator()
                 message
+                if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+                    Separator()
+                    getPrimaryCell(title: "functionSignature", value: signature)
+                    if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
+                        Separator()
+                        getPrimaryCell(title: "functionArguments", value: args)
+                    }
+                }
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
