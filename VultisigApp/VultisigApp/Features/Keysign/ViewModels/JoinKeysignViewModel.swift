@@ -428,15 +428,29 @@ class JoinKeysignViewModel: ObservableObject {
             toAddress: keysignPayload?.toAddress
         ) else { return nil }
 
-        let chain = keysignPayload?.coin.chain
-        let match = vault.coins.first {
-            $0.chain == chain
-                && $0.contractAddress.lowercased() == pair.tokenAddress.lowercased()
+        guard let chain = keysignPayload?.coin.chain else { return nil }
+        let addressLower = pair.tokenAddress.lowercased()
+
+        // Check vault first (user has added it), then built-in tokens registry.
+        let ticker: String
+        let decimals: Int
+        if let vaultMatch = vault.coins.first(where: {
+            $0.chain == chain && $0.contractAddress.lowercased() == addressLower
+        }) {
+            ticker = vaultMatch.ticker
+            decimals = vaultMatch.decimals
+        } else if let builtIn = TokensStore.findTokenMeta(
+            chain: chain,
+            contractAddress: pair.tokenAddress
+        ) {
+            ticker = builtIn.ticker
+            decimals = builtIn.decimals
+        } else {
+            return nil
         }
-        guard let coin = match else { return nil }
 
         guard let amount = BigInt(pair.rawAmount) else { return nil }
-        let divisor = BigInt(10).power(coin.decimals)
+        let divisor = BigInt(10).power(decimals)
         let whole = amount / divisor
         let remainder = amount % divisor
         let formatted: String
@@ -444,14 +458,14 @@ class JoinKeysignViewModel: ObservableObject {
             formatted = "\(whole)"
         } else {
             let remainderStr = String(remainder)
-            let padded = String(repeating: "0", count: max(0, coin.decimals - remainderStr.count)) + remainderStr
+            let padded = String(repeating: "0", count: max(0, decimals - remainderStr.count)) + remainderStr
             var trimmed = padded
             while trimmed.hasSuffix("0") {
                 trimmed.removeLast()
             }
             formatted = trimmed.isEmpty ? "\(whole)" : "\(whole).\(trimmed)"
         }
-        return "\(formatted) \(coin.ticker)"
+        return "\(formatted) \(ticker)"
     }
 
     var providerName: String {

@@ -1916,6 +1916,14 @@ class TokensStore {
         arbWSTETH
     ]
 
+    /// Look up a built-in token by chain and contract address (case-insensitive).
+    static func findTokenMeta(chain: Chain, contractAddress: String) -> CoinMeta? {
+        let addressLower = contractAddress.lowercased()
+        return TokenSelectionAssets.first {
+            $0.chain == chain && $0.contractAddress.lowercased() == addressLower
+        }
+    }
+
     static let rune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUNE",
