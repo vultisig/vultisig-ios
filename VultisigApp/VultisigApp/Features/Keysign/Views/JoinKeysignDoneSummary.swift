@@ -141,6 +141,14 @@ struct JoinKeysignDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
+            if let tokenDisplay = viewModel.decodedTokenDisplay, !tokenDisplay.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "amount",
+                    description: tokenDisplay,
+                    isVerticalStacked: true
+                )
+            }
             if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
                 Separator()
                 getGeneralCell(

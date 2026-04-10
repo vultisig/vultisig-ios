@@ -37,6 +37,10 @@ struct KeysignCustomMessageConfirmView: View {
                 method
                 Separator()
                 message
+                if let tokenDisplay = viewModel.decodedTokenDisplay, !tokenDisplay.isEmpty {
+                    Separator()
+                    getPrimaryCell(title: "amount", value: tokenDisplay)
+                }
                 if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
                     Separator()
                     getPrimaryCell(title: "functionSignature", value: signature)

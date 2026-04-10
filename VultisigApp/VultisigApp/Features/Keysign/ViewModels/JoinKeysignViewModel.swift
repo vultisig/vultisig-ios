@@ -48,6 +48,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedMemo: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var decodedTokenDisplay: String?
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -384,9 +385,12 @@ class JoinKeysignViewModel: ObservableObject {
         // This handles known selectors (Transfer, Approve), Kyber, etc.
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
 
+        let resolvedTokenDisplay = resolveTokenDisplay(parsedParams: parsedParams)
+
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
             self.decodedMemo = extensionDecoded
+            self.decodedTokenDisplay = resolvedTokenDisplay
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -414,6 +418,40 @@ class JoinKeysignViewModel: ObservableObject {
                 self.decodedFunctionArguments = nil
             }
         }
+    }
+
+    private func resolveTokenDisplay(parsedParams: ParsedMemoParams?) -> String? {
+        guard let params = parsedParams else { return nil }
+        guard let pair = ContractCallExtractor.extract(
+            signature: params.functionSignature,
+            argsJson: params.functionArguments,
+            toAddress: keysignPayload?.toAddress
+        ) else { return nil }
+
+        let chain = keysignPayload?.coin.chain
+        let match = vault.coins.first {
+            $0.chain == chain
+                && $0.contractAddress.lowercased() == pair.tokenAddress.lowercased()
+        }
+        guard let coin = match else { return nil }
+
+        guard let amount = BigInt(pair.rawAmount) else { return nil }
+        let divisor = BigInt(10).power(coin.decimals)
+        let whole = amount / divisor
+        let remainder = amount % divisor
+        let formatted: String
+        if remainder == 0 {
+            formatted = "\(whole)"
+        } else {
+            let remainderStr = String(remainder)
+            let padded = String(repeating: "0", count: max(0, coin.decimals - remainderStr.count)) + remainderStr
+            var trimmed = padded
+            while trimmed.hasSuffix("0") {
+                trimmed.removeLast()
+            }
+            formatted = trimmed.isEmpty ? "\(whole)" : "\(whole).\(trimmed)"
+        }
+        return "\(formatted) \(coin.ticker)"
     }
 
     var providerName: String {

@@ -1,0 +1,133 @@
+//
+//  ContractCallExtractor.swift
+//  VultisigApp
+//
+
+import Foundation
+
+struct TokenAndAmount {
+    let tokenAddress: String
+    let rawAmount: String
+}
+
+enum ExtractionStrategy {
+    // Lending/staking pattern: supply(address asset, uint256 amount, ...)
+    // Requires address index < uint256 index to avoid ERC-4626 collisions.
+    case firstAddressBeforeFirstUint
+    // ERC20 methods called on the token contract itself.
+    case contractIsToken
+    // Token is the Nth address param (0-indexed).
+    case nthAddress(Int)
+}
+
+// Split a param list on top-level commas only, respecting nested parentheses
+// so tuple types like `(uint256,uint256)` stay intact as one param.
+private func splitTopLevel(_ params: String) -> [String] {
+    var parts: [String] = []
+    var depth = 0
+    var current = ""
+    for ch in params {
+        if ch == "(" {
+            depth += 1
+        } else if ch == ")" {
+            depth -= 1
+        }
+        if ch == "," && depth == 0 {
+            parts.append(current.trimmingCharacters(in: .whitespaces))
+            current = ""
+        } else {
+            current.append(ch)
+        }
+    }
+    if !current.isEmpty {
+        parts.append(current.trimmingCharacters(in: .whitespaces))
+    }
+    return parts
+}
+
+enum ContractCallExtractor {
+
+    private static let registry: [String: ExtractionStrategy] = [
+        // Aave V3 / Spark / Radiant
+        "supply": .firstAddressBeforeFirstUint,
+        "supplyWithPermit": .firstAddressBeforeFirstUint,
+        "withdraw": .firstAddressBeforeFirstUint,
+        "borrow": .firstAddressBeforeFirstUint,
+        "repay": .firstAddressBeforeFirstUint,
+        "repayWithPermit": .firstAddressBeforeFirstUint,
+        "repayWithATokens": .firstAddressBeforeFirstUint,
+        // Compound V3
+        "supplyTo": .nthAddress(1),
+        "withdrawTo": .nthAddress(1),
+        "transferAsset": .nthAddress(1),
+        // EigenLayer
+        "depositIntoStrategy": .nthAddress(1),
+        "depositIntoStrategyWithSignature": .nthAddress(1),
+        // Across Protocol V3
+        "depositV3": .nthAddress(2),
+        // ERC20 methods on the token contract itself
+        "transfer": .contractIsToken,
+        "transferFrom": .contractIsToken,
+        "approve": .contractIsToken,
+        "increaseAllowance": .contractIsToken,
+        "decreaseAllowance": .contractIsToken
+    ]
+
+    static func extract(
+        signature: String,
+        argsJson: String,
+        toAddress: String?
+    ) -> TokenAndAmount? {
+        guard let parenStart = signature.firstIndex(of: "("),
+              let parenEnd = signature.lastIndex(of: ")")
+        else { return nil }
+
+        let funcName = String(signature[..<parenStart]).trimmingCharacters(in: .whitespaces)
+        guard let strategy = registry[funcName] else { return nil }
+
+        let paramsString = String(signature[signature.index(after: parenStart)..<parenEnd])
+        let paramTypes = splitTopLevel(paramsString)
+
+        guard let argsData = argsJson.data(using: .utf8),
+              let args = try? JSONSerialization.jsonObject(with: argsData) as? [String]
+        else { return nil }
+
+        guard let uint256Idx = paramTypes.firstIndex(of: "uint256"),
+              uint256Idx < args.count
+        else { return nil }
+        let rawAmount = args[uint256Idx]
+        guard !rawAmount.isEmpty,
+              rawAmount.allSatisfy({ $0.isNumber })
+        else { return nil }
+
+        switch strategy {
+        case .contractIsToken:
+            guard let toAddress, !toAddress.isEmpty else { return nil }
+            return TokenAndAmount(tokenAddress: toAddress, rawAmount: rawAmount)
+
+        case .firstAddressBeforeFirstUint:
+            guard let addressIdx = paramTypes.firstIndex(of: "address"),
+                  addressIdx < uint256Idx,
+                  addressIdx < args.count
+            else { return nil }
+            let tokenAddress = args[addressIdx]
+            guard !tokenAddress.isEmpty else { return nil }
+            return TokenAndAmount(tokenAddress: tokenAddress, rawAmount: rawAmount)
+
+        case .nthAddress(let n):
+            var count = 0
+            var targetIdx = -1
+            for (i, type) in paramTypes.enumerated() where type == "address" {
+                if count == n {
+                    targetIdx = i
+                    break
+                }
+                count += 1
+            }
+            guard targetIdx != -1, targetIdx < args.count else { return nil }
+            let tokenAddress = args[targetIdx]
+            guard !tokenAddress.isEmpty else { return nil }
+            return TokenAndAmount(tokenAddress: tokenAddress, rawAmount: rawAmount)
+        }
+    }
+}
