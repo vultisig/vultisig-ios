@@ -37,75 +37,20 @@ class FunctionCallVerifyViewModel: ObservableObject {
 
             let keysignPayloadFactory = KeysignPayloadFactory()
 
-            // Check if this is an AddThorLP transaction that requires ERC20 approval
+            // LP add transactions are deposits, not swaps. We only need to build an
+            // ERC20 approve payload when the LP asset is an ERC20 token routed through
+            // a THORChain router; the deposit itself is driven by the memo and
+            // `isDeposit` on the chain-specific, matching Android's payload shape.
             var approvePayload: ERC20ApprovePayload?
-            var swapPayload: SwapPayload?
-
-            if !tx.memoFunctionDictionary.allItems().isEmpty,
-               let _ = tx.memoFunctionDictionary.get("pool") { // This indicates it's an AddThorLP transaction
-
-                // For THORChain LP, create a THORChain swap payload
-                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 minutes
-
-                // Handle RUNE deposits vs L1 asset sends differently
-                let vaultAddress: String
-                let routerAddress: String?
-
-                if tx.coin.chain == .thorChain || tx.coin.chain == .mayaChain {
-                    // For RUNE LP, we send to paired chain's inbound address (set in tx.toAddress)
-                    // We don't lookup inbound for RUNE chain itself - that would fail
-                    vaultAddress = tx.toAddress // Use the paired chain's inbound address
-                    routerAddress = nil
-                } else {
-                    // For L1 assets, fetch inbound addresses to get correct vault address
-                    let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                    let chainName = getInboundChainName(for: tx.coin.chain)
-
-                    guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                        throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
-                    }
-
-                    if tx.coin.shouldApprove { // ERC20 tokens
-                        // For ERC20: vault = inbound address, router = router address
-                        vaultAddress = inbound.address // Asgard vault address
-                        routerAddress = inbound.router // Router contract address
-                    } else { // Native tokens
-                        // For native tokens: vault = inbound address, no router needed
-                        vaultAddress = inbound.address // Asgard vault address
-                        routerAddress = nil
-                    }
-                }
-
-                let thorchainSwapPayload = THORChainSwapPayload(
-                    fromAddress: tx.fromAddress,
-                    fromCoin: tx.coin,
-                    toCoin: tx.coin, // For LP, we're not swapping to a different coin
-                    vaultAddress: vaultAddress,
-                    routerAddress: routerAddress,
-                    fromAmount: tx.amountInRaw,
-                    toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw), // Convert BigInt to Decimal
-                    toAmountLimit: "",
-                    streamingInterval: "",
-                    streamingQuantity: "",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-                    isAffiliate: false
+            if tx.memoFunctionDictionary.get("pool") != nil,
+               tx.coin.shouldApprove,
+               !tx.toAddress.isEmpty {
+                approvePayload = ERC20ApprovePayload(
+                    amount: tx.amountInRaw,
+                    spender: tx.toAddress
                 )
-
-                switch tx.coin.chain {
-                case .mayaChain:
-                    swapPayload = .mayachain(thorchainSwapPayload)
-                default:
-                    swapPayload = .thorchain(thorchainSwapPayload)
-                }
-
-                // Check if the coin requires approval (ERC20 tokens)
-                if tx.coin.shouldApprove && !tx.toAddress.isEmpty {
-                    approvePayload = ERC20ApprovePayload(
-                        amount: tx.amountInRaw,
-                        spender: tx.toAddress
-                    )
-                }
             }
+
             await MainActor.run { isLoading = false }
             return try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
@@ -113,7 +58,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 amount: tx.amountInRaw,
                 memo: tx.memo,
                 chainSpecific: chainSpecific,
-                swapPayload: swapPayload,
                 approvePayload: approvePayload,
                 vault: vault,
                 wasmExecuteContractPayload: tx.wasmContractPayload
@@ -141,11 +85,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
             await MainActor.run { isLoading = false }
             throw HelperError.runtimeError(errorMessage)
         }
-    }
-
-    // Use THORChainUtils for chain name mapping
-    private func getInboundChainName(for chain: Chain) -> String {
-        return ThorchainService.getInboundChainName(for: chain)
     }
 
     func scan(transaction: SendTransaction, vault: Vault) async {
