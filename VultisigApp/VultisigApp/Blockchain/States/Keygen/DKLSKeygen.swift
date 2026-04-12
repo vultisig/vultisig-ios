@@ -591,7 +591,7 @@ final class DKLSKeygen {
 
     func DKLSReshareWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
         self.cache.removeAllObjects()
-        self.messenger.messageID = routing.exchangeMessageId
+        self.messenger.messageID = nil // reshare uses legacy shared namespace
         do {
             var keyshareHandle = godkls.Handle()
             if !self.publicKeyECDSA.isEmpty {
