@@ -579,7 +579,6 @@ class KeygenViewModel: ObservableObject {
             await updateProgress(100)
 
             try await finalizeDKLSKeygen(dklsKeygen: dklsKeygen, schnorrKeygen: schnorrKeygen, context: context)
-            self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed

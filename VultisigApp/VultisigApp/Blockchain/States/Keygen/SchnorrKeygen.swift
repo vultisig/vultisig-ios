@@ -45,8 +45,7 @@ final class SchnorrKeygen {
          encryptionKeyHex: String,
          isInitiatedDevice: Bool,
          setupMessage: [UInt8],
-         localUI: String?,
-         messageID: String? = nil) {
+         localUI: String?) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -58,7 +57,7 @@ final class SchnorrKeygen {
         self.setupMessage = setupMessage
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                        sessionID: self.sessionID,
-                                       messageID: messageID,
+                                       messageID: nil,
                                        encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = vault.pubKeyEdDSA
