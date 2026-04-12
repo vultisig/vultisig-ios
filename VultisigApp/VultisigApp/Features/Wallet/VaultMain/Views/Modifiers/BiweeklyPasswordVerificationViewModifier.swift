@@ -18,6 +18,9 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
             .crossPlatformSheet(isPresented: $shouldShow) {
                 PasswordVerifyReminderView(vault: vault, isSheetPresented: $shouldShow)
                     .presentationDetents([.height(260)])
+                #if os(macOS)
+                    .frame(width: 400, height: 260)
+                #endif
             }
             .onLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
