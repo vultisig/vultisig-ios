@@ -82,9 +82,10 @@ struct PasswordVerifyReminderView: View {
                 Button(action: handleCloseTap) {
                     Image(systemName: "xmark")
                         .foregroundStyle(Theme.colors.textTertiary)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(Theme.fonts.bodySMedium)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("close".localized)
             }
     }
 
