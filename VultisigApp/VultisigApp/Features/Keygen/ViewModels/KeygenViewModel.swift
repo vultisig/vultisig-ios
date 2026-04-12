@@ -529,53 +529,7 @@ class KeygenViewModel: ObservableObject {
 
                 await updateProgress(100)
 
-                self.vault.signers = self.keygenCommittee
-                let keyshareECDSA = dklsKeygen.getKeyshare()
-                let keyshareEdDSA = schnorrKeygen.getKeyshare()
-
-                guard let keyshareECDSA else {
-                    throw HelperError.runtimeError("fail to get ECDSA keyshare")
-                }
-                guard let keyshareEdDSA else {
-                    throw HelperError.runtimeError("fail to get EdDSA keyshare")
-                }
-
-                let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
-                                                sessionID: self.sessionID,
-                                                localPartyID: self.vault.localPartyID,
-                                                keygenCommittee: self.keygenCommittee)
-                await keygenVerify.markLocalPartyComplete()
-                let allFinished = await keygenVerify.checkCompletedParties()
-                if !allFinished {
-                    throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
-                }
-
-                self.vault.pubKeyECDSA = keyshareECDSA.PubKey
-                self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
-                self.vault.hexChainCode = keyshareECDSA.chaincode
-
-                if self.tssType == .Migrate {
-                    self.vault.libType = .DKLS
-                }
-                self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                        KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
-
-                let needsInsert = self.tssType == .Keygen ||
-                    !self.vaultOldCommittee.contains(self.vault.localPartyID)
-
-                if needsInsert {
-                    let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
-                    if !shouldProceed {
-                        self.didCancelDuplicateVault = true
-                        return
-                    }
-                    VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault)
-                    context.insert(self.vault)
-                }
-
-                try context.save()
-                self.status = .KeygenFinished
+                try await finalizeDKLSKeygen(dklsKeygen: dklsKeygen, schnorrKeygen: schnorrKeygen, context: context)
                 return
             }
 
@@ -624,54 +578,7 @@ class KeygenViewModel: ObservableObject {
 
             await updateProgress(100)
 
-            self.vault.signers = self.keygenCommittee
-            let keyshareECDSA = dklsKeygen.getKeyshare()
-            let keyshareEdDSA = schnorrKeygen.getKeyshare()
-
-            guard let keyshareECDSA else {
-                throw HelperError.runtimeError("fail to get ECDSA keyshare")
-            }
-            guard let keyshareEdDSA else {
-                throw HelperError.runtimeError("fail to get EdDSA keyshare")
-            }
-
-            // ensure all party created vault successfully
-            let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
-                                            sessionID: self.sessionID,
-                                            localPartyID: self.vault.localPartyID,
-                                            keygenCommittee: self.keygenCommittee)
-            await keygenVerify.markLocalPartyComplete()
-            let allFinished = await keygenVerify.checkCompletedParties()
-            if !allFinished {
-                throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
-            }
-
-            self.vault.pubKeyECDSA = keyshareECDSA.PubKey
-            self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
-            self.vault.hexChainCode = keyshareECDSA.chaincode
-
-            if self.tssType == .Migrate {
-                // make sure we set the vault's lib type to DKLS , otherwise it won't work
-                self.vault.libType = .DKLS
-            }
-            self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                    KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
-
-            let needsInsert = self.tssType == .Keygen ||
-                !self.vaultOldCommittee.contains(self.vault.localPartyID)
-
-            if needsInsert {
-                let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
-                if !shouldProceed {
-                    self.didCancelDuplicateVault = true
-                    return
-                }
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
-                context.insert(self.vault)
-            }
-
-            try context.save()
+            try await finalizeDKLSKeygen(dklsKeygen: dklsKeygen, schnorrKeygen: schnorrKeygen, context: context)
             self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
@@ -679,6 +586,56 @@ class KeygenViewModel: ObservableObject {
             self.keygenError = error.localizedDescription
             return
         }
+    }
+
+    private func finalizeDKLSKeygen(dklsKeygen: DKLSKeygen, schnorrKeygen: SchnorrKeygen, context: ModelContext) async throws {
+        self.vault.signers = self.keygenCommittee
+        let keyshareECDSA = dklsKeygen.getKeyshare()
+        let keyshareEdDSA = schnorrKeygen.getKeyshare()
+
+        guard let keyshareECDSA else {
+            throw HelperError.runtimeError("fail to get ECDSA keyshare")
+        }
+        guard let keyshareEdDSA else {
+            throw HelperError.runtimeError("fail to get EdDSA keyshare")
+        }
+
+        let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
+                                        sessionID: self.sessionID,
+                                        localPartyID: self.vault.localPartyID,
+                                        keygenCommittee: self.keygenCommittee)
+        await keygenVerify.markLocalPartyComplete()
+        let allFinished = await keygenVerify.checkCompletedParties()
+        if !allFinished {
+            throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
+        }
+
+        self.vault.pubKeyECDSA = keyshareECDSA.PubKey
+        self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
+        self.vault.hexChainCode = keyshareECDSA.chaincode
+
+        if self.tssType == .Migrate {
+            self.vault.libType = .DKLS
+        }
+        self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+                                KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+
+        let needsInsert = self.tssType == .Keygen ||
+            !self.vaultOldCommittee.contains(self.vault.localPartyID)
+
+        if needsInsert {
+            let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
+            if !shouldProceed {
+                self.didCancelDuplicateVault = true
+                return
+            }
+            VaultDefaultCoinService(context: context)
+                .setDefaultCoinsOnce(vault: self.vault)
+            context.insert(self.vault)
+        }
+
+        try context.save()
+        self.status = .KeygenFinished
     }
 
     func startKeygenGG20(context: ModelContext) async {

@@ -66,8 +66,7 @@ final class DKLSKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          isInitiateDevice: Bool,
-         localUI: String?,
-         messageID: String? = nil
+         localUI: String?
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -77,7 +76,7 @@ final class DKLSKeygen {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiateDevice
-        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: messageID, encryptionKeyHex: self.encryptionKeyHex)
+        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
         self.localPrivateSecret = localUI
@@ -529,6 +528,7 @@ final class DKLSKeygen {
 
     func DKLSReshareWithRetry(attempt: UInt8) async throws {
         self.cache.removeAllObjects()
+        self.messenger.messageID = nil // reshare uses legacy shared namespace
         do {
             var keyshareHandle = godkls.Handle()
             if !self.publicKeyECDSA.isEmpty {
