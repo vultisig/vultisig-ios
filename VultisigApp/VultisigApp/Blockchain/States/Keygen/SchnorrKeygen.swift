@@ -303,18 +303,20 @@ final class SchnorrKeygen {
         self.cache.removeAllObjects()
         self.messenger.messageID = routing.exchangeMessageId
         do {
-            let resolvedSetupMsg = try await getSharedSetupMessage()
-            var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
             var handler = goschnorr.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             switch self.tssType {
             case .Keygen:
+                let resolvedSetupMsg = try await getSharedSetupMessage()
+                var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
                 let result = schnorr_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
                 if result != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                 }
             case .Migrate:
+                let resolvedSetupMsg = try await getSharedSetupMessage()
+                var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
                 guard let localUI = self.localPrivateSecret else {
                     throw HelperError.runtimeError("can't migrate , local UI is empty")
                 }
