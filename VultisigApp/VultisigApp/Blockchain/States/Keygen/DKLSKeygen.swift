@@ -9,6 +9,30 @@ import godkls
 import OSLog
 import Mediator
 
+/// Relay routing for a single keygen ceremony.
+/// `exchangeMessageId` isolates TSS message exchange. `setupMessageId` isolates setup payload.
+struct KeygenRouting {
+    let exchangeMessageId: String?
+    let setupMessageId: String?
+
+    static let `default` = KeygenRouting(exchangeMessageId: nil, setupMessageId: nil)
+
+    static func from(setupMessageId: String = "", exchangeMessageId: String = "") -> KeygenRouting {
+        KeygenRouting(
+            exchangeMessageId: exchangeMessageId.isEmpty ? nil : exchangeMessageId,
+            setupMessageId: setupMessageId.isEmpty ? nil : setupMessageId
+        )
+    }
+}
+
+/// Relay message IDs matching the server batch keygen protocol prefixes.
+enum KeygenMessageId {
+    static let rootECDSA = "p-ecdsa"
+    static let rootEdDSA = "p-eddsa"
+    static let rootMLDSAExchange = "p-mldsa"
+    static let rootMLDSASetup = "p-mldsa-setup"
+}
+
 struct DKLSKeyshare {
     let PubKey: String
     let Keyshare: String
@@ -42,7 +66,8 @@ final class DKLSKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          isInitiateDevice: Bool,
-         localUI: String?
+         localUI: String?,
+         messageID: String? = nil
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -52,7 +77,7 @@ final class DKLSKeygen {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiateDevice
-        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
+        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: messageID, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
         self.localPrivateSecret = localUI
@@ -192,6 +217,9 @@ final class DKLSKeygen {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let messageID = self.messenger.messageID {
+            request.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
@@ -283,21 +311,23 @@ final class DKLSKeygen {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        if let messageID = self.messenger.messageID {
+            request.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
         let (_, _) = try await URLSession.shared.data(for: request)
     }
     // DKLSKeygenWithRetry tries to do keygen with retry mechanism
-    // additionalHeader is used to pass extra header info to messenger when uploading setup message
-    func DKLSKeygenWithRetry(attempt: UInt8, additionalHeader: String? = nil) async throws {
+    // routing.setupMessageId isolates setup payload, routing.exchangeMessageId isolates TSS exchange
+    func DKLSKeygenWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
         print("keygen committee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
+        self.messenger.messageID = routing.exchangeMessageId
         do {
             var keygenSetupMsg: [UInt8]
             var handler = godkls.Handle()
             if self.isInitiateDevice && attempt == 0 {
                 switch self.tssType {
                 case .Keygen, .Migrate, .Reshare, .SingleKeygen:
-                    // only for the first time , and on the initiating device , we create the setup message
-                    // for retry , let's just use the existing setup message
                     keygenSetupMsg = try getDklsSetupMessage()
                 case .KeyImport:
                     guard let localPrivateSecret = self.localPrivateSecret else {
@@ -306,10 +336,10 @@ final class DKLSKeygen {
                     (keygenSetupMsg, handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                 }
                 self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), additionalHeader)
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), routing.setupMessageId)
             } else {
                 // download the setup message from relay server
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(additionalHeader)
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -393,7 +423,7 @@ final class DKLSKeygen {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await DKLSKeygenWithRetry(attempt: attempt + 1, additionalHeader: additionalHeader)
+                try await DKLSKeygenWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error
             }

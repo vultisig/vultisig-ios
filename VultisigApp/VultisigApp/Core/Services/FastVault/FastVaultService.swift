@@ -8,6 +8,22 @@
 import Foundation
 import OSLog
 
+/// Request body for `POST /vault/batch/keygen`.
+struct BatchKeygenRequest: Codable {
+    let name: String
+    let session_id: String
+    let hex_encryption_key: String
+    let hex_chain_code: String
+    let local_party_id: String
+    let encryption_password: String
+    let email: String
+    let lib_type: Int
+    let protocols: [String]
+
+    static let protocolECDSA = "ecdsa"
+    static let protocolEdDSA = "eddsa"
+}
+
 final class FastVaultService {
 
     static let shared = FastVaultService()
@@ -107,6 +123,34 @@ final class FastVaultService {
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
             self.logger.info("Sent FastVault create request successfully")
+        }
+    }
+
+    func batchCreate(
+        name: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        hexChainCode: String,
+        encryptionPassword: String,
+        email: String,
+        lib_type: Int,
+        protocols: [String]
+    ) {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchKeygenRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            hex_chain_code: hexChainCode,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type,
+            protocols: protocols
+        )
+
+        Utils.sendRequest(urlString: "\(endpoint)/batch/keygen", method: "POST", headers: [:], body: req) { _ in
+            self.logger.info("Sent FastVault batch keygen request successfully")
         }
     }
 
