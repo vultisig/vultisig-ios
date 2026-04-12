@@ -30,6 +30,7 @@ struct VaultManagementSheet: View {
 
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
+    @State private var detentAnimationTask: Task<Void, Never>?
 
     @Binding var isPresented: Bool
     let availableHeight: CGFloat
@@ -106,8 +107,6 @@ struct VaultManagementSheet: View {
 
 private extension VaultManagementSheet {
     // This is to support detents animation
-    @State private var detentAnimationTask: Task<Void, Never>?
-
     func updateDetents(isEditing: Bool) {
         detentAnimationTask?.cancel()
         updateDetents(whileAnimation: true)
