@@ -73,20 +73,19 @@ struct PasswordVerifyReminderView: View {
     }
 
     var header: some View {
-        HStack {
-            Spacer()
-            Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
-                .multilineTextAlignment(.center)
-                .foregroundColor(Theme.colors.textSecondary)
-                .font(Theme.fonts.bodySMedium)
-            Spacer()
-            Button(action: handleCloseTap) {
-                Image(systemName: "xmark")
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(.system(size: 14, weight: .semibold))
+        Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
+            .multilineTextAlignment(.center)
+            .foregroundColor(Theme.colors.textSecondary)
+            .font(Theme.fonts.bodySMedium)
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .trailing) {
+                Button(action: handleCloseTap) {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
-        }
     }
 
     var description: some View {
