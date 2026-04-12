@@ -443,7 +443,7 @@ class KeygenViewModel: ObservableObject {
                                         encryptionKeyHex: self.encryptionKeyHex,
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: ecdsaPrivateKeyHex)
-            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: .from(setupMessageId: chain?.name ?? ""))
             guard let keyShare = dklsKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
@@ -467,7 +467,7 @@ class KeygenViewModel: ObservableObject {
                                               isInitiatedDevice: self.isInitiateDevice,
                                               setupMessage: [UInt8](),
                                               localUI: eddsaPrivateKeyHex)
-            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
+            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: .from(setupMessageId: chain?.name ?? ""))
             guard let keyShare = schnorrKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
@@ -484,6 +484,9 @@ class KeygenViewModel: ObservableObject {
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         await updateProgress(50)
         do {
+            let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+            let useParallelPath = isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate)
+
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
                                         keygenCommittee: self.keygenCommittee,
@@ -493,6 +496,92 @@ class KeygenViewModel: ObservableObject {
                                         encryptionKeyHex: self.encryptionKeyHex,
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: localUIEcdsa)
+
+            if useParallelPath {
+                // Parallel: ECDSA and EdDSA run concurrently with isolated relay namespaces.
+                // Schnorr gets empty setupMessage — it downloads the shared setup from relay on demand.
+                let schnorrKeygen = SchnorrKeygen(vault: self.vault,
+                                                  tssType: self.tssType,
+                                                  keygenCommittee: self.keygenCommittee,
+                                                  vaultOldCommittee: self.vaultOldCommittee,
+                                                  mediatorURL: self.mediatorURL,
+                                                  sessionID: self.sessionID,
+                                                  encryptionKeyHex: self.encryptionKeyHex,
+                                                  isInitiatedDevice: self.isInitiateDevice,
+                                                  setupMessage: [UInt8](),
+                                                  localUI: localUIEddsa)
+                self.status = .KeygenECDSA
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await dklsKeygen.DKLSKeygenWithRetry(
+                            attempt: 0,
+                            routing: .from(exchangeMessageId: KeygenMessageId.rootECDSA)
+                        )
+                    }
+                    group.addTask {
+                        try await schnorrKeygen.SchnorrKeygenWithRetry(
+                            attempt: 0,
+                            routing: .from(exchangeMessageId: KeygenMessageId.rootEdDSA)
+                        )
+                    }
+                    try await group.waitForAll()
+                }
+
+                await updateProgress(100)
+
+                self.vault.signers = self.keygenCommittee
+                let keyshareECDSA = dklsKeygen.getKeyshare()
+                let keyshareEdDSA = schnorrKeygen.getKeyshare()
+
+                guard let keyshareECDSA else {
+                    throw HelperError.runtimeError("fail to get ECDSA keyshare")
+                }
+                guard let keyshareEdDSA else {
+                    throw HelperError.runtimeError("fail to get EdDSA keyshare")
+                }
+
+                let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
+                                                sessionID: self.sessionID,
+                                                localPartyID: self.vault.localPartyID,
+                                                keygenCommittee: self.keygenCommittee)
+                await keygenVerify.markLocalPartyComplete()
+                let allFinished = await keygenVerify.checkCompletedParties()
+                if !allFinished {
+                    throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
+                }
+
+                self.vault.pubKeyECDSA = keyshareECDSA.PubKey
+                self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
+                self.vault.hexChainCode = keyshareECDSA.chaincode
+
+                if self.tssType == .Migrate {
+                    self.vault.libType = .DKLS
+                }
+                self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+                                        KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+
+                let needsInsert = self.tssType == .Keygen ||
+                    !self.vaultOldCommittee.contains(self.vault.localPartyID)
+
+                if needsInsert {
+                    let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
+                    if !shouldProceed {
+                        self.didCancelDuplicateVault = true
+                        return
+                    }
+                    VaultDefaultCoinService(context: context)
+                        .setDefaultCoinsOnce(vault: self.vault)
+                    context.insert(self.vault)
+                }
+
+                try context.save()
+                self.status = .KeygenFinished
+                return
+            }
+
+            // Sequential path (flag off, reshare, or key import).
+            // Reshare MUST stay sequential: ECDSA and EdDSA reshare share a relay
+            // namespace and the server does not support batch reshare.
             switch self.tssType {
             case .Keygen, .Migrate:
                 self.status = .KeygenECDSA

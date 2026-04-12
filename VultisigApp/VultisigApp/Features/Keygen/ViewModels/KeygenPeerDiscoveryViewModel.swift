@@ -115,13 +115,29 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
-                fastVaultService.create(name: vault.name,
-                                        sessionID: sessionID,
-                                        hexEncryptionKey: encryptionKeyHex!,
-                                        hexChainCode: vault.hexChainCode,
-                                        encryptionPassword: config.password,
-                                        email: config.email,
-                                        lib_type: vault.libType == .DKLS ? 1 : 0)
+                Task {
+                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+                    if isTssBatchEnabled {
+                        fastVaultService.batchCreate(
+                            name: vault.name,
+                            sessionID: sessionID,
+                            hexEncryptionKey: encryptionKeyHex!,
+                            hexChainCode: vault.hexChainCode,
+                            encryptionPassword: config.password,
+                            email: config.email,
+                            lib_type: vault.libType == .DKLS ? 1 : 0,
+                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                        )
+                    } else {
+                        fastVaultService.create(name: vault.name,
+                                                sessionID: sessionID,
+                                                hexEncryptionKey: encryptionKeyHex!,
+                                                hexChainCode: vault.hexChainCode,
+                                                encryptionPassword: config.password,
+                                                email: config.email,
+                                                lib_type: vault.libType == .DKLS ? 1 : 0)
+                    }
+                }
             case .KeyImport:
                 fastVaultService.keyImport(name: vault.name,
                                            sessionID: sessionID,
