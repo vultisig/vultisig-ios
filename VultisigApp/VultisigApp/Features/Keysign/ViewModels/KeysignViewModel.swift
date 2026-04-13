@@ -33,6 +33,10 @@ class KeysignViewModel: ObservableObject {
     @Published var txid: String = .empty
     @Published var approveTxid: String?
     @Published var decodedMemo: String?
+    @Published var decodedFunctionName: String?
+    @Published var decodedTokenAmount: String?
+    @Published var decodedTokenTicker: String?
+    @Published var decodedTokenLogo: String?
     @Published var decodedTokenDisplay: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?

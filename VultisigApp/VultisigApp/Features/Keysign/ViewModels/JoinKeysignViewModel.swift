@@ -9,6 +9,13 @@ import BigInt
 import SwiftData
 import SwiftUI
 
+private typealias ContractCallHeroDisplay = (
+    display: String,
+    amountText: String,
+    ticker: String,
+    logo: String
+)
+
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
     case DiscoverService
@@ -48,7 +55,11 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedMemo: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var decodedFunctionName: String?
     @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenAmount: String?
+    @Published var decodedTokenTicker: String?
+    @Published var decodedTokenLogo: String?
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -375,8 +386,7 @@ class JoinKeysignViewModel: ObservableObject {
 
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
-        let isEvm = keysignPayload?.coin.chainType == .EVM
-            || Chain(rawValue: customMessagePayload?.chain ?? "")?.chainType == .EVM
+        let isEvm = resolvedContractCallChain()?.chainType == .EVM
         if isEvm, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
@@ -385,12 +395,19 @@ class JoinKeysignViewModel: ObservableObject {
         // This handles known selectors (Transfer, Approve), Kyber, etc.
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
 
+        let functionName = parsedParams.flatMap {
+            evmFunctionName(from: $0.functionSignature)
+        }.map(capitalizeFirstCharacter)
         let resolvedTokenDisplay = resolveTokenDisplay(parsedParams: parsedParams)
 
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
             self.decodedMemo = extensionDecoded
-            self.decodedTokenDisplay = resolvedTokenDisplay
+            self.decodedFunctionName = functionName
+            self.decodedTokenDisplay = resolvedTokenDisplay?.display
+            self.decodedTokenAmount = resolvedTokenDisplay?.amountText
+            self.decodedTokenTicker = resolvedTokenDisplay?.ticker
+            self.decodedTokenLogo = resolvedTokenDisplay?.logo
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -420,7 +437,9 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
 
-    private func resolveTokenDisplay(parsedParams: ParsedMemoParams?) -> String? {
+    private func resolveTokenDisplay(
+        parsedParams: ParsedMemoParams?
+    ) -> ContractCallHeroDisplay? {
         guard let params = parsedParams else { return nil }
         guard let pair = ContractCallExtractor.extract(
             signature: params.functionSignature,
@@ -428,34 +447,43 @@ class JoinKeysignViewModel: ObservableObject {
             toAddress: keysignPayload?.toAddress
         ) else { return nil }
 
-        guard let chain = keysignPayload?.coin.chain else { return nil }
+        guard let chain = resolvedContractCallChain() else { return nil }
         let addressLower = pair.tokenAddress.lowercased()
 
         // Check vault first (user has added it), then built-in tokens registry.
         let ticker: String
         let decimals: Int
+        let logo: String
         if let vaultMatch = vault.coins.first(where: {
             $0.chain == chain && $0.contractAddress.lowercased() == addressLower
         }) {
             ticker = vaultMatch.ticker
             decimals = vaultMatch.decimals
+            logo = vaultMatch.logo
         } else if let builtIn = TokensStore.findTokenMeta(
             chain: chain,
             contractAddress: pair.tokenAddress
         ) {
             ticker = builtIn.ticker
             decimals = builtIn.decimals
+            logo = builtIn.logo
         } else {
             return nil
         }
 
         guard let amount = BigInt(pair.rawAmount) else { return nil }
 
-        // MAX_UINT256 is a sentinel whose meaning depends on the function:
-        // "Unlimited" for approvals, "Max" (all available balance) for withdraw/repay.
+        // MAX_UINT256 is a sentinel. For approvals → "Unlimited". For withdraw/repay
+        // the exact amount depends on on-chain state — return nil (skip display).
         if pair.rawAmount == MAX_UINT256_DECIMAL,
            let funcName = evmFunctionName(from: params.functionSignature) {
-            return "\(sentinelLabelFor(funcName: funcName)) \(ticker)"
+            guard let label = sentinelLabelFor(funcName: funcName) else { return nil }
+            return (
+                display: "\(label) \(ticker)",
+                amountText: label,
+                ticker: ticker,
+                logo: logo
+            )
         }
 
         let divisor = BigInt(10).power(decimals)
@@ -473,7 +501,29 @@ class JoinKeysignViewModel: ObservableObject {
             }
             formatted = trimmed.isEmpty ? "\(whole)" : "\(whole).\(trimmed)"
         }
-        return "\(formatted) \(ticker)"
+        return (
+            display: "\(formatted) \(ticker)",
+            amountText: formatted,
+            ticker: ticker,
+            logo: logo
+        )
+    }
+
+    private func resolvedContractCallChain() -> Chain? {
+        if let chain = keysignPayload?.coin.chain {
+            return chain
+        }
+
+        guard let chainValue = customMessagePayload?.chain, !chainValue.isEmpty else {
+            return nil
+        }
+
+        return Chain(rawValue: chainValue) ?? Chain(name: chainValue)
+    }
+
+    private func capitalizeFirstCharacter(_ value: String) -> String {
+        guard let first = value.first else { return value }
+        return first.uppercased() + value.dropFirst()
     }
 
     var providerName: String {

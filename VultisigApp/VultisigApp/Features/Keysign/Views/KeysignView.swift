@@ -17,6 +17,10 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
+    var decodedFunctionName: String? = nil
+    var decodedTokenAmount: String? = nil
+    var decodedTokenTicker: String? = nil
+    var decodedTokenLogo: String? = nil
     var decodedTokenDisplay: String? = nil
     var decodedFunctionSignature: String? = nil
     var decodedFunctionArguments: String? = nil
@@ -141,6 +145,10 @@ struct KeysignView: View {
             encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: self.isInitiateDevice
         )
+        viewModel.decodedFunctionName = decodedFunctionName
+        viewModel.decodedTokenAmount = decodedTokenAmount
+        viewModel.decodedTokenTicker = decodedTokenTicker
+        viewModel.decodedTokenLogo = decodedTokenLogo
         viewModel.decodedTokenDisplay = decodedTokenDisplay
         viewModel.decodedFunctionSignature = decodedFunctionSignature
         viewModel.decodedFunctionArguments = decodedFunctionArguments

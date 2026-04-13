@@ -13,26 +13,19 @@ struct TokenAndAmount {
 /// Decimal string of 2^256 - 1 — the standard max-value sentinel used across DeFi.
 let MAX_UINT256_DECIMAL = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
-/// Contextual meaning of MAX_UINT256 in a contract call.
-enum SentinelMeaning: String {
-    case unlimited = "Unlimited"
-    case max = "Max"
-}
-
-private let sentinelMeaningByFunction: [String: SentinelMeaning] = [
-    "approve": .unlimited,
-    "increaseAllowance": .unlimited,
-    "decreaseAllowance": .unlimited,
-    "withdraw": .max,
-    "withdrawTo": .max,
-    "repay": .max,
-    "repayWithPermit": .max,
-    "repayWithATokens": .max
+// Functions where MAX_UINT256 means "unlimited approval" — the only case where
+// a sentinel label makes sense. For withdraw/repay MAX_UINT256 means "all
+// available" but the exact amount depends on on-chain state, so we return nil
+// and let the caller skip the amount display rather than show a misleading label.
+private let unlimitedApprovalFunctions: Set<String> = [
+    "approve", "increaseAllowance", "decreaseAllowance"
 ]
 
-/// Human-readable label for a MAX_UINT256 sentinel in the given function's context.
-func sentinelLabelFor(funcName: String) -> String {
-    (sentinelMeaningByFunction[funcName] ?? .unlimited).rawValue
+/// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns
+/// `"Unlimited"`. For all other functions returns `nil` — the caller should omit
+/// the amount rather than display a vague label.
+func sentinelLabelFor(funcName: String) -> String? {
+    unlimitedApprovalFunctions.contains(funcName) ? "Unlimited" : nil
 }
 
 /// Extract the function name from an ABI signature like "withdraw(address,uint256,address)".
