@@ -222,36 +222,20 @@ struct SwapCryptoLogic {
     func baseAffiliateFee(tx: SwapTransaction) -> String {
         guard let quote = tx.quote else { return .empty }
 
-        // 1. Get Affiliate Fee directly from quote
-        // Determine which quote type we have and extract fee string
-        var affiliateFeeString: String?
-        let feeDecimals = 8 // Default to 8 (THORChain standard)
-        let feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            return evmFee.formatToFiat(includeCurrencySymbol: true)
+        }
 
         switch quote {
         case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            affiliateFeeString = q.fees.affiliate
-        // Verify if fee asset matches toCoin or fromCoin if needed, currently assuming toCoin as per SwapQuote.swift
-        case let .kyberswap(q, _):
-            guard let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 else { return .empty }
-            let feeDecimal = feeCoin.decimal(for: swapFeeBigInt)
-            let fiatValue = feeCoin.fiat(decimal: feeDecimal)
+            guard let affiliateFeeString = q.fees.affiliate else { return .empty }
+            let feeAmount = affiliateFeeString.toDecimal()
+            let feeDecimal = feeAmount / pow(10, 8)
+            let fiatValue = tx.toCoin.fiat(decimal: feeDecimal)
             return fiatValue.formatToFiat(includeCurrencySymbol: true)
         default:
-            return .empty // Other providers might not have affiliate fees structured same way
-        }
-
-        guard let affiliateFeeString = affiliateFeeString else {
             return .empty
         }
-        let feeAmount = affiliateFeeString.toDecimal()
-
-        // 2. Convert to Fiat
-        // If fee is in 'toCoin' units (e.g. 1e8)
-        let feeDecimal = feeAmount / pow(10, feeDecimals)
-        let fiatValue = feeCoin.fiat(decimal: feeDecimal)
-
-        return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
 
     func swapFeeLabel(tx: SwapTransaction) -> String {
@@ -264,35 +248,23 @@ struct SwapCryptoLogic {
 
         guard let quote = tx.quote else { return "swapFee".localized }
 
-        // Get affiliate fee fiat value
-        let affiliateFeeString = baseAffiliateFee(tx: tx)
-        guard !affiliateFeeString.isEmpty else { return String(format: "swapFeePercentage".localized, 0.0) }
-
-        // We need raw numbers for math, reusing logic for efficiency
-        var feeAmt: Decimal = 0
-        switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-        case let .kyberswap(q, _):
-            if let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 {
-                feeAmt = tx.toCoin.decimal(for: swapFeeBigInt)
+        let feeFiat: Decimal
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            feeFiat = evmFee
+        } else {
+            switch quote {
+            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
+                feeFiat = tx.toCoin.fiat(decimal: feeAmt)
+            default:
+                return String(format: "swapFeePercentage".localized, 0.0)
             }
-        default:
-            break
         }
 
-        // Calculate BPS: (Fee Amt / Expected Output Amount * ?? )
-        // Usually Swap Fee is on INPUT.
-        // Let's use currency values for comparsion to handle asset mismatch
-        let feeFiat = tx.toCoin.fiat(decimal: feeAmt)
-
         let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
-
         guard inputFiat > 0 else { return "swapFee".localized }
 
-        let rate = (feeFiat / inputFiat)
-        let percentage = rate * 100
-
+        let percentage = (feeFiat / inputFiat) * 100
         return String(format: "swapFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
     }
 
