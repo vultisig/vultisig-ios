@@ -98,7 +98,7 @@ enum SwapQuote: Hashable {
 
     var evmSwapFeeBigInt: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
             guard let fee = BigInt(quote.tx.swapFee), fee > 0 else { return nil }
             return fee
         default:
