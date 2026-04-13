@@ -228,8 +228,8 @@ struct SwapCryptoLogic {
 
         switch quote {
         case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            guard let affiliateFeeString = q.fees.affiliate else { return .empty }
-            let feeAmount = affiliateFeeString.toDecimal()
+            let feeAmount = q.fees.affiliate.toDecimal()
+            guard feeAmount > 0 else { return .empty }
             let feeDecimal = feeAmount / pow(10, 8)
             let fiatValue = tx.toCoin.fiat(decimal: feeDecimal)
             return fiatValue.formatToFiat(includeCurrencySymbol: true)
