@@ -91,7 +91,18 @@ enum SwapQuote: Hashable {
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
         case .oneinch, .kyberswap:
+            // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
+        }
+    }
+
+    var evmSwapFeeBigInt: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _):
+            guard let fee = BigInt(quote.tx.swapFee), fee > 0 else { return nil }
+            return fee
+        default:
+            return nil
         }
     }
 

@@ -436,15 +436,7 @@ struct SwapCryptoLogic {
     }
 
     private func evmSwapFeeFiat(tx: SwapTransaction) -> Decimal? {
-        guard let quote = tx.quote else { return nil }
-        let evmQuote: EVMQuote
-        switch quote {
-        case .oneinch(let q, _), .kyberswap(let q, _):
-            evmQuote = q
-        default:
-            return nil
-        }
-        guard let swapFeeBigInt = BigInt(evmQuote.tx.swapFee), swapFeeBigInt > 0 else { return nil }
+        guard let swapFeeBigInt = tx.quote?.evmSwapFeeBigInt else { return nil }
         let nativeCoin = feeCoin(tx: tx)
         let feeDecimal = nativeCoin.decimal(for: swapFeeBigInt)
         let fiatValue = nativeCoin.fiat(decimal: feeDecimal)
