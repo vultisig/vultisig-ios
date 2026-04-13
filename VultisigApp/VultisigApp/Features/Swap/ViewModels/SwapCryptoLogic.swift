@@ -408,11 +408,24 @@ struct SwapCryptoLogic {
 
     private func evmSwapFeeFiat(tx: SwapTransaction) -> Decimal? {
         guard let swapFeeBigInt = tx.quote?.evmSwapFeeBigInt else { return nil }
-        let nativeCoin = feeCoin(tx: tx)
-        let feeDecimal = nativeCoin.decimal(for: swapFeeBigInt)
-        let fiatValue = nativeCoin.fiat(decimal: feeDecimal)
+        let coin = swapFeeCoin(tx: tx)
+        let feeDecimal = coin.decimal(for: swapFeeBigInt)
+        let fiatValue = coin.fiat(decimal: feeDecimal)
         guard !fiatValue.isZero else { return nil }
         return fiatValue
+    }
+
+    private func swapFeeCoin(tx: SwapTransaction) -> Coin {
+        guard let contract = tx.quote?.swapFeeTokenContract else {
+            return feeCoin(tx: tx)
+        }
+        if contract.caseInsensitiveCompare(tx.fromCoin.contractAddress) == .orderedSame {
+            return tx.fromCoin
+        }
+        if contract.caseInsensitiveCompare(tx.toCoin.contractAddress) == .orderedSame {
+            return tx.toCoin
+        }
+        return feeCoin(tx: tx)
     }
 
     func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {

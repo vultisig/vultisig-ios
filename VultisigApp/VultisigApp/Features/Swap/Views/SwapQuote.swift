@@ -106,6 +106,16 @@ enum SwapQuote: Hashable {
         }
     }
 
+    var swapFeeTokenContract: String? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            let contract = quote.tx.swapFeeTokenContract
+            return contract.isEmpty ? nil : contract
+        default:
+            return nil
+        }
+    }
+
     var memo: String? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
