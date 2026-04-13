@@ -33,6 +33,9 @@ class KeysignViewModel: ObservableObject {
     @Published var txid: String = .empty
     @Published var approveTxid: String?
     @Published var decodedMemo: String?
+    @Published var decodedTokenDisplay: String?
+    @Published var decodedFunctionSignature: String?
+    @Published var decodedFunctionArguments: String?
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil

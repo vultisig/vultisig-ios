@@ -17,6 +17,9 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
+    var decodedTokenDisplay: String? = nil
+    var decodedFunctionSignature: String? = nil
+    var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
 
     @State var showAlert = false
@@ -138,6 +141,9 @@ struct KeysignView: View {
             encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: self.isInitiateDevice
         )
+        viewModel.decodedTokenDisplay = decodedTokenDisplay
+        viewModel.decodedFunctionSignature = decodedFunctionSignature
+        viewModel.decodedFunctionArguments = decodedFunctionArguments
     }
 
     private func movetoDoneView() {

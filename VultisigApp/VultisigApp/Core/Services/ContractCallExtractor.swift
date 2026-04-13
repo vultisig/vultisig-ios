@@ -27,7 +27,7 @@ private let sentinelMeaningByFunction: [String: SentinelMeaning] = [
     "withdrawTo": .max,
     "repay": .max,
     "repayWithPermit": .max,
-    "repayWithATokens": .max,
+    "repayWithATokens": .max
 ]
 
 /// Human-readable label for a MAX_UINT256 sentinel in the given function's context.
