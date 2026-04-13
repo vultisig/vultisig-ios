@@ -150,6 +150,10 @@ struct SwapCryptoLogic {
     }
 
     func swapFeeString(tx: SwapTransaction) -> String {
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            return evmFee.formatToFiat(includeCurrencySymbol: true)
+        }
+
         guard let inboundFeeDecimal = tx.inboundFeeDecimal, !inboundFeeDecimal.isZero else { return .empty }
 
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
@@ -186,12 +190,18 @@ struct SwapCryptoLogic {
     }
 
     func totalFeeString(tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let networkFee = fromCoin.fiat(gas: tx.fee)
+
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            let totalFee = evmFee + networkFee
+            return totalFee.formatToFiat(includeCurrencySymbol: true)
+        }
+
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
 
-        let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let providerFee = tx.toCoin.fiat(value: inboundFee)
-        let networkFee = fromCoin.fiat(gas: tx.fee)
         let totalFee = providerFee + networkFee
         return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
@@ -423,6 +433,23 @@ struct SwapCryptoLogic {
         // Fees are always paid in native token
         guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
         return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+    }
+
+    private func evmSwapFeeFiat(tx: SwapTransaction) -> Decimal? {
+        guard let quote = tx.quote else { return nil }
+        let evmQuote: EVMQuote
+        switch quote {
+        case .oneinch(let q, _), .kyberswap(let q, _):
+            evmQuote = q
+        default:
+            return nil
+        }
+        guard let swapFeeBigInt = BigInt(evmQuote.tx.swapFee), swapFeeBigInt > 0 else { return nil }
+        let nativeCoin = feeCoin(tx: tx)
+        let feeDecimal = nativeCoin.decimal(for: swapFeeBigInt)
+        let fiatValue = nativeCoin.fiat(decimal: feeDecimal)
+        guard !fiatValue.isZero else { return nil }
+        return fiatValue
     }
 
     func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {

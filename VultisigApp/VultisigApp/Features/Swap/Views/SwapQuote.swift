@@ -90,9 +90,8 @@ enum SwapQuote: Hashable {
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
-        case .oneinch(let quote, _), .kyberswap(let quote, _):
-            guard let swapFeeBigInt = BigInt(quote.tx.swapFee), swapFeeBigInt > 0 else { return .zero }
-            return toCoin.decimal(for: swapFeeBigInt)
+        case .oneinch, .kyberswap:
+            return .zero
         }
     }
 
