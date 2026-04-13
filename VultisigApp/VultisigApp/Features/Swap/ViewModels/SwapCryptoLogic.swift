@@ -348,9 +348,8 @@ struct SwapCryptoLogic {
         let baseFeeFiat = inputFiat * 0.0050
 
         // Actual Fee from Quote
-        // Re-calculate local to avoid string parsing
-        var actualFeeFiat: Decimal = 0
-        if let quote = tx.quote {
+        var actualFeeFiat = evmSwapFeeFiat(tx: tx) ?? 0
+        if actualFeeFiat == 0, let quote = tx.quote {
             switch quote {
             case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
                 let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
