@@ -10,6 +10,38 @@ struct TokenAndAmount {
     let rawAmount: String
 }
 
+/// Decimal string of 2^256 - 1 — the standard max-value sentinel used across DeFi.
+let MAX_UINT256_DECIMAL = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+
+/// Contextual meaning of MAX_UINT256 in a contract call.
+enum SentinelMeaning: String {
+    case unlimited = "Unlimited"
+    case max = "Max"
+}
+
+private let sentinelMeaningByFunction: [String: SentinelMeaning] = [
+    "approve": .unlimited,
+    "increaseAllowance": .unlimited,
+    "decreaseAllowance": .unlimited,
+    "withdraw": .max,
+    "withdrawTo": .max,
+    "repay": .max,
+    "repayWithPermit": .max,
+    "repayWithATokens": .max,
+]
+
+/// Human-readable label for a MAX_UINT256 sentinel in the given function's context.
+func sentinelLabelFor(funcName: String) -> String {
+    (sentinelMeaningByFunction[funcName] ?? .unlimited).rawValue
+}
+
+/// Extract the function name from an ABI signature like "withdraw(address,uint256,address)".
+func evmFunctionName(from signature: String) -> String? {
+    guard let parenIndex = signature.firstIndex(of: "(") else { return nil }
+    let name = String(signature[..<parenIndex]).trimmingCharacters(in: .whitespaces)
+    return name.isEmpty ? nil : name
+}
+
 enum ExtractionStrategy {
     // Lending/staking pattern: supply(address asset, uint256 amount, ...)
     // Requires address index < uint256 index to avoid ERC-4626 collisions.

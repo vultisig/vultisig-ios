@@ -450,6 +450,14 @@ class JoinKeysignViewModel: ObservableObject {
         }
 
         guard let amount = BigInt(pair.rawAmount) else { return nil }
+
+        // MAX_UINT256 is a sentinel whose meaning depends on the function:
+        // "Unlimited" for approvals, "Max" (all available balance) for withdraw/repay.
+        if pair.rawAmount == MAX_UINT256_DECIMAL,
+           let funcName = evmFunctionName(from: params.functionSignature) {
+            return "\(sentinelLabelFor(funcName: funcName)) \(ticker)"
+        }
+
         let divisor = BigInt(10).power(decimals)
         let whole = amount / divisor
         let remainder = amount % divisor
