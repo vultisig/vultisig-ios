@@ -71,6 +71,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.toAddress.isNotEmpty)
 
+            if let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
+                getValueCell(for: "amount", with: tokenDisplay)
+                Separator()
+            }
+
             if let signature = input.decodedFunctionSignature, !signature.isEmpty {
                 getValueCell(for: "functionSignature", with: signature, isMultiLine: true, color: Theme.colors.turquoise)
                 Separator()

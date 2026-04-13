@@ -29,7 +29,8 @@ struct KeysignMessageConfirmView: View {
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,
                         amount: viewModel.keysignPayload?.toAmountString ?? .empty,
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
-                        keysignPayload: viewModel.keysignPayload
+                        keysignPayload: viewModel.keysignPayload,
+                        tokenDisplay: viewModel.decodedTokenDisplay
                     ),
                     securityScannerState: .constant(.idle)
                 )
