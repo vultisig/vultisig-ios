@@ -71,6 +71,12 @@ struct VaultManagementSheet: View {
             updateDetents(whileAnimation: false)
             detentSelection = detents[safe: 0] ?? .medium
         }
+        .onDisappear {
+            // Cancel the sleeping detent animation Task so it can't wake up
+            // and mutate detentSelection after the sheet has been dismissed.
+            detentAnimationTask?.cancel()
+            detentAnimationTask = nil
+        }
     }
 
     var mainSheetView: some View {
