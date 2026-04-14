@@ -48,7 +48,7 @@ struct SendCryptoDoneHeaderView: View {
                         )
                         .font(Theme.fonts.bodyLMedium)
                     }
-                } else {
+                } else if heroTitle == nil {
                     if let coin {
                         AsyncImageView(
                             logo: coin.logo,

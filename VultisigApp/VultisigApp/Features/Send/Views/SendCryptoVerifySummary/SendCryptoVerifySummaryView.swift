@@ -219,7 +219,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     )
                 }
                 .frame(maxWidth: .infinity)
-            } else {
+            } else if input.heroTitle == nil {
                 HStack(spacing: 8) {
                     Image(input.coinImage)
                         .resizable()
