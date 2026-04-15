@@ -77,6 +77,16 @@ struct PasswordVerifyReminderView: View {
             .multilineTextAlignment(.center)
             .foregroundColor(Theme.colors.textSecondary)
             .font(Theme.fonts.bodySMedium)
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .trailing) {
+                Button(action: handleCloseTap) {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(Theme.fonts.bodySMedium)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("close".localized)
+            }
     }
 
     var description: some View {
@@ -133,7 +143,7 @@ struct PasswordVerifyReminderView: View {
                 }
             },
             label: {
-                Image(systemName: isPasswordVisible ? "eye": "eye.slash")
+                Image(systemName: isPasswordVisible ? "eye" : "eye.slash")
                     .foregroundColor(Theme.colors.textPrimary)
             }
         )
