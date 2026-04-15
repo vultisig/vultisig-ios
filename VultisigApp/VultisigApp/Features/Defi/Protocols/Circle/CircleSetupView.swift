@@ -34,6 +34,25 @@ struct CircleSetupView: View {
         !appClosedBanners.contains(infoBannerId)
     }
 
+    var usdcCoin: Coin? {
+        let (chain, _) = CircleViewLogic.getChainDetails()
+        return vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" })
+    }
+
+    var formattedBalanceUSDC: String {
+        AmountFormatter.formatCryptoAmount(value: model.balance, ticker: "USDC")
+    }
+
+    var formattedBalanceFiat: String {
+        guard let usdcCoin else { return "" }
+        return RateProvider.shared.fiatBalanceString(value: model.balance, coin: usdcCoin)
+    }
+
+    var formattedWalletBalanceFiat: String {
+        guard let usdcCoin else { return "" }
+        return RateProvider.shared.fiatBalanceString(value: walletUSDCBalance, coin: usdcCoin)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: CircleConstants.Design.verticalSpacing) {
@@ -77,6 +96,7 @@ struct CircleSetupView: View {
         #endif
         .onAppear {
             guard hasAccount else { return }
+            seedFromCache()
             Task { await loadData() }
         }
         .alert(isPresented: $showError) {
@@ -99,14 +119,31 @@ struct CircleSetupView: View {
             GeometryReader { geometry in
                 ZStack {
                     Circle()
+                        .stroke(Theme.colors.turquoise.opacity(0.5), lineWidth: 10)
+                        .frame(width: 145, height: 145)
+                        .blur(radius: 25)
+
+                    Circle()
                         .stroke(Theme.colors.turquoise.opacity(0.25), lineWidth: 2)
-                        .frame(width: 160, height: 160)
+                        .frame(width: 145, height: 145)
 
                     Circle()
                         .stroke(Theme.colors.turquoise.opacity(0.4), lineWidth: 4)
                         .frame(width: 120, height: 120)
+
+                    Image("circle-logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Theme.colors.primaryAccent1, Theme.colors.primaryAccent4],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 }
-                .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
+                .position(x: geometry.size.width - 70, y: geometry.size.height * 0.75)
             }
             .clipShape(RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius))
 
@@ -117,32 +154,22 @@ struct CircleSetupView: View {
                         .foregroundStyle(Theme.colors.textPrimary)
 
                     if hasAccount {
-                        HiddenBalanceText("$\(model.balance.formatted())")
+                        HiddenBalanceText(formattedBalanceFiat)
                             .font(CircleConstants.Fonts.balance)
                             .foregroundStyle(Theme.colors.textPrimary)
                     } else {
-                        Text("$\(walletUSDCBalance.formatted())")
+                        Text(formattedWalletBalanceFiat)
                             .font(CircleConstants.Fonts.balance)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
-                Spacer()
 
-                Image("circle-logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Theme.colors.primaryAccent1, Theme.colors.primaryAccent4],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .offset(x: 5, y: 27)
+                Spacer()
             }
             .padding(CircleConstants.Design.cardPadding)
         }
+        .frame(height: 118)
+        .clipShape(RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius))
     }
 
     // MARK: - Header Description
@@ -186,10 +213,10 @@ struct CircleSetupView: View {
             usdcBalanceSection
 
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            
+
             apyRow
 
-            HStack(spacing: 12) {
+            HStack(spacing: 0) {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
                     icon: "minus.circle",
@@ -198,6 +225,8 @@ struct CircleSetupView: View {
                     action: { router.navigate(to: CircleRoute.withdraw(vault: vault, model: model)) }
                 )
                 .disabled(model.balance <= 0)
+
+                Spacer()
 
                 DefiButton(
                     title: NSLocalizedString("circleDashboardDeposit", comment: "Deposit"),
@@ -223,37 +252,33 @@ struct CircleSetupView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textSecondary)
 
-                HiddenBalanceText("\(model.balance.formatted()) USDC")
+                HiddenBalanceText(formattedBalanceUSDC)
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
 
-                HiddenBalanceText("$\(model.balance.formatted())")
+                HiddenBalanceText(formattedBalanceFiat)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
             }
-
-            Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var apyRow: some View {
         HStack(spacing: 0) {
             HStack(spacing: 6) {
                 Image(systemName: "divide.circle")
-                    .foregroundStyle(Theme.colors.textTertiary)
-
                 Text(NSLocalizedString("circleAPYLabel", comment: "APY (Approx.)"))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
-
-//                rewardsTooltipButton
+                rewardsTooltipButton
             }
+            .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             Text("1%")
-                .font(CircleConstants.Fonts.subtitle)
-                .foregroundStyle(Theme.colors.turquoise)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.alertSuccess)
         }
     }
 
@@ -264,48 +289,27 @@ struct CircleSetupView: View {
             }
         } label: {
             Image(systemName: "info.circle")
-                .foregroundStyle(Theme.colors.textSecondary)
                 .font(.system(size: 14))
         }
         .overlay(alignment: .top) {
             if showRewardsTooltip {
-                rewardsTooltipContent
-                    .offset(y: 28)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
-            }
-        }
-    }
-
-    private var rewardsTooltipContent: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .top, spacing: 8) {
-                Text(NSLocalizedString("circleRewardsTitle", comment: "Rewards"))
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textDark)
-
-                Spacer()
-
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        showRewardsTooltip = false
+                InfoTooltip(
+                    title: "circleRewardsTitle".localized,
+                    description: "circleRewardsDescription".localized,
+                    arrowDirection: .down,
+                    onDismiss: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showRewardsTooltip = false
+                        }
                     }
-                } label: {
-                    Icon(named: "x", color: Theme.colors.textButtonDisabled, size: 20)
-                }
+                )
+                .fixedSize(horizontal: true, vertical: true)
+                .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
+                .offset(y: -90)
             }
-
-            Text(NSLocalizedString("circleRewardsDescription", comment: "Rewards are automatically credited to your balance."))
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.leading, 16)
-        .padding(.trailing, 10)
-        .padding(.top, 24)
-        .padding(.bottom, 12)
-        .background(Color(hex: "F5F5F5"))
-        .clipShape(TooltipShape())
-        .frame(maxWidth: 220)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showRewardsTooltip)
+        .zIndex(1)
     }
 
     // MARK: - Setup Card (no account state)
@@ -323,7 +327,7 @@ struct CircleSetupView: View {
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
 
-                    Text("\(model.balance.formatted()) USDC")
+                    Text(formattedBalanceUSDC)
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
@@ -376,8 +380,15 @@ struct CircleSetupView: View {
 
     // MARK: - Actions
 
+    private func seedFromCache() {
+        guard let cached = vault.circlePosition else { return }
+        model.balance = cached.usdcBalance
+        model.ethBalance = cached.ethBalance
+    }
+
+    @MainActor
     private func loadData() async {
-        guard let mscaAddress = vault.circleWalletAddress else { return }
+        guard vault.circleWalletAddress != nil else { return }
 
         let (chain, _) = CircleViewLogic.getChainDetails()
 
@@ -390,16 +401,12 @@ struct CircleSetupView: View {
         }
 
         do {
-            let (balance, ethBalance) = try await model.logic.fetchData(address: mscaAddress, vault: vault)
-            await MainActor.run {
-                model.balance = balance
-                model.ethBalance = ethBalance
-            }
+            let (balance, ethBalance) = try await model.logic.refresh(vault: vault)
+            model.balance = balance
+            model.ethBalance = ethBalance
         } catch {
             logger.error("Error loading Circle data: \(error.localizedDescription)")
-            await MainActor.run {
-                model.error = error
-            }
+            model.error = error
         }
     }
 

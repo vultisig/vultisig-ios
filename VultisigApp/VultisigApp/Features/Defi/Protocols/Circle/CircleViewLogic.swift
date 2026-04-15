@@ -37,6 +37,21 @@ struct CircleViewLogic {
         return try await CircleApiService.shared.createWallet(ethAddress: ethCoin.address)
     }
 
+    /// Fetches fresh balances from chain and upserts them into the vault's cached `CirclePosition`.
+    @MainActor
+    func refresh(vault: Vault) async throws -> (usdcBalance: Decimal, ethBalance: Decimal) {
+        guard let mscaAddress = vault.circleWalletAddress else {
+            return (.zero, .zero)
+        }
+        let (usdcBalance, ethBalance) = try await fetchData(address: mscaAddress, vault: vault)
+        try CirclePositionStorageService().upsert(
+            usdcBalance: usdcBalance,
+            ethBalance: ethBalance,
+            for: vault
+        )
+        return (usdcBalance, ethBalance)
+    }
+
     /// Returns: (USDC Balance, ETH Balance)
     func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal) {
         let (chain, usdcContract) = CircleViewLogic.getChainDetails()

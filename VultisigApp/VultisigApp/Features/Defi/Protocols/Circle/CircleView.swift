@@ -60,6 +60,13 @@ struct CircleView: View {
     }
 
     private func checkExistingWallet() async {
+        if let existing = vault.circleWalletAddress, !existing.isEmpty {
+            await MainActor.run {
+                hasCheckedBackend = true
+            }
+            return
+        }
+
         await MainActor.run { model.isLoading = true }
 
         do {
