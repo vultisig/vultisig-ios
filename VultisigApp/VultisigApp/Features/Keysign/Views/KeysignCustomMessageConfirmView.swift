@@ -42,8 +42,7 @@ struct KeysignCustomMessageConfirmView: View {
                 method
                 Separator()
                 message
-                if shouldShowAmountRow,
-                   let tokenDisplay = viewModel.decodedTokenDisplay,
+                if let tokenDisplay = viewModel.decodedTokenDisplay,
                    !tokenDisplay.isEmpty {
                     Separator()
                     getPrimaryCell(title: "amount", value: tokenDisplay)
@@ -72,10 +71,6 @@ struct KeysignCustomMessageConfirmView: View {
 
     var hasHeroSection: Bool {
         viewModel.decodedFunctionName != nil
-    }
-
-    var shouldShowAmountRow: Bool {
-        true
     }
 
     var hasTransactionDetails: Bool {

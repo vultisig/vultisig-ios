@@ -150,8 +150,7 @@ struct JoinKeysignDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
-            if shouldShowAmountRow,
-               let tokenDisplay = viewModel.decodedTokenDisplay,
+            if let tokenDisplay = viewModel.decodedTokenDisplay,
                !tokenDisplay.isEmpty {
                 Separator()
                 getGeneralCell(
@@ -198,10 +197,6 @@ struct JoinKeysignDoneSummary: View {
 
     private var hasHeroSection: Bool {
         viewModel.decodedFunctionName != nil
-    }
-
-    private var shouldShowAmountRow: Bool {
-        true
     }
 
     private func onDoneButtonPressed() {
