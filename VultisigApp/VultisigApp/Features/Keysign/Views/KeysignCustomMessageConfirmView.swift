@@ -62,44 +62,20 @@ struct KeysignCustomMessageConfirmView: View {
 
     @ViewBuilder
     var heroSection: some View {
-        if let title = viewModel.decodedFunctionName,
-           let amount = viewModel.decodedTokenAmount,
-           let ticker = viewModel.decodedTokenTicker {
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-
-                if let logo = viewModel.decodedTokenLogo, !logo.isEmpty {
-                    AsyncImageView(
-                        logo: logo,
-                        size: CGSize(width: 36, height: 36),
-                        ticker: ticker,
-                        tokenChainLogo: nil
-                    )
-                }
-
-                (
-                    Text(amount)
-                        .foregroundColor(Theme.colors.textPrimary) +
-                    Text(" \(ticker)")
-                        .foregroundColor(Theme.colors.textTertiary)
-                )
+        if let title = viewModel.decodedFunctionName {
+            Text(title)
                 .font(Theme.fonts.bodyLMedium)
-            }
-            .frame(maxWidth: .infinity)
+                .foregroundColor(Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 
     var hasHeroSection: Bool {
-        viewModel.decodedFunctionName != nil &&
-            viewModel.decodedTokenAmount != nil &&
-            viewModel.decodedTokenTicker != nil
+        viewModel.decodedFunctionName != nil
     }
 
     var shouldShowAmountRow: Bool {
-        viewModel.decodedTokenAmount == nil
+        true
     }
 
     var hasTransactionDetails: Bool {
