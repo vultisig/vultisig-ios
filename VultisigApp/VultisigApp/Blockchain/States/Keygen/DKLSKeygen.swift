@@ -31,6 +31,8 @@ enum KeygenMessageId {
     static let rootEdDSA = "p-eddsa"
     static let rootMLDSAExchange = "p-mldsa"
     static let rootMLDSASetup = "p-mldsa-setup"
+    static let rootECDSAKeyImport = "ecdsa_key_import"
+    static let rootEdDSAKeyImport = "eddsa_key_import"
 }
 
 struct DKLSKeyshare {
