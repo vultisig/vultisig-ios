@@ -45,19 +45,20 @@ jobs:
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
+
           # Print environment info
           echo "Xcode version:"
           xcodebuild -version
           echo "Swift version:"
           swift --version
-          
+
           # Clean, build and analyze for macOS
           echo "Building and analyzing for macOS - scheme: $scheme"
           xcodebuild clean build analyze \
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
             -destination 'platform=macOS,arch=x86_64' \
+            -derivedDataPath build-macos \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
@@ -68,6 +69,26 @@ jobs:
             ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
+      - name: Package macOS artifact
+        working-directory: VultisigApp
+        run: |
+          app_path=$(find build-macos/Build/Products -maxdepth 3 -type d -name "*.app" | head -n 1)
+          if [ -z "$app_path" ]; then
+            echo "No .app found under build-macos/Build/Products"
+            exit 1
+          fi
+          echo "Zipping $app_path"
+          ditto -c -k --sequesterRsrc --keepParent "$app_path" VultisigApp-macOS.zip
+          ls -lh VultisigApp-macOS.zip
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VultisigApp-macOS-unsigned
+          path: VultisigApp/VultisigApp-macOS.zip
+          retention-days: 14
+          if-no-files-found: error
+
       - name: Build and Test for iOS
         working-directory: VultisigApp
         env:
@@ -76,16 +97,37 @@ jobs:
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
+
           # Build and test for iOS in one command
           echo "Building and testing for iOS - scheme: $scheme"
           xcodebuild build analyze test \
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.1' \
+            -derivedDataPath build-ios \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=YES \
             ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
+
+      - name: Package iOS simulator artifact
+        working-directory: VultisigApp
+        run: |
+          app_path=$(find build-ios/Build/Products -maxdepth 3 -type d -name "*.app" | head -n 1)
+          if [ -z "$app_path" ]; then
+            echo "No .app found under build-ios/Build/Products"
+            exit 1
+          fi
+          echo "Zipping $app_path"
+          ditto -c -k --sequesterRsrc --keepParent "$app_path" VultisigApp-iOS-Simulator.zip
+          ls -lh VultisigApp-iOS-Simulator.zip
+
+      - name: Upload iOS simulator artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VultisigApp-iOS-Simulator-unsigned
+          path: VultisigApp/VultisigApp-iOS-Simulator.zip
+          retention-days: 14
+          if-no-files-found: error
