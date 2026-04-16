@@ -36,6 +36,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
     @AppStorage("agentEnabled") var agentEnabled: Bool = false
     @AppStorage("txHistoryEnabled") var txHistoryEnabled: Bool = false
+    @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
 
     init() {
         self.selectedCurrency = SettingsCurrency.current

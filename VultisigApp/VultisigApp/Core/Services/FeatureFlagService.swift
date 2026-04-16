@@ -19,7 +19,18 @@ enum FeatureFlag: String {
 }
 
 final class FeatureFlagService {
+    /// Local override keys for feature flags (set via Advanced Settings).
+    private static let localOverrideKeys: [FeatureFlag: String] = [
+        .TssBatch: "tssBatchEnabled"
+    ]
+
     func isFeatureEnabled(feature: FeatureFlag) async -> Bool {
+        // Check local override first (OR logic: local OR remote).
+        if let localKey = Self.localOverrideKeys[feature],
+           UserDefaults.standard.bool(forKey: localKey) {
+            return true
+        }
+
         do {
             let features = try await getFeatureFlagFromServer()
             if let result = features[feature.name] as? Bool {
