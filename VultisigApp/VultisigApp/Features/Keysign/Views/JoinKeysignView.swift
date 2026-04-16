@@ -29,6 +29,10 @@ struct JoinKeysignView: View {
             }
     }
 
+    var isInAnimationState: Bool {
+        viewModel.status == .WaitingForKeysignToStart || viewModel.status == .KeysignStarted
+    }
+
     var states: some View {
         ZStack {
             switch viewModel.status {
@@ -55,8 +59,7 @@ struct JoinKeysignView: View {
             }
 
         }
-        .padding()
-        .cornerRadius(10)
+        .if(!isInAnimationState) { $0.padding().cornerRadius(10) }
     }
 
     var keysignStartedView: some View {
@@ -177,20 +180,31 @@ extension JoinKeysignView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
+        .if(!isInAnimationState) {
+            $0
+                .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                        NavigationHelpButton()
+                    }
+                }
+        }
+        .if(isInAnimationState) {
+            $0.toolbar(.hidden, for: .navigationBar)
         }
     }
 
+    @ViewBuilder
     var main: some View {
-        VStack {
-            Spacer()
+        if isInAnimationState {
             states
-            Spacer()
+        } else {
+            VStack {
+                Spacer()
+                states
+                Spacer()
+            }
         }
     }
 }
@@ -207,12 +221,17 @@ extension JoinKeysignView {
         }
     }
 
+    @ViewBuilder
     var main: some View {
-        VStack {
-            headerMac
-            Spacer()
+        if isInAnimationState {
             states
-            Spacer()
+        } else {
+            VStack {
+                headerMac
+                Spacer()
+                states
+                Spacer()
+            }
         }
     }
 

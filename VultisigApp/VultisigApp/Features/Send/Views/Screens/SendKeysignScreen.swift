@@ -30,8 +30,8 @@ struct SendKeysignScreen: View {
                 isInitiateDevice: input.isInitiateDevice
             )
         }
-        .screenTitle("keysign".localized)
-        .screenBackButtonHidden()
+        .screenNavigationBarHidden()
+        .screenEdgeInsets(.zero)
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished else { return }
 

@@ -6,37 +6,21 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
-
-    @State var loadingAnimationVM: RiveViewModel? = nil
+    var coinLogo: String? = nil
 
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ZStack {
-            shadow
-
             if showError {
                 errorView
             } else {
-                signingView
+                KeysignAnimationView(connected: .constant(true), coinLogo: coinLogo)
             }
-        }
-        .onLoad {
-            setData()
-        }
-    }
-
-    var signingView: some View {
-        VStack {
-            Spacer()
-            signingAnimation
-            Spacer()
-            appVersion
         }
     }
 
@@ -49,46 +33,6 @@ struct SendCryptoKeysignView: View {
         ) {
             appViewModel.restart()
         }
-    }
-
-    var signingAnimation: some View {
-        VStack(spacing: 32) {
-            animation
-
-            if let title {
-                Text(NSLocalizedString(title, comment: ""))
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-            } else {
-                Text(NSLocalizedString("signingTransaction", comment: ""))
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-            }
-        }
-    }
-
-    var animation: some View {
-        loadingAnimationVM?.view()
-            .frame(width: 28, height: 28)
-    }
-
-    var shadow: some View {
-        Circle()
-            .frame(width: 360, height: 360)
-            .foregroundColor(Theme.colors.alertInfo)
-            .opacity(0.05)
-            .blur(radius: 20)
-    }
-
-    var appVersion: some View {
-        Text(Bundle.main.appVersionString)
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
-            .padding(.bottom, 30)
-    }
-
-    private func setData() {
-        loadingAnimationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
     }
 }
 
