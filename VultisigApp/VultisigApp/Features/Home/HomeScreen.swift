@@ -82,6 +82,14 @@ struct HomeScreen: View {
                 presetValuesForDeeplink()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .agentDidBroadcastTx)) { _ in
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                await MainActor.run {
+                    shouldRefresh = true
+                }
+            }
+        }
         .onChange(of: deeplinkViewModel.type) { _, newValue in
             if newValue != nil {
                 presetValuesForDeeplink()
