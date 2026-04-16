@@ -37,14 +37,42 @@ class FunctionCallVerifyViewModel: ObservableObject {
 
             let keysignPayloadFactory = KeysignPayloadFactory()
 
-            // LP add transactions are deposits, not swaps. We only need to build an
-            // ERC20 approve payload when the LP asset is an ERC20 token routed through
-            // a THORChain router; the deposit itself is driven by the memo and
-            // `isDeposit` on the chain-specific, matching Android's payload shape.
+            // LP adds are deposits, not swaps. Native RUNE/CACAO build their deposit
+            // from the memo in THORChainHelper and need no payload. ERC20 LP adds still
+            // ride the legacy swap-signing path — EVMHelper.getSwapPreSignedInputData
+            // requires a THORChainSwapPayload to build the router's depositWithExpiry
+            // call, so we synthesize one for that case only. TODO: replace with a
+            // dedicated deposit payload across iOS/Android/Windows.
             var approvePayload: ERC20ApprovePayload?
+            var swapPayload: SwapPayload?
             if tx.memoFunctionDictionary.get("pool") != nil,
                tx.coin.shouldApprove,
                !tx.toAddress.isEmpty {
+                let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+                let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+                guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                    throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
+                }
+
+                let expirationTime = Date().addingTimeInterval(60 * 15)
+                let thorchainSwapPayload = THORChainSwapPayload(
+                    fromAddress: tx.fromAddress,
+                    fromCoin: tx.coin,
+                    toCoin: tx.coin,
+                    vaultAddress: inbound.address,
+                    routerAddress: inbound.router,
+                    fromAmount: tx.amountInRaw,
+                    toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw),
+                    toAmountLimit: "",
+                    streamingInterval: "",
+                    streamingQuantity: "",
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970),
+                    isAffiliate: false
+                )
+                swapPayload = tx.coin.chain == .mayaChain
+                    ? .mayachain(thorchainSwapPayload)
+                    : .thorchain(thorchainSwapPayload)
+
                 approvePayload = ERC20ApprovePayload(
                     amount: tx.amountInRaw,
                     spender: tx.toAddress
@@ -58,6 +86,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 amount: tx.amountInRaw,
                 memo: tx.memo,
                 chainSpecific: chainSpecific,
+                swapPayload: swapPayload,
                 approvePayload: approvePayload,
                 vault: vault,
                 wasmExecuteContractPayload: tx.wasmContractPayload
