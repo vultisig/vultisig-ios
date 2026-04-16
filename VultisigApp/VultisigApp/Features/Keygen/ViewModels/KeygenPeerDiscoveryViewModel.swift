@@ -139,28 +139,61 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     }
                 }
             case .KeyImport:
-                fastVaultService.keyImport(name: vault.name,
-                                           sessionID: sessionID,
-                                           hexEncryptionKey: encryptionKeyHex!,
-                                           hexChainCode: vault.hexChainCode,
-                                           encryptionPassword: config.password,
-                                           email: config.email,
-                                           lib_type: 2,
-                                           chains: chains?.map { $0.name } ?? [])
+                Task {
+                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+                    if isTssBatchEnabled {
+                        fastVaultService.batchKeyImport(
+                            name: vault.name,
+                            sessionID: sessionID,
+                            hexEncryptionKey: encryptionKeyHex!,
+                            encryptionPassword: config.password,
+                            email: config.email,
+                            lib_type: 2,
+                            chains: chains?.map { $0.name } ?? [],
+                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                        )
+                    } else {
+                        fastVaultService.keyImport(
+                            name: vault.name,
+                            sessionID: sessionID,
+                            hexEncryptionKey: encryptionKeyHex!,
+                            hexChainCode: vault.hexChainCode,
+                            encryptionPassword: config.password,
+                            email: config.email,
+                            lib_type: 2,
+                            chains: chains?.map { $0.name } ?? []
+                        )
+                    }
+                }
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                fastVaultService.reshare(
-                    name: vault.name,
-                    publicKeyECDSA: pubKeyECDSA,
-                    sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
-                    hexChainCode: vault.hexChainCode,
-                    encryptionPassword: config.password,
-                    email: config.email,
-                    oldParties: vault.signers,
-                    oldResharePrefix: vault.resharePrefix ?? "",
-                    lib_type: vault.libType == .DKLS ? 1 : 0
-                )
+                Task {
+                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+                    if isTssBatchEnabled {
+                        fastVaultService.batchReshare(
+                            publicKeyECDSA: pubKeyECDSA,
+                            sessionID: sessionID,
+                            hexEncryptionKey: encryptionKeyHex!,
+                            encryptionPassword: config.password,
+                            email: config.email,
+                            oldParties: vault.signers,
+                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                        )
+                    } else {
+                        fastVaultService.reshare(
+                            name: vault.name,
+                            publicKeyECDSA: pubKeyECDSA,
+                            sessionID: sessionID,
+                            hexEncryptionKey: encryptionKeyHex!,
+                            hexChainCode: vault.hexChainCode,
+                            encryptionPassword: config.password,
+                            email: config.email,
+                            oldParties: vault.signers,
+                            oldResharePrefix: vault.resharePrefix ?? "",
+                            lib_type: vault.libType == .DKLS ? 1 : 0
+                        )
+                    }
+                }
             case .Migrate:
                 fastVaultService.migrate(
                     publicKeyECDSA: vault.pubKeyECDSA,
