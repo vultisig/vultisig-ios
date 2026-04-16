@@ -137,8 +137,6 @@
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Antes de começar...";
 "biometricsFastSigning" = "Biometria assinatura rápida";
-"biweeklyPasswordVerifyDescription" = "Periodicamente pediremos que verifique sua senha do Fast Sign para que você sempre se lembre dela";
-"biweeklyPasswordVerifyTitle" = "Verifique a Senha da sua\nParte do Servidor";
 "bond" = "Vincular";
 "Bond" = "Bond";
 "bonded" = "Vinculado";
@@ -1046,6 +1044,8 @@
 "verify" = "Verificar";
 "verifyingCodePleaseWait" = "Verificando código, aguarde";
 "verifyPassword" = "Verificar senha";
+"verifyPasswordPeriodicReminder" = "Pedimos uma verificação periódica para que você não esqueça sua senha.";
+"verifyYourPasswordFor" = "Verifique sua senha para:";
 "via" = "via";
 "view" = "Ver";
 "viewOnExplorer" = "Ver no Explorer";

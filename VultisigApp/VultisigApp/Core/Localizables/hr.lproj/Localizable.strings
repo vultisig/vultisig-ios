@@ -137,8 +137,6 @@
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Prije nego započnete...";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
-"biweeklyPasswordVerifyDescription" = "Povremeno ćemo vas tražiti da potvrdite svoju Fast Sign lozinku kako biste je uvijek zapamtili";
-"biweeklyPasswordVerifyTitle" = "Provjeri lozinku za svoj\nServer Share";
 "bond" = "Veži";
 "Bond" = "Bond";
 "bonded" = "Vezano";
@@ -1046,6 +1044,8 @@
 "verify" = "Provjeri";
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
 "verifyPassword" = "Potvrdite lozinku";
+"verifyPasswordPeriodicReminder" = "Povremeno tražimo potvrdu kako ne biste zaboravili svoju lozinku.";
+"verifyYourPasswordFor" = "Potvrdi svoju lozinku za:";
 "via" = "putem";
 "view" = "Pogledaj";
 "viewOnExplorer" = "Prikaži u Exploreru";
