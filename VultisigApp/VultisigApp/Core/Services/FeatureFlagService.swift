@@ -20,18 +20,19 @@ enum FeatureFlag: String {
 
 final class FeatureFlagService {
     func isFeatureEnabled(feature: FeatureFlag) async -> Bool {
-        do {
-            let features = try await getFeatureFlagFromServer()
-            if let result = features[feature.name] as? Bool {
-                return result
-            } else {
-                print("Feature flag for \(feature) is not a boolean value")
-            }
-
-        } catch {
-            print("fail to get features \(error)")
-        }
-        return false
+        true
+//        do {
+//            let features = try await getFeatureFlagFromServer()
+//            if let result = features[feature.name] as? Bool {
+//                return result
+//            } else {
+//                print("Feature flag for \(feature) is not a boolean value")
+//            }
+//
+//        } catch {
+//            print("fail to get features \(error)")
+//        }
+//        return false
     }
 
     private func getFeatureFlagFromServer() async throws -> [String: Any] {
