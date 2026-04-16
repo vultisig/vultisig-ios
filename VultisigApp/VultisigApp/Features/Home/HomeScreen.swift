@@ -82,7 +82,8 @@ struct HomeScreen: View {
                 presetValuesForDeeplink()
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .agentDidBroadcastTx)) { _ in
+        .onChange(of: appViewModel.restartNavigation) { _, newValue in
+            guard newValue else { return }
             Task {
                 try? await Task.sleep(for: .seconds(3))
                 await MainActor.run {
