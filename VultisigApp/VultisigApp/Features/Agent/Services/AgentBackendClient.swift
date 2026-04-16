@@ -213,18 +213,30 @@ final class AgentBackendClient {
 
                         if line.hasPrefix("data: ") {
                             let jsonStr = String(line.dropFirst(6)).trimmingCharacters(in: .init(charactersIn: "\r"))
+
+                            // Vercel UI Message Stream v1: no event: line, type is in JSON.
+                            let resolvedEvent: String
+                            let resolvedJsonStr: String
+                            if currentEvent.isEmpty, let (v1Event, v1Json) = self.resolveV1Event(jsonStr: jsonStr) {
+                                resolvedEvent = v1Event
+                                resolvedJsonStr = v1Json
+                            } else {
+                                resolvedEvent = currentEvent
+                                resolvedJsonStr = jsonStr
+                            }
+
                             #if DEBUG
-                            logger.debug("SSE data event='\(currentEvent)' json=\(String(jsonStr.prefix(200)))")
+                            logger.debug("SSE data event='\(resolvedEvent)' json=\(String(resolvedJsonStr.prefix(200)))")
                             #endif
 
-                            if let event = self.processSSEEvent(eventName: currentEvent, jsonStr: jsonStr) {
+                            if let event = self.processSSEEvent(eventName: resolvedEvent, jsonStr: resolvedJsonStr) {
                                 if case .message = event {
                                     hasMessage = true
                                 }
                                 continuation.yield(event)
                             } else {
                                 #if DEBUG
-                                logger.warning("SSE parser returned nil for event '\(currentEvent)'")
+                                logger.warning("SSE parser returned nil for event '\(resolvedEvent)'")
                                 #endif
                             }
                             currentEvent = ""
@@ -250,6 +262,42 @@ final class AgentBackendClient {
                 task.cancel()
             }
         }
+    }
+
+    // MARK: - Vercel UI Message Stream v1 Adapter
+
+    /// Maps v1 `type` field to legacy event name and unwraps nested `data` payloads.
+    private func resolveV1Event(jsonStr: String) -> (event: String, json: String)? {
+        guard let data = jsonStr.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let type = json["type"] as? String else {
+            return nil
+        }
+
+        // Map v1 type to legacy event name
+        let event: String
+        switch type {
+        case "text-delta": event = "text_delta"
+        case "finish": event = "done"
+        case "error":
+            // Remap {type:"error", errorText:"..."} → {error:"..."}
+            let errorText = json["errorText"] as? String ?? "stream error"
+            let remapped = try? JSONSerialization.data(withJSONObject: ["error": errorText])
+            return ("error", remapped.flatMap { String(data: $0, encoding: .utf8) } ?? jsonStr)
+        default:
+            if type.hasPrefix("data-") {
+                event = String(type.dropFirst(5)) // data-title → title, data-message → message
+                // Unwrap nested data payload: {type:"data-title", data:{title:"..."}} → {title:"..."}
+                if let innerData = json["data"],
+                   let innerJson = try? JSONSerialization.data(withJSONObject: innerData) {
+                    return (event, String(data: innerJson, encoding: .utf8) ?? jsonStr)
+                }
+            } else {
+                event = type
+            }
+        }
+
+        return (event, jsonStr)
     }
 
     // MARK: - SSE Event Parser
