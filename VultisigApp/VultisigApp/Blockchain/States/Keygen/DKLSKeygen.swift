@@ -420,6 +420,8 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
@@ -596,6 +598,8 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry

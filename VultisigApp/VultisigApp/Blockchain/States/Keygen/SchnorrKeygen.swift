@@ -379,6 +379,8 @@ final class SchnorrKeygen {
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
@@ -541,6 +543,8 @@ final class SchnorrKeygen {
                 print("reshare EdDSA successfully")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
