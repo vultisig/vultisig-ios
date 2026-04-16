@@ -24,6 +24,31 @@ struct BatchKeygenRequest: Codable {
     static let protocolEdDSA = "eddsa"
 }
 
+/// Request body for `POST /vault/batch/reshare`.
+struct BatchReshareRequest: Codable {
+    let public_key: String
+    let session_id: String
+    let hex_encryption_key: String
+    let local_party_id: String
+    let old_parties: [String]
+    let encryption_password: String
+    let email: String
+    let protocols: [String]
+}
+
+/// Request body for `POST /vault/batch/import`.
+struct BatchKeyImportRequest: Codable {
+    let name: String
+    let session_id: String
+    let hex_encryption_key: String
+    let local_party_id: String
+    let encryption_password: String
+    let email: String
+    let lib_type: Int
+    let chains: [String]
+    let protocols: [String]
+}
+
 final class FastVaultService {
 
     static let shared = FastVaultService()
@@ -169,6 +194,60 @@ final class FastVaultService {
 
         Utils.sendRequest(urlString: "\(endpoint)/import", method: "POST", headers: [:], body: req) { _ in
             self.logger.info("Sent FastVault import request successfully")
+        }
+    }
+
+    func batchKeyImport(
+        name: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword: String,
+        email: String,
+        lib_type: Int,
+        chains: [String],
+        protocols: [String]
+    ) {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchKeyImportRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type,
+            chains: chains,
+            protocols: protocols
+        )
+
+        Utils.sendRequest(urlString: "\(endpoint)/batch/import", method: "POST", headers: [:], body: req) { _ in
+            self.logger.info("Sent FastVault batch import request successfully")
+        }
+    }
+
+    func batchReshare(
+        publicKeyECDSA: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword: String,
+        email: String,
+        oldParties: [String],
+        protocols: [String]
+    ) {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchReshareRequest(
+            public_key: publicKeyECDSA,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            local_party_id: localPartyID,
+            old_parties: oldParties,
+            encryption_password: encryptionPassword,
+            email: email,
+            protocols: protocols
+        )
+
+        Utils.sendRequest(urlString: "\(endpoint)/batch/reshare", method: "POST", headers: [:], body: req) { _ in
+            self.logger.info("Sent FastVault batch reshare request successfully")
         }
     }
 

@@ -530,9 +530,9 @@ final class DKLSKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 
-    func DKLSReshareWithRetry(attempt: UInt8) async throws {
+    func DKLSReshareWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
         self.cache.removeAllObjects()
-        self.messenger.messageID = nil // reshare uses legacy shared namespace
+        self.messenger.messageID = routing.exchangeMessageId
         do {
             var keyshareHandle = godkls.Handle()
             if !self.publicKeyECDSA.isEmpty {
@@ -548,10 +548,10 @@ final class DKLSKeygen {
             var reshareSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), nil)
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), routing.setupMessageId)
             } else {
                 // download the setup message from relay server
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
                 self.setupMessage = reshareSetupMsg
             }
@@ -604,7 +604,7 @@ final class DKLSKeygen {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await DKLSReshareWithRetry(attempt: attempt + 1)
+                try await DKLSReshareWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error
             }

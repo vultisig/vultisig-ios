@@ -477,9 +477,13 @@ final class SchnorrKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 
-    func SchnorrReshareWithRetry(attempt: UInt8) async throws {
+    func SchnorrReshareWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
         print("start Schnorr reshare , attempt:\(attempt) , keygenCommittee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
+        self.messenger.messageID = routing.exchangeMessageId
+        // In sequential mode (.default), use "eddsa" to separate from DKLS setup.
+        // In parallel mode, each protocol has its own routing namespace.
+        let setupId = routing.setupMessageId ?? "eddsa"
         do {
             var keyshareHandle = goschnorr.Handle()
             if !self.publicKeyEdDSA.isEmpty {
@@ -493,18 +497,14 @@ final class SchnorrKeygen {
             }
 
             var reshareSetupMsg: [UInt8]
-            // currently reshare Schnorr need to have it's own setup message, let's set it up
-            // it might not needed
             if self.isInitiateDevice && attempt == 0 {
-                // DKLS/Schnorr reshare need to upload different setup message , thus here pass in an additional header as "eddsa" to make sure
-                // dkls and schnorr setup message will be saved differently
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), "eddsa")
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), setupId)
             } else {
                 // download the setup message from relay server
                 // backoff for 500ms so the initiate device will upload the setup message correctly
                 try await Task.sleep(for: .milliseconds(500))
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry("eddsa")
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(setupId)
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
@@ -549,7 +549,7 @@ final class SchnorrKeygen {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await SchnorrReshareWithRetry(attempt: attempt + 1)
+                try await SchnorrReshareWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error
             }

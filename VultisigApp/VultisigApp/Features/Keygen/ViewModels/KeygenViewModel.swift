@@ -561,7 +561,7 @@ class KeygenViewModel: ObservableObject {
         await updateProgress(50)
         do {
             let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-            let useParallelPath = isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate)
+            let useParallelPath = isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate || self.tssType == .Reshare)
 
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -575,7 +575,8 @@ class KeygenViewModel: ObservableObject {
 
             if useParallelPath {
                 // Parallel: ECDSA and EdDSA run concurrently with isolated relay namespaces.
-                // Schnorr gets empty setupMessage — it downloads the shared setup from relay on demand.
+                // Schnorr gets empty setupMessage — for keygen it downloads the shared setup
+                // from relay on demand; for reshare each protocol creates its own setup message.
                 let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                                   tssType: self.tssType,
                                                   keygenCommittee: self.keygenCommittee,
@@ -586,21 +587,42 @@ class KeygenViewModel: ObservableObject {
                                                   isInitiatedDevice: self.isInitiateDevice,
                                                   setupMessage: [UInt8](),
                                                   localUI: localUIEddsa)
-                self.status = .KeygenECDSA
-                try await withThrowingTaskGroup(of: Void.self) { group in
-                    group.addTask {
-                        try await dklsKeygen.DKLSKeygenWithRetry(
-                            attempt: 0,
-                            routing: .from(exchangeMessageId: KeygenMessageId.rootECDSA)
-                        )
+
+                let ecdsaRouting = KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootECDSA)
+                let eddsaRouting = KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootEdDSA)
+
+                if self.tssType == .Reshare {
+                    // Reshare: each protocol creates its own setup message, so setup also needs routing.
+                    let ecdsaReshareRouting = KeygenRouting.from(
+                        setupMessageId: KeygenMessageId.rootECDSA,
+                        exchangeMessageId: KeygenMessageId.rootECDSA
+                    )
+                    let eddsaReshareRouting = KeygenRouting.from(
+                        setupMessageId: KeygenMessageId.rootEdDSA,
+                        exchangeMessageId: KeygenMessageId.rootEdDSA
+                    )
+                    self.status = .ReshareECDSA
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            try await dklsKeygen.DKLSReshareWithRetry(attempt: 0, routing: ecdsaReshareRouting)
+                        }
+                        group.addTask {
+                            try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0, routing: eddsaReshareRouting)
+                        }
+                        try await group.waitForAll()
                     }
-                    group.addTask {
-                        try await schnorrKeygen.SchnorrKeygenWithRetry(
-                            attempt: 0,
-                            routing: .from(exchangeMessageId: KeygenMessageId.rootEdDSA)
-                        )
+                } else {
+                    // Keygen / Migrate: shared setup message, only exchange needs routing.
+                    self.status = .KeygenECDSA
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
+                        }
+                        group.addTask {
+                            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: eddsaRouting)
+                        }
+                        try await group.waitForAll()
                     }
-                    try await group.waitForAll()
                 }
 
                 await updateProgress(100)
@@ -609,9 +631,7 @@ class KeygenViewModel: ObservableObject {
                 return
             }
 
-            // Sequential path (flag off, reshare, or key import).
-            // Reshare MUST stay sequential: ECDSA and EdDSA reshare share a relay
-            // namespace and the server does not support batch reshare.
+            // Sequential path (flag off, or key import which has its own parallel handling).
             switch self.tssType {
             case .Keygen, .Migrate:
                 self.status = .KeygenECDSA
