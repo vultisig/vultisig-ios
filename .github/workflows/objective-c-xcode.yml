@@ -72,9 +72,9 @@ jobs:
       - name: Package macOS artifact
         working-directory: VultisigApp
         run: |
-          app_path=$(find build-macos/Build/Products -maxdepth 3 -type d -name "*.app" | head -n 1)
+          app_path=$(find build-macos/Build/Products -maxdepth 3 -type d -name "VultisigApp.app")
           if [ -z "$app_path" ]; then
-            echo "No .app found under build-macos/Build/Products"
+            echo "No VultisigApp.app found under build-macos/Build/Products"
             exit 1
           fi
           echo "Zipping $app_path"
@@ -115,9 +115,9 @@ jobs:
       - name: Package iOS simulator artifact
         working-directory: VultisigApp
         run: |
-          app_path=$(find build-ios/Build/Products -maxdepth 3 -type d -name "*.app" | head -n 1)
+          app_path=$(find build-ios/Build/Products -maxdepth 3 -type d -name "VultisigApp.app")
           if [ -z "$app_path" ]; then
-            echo "No .app found under build-ios/Build/Products"
+            echo "No VultisigApp.app found under build-ios/Build/Products"
             exit 1
           fi
           echo "Zipping $app_path"
