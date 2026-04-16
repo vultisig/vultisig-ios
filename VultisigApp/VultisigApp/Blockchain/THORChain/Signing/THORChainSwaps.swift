@@ -16,8 +16,6 @@ class THORChainSwaps {
 #endif
     }
 
-    static let standardAffiliateFeeRateBp = 50
-
     static var referredAffiliateFeeRateBp: Int {
         return 35
     }

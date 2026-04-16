@@ -530,7 +530,7 @@ struct SwapCryptoLogic {
 
         let vultDiscountBps = vultTier?.bpsDiscount ?? 0
         // Referral discount = normal fee - referred fee - referrer share (e.g. 50 - 35 - 10 = 5 bps)
-        let referralDiscountBps = referredCode.isEmpty ? 0 : max(0, THORChainSwaps.standardAffiliateFeeRateBp - THORChainSwaps.referredAffiliateFeeRateBp - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0))
+        let referralDiscountBps = referredCode.isEmpty ? 0 : max(0, THORChainSwaps.affiliateFeeRateBp - THORChainSwaps.referredAffiliateFeeRateBp - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0))
 
         await MainActor.run {
             tx.vultDiscountBps = vultDiscountBps
