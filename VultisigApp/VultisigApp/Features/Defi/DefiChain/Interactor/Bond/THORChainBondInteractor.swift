@@ -24,11 +24,7 @@ struct THORChainBondInteractor: BondInteractor {
 
             // Parallelize per-node metric calculations
             let activeNodes: [BondPosition] = await withTaskGroup(of: BondPosition?.self) { group in
-                var bondedNodeAddresses: Set<String> = []
-
                 for node in bondedNodes.nodes {
-                    bondedNodeAddresses.insert(node.address)
-
                     group.addTask {
                         do {
                             let myBondMetrics = try await thorchainAPIService.calculateBondMetrics(
@@ -104,7 +100,7 @@ private extension THORChainBondInteractor {
         do {
             try DefiPositionsStorageService().upsert(positions, for: vault)
         } catch {
-            logger.error("An error occured while saving bond positions: \(error)")
+            logger.error("An error occurred while saving bond positions: \(error)")
         }
     }
 }
