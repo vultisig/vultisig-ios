@@ -50,7 +50,11 @@ class VaultDefaultCoinService {
             for coin in coins {
                 if coin.isNativeToken {
                     self.context.insert(coin)
-                    vault.coins.append(coin)
+
+                    // Only append if SwiftData inverse relationship didn't auto-populate
+                    if !vault.coins.contains(where: { $0.id == coin.id }) {
+                        vault.coins.append(coin)
+                    }
 
                     Task {
                         await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)

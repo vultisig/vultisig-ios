@@ -529,8 +529,8 @@ struct SwapCryptoLogic {
         let vultTier = await VultTierService().fetchDiscountTier(for: vault)
 
         let vultDiscountBps = vultTier?.bpsDiscount ?? 0
-        // Referral discount only applies if user was referred (has a referredCode)
-        let referralDiscountBps = referredCode.isEmpty ? 0 : THORChainSwaps.referredAffiliateFeeRateBp
+        // Referral discount = normal fee - referred fee - referrer share (e.g. 50 - 35 - 10 = 5 bps)
+        let referralDiscountBps = referredCode.isEmpty ? 0 : max(0, THORChainSwaps.affiliateFeeRateBp - THORChainSwaps.referredAffiliateFeeRateBp - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0))
 
         await MainActor.run {
             tx.vultDiscountBps = vultDiscountBps
