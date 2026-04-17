@@ -60,6 +60,10 @@ final class DKLSKeygen {
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
 
+    // Populated by prepareKeyImportSetup. DKLSKeygenWithRetry consumes the stored
+    // handle on attempt 0 and falls back to the normal flow on retry.
+    private var preparedKeyImportHandle: godkls.Handle?
+
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
@@ -317,6 +321,49 @@ final class DKLSKeygen {
         }
         let (_, _) = try await URLSession.shared.data(for: request)
     }
+    /// Phase 1 of batch key import: uploads setup message to the relay (initiator)
+    /// or downloads it (follower), and creates the key-import session handle.
+    /// The server's batch/import endpoint fetches all setup messages serially
+    /// upfront before launching keygen goroutines, so every protocol must upload
+    /// its setup before any protocol starts TSS exchange.
+    /// Must be followed by DKLSKeygenWithRetry, which consumes the stored handle.
+    func prepareKeyImportSetup(routing: KeygenRouting) async throws {
+        guard self.tssType == .KeyImport else {
+            throw HelperError.runtimeError("prepareKeyImportSetup only supports KeyImport tssType, got \(self.tssType)")
+        }
+        self.cache.removeAllObjects()
+        self.messenger.messageID = routing.exchangeMessageId
+
+        var handler = godkls.Handle()
+        if self.isInitiateDevice {
+            guard let localPrivateSecret = self.localPrivateSecret else {
+                throw HelperError.runtimeError("can't import , local private key is empty")
+            }
+            let (keygenSetupMsg, initiatorHandle) = try getDklsKeyImportSetupMessage(
+                hexPrivateKey: localPrivateSecret,
+                hexRootChainCode: self.hexChainCode
+            )
+            self.setupMessage = keygenSetupMsg
+            handler = initiatorHandle
+            try await messenger.uploadSetupMessage(
+                message: Data(keygenSetupMsg).base64EncodedString(),
+                routing.setupMessageId
+            )
+        } else {
+            let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
+            let keygenSetupMsg = Array(base64: strKeygenSetupMsg)
+            self.setupMessage = keygenSetupMsg
+            var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
+            let localPartyIDArr = self.localPartyID.toArray()
+            var localPartySlice = localPartyIDArr.to_dkls_goslice()
+            let result = dkls_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
+            if result != DKLS_LIB_OK {
+                throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+            }
+        }
+        self.preparedKeyImportHandle = handler
+    }
+
     // DKLSKeygenWithRetry tries to do keygen with retry mechanism
     // routing.setupMessageId isolates setup payload, routing.exchangeMessageId isolates TSS exchange
     func DKLSKeygenWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
@@ -324,67 +371,79 @@ final class DKLSKeygen {
         self.cache.removeAllObjects()
         self.messenger.messageID = routing.exchangeMessageId
         do {
-            var keygenSetupMsg: [UInt8]
             var handler = godkls.Handle()
-            if self.isInitiateDevice && attempt == 0 {
-                switch self.tssType {
-                case .Keygen, .Migrate, .Reshare, .SingleKeygen:
-                    keygenSetupMsg = try getDklsSetupMessage()
-                case .KeyImport:
-                    guard let localPrivateSecret = self.localPrivateSecret else {
-                        throw HelperError.runtimeError("can't import , local private key is empty")
-                    }
-                    (keygenSetupMsg, handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
-                }
-                self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), routing.setupMessageId)
-            } else {
-                // download the setup message from relay server
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
-                keygenSetupMsg = Array(base64: strKeygenSetupMsg)
-                self.setupMessage = keygenSetupMsg
-            }
-            var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
+            var usedPreparedSetup = false
 
-            let localPartyIDArr = self.localPartyID.toArray()
-            var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            switch self.tssType {
-            case .Keygen:
-                let result = dkls_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
-                if result != DKLS_LIB_OK {
-                    throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
-                }
-            case .KeyImport:
-                if !self.isInitiateDevice {
-                    let result = dkls_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
-                    if result != DKLS_LIB_OK {
-                        throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+            if attempt == 0, let prepared = self.preparedKeyImportHandle {
+                // Phase 2 of batch key import: reuse the session from prepareKeyImportSetup.
+                // Consume the stored state so a retry goes through the normal setup flow.
+                handler = prepared
+                self.preparedKeyImportHandle = nil
+                usedPreparedSetup = true
+            }
+
+            if !usedPreparedSetup {
+                var keygenSetupMsg: [UInt8]
+                if self.isInitiateDevice && attempt == 0 {
+                    switch self.tssType {
+                    case .Keygen, .Migrate, .Reshare, .SingleKeygen:
+                        keygenSetupMsg = try getDklsSetupMessage()
+                    case .KeyImport:
+                        guard let localPrivateSecret = self.localPrivateSecret else {
+                            throw HelperError.runtimeError("can't import , local private key is empty")
+                        }
+                        (keygenSetupMsg, handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                     }
+                    self.setupMessage = keygenSetupMsg
+                    try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), routing.setupMessageId)
+                } else {
+                    // download the setup message from relay server
+                    let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
+                    keygenSetupMsg = Array(base64: strKeygenSetupMsg)
+                    self.setupMessage = keygenSetupMsg
                 }
-            case .Migrate:
-                guard let localUI = self.localPrivateSecret else {
-                    throw HelperError.runtimeError("can't migrate , local UI is empty")
+                var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
+
+                let localPartyIDArr = self.localPartyID.toArray()
+                var localPartySlice = localPartyIDArr.to_dkls_goslice()
+                switch self.tssType {
+                case .Keygen:
+                    let result = dkls_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
+                    if result != DKLS_LIB_OK {
+                        throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
+                    }
+                case .KeyImport:
+                    if !self.isInitiateDevice {
+                        let result = dkls_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
+                        if result != DKLS_LIB_OK {
+                            throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+                        }
+                    }
+                case .Migrate:
+                    guard let localUI = self.localPrivateSecret else {
+                        throw HelperError.runtimeError("can't migrate , local UI is empty")
+                    }
+                    let publicKeyArray = Array(hex: self.publicKeyECDSA)
+                    var publicKeySlice = publicKeyArray.to_dkls_goslice()
+                    let chainCodeArray = Array(hex: self.hexChainCode)
+                    var chainCodeSlice = chainCodeArray.to_dkls_goslice()
+                    let localUIArray = Array(hex: localUI)
+                    var localUISlice = localUIArray.to_dkls_goslice()
+                    let result = dkls_key_migration_session_from_setup(&decodedSetupMsg,
+                                                                       &localPartySlice,
+                                                                       &publicKeySlice,
+                                                                       &chainCodeSlice,
+                                                                       &localUISlice,
+                                                                       &handler)
+                    if result != DKLS_LIB_OK {
+                        throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
+                    }
+                case .Reshare:
+                    // it should not get here for reshare
+                    throw HelperError.runtimeError("invalid tss type for keygen:\(self.tssType)")
+                case .SingleKeygen:
+                    throw HelperError.runtimeError("SingleKeygen should not reach DKLS path")
                 }
-                let publicKeyArray = Array(hex: self.publicKeyECDSA)
-                var publicKeySlice = publicKeyArray.to_dkls_goslice()
-                let chainCodeArray = Array(hex: self.hexChainCode)
-                var chainCodeSlice = chainCodeArray.to_dkls_goslice()
-                let localUIArray = Array(hex: localUI)
-                var localUISlice = localUIArray.to_dkls_goslice()
-                let result = dkls_key_migration_session_from_setup(&decodedSetupMsg,
-                                                                   &localPartySlice,
-                                                                   &publicKeySlice,
-                                                                   &chainCodeSlice,
-                                                                   &localUISlice,
-                                                                   &handler)
-                if result != DKLS_LIB_OK {
-                    throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
-                }
-            case .Reshare:
-                // it should not get here for reshare
-                throw HelperError.runtimeError("invalid tss type for keygen:\(self.tssType)")
-            case .SingleKeygen:
-                throw HelperError.runtimeError("SingleKeygen should not reach DKLS path")
             }
             // free the handler
             defer {

@@ -328,10 +328,62 @@ class KeygenViewModel: ObservableObject {
             throw HelperError.runtimeError("KeyImportInput should have at least one chain")
         }
 
-        try await runRootKeyImportKeygen(wallet: wallet, useParallelPath: useParallelPath)
+        let ecdsaHex = wallet?.getMasterKey(curve: .secp256k1).data.hexString
+        var eddsaHex: String?
+        if let edDSAKey = wallet?.getMasterKey(curve: .ed25519) {
+            eddsaHex = Data.clampThenUniformScalar(from: edDSAKey.data)?.hexString
+        }
+        let rootDkls = makeDklsKeygen(localUI: ecdsaHex)
+        let rootSchnorr = makeSchnorrKeygen(localUI: eddsaHex)
+
+        // Batch key import uses the same relay exchange namespaces as batch keygen
+        // (p-ecdsa, p-eddsa, p-{chain}) because the server's /batch/import handler
+        // polls those channels. Root DKLS setup goes to the default namespace;
+        // root Schnorr setup has its own eddsa_key_import namespace to avoid collision.
+        let rootEcdsaRouting: KeygenRouting = useParallelPath
+            ? KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootECDSA)
+            : .default
+        let rootEddsaRouting: KeygenRouting = useParallelPath
+            ? KeygenRouting.from(
+                setupMessageId: KeygenMessageId.rootEdDSAKeyImport,
+                exchangeMessageId: KeygenMessageId.rootEdDSA
+              )
+            : .default
+
+        let chainJobs = try buildChainImportJobs(chains: chains, wallet: wallet, useParallelPath: useParallelPath)
+
+        // Phase 1 (parallel path only): upload every setup message to the relay
+        // before any protocol starts TSS exchange. The server's /batch/import
+        // endpoint downloads all setup messages serially with a 1-minute timeout
+        // each before launching any keygen goroutine; if per-chain setups arrive
+        // only after root keygen exchange starts, the server times out and both
+        // sides hang on mismatched relay channels.
+        if useParallelPath {
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await rootDkls.prepareKeyImportSetup(routing: rootEcdsaRouting)
+                }
+                group.addTask {
+                    try await rootSchnorr.prepareKeyImportSetup(routing: rootEddsaRouting)
+                }
+                for job in chainJobs {
+                    group.addTask {
+                        try await Self.prepareChainImportJob(job)
+                    }
+                }
+                try await group.waitForAll()
+            }
+        }
+
+        try await runRootKeyImportKeygen(
+            dklsKeygen: rootDkls,
+            schnorrKeygen: rootSchnorr,
+            useParallelPath: useParallelPath,
+            ecdsaRouting: rootEcdsaRouting,
+            eddsaRouting: rootEddsaRouting
+        )
 
         var seenPubKeys: Set<String> = [self.vault.pubKeyECDSA, self.vault.pubKeyEdDSA]
-        let chainJobs = try buildChainImportJobs(chains: chains, wallet: wallet, useParallelPath: useParallelPath)
 
         let chainResults: [KeyImportChainResult]
         if useParallelPath {
@@ -400,27 +452,16 @@ class KeygenViewModel: ObservableObject {
         self.status = .KeygenFinished
     }
 
-    private func runRootKeyImportKeygen(wallet: HDWallet?, useParallelPath: Bool) async throws {
+    private func runRootKeyImportKeygen(
+        dklsKeygen: DKLSKeygen,
+        schnorrKeygen: SchnorrKeygen,
+        useParallelPath: Bool,
+        ecdsaRouting: KeygenRouting,
+        eddsaRouting: KeygenRouting
+    ) async throws {
         self.logger.info("Starting Root Key import process")
 
-        let ecdsaHex = wallet?.getMasterKey(curve: .secp256k1).data.hexString
-        var eddsaHex: String?
-        if let edDSAKey = wallet?.getMasterKey(curve: .ed25519) {
-            eddsaHex = Data.clampThenUniformScalar(from: edDSAKey.data)?.hexString
-        }
-
-        let dklsKeygen = makeDklsKeygen(localUI: ecdsaHex)
-        let schnorrKeygen = makeSchnorrKeygen(localUI: eddsaHex)
-
         if useParallelPath {
-            let ecdsaRouting = KeygenRouting.from(
-                setupMessageId: KeygenMessageId.rootECDSAKeyImport,
-                exchangeMessageId: KeygenMessageId.rootECDSAKeyImport
-            )
-            let eddsaRouting = KeygenRouting.from(
-                setupMessageId: KeygenMessageId.rootEdDSAKeyImport,
-                exchangeMessageId: KeygenMessageId.rootEdDSAKeyImport
-            )
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
@@ -431,8 +472,8 @@ class KeygenViewModel: ObservableObject {
                 try await group.waitForAll()
             }
         } else {
-            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: .default)
-            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: .default)
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
+            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: eddsaRouting)
         }
 
         guard let rootEcdsa = dklsKeygen.getKeyshare() else {
@@ -459,11 +500,11 @@ class KeygenViewModel: ObservableObject {
                 chainKey = getChainKey(for: chain, wallet: wallet)
             }
 
-            // Parallel path namespaces the TSS exchange per chain so concurrent ceremonies don't
-            // collide on the relay. Sequential path keeps the legacy shared exchange namespace
-            // (exchangeMessageId nil) — only the setup payload is chain-scoped.
+            // Parallel path: setup goes to chain.name, exchange to p-{chain.name}
+            // (matching the server's /batch/import relay channels). Sequential path
+            // keeps the legacy shared exchange namespace — only setup is chain-scoped.
             let routing: KeygenRouting = useParallelPath
-                ? KeygenRouting.from(setupMessageId: chain.name, exchangeMessageId: chain.name)
+                ? KeygenRouting.from(setupMessageId: chain.name, exchangeMessageId: "p-\(chain.name)")
                 : KeygenRouting.from(setupMessageId: chain.name)
 
             if chain.isECDSA {
@@ -482,6 +523,18 @@ class KeygenViewModel: ObservableObject {
             }
         }
         return jobs
+    }
+
+    nonisolated private static func prepareChainImportJob(_ job: KeyImportChainJob) async throws {
+        if let dkls = job.dkls {
+            try await dkls.prepareKeyImportSetup(routing: job.routing)
+            return
+        }
+        if let schnorr = job.schnorr {
+            try await schnorr.prepareKeyImportSetup(routing: job.routing)
+            return
+        }
+        throw HelperError.runtimeError("invalid chain import job for \(job.chain.name)")
     }
 
     nonisolated private static func executeChainImportJob(_ job: KeyImportChainJob) async throws -> KeyImportChainResult {
