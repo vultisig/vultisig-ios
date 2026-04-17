@@ -30,6 +30,7 @@ struct VaultManagementSheet: View {
 
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
+    @State private var detentAnimationTask: Task<Void, Never>?
 
     @Binding var isPresented: Bool
     let availableHeight: CGFloat
@@ -70,6 +71,12 @@ struct VaultManagementSheet: View {
             updateDetents(whileAnimation: false)
             detentSelection = detents[safe: 0] ?? .medium
         }
+        .onDisappear {
+            // Cancel the sleeping detent animation Task so it can't wake up
+            // and mutate detentSelection after the sheet has been dismissed.
+            detentAnimationTask?.cancel()
+            detentAnimationTask = nil
+        }
     }
 
     var mainSheetView: some View {
@@ -107,12 +114,15 @@ struct VaultManagementSheet: View {
 private extension VaultManagementSheet {
     // This is to support detents animation
     func updateDetents(isEditing: Bool) {
+        detentAnimationTask?.cancel()
         updateDetents(whileAnimation: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        detentAnimationTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             detentSelection = isEditing ? .large : detents[safe: 0] ?? .medium
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                updateDetents(whileAnimation: false)
-            }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            updateDetents(whileAnimation: false)
         }
     }
     func updateDetents(whileAnimation: Bool) {
