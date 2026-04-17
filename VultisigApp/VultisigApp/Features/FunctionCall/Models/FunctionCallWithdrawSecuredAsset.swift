@@ -8,6 +8,9 @@
 import SwiftUI
 import Foundation
 import Combine
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-withdraw-secured-asset")
 
 // MARK: - Main ViewModel
 
@@ -79,43 +82,88 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         isLoadingAssets = true
         loadError = nil
 
-        // Secured-asset balances live as cosmos-bank denoms on the user's THOR
-        // address, not as entries in `vault.coins` until a discovery pass
-        // persists them. Trigger the same discovery path the chain detail
-        // screen uses so USDC / USDT / etc. acquired after the last visit are
-        // picked up before we build the dropdown.
         let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
-        let thorNative = vault.coins.first { coin in
+        guard let thorNative = vault.coins.first(where: { coin in
             thorChains.contains(coin.chain) && coin.isNativeToken
+        }) else {
+            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
+            return
         }
-        if let thorNative {
-            await CoinService.addDiscoveredTokens(nativeToken: thorNative, to: vault)
-        }
 
-        // A secured asset is any non-native THORChain coin whose on-chain denom is
-        // formatted as `<l1chain>-<symbol>[-<contract>]` (see THORChainHelper).
-        let securedAssetsInVault = vault.coins
-            .filter { THORChainHelper.isSecuredAsset(coin: $0) && $0.balanceDecimal > 0 }
-            .sorted { displayName(for: $0) < displayName(for: $1) }
+        // Secured-asset balances live as cosmos-bank denoms on the user's THOR
+        // address and are not present in vault.coins until explicitly enabled.
+        // Fetch the live bank balances so we see every secured asset the user
+        // holds (USDC, USDT, WBTC, ...) even on first use, then persist each
+        // via CoinService.addIfNeeded so the signing flow has a proper Coin.
+        do {
+            let service = ThorchainServiceFactory.getService(for: thorNative.chain)
+            let balances = try await service.fetchBalances(thorNative.address)
 
-        var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
-        var lookup: [UUID: Coin] = [:]
+            var persisted: [Coin] = []
+            for balance in balances where Self.isSecuredDenom(balance.denom) {
+                guard let coin = try persistSecuredAsset(balance: balance, chain: thorNative.chain) else {
+                    continue
+                }
+                coin.rawBalance = balance.amount
+                persisted.append(coin)
+            }
 
-        if securedAssetsInVault.isEmpty {
-            availableSecuredAssets = assetList
-            securedAssetLookup = lookup
-            loadError = NSLocalizedString("noSecuredAssets", comment: "")
-        } else {
-            let vaultAssets = securedAssetsInVault.map { coin -> IdentifiableString in
+            let securedAssets = persisted
+                .filter { $0.balanceDecimal > 0 }
+                .sorted { displayName(for: $0) < displayName(for: $1) }
+
+            guard !securedAssets.isEmpty else {
+                setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
+                return
+            }
+
+            var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+            var lookup: [UUID: Coin] = [:]
+            for coin in securedAssets {
                 let item = IdentifiableString(value: displayName(for: coin))
                 lookup[item.id] = coin
-                return item
+                assetList.append(item)
             }
-            assetList.append(contentsOf: vaultAssets)
             availableSecuredAssets = assetList
             securedAssetLookup = lookup
             loadError = nil
+            isLoadingAssets = false
+        } catch {
+            logger.error("Failed to fetch THORChain balances: \(error.localizedDescription)")
+            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
         }
+    }
+
+    private static func isSecuredDenom(_ denom: String) -> Bool {
+        let lower = denom.lowercased()
+        guard lower != "rune" else { return false }
+        guard !lower.hasPrefix("x/") else { return false }
+        return lower.contains("-")
+    }
+
+    @MainActor
+    private func persistSecuredAsset(balance: CosmosBalance, chain: Chain) throws -> Coin? {
+        let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
+        let ticker = info.ticker.uppercased()
+        let localAsset = TokensStore.TokenSelectionAssets.first {
+            $0.ticker.caseInsensitiveCompare(ticker) == .orderedSame
+        }
+        let coinMeta = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: localAsset?.logo ?? info.logo,
+            decimals: info.decimals,
+            priceProviderId: localAsset?.priceProviderId ?? "",
+            contractAddress: balance.denom,
+            isNativeToken: false
+        )
+        return try CoinService.addIfNeeded(asset: coinMeta, to: vault, priceProviderId: coinMeta.priceProviderId)
+    }
+
+    private func setPickerEmpty(reason: String) {
+        availableSecuredAssets = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+        securedAssetLookup = [:]
+        loadError = reason
         isLoadingAssets = false
     }
 
