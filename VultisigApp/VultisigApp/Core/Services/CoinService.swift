@@ -213,6 +213,34 @@ struct CoinService {
         return tokens
     }
 
+    /// Migrate stale `decimals` values for tokens whose registered precision changed
+    /// between releases. Fixes legacy persisted coins where the stored decimals no
+    /// longer matches `TokensStore.TokenSelectionAssets` (the canonical source).
+    ///
+    /// Known case (issue #4171): MAYA.AZTEC shipped briefly with `decimals = 8` and
+    /// was later corrected to `decimals = 4` (PR #3943). Vaults created while the
+    /// bad value was live kept the stale 8 in SwiftData, so balances render with
+    /// 4 fewer visible digits on platforms where the user never re-added the token.
+    static func migrateStaleCoinDecimals(vault: Vault) {
+        // Tokens whose decimals were corrected in-place in `TokensStore`.
+        // Keyed by (chain, ticker, contractAddress) — all compared case-insensitively.
+        let knownDecimalFixes: [(chain: Chain, ticker: String, contractAddress: String, expectedDecimals: Int)] = [
+            (.mayaChain, "AZTEC", "aztec", 4)
+        ]
+
+        for fix in knownDecimalFixes {
+            let staleCoins = vault.coins.filter { coin in
+                coin.chain == fix.chain
+                    && coin.ticker.caseInsensitiveCompare(fix.ticker) == .orderedSame
+                    && coin.contractAddress.caseInsensitiveCompare(fix.contractAddress) == .orderedSame
+                    && coin.decimals != fix.expectedDecimals
+            }
+            for coin in staleCoins {
+                coin.decimals = fix.expectedDecimals
+            }
+        }
+    }
+
     /// Migrate coins and hidden tokens that reference old contract addresses from PR #3837.
     /// Old addresses (e.g. "x/staking-x/tcy") are updated to new ones (e.g. "x/staking-tcy").
     /// If both old and new coins exist, the old duplicate is removed.
@@ -255,6 +283,7 @@ struct CoinService {
 
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         migrateOldContractAddresses(vault: vault)
+        migrateStaleCoinDecimals(vault: vault)
 
         do {
             let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
