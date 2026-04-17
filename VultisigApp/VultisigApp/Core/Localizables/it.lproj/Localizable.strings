@@ -1074,6 +1074,7 @@
 "Withdraw RUJI" = "Preleva RUJI";
 "Withdraw Secured Asset" = "Preleva asset garantito";
 "withdrawAmount" = "Preleva %@";
+"withdrawBelowOutboundFee" = "Importo inferiore alla commissione in uscita — preleva almeno %@ %@ per coprire i costi di rete";
 "withdrawPercentage" = "Percentuale di prelievo";
 "withdrawSecuredAssetError" = "Per prelevare %@, devi prima aggiungere la moneta %@ al tuo vault. Vai nelle impostazioni del vault e aggiungi %@ per continuare.";
 "wrongPassword" = "Password errata";

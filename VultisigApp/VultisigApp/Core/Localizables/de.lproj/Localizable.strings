@@ -1074,6 +1074,7 @@
 "Withdraw RUJI" = "RUJI abheben";
 "Withdraw Secured Asset" = "Gesicherten Vermögenswert abheben";
 "withdrawAmount" = "%@ abheben";
+"withdrawBelowOutboundFee" = "Betrag unter Ausgangsgebühr — mindestens %@ %@ abheben, um Netzwerkkosten zu decken";
 "withdrawPercentage" = "Abhebungsprozentsatz";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Falsches Passwort";

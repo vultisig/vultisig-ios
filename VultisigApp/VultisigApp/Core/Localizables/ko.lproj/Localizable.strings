@@ -1090,6 +1090,7 @@
 "Withdraw RUJI" = "RUJI 출금";
 "Withdraw Secured Asset" = "보안 자산 출금";
 "withdrawAmount" = "%@ 출금";
+"withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawPercentage" = "출금 비율";
 "withdrawSecuredAssetError" = "%@을(를) 출금하려면 먼저 볼트에 %@ 코인을 추가해야 합니다. 볼트 설정으로 이동하여 %@을(를) 추가하고 계속하세요.";
 "wrongPassword" = "잘못된 비밀번호";

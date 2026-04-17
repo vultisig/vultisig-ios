@@ -1075,6 +1075,7 @@
 "Withdraw RUJI" = "提取 RUJI";
 "Withdraw Secured Asset" = "提取担保资产";
 "withdrawAmount" = "提取 %@";
+"withdrawBelowOutboundFee" = "金额低于出站费用 — 请至少提取 %@ %@ 以支付网络费用";
 "withdrawPercentage" = "提取百分比";
 "withdrawSecuredAssetError" = "要提取 %@，您需要先将 %@ 代币添加到您的保险库。请前往保险库设置并添加 %@ 以继续。";
 "wrongPassword" = "密码错误";

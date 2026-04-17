@@ -32,6 +32,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     @Published var isLoadingAssets: Bool = true
     @Published var loadError: String? = nil
     @Published var selectedSecuredAssetCoin: Coin? = nil  // Track the actual secured asset coin
+    @Published var minimumWithdrawAmount: Decimal = 0
 
     /// Maps a dropdown item's id to the underlying secured asset coin in the vault.
     private var securedAssetLookup: [UUID: Coin] = [:]
@@ -209,6 +210,48 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
 
         // Update destination address based on the L1 chain encoded in the denom
         updateDestinationAddress(for: securedAssetCoin)
+
+        Task { @MainActor in
+            await refreshOutboundFeeThreshold(for: securedAssetCoin)
+        }
+    }
+
+    /// Queries the L1 chain's outbound_fee from THORChain's inbound_addresses and
+    /// converts it into the selected secured asset's units so we can reject
+    /// amounts THORChain would refuse with "not enough asset to pay for fees".
+    @MainActor
+    private func refreshOutboundFeeThreshold(for securedAssetCoin: Coin) async {
+        minimumWithdrawAmount = 0
+
+        let l1ChainCode = THORChainHelper.securedAssetChain(coin: securedAssetCoin)
+        guard let l1Chain = chain(forSwapAsset: l1ChainCode),
+              let nativeCoin = vault.coins.first(where: { $0.chain == l1Chain && $0.isNativeToken }) else {
+            return
+        }
+
+        let inboundChainName = ThorchainService.getInboundChainName(for: l1Chain)
+        let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+        guard let inbound = addresses.first(where: { $0.chain.uppercased() == inboundChainName.uppercased() }),
+              let feeRaw = inbound.outbound_fee,
+              let feeBaseUnits = Decimal(string: feeRaw) else {
+            return
+        }
+
+        // outbound_fee is denominated in the L1 native asset at 8 decimals across
+        // all THORChain-supported chains.
+        let feeNativeAmount = feeBaseUnits / pow(10, 8)
+        let feeFiat = RateProvider.shared.fiatBalance(value: feeNativeAmount, coin: nativeCoin)
+        let unitFiat = RateProvider.shared.fiatBalance(value: 1, coin: securedAssetCoin)
+
+        guard feeFiat > 0, unitFiat > 0 else {
+            return
+        }
+
+        // Small buffer so a price tick between check and broadcast doesn't flip
+        // the tx from accepted to "not enough asset to pay for fees".
+        let buffer: Decimal = 1.2
+        minimumWithdrawAmount = (feeFiat * buffer) / unitFiat
+        validateAmount()
     }
 
     private func updateDestinationAddress(for securedAssetCoin: Coin) {
@@ -291,10 +334,22 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         }
 
         if let secured = selectedSecuredAssetCoin {
-            amountValid = amount <= secured.balanceDecimal
+            let balanceOK = amount <= secured.balanceDecimal
+            let feeOK = minimumWithdrawAmount == 0 || amount >= minimumWithdrawAmount
+            amountValid = balanceOK && feeOK
             // Only update error message if there's no destination address error
             if destinationAddressValid {
-                customErrorMessage = amountValid ? nil : NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+                if !balanceOK {
+                    customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+                } else if !feeOK {
+                    customErrorMessage = String(
+                        format: NSLocalizedString("withdrawBelowOutboundFee", comment: ""),
+                        minimumWithdrawAmount.formatForDisplay(),
+                        secured.ticker.uppercased()
+                    )
+                } else {
+                    customErrorMessage = nil
+                }
             }
         } else {
             amountValid = false
