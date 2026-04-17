@@ -28,6 +28,10 @@ final class SchnorrKeygen {
     let localPrivateSecret: String?
     let hexChainCode: String
 
+    // Populated by prepareKeyImportSetup. SchnorrKeygenWithRetry consumes the stored
+    // handle on attempt 0 and falls back to the normal flow on retry.
+    private var preparedKeyImportHandle: goschnorr.Handle?
+
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
@@ -286,6 +290,50 @@ final class SchnorrKeygen {
         return try await downloadSharedSetupMessage()
     }
 
+    /// Phase 1 of batch key import: uploads setup message to the relay (initiator)
+    /// or downloads it (follower), and creates the key-import session handle.
+    /// The server's batch/import endpoint fetches all setup messages serially
+    /// upfront before launching keygen goroutines, so every protocol must upload
+    /// its setup before any protocol starts TSS exchange.
+    /// Must be followed by SchnorrKeygenWithRetry, which consumes the stored handle.
+    func prepareKeyImportSetup(routing: KeygenRouting) async throws {
+        guard self.tssType == .KeyImport else {
+            throw HelperError.runtimeError("prepareKeyImportSetup only supports KeyImport tssType, got \(self.tssType)")
+        }
+        self.cache.removeAllObjects()
+        self.messenger.messageID = routing.exchangeMessageId
+
+        let keyImportSetupId = routing.setupMessageId ?? "eddsa_key_import"
+        var handler = goschnorr.Handle()
+        if self.isInitiateDevice {
+            guard let localPrivateSecret = self.localPrivateSecret else {
+                throw HelperError.runtimeError("can't import , local private key is empty")
+            }
+            let (keygenSetupMsg, initiatorHandle) = try getKeyImportSetupMessage(
+                hexPrivateKey: localPrivateSecret,
+                hexRootChainCode: self.hexChainCode
+            )
+            self.setupMessage = keygenSetupMsg
+            handler = initiatorHandle
+            try await messenger.uploadSetupMessage(
+                message: Data(keygenSetupMsg).base64EncodedString(),
+                keyImportSetupId
+            )
+        } else {
+            let strSetupMsg = try await messenger.downloadSetupMessageWithRetry(keyImportSetupId)
+            let keygenSetupMsg = Array(base64: strSetupMsg)
+            self.setupMessage = keygenSetupMsg
+            var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
+            let localPartyIDArr = self.localPartyID.toArray()
+            var localPartySlice = localPartyIDArr.to_dkls_goslice()
+            let result = schnorr_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
+            if result != LIB_OK {
+                throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+            }
+        }
+        self.preparedKeyImportHandle = handler
+    }
+
     // SchnorrKeygenWithRetry will perform keygen/migration/keyimport with retry mechanism
     // routing.setupMessageId is used to differentiate the setup message when doing key import
     // routing.exchangeMessageId isolates TSS message exchange on the relay
@@ -295,59 +343,71 @@ final class SchnorrKeygen {
         self.messenger.messageID = routing.exchangeMessageId
         do {
             var handler = goschnorr.Handle()
-            let localPartyIDArr = self.localPartyID.toArray()
-            var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            switch self.tssType {
-            case .Keygen:
-                let resolvedSetupMsg = try await getSharedSetupMessage()
-                var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
-                let result = schnorr_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
-                if result != LIB_OK {
-                    throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
-                }
-            case .Migrate:
-                let resolvedSetupMsg = try await getSharedSetupMessage()
-                var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
-                guard let localUI = self.localPrivateSecret else {
-                    throw HelperError.runtimeError("can't migrate , local UI is empty")
-                }
-                let publicKeyArray = Array(hex: self.publicKeyEdDSA)
-                var publicKeySlice = publicKeyArray.to_dkls_goslice()
-                let chainCodeArray = Array(hex: self.hexChainCode)
-                var chainCodeSlice = chainCodeArray.to_dkls_goslice()
-                let localUIArray = Array(hex: localUI)
-                var localUISlice = localUIArray.to_dkls_goslice()
-                let result = schnorr_key_migration_session_from_setup(&decodedSetupMsg,
-                                                                   &localPartySlice,
-                                                                   &publicKeySlice,
-                                                                   &chainCodeSlice,
-                                                                   &localUISlice,
-                                                                   &handler)
-                if result != LIB_OK {
-                    throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
-                }
-            case .KeyImport:
-                let keyImportSetupId = routing.setupMessageId ?? "eddsa_key_import"
-                var keygenSetupMsg: [UInt8]
-                if self.isInitiateDevice {
-                    guard let localPrivateSecret = self.localPrivateSecret else {
-                        throw HelperError.runtimeError("can't import , local private key is empty")
-                    }
-                    (keygenSetupMsg, handler) = try getKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
-                    try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), keyImportSetupId)
-                } else {
-                    let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(keyImportSetupId)
-                    keygenSetupMsg = Array(base64: strReshareSetupMsg)
-                    var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
-                    let result = schnorr_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
+            var usedPreparedSetup = false
+
+            if attempt == 0, let prepared = self.preparedKeyImportHandle {
+                // Phase 2 of batch key import: reuse the session from prepareKeyImportSetup.
+                // Consume the stored state so a retry goes through the normal setup flow.
+                handler = prepared
+                self.preparedKeyImportHandle = nil
+                usedPreparedSetup = true
+            }
+
+            if !usedPreparedSetup {
+                let localPartyIDArr = self.localPartyID.toArray()
+                var localPartySlice = localPartyIDArr.to_dkls_goslice()
+                switch self.tssType {
+                case .Keygen:
+                    let resolvedSetupMsg = try await getSharedSetupMessage()
+                    var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
+                    let result = schnorr_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
                     if result != LIB_OK {
-                        throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+                        throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                     }
+                case .Migrate:
+                    let resolvedSetupMsg = try await getSharedSetupMessage()
+                    var decodedSetupMsg = resolvedSetupMsg.to_dkls_goslice()
+                    guard let localUI = self.localPrivateSecret else {
+                        throw HelperError.runtimeError("can't migrate , local UI is empty")
+                    }
+                    let publicKeyArray = Array(hex: self.publicKeyEdDSA)
+                    var publicKeySlice = publicKeyArray.to_dkls_goslice()
+                    let chainCodeArray = Array(hex: self.hexChainCode)
+                    var chainCodeSlice = chainCodeArray.to_dkls_goslice()
+                    let localUIArray = Array(hex: localUI)
+                    var localUISlice = localUIArray.to_dkls_goslice()
+                    let result = schnorr_key_migration_session_from_setup(&decodedSetupMsg,
+                                                                       &localPartySlice,
+                                                                       &publicKeySlice,
+                                                                       &chainCodeSlice,
+                                                                       &localUISlice,
+                                                                       &handler)
+                    if result != LIB_OK {
+                        throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
+                    }
+                case .KeyImport:
+                    let keyImportSetupId = routing.setupMessageId ?? "eddsa_key_import"
+                    var keygenSetupMsg: [UInt8]
+                    if self.isInitiateDevice {
+                        guard let localPrivateSecret = self.localPrivateSecret else {
+                            throw HelperError.runtimeError("can't import , local private key is empty")
+                        }
+                        (keygenSetupMsg, handler) = try getKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
+                        try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), keyImportSetupId)
+                    } else {
+                        let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(keyImportSetupId)
+                        keygenSetupMsg = Array(base64: strReshareSetupMsg)
+                        var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
+                        let result = schnorr_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
+                        if result != LIB_OK {
+                            throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+                        }
+                    }
+                case .Reshare:
+                    throw HelperError.runtimeError("Reshare should call SchnorrReshareWithRetry function")
+                case .SingleKeygen:
+                    throw HelperError.runtimeError("SingleKeygen should not reach Schnorr path")
                 }
-            case .Reshare:
-                throw HelperError.runtimeError("Reshare should call SchnorrReshareWithRetry function")
-            case .SingleKeygen:
-                throw HelperError.runtimeError("SingleKeygen should not reach Schnorr path")
             }
 
             // free the handler
