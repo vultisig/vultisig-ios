@@ -36,8 +36,33 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
 
     /// Maps a dropdown item's id to the underlying secured asset coin in the vault.
     private var securedAssetLookup: [UUID: Coin] = [:]
+    /// Set by `updateDestinationAddress` when the vault lacks the L1 native
+    /// coin; read by `updateErrorMessage` so destination issues take priority
+    /// over amount/fee complaints.
+    private var destinationError: String?
 
     private var cancellables = Set<AnyCancellable>()
+
+    private static let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
+
+    // MARK: - Coin helpers
+
+    private func nativeCoin(for chain: Chain) -> Coin? {
+        vault.coins.first { $0.chain == chain && $0.isNativeToken }
+    }
+
+    private var thorNative: Coin? {
+        vault.coins.first { Self.thorChains.contains($0.chain) && $0.isNativeToken }
+    }
+
+    /// Short symbol (e.g. "USDC") — `securedAssetSymbol` keeps the trailing
+    /// contract suffix for signing, which isn't what we want for labels.
+    private func shortSymbol(for coin: Coin) -> String {
+        THORChainHelper.securedAssetSymbol(coin: coin)
+            .split(separator: "-")
+            .first
+            .map(String.init) ?? coin.ticker.uppercased()
+    }
 
     // Domain models
     var tx: SendTransaction
@@ -82,57 +107,61 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     func loadAvailableSecuredAssets() async {
         isLoadingAssets = true
         loadError = nil
-
-        let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
-        guard let thorNative = vault.coins.first(where: { coin in
-            thorChains.contains(coin.chain) && coin.isNativeToken
-        }) else {
-            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
-            return
-        }
-
-        // Secured-asset balances live as cosmos-bank denoms on the user's THOR
-        // address and are not present in vault.coins until explicitly enabled.
-        // Fetch the live bank balances so we see every secured asset the user
-        // holds (USDC, USDT, WBTC, ...) even on first use, then persist each
-        // via CoinService.addIfNeeded so the signing flow has a proper Coin.
         do {
-            let service = ThorchainServiceFactory.getService(for: thorNative.chain)
-            let balances = try await service.fetchBalances(thorNative.address)
-
-            var persisted: [Coin] = []
-            for balance in balances where Self.isSecuredDenom(balance.denom) {
-                guard let coin = try persistSecuredAsset(balance: balance, chain: thorNative.chain) else {
-                    continue
-                }
-                coin.rawBalance = balance.amount
-                persisted.append(coin)
-            }
-
-            let securedAssets = persisted
-                .filter { $0.balanceDecimal > 0 }
-                .sorted { displayName(for: $0) < displayName(for: $1) }
-
-            guard !securedAssets.isEmpty else {
-                setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
-                return
-            }
-
-            var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
-            var lookup: [UUID: Coin] = [:]
-            for coin in securedAssets {
-                let item = IdentifiableString(value: displayName(for: coin))
-                lookup[item.id] = coin
-                assetList.append(item)
-            }
-            availableSecuredAssets = assetList
-            securedAssetLookup = lookup
-            loadError = nil
-            isLoadingAssets = false
+            let assets = try await fetchSecuredAssetCoins()
+            applyPicker(securedAssets: assets)
         } catch {
             logger.error("Failed to fetch THORChain balances: \(error.localizedDescription)")
             setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
         }
+    }
+
+    /// Pulls live cosmos-bank balances from the user's THOR address, persists
+    /// any secured-asset denoms that aren't yet in the vault, and returns the
+    /// set of coins with a non-zero balance sorted for display.
+    ///
+    /// Secured-asset balances live as cosmos-bank denoms and aren't present in
+    /// `vault.coins` until explicitly enabled, so fetching from the network
+    /// ensures USDC / USDT / WBTC etc. show up on first use. `addIfNeeded`
+    /// skips the spam/hidden filters that `addDiscoveredTokens` would apply.
+    @MainActor
+    private func fetchSecuredAssetCoins() async throws -> [Coin] {
+        guard let thorNative else { return [] }
+
+        let service = ThorchainServiceFactory.getService(for: thorNative.chain)
+        let balances = try await service.fetchBalances(thorNative.address)
+
+        var persisted: [Coin] = []
+        for balance in balances where Self.isSecuredDenom(balance.denom) {
+            guard let coin = try persistSecuredAsset(balance: balance, chain: thorNative.chain) else {
+                continue
+            }
+            coin.rawBalance = balance.amount
+            persisted.append(coin)
+        }
+
+        return persisted
+            .filter { $0.balanceDecimal > 0 }
+            .sorted { displayName(for: $0) < displayName(for: $1) }
+    }
+
+    @MainActor
+    private func applyPicker(securedAssets: [Coin]) {
+        guard !securedAssets.isEmpty else {
+            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
+            return
+        }
+        var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+        var lookup: [UUID: Coin] = [:]
+        for coin in securedAssets {
+            let item = IdentifiableString(value: displayName(for: coin))
+            lookup[item.id] = coin
+            assetList.append(item)
+        }
+        availableSecuredAssets = assetList
+        securedAssetLookup = lookup
+        loadError = nil
+        isLoadingAssets = false
     }
 
     private static func isSecuredDenom(_ denom: String) -> Bool {
@@ -169,15 +198,8 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     /// Human-readable label for a secured asset (e.g. "ETH.USDC", "BTC.BTC").
-    /// Uses the L1 chain + symbol (without the trailing contract address suffix
-    /// that `securedAssetSymbol` preserves) so labels stay short and unique.
     private func displayName(for coin: Coin) -> String {
-        let chain = THORChainHelper.securedAssetChain(coin: coin)
-        let symbol = THORChainHelper.securedAssetSymbol(coin: coin)
-            .split(separator: "-")
-            .first
-            .map(String.init) ?? coin.ticker.uppercased()
-        return "\(chain).\(symbol)"
+        "\(THORChainHelper.securedAssetChain(coin: coin)).\(shortSymbol(for: coin))"
     }
 
     // MARK: - Asset Selection
@@ -225,7 +247,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
 
         let l1ChainCode = THORChainHelper.securedAssetChain(coin: securedAssetCoin)
         guard let l1Chain = chain(forSwapAsset: l1ChainCode),
-              let nativeCoin = vault.coins.first(where: { $0.chain == l1Chain && $0.isNativeToken }) else {
+              let native = nativeCoin(for: l1Chain) else {
             return
         }
 
@@ -240,7 +262,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         // outbound_fee is denominated in the L1 native asset at 8 decimals across
         // all THORChain-supported chains.
         let feeNativeAmount = feeBaseUnits / pow(10, 8)
-        let feeFiat = RateProvider.shared.fiatBalance(value: feeNativeAmount, coin: nativeCoin)
+        let feeFiat = RateProvider.shared.fiatBalance(value: feeNativeAmount, coin: native)
         let unitFiat = RateProvider.shared.fiatBalance(value: 1, coin: securedAssetCoin)
 
         guard feeFiat > 0, unitFiat > 0 else {
@@ -257,30 +279,24 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     private func updateDestinationAddress(for securedAssetCoin: Coin) {
         // The L1 chain is encoded in the secured asset's denom (e.g. "eth-usdc-0x...").
         let l1Chain = THORChainHelper.securedAssetChain(coin: securedAssetCoin)
-        let displayTicker = displayName(for: securedAssetCoin)
-            .split(separator: ".")
-            .last
-            .map(String.init) ?? securedAssetCoin.ticker.uppercased()
         let targetChain = chain(forSwapAsset: l1Chain)
 
-        // Find the corresponding native coin in vault to get the user's own address for that chain
-        if let targetChain,
-           let coin = vault.coins.first(where: { $0.chain == targetChain && $0.isNativeToken }) {
+        if let targetChain, let coin = nativeCoin(for: targetChain) {
             destinationAddress = coin.address
             destinationAddressValid = true
-            customErrorMessage = nil
+            destinationError = nil
         } else {
-            // If no coin exists for that chain in the vault, show error
             destinationAddress = ""
             destinationAddressValid = false
             let chainName = targetChain?.name ?? l1Chain
-            customErrorMessage = String(
+            destinationError = String(
                 format: NSLocalizedString("withdrawSecuredAssetError", comment: ""),
-                displayTicker,
+                shortSymbol(for: securedAssetCoin),
                 l1Chain,
                 chainName
             )
         }
+        updateErrorMessage()
     }
 
     /// Maps a THORChain swap-asset chain code (e.g. "ETH", "AVAX") to the local `Chain` enum.
@@ -324,40 +340,44 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     private func validateAmount() {
-        guard amount > 0 else {
-            amountValid = false
-            // Only set amount error if there's no destination address error
-            if destinationAddressValid {
-                customErrorMessage = NSLocalizedString("enterValidAmount", comment: "")
-            }
-            return
-        }
+        amountValid = computeAmountValid()
+        updateErrorMessage()
+    }
 
-        if let secured = selectedSecuredAssetCoin {
-            let balanceOK = amount <= secured.balanceDecimal
-            let feeOK = minimumWithdrawAmount == 0 || amount >= minimumWithdrawAmount
-            amountValid = balanceOK && feeOK
-            // Only update error message if there's no destination address error
-            if destinationAddressValid {
-                if !balanceOK {
-                    customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "")
-                } else if !feeOK {
-                    customErrorMessage = String(
-                        format: NSLocalizedString("withdrawBelowOutboundFee", comment: ""),
-                        minimumWithdrawAmount.formatForDisplay(),
-                        secured.ticker.uppercased()
-                    )
-                } else {
-                    customErrorMessage = nil
-                }
-            }
-        } else {
-            amountValid = false
-            // Only set this error if there's no destination address error
-            if destinationAddressValid {
-                customErrorMessage = NSLocalizedString("selectSecuredAssetToSeeBalance", comment: "")
-            }
+    private func computeAmountValid() -> Bool {
+        guard amount > 0, let secured = selectedSecuredAssetCoin else { return false }
+        guard amount <= secured.balanceDecimal else { return false }
+        if minimumWithdrawAmount > 0, amount < minimumWithdrawAmount { return false }
+        return true
+    }
+
+    /// Destination errors take priority over amount/fee errors — matches the
+    /// original behavior that suppressed amount messages while destination was
+    /// broken, but without scattering `customErrorMessage` writes across three
+    /// methods.
+    private func updateErrorMessage() {
+        customErrorMessage = destinationError ?? amountErrorMessage()
+    }
+
+    private func amountErrorMessage() -> String? {
+        guard destinationAddressValid else { return nil }
+        guard amount > 0 else {
+            return NSLocalizedString("enterValidAmount", comment: "")
         }
+        guard let secured = selectedSecuredAssetCoin else {
+            return NSLocalizedString("selectSecuredAssetToSeeBalance", comment: "")
+        }
+        if amount > secured.balanceDecimal {
+            return NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+        }
+        if minimumWithdrawAmount > 0, amount < minimumWithdrawAmount {
+            return String(
+                format: NSLocalizedString("withdrawBelowOutboundFee", comment: ""),
+                minimumWithdrawAmount.formatForDisplay(),
+                secured.ticker.uppercased()
+            )
+        }
+        return nil
     }
 
     var description: String {
