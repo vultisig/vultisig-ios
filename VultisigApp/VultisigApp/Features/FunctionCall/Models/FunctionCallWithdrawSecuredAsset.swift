@@ -61,7 +61,9 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     func initialize() {
         setupValidation()
         prefillAddresses()
-        loadAvailableSecuredAssets()
+        Task { @MainActor in
+            await loadAvailableSecuredAssets()
+        }
     }
 
     private func prefillAddresses() {
@@ -72,42 +74,49 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
 
     // MARK: - Load Available Secured Assets
 
-    func loadAvailableSecuredAssets() {
+    @MainActor
+    func loadAvailableSecuredAssets() async {
         isLoadingAssets = true
         loadError = nil
 
+        // Secured-asset balances live as cosmos-bank denoms on the user's THOR
+        // address, not as entries in `vault.coins` until a discovery pass
+        // persists them. Trigger the same discovery path the chain detail
+        // screen uses so USDC / USDT / etc. acquired after the last visit are
+        // picked up before we build the dropdown.
+        let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
+        let thorNative = vault.coins.first { coin in
+            thorChains.contains(coin.chain) && coin.isNativeToken
+        }
+        if let thorNative {
+            await CoinService.addDiscoveredTokens(nativeToken: thorNative, to: vault)
+        }
+
         // A secured asset is any non-native THORChain coin whose on-chain denom is
         // formatted as `<l1chain>-<symbol>[-<contract>]` (see THORChainHelper).
-        // Rely on the shared helper rather than a hand-rolled ticker allow-list so
-        // every secured asset held in the vault (USDC, USDT, WBTC, ...) is offered.
         let securedAssetsInVault = vault.coins
             .filter { THORChainHelper.isSecuredAsset(coin: $0) && $0.balanceDecimal > 0 }
             .sorted { displayName(for: $0) < displayName(for: $1) }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+        var lookup: [UUID: Coin] = [:]
 
-            // Always start with "Select asset" placeholder to ensure dropdown works
-            var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
-            var lookup: [UUID: Coin] = [:]
-
-            if securedAssetsInVault.isEmpty {
-                // Keep just the placeholder
-                self.availableSecuredAssets = assetList
-                self.securedAssetLookup = lookup
-                self.loadError = NSLocalizedString("noSecuredAssets", comment: "")
-            } else {
-                let vaultAssets = securedAssetsInVault.map { coin -> IdentifiableString in
-                    let item = IdentifiableString(value: self.displayName(for: coin))
-                    lookup[item.id] = coin
-                    return item
-                }
-                assetList.append(contentsOf: vaultAssets)
-                self.availableSecuredAssets = assetList
-                self.securedAssetLookup = lookup
-                self.loadError = nil
+        if securedAssetsInVault.isEmpty {
+            availableSecuredAssets = assetList
+            securedAssetLookup = lookup
+            loadError = NSLocalizedString("noSecuredAssets", comment: "")
+        } else {
+            let vaultAssets = securedAssetsInVault.map { coin -> IdentifiableString in
+                let item = IdentifiableString(value: displayName(for: coin))
+                lookup[item.id] = coin
+                return item
             }
-            self.isLoadingAssets = false
+            assetList.append(contentsOf: vaultAssets)
+            availableSecuredAssets = assetList
+            securedAssetLookup = lookup
+            loadError = nil
         }
+        isLoadingAssets = false
     }
 
     /// Human-readable label for a secured asset (e.g. "ETH.USDC", "BTC.BTC").
@@ -358,9 +367,7 @@ struct SecuredAssetSelectorSection: View {
                 Spacer()
 
                 Button {
-                    model.loadError = nil
-                    model.isLoadingAssets = true
-                    model.loadAvailableSecuredAssets()
+                    Task { await model.loadAvailableSecuredAssets() }
                 } label: {
                     Text(NSLocalizedString("retry", comment: ""))
                         .font(.caption)
