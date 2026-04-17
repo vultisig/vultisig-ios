@@ -305,6 +305,7 @@ class KeygenViewModel: ObservableObject {
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
         let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
         let useParallelPath = isTssBatchEnabled
+        self.logger.info("KeyImport flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(isTssBatchEnabled)")
 
         var wallet: HDWallet?
 
@@ -615,6 +616,7 @@ class KeygenViewModel: ObservableObject {
         do {
             let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
             let useParallelPath = isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate || self.tssType == .Reshare)
+            self.logger.info("\(self.tssType.rawValue) flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(isTssBatchEnabled)")
 
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
