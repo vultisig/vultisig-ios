@@ -13,6 +13,9 @@ enum SolanaHelper {
     static let defaultFeeInLamports: BigInt = 1000000 // 0.001
     static let defaultPriorityFeePrice: UInt64 = 1_000_000 // Fallback priority fee price in microlamports
     static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
+    /// Rent-exempt reserve for a new SPL Associated Token Account (~0.00203928 SOL).
+    /// Required when the recipient has no ATA and we create one alongside the transfer.
+    static let ataRentLamports: BigInt = 2_039_280
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
@@ -88,8 +91,12 @@ enum SolanaHelper {
 
             } else if let fromPubKey = fromAddressPubKey, !fromPubKey.isEmpty {
 
-                // Create new account association for either SPL or Token-2022
-                let receiverAddress = SolanaAddress(string: toAddress.description)!
+                // Recipient has no Associated Token Account yet. Derive the deterministic ATA
+                // and let TrustWalletCore emit a `createAssociatedTokenAccount` instruction
+                // alongside the SPL transfer in a single transaction.
+                guard let receiverAddress = SolanaAddress(string: toAddress.description) else {
+                    throw HelperError.runtimeError("Invalid recipient Solana address")
+                }
 
                 let generatedAssociatedAddress: String?
                 if tokenProgramId {

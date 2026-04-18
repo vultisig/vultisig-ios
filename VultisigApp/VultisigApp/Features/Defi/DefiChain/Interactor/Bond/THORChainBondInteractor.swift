@@ -5,6 +5,10 @@
 //  Created by Gaston Mazzeo on 21/11/2025.
 //
 
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-bond-interactor")
+
 struct THORChainBondInteractor: BondInteractor {
     private let thorchainAPIService = THORChainAPIService()
 
@@ -58,7 +62,7 @@ struct THORChainBondInteractor: BondInteractor {
 
                     activeNodes.append(activeNode)
                 } catch {
-                    print("Error calculating metrics for node \(node.address): \(error)")
+                    logger.error("Error calculating metrics for node \(node.address): \(error)")
                     // Continue with other nodes even if one fails
                 }
             }
@@ -98,7 +102,7 @@ private extension THORChainBondInteractor {
         do {
             try DefiPositionsStorageService().upsert(positions, for: vault)
         } catch {
-            print("An error occured while saving staked positions: \(error)")
+            logger.error("An error occured while saving bond positions: \(error)")
         }
     }
 }
