@@ -22,7 +22,7 @@ struct JoinKeysignGasViewModel {
             let feeAmount = Decimal(fee) / pow(10, nativeToken.decimals)
             let gasInReadable = feeAmount.formatToDecimal(digits: nativeToken.decimals)
 
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: fee)
+            var feeInReadable = feesInReadable(coin: nativeToken, fee: fee)
             feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
             return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
