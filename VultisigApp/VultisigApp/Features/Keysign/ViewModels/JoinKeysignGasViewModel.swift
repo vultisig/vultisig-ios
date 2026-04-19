@@ -5,8 +5,8 @@
 //  Created by Gaston Mazzeo on 22/07/2025.
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 // TODO: - Extend and reuse for both on-device and co-pairing signing
 struct JoinKeysignGasViewModel {
@@ -18,20 +18,14 @@ struct JoinKeysignGasViewModel {
         }
 
         if payload.coin.chainType == .EVM {
-            let gas = payload.chainSpecific.gas
+            let fee = payload.chainSpecific.fee
+            let feeAmount = Decimal(fee) / pow(10, nativeToken.decimals)
+            let gasInReadable = feeAmount.formatToDecimal(digits: nativeToken.decimals)
 
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
-                  let gasDecimal = Decimal(string: gas.description) else {
-                return (.empty, .empty)
-            }
-
-            let gasGwei = gasDecimal / weiPerGWeiDecimal
-            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: fee)
             feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
-            return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
+            return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
         }
 
         // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
