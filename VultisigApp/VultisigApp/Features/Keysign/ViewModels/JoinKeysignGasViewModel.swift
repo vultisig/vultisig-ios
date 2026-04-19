@@ -10,6 +10,7 @@ import Foundation
 
 // TODO: - Extend and reuse for both on-device and co-pairing signing
 struct JoinKeysignGasViewModel {
+    /// Returns the network fee as a (crypto, fiat) string pair for display on the Join Keysign screen.
     func getCalculatedNetworkFee(payload: KeysignPayload) -> (feeCrypto: String, feeFiat: String) {
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
@@ -47,11 +48,13 @@ struct JoinKeysignGasViewModel {
         return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
     }
 
+    /// Returns the network fee as a single combined "crypto (~fiat)" string.
     func getJoinedCalculatedNetworkFee(payload: KeysignPayload) -> String {
         let fees = getCalculatedNetworkFee(payload: payload)
         return fees.feeCrypto + " (~\(fees.feeFiat))"
     }
 
+    /// Converts a raw fee amount to a fiat string using the vault's native coin price data, with a fallback to the provided coin.
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         // Try to get native coin from vault first (has up-to-date price data)
         if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain) {
