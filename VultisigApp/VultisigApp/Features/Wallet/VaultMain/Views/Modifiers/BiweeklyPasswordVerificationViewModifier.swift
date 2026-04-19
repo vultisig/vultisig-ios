@@ -13,13 +13,24 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
     @State var shouldShow: Bool = false
     @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
 
+    private let keychain = DefaultKeychainService.shared
+
+    private var hasHint: Bool {
+        guard let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) else { return false }
+        return !hint.isEmpty
+    }
+
+    private var sheetHeight: CGFloat {
+        hasHint ? 420 : 360
+    }
+
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
                 PasswordVerifyReminderView(vault: vault, isSheetPresented: $shouldShow)
-                    .presentationDetents([.height(260)])
+                    .presentationDetents([.height(sheetHeight)])
                 #if os(macOS)
-                    .frame(width: 400, height: 260)
+                    .frame(width: 400, height: sheetHeight)
                 #endif
             }
             .onLoad {

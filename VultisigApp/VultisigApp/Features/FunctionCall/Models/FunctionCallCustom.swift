@@ -68,14 +68,20 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
             }
 
         case .mayaChain:
-            // Load CACAO from TokensStore filtered by MayaChain
-            let mayaChainTokens = TokensStore.TokenSelectionAssets.filter { $0.chain == .mayaChain }
-            for token in mayaChainTokens {
-                let ticker = token.ticker.uppercased()
-                // Add CACAO (native token), MAYA, and AZTEC
+            // Load MayaChain tokens from vault: CACAO, MAYA, AZTEC
+            let mayaChainCoins = vault.coins.filter { $0.chain == .mayaChain }
+
+            for coin in mayaChainCoins {
+                let ticker = coin.ticker.uppercased()
+                // Add CACAO (native), MAYA, and AZTEC
                 if ticker == "CACAO" || ticker == "MAYA" || ticker == "AZTEC" {
                     tokens.append(.init(value: ticker))
                 }
+            }
+
+            // If no tokens found, at least add CACAO
+            if tokens.isEmpty {
+                tokens.append(.init(value: "CACAO"))
             }
 
         default:
@@ -101,7 +107,7 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
             if coin.chain == .thorChain && coin.ticker.lowercased() == ticker {
                 return coin
             }
-            // Check MayaChain for MAYA
+            // Check MayaChain for CACAO, MAYA, AZTEC
             if coin.chain == .mayaChain && coin.ticker.lowercased() == ticker {
                 return coin
             }

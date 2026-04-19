@@ -137,8 +137,6 @@
 "balanceInParentheses" = "( 余额: %@ %@ )";
 "beforeYouStart" = "开始之前...";
 "biometricsFastSigning" = "生物识别快速签名";
-"biweeklyPasswordVerifyDescription" = "我们会定期要求您验证快速签名密码，以便您始终记住它";
-"biweeklyPasswordVerifyTitle" = "验证您的服务器份额密码";
 "bond" = "绑定";
 "Bond" = "绑定";
 "bonded" = "已绑定";
@@ -1047,6 +1045,8 @@
 "verify" = "验证";
 "verifyingCodePleaseWait" = "正在验证代码，请稍候";
 "verifyPassword" = "验证密码";
+"verifyPasswordPeriodicReminder" = "我们会定期请您进行验证，以免您忘记密码。";
+"verifyYourPasswordFor" = "验证您的密码：";
 "via" = "通过";
 "view" = "查看";
 "viewOnExplorer" = "在浏览器中查看";
@@ -1075,6 +1075,7 @@
 "Withdraw RUJI" = "提取 RUJI";
 "Withdraw Secured Asset" = "提取担保资产";
 "withdrawAmount" = "提取 %@";
+"withdrawBelowOutboundFee" = "金额低于出站费用 — 请至少提取 %@ %@ 以支付网络费用";
 "withdrawPercentage" = "提取百分比";
 "withdrawSecuredAssetError" = "要提取 %@，您需要先将 %@ 代币添加到您的保险库。请前往保险库设置并添加 %@ 以继续。";
 "wrongPassword" = "密码错误";

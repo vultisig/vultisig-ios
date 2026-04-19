@@ -37,17 +37,20 @@ class FunctionCallVerifyViewModel: ObservableObject {
 
             let keysignPayloadFactory = KeysignPayloadFactory()
 
-            // LP adds are deposits, not swaps. Native RUNE/CACAO build their deposit
-            // from the memo in THORChainHelper and need no payload. ERC20 LP adds still
-            // ride the legacy swap-signing path — EVMHelper.getSwapPreSignedInputData
-            // requires a THORChainSwapPayload to build the router's depositWithExpiry
-            // call, so we synthesize one for that case only. TODO: replace with a
-            // dedicated deposit payload across iOS/Android/Windows.
+            // LP adds and SECURE+ mints are deposits, not swaps. Native RUNE/CACAO
+            // build their deposit from the memo in THORChainHelper and need no
+            // payload. ERC20 deposits still ride the legacy swap-signing path —
+            // EVMHelper.getSwapPreSignedInputData requires a THORChainSwapPayload
+            // to build the router's depositWithExpiry call (which is what carries
+            // the memo to THORChain), so we synthesize one for those cases. The
+            // router routes by memo, so the same shim works for both. TODO:
+            // replace with a dedicated deposit payload across iOS/Android/Windows.
             var approvePayload: ERC20ApprovePayload?
             var swapPayload: SwapPayload?
-            if tx.memoFunctionDictionary.get("pool") != nil,
-               tx.coin.shouldApprove,
-               !tx.toAddress.isEmpty {
+            let isLPAdd = tx.memoFunctionDictionary.get("pool") != nil
+            let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
+            let isRouterDeposit = isLPAdd || isSecuredAssetMint
+            if isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty {
                 let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
                 let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
                 guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {

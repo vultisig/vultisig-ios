@@ -5,201 +5,150 @@
 //  Created by Amol Kumar on 2025-04-25.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "password-verify-reminder")
 
 struct PasswordVerifyReminderView: View {
     let vault: Vault
     @Binding var isSheetPresented: Bool
 
-    @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Double?
+    @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
 
-    @State var showError = false
-    @State var errorText = ""
-
-    @State var isLoading = false
-    @State var verifyPassword = ""
-    @State var isPasswordVisible = false
+    @State private var password = ""
+    @State private var errorMessage: String?
+    @State private var isLoading = false
+    @State private var isHintVisible = false
 
     private let fastVaultService: FastVaultService = .shared
+    private let keychain = DefaultKeychainService.shared
+
+    private var hint: String? {
+        keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
+    }
 
     var body: some View {
-        ZStack {
-            Background()
-            view
+        VStack(spacing: 16) {
+            Icon(
+                named: "focus-lock",
+                color: Theme.colors.primaryAccent4,
+                size: 32
+            )
+            .padding(.top, 24)
 
-            if isLoading {
-                loader
+            VStack(spacing: 12) {
+                Text("verifyYourPasswordFor".localized)
+                    .font(Theme.fonts.title3)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                Text(vault.name)
+                    .font(Theme.fonts.title2)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-        }
-        .animation(.easeInOut, value: showError)
-        .onDisappear {
-            handleCloseTap()
-        }
-    }
+            .multilineTextAlignment(.center)
 
-    var loader: some View {
-        ZStack {
-            overlay
+            Text("verifyPasswordPeriodicReminder".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
 
-            ProgressView()
-                .preferredColorScheme(.dark)
-        }
-    }
+            SecureTextField(
+                value: $password,
+                placeholder: "enterPassword".localized,
+                error: $errorMessage
+            )
+            .padding(.top, 4)
 
-    var overlay: some View {
-        Color.black
-            .ignoresSafeArea()
-            .opacity(0.3)
-    }
+            if let hint, !hint.isEmpty {
+                hintSection(hint: hint)
+            }
 
-    var view: some View {
-        VStack(spacing: 12) {
-            header
-            separator
-            description
-            field
             Spacer(minLength: 0)
-            verifyButton
+
+            PrimaryButton(title: "done".localized) {
+                Task { await verifyPassword() }
+            }
+            .disabled(password.isEmpty || isLoading)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 24)
-        .padding(.bottom, 12)
-        .blur(radius: isLoading ? 1 : 0)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.colors.bgPrimary)
+        .overlay {
+            if isLoading {
+                loadingOverlay
+            }
+        }
+        .onDisappear(perform: resetVerificationTimer)
     }
 
-    var separator: some View {
-        LinearSeparator()
-            .opacity(0.8)
-    }
-
-    var header: some View {
-        Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
-            .multilineTextAlignment(.center)
-            .foregroundColor(Theme.colors.textSecondary)
-            .font(Theme.fonts.bodySMedium)
-            .frame(maxWidth: .infinity)
-            .overlay(alignment: .trailing) {
-                Button(action: handleCloseTap) {
-                    Image(systemName: "xmark")
+    private func hintSection(hint: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isHintVisible.toggle()
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("showHint".localized)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
-                        .font(Theme.fonts.bodySMedium)
+
+                    Icon(
+                        named: "chevron-down",
+                        color: Theme.colors.textTertiary,
+                        size: 16
+                    )
+                    .rotationEffect(.degrees(isHintVisible ? 180 : 0))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("close".localized)
             }
+            .buttonStyle(.plain)
+
+            Text(hint)
+                .font(Theme.fonts.caption12.italic())
+                .foregroundStyle(Theme.colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .opacity(isHintVisible ? 1 : 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    var description: some View {
-        Text(NSLocalizedString("biweeklyPasswordVerifyDescription", comment: ""))
-            .multilineTextAlignment(.center)
-            .foregroundColor(Theme.colors.textTertiary)
-            .font(Theme.fonts.caption12)
-            .padding(.horizontal, 28)
-    }
-
-    var field: some View {
+    private var loadingOverlay: some View {
         ZStack {
-            textField
-
-            if showError {
-                errorContent
-                    .offset(y: 48)
-            }
-        }
-        .padding(.bottom)
-    }
-
-    var textField: some View {
-        HStack {
-            if isPasswordVisible {
-                TextField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
-                    .borderlessTextFieldStyle()
-            } else {
-                SecureField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
-                    .borderlessTextFieldStyle()
-            }
-
-            hideButton
-        }
-        .colorScheme(.dark)
-        .foregroundColor(Theme.colors.textPrimary)
-        .font(Theme.fonts.bodySMedium)
-        .borderlessTextFieldStyle()
-        .frame(height: 56)
-        .padding(.horizontal, 24)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Theme.colors.alertError : Color.clear, lineWidth: 1)
-        )
-    }
-
-    var hideButton: some View {
-        Button(
-            action: {
-                withAnimation {
-                    isPasswordVisible.toggle()
-                }
-            },
-            label: {
-                Image(systemName: isPasswordVisible ? "eye" : "eye.slash")
-                    .foregroundColor(Theme.colors.textPrimary)
-            }
-        )
-        .buttonStyle(.plain)
-        .contentTransition(.symbolEffect(.replace))
-    }
-
-    var verifyButton: some View {
-        PrimaryButton(title: "verify") {
-            handleButtonTap()
+            Color.black.opacity(0.3).ignoresSafeArea()
+            ProgressView().preferredColorScheme(.dark)
         }
     }
 
-    var errorContent: some View {
-        Text(NSLocalizedString(errorText, comment: ""))
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.alertError)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func verifyPasswordIsValid() async {
-        guard !verifyPassword.isEmpty else {
-            errorText = "emptyField"
-            showError = true
-            isLoading = false
+    private func verifyPassword() async {
+        guard !password.isEmpty else {
+            errorMessage = "emptyField".localized
             return
         }
 
-        showError = false
+        errorMessage = nil
+        isLoading = true
+        defer { isLoading = false }
 
         let isValid = await fastVaultService.get(
             pubKeyECDSA: vault.pubKeyECDSA,
-            password: verifyPassword
+            password: password
         )
 
         if isValid {
-            handleCloseTap()
+            logger.info("Password verification succeeded")
+            isSheetPresented = false
         } else {
-            errorText = "incorrectPassword"
-            showError = true
+            errorMessage = "incorrectPasswordTryAgain".localized
         }
-
-        isLoading = false
     }
 
-    private func handleCloseTap() {
-        let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: Date())
+    private func resetVerificationTimer() {
+        let startOfToday = Calendar.current.startOfDay(for: Date())
         biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
-        isSheetPresented = false
-    }
-
-    private func handleButtonTap() {
-        Task {
-            isLoading = true
-            await verifyPasswordIsValid()
-        }
     }
 }
