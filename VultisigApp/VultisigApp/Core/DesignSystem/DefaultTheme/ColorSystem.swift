@@ -45,7 +45,7 @@ struct ColorSystem: ColorSystemProtocol {
 
     var border: Color { .init(hex: "1B3F73") }
     var borderLight: Color { .init(hex: "11284A") }
-    var borderExtraLight: Color { .init(hex: "FFFFFF").opacity(0.2) }
+    var borderExtraLight: Color { .init(hex: "FFFFFF").opacity(0.03) }
 
     var alertSuccess: Color { .init(hex: "13C89D") }
     var alertError: Color { .init(hex: "FF5C5C") }
