@@ -78,27 +78,29 @@ final class VaultBackupEncryptionTest: XCTestCase {
         XCTAssertGreaterThanOrEqual(encrypted.count, minSize)
     }
 
-    func testLegacyBackupStartingWithMagicByteStillDecrypts() throws {
+    func testLegacyBackupWithPartialMagicPrefixStillDecrypts() throws {
+        // Craft a legacy payload whose sealed blob starts with the first three
+        // magic bytes (0x56, 0x4C, 0x54) but a different fourth byte, proving
+        // the full 4-byte magic is required for PBKDF2 detection.
         let password = "pw"
         let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
 
-        var plaintext: Data!
-        var legacyData: Data!
-        // Craft a legacy payload whose combined blob starts with 0x02 to verify
-        // the full 4-byte magic is required for PBKDF2 detection.
-        for attempt in 0..<64 {
-            let candidate = Data("legacy-\(attempt)-payload".utf8)
-            let sealed = try AES.GCM.seal(candidate, using: key)
-            guard let combined = sealed.combined else { continue }
-            if combined.first == 0x02 {
-                plaintext = candidate
-                legacyData = combined
-                break
-            }
+        var nonceBytes = [UInt8](repeating: 0, count: 12)
+        nonceBytes[0] = 0x56
+        nonceBytes[1] = 0x4C
+        nonceBytes[2] = 0x54
+        nonceBytes[3] = 0xFF
+        let nonce = try AES.GCM.Nonce(data: Data(nonceBytes))
+
+        let plaintext = Data("legacy with partial magic prefix".utf8)
+        let sealed = try AES.GCM.seal(plaintext, using: key, nonce: nonce)
+        guard let legacyData = sealed.combined else {
+            XCTFail("Failed to seal legacy data")
+            return
         }
-        guard legacyData != nil else {
-            throw XCTSkip("Could not synthesize legacy ciphertext starting with 0x02")
-        }
+
+        XCTAssertEqual(Array(legacyData.prefix(3)), [0x56, 0x4C, 0x54])
+        XCTAssertNotEqual(legacyData[3], 0x02)
 
         let decrypted = sut.decrypt(data: legacyData, password: password)
         XCTAssertEqual(decrypted, plaintext)
