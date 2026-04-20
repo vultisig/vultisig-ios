@@ -29,8 +29,15 @@ struct MacScannerView: View {
 
     @State private var scannerMode: ScannerMode = .camera
     @State private var deeplinkError: Error?
+    @State private var showTooltip = false
 
     private let scanSize: CGFloat = 400
+
+    private let tooltipBullets = [
+        "scanQRCodeTooltipBullet1",
+        "scanQRCodeTooltipBullet2",
+        "scanQRCodeTooltipBullet3"
+    ]
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -45,6 +52,14 @@ struct MacScannerView: View {
                     options: ScannerMode.allCases,
                     size: .small
                 ).frame(maxWidth: 200)
+            }
+            CustomToolbarItem(placement: .trailing) {
+                HelpButtonWithTooltip(
+                    isPresented: $showTooltip,
+                    tooltipMaxWidth: 360
+                ) {
+                    tooltipContent
+                }
             }
         }
         .onChange(of: cameraViewModel.shouldJoinKeygen) { _, shouldNavigate in
@@ -239,6 +254,25 @@ struct MacScannerView: View {
         Image("QRScannerOutline")
             .resizable()
             .frame(width: scanSize, height: scanSize)
+    }
+
+    private var tooltipContent: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("scanQRCodeTooltipTitle".localized)
+                .font(Theme.fonts.bodySMedium)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("scanQRCodeTooltipSubtitle".localized)
+                    .font(Theme.fonts.footnote)
+                ForEach(tooltipBullets, id: \.self) { bullet in
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("•").font(Theme.fonts.footnote)
+                        Text(bullet.localized)
+                            .font(Theme.fonts.footnote)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
     }
 
     private func handleModeChange(_ newMode: ScannerMode) {
