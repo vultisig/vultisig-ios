@@ -18,6 +18,9 @@
         @State private var isFilePresented = false
         @State private var showErrorPopup = false
         @State private var showTooltip = false
+        @State private var tooltipWidth: CGFloat = 0
+
+        private let helpButtonSize: CGFloat = 44
 
         private var idiom: UIUserInterfaceIdiom {
             UIDevice.current.userInterfaceIdiom
@@ -100,7 +103,7 @@
                 }
             } label: {
                 Icon(named: "circle-info", color: Theme.colors.textPrimary, size: 22)
-                    .frame(width: 44, height: 44)
+                    .frame(width: helpButtonSize, height: helpButtonSize)
                     .background(glassCircleBackground)
                     .contentShape(Circle())
             }
@@ -151,13 +154,28 @@
             .padding(.horizontal, 16)
             .padding(.top, 24)
             .padding(.bottom, 12)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { tooltipWidth = proxy.size.width }
+                        .onChange(of: proxy.size.width) { _, newValue in
+                            tooltipWidth = newValue
+                        }
+                }
+            )
             .background(Theme.colors.textPrimary)
-            .clipShape(TooltipShape(arrowXFraction: 0.9))
+            .clipShape(TooltipShape(arrowXFraction: tooltipArrowFraction))
             .onTapGesture {
                 withAnimation(.interpolatingSpring) {
                     showTooltip = false
                 }
             }
+        }
+
+        private var tooltipArrowFraction: CGFloat {
+            guard tooltipWidth > 0 else { return 0.94 }
+            let offsetFromTrailing = helpButtonSize / 2
+            return (tooltipWidth - offsetFromTrailing) / tooltipWidth
         }
 
         private let tooltipBullets = [
