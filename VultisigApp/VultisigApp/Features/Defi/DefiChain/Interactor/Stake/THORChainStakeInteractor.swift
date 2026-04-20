@@ -13,6 +13,10 @@ struct THORChainStakeInteractor: StakeInteractor {
     private let thorchainAPIService = THORChainAPIService()
     private let stakingService = THORChainStakingService.shared
 
+    static func scaledAmount(rawAmount: Decimal, decimals: Int) -> Decimal {
+        rawAmount / pow(10, decimals)
+    }
+
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
         guard let runeCoin = vault.runeCoin else { return [] }
         let vaultStakePositions = vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []
@@ -74,7 +78,7 @@ private extension THORChainStakeInteractor {
 
         case "STCY":
             let rawAmount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
-            let amount = rawAmount / pow(10, coinMeta.decimals)
+            let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: coinMeta.decimals)
             return StakePosition(
                 coin: coinMeta,
                 type: .compound,
