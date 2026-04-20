@@ -189,7 +189,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                             .foregroundStyle(color ?? Theme.colors.textPrimary)
                             .lineLimit(isMultiLine ? nil : 1)
                             .truncationMode(.middle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
