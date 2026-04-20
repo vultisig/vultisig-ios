@@ -38,6 +38,13 @@ struct IOSToolbarView<Content: View>: View {
                     }
                 }
 
+                ToolbarItemGroup(placement: .principal) {
+                    ForEach(Array(centerItems.enumerated()), id: \.offset) { _, item in
+                        item.content
+                            .environment(\.isNativeToolbarItem, true)
+                    }
+                }
+
                 ToolbarItemGroup(placement: .confirmationAction) {
                     ForEach(Array(trailingGlassItems.enumerated()), id: \.offset) { _, item in
                         item.content
@@ -87,6 +94,10 @@ struct IOSToolbarView<Content: View>: View {
 
     private var leadingItems: [CustomToolbarItem] {
         items.filter { $0.placement == .leading }
+    }
+
+    private var centerItems: [CustomToolbarItem] {
+        items.filter { $0.placement == .center }
     }
 
     private var trailingGlassItems: [CustomToolbarItem] {
