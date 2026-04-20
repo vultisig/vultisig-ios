@@ -168,6 +168,12 @@ struct CoinService {
         // otherwise it report an error "Illegal attempt to map a relationship containing temporary objects to its identifiers."
         Storage.shared.insert([newCoin])
         try Storage.shared.save()
+
+        // Guard against SwiftData inverse relationship auto-populating vault.coins
+        guard !vault.coins.contains(where: { $0.id == newCoin.id }) else {
+            return vault.coins.first(where: { $0.id == newCoin.id })
+        }
+
         vault.coins.append(newCoin)
         return newCoin
     }

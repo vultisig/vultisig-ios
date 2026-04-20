@@ -137,8 +137,6 @@
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Antes de comenzar...";
 "biometricsFastSigning" = "Biometría Firma rápida";
-"biweeklyPasswordVerifyDescription" = "Periódicamente te pediremos que verifiques tu contraseña de Fast Sign para que siempre la recuerdes";
-"biweeklyPasswordVerifyTitle" = "Verifica la Contraseña de tu\nParte del Servidor";
 "bond" = "Vincular";
 "Bond" = "Bond";
 "bonded" = "Vinculado";
@@ -1046,6 +1044,8 @@
 "verify" = "Verificar";
 "verifyingCodePleaseWait" = "Verificando código, por favor espera";
 "verifyPassword" = "Verificar contraseña";
+"verifyPasswordPeriodicReminder" = "Te pedimos una verificación periódica para que no olvides tu contraseña.";
+"verifyYourPasswordFor" = "Verifica tu contraseña para:";
 "via" = "vía";
 "view" = "Ver";
 "viewOnExplorer" = "Ver en Explorer";
@@ -1074,6 +1074,7 @@
 "Withdraw RUJI" = "Retirar RUJI";
 "Withdraw Secured Asset" = "Retirar activo asegurado";
 "withdrawAmount" = "Retirar %@";
+"withdrawBelowOutboundFee" = "Monto por debajo de la tarifa de salida — retira al menos %@ %@ para cubrir los costos de red";
 "withdrawPercentage" = "Porcentaje de retiro";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Contraseña incorrecta";

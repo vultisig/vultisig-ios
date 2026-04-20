@@ -64,7 +64,9 @@ private extension THORChainStakingService {
         let response = try await httpClient.request(target, responseType: AccountRootData.self)
         let decoded = response.data
 
-        guard let stake = decoded.data.node?.stakingV2?.first else {
+        guard let stake = decoded.data.node?.stakingV2?.first(where: {
+            $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
+        }) else {
             return .empty
         }
 

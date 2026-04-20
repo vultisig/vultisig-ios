@@ -5,13 +5,17 @@
 //  Created by Gaston Mazzeo on 16/10/2025.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "vault-defi-chains-service")
 
 // Enables Defi chains for the first time for vaults that were created before Defi features where released
 // TODO: - To be removed after release
 struct VaultDefiChainsService {
     @AppStorage("enabled_vaults_4") private var enabledVaults: [String] = []
 
+    @MainActor
     func enableDefiChainsIfNeeded(for vault: Vault) async {
         guard !enabledVaults.contains(vault.pubKeyECDSA) else {
             return
@@ -36,7 +40,7 @@ struct VaultDefiChainsService {
             try await Storage.shared.save()
             enabledVaults.append(vault.pubKeyECDSA)
         } catch {
-            print("Failed to save DeFi chains for vault: \(error)")
+            logger.error("Failed to save DeFi chains for vault: \(error)")
         }
     }
 }

@@ -423,8 +423,13 @@ private extension BlockChainService {
                     }
                 }
 
-                // Important: Only return nil for toAddressPubKey if we're certain the account doesn't exist
-                // Empty string from RPC doesn't mean the account doesn't exist
+                // If the RPC and the deterministic ATA probe both fail to find a recipient
+                // token account, collapse the empty string to nil. The Solana signing helper
+                // treats a nil `toAddressPubKey` as the signal to emit a
+                // `createAssociatedTokenAccount` instruction alongside the SPL transfer so
+                // the recipient's ATA is created in the same transaction (see
+                // `SolanaHelper.getPreSignedInputData`). The extra ~0.00203 SOL rent for the
+                // new account is surfaced via `BlockChainSpecific.gas` (see `SolanaHelper.ataRentLamports`).
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
 
                 return .Solana(recentBlockHash: recentBlockHash, priorityFee: dynamicPriorityFee, priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)

@@ -15,14 +15,14 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
         VStack(alignment: .leading, spacing: 0) {
             selectedCell
 
-            if isActive && isExpanded {
+            if canExpand && isExpanded {
                 cells
             }
         }
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
-        .disabled(!isActive)
+        .disabled(items.isEmpty)
     }
 
     var selectedCell: some View {
@@ -47,7 +47,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
 
             Spacer()
 
-            if isActive {
+            if canExpand {
                 Image(systemName: "chevron.down")
             }
         }
@@ -87,8 +87,8 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
         .frame(height: 48)
     }
 
-    var isActive: Bool {
-        return items.count > 1
+    var canExpand: Bool {
+        return !items.isEmpty
     }
 
     private func handleSelection(for item: T) {

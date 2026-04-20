@@ -15,11 +15,7 @@ typedef enum MldsaSecurityLevel {
   MlDsa87 = 87,
 } MldsaSecurityLevel;
 
-enum mldsa_error
-#ifdef __cplusplus
-  : uintptr_t
-#endif // __cplusplus
- {
+enum mldsa_error_variants {
   LIB_OK,
   LIB_INVALID_HANDLE,
   LIB_HANDLE_IN_USE,
@@ -45,9 +41,7 @@ enum mldsa_error
   LIB_REJSAMPLING,
   LIB_ABORT_PROTOCOL_PARTY_1 = 200,
 };
-#ifndef __cplusplus
-typedef enum mldsa_error mldsa_error;
-#endif // __cplusplus
+typedef uintptr_t mldsa_error;
 
 typedef struct tss_buffer {
   const uint8_t *ptr;
@@ -63,10 +57,6 @@ typedef struct go_slice {
 typedef struct Handle {
   int32_t _0;
 } Handle;
-
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
 
 /*
  Free a `tss_buffer` allocated by this library.
@@ -610,9 +600,5 @@ mldsa_error mldsa_sign_session_finish(struct Handle session, struct tss_buffer *
 
  */
 mldsa_error mldsa_sign_session_free(struct Handle session);
-
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
 
 #endif  /* _VS_MLDSA_CORE_H */

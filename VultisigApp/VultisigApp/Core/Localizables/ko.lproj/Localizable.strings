@@ -145,8 +145,6 @@
 "balanceInParentheses" = "( 잔액: %@ %@ )";
 "beforeYouStart" = "시작하기 전에...";
 "biometricsFastSigning" = "생체인식 빠른 서명";
-"biweeklyPasswordVerifyDescription" = "빠른 서명 비밀번호를 기억할 수 있도록 주기적으로 확인을 요청합니다";
-"biweeklyPasswordVerifyTitle" = "서버 공유 비밀번호를 확인하세요";
 "bond" = "본드";
 "Bond" = "본드";
 "bonded" = "본딩됨";
@@ -1062,6 +1060,8 @@
 "verify" = "확인";
 "verifyingCodePleaseWait" = "코드 확인 중, 잠시 기다려 주세요";
 "verifyPassword" = "비밀번호 확인";
+"verifyPasswordPeriodicReminder" = "비밀번호를 잊지 않도록 주기적으로 확인을 요청합니다.";
+"verifyYourPasswordFor" = "다음의 비밀번호를 확인하세요:";
 "via" = "경유";
 "view" = "보기";
 "viewOnExplorer" = "탐색기에서 보기";
@@ -1090,6 +1090,7 @@
 "Withdraw RUJI" = "RUJI 출금";
 "Withdraw Secured Asset" = "보안 자산 출금";
 "withdrawAmount" = "%@ 출금";
+"withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawPercentage" = "출금 비율";
 "withdrawSecuredAssetError" = "%@을(를) 출금하려면 먼저 볼트에 %@ 코인을 추가해야 합니다. 볼트 설정으로 이동하여 %@을(를) 추가하고 계속하세요.";
 "wrongPassword" = "잘못된 비밀번호";
