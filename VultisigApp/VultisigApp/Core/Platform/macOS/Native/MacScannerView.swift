@@ -158,6 +158,7 @@ struct MacScannerView: View {
             VStack {
                 Spacer()
                 uploadQRCodeButton
+                    .padding(.horizontal, 40)
                     .padding(.bottom, 40)
             }
         }
@@ -223,7 +224,7 @@ struct MacScannerView: View {
     }
 
     var uploadQRCodeButton: some View {
-        PrimaryButton(title: "uploadQRCodeImage") {
+        PrimaryButton(title: "uploadQRCode") {
             router.navigate(to: KeygenRoute.generalQRImport(
                 type: type,
                 selectedVault: selectedVault,
@@ -335,6 +336,7 @@ struct MacScannerView: View {
             VStack {
                 Spacer()
                 uploadQRCodeButton
+                    .padding(.horizontal, 40)
                     .padding(.bottom, 40)
             }
         }
