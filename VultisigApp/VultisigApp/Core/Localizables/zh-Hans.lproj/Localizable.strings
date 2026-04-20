@@ -360,6 +360,7 @@
 "fastLoaderTitle" = "正在寻找 Vultiserver 连接...";
 "fastModeTitle" = "快速";
 "fastSetUp" = "快速设置";
+"fastVaultRegistrationFailed" = "注册 Vultiserver 失败，请重试。";
 "fastVaultSecureTextDescription" = "只需 1 个设备\n存储小额资金以进行快速操作\nVultiserver 即时共同签名";
 "fee" = "费用";
 "filterByAsset" = "按资产筛选";

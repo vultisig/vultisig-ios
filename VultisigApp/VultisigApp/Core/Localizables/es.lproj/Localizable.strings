@@ -360,6 +360,7 @@
 "fastLoaderTitle" = "Buscando FastVaultServer";
 "fastModeTitle" = "RÁPIDO";
 "fastSetUp" = "Configuración rápida";
+"fastVaultRegistrationFailed" = "Error al registrar con Vultiserver. Por favor, inténtalo de nuevo.";
 "fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para acciones rápidas\nVultiserver cofirma al instante";
 "fee" = "Tarifa";
 "filterByAsset" = "Filtrar por activo";

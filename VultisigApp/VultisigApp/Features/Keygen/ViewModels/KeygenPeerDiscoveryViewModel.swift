@@ -113,106 +113,118 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             break
         }
         if let config = fastSignConfig {
-            switch tssType {
-            case .Keygen:
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchCreate(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: vault.libType == .DKLS ? 1 : 0,
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.create(name: vault.name,
-                                                sessionID: sessionID,
-                                                hexEncryptionKey: encryptionKeyHex!,
-                                                hexChainCode: vault.hexChainCode,
-                                                encryptionPassword: config.password,
-                                                email: config.email,
-                                                lib_type: vault.libType == .DKLS ? 1 : 0)
+            Task { [weak self] in
+                guard let self else { return }
+                do {
+                    try await self.registerFastVaultServer(tssType: tssType, config: config)
+                } catch {
+                    self.logger.error("FastVault registration failed: \(error.localizedDescription, privacy: .public)")
+                    await MainActor.run {
+                        self.errorMessage = "fastVaultRegistrationFailed".localized
+                        self.status = .Failure
                     }
                 }
-            case .KeyImport:
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchKeyImport(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: 2,
-                            chains: chains?.map { $0.name } ?? [],
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.keyImport(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: 2,
-                            chains: chains?.map { $0.name } ?? []
-                        )
-                    }
-                }
-            case .Reshare:
-                let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchReshare(
-                            publicKeyECDSA: pubKeyECDSA,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            oldParties: vault.signers,
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.reshare(
-                            name: vault.name,
-                            publicKeyECDSA: pubKeyECDSA,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            oldParties: vault.signers,
-                            oldResharePrefix: vault.resharePrefix ?? "",
-                            lib_type: vault.libType == .DKLS ? 1 : 0
-                        )
-                    }
-                }
-            case .Migrate:
-                fastVaultService.migrate(
-                    publicKeyECDSA: vault.pubKeyECDSA,
-                    sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
-                    encryptionPassword: config.password,
-                    email: config.email
-                )
-            case .SingleKeygen:
-                fastVaultService.singleKeygen(
-                    publicKeyECDSA: vault.pubKeyECDSA,
-                    sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
-                    encryptionPassword: config.password,
-                    email: config.email
-                )
             }
         }
         self.isLoading = false
+    }
+
+    private func registerFastVaultServer(tssType: TssType, config: FastSignConfig) async throws {
+        guard let encryptionKeyHex else {
+            throw FastVaultServiceError.invalidResponse
+        }
+        let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+        switch tssType {
+        case .Keygen:
+            if isTssBatchEnabled {
+                try await fastVaultService.batchCreate(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: vault.libType == .DKLS ? 1 : 0,
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.create(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: vault.libType == .DKLS ? 1 : 0
+                )
+            }
+        case .KeyImport:
+            if isTssBatchEnabled {
+                try await fastVaultService.batchKeyImport(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: 2,
+                    chains: chains?.map { $0.name } ?? [],
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.keyImport(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: 2,
+                    chains: chains?.map { $0.name } ?? []
+                )
+            }
+        case .Reshare:
+            let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
+            if isTssBatchEnabled {
+                try await fastVaultService.batchReshare(
+                    publicKeyECDSA: pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    oldParties: vault.signers,
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.reshare(
+                    name: vault.name,
+                    publicKeyECDSA: pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    oldParties: vault.signers,
+                    oldResharePrefix: vault.resharePrefix ?? "",
+                    lib_type: vault.libType == .DKLS ? 1 : 0
+                )
+            }
+        case .Migrate:
+            try await fastVaultService.migrate(
+                publicKeyECDSA: vault.pubKeyECDSA,
+                sessionID: sessionID,
+                hexEncryptionKey: encryptionKeyHex,
+                encryptionPassword: config.password,
+                email: config.email
+            )
+        case .SingleKeygen:
+            try await fastVaultService.singleKeygen(
+                publicKeyECDSA: vault.pubKeyECDSA,
+                sessionID: sessionID,
+                hexEncryptionKey: encryptionKeyHex,
+                encryptionPassword: config.password,
+                email: config.email
+            )
+        }
     }
 
     func setupPeersFoundCancellable(
