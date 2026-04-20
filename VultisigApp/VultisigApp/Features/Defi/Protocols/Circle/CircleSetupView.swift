@@ -19,11 +19,12 @@ struct CircleSetupView: View {
     @AppStorage("appClosedBanners") var appClosedBanners: [String] = []
     @State private var showRewardsTooltip = false
     @State private var showError = false
+    @State private var tooltipButtonHeight: CGFloat = 0
 
     private let infoBannerId = "circleDashboardInfoBanner"
 
     private enum Layout {
-        static let rewardsTooltipGap: CGFloat = 8
+        static let rewardsTooltipGap: CGFloat = 16
     }
 
     var hasAccount: Bool {
@@ -295,7 +296,8 @@ struct CircleSetupView: View {
             Image(systemName: "info.circle")
                 .font(.system(size: 14))
         }
-        .overlay(alignment: .top) {
+        .readSize { tooltipButtonHeight = $0.height }
+        .overlay(alignment: .bottom) {
             if showRewardsTooltip {
                 InfoTooltip(
                     title: "circleRewardsTitle".localized,
@@ -308,8 +310,8 @@ struct CircleSetupView: View {
                     }
                 )
                 .fixedSize(horizontal: true, vertical: true)
+                .offset(y: -(tooltipButtonHeight + Layout.rewardsTooltipGap))
                 .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
-                .alignmentGuide(.top) { $0[.bottom] + Layout.rewardsTooltipGap }
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showRewardsTooltip)
