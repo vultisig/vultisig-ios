@@ -374,6 +374,8 @@
 "foregroundNotificationGeneric" = "Transakcija čeka odobrenje";
 "foregroundNotificationSend" = "Pošalji %@";
 "foregroundNotificationSwap" = "Zamijeni %@ → %@";
+"formInvalid" = "Obrazac nije valjan";
+"formInvalidMessage" = "Obrazac nije valjan. Ispravite polja označena crvenom zvjezdicom.";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
 "foundActiveChainsSubtitleHighlight" = "%d minuta";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
@@ -884,6 +886,7 @@
 "thisVaultOnly" = "Samo ovaj trezor";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainNotEnabledForLP" = "THORChain nije omogućen na ovom trezoru. Omogućite THORChain za dodavanje likvidnosti.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";

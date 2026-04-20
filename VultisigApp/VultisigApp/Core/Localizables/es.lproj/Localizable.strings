@@ -374,6 +374,8 @@
 "foregroundNotificationGeneric" = "Transacción pendiente de aprobación";
 "foregroundNotificationSend" = "Enviar %@";
 "foregroundNotificationSwap" = "Intercambiar %@ → %@";
+"formInvalid" = "Formulario inválido";
+"formInvalidMessage" = "El formulario no es válido. Corrige los campos marcados con una estrella roja.";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
@@ -884,6 +886,7 @@
 "thisVaultOnly" = "Solo esta bóveda";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Habilita THORChain para añadir liquidez.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";
 "title" = "Título";

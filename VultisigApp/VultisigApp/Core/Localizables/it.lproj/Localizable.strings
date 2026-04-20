@@ -374,6 +374,8 @@
 "foregroundNotificationGeneric" = "Transazione in attesa di approvazione";
 "foregroundNotificationSend" = "Invia %@";
 "foregroundNotificationSwap" = "Scambia %@ → %@";
+"formInvalid" = "Modulo non valido";
+"formInvalidMessage" = "Il modulo non è valido. Correggi i campi contrassegnati con una stella rossa.";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
@@ -884,6 +886,7 @@
 "thisVaultOnly" = "Solo questo Vault";
 "thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
+"thorchainNotEnabledForLP" = "THORChain non è abilitato in questo vault. Abilita THORChain per aggiungere liquidità.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";
 "title" = "Titolo";

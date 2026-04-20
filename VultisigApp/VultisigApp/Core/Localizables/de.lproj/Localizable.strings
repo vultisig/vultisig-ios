@@ -374,6 +374,8 @@
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
 "foregroundNotificationSend" = "Senden %@";
 "foregroundNotificationSwap" = "Tausch %@ → %@";
+"formInvalid" = "Formular ungültig";
+"formInvalidMessage" = "Das Formular ist nicht gültig. Bitte korrigiere die mit einem roten Stern markierten Felder.";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
@@ -884,6 +886,7 @@
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainNotEnabledForLP" = "THORChain ist in diesem Vault nicht aktiviert. Aktiviere THORChain, um Liquidität hinzuzufügen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";
 "title" = "Titel";

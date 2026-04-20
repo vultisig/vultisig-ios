@@ -380,6 +380,8 @@
 "foregroundNotificationGeneric" = "트랜잭션 승인 대기 중";
 "foregroundNotificationSend" = "%@ 전송";
 "foregroundNotificationSwap" = "%@ → %@ 스왑";
+"formInvalid" = "양식이 유효하지 않음";
+"formInvalidMessage" = "양식이 유효하지 않습니다. 빨간색 별표로 표시된 필드를 수정하세요.";
 "foundActiveChainsSubtitle" = "추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";
@@ -894,6 +896,7 @@
 "thisVaultOnly" = "이 볼트만";
 "thorAddressAutoFilled" = "THORChain 주소 (자동 채워짐)";
 "thorAddressNotFound" = "볼트에서 THORChain 주소를 찾을 수 없습니다. RUNE이 볼트에 있는지 확인하세요.";
+"thorchainNotEnabledForLP" = "이 볼트에 THORChain이 활성화되어 있지 않습니다. 유동성을 추가하려면 THORChain을 활성화하세요.";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
 "timeout" = "시간 초과";
 "title" = "제목";

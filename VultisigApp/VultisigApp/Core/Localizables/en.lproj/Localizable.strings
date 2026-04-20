@@ -380,6 +380,8 @@
 "foregroundNotificationGeneric" = "Transaction pending approval";
 "foregroundNotificationSend" = "Send %@";
 "foregroundNotificationSwap" = "Swap %@ → %@";
+"formInvalid" = "Form Invalid";
+"formInvalidMessage" = "The form is not valid. Please fix the fields marked with a red star.";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
@@ -894,6 +896,7 @@
 "thisVaultOnly" = "This Vault Only";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainNotEnabledForLP" = "THORChain is not enabled on this vault. Enable THORChain to add liquidity.";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";
 "title" = "Title";

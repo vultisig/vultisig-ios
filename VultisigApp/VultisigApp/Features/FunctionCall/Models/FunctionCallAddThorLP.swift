@@ -21,6 +21,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     @Published var poolValid: Bool = false
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
+    @Published var thorchainNotEnabled: Bool = false
 
     // Pools
     @Published var availablePools: [IdentifiableString] = []
@@ -206,12 +207,16 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         if tx.coin.chain == .thorChain {
             pairedAddress = ""
             pairedAddressValid = false
+            thorchainNotEnabled = false
         } else if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
             pairedAddress = thorCoin.address
             pairedAddressValid = true
+            thorchainNotEnabled = false
         } else {
             pairedAddress = ""
             pairedAddressValid = false
+            thorchainNotEnabled = true
+            customErrorMessage = NSLocalizedString("thorchainNotEnabledForLP", comment: "Error shown when adding a THORChain LP from a non-THORChain asset while THORChain is not enabled on the vault")
         }
     }
 
@@ -313,7 +318,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 let currentBalance = self.tx.coin.balanceDecimal
                 self.amountValid = amount > 0 && amount <= currentBalance
 
-                if currentBalance < amount {
+                if self.thorchainNotEnabled {
+                    self.customErrorMessage = NSLocalizedString("thorchainNotEnabledForLP", comment: "Error shown when adding a THORChain LP from a non-THORChain asset while THORChain is not enabled on the vault")
+                } else if currentBalance < amount {
                     self.amountValid = false
                     self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
                 } else {
@@ -381,6 +388,10 @@ struct FunctionCallAddThorLPView: View {
 
     var body: some View {
         VStack {
+            if model.thorchainNotEnabled {
+                ThorchainNotEnabledBanner()
+            }
+
             PoolSelectorSection(model: model)
 
             if model.isApprovalRequired {
@@ -496,6 +507,26 @@ struct PoolSelectorSection: View {
             }
 
         )
+    }
+}
+
+struct ThorchainNotEnabledBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.alertWarning)
+
+            Text(NSLocalizedString("thorchainNotEnabledForLP", comment: "Error shown when adding a THORChain LP from a non-THORChain asset while THORChain is not enabled on the vault"))
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(10)
     }
 }
 
