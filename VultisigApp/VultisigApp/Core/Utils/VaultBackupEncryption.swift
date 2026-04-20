@@ -5,9 +5,9 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "vault-backup-encryption")
 
-protocol VaultBackupEncryption {
-    func encrypt(data: Data, password: String) throws -> Data
-    func decrypt(data: Data, password: String) -> Data?
+protocol VaultBackupEncryption: Sendable {
+    func encrypt(data: Data, password: String) async throws -> Data
+    func decrypt(data: Data, password: String) async -> Data?
 }
 
 enum VaultBackupEncryptionError: Error {
@@ -27,9 +27,21 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
     private static let iterations: UInt32 = 600_000
     private static let headerSize = magicSize + saltLength + ivLength
 
-    func encrypt(data: Data, password: String) throws -> Data {
-        let salt = try randomBytes(count: Self.saltLength)
-        let iv = try randomBytes(count: Self.ivLength)
+    func encrypt(data: Data, password: String) async throws -> Data {
+        try await Task.detached(priority: .userInitiated) {
+            try Self.encryptSync(data: data, password: password)
+        }.value
+    }
+
+    func decrypt(data: Data, password: String) async -> Data? {
+        await Task.detached(priority: .userInitiated) {
+            Self.decryptSync(data: data, password: password)
+        }.value
+    }
+
+    private static func encryptSync(data: Data, password: String) throws -> Data {
+        let salt = try randomBytes(count: saltLength)
+        let iv = try randomBytes(count: ivLength)
         let key = try deriveKey(password: password, salt: salt)
 
         do {
@@ -38,8 +50,8 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
             guard let combined = sealed.combined else {
                 throw VaultBackupEncryptionError.encryptionFailed
             }
-            var output = Data(capacity: Self.magicSize + salt.count + combined.count)
-            output.append(contentsOf: Self.magic)
+            var output = Data(capacity: magicSize + salt.count + combined.count)
+            output.append(contentsOf: magic)
             output.append(salt)
             output.append(combined)
             return output
@@ -51,22 +63,27 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
         }
     }
 
-    func decrypt(data: Data, password: String) -> Data? {
+    private static func decryptSync(data: Data, password: String) -> Data? {
         if hasMagicPrefix(data) {
-            return decryptPbkdf2(data: data, password: password)
+            if let plaintext = decryptPbkdf2(data: data, password: password) {
+                return plaintext
+            }
+            // Legacy blobs begin with a random nonce that may, with ~1/2^32 probability,
+            // collide with the magic prefix. Fall back so those backups stay importable.
+            return legacyDecrypt(data: data, password: password)
         }
         return legacyDecrypt(data: data, password: password)
     }
 
-    private func decryptPbkdf2(data: Data, password: String) -> Data? {
-        let minSize = Self.headerSize + Self.gcmTagBytes
+    private static func decryptPbkdf2(data: Data, password: String) -> Data? {
+        let minSize = headerSize + gcmTagBytes
         guard data.count >= minSize else {
             logger.warning("PBKDF2 payload too small: \(data.count, privacy: .public) bytes")
             return nil
         }
 
-        let saltStart = Self.magicSize
-        let saltEnd = saltStart + Self.saltLength
+        let saltStart = magicSize
+        let saltEnd = saltStart + saltLength
         let salt = data.subdata(in: saltStart..<saltEnd)
         let sealedCombined = data.subdata(in: saltEnd..<data.count)
 
@@ -80,7 +97,7 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
         }
     }
 
-    private func legacyDecrypt(data: Data, password: String) -> Data? {
+    private static func legacyDecrypt(data: Data, password: String) -> Data? {
         let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
         do {
             let sealedBox = try AES.GCM.SealedBox(combined: data)
@@ -91,15 +108,15 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
         }
     }
 
-    private func hasMagicPrefix(_ data: Data) -> Bool {
-        guard data.count >= Self.magicSize else { return false }
-        for index in 0..<Self.magicSize where data[data.startIndex + index] != Self.magic[index] {
+    private static func hasMagicPrefix(_ data: Data) -> Bool {
+        guard data.count >= magicSize else { return false }
+        for index in 0..<magicSize where data[data.startIndex + index] != magic[index] {
             return false
         }
         return true
     }
 
-    private func deriveKey(password: String, salt: Data) throws -> SymmetricKey {
+    private static func deriveKey(password: String, salt: Data) throws -> SymmetricKey {
         let passwordBytes = Array(password.utf8)
         var derived = [UInt8](repeating: 0, count: Self.keyLengthBytes)
 
@@ -127,7 +144,7 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
         return SymmetricKey(data: Data(derived))
     }
 
-    private func randomBytes(count: Int) throws -> Data {
+    private static func randomBytes(count: Int) throws -> Data {
         var bytes = [UInt8](repeating: 0, count: count)
         let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
         guard status == errSecSuccess else {
