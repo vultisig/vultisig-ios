@@ -157,6 +157,11 @@
             "scanQRCodeTooltipBullet3"
         ]
 
+        private enum Layout {
+            static let tooltipWidth: CGFloat = 280
+            static let tooltipGap: CGFloat = 8
+        }
+
         var cameraView: some View {
             CodeScannerView(
                 codeTypes: [.qr],
