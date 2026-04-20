@@ -88,7 +88,6 @@
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
 "autocompounderInfo" = "Auto-Compounder informacije";
-"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Dostupno";
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";

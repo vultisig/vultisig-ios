@@ -24,4 +24,8 @@ class StaticURL {
         }
         return url
     }()
+
+    enum Defi {
+        static let tcyAutoCompounderInfo = URL(string: "https://docs.rujira.network/ecosystem-products/tcy-autocompounder")!
+    }
 }

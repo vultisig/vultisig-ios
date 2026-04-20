@@ -88,7 +88,6 @@
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
 "autocompounderInfo" = "自动复利信息";
-"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "可用";
 "availableLPUnits" = "可用 LP 单位";
 "availableNodes" = "可用节点";

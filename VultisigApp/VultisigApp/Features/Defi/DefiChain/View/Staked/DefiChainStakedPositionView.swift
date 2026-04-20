@@ -111,8 +111,7 @@ struct DefiChainStakedPositionView: View {
     }
 
     func openAutocompounderInfo() {
-        guard let url = URL(string: "autocompounderInfoURL".localized) else { return }
-        openURL(url)
+        openURL(StaticURL.Defi.tcyAutoCompounderInfo)
     }
 
     @ViewBuilder

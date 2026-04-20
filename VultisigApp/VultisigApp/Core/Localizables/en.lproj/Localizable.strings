@@ -96,7 +96,6 @@
 "atLeastOneDevice" = "At least one device";
 "atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
 "autocompounderInfo" = "Auto-Compounder Info";
-"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Available";
 "availableLPUnits" = "Available LP Units";
 "availableNodes" = "Available Nodes";

@@ -96,7 +96,6 @@
 "atLeastOneDevice" = "기기 최소 1개";
 "atLeastOneDeviceSubtitle" = "Vultisig를 실행할 수 있는 기기라면 모두 가능합니다.";
 "autocompounderInfo" = "자동 복리 정보";
-"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "사용 가능";
 "availableLPUnits" = "사용 가능한 LP 단위";
 "availableNodes" = "사용 가능한 노드";

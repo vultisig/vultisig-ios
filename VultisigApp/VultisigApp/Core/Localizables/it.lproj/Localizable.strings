@@ -88,7 +88,6 @@
 "atLeastOneDevice" = "Almeno un dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
 "autocompounderInfo" = "Informazioni Auto-Compounder";
-"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Disponibile";
 "availableLPUnits" = "Unità LP Disponibili";
 "availableNodes" = "Nodi Disponibili";
