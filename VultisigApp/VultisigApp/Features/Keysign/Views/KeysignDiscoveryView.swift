@@ -146,11 +146,13 @@ struct KeysignDiscoveryView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.colors.bgSurface2.opacity(0.3))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .inset(by: 0.5)
-                    .stroke(.white.opacity(0.03), lineWidth: 1)
-                    .fill(Theme.colors.bgButtonDisabled.opacity(0.5))
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
         }
         .disabled(isDisabled)
