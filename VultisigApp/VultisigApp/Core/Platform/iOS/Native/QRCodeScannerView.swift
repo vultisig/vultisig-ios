@@ -95,6 +95,7 @@
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("close".localized)
         }
 
         private var tooltipDismissLayer: some View {
@@ -137,6 +138,7 @@
                 VStack(alignment: .leading, spacing: 4) {
                     Text("scanQRCodeTooltipSubtitle".localized)
                         .font(Theme.fonts.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
                     ForEach(tooltipBullets, id: \.self) { bullet in
                         HStack(alignment: .top, spacing: 6) {
                             Text("•").font(Theme.fonts.footnote)
@@ -196,7 +198,7 @@
             let horizontalInset: CGFloat = 24
             let topOffset = proxy.safeAreaInsets.top + 72
             let bottomOffset: CGFloat = 120
-            let width = proxy.size.width - horizontalInset * 2
+            let width = max(proxy.size.width - horizontalInset * 2, 0)
             let availableHeight = proxy.size.height - topOffset - bottomOffset
             return CGRect(
                 x: horizontalInset,

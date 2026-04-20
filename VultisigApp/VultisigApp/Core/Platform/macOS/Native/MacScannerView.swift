@@ -296,6 +296,7 @@ struct MacScannerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("scanQRCodeTooltipSubtitle".localized)
                     .font(Theme.fonts.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
                 ForEach(tooltipBullets, id: \.self) { bullet in
                     HStack(alignment: .top, spacing: 6) {
                         Text("•").font(Theme.fonts.footnote)
