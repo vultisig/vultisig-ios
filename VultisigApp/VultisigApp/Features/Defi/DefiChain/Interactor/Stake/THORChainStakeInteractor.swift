@@ -73,7 +73,8 @@ private extension THORChainStakeInteractor {
             }
 
         case "STCY":
-            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            let rawAmount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            let amount = rawAmount / pow(10, coinMeta.decimals)
             return StakePosition(
                 coin: coinMeta,
                 type: .compound,
