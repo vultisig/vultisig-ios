@@ -87,6 +87,8 @@
 "assets" = "Imovine";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
+"autocompounderInfo" = "Auto-Compounder informacije";
+"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Dostupno";
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";
@@ -285,7 +287,6 @@
 "emptyLPsField" = "Prazno polje LPs";
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
-"enableAutoCompounding" = "Omogući Auto-Compounding";
 "enableBiometricsFastSigning" = "Omogući biometriju brzo potpisivanje";
 "enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
@@ -901,6 +902,7 @@
 "transactionID" = "ID transakcije";
 "transactionSuccessful" = "Transakcija uspješna";
 "transactionTrackingLink" = "Poveznica za praćenje transakcije";
+"transfer" = "Prijenos";
 "tronBandwidth" = "Propusnost";
 "tronBandwidthDescription" = "Bodovi propusnosti potrebni su za svaku transakciju na TRON-u, uključujući standardna slanja tokena i interakcije s pametnim ugovorima. Svaki TRON korisnik dnevno dobiva 600 besplatnih bodova propusnosti, koji mogu pokriti otprilike dva osnovna slanja. Dodatno, možete zaraditi dodatne bodove propusnosti stakingom TRX-a, povećavajući svoju dnevnu kvotu za podršku većem broju transakcija. Ako imate dovoljno bodova propusnosti, možete slati tokene, stakati TRX ili komunicirati s pametnim ugovorima bez plaćanja TRX-a za gas naknade.";
 "tronEnergy" = "Energija";

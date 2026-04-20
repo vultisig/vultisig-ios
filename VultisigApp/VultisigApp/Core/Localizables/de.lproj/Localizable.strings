@@ -87,6 +87,8 @@
 "assets" = "Vermögenswerte";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
+"autocompounderInfo" = "Auto-Compounder-Info";
+"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Verfügbar";
 "availableLPUnits" = "Verfügbare LP-Einheiten";
 "availableNodes" = "Verfügbare Knoten";
@@ -285,7 +287,6 @@
 "emptyLPsField" = "Leeres LPs-Feld";
 "enable" = "Aktivieren";
 "enableAll" = "Alle aktivieren";
-"enableAutoCompounding" = "Auto-Compounding aktivieren";
 "enableBiometricsFastSigning" = "Aktivieren Sie die Biometrie schnelles Signieren";
 "enableDKLS" = "DKLS aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
@@ -901,6 +902,7 @@
 "transactionID" = "Transaktions-ID";
 "transactionSuccessful" = "Transaktion erfolgreich";
 "transactionTrackingLink" = "Transaktionsverfolgungslink";
+"transfer" = "Übertragen";
 "tronBandwidth" = "Bandbreite";
 "tronBandwidthDescription" = "Bandbreitenpunkte werden für jede Transaktion auf TRON benötigt, einschließlich Standard-Token-Sendungen und Smart-Contract-Interaktionen. Jeder TRON-Benutzer erhält täglich 600 kostenlose Bandbreitenpunkte, die ungefähr zwei grundlegende Sendungen abdecken können. Darüber hinaus können Sie durch das Staking von TRX zusätzliche Bandbreitenpunkte verdienen und so Ihr tägliches Kontingent erhöhen, um mehr Transaktionen zu unterstützen. Wenn Sie genügend Bandbreitenpunkte haben, können Sie Token senden, TRX staken oder mit Smart Contracts interagieren, ohne TRX als Gasgebühren zu zahlen.";
 "tronEnergy" = "Energie";

@@ -87,6 +87,8 @@
 "assets" = "Activos";
 "atLeastOneDevice" = "Al menos un dispositivo";
 "atLeastOneDeviceSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
+"autocompounderInfo" = "Información del Auto-Compounder";
+"autocompounderInfoURL" = "https://docs.rujira.network/ecosystem-products/tcy-autocompounder";
 "available" = "Disponible";
 "availableLPUnits" = "Unidades LP Disponibles";
 "availableNodes" = "Nodos Disponibles";
@@ -285,7 +287,6 @@
 "emptyLPsField" = "Campo de LPs vacío";
 "enable" = "Permitir";
 "enableAll" = "Activar todas";
-"enableAutoCompounding" = "Habilitar Auto-Compounding";
 "enableBiometricsFastSigning" = "Habilitar la firma rápida de biometría";
 "enableDKLS" = "Habilitar DKLS";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
@@ -901,6 +902,7 @@
 "transactionID" = "ID de Transacción";
 "transactionSuccessful" = "Transacción exitosa";
 "transactionTrackingLink" = "Enlace de seguimiento de transacción";
+"transfer" = "Transferir";
 "tronBandwidth" = "Ancho de Banda";
 "tronBandwidthDescription" = "Los Puntos de Ancho de Banda son necesarios para cada transacción en TRON, incluyendo envíos estándar de tokens e interacciones con contratos inteligentes. Cada usuario de TRON recibe 600 Puntos de Ancho de Banda gratuitos por día, que pueden cubrir aproximadamente dos envíos básicos. Además, puedes ganar Puntos de Ancho de Banda adicionales haciendo staking de TRX, aumentando tu cuota diaria para soportar más transacciones. Si tienes suficientes Puntos de Ancho de Banda, puedes enviar tokens, hacer staking de TRX o interactuar con contratos inteligentes sin pagar TRX en tarifas de gas.";
 "tronEnergy" = "Energía";

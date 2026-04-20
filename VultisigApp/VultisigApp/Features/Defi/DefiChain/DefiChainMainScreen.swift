@@ -16,6 +16,7 @@ struct DefiChainMainScreen: View {
     @StateObject var bondViewModel: DefiChainBondViewModel
     @StateObject var lpsViewModel: DefiChainLPsViewModel
     @StateObject var stakeViewModel: DefiChainStakeViewModel
+    @StateObject var sendTx = SendTransaction()
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -109,6 +110,7 @@ struct DefiChainMainScreen: View {
                             rewardsCoin: rewardsCoin
                         ))
                     },
+                    onTransfer: { onTransfer(position: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .liquidityPool:
@@ -141,8 +143,10 @@ struct DefiChainMainScreen: View {
 
     func onStake(position: StakePosition) {
         switch position.type {
-        case .stake, .compound:
-            onTransactionToPresent(.stake(coin: position.coin, defaultAutocompound: false))
+        case .stake:
+            onTransactionToPresent(.stake(coin: position.coin, isAutocompound: false))
+        case .compound:
+            onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), isAutocompound: true))
         case .index:
             onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
         }
@@ -150,16 +154,45 @@ struct DefiChainMainScreen: View {
 
     func onUnstake(position: StakePosition) {
         switch position.type {
-        case .stake, .compound:
+        case .stake:
             onTransactionToPresent(
                 .unstake(
                     coin: position.coin,
-                    defaultAutocompound: false,
+                    isAutocompound: false,
                     availableToUnstake: position.availableToUnstake
+                )
+            )
+        case .compound:
+            onTransactionToPresent(
+                .unstake(
+                    coin: stakeCoin(for: position.coin),
+                    isAutocompound: true,
+                    availableToUnstake: position.amount
                 )
             )
         case .index:
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
+        }
+    }
+
+    func onTransfer(position: StakePosition) {
+        guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
+            return
+        }
+        sendTx.reset(coin: coin)
+        router.navigate(to: HomeRoute.vaultAction(
+            action: .send(coin: coin, hasPreselectedCoin: true),
+            sendTx: sendTx,
+            vault: vault
+        ))
+    }
+
+    func stakeCoin(for compoundCoin: CoinMeta) -> CoinMeta {
+        switch compoundCoin.ticker.uppercased() {
+        case "STCY":
+            return TokensStore.tcy
+        default:
+            return compoundCoin
         }
     }
 
