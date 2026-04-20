@@ -45,6 +45,18 @@ struct MacScannerView: View {
                 .showIf(scannerMode == .camera)
             main
         }
+        .overlay {
+            if showTooltip {
+                tooltipDismissLayer
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            HelpTooltip(isPresented: $showTooltip, maxWidth: 360) {
+                tooltipContent
+            }
+            .padding(.trailing, 16)
+            .padding(.top, 16)
+        }
         .crossPlatformToolbar {
             CustomToolbarItem(placement: .center) {
                 FilledSegmentedControl(
@@ -55,12 +67,7 @@ struct MacScannerView: View {
                 .frame(maxWidth: 220)
             }
             CustomToolbarItem(placement: .trailing) {
-                HelpButtonWithTooltip(
-                    isPresented: $showTooltip,
-                    tooltipMaxWidth: 360
-                ) {
-                    tooltipContent
-                }
+                HelpButton(isPresented: $showTooltip)
             }
         }
         .onChange(of: cameraViewModel.shouldJoinKeygen) { _, shouldNavigate in
@@ -231,6 +238,7 @@ struct MacScannerView: View {
                 sendTx: sendTx
             ))
         }
+        .fixedSize()
     }
 
     var tryAgainButton: some View {
@@ -269,6 +277,16 @@ struct MacScannerView: View {
             width: size,
             height: size
         )
+    }
+
+    private var tooltipDismissLayer: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.interpolatingSpring) {
+                    showTooltip = false
+                }
+            }
     }
 
     private var tooltipContent: some View {
@@ -336,7 +354,6 @@ struct MacScannerView: View {
             VStack {
                 Spacer()
                 uploadQRCodeButton
-                    .padding(.horizontal, 40)
                     .padding(.bottom, 40)
             }
         }

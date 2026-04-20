@@ -33,6 +33,10 @@
 
                 viewportOverlay
 
+                if showTooltip {
+                    tooltipDismissLayer
+                }
+
                 content
 
                 PopupCapsule(text: "noBarcodesFound".localized, showPopup: $showErrorPopup)
@@ -55,6 +59,10 @@
         var content: some View {
             VStack(spacing: 0) {
                 header
+                HelpTooltip(isPresented: $showTooltip, maxWidth: nil) {
+                    tooltipContent
+                }
+                .padding(.top, 8)
                 Spacer()
                 uploadButton
                     .padding(.bottom, 30)
@@ -71,12 +79,7 @@
                     .font(Theme.fonts.bodyLMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
                 Spacer()
-                HelpButtonWithTooltip(
-                    isPresented: $showTooltip,
-                    tooltipMaxWidth: 320
-                ) {
-                    tooltipContent
-                }
+                HelpButton(isPresented: $showTooltip)
             }
         }
 
@@ -92,6 +95,17 @@
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
+        }
+
+        private var tooltipDismissLayer: some View {
+            Color.clear
+                .contentShape(Rectangle())
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.interpolatingSpring) {
+                        showTooltip = false
+                    }
+                }
         }
 
         private var glassCircleBackground: some View {

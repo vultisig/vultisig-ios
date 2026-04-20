@@ -618,7 +618,7 @@
 		536346117EE8452192A63F3A /* BittensorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485EA7DF05214655872AE569 /* BittensorHelper.swift */; };
 		5589A8E15B5CE4DB4C3090AB /* VaultNotificationToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA8B3D6314175F82FEC27D8 /* VaultNotificationToggleRow.swift */; };
 		570871242D51A5905F8DDAC7 /* ForegroundNotificationBannerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE5D50E07EFD9201F09BDC4 /* ForegroundNotificationBannerModifier.swift */; };
-		58C63B8587C9B9E7A9947C32 /* HelpButtonWithTooltip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7FC4624616D00EC2905224F /* HelpButtonWithTooltip.swift */; };
+		58C63B8587C9B9E7A9947C32 /* HelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7FC4624616D00EC2905224F /* HelpButton.swift */; };
 		5E0E7A608BD5D13124215706 /* AgentToolExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3B44655675C6DADF3F5E06 /* AgentToolExecutor.swift */; };
 		5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */; };
 		5FEDAD6B0D51E35E54F4E5E7 /* SettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF04AF6EF603A94D983E0B5 /* SettingsPage.swift */; };
@@ -657,6 +657,7 @@
 		9FFDCA67FBEF7610D81CDCC5 /* AccessibilityID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB56D2C8977AF5B1BD24129 /* AccessibilityID.swift */; };
 		A0E04CD5D64E128B12F4F141 /* MacAddressScannerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F027585489FBADB42F55C5 /* MacAddressScannerView+macOS.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F3 /* Tooltip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Tooltip.swift */; };
+		A25485BB95EF618656E929F4 /* HelpTooltip.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D02FF7AA2E685D15E1AB5E /* HelpTooltip.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */; };
@@ -2445,6 +2446,7 @@
 		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
 		DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeDictionary.swift; sourceTree = "<group>"; };
 		DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedTransactionResult.swift; sourceTree = "<group>"; };
+		E0D02FF7AA2E685D15E1AB5E /* HelpTooltip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpTooltip.swift; sourceTree = "<group>"; };
 		E313D70696CC56709CA322D3 /* AgentThinkingIndicator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentThinkingIndicator.swift; sourceTree = "<group>"; };
 		E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusAPI.swift; sourceTree = "<group>"; };
@@ -2462,7 +2464,7 @@
 		F3FB37A5BFE7156A8C034D7B /* AgentChatMessageView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentChatMessageView.swift; sourceTree = "<group>"; };
 		F60268B5B38001090F27E283 /* AgentModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentModels.swift; sourceTree = "<group>"; };
 		F637961EABFB349F64A633BF /* MacCameraServiceViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacCameraServiceViewModel.swift; sourceTree = "<group>"; };
-		F7FC4624616D00EC2905224F /* HelpButtonWithTooltip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpButtonWithTooltip.swift; sourceTree = "<group>"; };
+		F7FC4624616D00EC2905224F /* HelpButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpButton.swift; sourceTree = "<group>"; };
 		F84EAAA1C5CB4AC0A9922354 /* FastVaultPasswordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastVaultPasswordViewModel.swift; sourceTree = "<group>"; };
 		F9FDC0FE2F5DEF7240D0D3B7 /* ForegroundNotificationBannerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ForegroundNotificationBannerView.swift; sourceTree = "<group>"; };
 		FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
@@ -6534,7 +6536,8 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* Tooltip.swift */,
-				F7FC4624616D00EC2905224F /* HelpButtonWithTooltip.swift */,
+				F7FC4624616D00EC2905224F /* HelpButton.swift */,
+				E0D02FF7AA2E685D15E1AB5E /* HelpTooltip.swift */,
 			);
 			path = Tooltip;
 			sourceTree = "<group>";
@@ -8166,7 +8169,8 @@
 				411422942A928D78FADAFCDF /* MacCameraServiceViewModel.swift in Sources */,
 				BD9DB6201E7149E5BC4D9EA7 /* StyledIntegerField.swift in Sources */,
 				9FFDCA67FBEF7610D81CDCC5 /* AccessibilityID.swift in Sources */,
-				58C63B8587C9B9E7A9947C32 /* HelpButtonWithTooltip.swift in Sources */,
+				58C63B8587C9B9E7A9947C32 /* HelpButton.swift in Sources */,
+				A25485BB95EF618656E929F4 /* HelpTooltip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
