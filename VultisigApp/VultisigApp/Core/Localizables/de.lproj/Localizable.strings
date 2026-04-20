@@ -864,6 +864,7 @@
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";
+"swapFeePercentage" = "Tauschgebühr (%.2f%%)";
 "swapOverview" = "Tauschübersicht";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";

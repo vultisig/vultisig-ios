@@ -874,6 +874,7 @@
 "swapErrorUnexpectedDescription" = "An unexpected error occurred. Please try again.";
 "swapErrorUnexpectedTitle" = "Unexpected Error";
 "swapFee" = "Swap Fee";
+"swapFeePercentage" = "Swap Fee (%.2f%%)";
 "swapOverview" = "Swap overview";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";

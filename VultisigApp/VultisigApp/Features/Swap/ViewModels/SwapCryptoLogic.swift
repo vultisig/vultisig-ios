@@ -252,11 +252,11 @@ struct SwapCryptoLogic {
         // Struct: `slippageBps`.
         // If not present, we can calculate: (AffiliateFeeFiat / InputFiat) * 10000
 
-        guard let quote = tx.quote else { return "Swap Fee" }
+        guard let quote = tx.quote else { return "swapFee".localized }
 
         // Get affiliate fee fiat value
         let affiliateFeeString = baseAffiliateFee(tx: tx)
-        guard !affiliateFeeString.isEmpty else { return "Swap Fee (0.00%)" }
+        guard !affiliateFeeString.isEmpty else { return String(format: "swapFeePercentage".localized, 0.0) }
 
         // We need raw numbers for math, reusing logic for efficiency
         var feeAmt: Decimal = 0
@@ -278,12 +278,12 @@ struct SwapCryptoLogic {
 
         let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
 
-        guard inputFiat > 0 else { return "Swap Fee" }
+        guard inputFiat > 0 else { return "swapFee".localized }
 
         let rate = (feeFiat / inputFiat)
         let percentage = rate * 100
 
-        return "Swap Fee (\(String(format: "%.2f", NSDecimalNumber(decimal: percentage).doubleValue))%)"
+        return String(format: "swapFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
     }
 
     func outboundFeeString(tx: SwapTransaction) -> String {

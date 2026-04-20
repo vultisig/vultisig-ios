@@ -864,6 +864,7 @@
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
+"swapFeePercentage" = "Naknada za zamjenu (%.2f%%)";
 "swapOverview" = "Pregled zamjene";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
