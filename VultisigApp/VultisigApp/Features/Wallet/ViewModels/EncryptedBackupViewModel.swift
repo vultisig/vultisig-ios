@@ -36,6 +36,7 @@ class EncryptedBackupViewModel: ObservableObject {
 
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     private let keychain = DefaultKeychainService.shared
+    private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
 
     func resetData() {
         showVaultExporter = false
@@ -156,12 +157,10 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     private func encrypt(data: Data, password: String) -> Data? {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
         do {
-            let sealedBox = try AES.GCM.seal(data, using: key)
-            return sealedBox.combined
+            return try backupEncryption.encrypt(data: data, password: password)
         } catch {
-            print("Error encrypting data: \(error.localizedDescription)")
+            logger.error("Error encrypting backup data: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }
@@ -579,15 +578,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     func decrypt(data: Data, password: String) -> Data? {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
-        do {
-            let sealedBox = try AES.GCM.SealedBox(combined: data)
-            let decryptedData = try AES.GCM.open(sealedBox, using: key)
-            return decryptedData
-        } catch {
-            print("Error decrypting data: \(error.localizedDescription)")
-            return nil
-        }
+        return backupEncryption.decrypt(data: data, password: password)
     }
 
     func isDKLS(filename: String) -> Bool {
