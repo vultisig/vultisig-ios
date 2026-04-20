@@ -195,6 +195,7 @@ struct DefiChainStakedPositionView: View {
             VStack(alignment: .leading, spacing: 16) {
                 PrimaryButton(title: withdrawTitle, action: onWithdraw)
                     .showIf(canWithdraw)
+                PrimaryButton(title: "transfer".localized, action: onTransfer)
                 compoundButtonsView
 
                 if let unstakeMessage = position.unstakeMessage {
@@ -210,9 +211,6 @@ struct DefiChainStakedPositionView: View {
 
     var compoundButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "transfer".localized, icon: "send", type: .secondary) {
-                onTransfer()
-            }
             DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
