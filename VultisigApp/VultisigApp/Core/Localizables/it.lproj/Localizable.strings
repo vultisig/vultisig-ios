@@ -147,6 +147,10 @@
 "bondRune" = "Vincola RUNE";
 "bondToNode" = "Vincola al Nodo";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Dati della transazione scaduti — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleBlockhash" = "Transazione scaduta — commissioni aggiornate. Riprova.";
+"broadcastRetryStaleNonce" = "Nonce della transazione obsoleto — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleQuote" = "Quotazione scaduta — dettagli aggiornati. Riprova.";
 "buy" = "Acquista";
 "cacaoPool" = "Pool Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
@@ -932,6 +936,7 @@
 "tronUnfreezeConfirm" = "Continua";
 "tronUnfreezeTitle" = "Scongela TRX";
 "tryAgain" = "Riprova";
+"tryAgainWithFreshData" = "Riprova con dati aggiornati";
 "txid" = "ID transazione";
 "typeHere" = "Digita qui";
 "ultimateSecurity" = "Massima Sicurezza";

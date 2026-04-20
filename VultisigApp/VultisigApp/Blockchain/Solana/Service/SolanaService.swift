@@ -3,15 +3,30 @@ import SwiftUI
 import WalletCore
 
 enum SolanaServiceError: Error, LocalizedError {
-    case blockhashExpired(message: String)
     case rpcError(message: String, code: Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .rpcError(let message, _):
+            return "RPC Error: \(message)"
+        }
+    }
+}
+
+enum SolanaRetryableError: Error, LocalizedError, RetryableBroadcastError {
+    case blockhashExpired(message: String)
 
     var errorDescription: String? {
         switch self {
         case .blockhashExpired(let message):
             return "Transaction failed: Blockhash expired. \(message)"
-        case .rpcError(let message, _):
-            return "RPC Error: \(message)"
+        }
+    }
+
+    var retryReason: BroadcastRetryReason {
+        switch self {
+        case .blockhashExpired:
+            return .staleBlockhash
         }
     }
 }
@@ -67,7 +82,7 @@ class SolanaService {
                     if errorMessage.contains("Blockhash not found") ||
                         errorMessage.contains("blockhash") ||
                         errorCode == -32002 {
-                        throw SolanaServiceError.blockhashExpired(message: errorMessage)
+                        throw SolanaRetryableError.blockhashExpired(message: errorMessage)
                     }
 
                     throw SolanaServiceError.rpcError(message: errorMessage, code: errorCode)

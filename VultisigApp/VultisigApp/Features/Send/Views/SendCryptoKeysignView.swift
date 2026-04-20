@@ -11,6 +11,8 @@ import RiveRuntime
 struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
+    var errorButtonTitle: String? = nil
+    var errorAction: (() -> Void)? = nil
 
     @State var loadingAnimationVM: RiveViewModel? = nil
 
@@ -41,13 +43,40 @@ struct SendCryptoKeysignView: View {
     }
 
     var errorView: some View {
-        ErrorView(
-            type: .warning,
-            title: "signingErrorTryAgain".localized,
-            description: title?.localized ?? .empty,
-            buttonTitle: "tryAgain".localized
-        ) {
-            appViewModel.restart()
+        VStack {
+            Spacer()
+            VStack(spacing: 12) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .background(Image("CirclesBackground"))
+                    .padding(.bottom, 12)
+                Text("signingErrorTryAgain".localized)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .font(Theme.fonts.title2)
+                    .multilineTextAlignment(.center)
+                if let title, title.isNotEmpty {
+                    Text(title.localized)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(Theme.fonts.bodySMedium)
+                        .multilineTextAlignment(.center)
+                }
+                PrimaryButton(
+                    title: errorButtonTitle ?? "tryAgain".localized,
+                    type: .secondary
+                ) {
+                    if let errorAction {
+                        errorAction()
+                    } else {
+                        appViewModel.restart()
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            Spacer()
+            appVersion
         }
     }
 

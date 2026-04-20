@@ -147,6 +147,10 @@
 "bondRune" = "Poveži RUNE";
 "bondToNode" = "Veži na Čvor";
 "bridge" = "Most";
+"broadcastRetryGeneric" = "Podaci o transakciji istekli — detalji ažurirani. Molimo pokušajte ponovno.";
+"broadcastRetryStaleBlockhash" = "Transakcija istekla — naknade ažurirane. Molimo pokušajte ponovno.";
+"broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";
+"broadcastRetryStaleQuote" = "Ponuda istekla — detalji ažurirani. Molimo pokušajte ponovno.";
 "buy" = "Kupi";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
@@ -932,6 +936,7 @@
 "tronUnfreezeConfirm" = "Nastavi";
 "tronUnfreezeTitle" = "Odmrzni TRX";
 "tryAgain" = "Pokušajte ponovno";
+"tryAgainWithFreshData" = "Pokušajte ponovno sa svježim podacima";
 "txid" = "ID transakcije";
 "typeHere" = "Ovdje upišite";
 "ultimateSecurity" = "Krajnja Sigurnost";

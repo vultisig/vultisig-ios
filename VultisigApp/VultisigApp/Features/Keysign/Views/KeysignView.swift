@@ -62,6 +62,8 @@ struct KeysignView: View {
                 keysignFinished
             case .KeysignFailed:
                 sendCryptoKeysignView
+            case .KeysignRetryRequested:
+                retryRequestedView
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
             }
@@ -111,6 +113,21 @@ struct KeysignView: View {
             .onAppear {
                 showError = true
             }
+    }
+
+    var retryRequestedView: some View {
+        SendCryptoKeysignView(
+            title: viewModel.retryReason?.userFacingMessage ?? .empty,
+            showError: true,
+            errorButtonTitle: "tryAgainWithFreshData".localized,
+            errorAction: {
+                guard let reason = viewModel.retryReason else { return }
+                transferViewModel?.retryBroadcast(reason: reason)
+            }
+        )
+        .onAppear {
+            showError = true
+        }
     }
 
     var keysignVaultMismatchErrorView: some View {

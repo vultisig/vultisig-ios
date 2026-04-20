@@ -155,6 +155,10 @@
 "bondRune" = "Bond RUNE";
 "bondToNode" = "Bond to Node";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Transaction data expired — details refreshed. Please try again.";
+"broadcastRetryStaleBlockhash" = "Transaction expired — fees refreshed. Please try again.";
+"broadcastRetryStaleNonce" = "Transaction nonce outdated — details refreshed. Please try again.";
+"broadcastRetryStaleQuote" = "Quote expired — details refreshed. Please try again.";
 "buy" = "Buy";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
@@ -946,6 +950,7 @@
 "tronUnfreezeConfirm" = "Continue";
 "tronUnfreezeTitle" = "Unfreeze TRX";
 "tryAgain" = "Try Again";
+"tryAgainWithFreshData" = "Try again with fresh data";
 "txid" = "Tx ID";
 "typeHere" = "Type here";
 "ultimateSecurity" = "Ultimate Security";

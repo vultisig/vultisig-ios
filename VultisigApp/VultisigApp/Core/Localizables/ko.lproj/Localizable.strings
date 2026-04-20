@@ -155,6 +155,10 @@
 "bondRune" = "RUNE 본드";
 "bondToNode" = "노드에 본드";
 "bridge" = "브릿지";
+"broadcastRetryGeneric" = "트랜잭션 데이터가 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
+"broadcastRetryStaleBlockhash" = "트랜잭션이 만료되었습니다 — 수수료가 새로 고쳐졌습니다. 다시 시도해 주세요.";
+"broadcastRetryStaleNonce" = "트랜잭션 nonce가 오래되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
+"broadcastRetryStaleQuote" = "견적이 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "buy" = "구매";
 "cacaoPool" = "Cacao 풀";
 "cacaoUnstakeMaturityMessage" = "입금 만기까지 %@";
@@ -946,6 +950,7 @@
 "tronUnfreezeConfirm" = "계속";
 "tronUnfreezeTitle" = "TRX 동결 해제";
 "tryAgain" = "다시 시도";
+"tryAgainWithFreshData" = "최신 데이터로 다시 시도";
 "txid" = "Tx ID";
 "typeHere" = "여기에 입력";
 "ultimateSecurity" = "궁극적 보안";
