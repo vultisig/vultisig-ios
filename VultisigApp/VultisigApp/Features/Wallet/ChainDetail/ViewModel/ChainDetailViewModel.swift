@@ -48,7 +48,7 @@ final class ChainDetailViewModel: ObservableObject {
 
     var tokens: [Coin] {
         return vault.coins.filter { $0.chain == nativeCoin.chain }
-            .filter { !Self.defiOnlyTickers.contains($0.ticker.uppercased()) }
+            .filter { !$0.isDefiOnly }
             .uniqueBy { $0.uniqueId }
             .sorted {
                 if $0.isNativeToken != $1.isNativeToken {
@@ -57,8 +57,6 @@ final class ChainDetailViewModel: ObservableObject {
                 return ($0.balanceInFiatDecimal) > ($1.balanceInFiatDecimal)
             }
     }
-
-    private static let defiOnlyTickers: Set<String> = ["STCY"]
 
     var filteredTokens: [Coin] {
         if searchText.isEmpty {
