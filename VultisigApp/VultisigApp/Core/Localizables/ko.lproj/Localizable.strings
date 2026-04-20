@@ -208,8 +208,8 @@
 "circleSetupDeposited" = "입금됨";
 "circleSetupInfoText" = "자금은 볼트의 완전한 통제 하에 있습니다. Circle 계정은 자체 보관이며 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
 "circleSetupOpenAccount" = "계정 개설";
-"circleSetupUSDCDeposited" = "USDC 입금됨";
 "circleTitle" = "Circle";
+"circleUSDCDeposited" = "USDC 입금됨";
 "circleWithdrawAmount" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";

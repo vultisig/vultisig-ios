@@ -210,7 +210,6 @@
 "circleSetupDeposited" = "Deposited";
 "circleSetupInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
 "circleSetupOpenAccount" = "Open Account";
-"circleSetupUSDCDeposited" = "USDC deposited";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC deposited";
 "circleWithdrawAmount" = "Amount";

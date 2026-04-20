@@ -5,10 +5,13 @@
 //  Created by Enrique Souza Soares on 17/12/25.
 //
 
+import OSLog
 import SwiftUI
 import BigInt
 import WalletCore
 import VultisigCommonData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "circle-view-logic")
 
 // MARK: - Logic (Methods)
 struct CircleViewLogic {
@@ -75,7 +78,7 @@ struct CircleViewLogic {
             return (usdcBalance, ethBalance)
 
         } catch {
-            print("Circle Fetch Error: \(error.localizedDescription)")
+            logger.error("Circle Fetch Error: \(error.localizedDescription)")
             throw error
         }
     }

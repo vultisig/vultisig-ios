@@ -203,7 +203,6 @@
 "circleSetupDeposited" = "Deponirano";
 "circleSetupInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
 "circleSetupOpenAccount" = "Otvori Račun";
-"circleSetupUSDCDeposited" = "USDC deponiran";
 "circleTitle" = "Circle američki dolar";
 "circleUSDCDeposited" = "USDC deponiran";
 "circleWithdraw" = "Povuci";

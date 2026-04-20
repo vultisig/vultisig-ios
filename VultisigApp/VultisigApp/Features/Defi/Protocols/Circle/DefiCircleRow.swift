@@ -5,7 +5,10 @@
 //  Created by Enrique Souza on 2025-12-11.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-circle-row")
 
 struct DefiCircleRow: View {
     let vault: Vault
@@ -125,7 +128,7 @@ struct DefiCircleRow: View {
             isLoading = false
             hasError = false
         } catch {
-            print("DefiCircleRow: Error loading balance: \(error.localizedDescription)")
+            logger.error("Error loading balance: \(error.localizedDescription)")
             isLoading = false
             if circleBalance == nil {
                 hasError = true

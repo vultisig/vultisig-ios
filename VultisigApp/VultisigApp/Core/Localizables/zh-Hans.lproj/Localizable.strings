@@ -203,7 +203,6 @@
 "circleSetupDeposited" = "已存入";
 "circleSetupInfoText" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleSetupOpenAccount" = "开设账户";
-"circleSetupUSDCDeposited" = "USDC 已存入";
 "circleTitle" = "Circle 美元";
 "circleUSDCDeposited" = "USDC 已存入";
 "circleWithdraw" = "提现";

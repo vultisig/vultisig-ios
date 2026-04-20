@@ -44,7 +44,7 @@ struct InfoTooltip: View {
         .padding(.trailing, 10)
         .padding(.top, topPadding)
         .padding(.bottom, bottomPadding)
-        .background(Color(hex: "F5F5F5"))
+        .background(Theme.colors.bgTooltip)
         .clipShape(TooltipShape(
             arrowXFraction: arrowXFraction,
             arrowDirection: arrowDirection

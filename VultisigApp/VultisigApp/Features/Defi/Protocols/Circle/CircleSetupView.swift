@@ -22,6 +22,10 @@ struct CircleSetupView: View {
 
     private let infoBannerId = "circleDashboardInfoBanner"
 
+    private enum Layout {
+        static let rewardsTooltipGap: CGFloat = 8
+    }
+
     var hasAccount: Bool {
         vault.circleWalletAddress != nil
     }
@@ -305,7 +309,7 @@ struct CircleSetupView: View {
                 )
                 .fixedSize(horizontal: true, vertical: true)
                 .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
-                .offset(y: -90)
+                .alignmentGuide(.top) { $0[.bottom] + Layout.rewardsTooltipGap }
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showRewardsTooltip)
@@ -350,7 +354,7 @@ struct CircleSetupView: View {
 
     private var setupCardLabel: String {
         model.balance > 0
-            ? NSLocalizedString("circleSetupUSDCDeposited", comment: "USDC deposited")
+            ? NSLocalizedString("circleUSDCDeposited", comment: "USDC deposited")
             : NSLocalizedString("circleSetupAccountBalance", comment: "Circle Account Balance")
     }
 

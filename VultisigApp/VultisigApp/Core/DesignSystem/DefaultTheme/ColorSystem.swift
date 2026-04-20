@@ -32,6 +32,7 @@ struct ColorSystem: ColorSystemProtocol {
     var bgAlert: Color { .init(hex: "362B17") }
     var bgError: Color { .init(hex: "2B1111") }
     var bgNeutral: Color { .init(hex: "061B3A") }
+    var bgTooltip: Color { .init(hex: "F5F5F5") }
 
     var primaryAccent1: Color { .init(hex: "042D9A") }
     var primaryAccent2: Color { .init(hex: "0439C7") }

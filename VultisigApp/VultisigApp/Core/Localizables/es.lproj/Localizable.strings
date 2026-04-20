@@ -203,7 +203,6 @@
 "circleSetupDeposited" = "Depositado";
 "circleSetupInfoText" = "Los fondos permanecen totalmente bajo el control de su bóveda. Las cuentas Circle son de auto-custodia y el rendimiento se genera a través de tesorerías seguras fuera de la cadena.";
 "circleSetupOpenAccount" = "Abrir Cuenta";
-"circleSetupUSDCDeposited" = "USDC depositado";
 "circleTitle" = "Circle U.S. Dollar";
 "circleUSDCDeposited" = "USDC depositado";
 "circleWithdraw" = "Retirar";
