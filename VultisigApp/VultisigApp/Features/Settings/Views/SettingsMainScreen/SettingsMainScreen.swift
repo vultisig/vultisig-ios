@@ -41,6 +41,7 @@ struct SettingsMainScreen: View {
             options: [
                 .faq,
                 .checkForUpdates,
+                .education,
                 .shareApp
             ]
         ),
