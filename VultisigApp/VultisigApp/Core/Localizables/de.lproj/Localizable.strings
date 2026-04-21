@@ -192,11 +192,11 @@
 "circleErrorWalletNotDeployed" = "Circle-Wallet noch nicht bereitgestellt. Bitte versuchen Sie es später erneut.";
 "circleEthereumRequired" = "Ethereum erforderlich";
 "circleEthereumRequiredDescription" = "Bitte fügen Sie Ethereum zu Ihrem Tresor hinzu, um Circle zu verwenden.";
+"circleRewardsDescription" = "Belohnungen werden automatisch Ihrem Guthaben gutgeschrieben.";
+"circleRewardsTitle" = "Belohnungen";
 "circleRowCreateWallet" = "Wallet erstellen";
 "circleRowGetStarted" = "Loslegen";
 "circleRowYieldAccount" = "Ertragskonto";
-"circleRewardsDescription" = "Belohnungen werden automatisch Ihrem Guthaben gutgeschrieben.";
-"circleRewardsTitle" = "Belohnungen";
 "circleSetupAccountTitle" = "Circle USDC Konto";
 "circleSetupCreateAccount" = "Konto erstellen";
 "circleSetupDepositDescription" = "Zahlen Sie Ihre $USDC auf ein Circle-Konto ein und verdienen Sie sicher in Ihrem Vultisig-Tresor.";
@@ -893,6 +893,9 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
+"tonConnectMessages" = "Nachrichten";
+"tonConnectPayloadBadge" = "Payload";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";

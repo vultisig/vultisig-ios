@@ -192,11 +192,11 @@
 "circleErrorWalletNotDeployed" = "Circle novčanik još nije postavljen. Molimo pokušajte kasnije.";
 "circleEthereumRequired" = "Ethereum Potreban";
 "circleEthereumRequiredDescription" = "Molimo dodajte Ethereum u vaš trezor za korištenje Circle-a.";
+"circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
+"circleRewardsTitle" = "Nagrade";
 "circleRowCreateWallet" = "Izradi novčanik";
 "circleRowGetStarted" = "Započni";
 "circleRowYieldAccount" = "Račun za prinos";
-"circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
-"circleRewardsTitle" = "Nagrade";
 "circleSetupAccountTitle" = "Circle USDC Račun";
 "circleSetupCreateAccount" = "Izradi račun";
 "circleSetupDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
@@ -893,6 +893,9 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
+"tonConnectMessages" = "Poruke";
+"tonConnectPayloadBadge" = "Payload";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";

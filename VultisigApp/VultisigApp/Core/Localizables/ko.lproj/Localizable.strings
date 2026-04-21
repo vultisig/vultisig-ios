@@ -902,6 +902,9 @@
 "to" = "받는 곳";
 "today" = "오늘";
 "tokens" = "토큰";
+"tonConnectMessages" = "메시지";
+"tonConnectPayloadBadge" = "페이로드";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "총 수수료";
 "track" = "추적";
 "transaction" = "트랜잭션";

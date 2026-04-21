@@ -192,11 +192,11 @@
 "circleErrorWalletNotDeployed" = "Wallet Circle non ancora distribuito. Per favore riprova più tardi.";
 "circleEthereumRequired" = "Ethereum Richiesto";
 "circleEthereumRequiredDescription" = "Per favore aggiungi Ethereum al tuo vault per usare Circle.";
+"circleRewardsDescription" = "I premi vengono automaticamente accreditati sul tuo saldo.";
+"circleRewardsTitle" = "Premi";
 "circleRowCreateWallet" = "Crea Portafoglio";
 "circleRowGetStarted" = "Inizia";
 "circleRowYieldAccount" = "Conto Rendimento";
-"circleRewardsDescription" = "I premi vengono automaticamente accreditati sul tuo saldo.";
-"circleRewardsTitle" = "Premi";
 "circleSetupAccountTitle" = "Account Circle USDC";
 "circleSetupCreateAccount" = "Crea Account";
 "circleSetupDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
@@ -893,6 +893,9 @@
 "to" = "A";
 "today" = "Oggi";
 "tokens" = "Token";
+"tonConnectMessages" = "Messaggi";
+"tonConnectPayloadBadge" = "Payload";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Commissione totale";
 "track" = "Traccia";
 "transaction" = "Transazione";
