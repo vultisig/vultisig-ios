@@ -34,7 +34,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var extractedFilesDirectory: URL?
     @Published var pendingEncryptedVaults: [(fileName: String, data: Data)] = []
 
-    private let logger = Logger(subsystem: "import-wallet", category: "communication")
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "encrypted-backup")
     private let keychain = DefaultKeychainService.shared
     private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
 
@@ -65,7 +65,7 @@ class EncryptedBackupViewModel: ObservableObject {
 
     func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
         guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
-            debugPrint("Couldn't fetch password for vault")
+            logger.warning("Couldn't fetch password for vault")
             return nil
         }
 

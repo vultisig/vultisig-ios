@@ -64,14 +64,11 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
     }
 
     private static func decryptSync(data: Data, password: String) -> Data? {
-        if hasMagicPrefix(data) {
-            if let plaintext = decryptPbkdf2(data: data, password: password) {
-                return plaintext
-            }
-            // Legacy blobs begin with a random nonce that may, with ~1/2^32 probability,
-            // collide with the magic prefix. Fall back so those backups stay importable.
-            return legacyDecrypt(data: data, password: password)
+        if hasMagicPrefix(data), let plaintext = decryptPbkdf2(data: data, password: password) {
+            return plaintext
         }
+        // Legacy blobs begin with a random nonce that may, with ~1/2^32 probability,
+        // collide with the magic prefix. Fall back so those backups stay importable.
         return legacyDecrypt(data: data, password: password)
     }
 
