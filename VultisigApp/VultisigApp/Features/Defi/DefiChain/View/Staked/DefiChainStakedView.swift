@@ -12,6 +12,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
     var onStake: (StakePosition) -> Void
     var onUnstake: (StakePosition) -> Void
     var onWithdraw: (StakePosition) -> Void
+    var onTransfer: (StakePosition) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var showLoading: Bool {
@@ -44,7 +45,8 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                         fiatAmount: fiatAmount,
                         onStake: { onStake(position) },
                         onUnstake: { onUnstake(position) },
-                        onWithdraw: { onWithdraw(position) }
+                        onWithdraw: { onWithdraw(position) },
+                        onTransfer: { onTransfer(position) }
                     )
                 }
             } else {
@@ -60,6 +62,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         onStake: { _ in },
         onUnstake: { _ in },
         onWithdraw: { _ in },
+        onTransfer: { _ in },
         emptyStateView: { EmptyView() }
     )
     .environmentObject(HomeViewModel())

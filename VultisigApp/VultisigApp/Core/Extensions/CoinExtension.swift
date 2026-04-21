@@ -14,12 +14,17 @@ extension Coin {
         return chain.coinType
     }
 
+    static let defiOnlyTickers: Set<String> = ["STCY"]
+
+    var isDefiOnly: Bool {
+        Coin.defiOnlyTickers.contains(ticker.uppercased())
+    }
 }
 
 extension Array where Element: Coin {
 
     var totalBalanceInFiatDecimal: Decimal {
-        return reduce(Decimal(0), { $0 + $1.balanceInFiatDecimal })
+        return reduce(Decimal(0)) { $0 + ($1.isDefiOnly ? 0 : $1.balanceInFiatDecimal) }
     }
 
     var totalBalanceInFiatString: String {

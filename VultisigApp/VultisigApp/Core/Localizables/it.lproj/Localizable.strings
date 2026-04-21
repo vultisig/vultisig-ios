@@ -87,6 +87,7 @@
 "assets" = "Asset";
 "atLeastOneDevice" = "Almeno un dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
+"autocompounderInfo" = "Informazioni Auto-Compounder";
 "available" = "Disponibile";
 "availableLPUnits" = "Unità LP Disponibili";
 "availableNodes" = "Nodi Disponibili";
@@ -285,7 +286,6 @@
 "emptyLPsField" = "Campo LPs vuoto";
 "enable" = "Abilitare";
 "enableAll" = "Attiva tutte";
-"enableAutoCompounding" = "Abilita Auto-Compounding";
 "enableBiometricsFastSigning" = "Abilita Biometrics Firma rapida";
 "enableDKLS" = "Abilita DKLS";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
@@ -901,6 +901,7 @@
 "transactionID" = "ID Transazione";
 "transactionSuccessful" = "Transazione riuscita";
 "transactionTrackingLink" = "Link di tracciamento transazione";
+"transfer" = "Trasferisci";
 "tronBandwidth" = "Larghezza di Banda";
 "tronBandwidthDescription" = "I Punti di Larghezza di Banda sono necessari per ogni transazione su TRON, inclusi invii standard di token e interazioni con smart contract. Ogni utente TRON riceve 600 Punti di Larghezza di Banda gratuiti al giorno, che possono coprire circa due invii base. Inoltre, puoi guadagnare Punti di Larghezza di Banda aggiuntivi facendo staking di TRX, aumentando la tua quota giornaliera per supportare più transazioni. Se hai abbastanza Punti di Larghezza di Banda, puoi inviare token, fare staking di TRX o interagire con smart contract senza pagare TRX in commissioni gas.";
 "tronEnergy" = "Energia";

@@ -95,6 +95,7 @@
 "asymmetricDepositInfo" = "CACAO 또는 자산만 입금할 수 있습니다. Maya가 자동으로 포지션을 조정합니다.";
 "atLeastOneDevice" = "기기 최소 1개";
 "atLeastOneDeviceSubtitle" = "Vultisig를 실행할 수 있는 기기라면 모두 가능합니다.";
+"autocompounderInfo" = "자동 복리 정보";
 "available" = "사용 가능";
 "availableLPUnits" = "사용 가능한 LP 단위";
 "availableNodes" = "사용 가능한 노드";
@@ -291,7 +292,6 @@
 "emptyLPsField" = "LP 필드가 비어 있습니다";
 "enable" = "활성화";
 "enableAll" = "모두 활성화";
-"enableAutoCompounding" = "자동 복리 활성화";
 "enableBiometricsFastSigning" = "생체인식 빠른 서명 활성화";
 "enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
@@ -915,6 +915,7 @@
 "transactionSuccessful" = "트랜잭션 성공";
 "transactionSuccessfulHighlight" = "성공";
 "transactionTrackingLink" = "트랜잭션 추적 링크";
+"transfer" = "전송";
 "tronBandwidth" = "대역폭";
 "tronBandwidthDescription" = "대역폭 포인트는 표준 토큰 전송 및 스마트 계약 상호작용을 포함한 TRON의 모든 트랜잭션에 필요합니다. 모든 TRON 사용자는 하루 600개의 무료 대역폭 포인트를 받습니다. 또한 TRX를 스테이킹하여 추가 대역폭 포인트를 얻어 더 많은 트랜잭션을 지원할 수 있습니다.";
 "tronEnergy" = "에너지";
