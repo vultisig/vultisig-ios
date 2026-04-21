@@ -78,9 +78,9 @@ class SolanaService {
                     let errorMessage = error["message"] as? String ?? "Unknown error"
                     let errorCode = error["code"] as? Int ?? -1
 
-                    // Check if it's a blockhash expiration error
-                    if errorMessage.contains("Blockhash not found") ||
-                        errorMessage.contains("blockhash") ||
+                    let lowered = errorMessage.lowercased()
+                    if lowered.contains("blockhash not found") ||
+                        lowered.contains("block height exceeded") ||
                         errorCode == -32002 {
                         throw SolanaRetryableError.blockhashExpired(message: errorMessage)
                     }
