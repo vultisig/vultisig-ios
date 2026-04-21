@@ -41,7 +41,7 @@ enum BlockaidSimulationInfo: Equatable {
     }
 
     var fromAmountDecimal: Decimal {
-        fromAmount.toDecimal(decimals: fromCoin.decimals)
+        fromAmount.description.toDecimal() / pow(Decimal(10), fromCoin.decimals)
     }
 
     var heroAmountText: String {

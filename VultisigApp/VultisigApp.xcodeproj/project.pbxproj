@@ -565,6 +565,7 @@
 		2587BEE0C4B62870DEAB2199 /* SolanaTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78CA9F7989A44AB965FF32F3 /* SolanaTransactionStatusProvider.swift */; };
 		267798512F306C9AAD705483 /* UTXOTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1A1FCF78FFFE8E23B38F0E /* UTXOTransactionStatusResponse.swift */; };
 		2766DE109517EAA30FF83AE1 /* ForegroundNotificationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4108DBD8BB46387973946D79 /* ForegroundNotificationData.swift */; };
+		2890D63D460C688C872D8860 /* MockBlockaidRpcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD125832CAD8A97F3970B6 /* MockBlockaidRpcClient.swift */; };
 		29661F44FBA4B69305932D72 /* SolanaTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEFADAC7EF33E20A932CD6 /* SolanaTransactionStatusResponse.swift */; };
 		2A815BD9B4E8BD1F2B92DC8D /* ScreenEnvironmentKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E842BB32016836B2202DE7 /* ScreenEnvironmentKeys.swift */; };
 		2B86966ABA5D0FB899F26AEF /* ReviewDeviceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6DF580ABA99F8941A501F /* ReviewDeviceCell.swift */; };
@@ -964,6 +965,7 @@
 		AA0001012E4D000000000001 /* KeygenAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001002E4D000000000001 /* KeygenAnimationView.swift */; };
 		AA15C50444DA9182DE80C9ED /* SnapshotDeviceConfigs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCAE1077F8D75EDA7AA32FD /* SnapshotDeviceConfigs.swift */; };
 		AA34535C58B0BB17020162DC /* ChainDetailActionButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15159390FCF7F45DC0787634 /* ChainDetailActionButtons+iOS.swift */; };
+		AC8444564DAEC47BB818BE79 /* BlockaidSimulationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE43A5E49CD108F86CEBAF7 /* BlockaidSimulationParserTests.swift */; };
 		AEC7204AD396C8BEF1700657 /* HomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9329F94E8B6ADC49CF18B0B5 /* HomePage.swift */; };
 		AEF2CEAD64A344FB85D7E3DE /* PendingTransactionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */; };
 		AF7144CC5A9FFD41AD0D9277 /* AgentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04FFEB77DBA65343B22EBEA /* AgentRouter.swift */; };
@@ -1086,6 +1088,7 @@
 		B7DE0CA908924F17917DC24B /* TransactionStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B6F47A0796793CADF498E8 /* TransactionStatusViewModel.swift */; };
 		B8EE4E5E8A055C8FC1733C12 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */; };
 		B9B7B8657D6D621FF09F4D59 /* ReferralCodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F9E808DB3DFACA1E3B84E4 /* ReferralCodeSheet.swift */; };
+		BAAAEB439D8E9D5818AD849D /* BlockaidSimulationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E2CF766FE1519AEDA4729B /* BlockaidSimulationServiceTests.swift */; };
 		BD41C1D559D84956EB77C717 /* SettingsCustomMessageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08B99C64FAE77784A39D375 /* SettingsCustomMessageView+iOS.swift */; };
 		BD9DB6201E7149E5BC4D9EA7 /* StyledIntegerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A41728F446027E6BA5B4473 /* StyledIntegerField.swift */; };
 		BF3AAB0F21EB5F954ED46D1A /* TransactionStatusPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8B2EC16FB39D6D6401EF80 /* TransactionStatusPoller.swift */; };
@@ -1891,6 +1894,7 @@
 		99155325EA91C0D8966E2B11 /* GeneralQRImportMacView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+macOS.swift"; sourceTree = "<group>"; };
 		9A067E30E53271AE034FC59F /* CoinFactory+QBTC.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CoinFactory+QBTC.swift"; sourceTree = "<group>"; };
 		9A41728F446027E6BA5B4473 /* StyledIntegerField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StyledIntegerField.swift; sourceTree = "<group>"; };
+		9ACD125832CAD8A97F3970B6 /* MockBlockaidRpcClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MockBlockaidRpcClient.swift; sourceTree = "<group>"; };
 		9B8A66504966BF6EFA6832ED /* MacAddressScannerViewModel+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "MacAddressScannerViewModel+macOS.swift"; sourceTree = "<group>"; };
 		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
 		9DCAE1077F8D75EDA7AA32FD /* SnapshotDeviceConfigs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SnapshotDeviceConfigs.swift; sourceTree = "<group>"; };
@@ -2207,6 +2211,7 @@
 		A8F5B728DE1B9BF68381E504 /* SetupPushNotificationsModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetupPushNotificationsModifier.swift; sourceTree = "<group>"; };
 		AA0001002E4D000000000001 /* KeygenAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenAnimationView.swift; sourceTree = "<group>"; };
 		AC43C18FD2125A5C2742AAB0 /* AgentConversationsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentConversationsView.swift; sourceTree = "<group>"; };
+		ACE43A5E49CD108F86CEBAF7 /* BlockaidSimulationParserTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockaidSimulationParserTests.swift; sourceTree = "<group>"; };
 		AFBA74DAF03E924B4C598AF9 /* TransactionHistoryRouteBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryRouteBuilder.swift; sourceTree = "<group>"; };
 		B08FAA81BD1AD27E98344042 /* SolanaTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingTransactionStorage.swift; sourceTree = "<group>"; };
@@ -2450,6 +2455,7 @@
 		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
 		DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeDictionary.swift; sourceTree = "<group>"; };
 		DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedTransactionResult.swift; sourceTree = "<group>"; };
+		E2E2CF766FE1519AEDA4729B /* BlockaidSimulationServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockaidSimulationServiceTests.swift; sourceTree = "<group>"; };
 		E313D70696CC56709CA322D3 /* AgentThinkingIndicator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentThinkingIndicator.swift; sourceTree = "<group>"; };
 		E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusAPI.swift; sourceTree = "<group>"; };
@@ -5295,6 +5301,16 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		6C490B8FC9F2A7A127ED5199 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				ACE43A5E49CD108F86CEBAF7 /* BlockaidSimulationParserTests.swift */,
+				E2E2CF766FE1519AEDA4729B /* BlockaidSimulationServiceTests.swift */,
+			);
+			name = Services;
+			path = Services;
+			sourceTree = "<group>";
+		};
 		6CA6A96F56569B3B7C8F599F /* macOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -6482,6 +6498,8 @@
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
 				927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */,
 				FDC8064E13E4758250781597 /* Snapshots */,
+				EB13E852442264ACE0B14257 /* Mocks */,
+				6C490B8FC9F2A7A127ED5199 /* Services */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -6684,6 +6702,15 @@
 				D55BE6C8FC8111920898C61D /* Service */,
 			);
 			path = Polkadot;
+			sourceTree = "<group>";
+		};
+		EB13E852442264ACE0B14257 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				9ACD125832CAD8A97F3970B6 /* MockBlockaidRpcClient.swift */,
+			);
+			name = Mocks;
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		EB636E62B0416060D8DDFFAF /* Localizables */ = {
@@ -8200,6 +8227,9 @@
 				D2FE6763BED8CC3044A39FBA /* ZipImportDuplicateTests.swift in Sources */,
 				CFF1B0DCBE47EAF6A1C28914 /* CreateVaultSnapshotTests.swift in Sources */,
 				AA15C50444DA9182DE80C9ED /* SnapshotDeviceConfigs.swift in Sources */,
+				2890D63D460C688C872D8860 /* MockBlockaidRpcClient.swift in Sources */,
+				AC8444564DAEC47BB818BE79 /* BlockaidSimulationParserTests.swift in Sources */,
+				BAAAEB439D8E9D5818AD849D /* BlockaidSimulationServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
