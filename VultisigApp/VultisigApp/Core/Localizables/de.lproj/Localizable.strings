@@ -148,7 +148,7 @@
 "bondToNode" = "An Knoten binden";
 "bridge" = "Brücke";
 "broadcastRetryGeneric" = "Transaktionsdaten abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
-"broadcastRetryStaleBlockhash" = "Transaktion abgelaufen — Gebühren aktualisiert. Bitte erneut versuchen.";
+"broadcastRetryStaleBlockhash" = "Transaktion abgelaufen. Bitte erneut versuchen.";
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleQuote" = "Angebot abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "buy" = "Kaufen";
@@ -936,7 +936,6 @@
 "tronUnfreezeConfirm" = "Weiter";
 "tronUnfreezeTitle" = "TRX auftauen";
 "tryAgain" = "Erneut versuchen";
-"tryAgainWithFreshData" = "Mit aktuellen Daten erneut versuchen";
 "txid" = "Tx-ID";
 "typeHere" = "Hier eingeben";
 "ultimateSecurity" = "Ultimative Sicherheit";

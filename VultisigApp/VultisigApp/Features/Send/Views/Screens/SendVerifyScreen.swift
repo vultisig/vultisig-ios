@@ -22,8 +22,7 @@ struct SendVerifyScreen: View {
     @Environment(\.router) var router
 
     @State private var error: HelperError?
-    @State private var retryToastKey: String = ""
-    @State private var showRetryToast: Bool = false
+    @State private var retryBannerText: String?
 
     var body: some View {
         Screen {
@@ -33,7 +32,7 @@ struct SendVerifyScreen: View {
             }
         }
         .screenTitle("verify".localized)
-        .overlay(PopupCapsule(text: retryToastKey, showPopup: $showRetryToast))
+        .withBanner(text: $retryBannerText)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),
@@ -55,8 +54,10 @@ struct SendVerifyScreen: View {
                 await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
             }
         }
-        .onAppear {
-            consumePendingRetry()
+        .onNavigationStackChange { isVisible in
+            if isVisible {
+                consumePendingRetry()
+            }
         }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
@@ -69,8 +70,7 @@ struct SendVerifyScreen: View {
 
     private func consumePendingRetry() {
         guard let reason = tx.pendingRetryReason else { return }
-        retryToastKey = reason.toastKey
-        showRetryToast = true
+        retryBannerText = reason.userFacingMessage
         tx.pendingRetryReason = nil
         Task {
             await sendCryptoVerifyViewModel.loadGasInfoForSending(tx: tx)

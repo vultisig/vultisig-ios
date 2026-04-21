@@ -119,7 +119,7 @@ struct KeysignView: View {
         SendCryptoKeysignView(
             title: viewModel.retryReason?.userFacingMessage ?? .empty,
             showError: true,
-            errorButtonTitle: "tryAgainWithFreshData".localized,
+            errorButtonTitle: "tryAgain".localized,
             errorAction: {
                 guard let reason = viewModel.retryReason else { return }
                 transferViewModel?.retryBroadcast(reason: reason)

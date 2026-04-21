@@ -148,7 +148,7 @@
 "bondToNode" = "Vincular ao Nó";
 "bridge" = "Ponte";
 "broadcastRetryGeneric" = "Dados da transação expirados — detalhes atualizados. Por favor, tente novamente.";
-"broadcastRetryStaleBlockhash" = "Transação expirada — taxas atualizadas. Por favor, tente novamente.";
+"broadcastRetryStaleBlockhash" = "Transação expirada. Por favor, tente novamente.";
 "broadcastRetryStaleNonce" = "Nonce da transação desatualizado — detalhes atualizados. Por favor, tente novamente.";
 "broadcastRetryStaleQuote" = "Cotação expirada — detalhes atualizados. Por favor, tente novamente.";
 "buy" = "Comprar";
@@ -936,7 +936,6 @@
 "tronUnfreezeConfirm" = "Continuar";
 "tronUnfreezeTitle" = "Descongelar TRX";
 "tryAgain" = "Tentar Novamente";
-"tryAgainWithFreshData" = "Tentar novamente com dados atualizados";
 "txid" = "ID da transação";
 "typeHere" = "Digite aqui";
 "ultimateSecurity" = "Segurança Máxima";

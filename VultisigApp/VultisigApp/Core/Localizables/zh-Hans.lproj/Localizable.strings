@@ -148,7 +148,7 @@
 "bondToNode" = "绑定到节点";
 "bridge" = "跨链桥";
 "broadcastRetryGeneric" = "交易数据已过期 — 详情已刷新。请重试。";
-"broadcastRetryStaleBlockhash" = "交易已过期 — 费用已刷新。请重试。";
+"broadcastRetryStaleBlockhash" = "交易已过期。请重试。";
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
 "buy" = "购买";
@@ -936,7 +936,6 @@
 "tronUnfreezeConfirm" = "继续";
 "tronUnfreezeTitle" = "解冻 TRX";
 "tryAgain" = "重试";
-"tryAgainWithFreshData" = "使用最新数据重试";
 "txid" = "交易 ID";
 "typeHere" = "在此输入";
 "ultimateSecurity" = "终极安全";
