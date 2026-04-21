@@ -195,14 +195,16 @@
 "circleRowCreateWallet" = "Criar Carteira";
 "circleRowGetStarted" = "Começar";
 "circleRowYieldAccount" = "Conta de Rendimento";
+"circleRewardsDescription" = "As recompensas são creditadas automaticamente no seu saldo.";
+"circleRewardsTitle" = "Recompensas";
 "circleSetupAccountTitle" = "Conta Circle USDC";
 "circleSetupCreateAccount" = "Criar Conta";
 "circleSetupDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
 "circleSetupDeposited" = "Depositado";
 "circleSetupInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
 "circleSetupOpenAccount" = "Abrir Conta";
-"circleSetupUSDCDeposited" = "USDC depositado";
 "circleTitle" = "Circle U.S. Dollar";
+"circleUSDCDeposited" = "USDC depositado";
 "circleWithdraw" = "Sacar";
 "circleWithdrawAddressLabel" = "Endereço";
 "circleWithdrawAmountLabel" = "Valor";
