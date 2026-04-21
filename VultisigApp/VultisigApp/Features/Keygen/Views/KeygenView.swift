@@ -68,13 +68,7 @@ struct KeygenView: View {
                     otpVerified: $otpVerified,
                     onBackup: { },
                     onBackToEmailSetup: {
-                        router.navigate(to: KeygenRoute.fastVaultPassword(
-                            tssType: tssType,
-                            vault: vault,
-                            selectedTab: .fast,
-                            isExistingVault: true,
-                            singleKeygenType: singleKeygenType
-                        ))
+                        router.navigateBack()
                     }
                 )
             }
