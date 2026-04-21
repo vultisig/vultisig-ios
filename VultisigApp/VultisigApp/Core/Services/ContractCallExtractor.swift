@@ -5,72 +5,49 @@
 
 import Foundation
 
-struct TokenAndAmount {
-    let tokenAddress: String
-    let rawAmount: String
-}
-
-/// Decimal string of 2^256 - 1 — the standard max-value sentinel used across DeFi.
-let MAX_UINT256_DECIMAL = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-
-// Functions where MAX_UINT256 means "unlimited approval" — the only case where
-// a sentinel label makes sense. For withdraw/repay MAX_UINT256 means "all
-// available" but the exact amount depends on on-chain state, so we return nil
-// and let the caller skip the amount display rather than show a misleading label.
-private let unlimitedApprovalFunctions: Set<String> = [
-    "approve", "increaseAllowance", "decreaseAllowance"
-]
-
-/// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns
-/// `"Unlimited"`. For all other functions returns `nil` — the caller should omit
-/// the amount rather than display a vague label.
-func sentinelLabelFor(funcName: String) -> String? {
-    unlimitedApprovalFunctions.contains(funcName) ? "Unlimited" : nil
-}
-
-/// Extract the function name from an ABI signature like "withdraw(address,uint256,address)".
-func evmFunctionName(from signature: String) -> String? {
-    guard let parenIndex = signature.firstIndex(of: "(") else { return nil }
-    let name = String(signature[..<parenIndex]).trimmingCharacters(in: .whitespaces)
-    return name.isEmpty ? nil : name
-}
-
-enum ExtractionStrategy {
-    // Lending/staking pattern: supply(address asset, uint256 amount, ...)
-    // Requires address index < uint256 index to avoid ERC-4626 collisions.
-    case firstAddressBeforeFirstUint
-    // ERC20 methods called on the token contract itself.
-    case contractIsToken
-    // Token is the Nth address param (0-indexed).
-    case nthAddress(Int)
-}
-
-// Split a param list on top-level commas only, respecting nested parentheses
-// so tuple types like `(uint256,uint256)` stay intact as one param.
-private func splitTopLevel(_ params: String) -> [String] {
-    var parts: [String] = []
-    var depth = 0
-    var current = ""
-    for ch in params {
-        if ch == "(" {
-            depth += 1
-        } else if ch == ")" {
-            depth -= 1
-        }
-        if ch == "," && depth == 0 {
-            parts.append(current.trimmingCharacters(in: .whitespaces))
-            current = ""
-        } else {
-            current.append(ch)
-        }
-    }
-    if !current.isEmpty {
-        parts.append(current.trimmingCharacters(in: .whitespaces))
-    }
-    return parts
-}
-
 enum ContractCallExtractor {
+
+    struct TokenAndAmount {
+        let tokenAddress: String
+        let rawAmount: String
+    }
+
+    enum ExtractionStrategy {
+        // Lending/staking pattern: supply(address asset, uint256 amount, ...)
+        // Requires address index < uint256 index to avoid ERC-4626 collisions.
+        case firstAddressBeforeFirstUint
+        // ERC20 methods called on the token contract itself.
+        case contractIsToken
+        // Token is the Nth address param (0-indexed).
+        case nthAddress(Int)
+    }
+
+    /// Decimal string of 2^256 - 1 — the standard max-value sentinel used across DeFi.
+    static let maxUInt256Decimal = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+
+    // Functions where MAX_UINT256 means "unlimited approval" — the only case where
+    // a sentinel label makes sense. decreaseAllowance is excluded because
+    // decreaseAllowance(MAX_UINT256) reduces allowance by that amount, it does
+    // not grant an unlimited approval. For withdraw/repay MAX_UINT256 means
+    // "all available" but the exact amount depends on on-chain state, so we
+    // return nil and let the caller skip the amount display.
+    private static let unlimitedApprovalFunctions: Set<String> = [
+        "approve", "increaseAllowance"
+    ]
+
+    /// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns
+    /// the localized "Unlimited" label. For all other functions returns `nil` — the
+    /// caller should omit the amount rather than display a vague label.
+    static func sentinelLabelFor(funcName: String) -> String? {
+        unlimitedApprovalFunctions.contains(funcName) ? "unlimited".localized : nil
+    }
+
+    /// Extract the function name from an ABI signature like "withdraw(address,uint256,address)".
+    static func evmFunctionName(from signature: String) -> String? {
+        guard let parenIndex = signature.firstIndex(of: "(") else { return nil }
+        let name = String(signature[..<parenIndex]).trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? nil : name
+    }
 
     private static let registry: [String: ExtractionStrategy] = [
         // Aave V3 / Spark / Radiant
@@ -154,5 +131,30 @@ enum ContractCallExtractor {
             guard !tokenAddress.isEmpty else { return nil }
             return TokenAndAmount(tokenAddress: tokenAddress, rawAmount: rawAmount)
         }
+    }
+
+    // Split a param list on top-level commas only, respecting nested parentheses
+    // so tuple types like `(uint256,uint256)` stay intact as one param.
+    private static func splitTopLevel(_ params: String) -> [String] {
+        var parts: [String] = []
+        var depth = 0
+        var current = ""
+        for ch in params {
+            if ch == "(" {
+                depth += 1
+            } else if ch == ")" {
+                depth -= 1
+            }
+            if ch == "," && depth == 0 {
+                parts.append(current.trimmingCharacters(in: .whitespaces))
+                current = ""
+            } else {
+                current.append(ch)
+            }
+        }
+        if !current.isEmpty {
+            parts.append(current.trimmingCharacters(in: .whitespaces))
+        }
+        return parts
     }
 }

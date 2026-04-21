@@ -386,6 +386,8 @@
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
 "function" = "Function";
+"functionArguments" = "Function Arguments";
+"functionSignature" = "Function Signature";
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "functionTransactionScreenErrorTitle" = "Function Error";
 "gas" = "Gas";
@@ -957,6 +959,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "Unbond RUNE";
 "unknown" = "";
+"unlimited" = "Unlimited";
 "unlockTier" = "Unlock Tier";
 "unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";
@@ -1114,6 +1117,3 @@
 "yourVaultSetup" = "Your vault setup";
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";

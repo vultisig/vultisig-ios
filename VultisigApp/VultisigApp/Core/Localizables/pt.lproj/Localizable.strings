@@ -381,6 +381,8 @@
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "from" = "De";
 "function" = "função";
+"functionArguments" = "Argumentos da função";
+"functionSignature" = "Assinatura da função";
 "functionTransactionScreenErrorSubtitle" = "Ocorreu um erro ao redirecionar para a função";
 "functionTransactionScreenErrorTitle" = "Erro de função";
 "gas" = "Gás";
@@ -943,6 +945,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "Desvincular RUNE";
 "unknown" = "Desconhecido";
+"unlimited" = "Ilimitado";
 "unlockTier" = "Desbloquear nível";
 "unlockXTier" = "Desbloquear nível %@";
 "unlockXTierDescription" = "Ao manter %@ $VULT, você desbloqueará o nível %@ e receberá um desconto de %@ bps nas taxas de negociação em todos os swaps.";
@@ -1098,6 +1101,3 @@
 "yourVaultSetup" = "Sua configuração de cofre";
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";
