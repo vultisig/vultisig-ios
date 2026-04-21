@@ -87,6 +87,7 @@
 "assets" = "资产";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
+"autocompounderInfo" = "自动复利信息";
 "available" = "可用";
 "availableLPUnits" = "可用 LP 单位";
 "availableNodes" = "可用节点";
@@ -198,14 +199,16 @@
 "circleRowCreateWallet" = "创建钱包";
 "circleRowGetStarted" = "开始";
 "circleRowYieldAccount" = "收益账户";
+"circleRewardsDescription" = "奖励会自动计入您的余额。";
+"circleRewardsTitle" = "奖励";
 "circleSetupAccountTitle" = "Circle USDC 账户";
 "circleSetupCreateAccount" = "创建账户";
 "circleSetupDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
 "circleSetupDeposited" = "已存入";
 "circleSetupInfoText" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleSetupOpenAccount" = "开设账户";
-"circleSetupUSDCDeposited" = "USDC 已存入";
 "circleTitle" = "Circle 美元";
+"circleUSDCDeposited" = "USDC 已存入";
 "circleWithdraw" = "提现";
 "circleWithdrawAddressLabel" = "地址";
 "circleWithdrawAmountLabel" = "金额";
@@ -289,7 +292,6 @@
 "emptyLPsField" = "LPs 字段为空";
 "enable" = "启用";
 "enableAll" = "全部启用";
-"enableAutoCompounding" = "启用自动复利";
 "enableBiometricsFastSigning" = "启用生物识别快速签名";
 "enableDKLS" = "启用 DKLS";
 "enableNotificationsForVault" = "为此保险库启用通知";
@@ -868,6 +870,7 @@
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorUnexpectedTitle" = "意外错误";
 "swapFee" = "交换费用";
+"swapFeePercentage" = "交换费用 (%.2f%%)";
 "swapOverview" = "交换概览";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
@@ -905,6 +908,7 @@
 "transactionID" = "交易 ID";
 "transactionSuccessful" = "交易成功";
 "transactionTrackingLink" = "交易跟踪链接";
+"transfer" = "转账";
 "tronBandwidth" = "带宽";
 "tronBandwidthDescription" = "带宽点数是 TRON 上每笔交易所必需的，包括标准代币发送和智能合约交互。每个 TRON 用户每天获得 600 个免费带宽点数，大约可以覆盖两次基本发送。此外，您可以通过质押 TRX 获得额外的带宽点数，增加每日配额以支持更多交易。如果您有足够的带宽点数，您可以发送代币、质押 TRX 或与智能合约交互，而无需支付 TRX 作为 Gas 费用。";
 "tronEnergy" = "能量";

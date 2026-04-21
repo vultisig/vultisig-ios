@@ -75,6 +75,7 @@ struct VultisigApp: App {
             BondPosition.self,
             StakePosition.self,
             LPPosition.self,
+            CirclePosition.self,
             StoredPendingTransaction.self,
             VaultSettings.self,
             TransactionHistoryItem.self

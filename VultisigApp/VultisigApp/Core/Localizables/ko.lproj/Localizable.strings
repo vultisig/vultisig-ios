@@ -95,6 +95,7 @@
 "asymmetricDepositInfo" = "CACAO 또는 자산만 입금할 수 있습니다. Maya가 자동으로 포지션을 조정합니다.";
 "atLeastOneDevice" = "기기 최소 1개";
 "atLeastOneDeviceSubtitle" = "Vultisig를 실행할 수 있는 기기라면 모두 가능합니다.";
+"autocompounderInfo" = "자동 복리 정보";
 "available" = "사용 가능";
 "availableLPUnits" = "사용 가능한 LP 단위";
 "availableNodes" = "사용 가능한 노드";
@@ -202,6 +203,8 @@
 "circleErrorWalletNotDeployed" = "Circle 지갑이 아직 배포되지 않았습니다. 나중에 다시 시도하세요.";
 "circleEthereumRequired" = "이더리움 필요";
 "circleEthereumRequiredDescription" = "Circle을 사용하려면 볼트에 이더리움을 추가하세요.";
+"circleRewardsDescription" = "보상은 자동으로 잔액에 적립됩니다.";
+"circleRewardsTitle" = "보상";
 "circleRowCreateWallet" = "지갑 생성";
 "circleRowGetStarted" = "시작하기";
 "circleRowYieldAccount" = "수익 계정";
@@ -211,8 +214,8 @@
 "circleSetupDeposited" = "입금됨";
 "circleSetupInfoText" = "자금은 볼트의 완전한 통제 하에 있습니다. Circle 계정은 자체 보관이며 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
 "circleSetupOpenAccount" = "계정 개설";
-"circleSetupUSDCDeposited" = "USDC 입금됨";
 "circleTitle" = "Circle";
+"circleUSDCDeposited" = "USDC 입금됨";
 "circleWithdrawAmount" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
@@ -295,7 +298,6 @@
 "emptyLPsField" = "LP 필드가 비어 있습니다";
 "enable" = "활성화";
 "enableAll" = "모두 활성화";
-"enableAutoCompounding" = "자동 복리 활성화";
 "enableBiometricsFastSigning" = "생체인식 빠른 서명 활성화";
 "enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
@@ -919,6 +921,7 @@
 "transactionSuccessful" = "트랜잭션 성공";
 "transactionSuccessfulHighlight" = "성공";
 "transactionTrackingLink" = "트랜잭션 추적 링크";
+"transfer" = "전송";
 "tronBandwidth" = "대역폭";
 "tronBandwidthDescription" = "대역폭 포인트는 표준 토큰 전송 및 스마트 계약 상호작용을 포함한 TRON의 모든 트랜잭션에 필요합니다. 모든 TRON 사용자는 하루 600개의 무료 대역폭 포인트를 받습니다. 또한 TRX를 스테이킹하여 추가 대역폭 포인트를 얻어 더 많은 트랜잭션을 지원할 수 있습니다.";
 "tronEnergy" = "에너지";

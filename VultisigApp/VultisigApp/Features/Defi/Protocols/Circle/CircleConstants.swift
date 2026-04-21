@@ -14,7 +14,7 @@ struct CircleConstants {
 
     struct Design {
         static let horizontalPadding: CGFloat = 20
-        static let cardPadding: CGFloat = 24
+        static let cardPadding: CGFloat = 16
         static let verticalSpacing: CGFloat = 16
         static let cornerRadius: CGFloat = 16
 

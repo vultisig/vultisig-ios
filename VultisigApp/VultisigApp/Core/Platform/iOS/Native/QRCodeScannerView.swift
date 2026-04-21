@@ -25,15 +25,20 @@
 
         var body: some View {
             ZStack {
-                LinearGradient(
-                    colors: [Theme.colors.bgPrimary, Theme.colors.bgSurface2],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                Theme.colors.bgPrimary
+                    .ignoresSafeArea()
+
                 cameraView
                     .showIf(!isPaused)
+
+                viewportOverlay
+
+                if showTooltip {
+                    tooltipDismissLayer
+                }
+
                 content
+
                 PopupCapsule(text: "noBarcodesFound".localized, showPopup: $showErrorPopup)
             }
             .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
@@ -52,59 +57,88 @@
         }
 
         var content: some View {
-            VStack {
+            VStack(spacing: 0) {
                 header
-                if showTooltip {
-                    tooltip
+                HelpTooltip(isPresented: $showTooltip, maxWidth: nil) {
+                    tooltipContent
                 }
+                .padding(.top, 8)
                 Spacer()
-                menubuttons
+                uploadButton
+                    .padding(.bottom, 30)
             }
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
 
         var header: some View {
             HStack {
                 backButton
                 Spacer()
-                title
+                Text("scanQRStartScreen".localized)
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
                 Spacer()
-                helpButton
+                HelpButton(isPresented: $showTooltip)
             }
-            .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
-            .offset(y: 8)
         }
 
         var backButton: some View {
             Button {
                 showScanner = false
             } label: {
-                getIcon(for: "xmark")
+                Image(systemName: "chevron.backward")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(width: 44, height: 44)
+                    .background(glassCircleBackground)
+                    .contentShape(Circle())
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("close".localized)
         }
 
-        var title: some View {
-            Text(NSLocalizedString("scanQRStartScreen", comment: ""))
-        }
-
-        var helpButton: some View {
-            Button {
-                withAnimation(.interpolatingSpring) {
-                    showTooltip.toggle()
+        private var tooltipDismissLayer: some View {
+            Color.clear
+                .contentShape(Rectangle())
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.interpolatingSpring) {
+                        showTooltip = false
+                    }
                 }
-            } label: {
-                getIcon(for: "info.circle")
-            }
         }
 
-        var tooltip: some View {
+        private var glassCircleBackground: some View {
+            Circle()
+                .fill(Color.white.opacity(0.05))
+                .overlay(
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.3),
+                                    Color.white.opacity(0.05),
+                                    Color.clear,
+                                    Color.white.opacity(0.2)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .glassy(shape: Circle())
+        }
+
+        private var tooltipContent: some View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("scanQRCodeTooltipTitle".localized)
                     .font(Theme.fonts.bodySMedium)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("scanQRCodeTooltipSubtitle".localized)
                         .font(Theme.fonts.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
                     ForEach(tooltipBullets, id: \.self) { bullet in
                         HStack(alignment: .top, spacing: 6) {
                             Text("•").font(Theme.fonts.footnote)
@@ -113,20 +147,6 @@
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                }
-            }
-            .foregroundStyle(Theme.colors.textDark)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.leading, 16)
-            .padding(.trailing, 16)
-            .padding(.top, 24)
-            .padding(.bottom, 12)
-            .background(Theme.colors.textPrimary)
-            .clipShape(TooltipShape(arrowXFraction: 0.9))
-            .padding(.horizontal, 16)
-            .onTapGesture {
-                withAnimation(.interpolatingSpring) {
-                    showTooltip = false
                 }
             }
         }
@@ -138,52 +158,57 @@
         ]
 
         var cameraView: some View {
-            ZStack {
-                CodeScannerView(
-                    codeTypes: [.qr],
-                    isPaused: isPaused,
-                    isGalleryPresented: $isGalleryPresented,
-                    videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100)
-                ) { result in
-                    switch result {
-                    case let .success(success):
-                        handleImport(success.string)
-                    case .failure:
-                        showErrorPopup = true
-                    }
+            CodeScannerView(
+                codeTypes: [.qr],
+                isPaused: isPaused,
+                isGalleryPresented: $isGalleryPresented,
+                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100)
+            ) { result in
+                switch result {
+                case let .success(success):
+                    handleImport(success.string)
+                case .failure:
+                    showErrorPopup = true
                 }
-
-                overlay
             }
         }
 
-        var overlay: some View {
+        var viewportOverlay: some View {
             GeometryReader { proxy in
-                let scanW = proxy.size.width - 48
-                let scanH = scanW * 1.5
-                let scanRect = CGRect(
-                    x: 24,
-                    y: (proxy.size.height - scanH) / 2,
-                    width: scanW,
-                    height: scanH
-                )
+                let rect = viewportRect(in: proxy)
                 ZStack {
                     Path { path in
                         path.addRect(proxy.frame(in: .local))
-                        path.addRoundedRect(in: scanRect, cornerSize: CGSize(width: 20, height: 20))
+                        path.addRoundedRect(in: rect, cornerSize: CGSize(width: 24, height: 24))
                     }
-                    .fill(.black.opacity(0.55), style: FillStyle(eoFill: true))
+                    .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
 
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(LinearGradient.qrBorderGradient, lineWidth: 3)
-                        .frame(width: scanW, height: scanH)
-                        .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
+                        .frame(width: rect.width, height: rect.height)
+                        .position(x: rect.midX, y: rect.midY)
+                        .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
                 }
             }
             .ignoresSafeArea()
+            .allowsHitTesting(false)
         }
 
-        var menubuttons: some View {
+        private func viewportRect(in proxy: GeometryProxy) -> CGRect {
+            let horizontalInset: CGFloat = 24
+            let topOffset = proxy.safeAreaInsets.top + 72
+            let bottomOffset: CGFloat = 120
+            let width = max(proxy.size.width - horizontalInset * 2, 0)
+            let availableHeight = proxy.size.height - topOffset - bottomOffset
+            return CGRect(
+                x: horizontalInset,
+                y: topOffset,
+                width: width,
+                height: max(availableHeight, 0)
+            )
+        }
+
+        var uploadButton: some View {
             Menu {
                 Button {
                     isGalleryPresented.toggle()
@@ -203,21 +228,9 @@
                     )
                 }
             } label: {
-                uploadButton
+                Text("uploadQRCode".localized)
             }
-            .buttonStyle(PrimaryButtonStyle(type: .primary, size: .medium))
-            .padding(.horizontal, 16)
-            .padding(.bottom, 30)
-        }
-
-        var uploadButton: some View {
-            PrimaryButtonView(title: "uploadQRCode", leadingIcon: "share")
-        }
-
-        private func getIcon(for icon: String) -> some View {
-            Image(systemName: icon)
-                .padding(16)
-                .contentShape(Rectangle())
+            .buttonStyle(PrimaryButtonStyle(type: .primary, size: .small))
         }
     }
 #endif

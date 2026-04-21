@@ -1,7 +1,6 @@
 ---
 name: localize
 description: Complete i18n workflow — add keys to all 7 locale files, translate, sort. Use when adding or modifying user-facing strings.
-disable-model-invocation: true
 ---
 
 # Localization Workflow

@@ -105,23 +105,21 @@ struct VaultSetupScreen: View {
             }
         }
         .screenEdgeInsets(.init(leading: 24, trailing: 24))
-        .screenBackButtonHidden(currentStep > 0)
+        .screenBackButtonHidden(true)
         .screenToolbar {
-            if currentStep > 0 {
-                CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "chevron.left") {
-                        navigateToStep(currentStep - 1)
-                    } iconContent: { _ in
-                        Icon(named: "chevron.left", color: Theme.colors.textPrimary, size: 20, isSystem: true)
-                            .offset(x: -1)
-                    }
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "chevron.left") {
+                    handleBack()
+                } iconContent: { _ in
+                    Icon(named: "chevron.left", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                        .offset(x: -1)
                 }
             }
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 referralButton
             }
         }
-        .navigationBarBackButtonHidden(currentStep > 0)
+        .navigationBarBackButtonHidden(true)
         .onSubmit {
             onContinue()
         }
@@ -360,6 +358,20 @@ struct VaultSetupScreen: View {
     }
 
     // MARK: - Actions
+
+    private func handleBack() {
+        if currentStep > 0 {
+            navigateToStep(currentStep - 1)
+        } else {
+            router.navigateBack { route in
+                if let onboardingRoute = route as? OnboardingRoute,
+                   case .vaultSetupInformation = onboardingRoute {
+                    return true
+                }
+                return false
+            }
+        }
+    }
 
     private func navigateToStep(_ target: Int) {
         guard canNavigateToStep(target) else { return }
