@@ -113,6 +113,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signSolana = input.keysignPayload?.signSolana {
                     Separator()
                     SignSolanaDisplayView(signSolana: signSolana)
+                } else if let signTon = input.keysignPayload?.signTon,
+                          let coin = input.keysignPayload?.coin {
+                    Separator()
+                    SignTonDisplayView(
+                        signTon: signTon,
+                        coinTicker: coin.ticker,
+                        coinDecimals: coin.decimals
+                    )
                 }
             }
         }

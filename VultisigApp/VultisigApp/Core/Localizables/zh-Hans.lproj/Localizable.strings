@@ -196,11 +196,11 @@
 "circleErrorWalletNotDeployed" = "Circle 钱包尚未部署。请稍后再试。";
 "circleEthereumRequired" = "需要以太坊";
 "circleEthereumRequiredDescription" = "请在您的保险库中添加以太坊才能使用 Circle。";
+"circleRewardsDescription" = "奖励会自动计入您的余额。";
+"circleRewardsTitle" = "奖励";
 "circleRowCreateWallet" = "创建钱包";
 "circleRowGetStarted" = "开始";
 "circleRowYieldAccount" = "收益账户";
-"circleRewardsDescription" = "奖励会自动计入您的余额。";
-"circleRewardsTitle" = "奖励";
 "circleSetupAccountTitle" = "Circle USDC 账户";
 "circleSetupCreateAccount" = "创建账户";
 "circleSetupDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
@@ -899,6 +899,9 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
+"tonConnectMessages" = "消息";
+"tonConnectPayloadBadge" = "负载";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";
