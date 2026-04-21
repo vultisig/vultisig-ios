@@ -112,8 +112,34 @@ final class TonSendTransactionTests: XCTestCase {
         )
         for transfer in input.messages {
             XCTAssertEqual(transfer.mode, expectedMode)
-            XCTAssertTrue(transfer.bounceable)
         }
+
+        // Per-address bounce intent derived from friendly-address prefix,
+        // not the vault-wide flag: UQ → non-bounceable, EQ / Ef → bounceable.
+        XCTAssertFalse(input.messages[0].bounceable, "UQ destination should be non-bounceable")
+        XCTAssertTrue(input.messages[1].bounceable, "EQ destination should be bounceable")
+        XCTAssertTrue(input.messages[2].bounceable, "Ef destination should be bounceable")
+    }
+
+    func testTonConnectBounceableIsDerivedPerAddress() throws {
+        let messages = [
+            TonMessage(to: destA, amount: "1000000"),
+            TonMessage(to: destB, amount: "1000000"),
+            TonMessage(to: destC, amount: "1000000")
+        ]
+        let payload = makePayload(
+            toAddress: destA,
+            toAmount: 0,
+            chainSpecific: tonSpecific(bounceable: false),
+            signData: .signTon(SignTon(tonMessages: messages))
+        )
+
+        let inputData = try TonHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try TheOpenNetworkSigningInput(serializedBytes: inputData)
+
+        XCTAssertFalse(input.messages[0].bounceable)
+        XCTAssertTrue(input.messages[1].bounceable)
+        XCTAssertTrue(input.messages[2].bounceable)
     }
 
     func testTonConnectThreadsStateInitAndCustomPayload() throws {

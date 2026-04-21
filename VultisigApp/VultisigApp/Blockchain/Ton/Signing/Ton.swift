@@ -68,7 +68,7 @@ enum TonHelper {
             guard signTon.tonMessages.count <= maxTonConnectMessages else {
                 throw HelperError.runtimeError("TonConnect allows at most \(maxTonConnectMessages) messages, got \(signTon.tonMessages.count)")
             }
-            return try signTon.tonMessages.map { try buildTonConnectTransfer(message: $0, bounceable: bounceable) }
+            return try signTon.tonMessages.map { try buildTonConnectTransfer(message: $0) }
         }
 
         // App-initiated TON send (native or jetton) — preserve existing single-transfer behavior.
@@ -108,7 +108,7 @@ enum TonHelper {
         return [transfer]
     }
 
-    private static func buildTonConnectTransfer(message: TonMessage, bounceable: Bool) throws -> TheOpenNetworkTransfer {
+    private static func buildTonConnectTransfer(message: TonMessage) throws -> TheOpenNetworkTransfer {
         guard let toAddress = AnyAddress(string: message.to, coin: .ton) else {
             throw HelperError.runtimeError("invalid TonConnect destination: \(message.to)")
         }
@@ -129,7 +129,7 @@ enum TonHelper {
             $0.dest = toAddress.description
             $0.amount = amountData
             $0.mode = mode
-            $0.bounceable = bounceable
+            $0.bounceable = isBounceable(address: message.to)
             if let stateInit = message.stateInit, !stateInit.isEmpty {
                 $0.stateInit = stateInit
             }
@@ -137,6 +137,18 @@ enum TonHelper {
                 $0.customPayload = payload
             }
         }
+    }
+
+    /// TonConnect conveys bounce intent per-address through the friendly-address tag byte:
+    /// addresses starting with `E` (mainnet) or `k` (testnet) carry the bounceable tag
+    /// (0x11 / 0x91); `U` / `0` carry the non-bounceable tag (0x51 / 0xD1). Raw format
+    /// (`0:…` / `-1:…`) has no prefix signal — default to non-bounceable, matching the
+    /// typical contract-deployment flow that enables stateInit.
+    private static func isBounceable(address: String) -> Bool {
+        guard !address.contains(":"), let first = address.first else {
+            return false
+        }
+        return first == "E" || first == "k"
     }
 
     static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String) throws -> TheOpenNetworkTransfer {
