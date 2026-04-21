@@ -381,6 +381,8 @@
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "from" = "De";
 "function" = "função";
+"functionArguments" = "Function Arguments";
+"functionSignature" = "Function Signature";
 "functionTransactionScreenErrorSubtitle" = "Ocorreu um erro ao redirecionar para a função";
 "functionTransactionScreenErrorTitle" = "Erro de função";
 "gas" = "Gás";
@@ -953,6 +955,7 @@
 "Unstake" = "Unstake";
 "unstakeCoin" = "Retirar %@";
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
+"unverifiedFunction" = "Função não verificada";
 "updateNow" = "Atualizar agora";
 "upgradeNow" = "Atualizar agora";
 "upgradeYourVault" = "Atualizar cofre";
@@ -1098,6 +1101,3 @@
 "yourVaultSetup" = "Sua configuração de cofre";
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";

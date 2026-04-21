@@ -381,6 +381,8 @@
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "from" = "从";
 "function" = "功能";
+"functionArguments" = "Function Arguments";
+"functionSignature" = "Function Signature";
 "functionTransactionScreenErrorSubtitle" = "重定向到功能时出错";
 "functionTransactionScreenErrorTitle" = "功能错误";
 "gas" = "燃料";
@@ -954,6 +956,7 @@
 "unstakeAutoCompoundTCYRewards" = "取消质押自动复利 TCY";
 "unstakeCoin" = "取消质押 %@";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
+"unverifiedFunction" = "未验证的函数";
 "updateNow" = "立即更新";
 "upgradeNow" = "立即升级";
 "upgradeYourVault" = "升级您的保险库";
@@ -1099,6 +1102,3 @@
 "yourVaultSetup" = "您的保险库设置";
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";

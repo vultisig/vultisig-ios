@@ -15,6 +15,7 @@ struct SendCryptoDoneHeaderView: View {
     let heroAmount: String?
     let heroTicker: String?
     let heroImage: String?
+    let heroCaption: String?
     let status: TransactionStatus
 
     var body: some View {
@@ -28,6 +29,13 @@ struct SendCryptoDoneHeaderView: View {
                     .foregroundStyle(Theme.colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .showIf(heroTitle != nil)
+
+                if let heroCaption {
+                    Text(heroCaption)
+                        .font(Theme.fonts.caption10)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
 
                 if let heroAmount, let heroTicker {
                     VStack(spacing: 12) {

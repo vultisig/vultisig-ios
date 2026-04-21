@@ -40,6 +40,8 @@ class KeysignViewModel: ObservableObject {
     @Published var decodedTokenDisplay: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var didLoadSimulation: Bool = false
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -107,8 +109,9 @@ class KeysignViewModel: ObservableObject {
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
 
-        // Load extension memo decoding
-        await loadFunctionName()
+        async let fn: Void = loadFunctionName()
+        async let sim: Void = loadSimulation()
+        _ = await (fn, sim)
     }
 
     func loadFunctionName() async {
@@ -130,8 +133,36 @@ class KeysignViewModel: ObservableObject {
         do {
             decodedMemo = try await MemoDecodingService.shared.decode(memo: memo)
         } catch {
-            print("EVM memo decoding error: \(error.localizedDescription)")
+            logger.error("EVM memo decoding error: \(error.localizedDescription)")
         }
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        blockaidSimulation = await BlockaidSimulationService.shared.simulate(keysignPayload: payload)
+        didLoadSimulation = true
+    }
+
+    var heroAmount: String? {
+        blockaidSimulation?.heroAmountText
+    }
+
+    var heroTicker: String? {
+        blockaidSimulation?.fromCoin.ticker
+    }
+
+    var heroImage: String? {
+        blockaidSimulation?.fromCoin.logo
+    }
+
+    var unverifiedFunctionCaption: String? {
+        guard didLoadSimulation,
+              blockaidSimulation == nil,
+              decodedFunctionName != nil else { return nil }
+        return "unverifiedFunction".localized
     }
 
     func getTransactionExplorerURL(txid: String) -> String {

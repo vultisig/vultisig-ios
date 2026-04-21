@@ -21,6 +21,14 @@ protocol BlockaidRpcClientProtocol {
         data: String
     ) async throws -> BlockaidTransactionScanResponseJson
 
+    func simulateEVMTransaction(
+        chain: Chain,
+        from: String,
+        to: String,
+        amount: String,
+        data: String
+    ) async throws -> BlockaidEvmSimulationResponseJson
+
     func scanSolanaTransaction(
         address: String,
         serializedMessage: String

@@ -386,6 +386,8 @@
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
 "function" = "Function";
+"functionArguments" = "Function Arguments";
+"functionSignature" = "Function Signature";
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "functionTransactionScreenErrorTitle" = "Function Error";
 "gas" = "Gas";
@@ -969,6 +971,7 @@
 "Unstake" = "Unstake";
 "unstakeCoin" = "Unstake %@";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
+"unverifiedFunction" = "Unverified function";
 "updateNow" = "Update Now";
 "upgradeNow" = "Upgrade now";
 "upgradeYourVault" = "Upgrade your vault";
@@ -1114,6 +1117,3 @@
 "yourVaultSetup" = "Your vault setup";
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";

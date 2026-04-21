@@ -47,6 +47,7 @@ struct SendCryptoDoneContentView: View {
                     heroAmount: input.heroAmount,
                     heroTicker: input.heroTicker,
                     heroImage: input.heroImage,
+                    heroCaption: input.heroCaption,
                     status: statusViewModel.status
                 )
 

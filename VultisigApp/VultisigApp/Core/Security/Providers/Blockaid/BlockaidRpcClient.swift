@@ -50,6 +50,28 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         return response.data
     }
 
+    func simulateEVMTransaction(
+        chain: Chain,
+        from: String,
+        to: String,
+        amount: String,
+        data: String
+    ) async throws -> BlockaidEvmSimulationResponseJson {
+        let request = buildEthereumScanRequest(
+            chain: chain,
+            from: from,
+            to: to,
+            data: data,
+            amount: amount,
+            options: ["simulation"]
+        )
+        let response = try await httpClient.request(
+            BlockaidAPI.simulateEVMTransaction(request),
+            responseType: BlockaidEvmSimulationResponseJson.self
+        )
+        return response.data
+    }
+
     func scanSolanaTransaction(
         address: String,
         serializedMessage: String
@@ -97,14 +119,15 @@ private extension BlockaidRpcClient {
         from: String,
         to: String,
         data: String,
-        amount: String
+        amount: String,
+        options: [String] = ["validation"]
     ) -> EthereumScanTransactionRequestJson {
         return EthereumScanTransactionRequestJson(
             chain: chain.toBlockaidName(),
             metadata: EthereumScanTransactionRequestJson.MetadataJson(
                 domain: BlockaidConstants.vultisigDomain
             ),
-            options: ["validation"],
+            options: options,
             accountAddress: from,
             data: EthereumScanTransactionRequestJson.DataJson(
                 from: from,
@@ -112,7 +135,7 @@ private extension BlockaidRpcClient {
                 data: data,
                 value: amount
             ),
-            simulatedWithEstimatedGas: false
+            simulatedWithEstimatedGas: options.contains("simulation")
         )
     }
 

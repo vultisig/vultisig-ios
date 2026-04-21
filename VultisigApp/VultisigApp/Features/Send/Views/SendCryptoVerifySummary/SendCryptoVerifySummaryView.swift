@@ -190,11 +190,19 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     }
 
     var summaryTitle: some View {
-        Text(input.heroTitle ?? NSLocalizedString("youreSending", comment: ""))
-            .foregroundStyle(Theme.colors.textSecondary)
-            .font(Theme.fonts.bodyMMedium)
-            .padding(.bottom, 8)
-            .frame(maxWidth: .infinity, alignment: heroAlignment)
+        VStack(spacing: 2) {
+            Text(input.heroTitle ?? NSLocalizedString("youreSending", comment: ""))
+                .foregroundStyle(Theme.colors.textSecondary)
+                .font(Theme.fonts.bodyMMedium)
+
+            if let heroCaption = input.heroCaption {
+                Text(heroCaption)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .font(Theme.fonts.caption10)
+            }
+        }
+        .padding(.bottom, 8)
+        .frame(maxWidth: .infinity, alignment: heroAlignment)
     }
 
     var summaryCoinDetails: some View {

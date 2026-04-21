@@ -60,6 +60,8 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedTokenAmount: String?
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var didLoadSimulation: Bool = false
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -524,6 +526,37 @@ class JoinKeysignViewModel: ObservableObject {
     private func capitalizeFirstCharacter(_ value: String) -> String {
         guard let first = value.first else { return value }
         return first.uppercased() + value.dropFirst()
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        blockaidSimulation = await BlockaidSimulationService.shared.simulate(keysignPayload: payload)
+        didLoadSimulation = true
+    }
+
+    // Hero values are populated only when Blockaid simulation succeeds. Phase 1
+    // keeps the hero title-only for 4byte-only decodes; Phase 2A promotes real
+    // balance-change data when the simulation returns authoritative values.
+    var heroAmount: String? {
+        blockaidSimulation?.heroAmountText
+    }
+
+    var heroTicker: String? {
+        blockaidSimulation?.fromCoin.ticker
+    }
+
+    var heroImage: String? {
+        blockaidSimulation?.fromCoin.logo
+    }
+
+    var unverifiedFunctionCaption: String? {
+        guard didLoadSimulation,
+              blockaidSimulation == nil,
+              decodedFunctionName != nil else { return nil }
+        return "unverifiedFunction".localized
     }
 
     var providerName: String {

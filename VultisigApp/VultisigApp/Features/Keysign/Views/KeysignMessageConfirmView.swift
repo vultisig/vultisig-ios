@@ -31,9 +31,10 @@ struct KeysignMessageConfirmView: View {
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
                         heroTitle: viewModel.decodedFunctionName,
-                        heroAmount: nil,
-                        heroTicker: nil,
-                        heroImage: nil,
+                        heroAmount: viewModel.heroAmount,
+                        heroTicker: viewModel.heroTicker,
+                        heroImage: viewModel.heroImage,
+                        heroCaption: viewModel.unverifiedFunctionCaption,
                         tokenDisplay: viewModel.decodedTokenDisplay
                     ),
                     securityScannerState: .constant(.idle)
@@ -44,8 +45,10 @@ struct KeysignMessageConfirmView: View {
                 }
             }
             .task {
-                await viewModel.loadThorchainID()
-                await viewModel.loadFunctionName()
+                async let thor: Void = viewModel.loadThorchainID()
+                async let fn: Void = viewModel.loadFunctionName()
+                async let sim: Void = viewModel.loadSimulation()
+                _ = await (thor, fn, sim)
             }
         }
         .navigationTitle("sendOverview")

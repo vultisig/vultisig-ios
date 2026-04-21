@@ -18,6 +18,7 @@ struct SendCryptoContent: Hashable {
     let heroAmount: String?
     let heroTicker: String?
     let heroImage: String?
+    var heroCaption: String? = nil
     let hash: String
     let explorerLink: String
     let memo: String

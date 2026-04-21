@@ -27,6 +27,7 @@ struct SendCryptoVerifySummary {
     let heroAmount: String?
     let heroTicker: String?
     let heroImage: String?
+    let heroCaption: String?
     /// Resolved token display for EVM contract calls, e.g. "0.3 USDC" or "Max USDC".
     let tokenDisplay: String?
 
@@ -53,6 +54,7 @@ struct SendCryptoVerifySummary {
         heroAmount: String? = nil,
         heroTicker: String? = nil,
         heroImage: String? = nil,
+        heroCaption: String? = nil,
         tokenDisplay: String? = nil
     ) {
         self.fromName = fromName
@@ -76,6 +78,7 @@ struct SendCryptoVerifySummary {
         self.heroAmount = heroAmount
         self.heroTicker = heroTicker
         self.heroImage = heroImage
+        self.heroCaption = heroCaption
         self.tokenDisplay = tokenDisplay
     }
 }

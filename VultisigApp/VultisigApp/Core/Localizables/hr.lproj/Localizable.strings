@@ -381,6 +381,8 @@
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "from" = "Od";
 "function" = "funkcija";
+"functionArguments" = "Function Arguments";
+"functionSignature" = "Function Signature";
 "functionTransactionScreenErrorSubtitle" = "Došlo je do greške prilikom preusmjeravanja na funkciju";
 "functionTransactionScreenErrorTitle" = "Greška funkcije";
 "gas" = "Plin";
@@ -953,6 +955,7 @@
 "Unstake" = "Poništi ulog";
 "unstakeCoin" = "Povuci %@";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
+"unverifiedFunction" = "Neprovjerena funkcija";
 "updateNow" = "Ažuriraj sada";
 "upgradeNow" = "Nadogradi sada";
 "upgradeYourVault" = "Nadogradi trezor";
@@ -1098,6 +1101,3 @@
 "yourVaultSetup" = "Vaša postavka trezora";
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
-
-"functionSignature" = "Function Signature";
-"functionArguments" = "Function Arguments";
