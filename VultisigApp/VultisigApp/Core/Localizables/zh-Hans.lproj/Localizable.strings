@@ -894,7 +894,7 @@
 "today" = "今天";
 "tokens" = "代币";
 "tonConnectMessages" = "消息";
-"tonConnectPayloadBadge" = "负载";
+"tonConnectPayloadBadge" = "Payload";
 "tonConnectStateInitBadge" = "State Init";
 "totalFee" = "总费用";
 "track" = "跟踪";
