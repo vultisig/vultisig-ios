@@ -53,6 +53,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var error: JoinKeygenError? = nil
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
+    @Published var isTssBatchEnabled: Bool = false
 
     var encryptionKeyHex: String = ""
     var singleKeygenType: SingleKeygenType = .MLDSA
@@ -84,6 +85,10 @@ class JoinKeygenViewModel: ObservableObject {
 
         if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
             status = .NoCameraAccess
+        }
+
+        Task { @MainActor in
+            self.isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
         }
     }
 

@@ -80,6 +80,7 @@ class KeygenViewModel: ObservableObject {
     var isInitiateDevice: Bool
     var keyImportInput: KeyImportInput?
     var singleKeygenType: SingleKeygenType?
+    var isTssBatchEnabled: Bool = false
 
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -119,6 +120,7 @@ class KeygenViewModel: ObservableObject {
                  encryptionKeyHex: String,
                  oldResharePrefix: String,
                  initiateDevice: Bool,
+                 isTssBatchEnabled: Bool,
                  keyImportInput: KeyImportInput? = nil,
                  singleKeygenType: SingleKeygenType? = nil
     ) async {
@@ -131,6 +133,7 @@ class KeygenViewModel: ObservableObject {
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
         self.isInitiateDevice = initiateDevice
+        self.isTssBatchEnabled = isTssBatchEnabled
         self.keyImportInput = keyImportInput
         self.singleKeygenType = singleKeygenType
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
@@ -303,9 +306,8 @@ class KeygenViewModel: ObservableObject {
     }
 
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
-        let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-        let useParallelPath = isTssBatchEnabled
-        self.logger.info("KeyImport flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(isTssBatchEnabled)")
+        let useParallelPath = self.isTssBatchEnabled
+        self.logger.info("KeyImport flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(self.isTssBatchEnabled)")
 
         var wallet: HDWallet?
 
@@ -614,9 +616,8 @@ class KeygenViewModel: ObservableObject {
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         await updateProgress(50)
         do {
-            let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-            let useParallelPath = isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate || self.tssType == .Reshare)
-            self.logger.info("\(self.tssType.rawValue) flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(isTssBatchEnabled)")
+            let useParallelPath = self.isTssBatchEnabled && (self.tssType == .Keygen || self.tssType == .Migrate || self.tssType == .Reshare)
+            self.logger.info("\(self.tssType.rawValue) flow starting: execution=\(useParallelPath ? "parallel" : "sequential"), tssBatchEnabled=\(self.isTssBatchEnabled)")
 
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,

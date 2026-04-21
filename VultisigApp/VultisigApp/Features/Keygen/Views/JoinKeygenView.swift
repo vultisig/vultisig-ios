@@ -104,6 +104,7 @@ struct JoinKeygenView: View {
             keyImportInput: viewModel.keyImportInput,
             singleKeygenType: viewModel.singleKeygenType,
             isInitiateDevice: false,
+            isTssBatchEnabled: viewModel.isTssBatchEnabled,
             hideBackButton: $hideBackButton
         )
     }

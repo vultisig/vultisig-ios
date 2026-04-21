@@ -25,6 +25,7 @@ struct KeygenView: View {
     let keyImportInput: KeyImportInput?
     let singleKeygenType: SingleKeygenType?
     let isInitiateDevice: Bool
+    let isTssBatchEnabled: Bool
     @Binding var hideBackButton: Bool
 
     @StateObject var viewModel = KeygenViewModel()
@@ -312,6 +313,7 @@ struct KeygenView: View {
             encryptionKeyHex: encryptionKeyHex,
             oldResharePrefix: oldResharePrefix,
             initiateDevice: isInitiateDevice,
+            isTssBatchEnabled: isTssBatchEnabled,
             keyImportInput: keyImportInput,
             singleKeygenType: singleKeygenType
         )
@@ -348,6 +350,7 @@ struct KeygenView: View {
         keyImportInput: nil,
         singleKeygenType: nil,
         isInitiateDevice: false,
+        isTssBatchEnabled: false,
         hideBackButton: .constant(false)
     )
     .frame(maxWidth: 600, maxHeight: isMacOS ? 600 : .infinity)

@@ -40,6 +40,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     @Published var isLoading: Bool = false
+    @Published var isTssBatchEnabled: Bool = false
 
     private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
@@ -112,87 +113,81 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         case .secure:
             break
         }
-        if let config = fastSignConfig {
+        Task { @MainActor in
+            let resolvedFlag = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+            self.isTssBatchEnabled = resolvedFlag
+            guard let config = fastSignConfig else { return }
             switch tssType {
             case .Keygen:
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchCreate(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: vault.libType == .DKLS ? 1 : 0,
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.create(name: vault.name,
-                                                sessionID: sessionID,
-                                                hexEncryptionKey: encryptionKeyHex!,
-                                                hexChainCode: vault.hexChainCode,
-                                                encryptionPassword: config.password,
-                                                email: config.email,
-                                                lib_type: vault.libType == .DKLS ? 1 : 0)
-                    }
+                if resolvedFlag {
+                    fastVaultService.batchCreate(
+                        name: vault.name,
+                        sessionID: sessionID,
+                        hexEncryptionKey: encryptionKeyHex!,
+                        hexChainCode: vault.hexChainCode,
+                        encryptionPassword: config.password,
+                        email: config.email,
+                        lib_type: vault.libType == .DKLS ? 1 : 0,
+                        protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                    )
+                } else {
+                    fastVaultService.create(name: vault.name,
+                                            sessionID: sessionID,
+                                            hexEncryptionKey: encryptionKeyHex!,
+                                            hexChainCode: vault.hexChainCode,
+                                            encryptionPassword: config.password,
+                                            email: config.email,
+                                            lib_type: vault.libType == .DKLS ? 1 : 0)
                 }
             case .KeyImport:
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchKeyImport(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: 2,
-                            chains: chains?.map { $0.name } ?? [],
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.keyImport(
-                            name: vault.name,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            lib_type: 2,
-                            chains: chains?.map { $0.name } ?? []
-                        )
-                    }
+                if resolvedFlag {
+                    fastVaultService.batchKeyImport(
+                        name: vault.name,
+                        sessionID: sessionID,
+                        hexEncryptionKey: encryptionKeyHex!,
+                        encryptionPassword: config.password,
+                        email: config.email,
+                        lib_type: 2,
+                        chains: chains?.map { $0.name } ?? [],
+                        protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                    )
+                } else {
+                    fastVaultService.keyImport(
+                        name: vault.name,
+                        sessionID: sessionID,
+                        hexEncryptionKey: encryptionKeyHex!,
+                        hexChainCode: vault.hexChainCode,
+                        encryptionPassword: config.password,
+                        email: config.email,
+                        lib_type: 2,
+                        chains: chains?.map { $0.name } ?? []
+                    )
                 }
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                Task {
-                    let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
-                    if isTssBatchEnabled {
-                        fastVaultService.batchReshare(
-                            publicKeyECDSA: pubKeyECDSA,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            oldParties: vault.signers,
-                            protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
-                        )
-                    } else {
-                        fastVaultService.reshare(
-                            name: vault.name,
-                            publicKeyECDSA: pubKeyECDSA,
-                            sessionID: sessionID,
-                            hexEncryptionKey: encryptionKeyHex!,
-                            hexChainCode: vault.hexChainCode,
-                            encryptionPassword: config.password,
-                            email: config.email,
-                            oldParties: vault.signers,
-                            oldResharePrefix: vault.resharePrefix ?? "",
-                            lib_type: vault.libType == .DKLS ? 1 : 0
-                        )
-                    }
+                if resolvedFlag {
+                    fastVaultService.batchReshare(
+                        publicKeyECDSA: pubKeyECDSA,
+                        sessionID: sessionID,
+                        hexEncryptionKey: encryptionKeyHex!,
+                        encryptionPassword: config.password,
+                        email: config.email,
+                        oldParties: vault.signers,
+                        protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                    )
+                } else {
+                    fastVaultService.reshare(
+                        name: vault.name,
+                        publicKeyECDSA: pubKeyECDSA,
+                        sessionID: sessionID,
+                        hexEncryptionKey: encryptionKeyHex!,
+                        hexChainCode: vault.hexChainCode,
+                        encryptionPassword: config.password,
+                        email: config.email,
+                        oldParties: vault.signers,
+                        oldResharePrefix: vault.resharePrefix ?? "",
+                        lib_type: vault.libType == .DKLS ? 1 : 0
+                    )
                 }
             case .Migrate:
                 fastVaultService.migrate(
