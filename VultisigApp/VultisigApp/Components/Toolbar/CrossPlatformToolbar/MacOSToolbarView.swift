@@ -67,8 +67,15 @@ struct MacOSToolbarView<Content: View>: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Title
-            if let navigationTitle {
+            // Center
+            if !centerItems.isEmpty {
+                HStack(spacing: 8) {
+                    ForEach(Array(centerItems.enumerated()), id: \.offset) { _, item in
+                        item.content
+                    }
+                }
+                .layoutPriority(1)
+            } else if let navigationTitle {
                 Text(navigationTitle)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyLMedium)
@@ -90,6 +97,10 @@ struct MacOSToolbarView<Content: View>: View {
 
     private var leadingItems: [CustomToolbarItem] {
         items.filter { $0.placement == .leading }
+    }
+
+    private var centerItems: [CustomToolbarItem] {
+        items.filter { $0.placement == .center }
     }
 
     private var trailingItems: [CustomToolbarItem] {
