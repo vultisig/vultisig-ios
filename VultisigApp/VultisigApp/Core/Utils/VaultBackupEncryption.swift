@@ -18,14 +18,14 @@ enum VaultBackupEncryptionError: Error {
 
 final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
 
-    private static let magic: [UInt8] = [0x56, 0x4C, 0x54, 0x02]
-    private static let magicSize = 4
+    private static let formatSignature: [UInt8] = [0x56, 0x4C, 0x54, 0x02]
+    private static let formatSignatureLength = 4
     private static let saltLength = 16
     private static let ivLength = 12
     private static let gcmTagBytes = 16
     private static let keyLengthBytes = 32
     private static let iterations: UInt32 = 600_000
-    private static let headerSize = magicSize + saltLength + ivLength
+    private static let headerSize = formatSignatureLength + saltLength + ivLength
 
     func encrypt(data: Data, password: String) async throws -> Data {
         try await Task.detached(priority: .userInitiated) {
@@ -50,8 +50,8 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
             guard let combined = sealed.combined else {
                 throw VaultBackupEncryptionError.encryptionFailed
             }
-            var output = Data(capacity: magicSize + salt.count + combined.count)
-            output.append(contentsOf: magic)
+            var output = Data(capacity: formatSignatureLength + salt.count + combined.count)
+            output.append(contentsOf: formatSignature)
             output.append(salt)
             output.append(combined)
             return output
@@ -64,11 +64,11 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
     }
 
     private static func decryptSync(data: Data, password: String) -> Data? {
-        if hasMagicPrefix(data), let plaintext = decryptPbkdf2(data: data, password: password) {
+        if hasFormatSignature(data), let plaintext = decryptPbkdf2(data: data, password: password) {
             return plaintext
         }
         // Legacy blobs begin with a random nonce that may, with ~1/2^32 probability,
-        // collide with the magic prefix. Fall back so those backups stay importable.
+        // collide with the format signature. Fall back so those backups stay importable.
         return legacyDecrypt(data: data, password: password)
     }
 
@@ -79,7 +79,7 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
             return nil
         }
 
-        let saltStart = magicSize
+        let saltStart = formatSignatureLength
         let saltEnd = saltStart + saltLength
         let salt = data.subdata(in: saltStart..<saltEnd)
         let sealedCombined = data.subdata(in: saltEnd..<data.count)
@@ -105,9 +105,9 @@ final class Pbkdf2VaultBackupEncryption: VaultBackupEncryption {
         }
     }
 
-    private static func hasMagicPrefix(_ data: Data) -> Bool {
-        guard data.count >= magicSize else { return false }
-        for index in 0..<magicSize where data[data.startIndex + index] != magic[index] {
+    private static func hasFormatSignature(_ data: Data) -> Bool {
+        guard data.count >= formatSignatureLength else { return false }
+        for index in 0..<formatSignatureLength where data[data.startIndex + index] != formatSignature[index] {
             return false
         }
         return true

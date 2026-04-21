@@ -9,8 +9,8 @@ import XCTest
 
 final class VaultBackupEncryptionTest: XCTestCase {
 
-    private let magic: [UInt8] = [0x56, 0x4C, 0x54, 0x02]
-    private let magicSize = 4
+    private let formatSignature: [UInt8] = [0x56, 0x4C, 0x54, 0x02]
+    private let formatSignatureLength = 4
     private let saltLength = 16
     private let ivLength = 12
     private let gcmTagBytes = 16
@@ -61,27 +61,27 @@ final class VaultBackupEncryptionTest: XCTestCase {
         XCTAssertEqual(decrypted, plaintext)
     }
 
-    func testEncryptedOutputStartsWithMagic() async throws {
+    func testEncryptedOutputStartsWithFormatSignature() async throws {
         let plaintext = Data("something".utf8)
         let encrypted = try await sut.encrypt(data: plaintext, password: "pw")
 
-        XCTAssertGreaterThanOrEqual(encrypted.count, magicSize)
-        let prefix = Array(encrypted.prefix(magicSize))
-        XCTAssertEqual(prefix, magic)
+        XCTAssertGreaterThanOrEqual(encrypted.count, formatSignatureLength)
+        let prefix = Array(encrypted.prefix(formatSignatureLength))
+        XCTAssertEqual(prefix, formatSignature)
     }
 
     func testEncryptedOutputHasHeaderAndTag() async throws {
         let plaintext = Data("x".utf8)
         let encrypted = try await sut.encrypt(data: plaintext, password: "pw")
 
-        let minSize = magicSize + saltLength + ivLength + plaintext.count + gcmTagBytes
+        let minSize = formatSignatureLength + saltLength + ivLength + plaintext.count + gcmTagBytes
         XCTAssertGreaterThanOrEqual(encrypted.count, minSize)
     }
 
-    func testLegacyBackupWithPartialMagicPrefixStillDecrypts() async throws {
+    func testLegacyBackupWithPartialSignaturePrefixStillDecrypts() async throws {
         // Craft a legacy payload whose sealed blob starts with the first three
-        // magic bytes (0x56, 0x4C, 0x54) but a different fourth byte, proving
-        // the full 4-byte magic is required for PBKDF2 detection.
+        // signature bytes (0x56, 0x4C, 0x54) but a different fourth byte, proving
+        // the full 4-byte signature is required for PBKDF2 detection.
         let password = "pw"
         let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
 
@@ -107,7 +107,7 @@ final class VaultBackupEncryptionTest: XCTestCase {
     }
 
     func testTooSmallPbkdf2PayloadReturnsNil() async {
-        var tiny = Data(magic)
+        var tiny = Data(formatSignature)
         tiny.append(Data(repeating: 0, count: 5))
 
         let decrypted = await sut.decrypt(data: tiny, password: "pw")
