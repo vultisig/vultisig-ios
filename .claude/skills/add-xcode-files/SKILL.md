@@ -1,7 +1,6 @@
 ---
 name: add-xcode-files
 description: Add newly created Swift files to the Xcode project (project.pbxproj).
-disable-model-invocation: true
 ---
 
 # Add Files to Xcode Project

@@ -509,6 +509,13 @@ class Endpoint {
         return "\(vultisigApiProxy)/ton/v2/runGetMethod"
     }
 
+    /// Builds the URL for fetching jetton master contract info from the Toncenter v3 API.
+    /// - Parameter jettonAddress: The jetton master contract address to query.
+    /// - Returns: The fully-qualified endpoint URL string.
+    static func fetchTonJettonMasterInfo(jettonAddress: String) -> String {
+        return "\(vultisigApiProxy)/ton/v3/jetton/masters?address=\(jettonAddress)&limit=1"
+    }
+
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
