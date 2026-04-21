@@ -28,6 +28,7 @@ struct DefiPositionsService {
         case .thorChain:
             [
                 TokensStore.tcy,
+                TokensStore.stcy,
                 TokensStore.ruji,
                 TokensStore.yrune,
                 TokensStore.ytcy

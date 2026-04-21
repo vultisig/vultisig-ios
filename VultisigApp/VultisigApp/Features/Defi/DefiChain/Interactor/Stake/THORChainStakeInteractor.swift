@@ -5,9 +5,17 @@
 //  Created by Gaston Mazzeo on 21/11/2025.
 //
 
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-stake-interactor")
+
 struct THORChainStakeInteractor: StakeInteractor {
     private let thorchainAPIService = THORChainAPIService()
     private let stakingService = THORChainStakingService.shared
+
+    static func scaledAmount(rawAmount: Decimal, decimals: Int) -> Decimal {
+        rawAmount / pow(10, decimals)
+    }
 
     func fetchStakePositions(vault: Vault) async -> [StakePosition] {
         guard let runeCoin = vault.runeCoin else { return [] }
@@ -54,8 +62,7 @@ private extension THORChainStakeInteractor {
                     vault: vault
                 )
             } catch {
-                print("Error fetching \(ticker) staking details: \(error.localizedDescription)")
-                // Fallback to using local staked balance
+                logger.error("Error fetching \(ticker) staking details: \(error.localizedDescription)")
                 return StakePosition(
                     coin: coinMeta,
                     type: .stake,
@@ -68,6 +75,21 @@ private extension THORChainStakeInteractor {
                     vault: vault
                 )
             }
+
+        case "STCY":
+            let rawAmount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: coinMeta.decimals)
+            return StakePosition(
+                coin: coinMeta,
+                type: .compound,
+                amount: amount,
+                apr: nil,
+                estimatedReward: nil,
+                nextPayout: nil,
+                rewards: nil,
+                rewardCoin: nil,
+                vault: vault
+            )
 
         case "YRUNE", "YTCY":
             return StakePosition(
@@ -102,7 +124,7 @@ private extension THORChainStakeInteractor {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {
-            print("An error occured while saving staked positions: \(error)")
+            logger.error("An error occured while saving staked positions: \(error.localizedDescription)")
         }
     }
 }

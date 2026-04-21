@@ -87,6 +87,7 @@
 "assets" = "资产";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
+"autocompounderInfo" = "自动复利信息";
 "available" = "可用";
 "availableLPUnits" = "可用 LP 单位";
 "availableNodes" = "可用节点";
@@ -285,7 +286,6 @@
 "emptyLPsField" = "LPs 字段为空";
 "enable" = "启用";
 "enableAll" = "全部启用";
-"enableAutoCompounding" = "启用自动复利";
 "enableBiometricsFastSigning" = "启用生物识别快速签名";
 "enableDKLS" = "启用 DKLS";
 "enableNotificationsForVault" = "为此保险库启用通知";
@@ -901,6 +901,7 @@
 "transactionID" = "交易 ID";
 "transactionSuccessful" = "交易成功";
 "transactionTrackingLink" = "交易跟踪链接";
+"transfer" = "转账";
 "tronBandwidth" = "带宽";
 "tronBandwidthDescription" = "带宽点数是 TRON 上每笔交易所必需的，包括标准代币发送和智能合约交互。每个 TRON 用户每天获得 600 个免费带宽点数，大约可以覆盖两次基本发送。此外，您可以通过质押 TRX 获得额外的带宽点数，增加每日配额以支持更多交易。如果您有足够的带宽点数，您可以发送代币、质押 TRX 或与智能合约交互，而无需支付 TRX 作为 Gas 费用。";
 "tronEnergy" = "能量";
