@@ -381,8 +381,8 @@
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "from" = "Od";
 "function" = "funkcija";
-"functionArguments" = "Function Arguments";
-"functionSignature" = "Function Signature";
+"functionArguments" = "Argumenti funkcije";
+"functionSignature" = "Potpis funkcije";
 "functionTransactionScreenErrorSubtitle" = "Došlo je do greške prilikom preusmjeravanja na funkciju";
 "functionTransactionScreenErrorTitle" = "Greška funkcije";
 "gas" = "Plin";
@@ -945,6 +945,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "Odveži RUNE";
 "unknown" = "Nepoznato";
+"unlimited" = "Neograničeno";
 "unlockTier" = "Otključaj razinu";
 "unlockXTier" = "Otključaj %@ razinu";
 "unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";

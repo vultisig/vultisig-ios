@@ -381,8 +381,8 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadFunctionName() async {
-        let memo = keysignPayload?.memo ?? customMessagePayload?.message
-        guard let memo, !memo.isEmpty else {
+        let candidates = [keysignPayload?.memo, customMessagePayload?.message]
+        guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
         }
 
@@ -398,7 +398,7 @@ class JoinKeysignViewModel: ObservableObject {
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
 
         let functionName = parsedParams.flatMap {
-            evmFunctionName(from: $0.functionSignature)
+            ContractCallExtractor.evmFunctionName(from: $0.functionSignature)
         }.map(capitalizeFirstCharacter)
         let resolvedTokenDisplay = resolveTokenDisplay(parsedParams: parsedParams)
 
@@ -477,9 +477,9 @@ class JoinKeysignViewModel: ObservableObject {
 
         // MAX_UINT256 is a sentinel. For approvals → "Unlimited". For withdraw/repay
         // the exact amount depends on on-chain state — return nil (skip display).
-        if pair.rawAmount == MAX_UINT256_DECIMAL,
-           let funcName = evmFunctionName(from: params.functionSignature) {
-            guard let label = sentinelLabelFor(funcName: funcName) else { return nil }
+        if pair.rawAmount == ContractCallExtractor.maxUInt256Decimal,
+           let funcName = ContractCallExtractor.evmFunctionName(from: params.functionSignature) {
+            guard let label = ContractCallExtractor.sentinelLabelFor(funcName: funcName) else { return nil }
             return (
                 display: "\(label) \(ticker)",
                 amountText: label,

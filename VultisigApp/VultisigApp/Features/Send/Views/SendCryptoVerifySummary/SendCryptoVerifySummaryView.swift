@@ -267,7 +267,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 HStack(alignment: .center) {
                     Text("transactionDetails".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
@@ -281,11 +281,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         if let signature = input.decodedFunctionSignature, !signature.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("functionSignature".localized)
-                                    .foregroundColor(Theme.colors.textTertiary)
+                                    .foregroundStyle(Theme.colors.textTertiary)
                                     .font(Theme.fonts.bodySMedium)
 
                                 Text(signature)
-                                    .foregroundColor(Theme.colors.turquoise)
+                                    .foregroundStyle(Theme.colors.turquoise)
                                     .font(Theme.fonts.bodySMedium)
                                     .textSelection(.enabled)
                             }
@@ -294,11 +294,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         if let args = input.decodedFunctionArguments, !args.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("functionArguments".localized)
-                                    .foregroundColor(Theme.colors.textTertiary)
+                                    .foregroundStyle(Theme.colors.textTertiary)
                                     .font(Theme.fonts.bodySMedium)
 
                                 Text(args)
-                                    .foregroundColor(Theme.colors.turquoise)
+                                    .foregroundStyle(Theme.colors.turquoise)
                                     .font(Theme.fonts.bodySMedium)
                                     .textSelection(.enabled)
                             }

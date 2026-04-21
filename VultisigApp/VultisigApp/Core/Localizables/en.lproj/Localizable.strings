@@ -959,6 +959,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "Unbond RUNE";
 "unknown" = "";
+"unlimited" = "Unlimited";
 "unlockTier" = "Unlock Tier";
 "unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";

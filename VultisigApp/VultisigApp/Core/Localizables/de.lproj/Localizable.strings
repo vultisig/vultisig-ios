@@ -381,8 +381,8 @@
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
 "from" = "Von";
 "function" = "Funktion";
-"functionArguments" = "Function Arguments";
-"functionSignature" = "Function Signature";
+"functionArguments" = "Funktionsargumente";
+"functionSignature" = "Funktionssignatur";
 "functionTransactionScreenErrorSubtitle" = "Fehler beim Weiterleiten zur Funktion";
 "functionTransactionScreenErrorTitle" = "Funktionsfehler";
 "gas" = "Gas";
@@ -945,6 +945,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "RUNE entbinden";
 "unknown" = "Unbekannt";
+"unlimited" = "Unbegrenzt";
 "unlockTier" = "Stufe freischalten";
 "unlockXTier" = "%@ Stufe freischalten";
 "unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";

@@ -381,8 +381,8 @@
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
 "from" = "Da";
 "function" = "funzione";
-"functionArguments" = "Function Arguments";
-"functionSignature" = "Function Signature";
+"functionArguments" = "Argomenti della funzione";
+"functionSignature" = "Firma della funzione";
 "functionTransactionScreenErrorSubtitle" = "Si è verificato un errore durante il reindirizzamento alla funzione";
 "functionTransactionScreenErrorTitle" = "Errore funzione";
 "gas" = "Gas";
@@ -945,6 +945,7 @@
 "Unbond" = "Unbond";
 "unbondRune" = "Scollega RUNE";
 "unknown" = "Sconosciuto";
+"unlimited" = "Illimitato";
 "unlockTier" = "Sblocca livello";
 "unlockXTier" = "Sblocca livello %@";
 "unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli swap.";
