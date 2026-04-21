@@ -866,6 +866,7 @@
 "swapErrorUnexpectedDescription" = "Si è verificato un errore imprevisto. Per favore riprova.";
 "swapErrorUnexpectedTitle" = "Errore Imprevisto";
 "swapFee" = "Commissione di scambio";
+"swapFeePercentage" = "Commissione di scambio (%.2f%%)";
 "swapOverview" = "Panoramica dello scambio";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";

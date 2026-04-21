@@ -866,6 +866,7 @@
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorUnexpectedTitle" = "意外错误";
 "swapFee" = "交换费用";
+"swapFeePercentage" = "交换费用 (%.2f%%)";
 "swapOverview" = "交换概览";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";

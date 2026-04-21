@@ -866,6 +866,7 @@
 "swapErrorUnexpectedDescription" = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
 "swapErrorUnexpectedTitle" = "Error Inesperado";
 "swapFee" = "Tarifa de intercambio";
+"swapFeePercentage" = "Tarifa de intercambio (%.2f%%)";
 "swapOverview" = "Resumen del intercambio";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swaps" = "Intercambios";
