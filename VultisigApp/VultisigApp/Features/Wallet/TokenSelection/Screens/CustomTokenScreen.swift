@@ -92,6 +92,9 @@ struct CustomTokenScreen: View {
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
     }
 
+    /// Builds a banner view displaying the given error with an optional retry button.
+    /// - Parameter error: The error to present. Rate-limit errors hide the retry action.
+    /// - Returns: An ``ActionBannerView`` configured for the error.
     func errorView(error: Error) -> some View {
         ActionBannerView(
             title: error.localizedDescription,
@@ -103,6 +106,7 @@ struct CustomTokenScreen: View {
         }
     }
 
+    /// A card view showing the resolved custom token's icon, ticker, chain badge, and contract address.
     var tokenInfoView: some View {
         ZStack(alignment: .top) {
             HStack(spacing: 12) {
@@ -141,6 +145,9 @@ struct CustomTokenScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    /// Looks up token metadata for the current ``contractAddress`` by dispatching to the appropriate
+    /// chain-specific service (EVM, Solana, Tron, or TON). On success, populates the token preview;
+    /// on failure, sets the ``error`` state.
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
 
@@ -155,41 +162,7 @@ struct CustomTokenScreen: View {
         error = nil
 
         do {
-            if ChainType.EVM == group.chain.chainType {
-
-                let service = try EvmService.getService(forChain: group.chain)
-                let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
-
-                if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
-                    let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
-                    if let nativeToken = nativeTokenOptional {
-                        self.token = CoinMeta(
-                            chain: nativeToken.chain,
-                            ticker: symbol,
-                            logo: .empty,
-                            decimals: decimals,
-                            priceProviderId: .empty,
-                            contractAddress: contractAddress,
-                            isNativeToken: false
-                        )
-                        self.tokenName = name
-                        self.tokenSymbol = symbol
-                        self.tokenDecimals = decimals
-                        self.showTokenInfo = true
-                        self.isLoading = false
-                    } else {
-                        self.error = TokenNotFoundError()
-                        self.isLoading = false
-                    }
-
-                } else {
-
-                    self.error = TokenNotFoundError()
-                    self.isLoading = false
-
-                }
-
-            } else if ChainType.Solana == group.chain.chainType {
+            if ChainType.Solana == group.chain.chainType {
 
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])
 
@@ -209,9 +182,26 @@ struct CustomTokenScreen: View {
 
                 }
 
-            } else if ChainType.Tron == group.chain.chainType {
+            } else {
 
-                let (name, symbol, decimals) = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
+                // EVM, TRON, and TON all share the same (name, symbol, decimals) lookup pattern
+                let tokenInfo: (name: String, symbol: String, decimals: Int)
+
+                switch group.chain.chainType {
+                case .EVM:
+                    let service = try EvmService.getService(forChain: group.chain)
+                    tokenInfo = try await service.getTokenInfo(contractAddress: contractAddress)
+                case .Tron:
+                    tokenInfo = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
+                case .Ton:
+                    tokenInfo = try await TonService.shared.getTokenInfo(contractAddress: contractAddress)
+                default:
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+                    return
+                }
+
+                let (name, symbol, decimals) = tokenInfo
 
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
                     let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
@@ -242,11 +232,6 @@ struct CustomTokenScreen: View {
 
                 }
 
-            } else {
-
-                self.error = TokenNotFoundError()
-                self.isLoading = false
-
             }
 
         } catch let error as NSError {
@@ -263,10 +248,15 @@ struct CustomTokenScreen: View {
         }
     }
 
+    /// Validates whether the given address string is a well-formed address for the current chain.
+    /// Updates ``isValidAddress`` accordingly.
+    /// - Parameter address: The raw address string entered by the user.
     private func validateAddress(_ address: String) {
         isValidAddress = AddressService.validateAddress(address: address, group: group)
     }
 
+    /// Persists the resolved custom token to the vault and dismisses the screen.
+    /// Shows an "adding token" loading indicator while the save is in progress.
     private func saveAssets() {
         if let customToken = self.token {
             isAddingToken = true
