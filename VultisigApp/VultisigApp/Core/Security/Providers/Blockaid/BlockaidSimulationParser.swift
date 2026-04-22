@@ -190,7 +190,12 @@ enum BlockaidSimulationParser {
         }
 
         let ticker = asset.symbol ?? storeMatch?.ticker ?? truncatedMint(mint)
-        let logo = asset.logo ?? storeMatch?.logo ?? .empty
+        // Blockaid returns per-request logo URLs under cdn.blockaid.io that are
+        // not hot-linkable, so the AsyncImageView placeholder would spin forever.
+        // Prefer the local TokensStore asset; fall back to Blockaid's URL only
+        // when we have no match, and ultimately let the view's first-letter
+        // fallback render if no logo resolves.
+        let logo = storeMatch?.logo ?? asset.logo ?? .empty
 
         return BlockaidSimulationCoin(
             chain: .solana,
