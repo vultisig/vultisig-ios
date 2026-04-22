@@ -375,18 +375,15 @@ private extension FastVaultService {
 }
 
 enum FastVaultServiceError: Error, LocalizedError {
-    case invalidSignURL
-    case invalidResponse
+    case missingEncryptionKey
     case signFailed(statusCode: Int, responseBody: String?)
     case registrationFailed(operation: String, statusCode: Int, responseBody: String?)
     case networkFailure(Error)
 
     var errorDescription: String? {
         switch self {
-        case .invalidSignURL:
-            return "FastVault sign URL is invalid"
-        case .invalidResponse:
-            return "FastVault sign returned an invalid response"
+        case .missingEncryptionKey:
+            return "FastVault encryption key is missing"
         case .signFailed(let statusCode, let responseBody):
             return "FastVault sign failed with status \(statusCode): \(describeBody(responseBody))"
         case .registrationFailed(let operation, let statusCode, let responseBody):

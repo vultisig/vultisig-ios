@@ -15,6 +15,15 @@ enum PeerDiscoveryStatus {
     case Failure
 }
 
+struct VaultRegistrationSnapshot {
+    let name: String
+    let pubKeyECDSA: String
+    let hexChainCode: String
+    let signers: [String]
+    let resharePrefix: String
+    let libType: LibType
+}
+
 class KeygenPeerDiscoveryViewModel: ObservableObject {
 
     private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
@@ -113,10 +122,18 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             break
         }
         if let config = fastSignConfig {
+            let snapshot = VaultRegistrationSnapshot(
+                name: vault.name,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                hexChainCode: vault.hexChainCode,
+                signers: vault.signers,
+                resharePrefix: vault.resharePrefix ?? "",
+                libType: vault.libType ?? .GG20
+            )
             Task { [weak self] in
                 guard let self else { return }
                 do {
-                    try await self.registerFastVaultServer(tssType: tssType, config: config)
+                    try await self.registerFastVaultServer(tssType: tssType, config: config, vault: snapshot)
                 } catch {
                     self.logger.error("FastVault registration failed: \(error.localizedDescription, privacy: .public)")
                     await MainActor.run {
@@ -126,14 +143,21 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 }
             }
         }
+        // isLoading reflects peer-discovery state, not registration — registration failure is surfaced via status = .Failure
         self.isLoading = false
     }
 
-    private func registerFastVaultServer(tssType: TssType, config: FastSignConfig) async throws {
+    private func registerFastVaultServer(
+        tssType: TssType,
+        config: FastSignConfig,
+        vault: VaultRegistrationSnapshot
+    ) async throws {
         guard let encryptionKeyHex else {
-            throw FastVaultServiceError.invalidResponse
+            throw FastVaultServiceError.missingEncryptionKey
         }
         let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+        let chainNames = chains?.map { $0.name } ?? []
+        let libTypeCode = vault.libType == .DKLS ? 1 : 0
         switch tssType {
         case .Keygen:
             if isTssBatchEnabled {
@@ -144,7 +168,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     hexChainCode: vault.hexChainCode,
                     encryptionPassword: config.password,
                     email: config.email,
-                    lib_type: vault.libType == .DKLS ? 1 : 0,
+                    lib_type: libTypeCode,
                     protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
                 )
             } else {
@@ -155,7 +179,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     hexChainCode: vault.hexChainCode,
                     encryptionPassword: config.password,
                     email: config.email,
-                    lib_type: vault.libType == .DKLS ? 1 : 0
+                    lib_type: libTypeCode
                 )
             }
         case .KeyImport:
@@ -167,7 +191,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionPassword: config.password,
                     email: config.email,
                     lib_type: 2,
-                    chains: chains?.map { $0.name } ?? [],
+                    chains: chainNames,
                     protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
                 )
             } else {
@@ -179,7 +203,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionPassword: config.password,
                     email: config.email,
                     lib_type: 2,
-                    chains: chains?.map { $0.name } ?? []
+                    chains: chainNames
                 )
             }
         case .Reshare:
@@ -204,8 +228,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionPassword: config.password,
                     email: config.email,
                     oldParties: vault.signers,
-                    oldResharePrefix: vault.resharePrefix ?? "",
-                    lib_type: vault.libType == .DKLS ? 1 : 0
+                    oldResharePrefix: vault.resharePrefix,
+                    lib_type: libTypeCode
                 )
             }
         case .Migrate:
