@@ -11,17 +11,12 @@ import Combine
 final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
-    let defaultAutocompound: Bool
+    let isAutocompound: Bool
     let availableToUnstake: Decimal?
-
-    var supportsAutocompound: Bool {
-        coin.supportsAutocompound
-    }
 
     @Published var percentageSelected: Double? = 100
     @Published var availableAmount: Decimal = 0
     var autocompoundBalance: Decimal = 0
-    @Published var isAutocompound: Bool = false
     @Published var validForm: Bool = false
     @Published var amountField = FormField(label: "amount".localized)
 
@@ -33,26 +28,25 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
 
-    init(coin: Coin, vault: Vault, defaultAutocompound: Bool, availableToUnstake: Decimal? = nil) {
+    init(coin: Coin, vault: Vault, isAutocompound: Bool, availableToUnstake: Decimal? = nil) {
         self.coin = coin
         self.vault = vault
-        self.defaultAutocompound = defaultAutocompound
+        self.isAutocompound = isAutocompound
         self.availableToUnstake = availableToUnstake
     }
 
     func onLoad() {
         setupForm()
-        // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
         availableAmount = availableToUnstake ?? coin.stakedBalanceDecimal
         setupAmountField()
 
-        $isAutocompound
-            .receive(on: DispatchQueue.main)
-            .sink(weak: self) { viewModel, _ in
-                viewModel.updateAvailableBalance()
+        if isAutocompound {
+            Task { @MainActor in
+                await fetchAutocompoundBalance()
+                self.availableAmount = autocompoundBalance
+                self.setupAmountField()
             }
-            .store(in: &cancellables)
-        isAutocompound = defaultAutocompound
+        }
     }
 
     var transactionBuilder: TransactionBuilder? {
@@ -93,19 +87,6 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
 
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
-    }
-
-    func updateAvailableBalance() {
-        Task { @MainActor in
-            if autocompoundBalance == .zero {
-                await fetchAutocompoundBalance()
-            }
-
-            // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
-            let defaultBalance = availableToUnstake ?? coin.stakedBalanceDecimal
-            self.availableAmount = isAutocompound ? autocompoundBalance : defaultBalance
-            self.setupAmountField()
-        }
     }
 
     func setupAmountField() {

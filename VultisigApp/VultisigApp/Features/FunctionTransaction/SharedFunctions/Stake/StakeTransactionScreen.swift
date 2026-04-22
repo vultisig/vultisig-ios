@@ -26,10 +26,7 @@ struct StakeTransactionScreen: View {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            VStack(spacing: 12) {
-                autocompoundToggle
-                gasReservationInfo
-            }
+            gasReservationInfo
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: percentageSelected) { _, newValue in
@@ -39,22 +36,15 @@ struct StakeTransactionScreen: View {
     }
 
     @ViewBuilder
-    var autocompoundToggle: some View {
-        if viewModel.supportsAutocompound {
-            AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
-        }
-    }
-
-    @ViewBuilder
     var gasReservationInfo: some View {
         if let message = viewModel.gasReservationMessage {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
                 Text(message)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
             }
             .padding(12)
@@ -69,7 +59,7 @@ struct StakeTransactionScreen: View {
         viewModel: StakeTransactionViewModel(
             coin: .example,
             vault: .example,
-            defaultAutocompound: false
+            isAutocompound: false
         )
     ) { _ in }
 }

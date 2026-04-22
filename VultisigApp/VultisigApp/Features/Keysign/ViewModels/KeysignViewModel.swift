@@ -17,6 +17,7 @@ enum KeysignStatus {
     case KeysignMLDSA
     case KeysignFinished
     case KeysignFailed
+    case KeysignRetryRequested
     case KeysignVaultMismatch
 }
 enum TssKeysignError: Error {
@@ -40,6 +41,10 @@ class KeysignViewModel: ObservableObject {
     @Published var decodedTokenDisplay: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var retryReason: BroadcastRetryReason?
+
+    private var broadcastRetryCount = 0
+    private static let maxBroadcastRetries = 1
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -732,16 +737,27 @@ class KeysignViewModel: ObservableObject {
     }
 
     func handleBroadcastError(error: Error, transactionType: SignedTransactionType) {
+        if let retryable = error as? RetryableBroadcastError,
+           broadcastRetryCount < Self.maxBroadcastRetries {
+            broadcastRetryCount += 1
+            logger.warning("broadcast failed with retryable error (\(retryable.retryReason.userFacingMessage, privacy: .public)); requesting retry")
+            DispatchQueue.main.async {
+                self.retryReason = retryable.retryReason
+                self.status = .KeysignRetryRequested
+            }
+            return
+        }
+
         var errMessage: String = ""
         switch error {
         case HelperError.runtimeError(let errDetail):
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
-            print("code:\(code), message:\(message)")
+            logger.error("rpc error code:\(code), message:\(message, privacy: .public)")
             if message == "already known"
                 || message == "replacement transaction underpriced"
                 || message.contains("This transaction has already been processed") {
-                print("the transaction already broadcast,code:\(code)")
+                logger.info("the transaction already broadcast, code:\(code)")
                 self.txid = transactionType.transactionHash
                 return
             }
@@ -749,14 +765,14 @@ class KeysignViewModel: ObservableObject {
 
             // Check for Cardano "already broadcasted" errors
             if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
-                print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
+                logger.info("Cardano transaction already broadcast - using hash from transactionType \(transactionType.transactionHash, privacy: .public)")
                 self.txid = transactionType.transactionHash
                 return
             }
 
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
-        print(errMessage)
+        logger.error("\(errMessage, privacy: .public)")
         DispatchQueue.main.async {
             self.keysignError = errMessage
             self.status = .KeysignFailed

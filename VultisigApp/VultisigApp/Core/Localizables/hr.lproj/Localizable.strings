@@ -87,6 +87,7 @@
 "assets" = "Imovine";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
+"autocompounderInfo" = "Auto-Compounder informacije";
 "available" = "Dostupno";
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";
@@ -137,8 +138,6 @@
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Prije nego započnete...";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
-"biweeklyPasswordVerifyDescription" = "Povremeno ćemo vas tražiti da potvrdite svoju Fast Sign lozinku kako biste je uvijek zapamtili";
-"biweeklyPasswordVerifyTitle" = "Provjeri lozinku za svoj\nServer Share";
 "bond" = "Veži";
 "Bond" = "Bond";
 "bonded" = "Vezano";
@@ -149,6 +148,10 @@
 "bondRune" = "Poveži RUNE";
 "bondToNode" = "Veži na Čvor";
 "bridge" = "Most";
+"broadcastRetryGeneric" = "Podaci o transakciji istekli — detalji ažurirani. Molimo pokušajte ponovno.";
+"broadcastRetryStaleBlockhash" = "Transakcija istekla. Molimo pokušajte ponovno.";
+"broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";
+"broadcastRetryStaleQuote" = "Ponuda istekla — detalji ažurirani. Molimo pokušajte ponovno.";
 "buy" = "Kupi";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
@@ -196,14 +199,16 @@
 "circleRowCreateWallet" = "Izradi novčanik";
 "circleRowGetStarted" = "Započni";
 "circleRowYieldAccount" = "Račun za prinos";
+"circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
+"circleRewardsTitle" = "Nagrade";
 "circleSetupAccountTitle" = "Circle USDC Račun";
 "circleSetupCreateAccount" = "Izradi račun";
 "circleSetupDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
 "circleSetupDeposited" = "Deponirano";
 "circleSetupInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
 "circleSetupOpenAccount" = "Otvori Račun";
-"circleSetupUSDCDeposited" = "USDC deponiran";
 "circleTitle" = "Circle američki dolar";
+"circleUSDCDeposited" = "USDC deponiran";
 "circleWithdraw" = "Povuci";
 "circleWithdrawAddressLabel" = "Adresa";
 "circleWithdrawAmountLabel" = "Iznos";
@@ -287,7 +292,6 @@
 "emptyLPsField" = "Prazno polje LPs";
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
-"enableAutoCompounding" = "Omogući Auto-Compounding";
 "enableBiometricsFastSigning" = "Omogući biometriju brzo potpisivanje";
 "enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
@@ -868,6 +872,7 @@
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
+"swapFeePercentage" = "Naknada za zamjenu (%.2f%%)";
 "swapOverview" = "Pregled zamjene";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
@@ -905,6 +910,7 @@
 "transactionID" = "ID transakcije";
 "transactionSuccessful" = "Transakcija uspješna";
 "transactionTrackingLink" = "Poveznica za praćenje transakcije";
+"transfer" = "Prijenos";
 "tronBandwidth" = "Propusnost";
 "tronBandwidthDescription" = "Bodovi propusnosti potrebni su za svaku transakciju na TRON-u, uključujući standardna slanja tokena i interakcije s pametnim ugovorima. Svaki TRON korisnik dnevno dobiva 600 besplatnih bodova propusnosti, koji mogu pokriti otprilike dva osnovna slanja. Dodatno, možete zaraditi dodatne bodove propusnosti stakingom TRX-a, povećavajući svoju dnevnu kvotu za podršku većem broju transakcija. Ako imate dovoljno bodova propusnosti, možete slati tokene, stakati TRX ili komunicirati s pametnim ugovorima bez plaćanja TRX-a za gas naknade.";
 "tronEnergy" = "Energija";
@@ -1049,6 +1055,8 @@
 "verify" = "Provjeri";
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
 "verifyPassword" = "Potvrdite lozinku";
+"verifyPasswordPeriodicReminder" = "Povremeno tražimo potvrdu kako ne biste zaboravili svoju lozinku.";
+"verifyYourPasswordFor" = "Potvrdi svoju lozinku za:";
 "via" = "putem";
 "view" = "Pogledaj";
 "viewOnExplorer" = "Prikaži u Exploreru";
@@ -1077,6 +1085,7 @@
 "Withdraw RUJI" = "Povuci RUJI";
 "Withdraw Secured Asset" = "Povuci osiguranu imovinu";
 "withdrawAmount" = "Podignite %@";
+"withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";
 "withdrawSecuredAssetError" = "Za povlačenje %@, prvo morate dodati %@ kovanicu u svoj trezor. Idite u postavke trezora i dodajte %@ za nastavak.";
 "wrongPassword" = "Pogrešna lozinka";

@@ -12,6 +12,7 @@ import SwiftUI
 struct CustomToolbarItem {
     enum Placement {
         case leading
+        case center
         case trailing
     }
 

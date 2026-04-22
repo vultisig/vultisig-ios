@@ -95,6 +95,7 @@
 "asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "atLeastOneDevice" = "At least one device";
 "atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
+"autocompounderInfo" = "Auto-Compounder Info";
 "available" = "Available";
 "availableLPUnits" = "Available LP Units";
 "availableNodes" = "Available Nodes";
@@ -145,8 +146,6 @@
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Before you start...";
 "biometricsFastSigning" = "Biometrics Fast Signing";
-"biweeklyPasswordVerifyDescription" = "We will periodically ask you to verify your fast sign password so you will always remember it";
-"biweeklyPasswordVerifyTitle" = "Verify your Server Share Password";
 "bond" = "Bond";
 "Bond" = "Bond";
 "bonded" = "Bonded";
@@ -157,6 +156,10 @@
 "bondRune" = "Bond RUNE";
 "bondToNode" = "Bond to Node";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Transaction data expired — details refreshed. Please try again.";
+"broadcastRetryStaleBlockhash" = "Transaction expired. Please try again.";
+"broadcastRetryStaleNonce" = "Transaction nonce outdated — details refreshed. Please try again.";
+"broadcastRetryStaleQuote" = "Quote expired — details refreshed. Please try again.";
 "buy" = "Buy";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
@@ -203,14 +206,16 @@
 "circleRowCreateWallet" = "Create Wallet";
 "circleRowGetStarted" = "Get Started";
 "circleRowYieldAccount" = "Yield Account";
+"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
+"circleRewardsTitle" = "Rewards";
 "circleSetupAccountBalance" = "Circle Account Balance";
 "circleSetupAccountTitle" = "Circle USDC Account";
 "circleSetupDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
 "circleSetupDeposited" = "Deposited";
 "circleSetupInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
 "circleSetupOpenAccount" = "Open Account";
-"circleSetupUSDCDeposited" = "USDC deposited";
 "circleTitle" = "Circle";
+"circleUSDCDeposited" = "USDC deposited";
 "circleWithdrawAmount" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
@@ -293,7 +298,6 @@
 "emptyLPsField" = "Empty LPs field";
 "enable" = "Enable";
 "enableAll" = "Enable all";
-"enableAutoCompounding" = "Enable Auto-Compound";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
 "enableDKLS" = "Enable DKLS";
 "enableNotificationsForVault" = "Enable notifications for this vault";
@@ -878,6 +882,7 @@
 "swapErrorUnexpectedDescription" = "An unexpected error occurred. Please try again.";
 "swapErrorUnexpectedTitle" = "Unexpected Error";
 "swapFee" = "Swap Fee";
+"swapFeePercentage" = "Swap Fee (%.2f%%)";
 "swapOverview" = "Swap overview";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
@@ -919,6 +924,7 @@
 "transactionSuccessful" = "Transaction successful";
 "transactionSuccessfulHighlight" = "successful";
 "transactionTrackingLink" = "Transaction tracking link";
+"transfer" = "Transfer";
 "tronBandwidth" = "Bandwidth";
 "tronBandwidthDescription" = "Bandwidth Points are required for every transaction on TRON, including both standard token sends and smart contract interactions. Every TRON user receives 600 free Bandwidth Points per day, which can cover approximately two basic sends. Additionally, you can earn extra Bandwidth Points by staking TRX, increasing your daily balance to support more transactions. If you have enough Bandwidth Points, you can send tokens, stake TRX, or interact with smart contracts without paying TRX in gas fees.";
 "tronEnergy" = "Energy";
@@ -1065,6 +1071,8 @@
 "verify" = "Verify";
 "verifyingCodePleaseWait" = "Verifying code, please wait";
 "verifyPassword" = "Verify Password";
+"verifyPasswordPeriodicReminder" = "We periodically ask for a verification so you don't forget your password.";
+"verifyYourPasswordFor" = "Verify your password for:";
 "via" = "via";
 "view" = "View";
 "viewOnExplorer" = "View on Explorer";
@@ -1093,6 +1101,7 @@
 "Withdraw RUJI" = "Withdraw RUJI";
 "Withdraw Secured Asset" = "Withdraw Secured Asset";
 "withdrawAmount" = "Withdraw %@";
+"withdrawBelowOutboundFee" = "Amount below outbound fee — withdraw at least %@ %@ to cover network costs";
 "withdrawPercentage" = "Withdraw Percentage";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Wrong password";

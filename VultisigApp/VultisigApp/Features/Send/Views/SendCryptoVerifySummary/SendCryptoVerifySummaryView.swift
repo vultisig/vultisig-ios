@@ -153,6 +153,27 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
+            } else if let bracketValue {
+                HStack(spacing: 4) {
+                    if let image {
+                        Image(image)
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                    }
+                    HStack(spacing: 4) {
+                        Text(value)
+                            .foregroundStyle(color ?? Theme.colors.textPrimary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .layoutPriority(1)
+                        Text("(\(bracketValue))")
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             } else {
                 HStack(spacing: 4) {
                     if let image {
@@ -160,27 +181,12 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                             .resizable()
                             .frame(width: 16, height: 16)
                     }
-
-                    if let bracketValue {
-                        HStack(spacing: 4) {
-                            Text(value)
-                                .foregroundStyle(color ?? Theme.colors.textPrimary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                                .layoutPriority(1)
-                            Text("(\(bracketValue))")
-                                .foregroundStyle(Theme.colors.textTertiary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(value)
-                            .foregroundStyle(color ?? Theme.colors.textPrimary)
-                            .lineLimit(isMultiLine ? nil : 1)
-                            .truncationMode(.middle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                    Text(value)
+                        .foregroundStyle(color ?? Theme.colors.textPrimary)
+                        .lineLimit(isMultiLine ? nil : 1)
+                        .truncationMode(.middle)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: image == nil ? .infinity : nil, alignment: .trailing)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }

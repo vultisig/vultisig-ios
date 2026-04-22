@@ -3,16 +3,21 @@
 //  VultisigApp
 //
 
+import Combine
 import Foundation
+import OSLog
 
 @MainActor
-final class TransactionStatusPoller {
+final class TransactionStatusPoller: ObservableObject {
     static let shared = TransactionStatusPoller()
+
+    @Published private(set) var completedTransactionCount: Int = 0
 
     private let service = TransactionStatusService.shared
     private let recorder = TransactionHistoryRecorder.shared
     private var activeTasks: [String: Task<Void, Never>] = [:]
     private var taskTokens: [String: UUID] = [:]
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-poller")
 
     private init() {}
 
@@ -43,6 +48,7 @@ final class TransactionStatusPoller {
                             errorMessage: timeoutMessage
                         )
                         onUpdate(.error, timeoutMessage)
+                        self?.completedTransactionCount += 1
                         break
                     }
 
@@ -63,6 +69,7 @@ final class TransactionStatusPoller {
                             errorMessage: errorMessage
                         )
                         onUpdate(historyStatus, errorMessage)
+                        self?.completedTransactionCount += 1
                         break
                     }
 
@@ -95,6 +102,18 @@ final class TransactionStatusPoller {
         guard taskTokens[txHash] == token else { return }
         activeTasks.removeValue(forKey: txHash)
         taskTokens.removeValue(forKey: txHash)
+    }
+
+    /// Start polling all pending transactions for a vault.
+    func pollPendingTransactions(pubKeyECDSA: String) {
+        do {
+            let pending = try StoredPendingTransactionStorage.shared.getAllPending()
+            for tx in pending where tx.pubKeyECDSA == pubKeyECDSA {
+                poll(txHash: tx.txHash, chain: tx.chain, createdAt: tx.createdAt, pubKeyECDSA: pubKeyECDSA) { _, _ in }
+            }
+        } catch {
+            logger.error("Failed to fetch pending transactions: \(error)")
+        }
     }
 
     /// Returns a terminal TransactionHistoryStatus if the result is terminal, nil if still pending.

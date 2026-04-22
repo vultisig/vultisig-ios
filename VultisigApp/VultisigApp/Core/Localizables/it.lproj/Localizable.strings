@@ -87,6 +87,7 @@
 "assets" = "Asset";
 "atLeastOneDevice" = "Almeno un dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
+"autocompounderInfo" = "Informazioni Auto-Compounder";
 "available" = "Disponibile";
 "availableLPUnits" = "Unità LP Disponibili";
 "availableNodes" = "Nodi Disponibili";
@@ -137,8 +138,6 @@
 "balanceInParentheses" = "( Saldo: %@ %@ )";
 "beforeYouStart" = "Prima di iniziare...";
 "biometricsFastSigning" = "Biometria Firma rapida";
-"biweeklyPasswordVerifyDescription" = "Ti chiederemo periodicamente di verificare la tua password Fast Sign, così non la dimenticherai mai";
-"biweeklyPasswordVerifyTitle" = "Verifica la Password della tua\nQuota Server";
 "bond" = "Vincola";
 "Bond" = "Bond";
 "bonded" = "Vincolato";
@@ -149,6 +148,10 @@
 "bondRune" = "Vincola RUNE";
 "bondToNode" = "Vincola al Nodo";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Dati della transazione scaduti — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleBlockhash" = "Transazione scaduta. Riprova.";
+"broadcastRetryStaleNonce" = "Nonce della transazione obsoleto — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleQuote" = "Quotazione scaduta — dettagli aggiornati. Riprova.";
 "buy" = "Acquista";
 "cacaoPool" = "Pool Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
@@ -196,14 +199,16 @@
 "circleRowCreateWallet" = "Crea Portafoglio";
 "circleRowGetStarted" = "Inizia";
 "circleRowYieldAccount" = "Conto Rendimento";
+"circleRewardsDescription" = "I premi vengono automaticamente accreditati sul tuo saldo.";
+"circleRewardsTitle" = "Premi";
 "circleSetupAccountTitle" = "Account Circle USDC";
 "circleSetupCreateAccount" = "Crea Account";
 "circleSetupDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
 "circleSetupDeposited" = "Depositato";
 "circleSetupInfoText" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
 "circleSetupOpenAccount" = "Apri Account";
-"circleSetupUSDCDeposited" = "USDC depositato";
 "circleTitle" = "Circle U.S. Dollar";
+"circleUSDCDeposited" = "USDC depositato";
 "circleWithdraw" = "Preleva";
 "circleWithdrawAddressLabel" = "Indirizzo";
 "circleWithdrawAmountLabel" = "Importo";
@@ -287,7 +292,6 @@
 "emptyLPsField" = "Campo LPs vuoto";
 "enable" = "Abilitare";
 "enableAll" = "Attiva tutte";
-"enableAutoCompounding" = "Abilita Auto-Compounding";
 "enableBiometricsFastSigning" = "Abilita Biometrics Firma rapida";
 "enableDKLS" = "Abilita DKLS";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
@@ -868,6 +872,7 @@
 "swapErrorUnexpectedDescription" = "Si è verificato un errore imprevisto. Per favore riprova.";
 "swapErrorUnexpectedTitle" = "Errore Imprevisto";
 "swapFee" = "Commissione di scambio";
+"swapFeePercentage" = "Commissione di scambio (%.2f%%)";
 "swapOverview" = "Panoramica dello scambio";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
@@ -905,6 +910,7 @@
 "transactionID" = "ID Transazione";
 "transactionSuccessful" = "Transazione riuscita";
 "transactionTrackingLink" = "Link di tracciamento transazione";
+"transfer" = "Trasferisci";
 "tronBandwidth" = "Larghezza di Banda";
 "tronBandwidthDescription" = "I Punti di Larghezza di Banda sono necessari per ogni transazione su TRON, inclusi invii standard di token e interazioni con smart contract. Ogni utente TRON riceve 600 Punti di Larghezza di Banda gratuiti al giorno, che possono coprire circa due invii base. Inoltre, puoi guadagnare Punti di Larghezza di Banda aggiuntivi facendo staking di TRX, aumentando la tua quota giornaliera per supportare più transazioni. Se hai abbastanza Punti di Larghezza di Banda, puoi inviare token, fare staking di TRX o interagire con smart contract senza pagare TRX in commissioni gas.";
 "tronEnergy" = "Energia";
@@ -1049,6 +1055,8 @@
 "verify" = "Verifica";
 "verifyingCodePleaseWait" = "Verifica del codice in corso, attendere";
 "verifyPassword" = "Verifica la password";
+"verifyPasswordPeriodicReminder" = "Ti chiediamo periodicamente una verifica affinché tu non dimentichi la tua password.";
+"verifyYourPasswordFor" = "Verifica la tua password per:";
 "via" = "tramite";
 "view" = "Visualizza";
 "viewOnExplorer" = "Visualizza su Explorer";
@@ -1077,6 +1085,7 @@
 "Withdraw RUJI" = "Preleva RUJI";
 "Withdraw Secured Asset" = "Preleva asset garantito";
 "withdrawAmount" = "Preleva %@";
+"withdrawBelowOutboundFee" = "Importo inferiore alla commissione in uscita — preleva almeno %@ %@ per coprire i costi di rete";
 "withdrawPercentage" = "Percentuale di prelievo";
 "withdrawSecuredAssetError" = "Per prelevare %@, devi prima aggiungere la moneta %@ al tuo vault. Vai nelle impostazioni del vault e aggiungi %@ per continuare.";
 "wrongPassword" = "Password errata";

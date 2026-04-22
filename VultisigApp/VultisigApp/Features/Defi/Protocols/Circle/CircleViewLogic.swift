@@ -5,10 +5,13 @@
 //  Created by Enrique Souza Soares on 17/12/25.
 //
 
+import OSLog
 import SwiftUI
 import BigInt
 import WalletCore
 import VultisigCommonData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "circle-view-logic")
 
 // MARK: - Logic (Methods)
 struct CircleViewLogic {
@@ -37,6 +40,21 @@ struct CircleViewLogic {
         return try await CircleApiService.shared.createWallet(ethAddress: ethCoin.address)
     }
 
+    /// Fetches fresh balances from chain and upserts them into the vault's cached `CirclePosition`.
+    @MainActor
+    func refresh(vault: Vault) async throws -> (usdcBalance: Decimal, ethBalance: Decimal) {
+        guard let mscaAddress = vault.circleWalletAddress else {
+            return (.zero, .zero)
+        }
+        let (usdcBalance, ethBalance) = try await fetchData(address: mscaAddress, vault: vault)
+        try CirclePositionStorageService().upsert(
+            usdcBalance: usdcBalance,
+            ethBalance: ethBalance,
+            for: vault
+        )
+        return (usdcBalance, ethBalance)
+    }
+
     /// Returns: (USDC Balance, ETH Balance)
     func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal) {
         let (chain, usdcContract) = CircleViewLogic.getChainDetails()
@@ -60,7 +78,7 @@ struct CircleViewLogic {
             return (usdcBalance, ethBalance)
 
         } catch {
-            print("Circle Fetch Error: \(error.localizedDescription)")
+            logger.error("Circle Fetch Error: \(error.localizedDescription)")
             throw error
         }
     }

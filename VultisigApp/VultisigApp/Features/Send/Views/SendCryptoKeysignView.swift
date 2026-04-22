@@ -11,6 +11,8 @@ import RiveRuntime
 struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
+    var errorButtonTitle: String? = nil
+    var errorAction: (() -> Void)? = nil
 
     @State var loadingAnimationVM: RiveViewModel? = nil
 
@@ -45,9 +47,13 @@ struct SendCryptoKeysignView: View {
             type: .warning,
             title: "signingErrorTryAgain".localized,
             description: title?.localized ?? .empty,
-            buttonTitle: "tryAgain".localized
+            buttonTitle: errorButtonTitle ?? "tryAgain".localized
         ) {
-            appViewModel.restart()
+            if let errorAction {
+                errorAction()
+            } else {
+                appViewModel.restart()
+            }
         }
     }
 
