@@ -52,8 +52,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            summaryTitle
-            summaryCoinDetails
+            heroHeader
             Separator()
 
             Group {
@@ -195,45 +194,18 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    var summaryTitle: some View {
-        VStack(spacing: 2) {
-            Text(input.heroTitle ?? NSLocalizedString("youreSending", comment: ""))
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.bodyMMedium)
+    @ViewBuilder
+    var heroHeader: some View {
+        if let hero = input.hero {
+            HeroContentView(content: hero)
+                .padding(.bottom, 8)
+        } else {
+            VStack(spacing: 8) {
+                Text(NSLocalizedString("youreSending", comment: ""))
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .font(Theme.fonts.bodyMMedium)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let heroCaption = input.heroCaption {
-                Text(heroCaption)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.caption10)
-            }
-        }
-        .padding(.bottom, 8)
-        .frame(maxWidth: .infinity, alignment: heroAlignment)
-    }
-
-    var summaryCoinDetails: some View {
-        Group {
-            if let heroAmount = input.heroAmount,
-               let heroTicker = input.heroTicker {
-                VStack(spacing: 12) {
-                    if let heroImage = input.heroImage, !heroImage.isEmpty {
-                        AsyncImageView(
-                            logo: heroImage,
-                            size: CGSize(width: 36, height: 36),
-                            ticker: heroTicker,
-                            tokenChainLogo: nil
-                        )
-                    }
-
-                    (
-                        Text(heroAmount)
-                            .foregroundStyle(Theme.colors.textPrimary) +
-                        Text(" \(heroTicker)")
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    )
-                }
-                .frame(maxWidth: .infinity)
-            } else if input.heroTitle == nil {
                 HStack(spacing: 8) {
                     Image(input.coinImage)
                         .resizable()
@@ -248,13 +220,10 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
                     Spacer()
                 }
+                .font(Theme.fonts.bodyLMedium)
             }
+            .padding(.bottom, 8)
         }
-        .font(Theme.fonts.bodyLMedium)
-    }
-
-    var heroAlignment: Alignment {
-        input.heroTitle == nil ? .leading : .center
     }
 
     var hasTransactionDetails: Bool {
@@ -319,8 +288,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         }
     }
 
+    /// True when the hero doesn't already show a resolved amount/coin, so the
+    /// "amount" detail row should render with the fallback `tokenDisplay` value.
     var shouldShowAmountRow: Bool {
-        input.heroAmount == nil
+        switch input.hero {
+        case nil, .title:
+            return true
+        case .send, .swap:
+            return false
+        }
     }
 
 }

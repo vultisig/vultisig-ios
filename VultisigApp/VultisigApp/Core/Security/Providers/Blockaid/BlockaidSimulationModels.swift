@@ -72,8 +72,30 @@ enum BlockaidSimulationInfo: Equatable {
         fromAmount.description.toDecimal() / pow(Decimal(10), fromCoin.decimals)
     }
 
+    /// Human-readable from-side amount (e.g. "1.25"). For both transfer and
+    /// swap simulations.
     var heroAmountText: String {
         fromAmountDecimal.formatForDisplay()
+    }
+
+    /// The "to" side of a swap simulation. Nil for transfer.
+    var toCoin: BlockaidSimulationCoin? {
+        if case .swap(_, let coin, _, _) = self { return coin }
+        return nil
+    }
+
+    var toAmount: BigInt? {
+        if case .swap(_, _, _, let amount) = self { return amount }
+        return nil
+    }
+
+    var toAmountDecimal: Decimal? {
+        guard let toAmount, let toCoin else { return nil }
+        return toAmount.description.toDecimal() / pow(Decimal(10), toCoin.decimals)
+    }
+
+    var heroToAmountText: String? {
+        toAmountDecimal?.formatForDisplay()
     }
 }
 

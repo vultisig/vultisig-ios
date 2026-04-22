@@ -537,28 +537,45 @@ class JoinKeysignViewModel: ObservableObject {
         didLoadSimulation = true
     }
 
-    // Hero values are populated only when Blockaid simulation succeeds. Phase 1
-    // keeps the hero title-only for 4byte-only decodes; Phase 2A promotes real
-    // balance-change data when the simulation returns authoritative values.
-    var heroAmount: String? {
-        blockaidSimulation?.heroAmountText
-    }
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
+    var heroContent: HeroContent? {
+        if let sim = blockaidSimulation {
+            switch sim {
+            case .transfer(let coin, _):
+                return .send(
+                    title: decodedFunctionName,
+                    coin: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: coin.ticker,
+                        logo: coin.logo
+                    )
+                )
+            case .swap(let from, let to, _, _):
+                return .swap(
+                    title: decodedFunctionName,
+                    from: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: from.ticker,
+                        logo: from.logo
+                    ),
+                    to: HeroCoinAmount(
+                        amount: sim.heroToAmountText ?? "",
+                        ticker: to.ticker,
+                        logo: to.logo
+                    )
+                )
+            }
+        }
 
-    var heroTicker: String? {
-        blockaidSimulation?.fromCoin.ticker
+        if didLoadSimulation,
+           blockaidSimulation == nil,
+           let name = decodedFunctionName {
+            return .title(text: name, caption: "unverifiedFunction".localized)
+        }
+        return nil
     }
-
-    var heroImage: String? {
-        blockaidSimulation?.fromCoin.logo
-    }
-
-    var unverifiedFunctionCaption: String? {
-        guard didLoadSimulation,
-              blockaidSimulation == nil,
-              decodedFunctionName != nil else { return nil }
-        return "unverifiedFunction".localized
-    }
-
 
     var providerName: String {
         keysignPayload?.swapPayload?.providerName ?? .empty

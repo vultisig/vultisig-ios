@@ -120,6 +120,32 @@ final class BlockaidSimulationParserTests: XCTestCase {
         )
         XCTAssertEqual(whole.heroAmountText, Decimal(string: "42")!.formatForDisplay())
     }
+
+    // MARK: - Swap-side accessors
+
+    func test_transferInfo_toSideAccessors_areNil() {
+        let info = BlockaidSimulationInfo.transfer(
+            fromCoin: simulationCoin(ticker: "USDC", decimals: 6),
+            fromAmount: BigInt("1500000")
+        )
+        XCTAssertNil(info.toCoin)
+        XCTAssertNil(info.toAmount)
+        XCTAssertNil(info.toAmountDecimal)
+        XCTAssertNil(info.heroToAmountText)
+    }
+
+    func test_swapInfo_toSideAccessors_exposeToSide() {
+        let info = BlockaidSimulationInfo.swap(
+            fromCoin: simulationCoin(ticker: "ETH", decimals: 18),
+            toCoin: simulationCoin(ticker: "USDC", decimals: 6),
+            fromAmount: BigInt("1000000000000000000"), // 1 ETH
+            toAmount: BigInt("3000000000")             // 3000 USDC
+        )
+        XCTAssertEqual(info.toCoin?.ticker, "USDC")
+        XCTAssertEqual(info.toAmount, BigInt("3000000000"))
+        XCTAssertEqual(info.toAmountDecimal, Decimal(3000))
+        XCTAssertEqual(info.heroToAmountText, Decimal(3000).formatForDisplay())
+    }
 }
 
 // MARK: - Fixture helpers
@@ -170,5 +196,15 @@ private extension BlockaidSimulationParserTests {
 
     func balance(_ raw: String) -> BlockaidEvmSimulationJson.BalanceChange {
         BlockaidEvmSimulationJson.BalanceChange(rawValue: raw)
+    }
+
+    func simulationCoin(ticker: String, decimals: Int) -> BlockaidSimulationCoin {
+        BlockaidSimulationCoin(
+            chain: .ethereum,
+            address: nil,
+            ticker: ticker,
+            logo: "",
+            decimals: decimals
+        )
     }
 }

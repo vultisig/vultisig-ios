@@ -655,6 +655,7 @@
 		8944673DA4B36AB8D2458809 /* ContractCallExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347B6BCF87538EB1EC27B4BF /* ContractCallExtractor.swift */; };
 		8B4BFACA727A321A94A8CCA0 /* TransactionHistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E33EE28C2420BB980A60F3D /* TransactionHistoryScreen.swift */; };
 		8C61F213A6F1A0F4A97024E5 /* AgentChatMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB37A5BFE7156A8C034D7B /* AgentChatMessageView.swift */; };
+		8C6376FA33F904247AB8F662 /* HeroContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B923CEABBCB15C23B8B103C9 /* HeroContent.swift */; };
 		8D8CD1A7DF304D8074C03B4E /* SingleKeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		904E87A1D4933DEA5572D055 /* ChainDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FADD02CF36DA8DC9A9894F8 /* ChainDetailViewModelTests.swift */; };
@@ -992,6 +993,7 @@
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
 		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
 		B3D2F81A92C4E05D7F1A38E9 /* TronResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */; };
+		B4CB81AA8E64973A894332E4 /* HeroContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BAFB8CCBD0FB56C0534BBA2 /* HeroContentView.swift */; };
 		B500DFBD2EB4F864009F5C68 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ZPZIPPROD0000000000000001 /* ZIPFoundation */; };
 		B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B505BF8E2E686D1500A5698B /* FeeService.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
@@ -1893,6 +1895,7 @@
 		6B96312D2493F377B159E118 /* CircleDepositView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDepositView.swift; sourceTree = "<group>"; };
 		6C8B2EC16FB39D6D6401EF80 /* TransactionStatusPoller.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusPoller.swift; sourceTree = "<group>"; };
 		78CA9F7989A44AB965FF32F3 /* SolanaTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		7BAFB8CCBD0FB56C0534BBA2 /* HeroContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HeroContentView.swift; sourceTree = "<group>"; };
 		7C77BD6311232B1382C49417 /* TransactionHistoryAssetFilterView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryAssetFilterView.swift; sourceTree = "<group>"; };
 		7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesLoader.swift; sourceTree = "<group>"; };
@@ -2350,6 +2353,7 @@
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
 		B73A800403ED7DDBD637450B /* QBTCHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QBTCHelper.swift; sourceTree = "<group>"; };
 		B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SingleKeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
+		B923CEABBCB15C23B8B103C9 /* HeroContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HeroContent.swift; sourceTree = "<group>"; };
 		BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleWithdrawView.swift; sourceTree = "<group>"; };
 		BC586168CA29D811C28C56A4 /* TransactionStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatus.swift; sourceTree = "<group>"; };
 		BD019C09C75338AAA65909F1 /* ViewExtension+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "ViewExtension+iOS.swift"; sourceTree = "<group>"; };
@@ -4502,6 +4506,16 @@
 			path = Providers;
 			sourceTree = "<group>";
 		};
+		1D0094695AD7723ED3FD9AB7 /* Hero */ = {
+			isa = PBXGroup;
+			children = (
+				B923CEABBCB15C23B8B103C9 /* HeroContent.swift */,
+				7BAFB8CCBD0FB56C0534BBA2 /* HeroContentView.swift */,
+			);
+			name = Hero;
+			path = Hero;
+			sourceTree = "<group>";
+		};
 		1DA42C2C4B5A5496CEF17078 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -6364,6 +6378,7 @@
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				15159390FCF7F45DC0787634 /* ChainDetailActionButtons+iOS.swift */,
 				2803BC564BA64B97AB6C428D /* ChainDetailActionButtons+macOS.swift */,
+				1D0094695AD7723ED3FD9AB7 /* Hero */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -8249,6 +8264,8 @@
 				DAF6F296230656CEA718E151 /* TooltipShape.swift in Sources */,
 				DCAC7F21C72DB085D99F7144 /* BlockaidSimulationService.swift in Sources */,
 				F4D773E9AA91BFDD96269CBB /* CirclePositionStorageService.swift in Sources */,
+				8C6376FA33F904247AB8F662 /* HeroContent.swift in Sources */,
+				B4CB81AA8E64973A894332E4 /* HeroContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
