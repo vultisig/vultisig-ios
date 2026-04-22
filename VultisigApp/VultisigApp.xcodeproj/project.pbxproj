@@ -628,6 +628,7 @@
 		5FEDAD6B0D51E35E54F4E5E7 /* SettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF04AF6EF603A94D983E0B5 /* SettingsPage.swift */; };
 		60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */; };
 		60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */; };
+		6128ADF9A39F2ACC1DAC23E7 /* BlockaidSolanaSimulationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139576086BC54E180F712CCD /* BlockaidSolanaSimulationParserTests.swift */; };
 		619C41B48AA7DDF05E5B0FB0 /* TransactionHistoryData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834B4865644FA4A2EACF956E /* TransactionHistoryData.swift */; };
 		66745946183E4D33B56740CA /* BittensorTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434C3C4771E4734B07D1305 /* BittensorTransactionStatusProvider.swift */; };
 		6796122990E4CCA79126A860 /* BlockaidSimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1EA529A3DDC871EF4D4E7B4 /* BlockaidSimulationModels.swift */; };
@@ -1600,6 +1601,7 @@
 		1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionViewModel.swift; sourceTree = "<group>"; };
 		1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionScreen.swift; sourceTree = "<group>"; };
 		1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionBuilder.swift; sourceTree = "<group>"; };
+		139576086BC54E180F712CCD /* BlockaidSolanaSimulationParserTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockaidSolanaSimulationParserTests.swift; sourceTree = "<group>"; };
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultSelectionSheet.swift; sourceTree = "<group>"; };
@@ -5351,6 +5353,7 @@
 				7FADD02CF36DA8DC9A9894F8 /* ChainDetailViewModelTests.swift */,
 				1FF72BB51C0FFBC1BB01AA17 /* THORChainStakeInteractorTests.swift */,
 				602499BC8C8E489FE006335D /* ContractCallExtractorTests.swift */,
+				139576086BC54E180F712CCD /* BlockaidSolanaSimulationParserTests.swift */,
 			);
 			name = Services;
 			path = Services;
@@ -8308,6 +8311,7 @@
 				BAAAEB439D8E9D5818AD849D /* BlockaidSimulationServiceTests.swift in Sources */,
 				E9479AAC4758EEAD02DAEBA6 /* VaultBackupEncryptionTest.swift in Sources */,
 				C3CB9C06844469DE21CD1F27 /* ContractCallExtractorTests.swift in Sources */,
+				6128ADF9A39F2ACC1DAC23E7 /* BlockaidSolanaSimulationParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

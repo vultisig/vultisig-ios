@@ -178,3 +178,82 @@ struct BlockaidEvmSimulationJson: Codable {
         }
     }
 }
+
+// MARK: - Solana Simulation Response
+
+/// Solana simulation response from `/solana/message/scan` when invoked with
+/// `options: ["simulation"]`. Top-level shape matches the validation response
+/// (`result: { ... }`), with simulation data under `result.simulation`.
+struct BlockaidSolanaSimulationResponseJson: Codable {
+    let result: BlockaidSolanaSimulationResultJson?
+    let status: String?
+    let error: String?
+
+    struct BlockaidSolanaSimulationResultJson: Codable {
+        let simulation: BlockaidSolanaSimulationJson?
+    }
+}
+
+/// Mirrors `BlockaidSolanaSimulation` in
+/// `core-chain/security/blockaid/tx/simulation/api/core.ts`. Note the
+/// intentional divergences from EVM: `account_assets_diff` (singular "diff")
+/// instead of `assets_diffs`, and `in` / `out` as single nullable objects
+/// rather than arrays.
+struct BlockaidSolanaSimulationJson: Codable {
+    let accountSummary: AccountSummary?
+
+    enum CodingKeys: String, CodingKey {
+        case accountSummary = "account_summary"
+    }
+
+    struct AccountSummary: Codable {
+        let accountAssetsDiff: [AccountAssetDiff]?
+
+        enum CodingKeys: String, CodingKey {
+            case accountAssetsDiff = "account_assets_diff"
+        }
+    }
+
+    struct AccountAssetDiff: Codable {
+        let asset: Asset
+        let assetType: String?
+        let `in`: BalanceChange?
+        let out: BalanceChange?
+
+        enum CodingKeys: String, CodingKey {
+            case asset
+            case assetType = "asset_type"
+            case `in`
+            case out
+        }
+    }
+
+    struct Asset: Codable {
+        /// `"SOL"` for native SOL, `"TOKEN"` for SPL tokens.
+        let type: String?
+        let name: String?
+        let symbol: String?
+        /// Mint address for SPL tokens. Nil for native SOL (use the wrapped-SOL
+        /// mint sentinel when rendering).
+        let address: String?
+        let decimals: Int?
+        let logo: String?
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case name
+            case symbol
+            case address
+            case decimals
+            case logo
+        }
+    }
+
+    struct BalanceChange: Codable {
+        let rawValue: String?
+
+        enum CodingKeys: String, CodingKey {
+            case rawValue = "raw_value"
+        }
+    }
+}

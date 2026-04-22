@@ -34,6 +34,11 @@ protocol BlockaidRpcClientProtocol {
         serializedMessage: String
     ) async throws -> BlockaidTransactionScanResponseJson
 
+    func simulateSolanaTransaction(
+        address: String,
+        rawTransactions: [String]
+    ) async throws -> BlockaidSolanaSimulationResponseJson
+
     func scanSuiTransaction(
         address: String,
         serializedTransaction: String

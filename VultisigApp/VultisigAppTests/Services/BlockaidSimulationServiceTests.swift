@@ -101,6 +101,66 @@ final class BlockaidSimulationServiceTests: XCTestCase {
 
         XCTAssertEqual(mock.simulateCallCount, 1, "casing differences must not split the cache entry")
     }
+
+    // MARK: - Solana
+
+    func test_scan_dispatchesToSolanaRpc_andDecodesRawTxsToBase58() async {
+        mock.simulateSolanaResult = .success(Self.solanaTransferResponse(symbol: "USDC", decimals: 6, rawAmount: "1500000"))
+        // base64("hello") = "aGVsbG8=", base58 of "hello" bytes = "Cn8eVZg"
+        let payload = Self.solanaPayload(rawTransactionsBase64: ["aGVsbG8="])
+
+        let result = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(mock.simulateSolanaCallCount, 1)
+        XCTAssertEqual(mock.simulateCallCount, 0, "Solana payload must not hit the EVM RPC")
+        XCTAssertEqual(mock.simulatedSolanaRawTransactions.first, ["Cn8eVZg"])
+        guard case let .transfer(coin, _) = result.simulation else {
+            return XCTFail("expected .transfer from Solana parse")
+        }
+        XCTAssertEqual(coin.ticker, "USDC")
+        XCTAssertEqual(coin.chain, .solana)
+    }
+
+    func test_scan_solana_returnsEmpty_whenSignSolanaMissing() async {
+        let payload = Self.solanaPayload(rawTransactionsBase64: nil)
+
+        let result = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(result, .empty)
+        XCTAssertEqual(mock.simulateSolanaCallCount, 0, "no raw txs → no RPC call")
+    }
+
+    func test_scan_solana_cachesSuccessResult() async {
+        mock.simulateSolanaResult = .success(Self.solanaTransferResponse(symbol: "USDC", decimals: 6, rawAmount: "1500000"))
+        let payload = Self.solanaPayload(rawTransactionsBase64: ["aGVsbG8="])
+
+        _ = await service.scan(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(mock.simulateSolanaCallCount, 1, "cached success should not re-hit the RPC")
+    }
+
+    func test_scan_solana_differentRawTxsCacheIndependently() async {
+        mock.simulateSolanaResult = .success(Self.solanaTransferResponse(symbol: "USDC", decimals: 6, rawAmount: "1500000"))
+        let a = Self.solanaPayload(rawTransactionsBase64: ["aGVsbG8="])
+        let b = Self.solanaPayload(rawTransactionsBase64: ["d29ybGQ="]) // "world"
+
+        _ = await service.scan(keysignPayload: a)
+        _ = await service.scan(keysignPayload: b)
+        _ = await service.scan(keysignPayload: a)
+
+        XCTAssertEqual(mock.simulateSolanaCallCount, 2, "distinct raw txs → distinct cache entries; re-asking first is a hit")
+    }
+
+    func test_scan_solana_doesNotCacheFailures() async {
+        mock.simulateSolanaResult = .failure(MockBlockaidRpcClient.StubError.simulated)
+        let payload = Self.solanaPayload(rawTransactionsBase64: ["aGVsbG8="])
+
+        _ = await service.scan(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(mock.simulateSolanaCallCount, 2, "network failure must allow the next screen to retry")
+    }
 }
 
 // MARK: - Fixtures
@@ -163,6 +223,78 @@ private extension BlockaidSimulationServiceTests {
             tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
+        )
+    }
+
+    static func solanaPayload(rawTransactionsBase64: [String]?) -> KeysignPayload {
+        let asset = CoinMeta(
+            chain: .solana,
+            ticker: "SOL",
+            logo: "solana",
+            decimals: 9,
+            priceProviderId: "solana",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        let coin = Coin(asset: asset, address: "SoAddress", hexPublicKey: "hex")
+        let signData: SignData? = rawTransactionsBase64.map { txs in
+            .signSolana(SignSolana(proto: .with { $0.rawTransactions = txs }))
+        }
+        return KeysignPayload(
+            coin: coin,
+            toAddress: "SoTo",
+            toAmount: BigInt(0),
+            chainSpecific: BlockChainSpecific.Solana(
+                recentBlockHash: "hash",
+                priorityFee: BigInt(0),
+                priorityLimit: BigInt(0),
+                fromAddressPubKey: nil,
+                toAddressPubKey: nil,
+                hasProgramId: false
+            ),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            skipBroadcast: false,
+            signData: signData
+        )
+    }
+
+    static func solanaTransferResponse(
+        symbol: String,
+        decimals: Int,
+        rawAmount: String
+    ) -> BlockaidSolanaSimulationResponseJson {
+        let asset = BlockaidSolanaSimulationJson.Asset(
+            type: "TOKEN",
+            name: symbol,
+            symbol: symbol,
+            address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            decimals: decimals,
+            logo: nil
+        )
+        let diff = BlockaidSolanaSimulationJson.AccountAssetDiff(
+            asset: asset,
+            assetType: "TOKEN",
+            in: nil,
+            out: BlockaidSolanaSimulationJson.BalanceChange(rawValue: rawAmount)
+        )
+        return BlockaidSolanaSimulationResponseJson(
+            result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(
+                simulation: BlockaidSolanaSimulationJson(
+                    accountSummary: BlockaidSolanaSimulationJson.AccountSummary(accountAssetsDiff: [diff])
+                )
+            ),
+            status: "Success",
+            error: nil
         )
     }
 
