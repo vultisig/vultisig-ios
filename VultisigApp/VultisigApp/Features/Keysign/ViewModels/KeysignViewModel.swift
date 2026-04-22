@@ -39,6 +39,7 @@ class KeysignViewModel: ObservableObject {
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
     @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?

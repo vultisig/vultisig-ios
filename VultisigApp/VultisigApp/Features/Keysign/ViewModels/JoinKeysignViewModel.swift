@@ -13,7 +13,11 @@ private typealias ContractCallHeroDisplay = (
     display: String,
     amountText: String,
     ticker: String,
-    logo: String
+    logo: String,
+    /// True when the amount is a MAX_UINT256 sentinel that we're labeling
+    /// "Unlimited". The UI should highlight this as a warning since granting
+    /// unlimited approval is the riskiest case an unsuspecting user can sign.
+    isUnlimited: Bool
 )
 
 enum JoinKeysignStatus {
@@ -57,6 +61,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedFunctionArguments: String?
     @Published var decodedFunctionName: String?
     @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
     @Published var decodedTokenAmount: String?
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
@@ -410,6 +415,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.decodedTokenAmount = resolvedTokenDisplay?.amountText
             self.decodedTokenTicker = resolvedTokenDisplay?.ticker
             self.decodedTokenLogo = resolvedTokenDisplay?.logo
+            self.decodedTokenIsUnlimited = resolvedTokenDisplay?.isUnlimited ?? false
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -484,7 +490,8 @@ class JoinKeysignViewModel: ObservableObject {
                 display: "\(label) \(ticker)",
                 amountText: label,
                 ticker: ticker,
-                logo: logo
+                logo: logo,
+                isUnlimited: true
             )
         }
 
@@ -507,7 +514,8 @@ class JoinKeysignViewModel: ObservableObject {
             display: "\(formatted) \(ticker)",
             amountText: formatted,
             ticker: ticker,
-            logo: logo
+            logo: logo,
+            isUnlimited: false
         )
     }
 

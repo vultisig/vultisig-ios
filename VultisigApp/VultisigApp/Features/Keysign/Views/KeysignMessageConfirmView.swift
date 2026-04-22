@@ -31,7 +31,8 @@ struct KeysignMessageConfirmView: View {
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
                         hero: viewModel.heroContent,
-                        tokenDisplay: viewModel.decodedTokenDisplay
+                        tokenDisplay: viewModel.decodedTokenDisplay,
+                        tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited
                     ),
                     securityScannerState: .constant(.idle)
                 )

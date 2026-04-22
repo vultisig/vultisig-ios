@@ -153,7 +153,8 @@ struct JoinKeysignDoneSummary: View {
                 getGeneralCell(
                     title: "amount",
                     description: tokenDisplay,
-                    isVerticalStacked: true
+                    isVerticalStacked: true,
+                    isWarning: viewModel.decodedTokenIsUnlimited
                 )
             }
             if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
@@ -200,17 +201,28 @@ struct JoinKeysignDoneSummary: View {
         appViewModel.restart()
     }
 
-    private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
-        ZStack {
+    private func getGeneralCell(
+        title: String,
+        description: String,
+        isVerticalStacked: Bool = false,
+        isWarning: Bool = false
+    ) -> some View {
+        let textColor: Color = isWarning ? Theme.colors.alertWarning : Theme.colors.textPrimary
+        return ZStack {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textTertiary)
 
-                    Text(description)
-                        .foregroundColor(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
+                    HStack(spacing: 6) {
+                        Text(description)
+                            .foregroundColor(textColor)
+                            .font(Theme.fonts.bodySMedium)
+                        if isWarning {
+                            Icon(named: "triangle-alert", color: textColor, size: 14)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -219,7 +231,10 @@ struct JoinKeysignDoneSummary: View {
                         .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
                     Text(description)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundColor(textColor)
+                    if isWarning {
+                        Icon(named: "triangle-alert", color: textColor, size: 14)
+                    }
                 }
                 .font(Theme.fonts.bodySMedium)
             }

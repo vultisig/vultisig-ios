@@ -72,7 +72,12 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             .showIf(input.toAddress.isNotEmpty)
 
             if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
-                getValueCell(for: "amount", with: tokenDisplay)
+                getValueCell(
+                    for: "amount",
+                    with: tokenDisplay,
+                    color: input.tokenDisplayIsUnlimited ? Theme.colors.alertWarning : nil,
+                    trailingIcon: input.tokenDisplayIsUnlimited ? "triangle-alert" : nil
+                )
                 Separator()
             }
 
@@ -132,7 +137,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         secondRowText: String? = nil,
         image: String? = nil,
         isMultiLine: Bool = false,
-        color: Color? = nil
+        color: Color? = nil,
+        trailingIcon: String? = nil
     ) -> some View {
         HStack(spacing: 4) {
             Text(title.localized)
@@ -186,6 +192,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .truncationMode(.middle)
                         .multilineTextAlignment(.trailing)
                         .frame(maxWidth: image == nil ? .infinity : nil, alignment: .trailing)
+                    if let trailingIcon {
+                        Icon(named: trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }

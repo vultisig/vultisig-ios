@@ -101,6 +101,7 @@ struct JoinKeysignView: View {
             decodedTokenTicker: viewModel.decodedTokenTicker,
             decodedTokenLogo: viewModel.decodedTokenLogo,
             decodedTokenDisplay: viewModel.decodedTokenDisplay,
+            decodedTokenIsUnlimited: viewModel.decodedTokenIsUnlimited,
             decodedFunctionSignature: viewModel.decodedFunctionSignature,
             decodedFunctionArguments: viewModel.decodedFunctionArguments
         )

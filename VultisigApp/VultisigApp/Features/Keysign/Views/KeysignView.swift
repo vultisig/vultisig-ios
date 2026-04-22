@@ -22,6 +22,7 @@ struct KeysignView: View {
     var decodedTokenTicker: String? = nil
     var decodedTokenLogo: String? = nil
     var decodedTokenDisplay: String? = nil
+    var decodedTokenIsUnlimited: Bool = false
     var decodedFunctionSignature: String? = nil
     var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
@@ -167,6 +168,7 @@ struct KeysignView: View {
         viewModel.decodedTokenTicker = decodedTokenTicker
         viewModel.decodedTokenLogo = decodedTokenLogo
         viewModel.decodedTokenDisplay = decodedTokenDisplay
+        viewModel.decodedTokenIsUnlimited = decodedTokenIsUnlimited
         viewModel.decodedFunctionSignature = decodedFunctionSignature
         viewModel.decodedFunctionArguments = decodedFunctionArguments
     }
