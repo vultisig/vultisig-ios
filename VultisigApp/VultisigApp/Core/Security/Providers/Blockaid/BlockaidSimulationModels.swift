@@ -6,6 +6,34 @@
 import Foundation
 import BigInt
 
+// MARK: - EVM Simulation Request
+
+/// Mirrors the vultisig-windows extension payload for the Blockaid EVM
+/// simulation endpoint: a JSON-RPC `eth_sendTransaction` call inside `data`,
+/// with no `account_address` or `simulate_with_estimated_gas` fields.
+struct EthereumSimulateTransactionRequestJson: Codable {
+    let data: DataJson
+    let chain: String
+    let metadata: MetadataJson
+    let options: [String]
+
+    struct MetadataJson: Codable {
+        let domain: String
+    }
+
+    struct DataJson: Codable {
+        let method: String
+        let params: [ParamsJson]
+
+        struct ParamsJson: Codable {
+            let from: String
+            let to: String
+            let value: String
+            let data: String
+        }
+    }
+}
+
 // MARK: - Parsed Simulation Info
 
 /// Authoritative balance-change information derived from a Blockaid simulation.

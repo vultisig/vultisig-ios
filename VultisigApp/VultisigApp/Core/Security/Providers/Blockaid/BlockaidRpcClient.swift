@@ -57,13 +57,12 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         amount: String,
         data: String
     ) async throws -> BlockaidEvmSimulationResponseJson {
-        let request = buildEthereumScanRequest(
+        let request = buildEthereumSimulateRequest(
             chain: chain,
             from: from,
             to: to,
             data: data,
-            amount: amount,
-            options: ["simulation"]
+            amount: amount
         )
         let response = try await httpClient.request(
             BlockaidAPI.simulateEVMTransaction(request),
@@ -119,15 +118,14 @@ private extension BlockaidRpcClient {
         from: String,
         to: String,
         data: String,
-        amount: String,
-        options: [String] = ["validation"]
+        amount: String
     ) -> EthereumScanTransactionRequestJson {
         return EthereumScanTransactionRequestJson(
             chain: chain.toBlockaidName(),
             metadata: EthereumScanTransactionRequestJson.MetadataJson(
                 domain: BlockaidConstants.vultisigDomain
             ),
-            options: options,
+            options: ["validation"],
             accountAddress: from,
             data: EthereumScanTransactionRequestJson.DataJson(
                 from: from,
@@ -135,7 +133,34 @@ private extension BlockaidRpcClient {
                 data: data,
                 value: amount
             ),
-            simulatedWithEstimatedGas: options.contains("simulation")
+            simulatedWithEstimatedGas: false
+        )
+    }
+
+    func buildEthereumSimulateRequest(
+        chain: Chain,
+        from: String,
+        to: String,
+        data: String,
+        amount: String
+    ) -> EthereumSimulateTransactionRequestJson {
+        return EthereumSimulateTransactionRequestJson(
+            data: EthereumSimulateTransactionRequestJson.DataJson(
+                method: "eth_sendTransaction",
+                params: [
+                    EthereumSimulateTransactionRequestJson.DataJson.ParamsJson(
+                        from: from,
+                        to: to,
+                        value: amount,
+                        data: data
+                    )
+                ]
+            ),
+            chain: chain.toBlockaidName(),
+            metadata: EthereumSimulateTransactionRequestJson.MetadataJson(
+                domain: BlockaidConstants.vultisigDomain
+            ),
+            options: ["simulation"]
         )
     }
 

@@ -32,7 +32,8 @@ enum ContractCallExtractor {
     // "all available" but the exact amount depends on on-chain state, so we
     // return nil and let the caller skip the amount display.
     private static let unlimitedApprovalFunctions: Set<String> = [
-        "approve", "increaseAllowance"
+        "approve", "increaseAllowance",
+        "permit", "permitSingle", "permitBatch"
     ]
 
     /// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns

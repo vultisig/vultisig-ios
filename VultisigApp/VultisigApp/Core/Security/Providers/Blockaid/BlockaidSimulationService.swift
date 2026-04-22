@@ -39,10 +39,10 @@ actor BlockaidSimulationService {
     func simulate(keysignPayload: KeysignPayload) async -> BlockaidSimulationInfo? {
         guard let key = CacheKey(payload: keysignPayload) else { return nil }
 
-        if let cached = cache[key] { return cached }
-        if let pending = inflight[key] { return try? await pending.value }
+//        if let cached = cache[key] { return cached }
+//        if let pending = inflight[key] { return try? await pending.value }
 
-        let task = Task { [rpcClient] () throws -> BlockaidSimulationInfo? in
+        let task = Task { [rpcClient, logger] () throws -> BlockaidSimulationInfo? in
             let response = try await rpcClient.simulateEVMTransaction(
                 chain: keysignPayload.coin.chain,
                 from: keysignPayload.coin.address,
@@ -50,6 +50,12 @@ actor BlockaidSimulationService {
                 amount: keysignPayload.toAmount.toEvenLengthHexString(),
                 data: keysignPayload.memo ?? "0x"
             )
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            if let json = try? encoder.encode(response),
+               let jsonString = String(data: json, encoding: .utf8) {
+                logger.debug("simulation response: \(jsonString, privacy: .public)")
+            }
             return BlockaidSimulationParser.parse(
                 response: response,
                 chain: keysignPayload.coin.chain
