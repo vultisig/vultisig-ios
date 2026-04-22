@@ -100,6 +100,64 @@ extension BlockaidTransactionScanResponseJson {
     }
 }
 
+// MARK: - BlockaidEvmSimulationResponseJson Extensions
+
+extension BlockaidEvmSimulationResponseJson {
+
+    /// Derives a `SecurityScannerResult` from the validation portion of a
+    /// Blockaid `/evm/json-rpc/scan` response (which also carries simulation
+    /// data). Returns `nil` when validation is absent — callers treat that as
+    /// "not scanned". Mirrors the keysign flow in the browser extension, where
+    /// the same endpoint powers both the balance-change hero and the
+    /// "Scanned by Blockaid" header.
+    func toKeysignScannerResult() -> SecurityScannerResult? {
+        guard let validation = validation else { return nil }
+
+        let riskLevel = validation.toKeysignRiskLevel()
+        let isSecure = riskLevel == .noRisk || riskLevel == .low
+
+        let warnings = validation.features?.map { feature in
+            SecurityWarning(
+                type: feature.type.toWarningType(),
+                severity: feature.featureId,
+                message: feature.description,
+                details: feature.address
+            )
+        } ?? []
+
+        return SecurityScannerResult(
+            provider: "blockaid",
+            isSecure: isSecure,
+            riskLevel: riskLevel,
+            warnings: warnings,
+            description: validation.description,
+            recommendations: validation.classification?.toRecommendations() ?? "",
+            metadata: SecurityScannerMetadata(
+                requestId: "",
+                classification: validation.classification ?? "",
+                resultType: validation.resultType ?? ""
+            )
+        )
+    }
+}
+
+private extension BlockaidTransactionScanResponseJson.BlockaidValidationJson {
+
+    func toKeysignRiskLevel() -> SecurityRiskLevel {
+        let hasFeatures = features?.isEmpty == false
+        let isBenign = status?.lowercased() == "success"
+            && resultType?.lowercased() == "benign"
+            && !hasFeatures
+
+        if isBenign {
+            return .noRisk
+        }
+
+        let label = resultType ?? classification
+        return label?.toWarningType() ?? .medium
+    }
+}
+
 // MARK: - Private Extensions
 
 private extension BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.BlockaidSolanaValidationJson {

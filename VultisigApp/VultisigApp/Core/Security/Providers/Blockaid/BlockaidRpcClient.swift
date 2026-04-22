@@ -160,7 +160,7 @@ private extension BlockaidRpcClient {
             metadata: EthereumSimulateTransactionRequestJson.MetadataJson(
                 domain: BlockaidConstants.vultisigDomain
             ),
-            options: ["simulation"]
+            options: ["simulation", "validation"]
         )
     }
 

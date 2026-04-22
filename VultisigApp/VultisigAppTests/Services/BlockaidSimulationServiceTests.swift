@@ -30,27 +30,30 @@ final class BlockaidSimulationServiceTests: XCTestCase {
     func test_simulate_returnsNil_forNonEvmPayload() async {
         let payload = Self.bitcoinPayload(memo: "0xabcdef")
 
-        let result = await service.simulate(keysignPayload: payload)
+        let result = await service.scan(keysignPayload: payload)
 
-        XCTAssertNil(result)
+        XCTAssertNil(result.simulation)
+        XCTAssertNil(result.scannerResult)
         XCTAssertEqual(mock.simulateCallCount, 0)
     }
 
     func test_simulate_returnsNil_whenMemoMissing() async {
         let payload = Self.ethereumPayload(memo: nil)
 
-        let result = await service.simulate(keysignPayload: payload)
+        let result = await service.scan(keysignPayload: payload)
 
-        XCTAssertNil(result)
+        XCTAssertNil(result.simulation)
+        XCTAssertNil(result.scannerResult)
         XCTAssertEqual(mock.simulateCallCount, 0)
     }
 
     func test_simulate_returnsNil_whenMemoNotHexPrefixed() async {
         let payload = Self.ethereumPayload(memo: "not-hex")
 
-        let result = await service.simulate(keysignPayload: payload)
+        let result = await service.scan(keysignPayload: payload)
 
-        XCTAssertNil(result)
+        XCTAssertNil(result.simulation)
+        XCTAssertNil(result.scannerResult)
         XCTAssertEqual(mock.simulateCallCount, 0)
     }
 
@@ -60,8 +63,8 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         mock.simulateResult = .success(Self.transferResponse(symbol: "USDC", decimals: 6, rawAmount: "1000000"))
         let payload = Self.ethereumPayload(memo: "0xA9059CBB0000")
 
-        _ = await service.simulate(keysignPayload: payload)
-        _ = await service.simulate(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
 
         XCTAssertEqual(mock.simulateCallCount, 1, "cached success should not re-hit the RPC")
     }
@@ -70,8 +73,8 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         mock.simulateResult = .failure(MockBlockaidRpcClient.StubError.simulated)
         let payload = Self.ethereumPayload(memo: "0xA9059CBB0000")
 
-        _ = await service.simulate(keysignPayload: payload)
-        _ = await service.simulate(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
 
         XCTAssertEqual(mock.simulateCallCount, 2, "a network failure must allow the next screen to retry")
     }
@@ -81,9 +84,9 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         let first = Self.ethereumPayload(memo: "0xA9059CBB0001")
         let second = Self.ethereumPayload(memo: "0xA9059CBB0002")
 
-        _ = await service.simulate(keysignPayload: first)
-        _ = await service.simulate(keysignPayload: second)
-        _ = await service.simulate(keysignPayload: first)
+        _ = await service.scan(keysignPayload: first)
+        _ = await service.scan(keysignPayload: second)
+        _ = await service.scan(keysignPayload: first)
 
         XCTAssertEqual(mock.simulateCallCount, 2, "distinct memos get distinct cache entries; re-asking first is a hit")
     }
@@ -93,8 +96,8 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         let lower = Self.ethereumPayload(memo: "0xa9059cbb0000")
         let upper = Self.ethereumPayload(memo: "0xA9059CBB0000")
 
-        _ = await service.simulate(keysignPayload: lower)
-        _ = await service.simulate(keysignPayload: upper)
+        _ = await service.scan(keysignPayload: lower)
+        _ = await service.scan(keysignPayload: upper)
 
         XCTAssertEqual(mock.simulateCallCount, 1, "casing differences must not split the cache entry")
     }

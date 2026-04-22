@@ -43,6 +43,7 @@ class KeysignViewModel: ObservableObject {
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
     @Published var retryReason: BroadcastRetryReason?
 
@@ -148,7 +149,14 @@ class KeysignViewModel: ObservableObject {
             didLoadSimulation = true
             return
         }
-        blockaidSimulation = await BlockaidSimulationService.shared.simulate(keysignPayload: payload)
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
         didLoadSimulation = true
     }
 

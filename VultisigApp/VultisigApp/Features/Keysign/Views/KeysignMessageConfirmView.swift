@@ -34,7 +34,7 @@ struct KeysignMessageConfirmView: View {
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited
                     ),
-                    securityScannerState: .constant(.idle)
+                    securityScannerState: $viewModel.securityScannerState
                 )
 
                 PrimaryButton(title: "joinTransactionSigning") {

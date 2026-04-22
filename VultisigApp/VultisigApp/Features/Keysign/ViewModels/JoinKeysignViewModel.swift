@@ -66,6 +66,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
 
     var encryptionKeyHex: String = ""
@@ -541,7 +542,14 @@ class JoinKeysignViewModel: ObservableObject {
             didLoadSimulation = true
             return
         }
-        blockaidSimulation = await BlockaidSimulationService.shared.simulate(keysignPayload: payload)
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
         didLoadSimulation = true
     }
 
