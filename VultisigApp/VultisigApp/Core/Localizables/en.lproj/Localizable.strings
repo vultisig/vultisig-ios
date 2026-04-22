@@ -156,6 +156,10 @@
 "bondRune" = "Bond RUNE";
 "bondToNode" = "Bond to Node";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Transaction data expired — details refreshed. Please try again.";
+"broadcastRetryStaleBlockhash" = "Transaction expired. Please try again.";
+"broadcastRetryStaleNonce" = "Transaction nonce outdated — details refreshed. Please try again.";
+"broadcastRetryStaleQuote" = "Quote expired — details refreshed. Please try again.";
 "buy" = "Buy";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";

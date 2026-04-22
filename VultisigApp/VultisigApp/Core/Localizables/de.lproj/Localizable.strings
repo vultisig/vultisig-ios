@@ -148,6 +148,10 @@
 "bondRune" = "RUNE binden";
 "bondToNode" = "An Knoten binden";
 "bridge" = "Brücke";
+"broadcastRetryGeneric" = "Transaktionsdaten abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
+"broadcastRetryStaleBlockhash" = "Transaktion abgelaufen. Bitte erneut versuchen.";
+"broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
+"broadcastRetryStaleQuote" = "Angebot abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "buy" = "Kaufen";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";

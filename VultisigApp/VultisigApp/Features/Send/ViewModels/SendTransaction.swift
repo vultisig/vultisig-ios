@@ -32,6 +32,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
     @Published var vault: Vault?
+    @Published var pendingRetryReason: BroadcastRetryReason?
 
     var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
 
