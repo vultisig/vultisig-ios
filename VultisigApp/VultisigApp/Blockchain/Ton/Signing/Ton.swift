@@ -113,7 +113,7 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid TonConnect destination: \(message.to)")
         }
 
-        guard let amountBig = BigInt(message.amount), amountBig >= 0 else {
+        guard let amountBig = BigInt(message.amount), amountBig > 0 else {
             throw HelperError.runtimeError("invalid TonConnect amount: \(message.amount)")
         }
         guard let amountData = Data(hexString: amountBig.toEvenLengthHexString()) else {
