@@ -150,6 +150,10 @@ struct SwapCryptoLogic {
     }
 
     func swapFeeString(tx: SwapTransaction) -> String {
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            return evmFee.formatToFiat(includeCurrencySymbol: true)
+        }
+
         guard let inboundFeeDecimal = tx.inboundFeeDecimal, !inboundFeeDecimal.isZero else { return .empty }
 
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
@@ -186,12 +190,18 @@ struct SwapCryptoLogic {
     }
 
     func totalFeeString(tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let networkFee = fromCoin.fiat(gas: tx.fee)
+
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            let totalFee = evmFee + networkFee
+            return totalFee.formatToFiat(includeCurrencySymbol: true)
+        }
+
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
 
-        let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let providerFee = tx.toCoin.fiat(value: inboundFee)
-        let networkFee = fromCoin.fiat(gas: tx.fee)
         let totalFee = providerFee + networkFee
         return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
@@ -212,36 +222,20 @@ struct SwapCryptoLogic {
     func baseAffiliateFee(tx: SwapTransaction) -> String {
         guard let quote = tx.quote else { return .empty }
 
-        // 1. Get Affiliate Fee directly from quote
-        // Determine which quote type we have and extract fee string
-        var affiliateFeeString: String?
-        let feeDecimals = 8 // Default to 8 (THORChain standard)
-        let feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            return evmFee.formatToFiat(includeCurrencySymbol: true)
+        }
 
         switch quote {
         case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            affiliateFeeString = q.fees.affiliate
-        // Verify if fee asset matches toCoin or fromCoin if needed, currently assuming toCoin as per SwapQuote.swift
-        case let .kyberswap(q, _):
-            guard let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 else { return .empty }
-            let feeDecimal = feeCoin.decimal(for: swapFeeBigInt)
-            let fiatValue = feeCoin.fiat(decimal: feeDecimal)
+            let feeAmount = q.fees.affiliate.toDecimal()
+            guard feeAmount > 0 else { return .empty }
+            let feeDecimal = feeAmount / pow(10, 8)
+            let fiatValue = tx.toCoin.fiat(decimal: feeDecimal)
             return fiatValue.formatToFiat(includeCurrencySymbol: true)
         default:
-            return .empty // Other providers might not have affiliate fees structured same way
-        }
-
-        guard let affiliateFeeString = affiliateFeeString else {
             return .empty
         }
-        let feeAmount = affiliateFeeString.toDecimal()
-
-        // 2. Convert to Fiat
-        // If fee is in 'toCoin' units (e.g. 1e8)
-        let feeDecimal = feeAmount / pow(10, feeDecimals)
-        let fiatValue = feeCoin.fiat(decimal: feeDecimal)
-
-        return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
 
     func swapFeeLabel(tx: SwapTransaction) -> String {
@@ -254,35 +248,23 @@ struct SwapCryptoLogic {
 
         guard let quote = tx.quote else { return "swapFee".localized }
 
-        // Get affiliate fee fiat value
-        let affiliateFeeString = baseAffiliateFee(tx: tx)
-        guard !affiliateFeeString.isEmpty else { return String(format: "swapFeePercentage".localized, 0.0) }
-
-        // We need raw numbers for math, reusing logic for efficiency
-        var feeAmt: Decimal = 0
-        switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-        case let .kyberswap(q, _):
-            if let swapFeeBigInt = BigInt(q.tx.swapFee), swapFeeBigInt > 0 {
-                feeAmt = tx.toCoin.decimal(for: swapFeeBigInt)
+        let feeFiat: Decimal
+        if let evmFee = evmSwapFeeFiat(tx: tx) {
+            feeFiat = evmFee
+        } else {
+            switch quote {
+            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
+                feeFiat = tx.toCoin.fiat(decimal: feeAmt)
+            default:
+                return String(format: "swapFeePercentage".localized, 0.0)
             }
-        default:
-            break
         }
 
-        // Calculate BPS: (Fee Amt / Expected Output Amount * ?? )
-        // Usually Swap Fee is on INPUT.
-        // Let's use currency values for comparsion to handle asset mismatch
-        let feeFiat = tx.toCoin.fiat(decimal: feeAmt)
-
         let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
-
         guard inputFiat > 0 else { return "swapFee".localized }
 
-        let rate = (feeFiat / inputFiat)
-        let percentage = rate * 100
-
+        let percentage = (feeFiat / inputFiat) * 100
         return String(format: "swapFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
     }
 
@@ -366,9 +348,8 @@ struct SwapCryptoLogic {
         let baseFeeFiat = inputFiat * 0.0050
 
         // Actual Fee from Quote
-        // Re-calculate local to avoid string parsing
-        var actualFeeFiat: Decimal = 0
-        if let quote = tx.quote {
+        var actualFeeFiat = evmSwapFeeFiat(tx: tx) ?? 0
+        if actualFeeFiat == 0, let quote = tx.quote {
             switch quote {
             case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
                 let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
@@ -423,6 +404,28 @@ struct SwapCryptoLogic {
         // Fees are always paid in native token
         guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
         return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+    }
+
+    private func evmSwapFeeFiat(tx: SwapTransaction) -> Decimal? {
+        guard let swapFeeBigInt = tx.quote?.evmSwapFeeBigInt else { return nil }
+        let coin = swapFeeCoin(tx: tx)
+        let feeDecimal = coin.decimal(for: swapFeeBigInt)
+        let fiatValue = coin.fiat(decimal: feeDecimal)
+        guard !fiatValue.isZero else { return nil }
+        return fiatValue
+    }
+
+    private func swapFeeCoin(tx: SwapTransaction) -> Coin {
+        guard let contract = tx.quote?.swapFeeTokenContract else {
+            return feeCoin(tx: tx)
+        }
+        if contract.caseInsensitiveCompare(tx.fromCoin.contractAddress) == .orderedSame {
+            return tx.fromCoin
+        }
+        if contract.caseInsensitiveCompare(tx.toCoin.contractAddress) == .orderedSame {
+            return tx.toCoin
+        }
+        return feeCoin(tx: tx)
     }
 
     func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
