@@ -390,6 +390,8 @@
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";
 "function" = "함수";
+"functionArguments" = "함수 인수";
+"functionSignature" = "함수 서명";
 "functionTransactionScreenErrorSubtitle" = "함수로 리디렉션하는 중 오류가 발생했습니다";
 "functionTransactionScreenErrorTitle" = "함수 오류";
 "gas" = "가스";
@@ -962,6 +964,7 @@
 "Unbond" = "본드 해제";
 "unbondRune" = "RUNE 본드 해제";
 "unknown" = "";
+"unlimited" = "무제한";
 "unlockTier" = "티어 잠금 해제";
 "unlockUltimateTierDescription" = "%@ $VULT를 보유하면 Ultimate 티어를 잠금 해제하고 모든 스왑에서 Vultisig 수수료를 완전히 면제받을 수 있습니다.";
 "unlockUltimateTierDescriptionHighlighted" = "모든 스왑에서 Vultisig 수수료 완전 면제.";

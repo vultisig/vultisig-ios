@@ -95,7 +95,14 @@ struct JoinKeysignView: View {
             customMessagePayload: viewModel.customMessagePayload,
             transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            isInitiateDevice: false
+            isInitiateDevice: false,
+            decodedFunctionName: viewModel.decodedFunctionName,
+            decodedTokenAmount: viewModel.decodedTokenAmount,
+            decodedTokenTicker: viewModel.decodedTokenTicker,
+            decodedTokenLogo: viewModel.decodedTokenLogo,
+            decodedTokenDisplay: viewModel.decodedTokenDisplay,
+            decodedFunctionSignature: viewModel.decodedFunctionSignature,
+            decodedFunctionArguments: viewModel.decodedFunctionArguments
         )
     }
 

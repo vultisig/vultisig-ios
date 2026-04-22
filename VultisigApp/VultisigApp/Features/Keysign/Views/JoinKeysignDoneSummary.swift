@@ -102,6 +102,10 @@ struct JoinKeysignDoneSummary: View {
                     coin: keysignPayload.coin,
                     amountCrypto: keysignPayload.toAmountWithTickerString,
                     amountFiat: keysignPayload.toSendAmountFiatString,
+                    heroTitle: viewModel.decodedFunctionName,
+                    heroAmount: nil,
+                    heroTicker: nil,
+                    heroImage: nil,
                     hash: viewModel.txid,
                     explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                     memo: viewModel.memo ?? "",
@@ -120,6 +124,11 @@ struct JoinKeysignDoneSummary: View {
 
     var signMessageContent: some View {
         VStack(spacing: 18) {
+            if hasHeroSection {
+                doneHeroSection
+                Separator()
+            }
+
             getGeneralCell(
                 title: "Method",
                 description: viewModel.customMessagePayload?.method ?? "",
@@ -141,6 +150,31 @@ struct JoinKeysignDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
+            if let tokenDisplay = viewModel.decodedTokenDisplay,
+               !tokenDisplay.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "amount",
+                    description: tokenDisplay,
+                    isVerticalStacked: true
+                )
+            }
+            if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "functionSignature",
+                    description: signature,
+                    isVerticalStacked: true
+                )
+            }
+            if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "functionArguments",
+                    description: args,
+                    isVerticalStacked: true
+                )
+            }
             Separator()
             getGeneralCell(
                 title: "Signature",
@@ -149,6 +183,20 @@ struct JoinKeysignDoneSummary: View {
             )
         }
 
+    }
+
+    @ViewBuilder
+    private var doneHeroSection: some View {
+        if let title = viewModel.decodedFunctionName {
+            Text(title)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+    }
+
+    private var hasHeroSection: Bool {
+        viewModel.decodedFunctionName != nil
     }
 
     private func onDoneButtonPressed() {

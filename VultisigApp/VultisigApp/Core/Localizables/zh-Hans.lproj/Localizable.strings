@@ -385,6 +385,8 @@
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "from" = "从";
 "function" = "功能";
+"functionArguments" = "函数参数";
+"functionSignature" = "函数签名";
 "functionTransactionScreenErrorSubtitle" = "重定向到功能时出错";
 "functionTransactionScreenErrorTitle" = "功能错误";
 "gas" = "燃料";
@@ -949,6 +951,7 @@
 "Unbond" = "解绑";
 "unbondRune" = "解除绑定 RUNE";
 "unknown" = "未知";
+"unlimited" = "无限制";
 "unlockTier" = "解锁等级";
 "unlockXTier" = "解锁 %@ 等级";
 "unlockXTierDescription" = "通过持有 %@ $VULT，您将解锁 %@ 等级并在所有交换中获得 %@ 个基点的交易费折扣";
