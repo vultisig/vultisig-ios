@@ -34,7 +34,7 @@ enum ContractCallExtractor {
     // let the caller skip the amount display.
     private static let unlimitedApprovalFunctions: Set<String> = [
         "approve",
-        "permit", "permitSingle", "permitBatch"
+        "permit"
     ]
 
     /// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns
@@ -74,7 +74,11 @@ enum ContractCallExtractor {
         "transferFrom": .contractIsToken,
         "approve": .contractIsToken,
         "increaseAllowance": .contractIsToken,
-        "decreaseAllowance": .contractIsToken
+        "decreaseAllowance": .contractIsToken,
+        // EIP-2612: permit(owner, spender, value, deadline, v, r, s). Called on
+        // the ERC20 token itself, so the contract IS the token; value is the
+        // first uint256 — which is exactly what .contractIsToken extracts.
+        "permit": .contractIsToken
     ]
 
     static func extract(

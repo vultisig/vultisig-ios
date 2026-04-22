@@ -17,7 +17,14 @@ final class BlockaidSimulationParserTests: XCTestCase {
     }
 
     func test_parse_returnsNil_whenAssetsDiffsNil() {
-        let response = response(with: [])
+        let response = BlockaidEvmSimulationResponseJson(
+            simulation: BlockaidEvmSimulationJson(
+                status: "Success",
+                accountSummary: BlockaidEvmSimulationJson.AccountSummary(assetsDiffs: nil)
+            ),
+            validation: nil,
+            error: nil
+        )
         XCTAssertNil(BlockaidSimulationParser.parse(response: response, chain: .ethereum))
     }
 

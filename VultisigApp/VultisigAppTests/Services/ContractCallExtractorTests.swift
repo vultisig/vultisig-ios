@@ -14,10 +14,17 @@ final class ContractCallExtractorTests: XCTestCase {
         XCTAssertNotNil(ContractCallExtractor.sentinelLabelFor(funcName: "approve"))
     }
 
-    func test_sentinelLabel_forPermitFamily_isNonNil() {
+    func test_sentinelLabel_forPermit_isNonNil() {
         XCTAssertNotNil(ContractCallExtractor.sentinelLabelFor(funcName: "permit"))
-        XCTAssertNotNil(ContractCallExtractor.sentinelLabelFor(funcName: "permitSingle"))
-        XCTAssertNotNil(ContractCallExtractor.sentinelLabelFor(funcName: "permitBatch"))
+    }
+
+    /// permitSingle/permitBatch target Uniswap's Permit2 contract, not the token
+    /// itself — extracting the permitted token requires decoding a nested struct
+    /// and is out of scope here. Keep them out of the sentinel list so we don't
+    /// promise an "Unlimited" label the extraction can't back up.
+    func test_sentinelLabel_forPermit2Variants_isNil() {
+        XCTAssertNil(ContractCallExtractor.sentinelLabelFor(funcName: "permitSingle"))
+        XCTAssertNil(ContractCallExtractor.sentinelLabelFor(funcName: "permitBatch"))
     }
 
     /// `increaseAllowance(MAX_UINT256)` raises the allowance by 2^256-1, it does

@@ -25,7 +25,7 @@ enum BlockaidSimulationParser {
             return parseTransfer(diff: diffs[0], chain: chain)
         }
 
-        return parseSwap(diffs: diffs, chain: chain) ?? parseTransfer(diff: diffs[0], chain: chain)
+        return parseSwap(diffs: diffs, chain: chain)
     }
 
     private static func parseTransfer(
@@ -45,9 +45,11 @@ enum BlockaidSimulationParser {
         diffs: [BlockaidEvmSimulationJson.AssetDiff],
         chain: Chain
     ) -> BlockaidSimulationInfo? {
+        // EVM addresses are case-insensitive (EIP-55 checksums differ in casing
+        // between otherwise-identical addresses), so compare lowercased.
         guard let outDiff = diffs.first(where: { ($0.out?.first?.rawValue) != nil }),
-              let inDiff = diffs.first(where: { ($0.in?.first?.rawValue) != nil && $0.asset.address != outDiff.asset.address }) ?? diffs.first(where: { ($0.in?.first?.rawValue) != nil }),
-              outDiff.asset.address != inDiff.asset.address || outDiff.asset.symbol != inDiff.asset.symbol,
+              let inDiff = diffs.first(where: { ($0.in?.first?.rawValue) != nil && $0.asset.address?.lowercased() != outDiff.asset.address?.lowercased() }) ?? diffs.first(where: { ($0.in?.first?.rawValue) != nil }),
+              outDiff.asset.address?.lowercased() != inDiff.asset.address?.lowercased() || outDiff.asset.symbol != inDiff.asset.symbol,
               let outValueString = outDiff.out?.first?.rawValue,
               let inValueString = inDiff.in?.first?.rawValue,
               let outAmount = parseRawAmount(outValueString),
