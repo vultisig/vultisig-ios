@@ -195,10 +195,13 @@ private extension BlockaidRpcClient {
         address: String,
         rawTransactions: [String]
     ) -> SolanaScanTransactionRequestJson {
+        // Ask for both simulation AND validation in the same call so the dApp
+        // hero gets balance changes + the "Scanned by Blockaid" header state
+        // without a second round-trip.
         return SolanaScanTransactionRequestJson(
             chain: BlockaidConstants.solanaChain,
             metadata: CommonMetadataJson(url: BlockaidConstants.vultisigDomain),
-            options: ["simulation"],
+            options: ["simulation", "validation"],
             accountAddress: address,
             encoding: BlockaidConstants.solanaEncoding,
             transactions: rawTransactions,

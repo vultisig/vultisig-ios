@@ -291,7 +291,8 @@ private extension BlockaidSimulationServiceTests {
             result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(
                 simulation: BlockaidSolanaSimulationJson(
                     accountSummary: BlockaidSolanaSimulationJson.AccountSummary(accountAssetsDiff: [diff])
-                )
+                ),
+                validation: nil
             ),
             status: "Success",
             error: nil

@@ -54,6 +54,47 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(diffs?[1].out?.rawValue, "910724")
     }
 
+    /// When Blockaid returns a validation block alongside simulation, the
+    /// response should produce a SecurityScannerResult so the "Scanned by
+    /// Blockaid" header can render. Null validation returns nil (header
+    /// stays in .idle).
+    func test_toKeysignScannerResult_returnsResult_whenValidationPresent() throws {
+        let json = """
+        {
+          "result": {
+            "simulation": null,
+            "validation": {
+              "result_type": "Benign",
+              "reason": "",
+              "features": [],
+              "extended_features": []
+            }
+          },
+          "status": "SUCCESS"
+        }
+        """
+        let decoded = try JSONDecoder().decode(
+            BlockaidSolanaSimulationResponseJson.self,
+            from: json.data(using: .utf8)!
+        )
+        let scannerResult = decoded.toKeysignScannerResult()
+        XCTAssertNotNil(scannerResult)
+        XCTAssertEqual(scannerResult?.provider, "blockaid")
+        XCTAssertTrue(scannerResult?.isSecure ?? false)
+    }
+
+    func test_toKeysignScannerResult_returnsNil_whenValidationMissing() {
+        let response = BlockaidSolanaSimulationResponseJson(
+            result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(
+                simulation: nil,
+                validation: nil
+            ),
+            status: "SUCCESS",
+            error: nil
+        )
+        XCTAssertNil(response.toKeysignScannerResult())
+    }
+
     // MARK: - Short-circuit paths
 
     func test_parseSolana_returnsNil_whenResultMissing() {
@@ -63,7 +104,7 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
 
     func test_parseSolana_returnsNil_whenSimulationMissing() {
         let response = BlockaidSolanaSimulationResponseJson(
-            result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(simulation: nil),
+            result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(simulation: nil, validation: nil),
             status: "Success",
             error: nil
         )
@@ -206,7 +247,8 @@ private extension BlockaidSolanaSimulationParserTests {
             result: BlockaidSolanaSimulationResponseJson.BlockaidSolanaSimulationResultJson(
                 simulation: BlockaidSolanaSimulationJson(
                     accountSummary: BlockaidSolanaSimulationJson.AccountSummary(accountAssetsDiff: diffs)
-                )
+                ),
+                validation: nil
             ),
             status: "Success",
             error: nil

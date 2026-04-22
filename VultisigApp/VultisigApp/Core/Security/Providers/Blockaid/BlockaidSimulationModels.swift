@@ -181,9 +181,10 @@ struct BlockaidEvmSimulationJson: Codable {
 
 // MARK: - Solana Simulation Response
 
-/// Solana simulation response from `/solana/message/scan` when invoked with
-/// `options: ["simulation"]`. Top-level shape matches the validation response
-/// (`result: { ... }`), with simulation data under `result.simulation`.
+/// Solana scan response from `/solana/message/scan` invoked with
+/// `options: ["simulation", "validation"]`. Simulation drives the hero,
+/// validation drives the "Scanned by Blockaid" header — a single call covers
+/// both and matches the shape returned by the existing validation-only path.
 struct BlockaidSolanaSimulationResponseJson: Codable {
     let result: BlockaidSolanaSimulationResultJson?
     let status: String?
@@ -191,6 +192,7 @@ struct BlockaidSolanaSimulationResponseJson: Codable {
 
     struct BlockaidSolanaSimulationResultJson: Codable {
         let simulation: BlockaidSolanaSimulationJson?
+        let validation: BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.BlockaidSolanaValidationJson?
     }
 }
 

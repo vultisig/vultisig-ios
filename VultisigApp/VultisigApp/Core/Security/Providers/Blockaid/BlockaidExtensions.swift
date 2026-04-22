@@ -100,6 +100,53 @@ extension BlockaidTransactionScanResponseJson {
     }
 }
 
+// MARK: - BlockaidSolanaSimulationResponseJson Extensions
+
+extension BlockaidSolanaSimulationResponseJson {
+
+    /// Mirrors `toKeysignScannerResult()` on the EVM response but reads from
+    /// the Solana-shape validation nested under `result.validation`. Returns
+    /// `nil` when validation is absent so callers can fall back to `.idle`.
+    func toKeysignScannerResult() -> SecurityScannerResult? {
+        guard let validation = result?.validation else { return nil }
+        return validation.toKeysignScannerResult(provider: "blockaid")
+    }
+}
+
+extension BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.BlockaidSolanaValidationJson {
+
+    /// Builds a `SecurityScannerResult` from a Solana validation payload —
+    /// shared between the existing `toSolanaSecurityScannerResult` path
+    /// (validation-only scan) and the new simulate-plus-validate Solana path.
+    func toKeysignScannerResult(provider: String) -> SecurityScannerResult {
+        let riskLevel = toSolanaValidationRiskLevel()
+        let isSecure = riskLevel == .noRisk || riskLevel == .low
+
+        let description: String? = isSecure
+            ? features.prefix(3).joined(separator: "\n")
+            : nil
+
+        let warnings = extendedFeatures.map { feature in
+            SecurityWarning(
+                type: feature.type.toWarningType(),
+                severity: "",
+                message: feature.description,
+                details: nil
+            )
+        }
+
+        return SecurityScannerResult(
+            provider: provider,
+            isSecure: isSecure,
+            riskLevel: riskLevel,
+            warnings: warnings,
+            description: description,
+            recommendations: "",
+            metadata: SecurityScannerMetadata()
+        )
+    }
+}
+
 // MARK: - BlockaidEvmSimulationResponseJson Extensions
 
 extension BlockaidEvmSimulationResponseJson {

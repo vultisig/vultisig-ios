@@ -134,9 +134,10 @@ actor BlockaidSimulationService {
             if simulation == nil {
                 logger.info("solana parse returned nil — no diffs or unrecognized shape")
             }
+            let scannerResult = response.toKeysignScannerResult()
             return BlockaidKeysignScanResult(
                 simulation: simulation,
-                scannerResult: nil
+                scannerResult: scannerResult
             )
         }
     }
