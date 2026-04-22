@@ -153,6 +153,30 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(amount, BigInt("2000000000"))
     }
 
+    /// Native SOL must render the chain's own logo, not the wrapped-SOL
+    /// (WSOL) metadata that `TokensStore` returns for the wrapped-SOL mint,
+    /// and not the Blockaid per-request CDN URL (which isn't hot-linkable).
+    func test_parseSolana_transfer_nativeSOL_logoIsChainNativeAsset() {
+        let diff = diff(
+            asset: BlockaidSolanaSimulationJson.Asset(
+                type: "SOL",
+                name: "Solana",
+                symbol: "SOL",
+                address: nil,
+                decimals: 9,
+                logo: "https://cdn.blockaid.io/ephemeral/will-not-resolve"
+            ),
+            out: balance("1000000000")
+        )
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: [diff]))
+
+        guard case let .transfer(coin, _) = info else {
+            return XCTFail("expected .transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.logo, Chain.solana.logo)
+        XCTAssertFalse(coin.logo.hasPrefix("http"), "native SOL should use the local bundle asset")
+    }
+
     func test_parseSolana_transfer_returnsNil_whenOutMissing() {
         let diff = diff(
             asset: token(symbol: "USDC", address: "mint", decimals: 6),

@@ -180,10 +180,16 @@ enum BlockaidSimulationParser {
     private static func buildSolanaCoin(
         from asset: BlockaidSolanaSimulationJson.Asset
     ) -> BlockaidSimulationCoin? {
-        let mint = asset.type == "SOL" ? wrappedSolMint : asset.address
+        let isNative = asset.type == "SOL"
+        let mint = isNative ? wrappedSolMint : asset.address
         guard let mint, !mint.isEmpty else { return nil }
 
-        let storeMatch = TokensStore.findTokenMeta(chain: .solana, contractAddress: mint)
+        // Native SOL would otherwise match the wrapped-SOL (WSOL) metadata via
+        // the mint sentinel — skip the lookup and use the chain's native logo
+        // directly so the hero renders "SOL" with the proper icon.
+        let storeMatch = isNative
+            ? nil
+            : TokensStore.findTokenMeta(chain: .solana, contractAddress: mint)
 
         guard let decimals = asset.decimals ?? storeMatch?.decimals else {
             return nil
@@ -192,10 +198,15 @@ enum BlockaidSimulationParser {
         let ticker = asset.symbol ?? storeMatch?.ticker ?? truncatedMint(mint)
         // Blockaid returns per-request logo URLs under cdn.blockaid.io that are
         // not hot-linkable, so the AsyncImageView placeholder would spin forever.
-        // Prefer the local TokensStore asset; fall back to Blockaid's URL only
-        // when we have no match, and ultimately let the view's first-letter
-        // fallback render if no logo resolves.
-        let logo = storeMatch?.logo ?? asset.logo ?? .empty
+        // Prefer the native Solana asset for SOL, the TokensStore asset for
+        // known SPL tokens, and only fall back to Blockaid's URL when nothing
+        // local matches.
+        let logo: String
+        if isNative {
+            logo = Chain.solana.logo
+        } else {
+            logo = storeMatch?.logo ?? asset.logo ?? .empty
+        }
 
         return BlockaidSimulationCoin(
             chain: .solana,
