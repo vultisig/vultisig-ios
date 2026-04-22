@@ -148,6 +148,10 @@
 "bondRune" = "Vincular RUNE";
 "bondToNode" = "Vincular ao Nó";
 "bridge" = "Ponte";
+"broadcastRetryGeneric" = "Dados da transação expirados — detalhes atualizados. Por favor, tente novamente.";
+"broadcastRetryStaleBlockhash" = "Transação expirada. Por favor, tente novamente.";
+"broadcastRetryStaleNonce" = "Nonce da transação desatualizado — detalhes atualizados. Por favor, tente novamente.";
+"broadcastRetryStaleQuote" = "Cotação expirada — detalhes atualizados. Por favor, tente novamente.";
 "buy" = "Comprar";
 "cacaoPool" = "Pool de Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ até atingir a maturidade do depósito";

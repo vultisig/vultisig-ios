@@ -148,6 +148,10 @@
 "bondRune" = "Vincola RUNE";
 "bondToNode" = "Vincola al Nodo";
 "bridge" = "Bridge";
+"broadcastRetryGeneric" = "Dati della transazione scaduti — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleBlockhash" = "Transazione scaduta. Riprova.";
+"broadcastRetryStaleNonce" = "Nonce della transazione obsoleto — dettagli aggiornati. Riprova.";
+"broadcastRetryStaleQuote" = "Quotazione scaduta — dettagli aggiornati. Riprova.";
 "buy" = "Acquista";
 "cacaoPool" = "Pool Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";

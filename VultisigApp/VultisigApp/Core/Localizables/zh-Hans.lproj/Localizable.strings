@@ -148,6 +148,10 @@
 "bondRune" = "绑定 RUNE";
 "bondToNode" = "绑定到节点";
 "bridge" = "跨链桥";
+"broadcastRetryGeneric" = "交易数据已过期 — 详情已刷新。请重试。";
+"broadcastRetryStaleBlockhash" = "交易已过期。请重试。";
+"broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
+"broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
 "buy" = "购买";
 "cacaoPool" = "Cacao 池";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";

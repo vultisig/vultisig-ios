@@ -187,7 +187,7 @@ struct KyberSwapService {
                 gasPrice: buildResponse.tx.gasPrice,
                 gas: buildResponse.tx.gas,
                 swapFee: affiliateFeeAmount.description,
-                swapFeeTokenContract: ""
+                swapFeeTokenContract: routeResponse.data.routeSummary.tokenOut
             )
         )
 

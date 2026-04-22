@@ -14,6 +14,7 @@
 		064D3D2833A07505317CC841 /* CosmosTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */; };
 		06A85C472977E4D585B98B5C /* SingleKeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */; };
 		06FE6524495852E02AF35F7E /* ImageFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFAF336EB817EBB89622FCD /* ImageFileDocument.swift */; };
+		0A4A2F2CB5A8F2770FB71A62 /* RetryableBroadcastError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657EEE7201433258256FB007 /* RetryableBroadcastError.swift */; };
 		0BB1F9CE67A3BE99B4FC0E3A /* AgentConversationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC43C18FD2125A5C2742AAB0 /* AgentConversationsView.swift */; };
 		1173BB0D4FDA7444CB9AC6E2 /* AgentBackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A107C81612286300C1D9866B /* AgentBackendClient.swift */; };
 		12B3EB2EC4F83BC93D67CF00 /* AgentRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5426324385F4CE10A82D309 /* AgentRoute.swift */; };
@@ -1874,6 +1875,7 @@
 		603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebViewCoordinator.swift; sourceTree = "<group>"; };
 		615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastVaultKeysignService.swift; sourceTree = "<group>"; };
 		6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusService.swift; sourceTree = "<group>"; };
+		657EEE7201433258256FB007 /* RetryableBroadcastError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RetryableBroadcastError.swift; sourceTree = "<group>"; };
 		68274C3A94E4F6B7BDEC9A94 /* BannerViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerViewModifier.swift; sourceTree = "<group>"; };
 		6889A906A43CE1C527937EF4 /* TransactionHistoryStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryStorage.swift; sourceTree = "<group>"; };
 		69409726FE812D77E37E1F08 /* MacAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
@@ -4915,6 +4917,7 @@
 				BC586168CA29D811C28C56A4 /* TransactionStatus.swift */,
 				B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */,
 				A6404F762E03346600069BD1 /* ThorchainNetwork.swift */,
+				657EEE7201433258256FB007 /* RetryableBroadcastError.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -8201,6 +8204,7 @@
 				411422942A928D78FADAFCDF /* MacCameraServiceViewModel.swift in Sources */,
 				BD9DB6201E7149E5BC4D9EA7 /* StyledIntegerField.swift in Sources */,
 				9FFDCA67FBEF7610D81CDCC5 /* AccessibilityID.swift in Sources */,
+				0A4A2F2CB5A8F2770FB71A62 /* RetryableBroadcastError.swift in Sources */,
 				149CD73CC0D7A592F9662B92 /* VaultBackupEncryption.swift in Sources */,
 				34D13EBBD5541C20FAA46AC7 /* InfoTooltip.swift in Sources */,
 				58C63B8587C9B9E7A9947C32 /* HelpButton.swift in Sources */,

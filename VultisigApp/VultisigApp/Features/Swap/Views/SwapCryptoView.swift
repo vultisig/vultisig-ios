@@ -31,6 +31,11 @@ struct SwapCryptoView: View {
                     tx.fromCoin = fromCoin
                 }
             }
+            .onChange(of: swapViewModel.pendingRetryReason) { _, reason in
+                guard reason != nil else { return }
+                keysignView = nil
+                swapViewModel.stopMediator()
+            }
     }
 
     var view: some View {

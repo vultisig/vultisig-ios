@@ -11,4 +11,9 @@ import Foundation
     var hash: String? { get set }
     var approveHash: String? { get set }
     func moveToNextView()
+    func retryBroadcast(reason: BroadcastRetryReason)
+}
+
+extension TransferViewModel {
+    func retryBroadcast(reason _: BroadcastRetryReason) {}
 }
