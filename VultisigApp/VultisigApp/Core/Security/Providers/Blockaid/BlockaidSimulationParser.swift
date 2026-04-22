@@ -34,7 +34,7 @@ enum BlockaidSimulationParser {
     ) -> BlockaidSimulationInfo? {
         guard let out = diff.out?.first,
               let rawValue = out.rawValue,
-              let amount = BigInt(rawValue),
+              let amount = parseRawAmount(rawValue),
               let coin = buildCoin(from: diff.asset, chain: chain) else {
             return nil
         }
@@ -50,8 +50,8 @@ enum BlockaidSimulationParser {
               outDiff.asset.address != inDiff.asset.address || outDiff.asset.symbol != inDiff.asset.symbol,
               let outValueString = outDiff.out?.first?.rawValue,
               let inValueString = inDiff.in?.first?.rawValue,
-              let outAmount = BigInt(outValueString),
-              let inAmount = BigInt(inValueString),
+              let outAmount = parseRawAmount(outValueString),
+              let inAmount = parseRawAmount(inValueString),
               let fromCoin = buildCoin(from: outDiff.asset, chain: chain),
               let toCoin = buildCoin(from: inDiff.asset, chain: chain) else {
             return nil
@@ -63,6 +63,17 @@ enum BlockaidSimulationParser {
             fromAmount: outAmount,
             toAmount: inAmount
         )
+    }
+
+    /// Blockaid encodes `raw_value` as a hex string (e.g. `"0x75652c52418a6"`).
+    /// `BigInt(_:)` in Swift defaults to base 10 and would return nil for
+    /// hex-prefixed values. Accept both to stay tolerant of any non-hex
+    /// payloads the backend might return.
+    private static func parseRawAmount(_ raw: String) -> BigInt? {
+        if raw.hasPrefix("0x") || raw.hasPrefix("0X") {
+            return BigInt(raw.dropFirst(2), radix: 16)
+        }
+        return BigInt(raw)
     }
 
     private static func buildCoin(

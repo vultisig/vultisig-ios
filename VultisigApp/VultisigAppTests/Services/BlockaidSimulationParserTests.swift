@@ -91,6 +91,43 @@ final class BlockaidSimulationParserTests: XCTestCase {
         XCTAssertEqual(toAmount, BigInt("300000000000000000"))
     }
 
+    /// Blockaid encodes `raw_value` as hex with `0x` prefix — `BigInt(String)`
+    /// with default base 10 would silently drop these. Regression guard against
+    /// the parser returning nil on a valid response (WETH → ETH unwrap).
+    func test_parse_swap_acceptsHexRawValues() {
+        let outDiff = diff(
+            asset: asset(symbol: "WETH", decimals: 18, address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", type: "ERC20"),
+            out: [balance("0x75652c52418a6")]
+        )
+        let inDiff = diff(
+            asset: asset(symbol: "ETH", decimals: 18, address: nil, type: "NATIVE"),
+            in: [balance("0x75652c52418a6")]
+        )
+        let result = BlockaidSimulationParser.parse(response: response(with: [inDiff, outDiff]), chain: .ethereum)
+
+        guard case let .swap(fromCoin, toCoin, fromAmount, toAmount) = result else {
+            return XCTFail("expected .swap, got \(String(describing: result))")
+        }
+        XCTAssertEqual(fromCoin.ticker, "WETH")
+        XCTAssertEqual(toCoin.ticker, "ETH")
+        let expected = BigInt("75652c52418a6", radix: 16)
+        XCTAssertEqual(fromAmount, expected)
+        XCTAssertEqual(toAmount, expected)
+    }
+
+    func test_parse_transfer_acceptsHexRawValue() {
+        let diff = diff(
+            asset: asset(symbol: "USDC", decimals: 6, address: "0xUsdc"),
+            out: [balance("0xF4240")] // 1_000_000
+        )
+        let result = BlockaidSimulationParser.parse(response: response(with: [diff]), chain: .ethereum)
+
+        guard case let .transfer(_, amount) = result else {
+            return XCTFail("expected .transfer, got \(String(describing: result))")
+        }
+        XCTAssertEqual(amount, BigInt("1000000"))
+    }
+
     // MARK: - Decimal + formatting
 
     func test_fromAmountDecimal_usesCoinDecimals() {
