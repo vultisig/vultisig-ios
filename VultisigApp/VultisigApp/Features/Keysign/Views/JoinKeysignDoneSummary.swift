@@ -157,21 +157,32 @@ struct JoinKeysignDoneSummary: View {
                     isWarning: viewModel.decodedTokenIsUnlimited
                 )
             }
-            if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+            if hasTransactionDetails {
                 Separator()
-                getGeneralCell(
-                    title: "functionSignature",
-                    description: signature,
-                    isVerticalStacked: true
-                )
-            }
-            if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
-                Separator()
-                getGeneralCell(
-                    title: "functionArguments",
-                    description: args,
-                    isVerticalStacked: true
-                )
+                DisclosureSection(title: "transactionDetails") {
+                    if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("functionSignature".localized)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .font(Theme.fonts.bodySMedium)
+                            Text(signature)
+                                .foregroundStyle(Theme.colors.turquoise)
+                                .font(Theme.fonts.bodySMedium)
+                                .textSelection(.enabled)
+                        }
+                    }
+                    if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("functionArguments".localized)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .font(Theme.fonts.bodySMedium)
+                            Text(args)
+                                .foregroundStyle(Theme.colors.turquoise)
+                                .font(Theme.fonts.bodySMedium)
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
             }
             Separator()
             getGeneralCell(
@@ -191,6 +202,12 @@ struct JoinKeysignDoneSummary: View {
                 .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
+    }
+
+    private var hasTransactionDetails: Bool {
+        let hasSignature = !(viewModel.decodedFunctionSignature?.isEmpty ?? true)
+        let hasArguments = !(viewModel.decodedFunctionArguments?.isEmpty ?? true)
+        return hasSignature || hasArguments
     }
 
     private var hasHeroSection: Bool {

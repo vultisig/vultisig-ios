@@ -1112,6 +1112,7 @@
 		CE4F321A3F8A17A978BE0C14 /* VultisigUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 538DC0B883677338C0113186 /* VultisigUITestCase.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
 		CFF1B0DCBE47EAF6A1C28914 /* CreateVaultSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C56E61F23C2DF1C0F6BB2D3 /* CreateVaultSnapshotTests.swift */; };
+		D0AEC4357BA2FF62A05913E5 /* DisclosureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0128C3B3BB1EBF81D192A94F /* DisclosureSection.swift */; };
 		D2485B3E2107573C94899396 /* PendingTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544EB5E7CBD182E832CC537C /* PendingTransaction.swift */; };
 		D2FE6763BED8CC3044A39FBA /* ZipImportDuplicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF1829BAF85766FCAA71794 /* ZipImportDuplicateTests.swift */; };
 		D58FAE84CB2EC92E18EF273B /* TransactionHistoryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB85BCD6C29C392A9B335FB /* TransactionHistoryCardView.swift */; };
@@ -1267,6 +1268,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0128C3B3BB1EBF81D192A94F /* DisclosureSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DisclosureSection.swift; sourceTree = "<group>"; };
 		014298C33F1D21BC1F80F96A /* NotificationAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationAPI.swift; sourceTree = "<group>"; };
 		0394970AFE40C0213C84704C /* TransactionHistoryViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryViewModel.swift; sourceTree = "<group>"; };
 		03A2461D2F258DFEEDCC489F /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -5428,6 +5430,15 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		72E4A5A04DFBEB0D043ED218 /* Disclosure */ = {
+			isa = PBXGroup;
+			children = (
+				0128C3B3BB1EBF81D192A94F /* DisclosureSection.swift */,
+			);
+			name = Disclosure;
+			path = Disclosure;
+			sourceTree = "<group>";
+		};
 		76E848F816368AE05C9352D8 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -6379,6 +6390,7 @@
 				15159390FCF7F45DC0787634 /* ChainDetailActionButtons+iOS.swift */,
 				2803BC564BA64B97AB6C428D /* ChainDetailActionButtons+macOS.swift */,
 				1D0094695AD7723ED3FD9AB7 /* Hero */,
+				72E4A5A04DFBEB0D043ED218 /* Disclosure */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -8266,6 +8278,7 @@
 				F4D773E9AA91BFDD96269CBB /* CirclePositionStorageService.swift in Sources */,
 				8C6376FA33F904247AB8F662 /* HeroContent.swift in Sources */,
 				B4CB81AA8E64973A894332E4 /* HeroContentView.swift in Sources */,
+				D0AEC4357BA2FF62A05913E5 /* DisclosureSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
