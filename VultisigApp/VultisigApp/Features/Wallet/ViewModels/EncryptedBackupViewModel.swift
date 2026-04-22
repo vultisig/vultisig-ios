@@ -34,8 +34,9 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var extractedFilesDirectory: URL?
     @Published var pendingEncryptedVaults: [(fileName: String, data: Data)] = []
 
-    private let logger = Logger(subsystem: "import-wallet", category: "communication")
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "encrypted-backup")
     private let keychain = DefaultKeychainService.shared
+    private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
 
     func resetData() {
         showVaultExporter = false
@@ -58,33 +59,33 @@ class EncryptedBackupViewModel: ObservableObject {
         extractedFilesDirectory = nil
     }
 
-    func exportFileWithoutPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
-        return try? createBackupFile(backupType, encryptionPassword: nil)
+    func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+        return try? await createBackupFile(backupType, encryptionPassword: nil)
     }
 
-    func exportFileWithVaultPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
+    func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
         guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
-            debugPrint("Couldn't fetch password for vault")
+            logger.warning("Couldn't fetch password for vault")
             return nil
         }
 
-        return try? createBackupFile(backupType, encryptionPassword: vaultPassword)
+        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
     }
 
-    func exportFileWithCustomPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
-        return try? createBackupFile(backupType, encryptionPassword: encryptionPassword)
+    func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
     }
 
-    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
+    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
         switch backupType {
         case .single(let vault):
-            return try createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+            return try await createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
         case .multiple(let vaults, _):
-            return try createMultipleBackupFile(vaults: vaults, encryptionPassword: encryptionPassword)
+            return try await createMultipleBackupFile(vaults: vaults, encryptionPassword: encryptionPassword)
         }
     }
 
-    func createMultipleBackupFile(vaults: [Vault], encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
+    func createMultipleBackupFile(vaults: [Vault], encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
         let timestamp = Int(Date().timeIntervalSince1970)
         let backupFolderName = "vultisig_backups_\(timestamp)"
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(backupFolderName)
@@ -95,7 +96,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
 
         for vault in vaults {
-            _ = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword, targetDirectory: tempDir)
+            _ = try await generateBackupFile(vault: vault, encryptionPassword: encryptionPassword, targetDirectory: tempDir)
         }
 
         let zipGenerator = ZipFileGenerator()
@@ -115,14 +116,14 @@ class EncryptedBackupViewModel: ObservableObject {
         )
     }
 
-    func generateBackupFile(vault: Vault, encryptionPassword: String?, targetDirectory: URL? = nil) throws -> URL? {
+    func generateBackupFile(vault: Vault, encryptionPassword: String?, targetDirectory: URL? = nil) async throws -> URL? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
         let vsVault = vault.mapToProtobuff()
         let data = try vsVault.serializedData()
 
         if let encryptionPassword {
-            guard let encryptedData = encrypt(data: data, password: encryptionPassword) else {
+            guard let encryptedData = await encrypt(data: data, password: encryptionPassword) else {
                 return nil
             }
             vaultContainer.isEncrypted = true
@@ -141,8 +142,8 @@ class EncryptedBackupViewModel: ObservableObject {
         return fileURL
     }
 
-    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
-        let tempURL = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+        let tempURL = try await generateBackupFile(vault: vault, encryptionPassword: encryptionPassword)
         guard let tempURL, let file = EncryptedDataFile(url: tempURL) else {
             return nil
         }
@@ -155,37 +156,35 @@ class EncryptedBackupViewModel: ObservableObject {
         )
     }
 
-    private func encrypt(data: Data, password: String) -> Data? {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
+    private func encrypt(data: Data, password: String) async -> Data? {
         do {
-            let sealedBox = try AES.GCM.seal(data, using: key)
-            return sealedBox.combined
+            return try await backupEncryption.encrypt(data: data, password: password)
         } catch {
-            print("Error encrypting data: \(error.localizedDescription)")
+            logger.error("Error encrypting backup data: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }
 
-    func importDragDropFile(content: Data) {
+    func importDragDropFile(content: Data) async {
         do {
             if isBakFile() {
                 try importBakFile(data: content)
                 return
             }
 
-            if let decryptedString = decryptOrReadData(data: content, password: "") {
+            if let decryptedString = await decryptOrReadData(data: content, password: "") {
                 decryptedContent = decryptedString
                 isFileUploaded = true
             } else {
                 promptForPasswordAndImport(from: content)
             }
         } catch {
-            print("Error reading file: \(error.localizedDescription)")
+            logger.error("Error reading file: \(error.localizedDescription, privacy: .public)")
         }
     }
 
     // Import
-    func importFile(from url: URL) {
+    func importFile(from url: URL) async {
         _ = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
 
@@ -205,14 +204,14 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
 
-            if let decryptedString = decryptOrReadData(data: data, password: "") {
+            if let decryptedString = await decryptOrReadData(data: data, password: "") {
                 decryptedContent = decryptedString
                 isFileUploaded = true
             } else {
                 promptForPasswordAndImport(from: data)
             }
         } catch {
-            print("Error reading file: \(error.localizedDescription)")
+            logger.error("Error reading file: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -443,13 +442,13 @@ class EncryptedBackupViewModel: ObservableObject {
         return try? Vault(proto: vsVault)
     }
 
-    func processEncryptedVaults(encryptedVaultData: [(fileName: String, data: Data)], processedVaults: [Vault], password: String) {
+    func processEncryptedVaults(encryptedVaultData: [(fileName: String, data: Data)], processedVaults: [Vault], password: String) async {
         var allVaults = processedVaults
         var failedVaults: [String] = []
 
         for (fileName, vaultData) in encryptedVaultData {
             // Decrypt the vault data (returns raw protobuf bytes, not text)
-            if let decryptedData = decrypt(data: vaultData, password: password) {
+            if let decryptedData = await decrypt(data: vaultData, password: password) {
                 // Parse the decrypted protobuf bytes directly
                 do {
                     let vsVault = try VSVault(serializedBytes: decryptedData)
@@ -553,8 +552,8 @@ class EncryptedBackupViewModel: ObservableObject {
         isVaultImported = false
     }
 
-    func importFileWithPassword(from data: Data, password: String) {
-        if let decryptedData = decrypt(data: data, password: password) {
+    func importFileWithPassword(from data: Data, password: String) async {
+        if let decryptedData = await decrypt(data: data, password: password) {
             if isBakFile() {
                 decryptedContent = decryptedData.hexString
             } else if let decryptedString = String(data: decryptedData, encoding: .utf8) {
@@ -570,24 +569,16 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
 
-    func decryptOrReadData(data: Data, password: String) -> String? {
+    func decryptOrReadData(data: Data, password: String) async -> String? {
         if password.isEmpty {
             return String(data: data, encoding: .utf8)
         } else {
-            return decrypt(data: data, password: password).flatMap { String(data: $0, encoding: .utf8) }
+            return await decrypt(data: data, password: password).flatMap { String(data: $0, encoding: .utf8) }
         }
     }
 
-    func decrypt(data: Data, password: String) -> Data? {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
-        do {
-            let sealedBox = try AES.GCM.SealedBox(combined: data)
-            let decryptedData = try AES.GCM.open(sealedBox, using: key)
-            return decryptedData
-        } catch {
-            print("Error decrypting data: \(error.localizedDescription)")
-            return nil
-        }
+    func decrypt(data: Data, password: String) async -> Data? {
+        return await backupEncryption.decrypt(data: data, password: password)
     }
 
     func isDKLS(filename: String) -> Bool {
@@ -723,10 +714,12 @@ class EncryptedBackupViewModel: ObservableObject {
                     return
                 }
                 importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
-                importFile(from: url)
+                Task { @MainActor in
+                    await importFile(from: url)
+                }
             }
         case .failure(let error):
-            print("Error importing file: \(error.localizedDescription)")
+            logger.error("Error importing file: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -736,7 +729,9 @@ class EncryptedBackupViewModel: ObservableObject {
             return
         }
         importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
-        importFile(from: url)
+        Task { @MainActor in
+            await importFile(from: url)
+        }
     }
 
     func handleOnDrop(providers: [NSItemProvider]) async {
@@ -751,13 +746,13 @@ class EncryptedBackupViewModel: ObservableObject {
                 provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     if let data {
                         let url = urlData as URL
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             guard self.isValidFormat(url) else {
                                 self.showInvalidFormatAlert()
                                 return
                             }
                             self.importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
-                            self.importDragDropFile(content: data)
+                            await self.importDragDropFile(content: data)
                         }
                     }
                 }
@@ -785,8 +780,10 @@ extension EncryptedBackupViewModel {
         }
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
+                Task { @MainActor in
+                    self.decryptionPassword = password
+                    await self.importFileWithPassword(from: data, password: password)
+                }
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -805,8 +802,10 @@ extension EncryptedBackupViewModel {
         }
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {
-                self.decryptionPassword = password
-                self.processEncryptedVaults(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults, password: password)
+                Task { @MainActor in
+                    self.decryptionPassword = password
+                    await self.processEncryptedVaults(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults, password: password)
+                }
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
@@ -859,8 +858,10 @@ extension EncryptedBackupViewModel {
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
                 let password = textField.stringValue
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
+                Task { @MainActor in
+                    self.decryptionPassword = password
+                    await self.importFileWithPassword(from: data, password: password)
+                }
             }
             return
         }
@@ -869,8 +870,10 @@ extension EncryptedBackupViewModel {
         alert.beginSheetModal(for: mainWindow) { response in
             if response == .alertFirstButtonReturn {
                 let password = textField.stringValue
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
+                Task { @MainActor in
+                    self.decryptionPassword = password
+                    await self.importFileWithPassword(from: data, password: password)
+                }
             }
         }
     }
@@ -891,8 +894,10 @@ extension EncryptedBackupViewModel {
         let handleResponse: (NSApplication.ModalResponse) -> Void = { response in
             if response == .alertFirstButtonReturn {
                 let password = textField.stringValue
-                self.decryptionPassword = password
-                self.processEncryptedVaults(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults, password: password)
+                Task { @MainActor in
+                    self.decryptionPassword = password
+                    await self.processEncryptedVaults(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults, password: password)
+                }
             } else if response == .alertSecondButtonReturn {
                 // Clear pending encrypted vaults on cancel
                 self.pendingEncryptedVaults = []

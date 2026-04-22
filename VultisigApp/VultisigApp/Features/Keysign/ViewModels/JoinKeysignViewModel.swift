@@ -559,6 +559,7 @@ class JoinKeysignViewModel: ObservableObject {
         return "unverifiedFunction".localized
     }
 
+
     var providerName: String {
         keysignPayload?.swapPayload?.providerName ?? .empty
     }

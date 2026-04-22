@@ -67,20 +67,20 @@ struct FunctionTransactionScreen: View {
                         )
                     }
                 }
-            case .stake(let coin, let defaultAutocompound):
+            case .stake(let coin, let isAutocompound):
                 resolvingCoin(coinMeta: coin) {
                     StakeTransactionScreen(
-                        viewModel: StakeTransactionViewModel(coin: $0, vault: vault, defaultAutocompound: defaultAutocompound),
+                        viewModel: StakeTransactionViewModel(coin: $0, vault: vault, isAutocompound: isAutocompound),
                         onVerify: onVerify
                     )
                 }
-            case .unstake(let coin, let defaultAutocompound, let availableToUnstake):
+            case .unstake(let coin, let isAutocompound, let availableToUnstake):
                 resolvingCoin(coinMeta: coin) {
                     UnstakeTransactionScreen(
                         viewModel: UnstakeTransactionViewModel(
                             coin: $0,
                             vault: vault,
-                            defaultAutocompound: defaultAutocompound,
+                            isAutocompound: isAutocompound,
                             availableToUnstake: availableToUnstake
                         ),
                         onVerify: onVerify

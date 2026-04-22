@@ -28,6 +28,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var currentTitle = "swap"
     @Published var hash: String?
     @Published var approveHash: String?
+    @Published var pendingRetryReason: BroadcastRetryReason?
 
     @Published var error: Error?
     @Published var isLoading = false
@@ -158,6 +159,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func moveToNextView() {
         currentIndex += 1
         currentTitle = titles[currentIndex-1]
+    }
+
+    func retryBroadcast(reason: BroadcastRetryReason) {
+        pendingRetryReason = reason
+        keysignPayload = nil
+        hash = nil
+        approveHash = nil
+        currentIndex = 2
+        currentTitle = titles[currentIndex - 1]
     }
 
     func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {

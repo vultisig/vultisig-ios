@@ -333,6 +333,14 @@ extension ThorchainService {
         let price: Decimal
     }
 
+    /// A single merge account entry as returned by the RUJIRA GraphQL API,
+    /// keyed by the canonical symbol (e.g. "KUJI", "RKUJI", "FUZN").
+    struct RujiMergeAccount {
+        let symbol: String
+        let shares: String
+        let sizeAmount: String
+    }
+
     /// Structure representing a RUJI Stake balance result
     struct RujiStakeBalance {
         let stakeAmount: BigInt
@@ -343,12 +351,10 @@ extension ThorchainService {
         static let empty = RujiStakeBalance(stakeAmount: .zero, stakeTicker: "", rewardsAmount: .zero, rewardsTicker: "")
     }
 
-    /// Fetch merged RUJI balance for a specific token
-    /// - Parameters:
-    ///   - thorAddress: The THORChain address to query
-    ///   - tokenSymbol: The token symbol to check (e.g., "THOR.KUJI", "THOR.RKUJI")
-    /// - Returns: A tuple containing (ruji amount, shares, price per share)
-    func fetchRujiMergeBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
+    /// Fetch every merge account tied to the given THORChain address.
+    /// - Parameter thorAddr: The THORChain address to query.
+    /// - Returns: All merge accounts keyed by their canonical asset symbol.
+    func fetchAllRujiMergeBalances(thorAddr: String) async throws -> [RujiMergeAccount] {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
 
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
@@ -356,37 +362,55 @@ extension ThorchainService {
         }
 
         let query = String(format: Self.mergedAssetsQuery, id)
-
-        let requestBody: [String: Any] = ["query": query]
-
-        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        let bodyData = try JSONSerialization.data(withJSONObject: ["query": query])
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = bodyData
 
         let (data, _) = try await URLSession.shared.data(for: request)
-
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
 
-        // Find the account matching the selected token
-        let cleanTokenSymbol = tokenSymbol.lowercased().replacingOccurrences(of: "thor.", with: "")
+        return decoded.data.node?.merge?.accounts.map { account in
+            RujiMergeAccount(
+                symbol: account.pool.mergeAsset.metadata.symbol,
+                shares: account.shares,
+                sizeAmount: account.size.amount
+            )
+        } ?? []
+    }
 
-        let acc = decoded.data.node?.merge?.accounts.first { account in
-            account.pool.mergeAsset.metadata.symbol.lowercased() == cleanTokenSymbol
-        }
+    /// Fetch merged RUJI balance for a specific token.
+    /// - Parameters:
+    ///   - thorAddr: The THORChain address to query.
+    ///   - tokenSymbol: The token symbol to check (e.g. "THOR.KUJI", "KUJI").
+    /// - Returns: The matching balance or a zero balance when no position exists.
+    func fetchRujiMergeBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
+        let accounts = try await fetchAllRujiMergeBalances(thorAddr: thorAddr)
+        let target = Self.normalizeRujiSymbol(tokenSymbol)
 
-        guard let acc = acc else {
+        guard let match = accounts.first(where: { Self.normalizeRujiSymbol($0.symbol) == target }) else {
+            let available = accounts.map(\.symbol).joined(separator: ", ")
+            logger.warning("No RUJI merge account matched \(tokenSymbol, privacy: .public); available symbols: [\(available, privacy: .public)]")
             return RujiBalance(ruji: 0, shares: "0", price: 0)
         }
 
-        let shares = acc.shares
-        let ruji = Decimal(string: acc.size.amount) ?? 0
-        // Calculate price per share based on user's own position
+        let shares = match.shares
+        let ruji = Decimal(string: match.sizeAmount) ?? 0
         let sharesDecimal = Decimal(string: shares) ?? 1
         let price = sharesDecimal > 0 ? ruji / sharesDecimal : 0
 
         return RujiBalance(ruji: ruji, shares: shares, price: price)
+    }
+
+    /// Normalize a RUJI merge token identifier (e.g. `"THOR.KUJI"`, `"kuji"`, `"KUJI"`)
+    /// into a canonical uppercase ticker suitable for equality comparisons.
+    static func normalizeRujiSymbol(_ symbol: String) -> String {
+        var normalized = symbol.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if normalized.hasPrefix("THOR.") {
+            normalized.removeFirst("THOR.".count)
+        }
+        return normalized
     }
 
     func fetchRujiStakeBalance(thorAddr: String) async throws -> RujiStakeBalance {

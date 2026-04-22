@@ -29,11 +29,11 @@ struct SettingsMainScreen: View {
         SettingsOptionGroup(
             title: "general",
             options: [
+                .notifications,
+                .referralCode,
                 .language,
                 .currency,
-                .notifications,
-                .addressBook,
-                .referralCode
+                .addressBook
             ]
         ),
         SettingsOptionGroup(
@@ -41,6 +41,7 @@ struct SettingsMainScreen: View {
             options: [
                 .faq,
                 .checkForUpdates,
+                .education,
                 .shareApp
             ]
         ),

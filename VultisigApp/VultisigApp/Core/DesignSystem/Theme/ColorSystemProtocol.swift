@@ -32,6 +32,7 @@ public protocol ColorSystemProtocol {
     var bgAlert: Color { get }
     var bgError: Color { get }
     var bgNeutral: Color { get }
+    var bgTooltip: Color { get }
 
     var primaryAccent1: Color { get }
     var primaryAccent2: Color { get }

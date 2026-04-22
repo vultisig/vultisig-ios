@@ -37,6 +37,7 @@ struct SendCryptoDoneHeaderView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
 
+
                 if let heroAmount, let heroTicker {
                     VStack(spacing: 12) {
                         if let heroImage, !heroImage.isEmpty {
