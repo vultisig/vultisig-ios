@@ -9,6 +9,51 @@ import XCTest
 
 final class BlockaidSolanaSimulationParserTests: XCTestCase {
 
+    // MARK: - Decode
+
+    /// Regression guard: Blockaid serialises Solana `raw_value` as a JSON number
+    /// even though the extension's TS type claims string. The strict Swift
+    /// decoder must accept both forms. Captured body is trimmed from a real
+    /// Jupiter swap response.
+    func test_decode_numericRawValue() throws {
+        let json = """
+        {
+          "encoding": "base58",
+          "status": "SUCCESS",
+          "result": {
+            "simulation": {
+              "account_summary": {
+                "account_assets_diff": [
+                  {
+                    "asset": { "type": "SOL", "name": "SOL", "symbol": "SOL", "decimals": 9, "logo": "x" },
+                    "in": null,
+                    "out": { "usd_price": 5.94, "summary": "Lost", "value": 0.067, "raw_value": 67498185 },
+                    "asset_type": "SOL"
+                  },
+                  {
+                    "asset": { "type": "TOKEN", "name": "USD Coin", "symbol": "USDC", "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "decimals": 6, "logo": "y" },
+                    "in": null,
+                    "out": { "usd_price": 0.91, "summary": "Lost", "value": 0.91, "raw_value": 910724 },
+                    "asset_type": "TOKEN"
+                  }
+                ]
+              }
+            },
+            "validation": null
+          },
+          "error": null,
+          "request_id": "r"
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(BlockaidSolanaSimulationResponseJson.self, from: data)
+
+        let diffs = decoded.result?.simulation?.accountSummary?.accountAssetsDiff
+        XCTAssertEqual(diffs?.count, 2)
+        XCTAssertEqual(diffs?[0].out?.rawValue, "67498185")
+        XCTAssertEqual(diffs?[1].out?.rawValue, "910724")
+    }
+
     // MARK: - Short-circuit paths
 
     func test_parseSolana_returnsNil_whenResultMissing() {

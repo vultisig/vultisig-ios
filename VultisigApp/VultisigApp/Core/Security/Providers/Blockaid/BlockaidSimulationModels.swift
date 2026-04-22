@@ -249,11 +249,36 @@ struct BlockaidSolanaSimulationJson: Codable {
         }
     }
 
+    /// Blockaid serialises Solana `raw_value` as a JSON number (unlike the EVM
+    /// payload, which quotes it as a string). Accept both so the strict Swift
+    /// decoder tolerates the shape Blockaid actually returns.
     struct BalanceChange: Codable {
         let rawValue: String?
 
+        init(rawValue: String?) {
+            self.rawValue = rawValue
+        }
+
         enum CodingKeys: String, CodingKey {
             case rawValue = "raw_value"
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let str = try? container.decode(String.self, forKey: .rawValue) {
+                self.rawValue = str
+            } else if let uint = try? container.decode(UInt64.self, forKey: .rawValue) {
+                self.rawValue = String(uint)
+            } else if let int = try? container.decode(Int64.self, forKey: .rawValue) {
+                self.rawValue = String(int)
+            } else {
+                self.rawValue = nil
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(rawValue, forKey: .rawValue)
         }
     }
 }

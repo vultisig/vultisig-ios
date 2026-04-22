@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 
 // MARK: - BlockaidRpcClient Implementation
 
@@ -89,15 +88,11 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         rawTransactions: [String]
     ) async throws -> BlockaidSolanaSimulationResponseJson {
         let request = buildSolanaSimulateRequest(address: address, rawTransactions: rawTransactions)
-        let rawResponse = try await httpClient.request(BlockaidAPI.scanSolanaTransaction(request))
-        do {
-            return try JSONDecoder().decode(BlockaidSolanaSimulationResponseJson.self, from: rawResponse.data)
-        } catch {
-            let body = String(data: rawResponse.data, encoding: .utf8) ?? "<non-utf8>"
-            let logger = Logger(subsystem: "com.vultisig.app", category: "blockaid-simulation")
-            logger.error("solana simulate decode failed: \(error.localizedDescription) — body: \(body, privacy: .public)")
-            throw error
-        }
+        let response = try await httpClient.request(
+            BlockaidAPI.scanSolanaTransaction(request),
+            responseType: BlockaidSolanaSimulationResponseJson.self
+        )
+        return response.data
     }
 
     func scanSuiTransaction(
