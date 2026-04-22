@@ -84,7 +84,7 @@ struct HeroContentView: View {
                 Text(" \(coin.ticker)")
                     .foregroundStyle(Theme.colors.textTertiary)
             )
-            .font(Theme.fonts.bodyLMedium)
+            .font(Theme.fonts.priceBodyL)
         }
     }
 
