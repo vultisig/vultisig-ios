@@ -50,10 +50,14 @@ actor BlockaidSimulationService {
     /// contract call (for EVM) or has no raw transactions (for Solana), or
     /// the scan fails.
     func scan(keysignPayload: KeysignPayload) async -> BlockaidKeysignScanResult {
-        guard let key = CacheKey(payload: keysignPayload) else { return .empty }
+        guard let key = CacheKey(payload: keysignPayload) else {
+            logger.info("scan skipped: unsupported payload (chain=\(keysignPayload.coin.chain.ticker, privacy: .public), chainType=\(String(describing: keysignPayload.coin.chainType), privacy: .public), hasMemo=\(keysignPayload.memo?.isEmpty == false), hasSignSolana=\(keysignPayload.signSolana != nil))")
+            return .empty
+        }
 
         if let cached = cache[key] { return cached }
         if let pending = inflight[key] { return (try? await pending.value) ?? .empty }
+        logger.info("scan dispatching for key=\(String(describing: key), privacy: .public)")
 
         let task: Task<BlockaidKeysignScanResult, Error>
         switch key {
@@ -115,7 +119,11 @@ actor BlockaidSimulationService {
                 guard let data = Data(base64Encoded: base64) else { return nil }
                 return Base58.encodeNoCheck(data: data)
             }
-            guard !rawTxsBase58.isEmpty else { return .empty }
+            guard !rawTxsBase58.isEmpty else {
+                logger.warning("solana scan aborted: rawTransactions base64 decode produced empty list (input count=\(rawTxsBase64.count))")
+                return .empty
+            }
+            logger.info("solana scan calling rpc with \(rawTxsBase58.count) tx(s)")
 
             let response = try await rpcClient.simulateSolanaTransaction(
                 address: keysignPayload.coin.address,
@@ -123,6 +131,9 @@ actor BlockaidSimulationService {
             )
             Self.debugLog(response: response, logger: logger)
             let simulation = BlockaidSimulationParser.parseSolana(response: response)
+            if simulation == nil {
+                logger.info("solana parse returned nil — no diffs or unrecognized shape")
+            }
             return BlockaidKeysignScanResult(
                 simulation: simulation,
                 scannerResult: nil
