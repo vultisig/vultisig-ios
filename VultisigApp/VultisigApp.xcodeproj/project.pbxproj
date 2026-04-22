@@ -652,6 +652,7 @@
 		84EA8FA0C63B4F2B11B39C45 /* THORChainStakeInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FF72BB51C0FFBC1BB01AA17 /* THORChainStakeInteractorTests.swift */; };
 		8540AB851B242445AADAC815 /* CoinExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31181CF44EA87AC03D9B9497 /* CoinExtensionTests.swift */; };
 		8572B6910CB7E64BD6260D6C /* TransactionStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */; };
+		8944673DA4B36AB8D2458809 /* ContractCallExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347B6BCF87538EB1EC27B4BF /* ContractCallExtractor.swift */; };
 		8B4BFACA727A321A94A8CCA0 /* TransactionHistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E33EE28C2420BB980A60F3D /* TransactionHistoryScreen.swift */; };
 		8C61F213A6F1A0F4A97024E5 /* AgentChatMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB37A5BFE7156A8C034D7B /* AgentChatMessageView.swift */; };
 		8D8CD1A7DF304D8074C03B4E /* SingleKeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */; };
@@ -763,7 +764,6 @@
 		A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */; };
 		A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */; };
 		A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8182BA2687D00484689 /* TokensStore.swift */; };
-		8944673DA4B36AB8D2458809 /* ContractCallExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347B6BCF87538EB1EC27B4BF /* ContractCallExtractor.swift */; };
 		A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */; };
 		A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
@@ -1105,6 +1105,7 @@
 		C20EA28920FB1554155AA332 /* ForegroundNotificationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6A38BCCA67E47B84787AA0 /* ForegroundNotificationParser.swift */; };
 		C37D6C319209C091BBBBD937 /* LaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC628CAF520ACB95D0DECBC /* LaunchTests.swift */; };
 		C393A0F317AFEC933348D8A5 /* SolanaTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B08FAA81BD1AD27E98344042 /* SolanaTransactionStatusAPI.swift */; };
+		C3CB9C06844469DE21CD1F27 /* ContractCallExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602499BC8C8E489FE006335D /* ContractCallExtractorTests.swift */; };
 		CCD4367C48BE63087AD4736C /* LPUnitsValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */; };
 		CE4F321A3F8A17A978BE0C14 /* VultisigUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 538DC0B883677338C0113186 /* VultisigUITestCase.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
@@ -1817,6 +1818,7 @@
 		2987AFF9D2BF542D8A798F9E /* VaultNotificationSetupSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultNotificationSetupSheet.swift; sourceTree = "<group>"; };
 		29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleApiService.swift; sourceTree = "<group>"; };
 		31181CF44EA87AC03D9B9497 /* CoinExtensionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinExtensionTests.swift; sourceTree = "<group>"; };
+		347B6BCF87538EB1EC27B4BF /* ContractCallExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractCallExtractor.swift; sourceTree = "<group>"; };
 		35953B42171F515630BA7E9B /* CircleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
 		35B621377F63B9A5B4DEE2D1 /* AgentAuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentAuthService.swift; sourceTree = "<group>"; };
 		3649DFEAF4C207AD2307E8B7 /* TransactionHistoryRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionHistoryRouter.swift; sourceTree = "<group>"; };
@@ -1879,6 +1881,7 @@
 		5CE5D50E07EFD9201F09BDC4 /* ForegroundNotificationBannerModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ForegroundNotificationBannerModifier.swift; sourceTree = "<group>"; };
 		5DD47F58E085AADDA037E719 /* DilithiumAlreadyGeneratedSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DilithiumAlreadyGeneratedSheet.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
+		602499BC8C8E489FE006335D /* ContractCallExtractorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContractCallExtractorTests.swift; sourceTree = "<group>"; };
 		603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebViewCoordinator.swift; sourceTree = "<group>"; };
 		615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastVaultKeysignService.swift; sourceTree = "<group>"; };
 		6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusService.swift; sourceTree = "<group>"; };
@@ -2017,7 +2020,6 @@
 		A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpToDateView.swift; sourceTree = "<group>"; };
 		A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpdateNowView.swift; sourceTree = "<group>"; };
 		A61BC8182BA2687D00484689 /* TokensStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensStore.swift; sourceTree = "<group>"; };
-		347B6BCF87538EB1EC27B4BF /* ContractCallExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractCallExtractor.swift; sourceTree = "<group>"; };
 		A61CDCEFBC18B3F5073DB943 /* AgentTransactionBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentTransactionBuilder.swift; sourceTree = "<group>"; };
 		A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCheckUpdateViewModel.swift; sourceTree = "<group>"; };
 		A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCheckUpdateView.swift; sourceTree = "<group>"; };
@@ -5332,6 +5334,7 @@
 				E2E2CF766FE1519AEDA4729B /* BlockaidSimulationServiceTests.swift */,
 				7FADD02CF36DA8DC9A9894F8 /* ChainDetailViewModelTests.swift */,
 				1FF72BB51C0FFBC1BB01AA17 /* THORChainStakeInteractorTests.swift */,
+				602499BC8C8E489FE006335D /* ContractCallExtractorTests.swift */,
 			);
 			name = Services;
 			path = Services;
@@ -8274,6 +8277,7 @@
 				AC8444564DAEC47BB818BE79 /* BlockaidSimulationParserTests.swift in Sources */,
 				BAAAEB439D8E9D5818AD849D /* BlockaidSimulationServiceTests.swift in Sources */,
 				E9479AAC4758EEAD02DAEBA6 /* VaultBackupEncryptionTest.swift in Sources */,
+				C3CB9C06844469DE21CD1F27 /* ContractCallExtractorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
