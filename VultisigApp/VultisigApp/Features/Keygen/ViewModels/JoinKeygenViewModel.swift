@@ -53,6 +53,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var error: JoinKeygenError? = nil
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
+    @Published var isTssBatch: Bool = false
 
     var encryptionKeyHex: String = ""
     var singleKeygenType: SingleKeygenType = .MLDSA
@@ -217,6 +218,7 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
                 keyImportChains = keygenMsg.chains
+                isTssBatch = keygenMsg.isTssBatch
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
                     error = .vaultNameAlreadyExists
                     logger.error("Vault name already exists: \(keygenMsg.vaultName)")
@@ -233,6 +235,7 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
+                isTssBatch = reshareMsg.isTssBatch
 
                 if tssType == .Migrate {
                     // this logic only applies to migrate

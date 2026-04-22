@@ -66,12 +66,6 @@ struct SettingsAdvancedView: View {
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
-
-            SettingToggleCell(
-                title: "TSS Batching",
-                icon: "bolt.horizontal",
-                isEnabled: $settingsViewModel.tssBatchEnabled
-            )
         }
     }
 }

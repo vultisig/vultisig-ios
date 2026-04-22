@@ -12,4 +12,5 @@ struct KeygenMessage {
     let vaultName: String
     let libType: LibType
     let chains: [Chain]
+    let isTssBatch: Bool
 }
