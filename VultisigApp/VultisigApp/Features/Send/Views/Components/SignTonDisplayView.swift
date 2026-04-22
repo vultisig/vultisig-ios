@@ -78,7 +78,7 @@ struct SignTonDisplayView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.colors.bgPrimary)
-        .cornerRadius(8)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func badge(_ text: String) -> some View {
@@ -88,7 +88,7 @@ struct SignTonDisplayView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(Theme.colors.bgSurface2)
-            .cornerRadius(4)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 
     private func formatAmount(_ raw: String) -> String {
