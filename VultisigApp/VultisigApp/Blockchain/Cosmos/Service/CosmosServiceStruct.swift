@@ -12,6 +12,12 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-ser
 
 struct CosmosServiceStruct {
     let config: CosmosServiceConfig
+    private let httpClient: HTTPClientProtocol
+
+    init(config: CosmosServiceConfig, httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.config = config
+        self.httpClient = httpClient
+    }
 
     // MARK: - Balance Operations
 
@@ -24,9 +30,11 @@ struct CosmosServiceStruct {
                 return [CosmosBalance]()
             }
 
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-            return balanceResponse.balances
+            let response = try await httpClient.request(
+                URLPassthroughAPI.get(url: url),
+                responseType: CosmosBalanceResponse.self
+            )
+            return response.data.balances
 
         } else {
             let balance = try await fetchWasmTokenBalances(coin: coin, address: address)
@@ -43,27 +51,23 @@ struct CosmosServiceStruct {
         }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let response = try await httpClient.request(
+                URLPassthroughAPI.get(url: url),
+                responseType: CosmosIbcDenomTrace.self
+            )
 
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(CosmosIbcDenomTrace.self, from: data)
-
-            if let denomTrace = response.denomTrace {
+            if let denomTrace = response.data.denomTrace {
                 return denomTrace
-            } else if let error = response.error {
+            } else if let error = response.data.error {
                 print("Error fetching IBC denom traces: \(error)")
-                // Handle "not implemented" error
                 return nil
-            } else if let code = response.code, let message = response.message {
+            } else if let code = response.data.code, let message = response.data.message {
                 print("Error fetching IBC denom traces - Code: \(code), Message: \(message)")
-                // Handle general error
                 return nil
             } else {
-                // Handle unexpected response
                 return nil
             }
         } catch {
-            // Return nil in case of any error
             return nil
         }
     }
@@ -82,9 +86,9 @@ struct CosmosServiceStruct {
             return "0"
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try await httpClient.request(URLPassthroughAPI.get(url: url))
 
-        if let balance = Utils.extractResultFromJson(fromData: data, path: "data.balance") as? String {
+        if let balance = Utils.extractResultFromJson(fromData: response.data, path: "data.balance") as? String {
             return balance
         }
 
@@ -98,9 +102,9 @@ struct CosmosServiceStruct {
             return "0"
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try await httpClient.request(URLPassthroughAPI.get(url: url))
 
-        if let block = Utils.extractResultFromJson(fromData: data, path: "block.header.height") as? String {
+        if let block = Utils.extractResultFromJson(fromData: response.data, path: "block.header.height") as? String {
             return block
         }
 
@@ -114,9 +118,11 @@ struct CosmosServiceStruct {
             return nil
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let accountResponse = try JSONDecoder().decode(CosmosAccountsResponse.self, from: data)
-        return accountResponse.account
+        let response = try await httpClient.request(
+            URLPassthroughAPI.get(url: url),
+            responseType: CosmosAccountsResponse.self
+        )
+        return response.data.account
     }
 
     // MARK: - Transaction Operations
@@ -126,21 +132,9 @@ struct CosmosServiceStruct {
             return .failure(HelperError.runtimeError("Failed to convert input json to data"))
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = jsonData
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
         do {
-            let (data, resp) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = resp as? HTTPURLResponse else {
-                return .failure(HelperError.runtimeError("Invalid HTTP response"))
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return .failure(HelperError.runtimeError("Status code: \(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"))
-            }
-            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: data)
+            let raw = try await httpClient.request(URLPassthroughAPI.post(url: url, body: jsonData))
+            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
             let code = response.txResponse?.code
             let rawLog = response.txResponse?.rawLog
             if let code, code == 0 || code == 19 {
@@ -148,10 +142,12 @@ struct CosmosServiceStruct {
                     return .success(txHash)
                 }
             }
-            let responseBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            let responseBody = String(data: raw.data, encoding: .utf8) ?? "Unknown error"
             logger.error("Cosmos broadcast failed: code=\(code ?? -1), rawLog=\(rawLog ?? "nil"), body=\(responseBody)")
             return .failure(HelperError.runtimeError(responseBody))
-
+        } catch HTTPError.statusCode(let code, let data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "Unknown error"
+            return .failure(HelperError.runtimeError("Status code: \(code), \(body)"))
         } catch {
             return .failure(error)
         }

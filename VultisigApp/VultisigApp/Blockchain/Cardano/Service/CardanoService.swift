@@ -10,14 +10,16 @@ class CardanoService {
 
     static let shared = CardanoService()
 
-    private init() {}
+    private let httpClient: HTTPClientProtocol
+
+    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func getBalance(address: String) async throws -> String {
-        let url = URL(string: Endpoint.fetchCardanoBalance())!
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let url = URL(string: Endpoint.fetchCardanoBalance()) else {
+            return "0"
+        }
 
         // Koios API expects JSON body with addresses array
         let requestBody = [
@@ -25,20 +27,11 @@ class CardanoService {
         ]
 
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return "0"
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return "0"
-            }
+            let body = try JSONSerialization.data(withJSONObject: requestBody)
+            let response = try await httpClient.request(URLPassthroughAPI.post(url: url, body: body))
 
             // Parse Koios API response - it returns a direct array, not wrapped in "data"
-            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            guard let dataArray = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]] else {
                 return "0"
             }
 
@@ -58,11 +51,9 @@ class CardanoService {
     }
 
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        let url = URL(string: Endpoint.fetchCardanoUTXOs())!
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let url = URL(string: Endpoint.fetchCardanoUTXOs()) else {
+            return []
+        }
 
         // Koios API expects JSON body with addresses array
         let requestBody = [
@@ -70,20 +61,11 @@ class CardanoService {
         ]
 
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return []
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return []
-            }
+            let body = try JSONSerialization.data(withJSONObject: requestBody)
+            let response = try await httpClient.request(URLPassthroughAPI.post(url: url, body: body))
 
             // Parse Koios API response for UTXOs
-            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            guard let dataArray = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]] else {
                 return []
             }
 
@@ -122,24 +104,14 @@ class CardanoService {
     /// Fetch current Cardano slot from Koios API
     /// This is used for dynamic TTL calculation to ensure all TSS devices use the same slot reference
     func getCurrentSlot() async throws -> UInt64 {
-        let url = URL(string: "https://api.koios.rest/api/v1/tip")!
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "CardanoServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        guard let url = URL(string: "https://api.koios.rest/api/v1/tip") else {
+            throw NSError(domain: "CardanoServiceError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid tip URL"])
         }
 
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode)"])
-        }
+        let response = try await httpClient.request(URLPassthroughAPI.get(url: url))
 
         // Koios API returns an array with one object
-        guard let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+        guard let jsonArray = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]],
               let tipInfo = jsonArray.first,
               let absSlot = tipInfo["abs_slot"] as? UInt64 else {
             throw NSError(domain: "CardanoServiceError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to parse slot from response"])
@@ -233,10 +205,6 @@ class CardanoService {
     func broadcastTransaction(signedTransaction: String) async throws -> String {
         let url = Endpoint.cardanoBroadcast()
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
         // Construct JSON-RPC request
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
@@ -247,18 +215,24 @@ class CardanoService {
             "id": 1
         ]
 
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        let body = try JSONSerialization.data(withJSONObject: requestBody)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "CardanoServiceError", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        let responseData: Data
+        let statusCode: Int
+        do {
+            let response = try await httpClient.request(URLPassthroughAPI.post(url: url, body: body))
+            responseData = response.data
+            statusCode = response.response.statusCode
+        } catch HTTPError.statusCode(let code, let data) {
+            // Non-2xx: keep the parse path below so we can recognize RPC code 3117
+            // ("already in mempool") even when the server returns HTTP 400.
+            responseData = data ?? Data()
+            statusCode = code
         }
 
-        // Try to parse JSON response first, as it might contain specific error codes we want to handle (like 3117)
-        // even if the HTTP status code is an error (e.g., 400)
-        if let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-
+        // Try to parse JSON response first, as it might contain specific error codes we want to handle
+        // (like 3117) even if the HTTP status code is an error (e.g., 400).
+        if let jsonResponse = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any] {
             // Check for RPC error
             if let error = jsonResponse["error"] as? [String: Any] {
                 if let code = error["code"] as? Int, code == 3117 {
@@ -274,8 +248,8 @@ class CardanoService {
 
                 // If it's another error and status code is bad, we'll throw later or here
                 if let message = error["message"] as? String {
-                     // If we have a specific error message from RPC, prefer it over generic HTTP error
-                     throw NSError(domain: "CardanoServiceError", code: 9, userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(message)"])
+                    // If we have a specific error message from RPC, prefer it over generic HTTP error
+                    throw NSError(domain: "CardanoServiceError", code: 9, userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(message)"])
                 }
             }
 
@@ -289,18 +263,16 @@ class CardanoService {
         }
 
         // If we haven't returned yet, check HTTP status code
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Try to get error message from response
-            var errorDetail = "HTTP \(httpResponse.statusCode)"
-            if let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+        guard (200...299).contains(statusCode) else {
+            var errorDetail = "HTTP \(statusCode)"
+            if let responseString = String(data: responseData, encoding: .utf8), !responseString.isEmpty {
                 errorDetail += ": \(responseString)"
             }
-            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
+            throw NSError(domain: "CardanoServiceError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
         }
 
-        // If we got here, it means status was 200 OK but we failed to parse JSON or find result
-        // Try to parse JSON again for debugging message if possible
-        let jsonString = String(data: data, encoding: .utf8) ?? "invalid data"
+        // If we got here, status was 200 OK but we failed to parse JSON or find result
+        let jsonString = String(data: responseData, encoding: .utf8) ?? "invalid data"
         throw NSError(domain: "CardanoServiceError", code: 10, userInfo: [NSLocalizedDescriptionKey: "Missing result in RPC response: \(jsonString)"])
     }
 }

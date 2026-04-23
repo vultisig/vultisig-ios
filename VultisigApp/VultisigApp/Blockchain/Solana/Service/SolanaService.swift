@@ -45,6 +45,8 @@ struct SendTransactionResponse: Codable {
 class SolanaService {
     static let shared = SolanaService()
 
+    private let httpClient: HTTPClientProtocol = HTTPClient()
+
     private init() {}
 
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
@@ -468,15 +470,9 @@ class SolanaService {
     }
 
     private func postRequest(with requestBody: [String: Any], url: URL) async throws -> Data {
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-        request.timeoutInterval = 10
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        return data
+        let body = try JSONSerialization.data(withJSONObject: requestBody)
+        let response = try await httpClient.request(URLPassthroughAPI.post(url: url, body: body))
+        return response.data
     }
 
     private func parseSolanaTokenResponse(jsonData: Data) throws -> SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]> {
