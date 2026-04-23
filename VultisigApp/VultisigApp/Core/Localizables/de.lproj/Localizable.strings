@@ -366,6 +366,7 @@
 "fastLoaderTitle" = "Suche nach FastVaultServer";
 "fastModeTitle" = "SCHNELL";
 "fastSetUp" = "Schnelle Einrichtung";
+"fastVaultRegistrationFailed" = "Registrierung beim Vultiserver fehlgeschlagen. Bitte erneut versuchen.";
 "fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nKleine Beträge für schnelle Aktionen speichern\nVultiserver unterzeichnet sofort";
 "fee" = "Gebühr";
 "filterByAsset" = "Nach Asset filtern";
