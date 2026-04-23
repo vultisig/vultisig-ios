@@ -468,10 +468,11 @@ make ui_test
 make ui_test DESTINATION='platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
 ```
 
-Drop to raw `xcodebuild` only when you need `-only-testing:` filtering:
+Drop to raw `xcodebuild` only when you need `-only-testing:` filtering. Prepend `make generate` so newly added test files are in the project:
 
 ```bash
 # Run a specific test class
+make generate
 cd VultisigApp && xcodebuild test \
     -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
@@ -480,6 +481,7 @@ cd VultisigApp && xcodebuild test \
     -skipPackagePluginValidation
 
 # Run a specific test method
+make generate
 cd VultisigApp && xcodebuild test \
     -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
@@ -530,9 +532,12 @@ Follow this checklist when adding UI tests for a screen:
 
 ### Step 5 — Run and Verify
 
+Always regenerate the project first — new Swift files aren't in `VultisigApp.xcodeproj` until `xcodegen` picks them up.
+
 Filtered runs need raw `xcodebuild`; full runs go through `make ui_test`:
 
 ```bash
+make generate
 cd VultisigApp && xcodebuild test \
     -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
