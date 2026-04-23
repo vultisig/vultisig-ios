@@ -287,11 +287,13 @@ class Endpoint {
         toAsset: String,
         amount: String,
         interval: String,
+        streamingQuantity: String = "",
         referredCode: String,
         vultTierDiscount: Int
     ) -> URL {
         let affiliateParams = buildAffiliateParams(chain: chain, referredCode: referredCode, discountBps: vultTierDiscount)
-        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(affiliateParams)".asUrl
+        let streamingQuantityParam = streamingQuantity.isEmpty ? "" : "&streaming_quantity=\(streamingQuantity)"
+        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(streamingQuantityParam)\(affiliateParams)".asUrl
     }
 
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {

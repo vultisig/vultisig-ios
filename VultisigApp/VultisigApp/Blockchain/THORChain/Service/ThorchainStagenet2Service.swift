@@ -123,6 +123,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
+        streamingQuantity: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -134,6 +135,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             toAsset: toAsset,
             amount: amount,
             interval: String(interval),
+            streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : "",
             referredCode: referredCode,
             vultTierDiscount: vultTierDiscount
         )
