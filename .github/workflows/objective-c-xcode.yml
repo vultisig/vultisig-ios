@@ -18,7 +18,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        # Idempotent: skip `brew install` if xcodegen is already on the runner.
+        run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
 
       - name: Generate Xcode project
         run: make generate
