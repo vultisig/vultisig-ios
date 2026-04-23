@@ -2,6 +2,16 @@ import XCTest
 import BigInt
 @testable import VultisigApp
 
+// `formatToDecimal` uses `Locale.current`, so hardcoded `.`-separated
+// expected strings fail on simulators in comma-decimal locales (e.g. de_DE).
+// `.localeDecimal` rewrites the expected value with the current separator.
+private extension String {
+    var localeDecimal: String {
+        let sep = Locale.current.decimalSeparator ?? "."
+        return replacingOccurrences(of: ".", with: sep)
+    }
+}
+
 class SwapPercentageTests: XCTestCase {
 
     func testBTCPercentageCalculation() {
@@ -27,7 +37,7 @@ class SwapPercentageTests: XCTestCase {
         let formattedAmount = twentyFivePercent.formatToDecimal(digits: 8)
 
         // Should be 0.00005330 BTC, not 0.0001
-        XCTAssertEqual(formattedAmount, "0.00005330", "25% of 0.00021322 BTC should be 0.00005330")
+        XCTAssertEqual(formattedAmount, "0.0000533".localeDecimal, "25% of 0.00021322 BTC should be 0.00005330")
 
         // Test with the actual implementation's logic (using max(4, decimals))
         let decimalsToUse = max(4, btcCoin.decimals)
@@ -35,17 +45,17 @@ class SwapPercentageTests: XCTestCase {
 
         // Test all percentages
         let testCases: [(percentage: Double, expected: String)] = [
-            (0.25, "0.00005330"),
+            (0.25, "0.0000533"),
             (0.50, "0.00010661"),
             (0.75, "0.00015991"),
             (1.00, "0.00021322")
         ]
 
         for testCase in testCases {
-            let calculatedAmount = (balance * testCase.percentage).formatToDecimal(digits: decimalsToUse)
+            let calculatedAmount = (balance * Decimal(testCase.percentage)).formatToDecimal(digits: decimalsToUse)
             XCTAssertEqual(
                 calculatedAmount,
-                testCase.expected,
+                testCase.expected.localeDecimal,
                 "\(Int(testCase.percentage * 100))% of 0.00021322 BTC should be \(testCase.expected)"
             )
         }
@@ -82,7 +92,7 @@ class SwapPercentageTests: XCTestCase {
 
         // Test 25% calculation with capped decimals
         let twentyFivePercent = (balance * 0.25).formatToDecimal(digits: decimalsToUse)
-        XCTAssertEqual(twentyFivePercent, "0.002235192", "25% calculation should be capped at 9 decimals")
+        XCTAssertEqual(twentyFivePercent, "0.002235192".localeDecimal, "25% calculation should be capped at 9 decimals")
     }
 
     func testEVMDecimalCapping() {

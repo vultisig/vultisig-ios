@@ -209,13 +209,10 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
-          # Orphan test files: present on disk but never added to the legacy
-          # target. SwapPercentageTests has a Decimal/Double type error;
-          # the other two likely just need re-adding. Fix or remove in a
-          # follow-up PR; excluded here to preserve legacy behavior exactly.
+          # Integration test written against an ApplicationState API that no
+          # longer exists (`currentVault` was removed). Re-enable after
+          # porting to the current vault-selection API.
           - "Services/KyberSwapServiceTests.swift"
-          - "Services/SwapPercentageTests.swift"
-          - "Chains/ThorAddressValidationTests.swift"
 
     settings:
       base:
