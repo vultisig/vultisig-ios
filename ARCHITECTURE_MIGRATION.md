@@ -292,5 +292,5 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 2. **No logic changes** — only file moves and import path updates. If a file needs refactoring, that's a separate PR.
 3. **Build must pass** after every task group. Never merge a broken build.
 4. **SwiftLint must pass** — no new warnings.
-5. **Update `project.pbxproj`** via `/add-xcode-files` skill — never edit manually.
+5. **Do not edit `project.pbxproj`** — it is generated from `VultisigApp/project.yml` by XcodeGen. Moves/renames/deletions of Swift files are picked up automatically by the next `./VultisigApp/scripts/bootstrap.sh` run.
 6. **Do not touch `Tss/`** internal structure — only move the directory as a unit.

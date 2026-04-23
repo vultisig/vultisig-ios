@@ -96,3 +96,12 @@ VultisigApp.app
 
 # Claude Code - ignore local settings
 .claude/settings.local.json
+
+# XcodeGen — project is generated from VultisigApp/project.yml.
+# Run VultisigApp/scripts/bootstrap.sh after pulling changes.
+VultisigApp/VultisigApp.xcodeproj/project.pbxproj
+VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme
+VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcdebugger/
+VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcschememanagement.plist
+# Keep Package.resolved under version control even though it lives inside the xcodeproj.
+!VultisigApp/VultisigApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

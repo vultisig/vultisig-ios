@@ -109,7 +109,7 @@ verify: ["swiftlint lint"]
 | `large` | 8+ | 500+ | **SPLIT THIS** |
 
 ## Key Repo Rules
-- Never edit `project.pbxproj` directly — use `/add-xcode-files`
+- Never edit `project.pbxproj` directly — it is generated from `VultisigApp/project.yml` by XcodeGen. Change sources or `project.yml` and run `./VultisigApp/scripts/bootstrap.sh`.
 - Never modify `Blockchain/Tss/` without explicit review
 - Use `"key".localized` for all user-facing strings
 - Update ALL 7 locale files for string changes

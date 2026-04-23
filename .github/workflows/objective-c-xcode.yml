@@ -16,7 +16,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: VultisigApp
+        run: xcodegen generate --spec project.yml
+
       - name: Cache SwiftPM
         uses: actions/cache@v4
         with:

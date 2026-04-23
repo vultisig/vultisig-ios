@@ -28,7 +28,7 @@ _How to fill the Vultisig issue template so agents AND humans produce great resu
 
 ## Key Rules for This Repo
 
-- **DO NOT** edit `project.pbxproj` directly — use `/add-xcode-files` skill
+- **DO NOT** edit `project.pbxproj` directly — it is generated from `VultisigApp/project.yml` by XcodeGen. Add/remove Swift files on disk and run `./VultisigApp/scripts/bootstrap.sh`.
 - **DO NOT** modify TSS/crypto code without explicit review approval
 - All user-facing strings must use `.localized` and appear in all 7 locale files
 - All colors/fonts must use `Theme.colors.*` / `Theme.fonts.*`
