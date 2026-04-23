@@ -288,7 +288,9 @@ schemes:
   VultisigAppUITests:
     build:
       targets:
-        VultisigApp: [run, test]
+        # Host app only needs to launch (`run`) — UITests don't exercise its
+        # unit tests, so dropping `test` keeps the UITest build lighter.
+        VultisigApp: [run]
         VultisigAppUITests: [test]
     run:
       config: Debug
