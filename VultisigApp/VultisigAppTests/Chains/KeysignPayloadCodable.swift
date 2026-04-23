@@ -889,6 +889,7 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         case signDirect = "sign_direct"
         case signAmino = "sign_amino"
         case signSolana = "sign_solana"
+        case signTon = "sign_ton"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -904,6 +905,9 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         } else if container.contains(.signSolana) {
             let signSolana = try container.decode(VSSignSolana.self, forKey: .signSolana)
             self = .signSolana(signSolana)
+        } else if container.contains(.signTon) {
+            let signTon = try container.decode(VSSignTon.self, forKey: .signTon)
+            self = .signTon(signTon)
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
@@ -923,6 +927,8 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignDirect, forKey: .signDirect)
         case .signSolana(let vSSignSolana):
             try container.encode(vSSignSolana, forKey: .signSolana)
+        case .signTon(let vSSignTon):
+            try container.encode(vSSignTon, forKey: .signTon)
         }
     }
 }
@@ -1169,6 +1175,57 @@ extension VSSignSolana: @retroactive Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         rawTransactions = try container.decode([String].self, forKey: .rawTransactions)
+    }
+}
+
+extension VSTonMessage: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case to
+        case amount
+        case payload
+        case stateInit = "state_init"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(to, forKey: .to)
+        try container.encode(amount, forKey: .amount)
+        if hasPayload {
+            try container.encode(payload, forKey: .payload)
+        }
+        if hasStateInit {
+            try container.encode(stateInit, forKey: .stateInit)
+        }
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        to = try container.decode(String.self, forKey: .to)
+        amount = try container.decode(String.self, forKey: .amount)
+        if let payloadValue = try container.decodeIfPresent(String.self, forKey: .payload) {
+            payload = payloadValue
+        }
+        if let stateInitValue = try container.decodeIfPresent(String.self, forKey: .stateInit) {
+            stateInit = stateInitValue
+        }
+    }
+}
+
+extension VSSignTon: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case tonMessages = "ton_messages"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(tonMessages, forKey: .tonMessages)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        tonMessages = try container.decode([VSTonMessage].self, forKey: .tonMessages)
     }
 }
 
