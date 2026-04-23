@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+import OSLog
 
+@MainActor
 class PhoneCheckUpdateViewModel: ObservableObject {
     @Published var showError: Bool = false
     @Published var showDetails: Bool = false
@@ -16,43 +18,38 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     @Published var latestVersionString: String = ""
     @Published var currentVersionString: String = ""
 
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "update-check")
     private let logic = PhoneCheckUpdateLogic()
 
     func checkForUpdates(isAutoCheck: Bool = false) {
-        let currentVersion = logic.currentAppVersion()
-        let bundleID = Bundle.main.bundleIdentifier ?? ""
-
-        logic.fetchLatestAppStoreVersion(bundleID: bundleID) { [weak self] latestVersion in
+        Task { [weak self] in
             guard let self else { return }
-            guard let latestVersion = latestVersion else {
-                self.showErrorMessage()
-                print("Could not fetch the latest version from the App Store.")
-                return
-            }
 
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
-            let fullCurrentVersion = currentVersion + "." + build
+            let currentVersion = logic.currentAppVersion()
+            let bundleID = Bundle.main.bundleIdentifier ?? ""
 
-            let comparisonResult = self.logic.compareVersions(fullCurrentVersion, latestVersion)
-            DispatchQueue.main.async {
-                switch comparisonResult {
+            do {
+                let latestVersion = try await logic.fetchLatestAppStoreVersion(bundleID: bundleID)
+                let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+                let fullCurrentVersion = currentVersion + "." + build
+
+                switch logic.compareVersions(fullCurrentVersion, latestVersion) {
                 case .orderedAscending:
                     self.isUpdateAvailable = true
-
                     if isAutoCheck {
                         self.showUpdateAlert = true
                     } else {
                         self.showDetails = true
                     }
-                case .orderedSame:
-                    self.isUpdateAvailable = false
-                    self.showDetails = true
-                case .orderedDescending:
+                case .orderedSame, .orderedDescending:
                     self.isUpdateAvailable = false
                     self.showDetails = true
                 }
 
                 self.updateTextValues(fullCurrentVersion, latestVersion)
+            } catch {
+                logger.error("Could not fetch the latest version from the App Store: \(error.localizedDescription)")
+                self.showError = true
             }
         }
     }
@@ -61,17 +58,21 @@ class PhoneCheckUpdateViewModel: ObservableObject {
         currentVersionString = "Version " + currentVersion
         latestVersionString = "Version " + latestVersion
     }
-
-    func showErrorMessage() {
-        DispatchQueue.main.async {
-            self.showError = true
-        }
-    }
 }
 
 // MARK: - PhoneCheckUpdateLogic
 
 struct PhoneCheckUpdateLogic {
+
+    enum LookupError: Error {
+        case missingVersion
+    }
+
+    private let httpClient: HTTPClientProtocol
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func currentAppVersion() -> String {
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
@@ -80,37 +81,18 @@ struct PhoneCheckUpdateLogic {
         return "Unknown"
     }
 
-    func fetchLatestAppStoreVersion(bundleID: String, completion: @escaping (String?) -> Void) {
-        let urlStr = "https://itunes.apple.com/lookup?bundleId=\(bundleID)"
-        guard let url = URL(string: urlStr) else {
-            completion(nil)
-            return
+    func fetchLatestAppStoreVersion(bundleID: String) async throws -> String {
+        let response = try await httpClient.request(
+            AppStoreLookupAPI.lookup(bundleId: bundleID),
+            responseType: AppStoreLookupResponse.self
+        )
+
+        guard let first = response.data.results.first, let version = first.version else {
+            throw LookupError.missingVersion
         }
 
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
-                print("Error fetching data from App Store: \(error.localizedDescription)")
-                completion(nil)
-                return
-            }
-
-            guard let data = data else {
-                completion(nil)
-                return
-            }
-
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let results = json["results"] as? [[String: Any]], let appStoreVersion = results.first?["version"] as? String {
-                    let buildNumber = results.first?["bundleVersion"] as? String ?? "0"
-                    completion(appStoreVersion + "." + buildNumber)
-                } else {
-                    completion(nil)
-                }
-            } catch {
-                print("Error parsing App Store data: \(error.localizedDescription)")
-                completion(nil)
-            }
-        }.resume()
+        let buildNumber = first.bundleVersion ?? "0"
+        return version + "." + buildNumber
     }
 
     func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {
