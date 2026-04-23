@@ -10,6 +10,14 @@ import goschnorr
 import OSLog
 import Mediator
 
+/// Swift cannot disambiguate the bare `LIB_OK` C enum case between the
+/// `godkls` and `goschnorr` frameworks (both headers export `LIB_OK` under
+/// different parent enum types) when compiling in wholemodule mode.
+/// Reference the goschnorr value via this typed constant instead.
+private extension goschnorr.schnorr_lib_error {
+    static let schnorrLibOK = goschnorr.schnorr_lib_error(rawValue: 0)
+}
+
 final class SchnorrKeygen {
     let vault: Vault
     let tssType: TssType
@@ -84,7 +92,7 @@ final class SchnorrKeygen {
         var rootChainSlice = decodedChainCode.to_dkls_goslice()
         var handler = goschnorr.Handle()
         let err = schnorr_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids, &buf, &handler)
-        if err != LIB_OK {
+        if err != .schnorrLibOK {
             throw HelperError.runtimeError("fail to setup keygen message, schnorr error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -104,7 +112,7 @@ final class SchnorrKeygen {
             result = schnorr_qc_session_output_message(handle, &buf)
         }
 
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             print("fail to get outbound message: \(result)")
             return (result, [])
         }
@@ -124,7 +132,7 @@ final class SchnorrKeygen {
         case .Reshare:
             receiverResult = schnorr_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         }
-        if receiverResult != LIB_OK {
+        if receiverResult != .schnorrLibOK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
         }
@@ -134,7 +142,7 @@ final class SchnorrKeygen {
     func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
             let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 print("fail to get outbound message")
             }
             if outboundMessage.isEmpty {
@@ -234,7 +242,7 @@ final class SchnorrKeygen {
                 result = schnorr_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
             }
 
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
                 print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no), from: \(msg.from) , to: \(msg.to) , size: \(decodedMsg.count) ")
@@ -273,7 +281,7 @@ final class SchnorrKeygen {
             switch self.tssType {
             case .Keygen:
                 let result = schnorr_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
-                if result != LIB_OK {
+                if result != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                 }
             case .Migrate:
@@ -292,7 +300,7 @@ final class SchnorrKeygen {
                                                                    &chainCodeSlice,
                                                                    &localUISlice,
                                                                    &handler)
-                if result != LIB_OK {
+                if result != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
                 }
             case .KeyImport:
@@ -308,7 +316,7 @@ final class SchnorrKeygen {
                     keygenSetupMsg = Array(base64: strReshareSetupMsg)
                     var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
                     let result = schnorr_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
-                    if result != LIB_OK {
+                    if result != .schnorrLibOK {
                         throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
                     }
                 }
@@ -329,7 +337,7 @@ final class SchnorrKeygen {
                 try await processSchnorrOutboundMessage(handle: h)
                 var keyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_keygen_session_finish(handler, &keyshareHandler)
-                if keyShareResult != LIB_OK {
+                if keyShareResult != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
                 }
                 let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
@@ -356,7 +364,7 @@ final class SchnorrKeygen {
             goschnorr.tss_buffer_free(&buf)
         }
         let result = schnorr_keyshare_to_bytes(handle, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to get keyshare from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -368,7 +376,7 @@ final class SchnorrKeygen {
             goschnorr.tss_buffer_free(&buf)
         }
         let result =  schnorr_keyshare_public_key(handle, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to get ECDSA public key from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -429,7 +437,7 @@ final class SchnorrKeygen {
         var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
         var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
         let result = schnorr_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice, threshold, &newPartiesIdxSlice, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to get qc setup message, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -445,7 +453,7 @@ final class SchnorrKeygen {
                 let keyshare = try getKeyshareBytesFromVault()
                 var keyshareSlice = keyshare.to_dkls_goslice()
                 let result = schnorr_keyshare_from_bytes(&keyshareSlice, &keyshareHandle)
-                if result != LIB_OK {
+                if result != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to get keyshare, \(result)")
                 }
             }
@@ -471,13 +479,13 @@ final class SchnorrKeygen {
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
 
             let result = schnorr_qc_session_from_setup(&decodedSetupMsg, &localPartySlice, keyshareHandle, &handler)
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to create session from reshare setup message,error:\(result)")
             }
             // free the handler
             defer {
                 let sessionFreeResult = schnorr_qc_session_free(&handler)
-                if sessionFreeResult != LIB_OK {
+                if sessionFreeResult != .schnorrLibOK {
                     print("fail to free reshare session \(sessionFreeResult)")
                 }
             }
@@ -488,7 +496,7 @@ final class SchnorrKeygen {
                 try await processSchnorrOutboundMessage(handle: h)
                 var newKeyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_qc_session_finish(handler, &newKeyshareHandler)
-                if keyShareResult != LIB_OK {
+                if keyShareResult != .schnorrLibOK {
                     throw HelperError.runtimeError("fail to get new keyshare,\(keyShareResult)")
                 }
 

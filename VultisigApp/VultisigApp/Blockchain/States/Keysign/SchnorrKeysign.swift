@@ -11,6 +11,14 @@ import OSLog
 import Mediator
 import Tss
 
+/// Swift cannot disambiguate the bare `LIB_OK` C enum case between the
+/// `godkls` and `goschnorr` frameworks (both headers export `LIB_OK` under
+/// different parent enum types) when compiling in wholemodule mode.
+/// Reference the goschnorr value via this typed constant instead.
+private extension goschnorr.schnorr_lib_error {
+    static let schnorrLibOK = goschnorr.schnorr_lib_error(rawValue: 0)
+}
+
 final class SchnorrKeysign {
     let keysignCommittee: [String]
     let mediatorURL: String
@@ -78,11 +86,11 @@ final class SchnorrKeysign {
         var keyshareSlice = keyShareBytes.to_dkls_goslice()
         var h = goschnorr.Handle()
         let result = schnorr_keyshare_from_bytes(&keyshareSlice, &h)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
         }
         let keyIDResult = schnorr_keyshare_key_id(h, &buf)
-        if keyIDResult != LIB_OK {
+        if keyIDResult != .schnorrLibOK {
             throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -108,7 +116,7 @@ final class SchnorrKeysign {
         var msgSlice = msgArr.to_dkls_goslice()
 
         let err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
-        if err != LIB_OK {
+        if err != .schnorrLibOK {
             throw HelperError.runtimeError("fail to setup keysign message, error:\(err)")
         }
 
@@ -122,7 +130,7 @@ final class SchnorrKeysign {
         }
         var setupMsgSlice = setupMsg.to_dkls_goslice()
         let result = schnorr_decode_message(&setupMsgSlice, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to extract message from setup message:\(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))).toHexString()
@@ -135,7 +143,7 @@ final class SchnorrKeysign {
         }
         var mutableMessage = message
         let receiverResult = schnorr_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
-        if receiverResult != LIB_OK {
+        if receiverResult != .schnorrLibOK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
         }
@@ -148,7 +156,7 @@ final class SchnorrKeysign {
             goschnorr.tss_buffer_free(&buf)
         }
         let result = schnorr_sign_session_output_message(handle, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             print("fail to get outbound message: \(result)")
             return (result, [])
         }
@@ -158,7 +166,7 @@ final class SchnorrKeysign {
     func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
             let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 print("fail to get outbound message")
             }
             if outboundMessage.isEmpty {
@@ -266,7 +274,7 @@ final class SchnorrKeysign {
 
             var isFinished: UInt32 = 0
             let result = schnorr_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to apply message to schnorr session, error code: \(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
@@ -326,7 +334,7 @@ final class SchnorrKeysign {
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
             var keyshareHandle = goschnorr.Handle()
             let result = schnorr_keyshare_from_bytes(&keyshareSlice, &keyshareHandle)
-            if result != LIB_OK {
+            if result != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
 
@@ -334,7 +342,7 @@ final class SchnorrKeysign {
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)
-            if sessionResult != LIB_OK {
+            if sessionResult != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
             // free the handler
@@ -378,7 +386,7 @@ final class SchnorrKeysign {
             goschnorr.tss_buffer_free(&buf)
         }
         let result = schnorr_sign_session_finish(handle, &buf)
-        if result != LIB_OK {
+        if result != .schnorrLibOK {
             throw HelperError.runtimeError("fail to get keysign signature \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
