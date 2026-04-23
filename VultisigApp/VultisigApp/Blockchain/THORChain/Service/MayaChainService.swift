@@ -7,24 +7,91 @@
 
 import Foundation
 
+/// TargetType for the MayaChain REST endpoints consumed by MayachainService.
+enum MayaChainAPI: TargetType {
+    case balances(address: String)
+    case accountNumber(address: String)
+    case swapQuote(
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        destination: String,
+        streamingInterval: String,
+        affiliate: String?,
+        affiliateBps: String?
+    )
+    case broadcast(body: Data)
+    case pools
+
+    var baseURL: URL { URL(string: "https://mayanode.mayachain.info")! }
+
+    var path: String {
+        switch self {
+        case .balances(let addr):
+            return "/cosmos/bank/v1beta1/balances/\(addr)"
+        case .accountNumber(let addr):
+            return "/auth/accounts/\(addr)"
+        case .swapQuote:
+            return "/mayachain/quote/swap"
+        case .broadcast:
+            return "/cosmos/tx/v1beta1/txs"
+        case .pools:
+            return "/mayachain/pools"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .balances, .accountNumber, .swapQuote, .pools:
+            return .get
+        case .broadcast:
+            return .post
+        }
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .balances, .accountNumber, .pools:
+            return .requestPlain
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let affiliate, let affiliateBps):
+            var params: [String: Any] = [
+                "from_asset": from,
+                "to_asset": to,
+                "amount": amount,
+                "destination": dest,
+                "streaming_interval": interval
+            ]
+            if let affiliate = affiliate { params["affiliate"] = affiliate }
+            if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
+            return .requestParameters(params, .urlEncoding)
+        case .broadcast(let body):
+            return .requestData(body)
+        }
+    }
+
+    var headers: [String: String]? {
+        [
+            "Content-Type": "application/json",
+            "X-Client-ID": "vultisig"
+        ]
+    }
+}
+
 class MayachainService: ThorchainSwapProvider {
     static let shared = MayachainService()
 
-    private init() {}
+    private let httpClient: HTTPClientProtocol
+
+    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
-        guard
-            let url = URL(
-                string: Endpoint.fetchAccountBalanceMayachain(address: address))
-        else {
-            return [CosmosBalance]()
-        }
-        let (data, _) = try await URLSession.shared.data(
-            for: get9RRequest(url: url))
-
-        let balanceResponse = try JSONDecoder().decode(
-            CosmosBalanceResponse.self, from: data)
-        return balanceResponse.balances
+        let response = try await httpClient.request(
+            MayaChainAPI.balances(address: address),
+            responseType: CosmosBalanceResponse.self
+        )
+        return response.data.balances
     }
 
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
@@ -74,23 +141,12 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    func fetchAccountNumber(_ address: String) async throws
-        -> THORChainAccountValue? {
-        guard
-            let url = URL(string: Endpoint.fetchAccountNumberMayachain(address))
-        else {
-            return nil
-        }
-        let (data, _) = try await URLSession.shared.data(
-            for: get9RRequest(url: url))
-        let accountResponse = try JSONDecoder().decode(
-            THORChainAccountNumberResponse.self, from: data)
-        return accountResponse.result.value
-    }
-    func get9RRequest(url: URL) -> URLRequest {
-        var req = URLRequest(url: url)
-        req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
-        return req
+    func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
+        let response = try await httpClient.request(
+            MayaChainAPI.accountNumber(address: address),
+            responseType: THORChainAccountNumberResponse.self
+        )
+        return response.data.result.value
     }
 
     func fetchSwapQuotes(
@@ -102,115 +158,104 @@ class MayachainService: ThorchainSwapProvider {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
-
-        let url = Endpoint.fetchSwapQuoteThorchain(
-            chain: .maya,
-            address: address,
-            fromAsset: fromAsset,
-            toAsset: toAsset,
-            amount: amount,
-            interval: String(interval),
+        let (affiliate, affiliateBps) = MayachainService.affiliateParams(
             referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount
+            discountBps: vultTierDiscount
         )
 
-        let (data, _) = try await URLSession.shared.data(
-            for: get9RRequest(url: url))
-
         do {
-            let response = try JSONDecoder().decode(
-                ThorchainSwapQuote.self, from: data)
-            return response
-        } catch {
-            let error = try JSONDecoder().decode(
-                MayachainSwapError.self, from: data)
-            throw error
+            let response = try await httpClient.request(
+                MayaChainAPI.swapQuote(
+                    fromAsset: fromAsset,
+                    toAsset: toAsset,
+                    amount: amount,
+                    destination: address,
+                    streamingInterval: String(interval),
+                    affiliate: affiliate,
+                    affiliateBps: affiliateBps
+                ),
+                responseType: ThorchainSwapQuote.self
+            )
+            return response.data
+        } catch HTTPError.decodingFailed, HTTPError.statusCode {
+            // Maya sometimes returns a structured swap error body with a
+            // non-2xx status or a shape that doesn't decode as ThorchainSwapQuote.
+            // Re-fetch raw bytes and attempt the error decode.
+            let raw = try await httpClient.request(MayaChainAPI.swapQuote(
+                fromAsset: fromAsset,
+                toAsset: toAsset,
+                amount: amount,
+                destination: address,
+                streamingInterval: String(interval),
+                affiliate: affiliate,
+                affiliateBps: affiliateBps
+            ))
+            let swapError = try JSONDecoder().decode(MayachainSwapError.self, from: raw.data)
+            throw swapError
         }
     }
 
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
-        let url = URL(string: Endpoint.broadcastTransactionMayachain)!
-
         guard let jsonData = jsonString.data(using: .utf8) else {
-            return .failure(
-                HelperError.runtimeError("fail to convert input json to data"))
+            return .failure(HelperError.runtimeError("fail to convert input json to data"))
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = jsonData
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            let (data, resp) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = resp as? HTTPURLResponse else {
-                return .failure(
-                    HelperError.runtimeError("Invalid http response"))
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return .failure(
-                    HelperError.runtimeError(
-                        "status code:\(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"
-                    ))
-            }
-            let response = try JSONDecoder().decode(
-                CosmosTransactionBroadcastResponse.self, from: data)
+            let raw = try await httpClient.request(MayaChainAPI.broadcast(body: jsonData))
+            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
             // Check if the transaction was successful based on the `code` field
-            // code 19 means the transaction has been exist in the mempool , which indicate another party already broadcast successfully
+            // code 19 means the transaction has been exist in the mempool, which indicates
+            // another party already broadcast successfully.
             if let code = response.txResponse?.code, code == 0 || code == 19 {
-                // Transaction successful
                 if let txHash = response.txResponse?.txhash {
                     return .success(txHash)
                 }
             }
             return .failure(
-                HelperError.runtimeError(
-                    String(data: data, encoding: .utf8) ?? "Unknown error"))
-
+                HelperError.runtimeError(String(data: raw.data, encoding: .utf8) ?? "Unknown error")
+            )
+        } catch HTTPError.statusCode(let code, let data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "Unknown error"
+            return .failure(HelperError.runtimeError("status code:\(code), \(body)"))
         } catch {
             return .failure(error)
         }
-
     }
 
-    func getDepositAssets(completion: @escaping ([String]) -> Void) {
-        let url = URL(string: Endpoint.depositAssetsMaya)!
-
+    func getDepositAssets() async -> [String] {
         struct DepositAsset: Codable {
             let asset: String
             let bondable: Bool
         }
 
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
-            // Verifica se houve erro
-            if let error = error {
-                print("Erro ao buscar ativos: \(error)")
-                completion([])
-
-                return
-            }
-
-            // Verifica se há dados
-            guard let data = data else {
-                completion([])
-
-                return
-            }
-
-            do {
-                let response = try JSONDecoder().decode(
-                    [DepositAsset].self, from: data)
-                let assets = response.filter { $0.bondable }.map { $0.asset }
-                completion(assets)
-
-            } catch {
-                print("Erro ao decodificar dados: \(error)")
-                completion([])
-
-            }
+        do {
+            let response = try await httpClient.request(
+                MayaChainAPI.pools,
+                responseType: [DepositAsset].self
+            )
+            return response.data.filter { $0.bondable }.map { $0.asset }
+        } catch {
+            print("Error fetching MayaChain deposit assets: \(error)")
+            return []
         }
-
-        task.resume()
     }
 
+    /// Legacy callback shim. Existing call sites in FunctionCall views still use this
+    /// signature; migrate them to the async variant above in a follow-up.
+    func getDepositAssets(completion: @escaping ([String]) -> Void) {
+        Task {
+            let assets = await getDepositAssets()
+            completion(assets)
+        }
+    }
+}
+
+private extension MayachainService {
+    /// MayaChain only supports a single affiliate (no nested referral like THORChain).
+    /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)
+    /// if no affiliate should be sent.
+    static func affiliateParams(referredCode: String, discountBps: Int) -> (String?, String?) {
+        let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+        return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
+    }
 }
