@@ -48,9 +48,6 @@ struct HomeScreen: View {
         if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
             baseTabs.append(.defi)
         }
-        if SettingsViewModel.shared.agentEnabled {
-            baseTabs.append(.agent)
-        }
         return baseTabs
     }
 
@@ -161,8 +158,6 @@ struct HomeScreen: View {
                             vault: selectedVault,
                             showBalanceInHeader: $defiShowPortfolioHeader
                         )
-                    case .agent:
-                        AgentConversationsView()
                     case .camera:
                         EmptyView()
                     }
@@ -175,7 +170,6 @@ struct HomeScreen: View {
             }
 
             header(vault: selectedVault)
-                .showIf(selectedTab != .agent)
         }
     }
 
@@ -352,8 +346,6 @@ extension HomeScreen {
             showOpaqueHeader = defiShowPortfolioHeader
         case .wallet:
             showOpaqueHeader = walletShowPortfolioHeader
-        case .agent:
-            showOpaqueHeader = false
         case .camera:
             return
         }
