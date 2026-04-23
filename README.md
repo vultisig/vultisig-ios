@@ -4,14 +4,17 @@ Vultisig is a multichain multifactor crypto vault that uses MPC - ECDSA and EDDS
 
 ## Getting started
 
-The Xcode project is generated from `VultisigApp/project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). After cloning (or pulling changes to `project.yml`), run:
+The Xcode project is generated from `VultisigApp/project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). All common commands are wrapped in the root `Makefile`:
 
 ```bash
-./VultisigApp/scripts/bootstrap.sh              # regenerate VultisigApp.xcodeproj
-./VultisigApp/scripts/bootstrap.sh --install    # also install XcodeGen via Homebrew if missing
+make bootstrap    # install XcodeGen + SwiftLint and generate VultisigApp.xcodeproj
+make generate     # regenerate VultisigApp.xcodeproj after changes to project.yml or source files
+make test         # run unit tests
+make ui_test      # run UI tests
+make help         # list all targets
 ```
 
-Then open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **not** edit `project.pbxproj` by hand — your changes will be overwritten on the next generation. Add or remove files directly in the filesystem under `VultisigApp/VultisigApp/` and rerun the bootstrap script.
+After `make bootstrap`, open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **not** edit `project.pbxproj` by hand — your changes will be overwritten on the next `make generate`. Add or remove files directly under `VultisigApp/VultisigApp/` and rerun `make generate`.
 
 ## Third party services
 

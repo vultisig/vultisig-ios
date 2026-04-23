@@ -18,14 +18,31 @@ swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
 
 If lint fails, fix all warnings before proceeding to build.
 
-### Step 2: Build (only if lint passes)
+### Step 2: Regenerate the project (only if the source tree changed)
+
+If `project.yml` was edited or Swift files were added/removed/renamed since the last generate, run:
 
 ```bash
-xcodebuild -project VultisigApp/VultisigApp.xcodeproj \
+make generate
+```
+
+### Step 3: Build (only if lint passes)
+
+Prefer the Makefile target when the scheme + destination match the default:
+
+```bash
+make test    # builds + runs tests
+```
+
+For a compile-only check without running tests, fall through to `xcodebuild`:
+
+```bash
+cd VultisigApp && xcodebuild build \
+    -project VultisigApp.xcodeproj \
     -scheme VultisigApp \
     -sdk iphonesimulator \
     -destination 'generic/platform=iOS Simulator' \
-    build 2>&1 | tail -20
+    -skipPackagePluginValidation 2>&1 | tail -20
 ```
 
 ## Output

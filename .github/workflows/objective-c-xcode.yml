@@ -21,8 +21,7 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Xcode project
-        working-directory: VultisigApp
-        run: xcodegen generate --spec project.yml
+        run: make generate
 
       - name: Cache SwiftPM
         uses: actions/cache@v4
