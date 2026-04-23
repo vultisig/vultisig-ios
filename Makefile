@@ -21,9 +21,16 @@ VULTISIG_APP_DIR := VultisigApp
 PROJECT          := VultisigApp.xcodeproj
 
 # Overridable via environment: `make test DESTINATION='...'`
-DESTINATION ?= platform=iOS Simulator,name=iPhone 17 Pro Max
-APP_SCHEME  ?= VultisigApp
-UI_SCHEME   ?= VultisigAppUITests
+# DESTINATION: used by `test` / `ui_test` — must name a specific simulator the
+# runner has available. Override for older Xcode installs that don't ship the
+# iPhone 17 runtime.
+DESTINATION       ?= platform=iOS Simulator,name=iPhone 17 Pro Max
+# BUILD_DESTINATION: used by `build-check` (compile-only — no device needed).
+# Generic target works on any Xcode; avoids CI failures when the named
+# simulator isn't installed.
+BUILD_DESTINATION ?= generic/platform=iOS Simulator
+APP_SCHEME        ?= VultisigApp
+UI_SCHEME         ?= VultisigAppUITests
 
 # Tool detection (evaluated at invocation)
 BREW      := $(shell command -v brew 2>/dev/null)
@@ -39,7 +46,8 @@ help: ## List all targets
 	@echo "  make ui_test     — run UI tests on iOS simulator ($(UI_SCHEME) scheme)"
 	@echo ""
 	@echo "Overrides:"
-	@echo "  DESTINATION='platform=iOS Simulator,name=iPhone 17 Pro'"
+	@echo "  DESTINATION='platform=iOS Simulator,name=iPhone 17 Pro'     # test / ui_test"
+	@echo "  BUILD_DESTINATION='generic/platform=iOS Simulator'          # build-check"
 	@echo "  APP_SCHEME=VultisigApp  UI_SCHEME=VultisigAppUITests"
 
 bootstrap: ## Install tooling and generate the Xcode project
@@ -68,7 +76,7 @@ build-check: generate ## Compile-only build check (no tests). Used by automation
 	@cd $(VULTISIG_APP_DIR) && xcodebuild build \
 		-project $(PROJECT) \
 		-scheme $(APP_SCHEME) \
-		-destination '$(DESTINATION)' \
+		-destination '$(BUILD_DESTINATION)' \
 		-skipMacroValidation \
 		-skipPackagePluginValidation \
 		CODE_SIGNING_ALLOWED=NO \
