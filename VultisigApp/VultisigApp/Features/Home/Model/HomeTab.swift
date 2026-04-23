@@ -8,7 +8,6 @@
 enum HomeTab: TabBarItem, CaseIterable {
     case wallet
     case defi
-    case agent
     // Only used to fake `camera` button for liquid glass
     case camera
 
@@ -18,8 +17,6 @@ enum HomeTab: TabBarItem, CaseIterable {
             "Wallet"
         case .defi:
             "DeFi"
-        case .agent:
-            "Agent"
         case .camera:
             ""
         }
@@ -31,8 +28,6 @@ enum HomeTab: TabBarItem, CaseIterable {
             "wallet"
         case .defi:
             "coins-add"
-        case .agent:
-            "stars"
         case .camera:
             "camera-2"
         }
@@ -44,8 +39,6 @@ enum HomeTab: TabBarItem, CaseIterable {
             AccessibilityID.Home.walletTab
         case .defi:
             AccessibilityID.Home.defiTab
-        case .agent:
-            AccessibilityID.Home.agentTab
         case .camera:
             AccessibilityID.Home.cameraButton
         }
