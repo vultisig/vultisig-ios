@@ -111,17 +111,21 @@ actor BlockaidSimulationService {
         keysignPayload: KeysignPayload
     ) -> Task<BlockaidKeysignScanResult, Error> {
         Task { [rpcClient, logger] () throws -> BlockaidKeysignScanResult in
-            // The dApp keysign payload carries rawTransactions as base64. The
-            // Blockaid simulate endpoint expects base58, per the extension's
-            // getBlockaidPayloadSimulationInput resolver.
+            // The dApp keysign payload carries rawTransactions as base64 (see
+            // SignSolana.rawTransactions); Blockaid's simulate endpoint expects
+            // base58. Fail fast on any decode error rather than simulating on a
+            // subset, which would make the hero show balance changes that don't
+            // match what the user is signing.
             let rawTxsBase64 = keysignPayload.signSolana?.rawTransactions ?? []
-            let rawTxsBase58: [String] = rawTxsBase64.compactMap { base64 -> String? in
-                guard let data = Data(base64Encoded: base64) else { return nil }
-                return Base58.encodeNoCheck(data: data)
-            }
-            guard !rawTxsBase58.isEmpty else {
-                logger.warning("solana scan aborted: rawTransactions base64 decode produced empty list (input count=\(rawTxsBase64.count))")
-                return .empty
+            guard !rawTxsBase64.isEmpty else { return .empty }
+            var rawTxsBase58: [String] = []
+            rawTxsBase58.reserveCapacity(rawTxsBase64.count)
+            for base64 in rawTxsBase64 {
+                guard let data = Data(base64Encoded: base64) else {
+                    logger.warning("solana scan aborted: rawTransaction base64 decode failed")
+                    return .empty
+                }
+                rawTxsBase58.append(Base58.encodeNoCheck(data: data))
             }
             logger.info("solana scan calling rpc with \(rawTxsBase58.count) tx(s)")
 
