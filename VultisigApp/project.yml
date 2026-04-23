@@ -209,10 +209,6 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
-          # Integration test written against an ApplicationState API that no
-          # longer exists (`currentVault` was removed). Re-enable after
-          # porting to the current vault-selection API.
-          - "Services/KyberSwapServiceTests.swift"
 
     settings:
       base:
