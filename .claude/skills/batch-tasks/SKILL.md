@@ -211,7 +211,7 @@ Read these files first to understand the context:
 ### Step 3 — Quality Checks
 6. Run SwiftLint: `swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/`
 7. Fix any SwiftLint warnings you introduced
-8. Run build check: `xcodebuild build -scheme VultisigApp -destination 'platform=iOS Simulator,name=iPhone 16' -skipMacroValidation -skipPackagePluginValidation 2>&1 | tail -20`
+8. Run build check (regenerates the project and compiles with pipefail enabled): `make build-check`
 9. Fix any build errors (if build fails, prioritize fixing compile errors over creating the PR)
 
 ### Step 4 — Self-Review

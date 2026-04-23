@@ -21,7 +21,7 @@
       ],
       "target" : {
         "containerPath" : "container:VultisigApp.xcodeproj",
-        "identifier" : "DE49A1752B65F6DB000F3AFB",
+        "identifier" : "F7A15FAEE341D80B5EAEE380",
         "name" : "VultisigAppTests"
       }
     }
