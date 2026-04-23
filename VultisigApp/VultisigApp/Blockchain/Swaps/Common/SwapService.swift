@@ -373,15 +373,26 @@ extension SwapService {
         referredCode: String,
         vultTierDiscount: Int
     ) async -> ThorchainSwapQuote {
-        guard Self.supportsStreamingFallback(provider) else { return rapid }
+        guard Self.supportsStreamingFallback(provider) else {
+            logger.info("[anti-rekt] provider=\(String(describing: provider), privacy: .public) not eligible → using RAPID")
+            return rapid
+        }
 
-        guard let slippageBps = Self.rapidSlippageBps(fromQuote: rapid),
-              slippageBps > Self.streamingSlippageThresholdBps else {
+        let slippageBps = Self.rapidSlippageBps(fromQuote: rapid) ?? 0
+        logger.info("[anti-rekt] rapid slippage=\(slippageBps, privacy: .public) bps, threshold=\(Self.streamingSlippageThresholdBps, privacy: .public) bps, fromAsset=\(fromAsset, privacy: .public), toAsset=\(toAsset, privacy: .public)")
+
+        guard slippageBps > Self.streamingSlippageThresholdBps else {
+            logger.info("[anti-rekt] slippage ≤ threshold → using RAPID (memo=\(rapid.memo, privacy: .public))")
             return rapid
         }
 
         let streamingQuantity = rapid.maxStreamingQuantity ?? 0
-        guard streamingQuantity > 0 else { return rapid }
+        guard streamingQuantity > 0 else {
+            logger.info("[anti-rekt] max_streaming_quantity missing/zero → using RAPID")
+            return rapid
+        }
+
+        logger.info("[anti-rekt] fetching STREAMING quote (interval=1, quantity=\(streamingQuantity, privacy: .public))")
 
         do {
             let streaming = try await service.fetchSwapQuotes(
@@ -394,9 +405,13 @@ extension SwapService {
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
-            return Self.selectBetterQuote(rapid: rapid, streaming: streaming)
+            let chosen = Self.selectBetterQuote(rapid: rapid, streaming: streaming)
+            let pickedStreaming = chosen.expectedAmountOut == streaming.expectedAmountOut &&
+                chosen.expectedAmountOut != rapid.expectedAmountOut
+            logger.info("[anti-rekt] rapid out=\(rapid.expectedAmountOut, privacy: .public), streaming out=\(streaming.expectedAmountOut, privacy: .public) → using \(pickedStreaming ? "STREAMING" : "RAPID", privacy: .public) (memo=\(chosen.memo, privacy: .public))")
+            return chosen
         } catch {
-            logger.warning("Streaming fallback fetch failed, returning rapid quote: \(error.localizedDescription, privacy: .public)")
+            logger.warning("[anti-rekt] streaming fetch failed, falling back to RAPID: \(error.localizedDescription, privacy: .public)")
             return rapid
         }
     }
