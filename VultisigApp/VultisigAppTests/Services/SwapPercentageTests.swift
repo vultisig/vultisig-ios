@@ -12,6 +12,16 @@ private extension String {
     }
 }
 
+/// Tests the pure `Decimal` math + `formatToDecimal` formatting used when a
+/// user selects a 25/50/75/100% amount for a swap. This file validates the
+/// *intended* rule (`max(4, coin.decimals)`, capped at 9 for EVM chains).
+///
+/// Note: `SwapCryptoDetailsView.handlePercentageSelection` currently hardcodes
+/// `decimalsToUse: Int = 4` for every coin, so BTC/ETH amounts are truncated
+/// to 4 decimals in the UI today. Aligning the UI with this rule is tracked
+/// in the Swap flow rewrite (docs/refactors/10-swap-rewrite.md). Until then
+/// these tests verify the formatter+math primitives in isolation; they do
+/// not exercise the live UI behavior.
 class SwapPercentageTests: XCTestCase {
 
     func testBTCPercentageCalculation() {
