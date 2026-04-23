@@ -20,7 +20,7 @@ All common dev commands are defined in the `Makefile` at the repo root. Prefer t
 ## When to use each
 
 - **After cloning the repo:** `make bootstrap`.
-- **After `git pull` that touched `project.yml`** or after you added/renamed Swift files: `make generate`.
+- **After `git pull` that touched `project.yml`** or after you added/renamed/removed Swift files: `make generate`.
 - **Before opening a PR:** `make test`.
 - **After touching UI flow tests:** `make ui_test`.
 

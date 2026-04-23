@@ -1,7 +1,8 @@
 name: VultisigApp
 
 # XcodeGen-generated project. Do NOT edit VultisigApp.xcodeproj/project.pbxproj
-# directly — run `scripts/bootstrap.sh` or `xcodegen generate` after changes here.
+# directly — run `make generate` from the repo root after changing this file
+# or after adding/removing/renaming Swift sources.
 # See ../docs/refactors/01-xcodegen.md (workspace-level) for migration context.
 
 options:

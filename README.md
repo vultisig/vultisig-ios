@@ -14,7 +14,7 @@ make ui_test      # run UI tests
 make help         # list all targets
 ```
 
-After `make bootstrap`, open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **not** edit `project.pbxproj` by hand — your changes will be overwritten on the next `make generate`. Add or remove files directly under `VultisigApp/VultisigApp/` and rerun `make generate`.
+After `make bootstrap`, open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **not** edit `project.pbxproj` by hand — your changes will be overwritten on the next `make generate`. Add or remove files in the appropriate target folder (`VultisigApp/VultisigApp/` for app code, `VultisigApp/VultisigAppTests/` for unit tests, `VultisigApp/VultisigAppUITests/` for UI tests) and rerun `make generate`.
 
 ## Third party services
 

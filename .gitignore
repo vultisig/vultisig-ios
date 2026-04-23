@@ -98,7 +98,7 @@ VultisigApp.app
 .claude/settings.local.json
 
 # XcodeGen — project is generated from VultisigApp/project.yml.
-# Run VultisigApp/scripts/bootstrap.sh after pulling changes.
+# Run `make generate` from the repo root after pulling project.yml changes.
 VultisigApp/VultisigApp.xcodeproj/project.pbxproj
 VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme
 VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcdebugger/

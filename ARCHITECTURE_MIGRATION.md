@@ -56,7 +56,7 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 
 ### Verification
 
-- [ ] 1.16 Update `project.pbxproj` (remove deleted file references)
+- [ ] 1.16 Run `make generate` to refresh project references after deletions
 - [ ] 1.17 Verify build succeeds on both iOS and macOS targets
 - [ ] 1.18 Run SwiftLint — no new warnings
 
@@ -76,7 +76,7 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 - [ ] 2.3 Move `iOS/AppDelegate.swift` and `macOS/MacAppDelegate.swift` into `App/`
 - [ ] 2.4 Move `Views/Components/` contents into `Components/`, preserving subdirectory structure:
   - `Buttons/`, `Cells/`, `TextFields/`, `Banners/`, `Loaders/`, `Sheet/`, `Toolbar/`, `Screen/`, `Animations/`, `Background/`, `Icons/`, `ImageView/`, `Layout/`, `List/`, `Navigation Header/`, `Navigation Items/`, `Picker/`, `ScrollView/`, `SegmentedControls/`, `TabBar/`, `Text/`, `TextEditor/`, `Tooltip/`, `ViewModifiers/`, `Forms/`, `Swap/`, `banxa/`, `ActionBanner/`
-- [ ] 2.5 Update all import paths / file references in `project.pbxproj`
+- [ ] 2.5 Run `make generate` so the project picks up the new file locations; update Swift import paths as needed
 - [ ] 2.6 Verify build succeeds on both iOS and macOS targets
 - [ ] 2.7 Run SwiftLint — no new warnings
 
