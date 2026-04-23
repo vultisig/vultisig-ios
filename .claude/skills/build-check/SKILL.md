@@ -18,25 +18,19 @@ swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
 
 If lint fails, fix all warnings before proceeding to build.
 
-### Step 2: Regenerate the project (only if the source tree changed)
-
-If `project.yml` was edited or Swift files were added/removed/renamed since the last generate, run:
+### Step 2: Build (only if lint passes)
 
 ```bash
-make generate
+make build-check     # regenerate + compile (pipefail enabled, fails loudly)
+make test            # builds + runs tests — prefer when test feedback is needed
 ```
 
-### Step 3: Build (only if lint passes)
+`make build-check` is what the batch/agent automation uses — it runs `make generate` first, then `xcodebuild build` with `set -o pipefail` so a failed build doesn't silently pass due to the trailing `tail -20`.
 
-Prefer the Makefile target when the scheme + destination match the default:
-
-```bash
-make test    # builds + runs tests
-```
-
-For a compile-only check without running tests, fall through to `xcodebuild`:
+For a custom destination or scheme, drop to `xcodebuild` directly (remember `set -o pipefail`):
 
 ```bash
+set -o pipefail
 cd VultisigApp && xcodebuild build \
     -project VultisigApp.xcodeproj \
     -scheme VultisigApp \

@@ -137,7 +137,7 @@ You are fixing CodeRabbit review feedback on a PR for the Vultisig iOS app.
 5. For CLAUDE.md violations, follow the relevant rule strictly
 6. Run SwiftLint: `swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/`
 7. Fix any new SwiftLint warnings
-8. Regenerate the project and run build check: `make generate && cd VultisigApp && xcodebuild build -project VultisigApp.xcodeproj -scheme VultisigApp -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' -skipMacroValidation -skipPackagePluginValidation 2>&1 | tail -20`
+8. Run build check (regenerates the project and compiles with pipefail enabled): `make build-check`
 9. Self-review: `git diff HEAD` — verify each fix addresses the CodeRabbit comment
 10. Commit with a message like: "fix: address CodeRabbit review feedback\n\n- {list each fix}"
 11. Push: `git push origin {branch-name}`

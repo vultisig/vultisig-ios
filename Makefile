@@ -12,8 +12,9 @@
 #   make help        # list all targets
 
 SHELL := /bin/bash
+.SHELLFLAGS := -eo pipefail -c
 
-.PHONY: help bootstrap generate test ui_test
+.PHONY: help bootstrap generate build-check test ui_test
 
 # Paths
 VULTISIG_APP_DIR := VultisigApp
@@ -31,10 +32,11 @@ SWIFTLINT := $(shell command -v swiftlint 2>/dev/null)
 
 help: ## List all targets
 	@echo "Available targets:"
-	@echo "  make bootstrap  — install XcodeGen + SwiftLint (via Homebrew) and generate the Xcode project"
-	@echo "  make generate   — regenerate VultisigApp.xcodeproj from VultisigApp/project.yml"
-	@echo "  make test       — run unit tests on iOS simulator ($(APP_SCHEME) scheme)"
-	@echo "  make ui_test    — run UI tests on iOS simulator ($(UI_SCHEME) scheme)"
+	@echo "  make bootstrap   — install XcodeGen + SwiftLint (via Homebrew) and generate the Xcode project"
+	@echo "  make generate    — regenerate VultisigApp.xcodeproj from VultisigApp/project.yml"
+	@echo "  make build-check — compile-only build check (for automation; tails 20 lines of output)"
+	@echo "  make test        — run unit tests on iOS simulator ($(APP_SCHEME) scheme)"
+	@echo "  make ui_test     — run UI tests on iOS simulator ($(UI_SCHEME) scheme)"
 	@echo ""
 	@echo "Overrides:"
 	@echo "  DESTINATION='platform=iOS Simulator,name=iPhone 17 Pro'"
@@ -61,6 +63,16 @@ generate: ## Regenerate the Xcode project from project.yml
 		exit 1; \
 	fi
 	@cd $(VULTISIG_APP_DIR) && xcodegen generate --spec project.yml
+
+build-check: generate ## Compile-only build check (no tests). Used by automation skills.
+	@cd $(VULTISIG_APP_DIR) && xcodebuild build \
+		-project $(PROJECT) \
+		-scheme $(APP_SCHEME) \
+		-destination '$(DESTINATION)' \
+		-skipMacroValidation \
+		-skipPackagePluginValidation \
+		CODE_SIGNING_ALLOWED=NO \
+		2>&1 | tail -20
 
 test: ## Run unit tests
 	@cd $(VULTISIG_APP_DIR) && xcodebuild test \
