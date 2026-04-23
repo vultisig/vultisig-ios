@@ -10,6 +10,8 @@ user-invocable: false
 
 All networking uses a custom HTTP client built on `URLSession` with async/await.
 
+**Do not call `URLSession` or construct `URLRequest` outside `Core/Networking/`.** SwiftLint custom rules (`no_raw_urlsession`, `no_raw_urlrequest`) flag violations as warnings today and will flip to errors once the Architecture 3 HTTPClient migration completes. If you see those warnings in a file you're editing, define a `TargetType` and route the call through `HTTPClient`.
+
 **Key files (all under `VultisigApp/VultisigApp/Core/Networking/`):**
 
 | File | Purpose |
