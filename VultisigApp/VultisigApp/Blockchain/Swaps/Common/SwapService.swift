@@ -313,14 +313,18 @@ private extension SwapService {
 // MARK: - THORChain anti-rekt streaming fallback
 
 extension SwapService {
-    /// Compute an approximate slippage in basis points from a THORChain rapid quote
-    /// using `fees.total / (expected_amount_out + fees.total)`. This is a
-    /// fiat-independent approximation of `fees.total / input_fiat` and is
-    /// slightly conservative (errs toward triggering streaming).
+    /// Slippage in basis points from a THORChain rapid quote. Prefers the
+    /// authoritative `fees.total_bps` returned by the node, computed as
+    /// `total × 10_000 / (expected_amount_out + total)`. Falls back to the
+    /// same formula locally when the field is absent (older nodes, Maya).
     ///
-    /// Returns `nil` when the inputs cannot be parsed or produce a non-positive
-    /// denominator; callers should treat that as "do not trigger streaming".
+    /// Returns `nil` when inputs cannot be parsed; callers should treat that
+    /// as "do not trigger streaming".
     static func rapidSlippageBps(fromQuote quote: ThorchainSwapQuote) -> Int? {
+        if let totalBps = quote.fees.totalBps {
+            return totalBps
+        }
+
         guard let feesTotal = Double(quote.fees.total),
               let expected = Double(quote.expectedAmountOut) else {
             return nil

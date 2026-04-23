@@ -5,9 +5,16 @@ final class ThorchainAntiRektTests: XCTestCase {
 
     // MARK: - rapidSlippageBps
 
+    func test_rapidSlippageBps_prefersAuthoritativeTotalBpsField() {
+        // When fees.total_bps is returned by the node, we use it verbatim.
+        let quote = makeQuote(expectedAmountOut: "100", feesTotal: "0", totalBps: 6434)
+
+        XCTAssertEqual(SwapService.rapidSlippageBps(fromQuote: quote), 6434)
+    }
+
     func test_rapidSlippageBps_catastrophicSlippage_exceedsThreshold() {
         // BTC → TRX case from issue #4205: expected $24,079 of TRX, $43,440 in fees
-        let quote = makeQuote(expectedAmountOut: "24079", feesTotal: "43440")
+        let quote = makeQuote(expectedAmountOut: "24079", feesTotal: "43440", totalBps: nil)
 
         let bps = SwapService.rapidSlippageBps(fromQuote: quote)
 
@@ -18,7 +25,7 @@ final class ThorchainAntiRektTests: XCTestCase {
 
     func test_rapidSlippageBps_moderateSlippage_exceedsThreshold() {
         // BTC → XRP case from issue #4205: expected $55,720 of XRP, $12,504 in fees
-        let quote = makeQuote(expectedAmountOut: "55720", feesTotal: "12504")
+        let quote = makeQuote(expectedAmountOut: "55720", feesTotal: "12504", totalBps: nil)
 
         let bps = SwapService.rapidSlippageBps(fromQuote: quote)
 
@@ -29,7 +36,7 @@ final class ThorchainAntiRektTests: XCTestCase {
 
     func test_rapidSlippageBps_belowThreshold_returnsSmallValue() {
         // Typical healthy trade: 0.5% slippage
-        let quote = makeQuote(expectedAmountOut: "99500", feesTotal: "500")
+        let quote = makeQuote(expectedAmountOut: "99500", feesTotal: "500", totalBps: nil)
 
         let bps = SwapService.rapidSlippageBps(fromQuote: quote)
 
@@ -38,13 +45,13 @@ final class ThorchainAntiRektTests: XCTestCase {
     }
 
     func test_rapidSlippageBps_zeroFees_returnsZero() {
-        let quote = makeQuote(expectedAmountOut: "100000", feesTotal: "0")
+        let quote = makeQuote(expectedAmountOut: "100000", feesTotal: "0", totalBps: nil)
 
         XCTAssertEqual(SwapService.rapidSlippageBps(fromQuote: quote), 0)
     }
 
     func test_rapidSlippageBps_unparseableValues_returnsNil() {
-        let quote = makeQuote(expectedAmountOut: "not-a-number", feesTotal: "100")
+        let quote = makeQuote(expectedAmountOut: "not-a-number", feesTotal: "100", totalBps: nil)
 
         XCTAssertNil(SwapService.rapidSlippageBps(fromQuote: quote))
     }
@@ -156,6 +163,7 @@ final class ThorchainAntiRektTests: XCTestCase {
     private func makeQuote(
         expectedAmountOut: String,
         feesTotal: String,
+        totalBps: Int? = nil,
         maxStreamingQuantity: Int? = 10,
         memo: String = "=:TRX.TRX:addr"
     ) -> ThorchainSwapQuote {
@@ -163,7 +171,15 @@ final class ThorchainAntiRektTests: XCTestCase {
             dustThreshold: nil,
             expectedAmountOut: expectedAmountOut,
             expiry: 0,
-            fees: Fees(affiliate: "0", asset: "TRX.TRX", outbound: "0", total: feesTotal),
+            fees: Fees(
+                affiliate: "0",
+                asset: "TRX.TRX",
+                outbound: "0",
+                total: feesTotal,
+                liquidity: nil,
+                slippageBps: nil,
+                totalBps: totalBps
+            ),
             inboundAddress: nil,
             inboundConfirmationBlocks: nil,
             inboundConfirmationSeconds: nil,
