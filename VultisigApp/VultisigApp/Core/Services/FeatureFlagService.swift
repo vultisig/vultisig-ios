@@ -16,7 +16,30 @@ enum FeatureFlag: String {
     }
 }
 
+enum FeatureFlagAPI: TargetType {
+    case flags
+
+    var baseURL: URL { URL(string: "https://api.vultisig.com")! }
+
+    var path: String {
+#if DEBUG
+        "/feature/debug.json"
+#else
+        "/feature/release.json"
+#endif
+    }
+
+    var method: HTTPMethod { .get }
+    var task: HTTPTask { .requestPlain }
+}
+
 final class FeatureFlagService {
+    private let httpClient: HTTPClientProtocol
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
+
     func isFeatureEnabled(feature: FeatureFlag) async -> Bool {
         do {
             let features = try await getFeatureFlagFromServer()
@@ -33,14 +56,10 @@ final class FeatureFlagService {
     }
 
     private func getFeatureFlagFromServer() async throws -> [String: Any] {
-#if DEBUG
-        let url =  URL(string: "https://api.vultisig.com/feature/debug.json")!
-#else
-        let url = URL(string: "https://api.vultisig.com/feature/release.json")!
-#endif
-        let (jsonData, _) = try await URLSession.shared.data(from: url)
-        // Decode JSON data into a dictionary
-        let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
+        // The server returns a JSON object of arbitrary shape (any value types),
+        // so we don't map it to a Codable struct — decode as [String: Any].
+        let response = try await httpClient.request(FeatureFlagAPI.flags)
+        let jsonObject = try JSONSerialization.jsonObject(with: response.data, options: [])
         guard let jsonDict = jsonObject as? [String: Any] else {
             throw NSError(domain: "FeatureFlagService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON format"])
         }

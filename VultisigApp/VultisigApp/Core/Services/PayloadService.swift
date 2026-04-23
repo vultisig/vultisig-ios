@@ -10,15 +10,58 @@ import Foundation
 enum PayloadServiceError: Error {
     case NetworkError(message: String)
 }
+
+/// TargetType for the relay server payload endpoints. `baseURL` is carried as
+/// an associated value because the relay host is selected per-session at
+/// construction time, not a global constant.
+enum PayloadAPI: TargetType {
+    case upload(baseURL: URL, hash: String, payload: String)
+    case get(baseURL: URL, hash: String)
+
+    var baseURL: URL {
+        switch self {
+        case .upload(let url, _, _), .get(let url, _):
+            return url
+        }
+    }
+
+    var path: String {
+        switch self {
+        case .upload(_, let hash, _), .get(_, let hash):
+            return "/payload/\(hash)"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .upload: return .post
+        case .get: return .get
+        }
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .upload(_, _, let payload):
+            return .requestData(payload.data(using: .utf8) ?? Data())
+        case .get:
+            return .requestPlain
+        }
+    }
+}
+
 final class PayloadService {
     internal let serverURL: String
+    private let httpClient: HTTPClientProtocol
 
-    init(serverURL: String) {
+    init(serverURL: String, httpClient: HTTPClientProtocol = HTTPClient()) {
         self.serverURL = serverURL
+        self.httpClient = httpClient
     }
+
     func getUrl(hash: String) -> String {
         return "\(serverURL)/payload/\(hash)"
     }
+
     func shouldUploadToRelay(payload: String) -> Bool {
         // when the payload is m
         if payload.lengthOfBytes(using: .utf8) > 2048 {
@@ -29,37 +72,26 @@ final class PayloadService {
 
     func uploadPayload(payload: String) async throws -> String {
         let hash = payload.sha256()
-        let urlStr = getUrl(hash: hash)
-        guard let url = URL(string: urlStr) else {
-            throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
+        guard let baseURL = URL(string: serverURL) else {
+            throw PayloadServiceError.NetworkError(message: "invalid server url: \(serverURL)")
         }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = payload.data(using: .utf8)
-        let (_, resp) = try await URLSession.shared.data(for: request)
-        if let httpResponse = resp as? HTTPURLResponse {
-            if !(200...299).contains(httpResponse.statusCode) {
-                throw PayloadServiceError.NetworkError(message: "fail to upload payload to relay server")
-            }
+        do {
+            _ = try await httpClient.request(PayloadAPI.upload(baseURL: baseURL, hash: hash, payload: payload))
+        } catch {
+            throw PayloadServiceError.NetworkError(message: "fail to upload payload to relay server")
         }
         return hash
     }
 
     func getPayload(hash: String) async throws -> String {
-        let urlStr = getUrl(hash: hash)
-        guard let url = URL(string: urlStr) else {
-            throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
+        guard let baseURL = URL(string: serverURL) else {
+            throw PayloadServiceError.NetworkError(message: "invalid server url: \(serverURL)")
         }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        let (data, resp) = try await URLSession.shared.data(for: request)
-        if let httpResponse = resp as? HTTPURLResponse {
-            if !(200...299).contains(httpResponse.statusCode) {
-                throw PayloadServiceError.NetworkError(message: "fail to get payload to relay server")
-            }
+        do {
+            let response = try await httpClient.request(PayloadAPI.get(baseURL: baseURL, hash: hash))
+            return String(data: response.data, encoding: .utf8) ?? ""
+        } catch {
+            throw PayloadServiceError.NetworkError(message: "fail to get payload to relay server")
         }
-        return String(data: data, encoding: .utf8) ?? ""
     }
 }
