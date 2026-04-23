@@ -203,11 +203,11 @@
 "circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";
 "circleEthereumRequired" = "Ethereum Required";
 "circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
+"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
+"circleRewardsTitle" = "Rewards";
 "circleRowCreateWallet" = "Create Wallet";
 "circleRowGetStarted" = "Get Started";
 "circleRowYieldAccount" = "Yield Account";
-"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
-"circleRewardsTitle" = "Rewards";
 "circleSetupAccountBalance" = "Circle Account Balance";
 "circleSetupAccountTitle" = "Circle USDC Account";
 "circleSetupDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
@@ -909,6 +909,9 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
+"tonConnectMessages" = "Messages";
+"tonConnectPayloadBadge" = "Payload";
+"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";
