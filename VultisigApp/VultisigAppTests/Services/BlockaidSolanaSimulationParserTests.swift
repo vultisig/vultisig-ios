@@ -19,7 +19,7 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         let json = """
         {
           "encoding": "base58",
-          "status": "SUCCESS",
+          "status": "Success",
           "result": {
             "simulation": {
               "account_summary": {
@@ -70,7 +70,7 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
               "extended_features": []
             }
           },
-          "status": "SUCCESS"
+          "status": "Success"
         }
         """
         let decoded = try JSONDecoder().decode(
@@ -89,7 +89,7 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
                 simulation: nil,
                 validation: nil
             ),
-            status: "SUCCESS",
+            status: "Success",
             error: nil
         )
         XCTAssertNil(response.toKeysignScannerResult())
