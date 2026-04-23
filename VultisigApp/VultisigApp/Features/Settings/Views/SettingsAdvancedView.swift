@@ -66,6 +66,12 @@ struct SettingsAdvancedView: View {
                 icon: "clock.arrow.circlepath",
                 isEnabled: $settingsViewModel.txHistoryEnabled
             )
+
+            SettingToggleCell(
+                title: "TSS Batching",
+                icon: "bolt.horizontal",
+                isEnabled: $settingsViewModel.tssBatchEnabled
+            )
         }
     }
 }

@@ -340,6 +340,7 @@
 "fastLoaderTitle" = "Looking for Vultiserver to connect...";
 "fastModeTitle" = "FAST";
 "fastSetUp" = "Fast set-up";
+"fastVaultRegistrationFailed" = "Failed to register with Vultiserver. Please try again.";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVultiserver co-signs instantly";
 "fee" = "Fee";
 "filterByAsset" = "Filter by Asset";
