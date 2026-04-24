@@ -2,6 +2,20 @@
 
 Vultisig is a multichain multifactor crypto vault that uses MPC - ECDSA and EDDSA Threshold Signatures. 
 
+## Getting started
+
+The Xcode project is generated from `VultisigApp/project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). All common commands are wrapped in the root `Makefile`:
+
+```bash
+make bootstrap    # install XcodeGen + SwiftLint and generate VultisigApp.xcodeproj
+make generate     # regenerate VultisigApp.xcodeproj after changes to project.yml or source files
+make test         # run unit tests
+make ui_test      # run UI tests
+make help         # list all targets
+```
+
+After `make bootstrap`, open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **not** edit `project.pbxproj` by hand — your changes will be overwritten on the next `make generate`. Add or remove files in the appropriate target folder (`VultisigApp/VultisigApp/` for app code, `VultisigApp/VultisigAppTests/` for unit tests, `VultisigApp/VultisigAppUITests/` for UI tests) and rerun `make generate`.
+
 ## Third party services
 
 Vultisig use the following third party services to access price , blockchain node RPC

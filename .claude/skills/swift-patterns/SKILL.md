@@ -176,10 +176,13 @@ actor MyCache {
 
 ## Build Commands
 
-```bash
-# Build
-xcodebuild -project VultisigApp/VultisigApp.xcodeproj -scheme VultisigApp -sdk iphonesimulator build
+Use the Makefile at repo root (see `/make` skill):
 
-# Run tests
-xcodebuild -project VultisigApp/VultisigApp.xcodeproj -scheme VultisigApp -sdk iphonesimulator test
+```bash
+make bootstrap   # first-time setup (installs tools + generates xcodeproj)
+make generate    # regenerate xcodeproj after project.yml or source changes
+make test        # run unit tests
+make ui_test     # run UI tests
 ```
+
+Never invoke `xcodebuild` directly for routine tasks — go through `make` so CI and local stay consistent.
