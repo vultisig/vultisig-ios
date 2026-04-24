@@ -52,12 +52,12 @@ enum ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .poolInfo, .pools,
              .poolLiquidityProvider, .swapQuote, .tcyStaker:
-            return URL(string: "https://thornode.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
         case .networkStatus, .tcyAutoCompoundStatus:
-            return URL(string: "https://rpc.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_rpc")!
         case .resolveTNS(_, let chain):
             let isStagenet = (chain == .thorChainChainnet || chain == .thorChainStagenet)
-            let host = isStagenet ? "https://stagenet-midgard.thorchain.network" : "https://midgard.thorchain.network"
+            let host = isStagenet ? "https://stagenet-midgard.thorchain.network" : "https://gateway.liquify.com/chain/thorchain_midgard"
             return URL(string: host)!
         case .rujiGraphQL:
             return URL(string: "https://api.vultisig.com")!

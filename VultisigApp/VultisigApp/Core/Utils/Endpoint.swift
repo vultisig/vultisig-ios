@@ -22,7 +22,7 @@ class Endpoint {
         var baseUrl: String {
             switch self {
             case .thorchain:
-                return "https://thornode.thorchain.network/thorchain"
+                return "https://gateway.liquify.com/chain/thorchain_api/thorchain"
             case .thorchainChainnet:
                 return "https://chainnet-thornode.thorchain.network/thorchain"
             case .thorchainStagenet:
@@ -37,11 +37,11 @@ class Endpoint {
     static let vultisigNotification = "https://api.vultisig.com/notification"
     static let supportDocumentLink = "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup#recovering-a-lost-device"
     static let vultisigRelay = "https://api.vultisig.com/router"
-    static let broadcastTransactionThorchainNineRealms = "https://thornode.thorchain.network/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainNineRealms = "https://gateway.liquify.com/chain/thorchain_api/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
 
     // Transaction status endpoints (Midgard)
-    static let thorchainMidgard = "https://midgard.thorchain.network"
+    static let thorchainMidgard = "https://gateway.liquify.com/chain/thorchain_midgard"
     static let thorchainMidgardStagenet = "https://stagenet-midgard.thorchain.network"
     static let mayachainMidgard = "https://midgard.mayachain.info"
 
@@ -136,22 +136,22 @@ class Endpoint {
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
 
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
-        "https://thornode.thorchain.network/auth/accounts/\(address)"
+        "https://gateway.liquify.com/chain/thorchain_api/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainNetworkInfoNineRealms = "https://thornode.thorchain.network/thorchain/network"
+    static let fetchThorchainNetworkInfoNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
 
     static func fetchThorchainDenomMetadata(denom: String) -> String {
-        "https://thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
 
     static func fetchThorchainAllDenomMetadata() -> String {
-        "https://thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
 
-    static let thorchainNetworkInfo = "https://rpc.thorchain.network/status".asUrl
+    static let thorchainNetworkInfo = "https://gateway.liquify.com/chain/thorchain_rpc/status".asUrl
 
-    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.thorchain.network/thorchain/inbound_addresses"
+    static let fetchThorchainInboundAddressesNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/inbound_addresses"
 
     /// Stagenet endpoints
     static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {
@@ -179,7 +179,7 @@ class Endpoint {
     }
 
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
-        "https://thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
+        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/balances/\(address)"
     }
 
     static func fetchAccountBalanceThorchainChainnet(address: String) -> String {
@@ -192,7 +192,7 @@ class Endpoint {
 
     /// Fetch pool info for any THORChain asset
     static func fetchPoolInfo(asset: String) -> String {
-        "https://thornode.thorchain.network/thorchain/pool/\(asset)"
+        "https://gateway.liquify.com/chain/thorchain_api/thorchain/pool/\(asset)"
     }
 
     static func fetchChainnetPoolInfo(asset: String) -> String {
@@ -200,16 +200,16 @@ class Endpoint {
     }
 
     static func fetchTcyStakedAmount(address: String) -> String {
-        "https://thornode.thorchain.network/thorchain/tcy_staker/\(address)"
+        "https://gateway.liquify.com/chain/thorchain_api/thorchain/tcy_staker/\(address)"
     }
 
     static func fetchTcyAutoCompoundStatus() -> String {
-        "https://rpc.thorchain.network/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
+        "https://gateway.liquify.com/chain/thorchain_rpc/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
     }
 
     static func fetchTcyAutoCompoundBalance(address: String) -> String {
         // Query user's sTCY balance using cosmos bank API - URL encode the denom
-        "https://rpc.thorchain.network/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
+        "https://gateway.liquify.com/chain/thorchain_rpc/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
     }
 
     static func fetchYRunePrice() -> String {
@@ -232,10 +232,10 @@ class Endpoint {
 
     /// THORChain LP endpoints
     static func fetchThorchainPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+        "https://gateway.liquify.com/chain/thorchain_api/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
-    static let fetchThorchainPools = "https://thornode.thorchain.network/thorchain/pools"
+    static let fetchThorchainPools = "https://gateway.liquify.com/chain/thorchain_api/thorchain/pools"
 
     /// THORChain Stagenet LP endpoints
     static func fetchThorchainChainnetPoolLiquidityProvider(asset: String, address: String) -> String {
@@ -625,7 +625,7 @@ class Endpoint {
     static func resolveTNS(name: String, chain: Chain = .thorChain) -> URL {
         let baseUrl = (chain == .thorChainChainnet || chain == .thorChainStagenet)
             ? "https://stagenet-midgard.thorchain.network"
-            : "https://midgard.thorchain.network"
+            : "https://gateway.liquify.com/chain/thorchain_midgard"
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
@@ -1217,8 +1217,8 @@ class Endpoint {
 
     // Referral
 
-    static let ReferralBase = "https://thornode.thorchain.network/thorchain"
-    static let ReferralFees = "https://thornode.thorchain.network/thorchain/network"
+    static let ReferralBase = "https://gateway.liquify.com/chain/thorchain_api/thorchain"
+    static let ReferralFees = "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
 
     static func checkNameAvailability(for code: String) -> String {
         ReferralBase + "/thorname/lookup/\(code)"
@@ -1233,7 +1233,7 @@ class Endpoint {
     }
 
     static func nameLookup(for name: String) -> String {
-        "https://midgard.thorchain.network/v2/thorname/lookup/\(name)"
+        "https://gateway.liquify.com/chain/thorchain_midgard/v2/thorname/lookup/\(name)"
     }
 }
 
