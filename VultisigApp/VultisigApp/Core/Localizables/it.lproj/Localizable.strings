@@ -934,6 +934,7 @@
 "Unstake" = "Unstake";
 "unstakeCoin" = "Unstake %@";
 "unsupportedFileTypeError" = "Tipo di file non supportato, riprova";
+"unverifiedFunction" = "Funzione non verificata";
 "updateNow" = "Aggiorna ora";
 "upgradeNow" = "Aggiorna ora";
 "upgradeYourVault" = "Aggiorna il tuo vault";
