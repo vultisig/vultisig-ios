@@ -25,14 +25,16 @@ enum ContractCallExtractor {
     /// Decimal string of 2^256 - 1 — the standard max-value sentinel used across DeFi.
     static let maxUInt256Decimal = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
-    // Functions where MAX_UINT256 means "unlimited approval" — the only case where
-    // a sentinel label makes sense. decreaseAllowance is excluded because
-    // decreaseAllowance(MAX_UINT256) reduces allowance by that amount, it does
-    // not grant an unlimited approval. For withdraw/repay MAX_UINT256 means
-    // "all available" but the exact amount depends on on-chain state, so we
-    // return nil and let the caller skip the amount display.
+    // Functions where MAX_UINT256 means "unlimited approval" — the only case
+    // where a sentinel label makes sense. increaseAllowance/decreaseAllowance
+    // are excluded because their amount is a delta, not the final allowance —
+    // labeling MAX_UINT256 as "Unlimited" there would misstate what the user
+    // is about to sign. For withdraw/repay MAX_UINT256 means "all available"
+    // but the exact amount depends on on-chain state, so we return nil and
+    // let the caller skip the amount display.
     private static let unlimitedApprovalFunctions: Set<String> = [
-        "approve", "increaseAllowance"
+        "approve",
+        "permit"
     ]
 
     /// If `funcName` uses MAX_UINT256 as an "unlimited approval" sentinel, returns
@@ -72,7 +74,11 @@ enum ContractCallExtractor {
         "transferFrom": .contractIsToken,
         "approve": .contractIsToken,
         "increaseAllowance": .contractIsToken,
-        "decreaseAllowance": .contractIsToken
+        "decreaseAllowance": .contractIsToken,
+        // EIP-2612: permit(owner, spender, value, deadline, v, r, s). Called on
+        // the ERC20 token itself, so the contract IS the token; value is the
+        // first uint256 — which is exactly what .contractIsToken extracts.
+        "permit": .contractIsToken
     ]
 
     static func extract(
