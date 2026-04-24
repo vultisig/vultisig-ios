@@ -8,81 +8,53 @@
 import Foundation
 import OSLog
 
-/// TargetType for the async FastVault endpoints. Fire-and-forget POSTs
-/// (create, keyImport, reshare, singleKeygen, migrate) still use
-/// `Utils.sendRequest` — they'll migrate with the Utils network helpers in
-/// a later sub-issue of Architecture 3.
-enum FastVaultAPI: TargetType {
-    /// GET /vault/get/{pubKeyECDSA} with x-password header.
-    /// Caller interprets 200 / 401 / 403 / 404 — use .noValidation.
-    case get(pubKeyECDSA: String, password: String)
-    /// GET /vault/exist/{pubKeyECDSA}.
-    case exist(pubKeyECDSA: String)
-    /// POST /vault/sign with KeysignRequest body.
-    case sign(request: KeysignRequest)
-    /// GET /vault/verify/{ecdsaKey}/{otpCode}.
-    /// Caller interprets 200 vs anything-else — use .noValidation.
-    case verifyBackupOTP(ecdsaKey: String, otpCode: String)
+/// Request body for `POST /vault/batch/keygen`.
+struct BatchKeygenRequest: Codable {
+    let name: String
+    let session_id: String
+    let hex_encryption_key: String
+    let hex_chain_code: String
+    let local_party_id: String
+    let encryption_password: String
+    let email: String
+    let lib_type: Int
+    let protocols: [String]
 
-    var baseURL: URL { URL(string: Endpoint.vultisigApiProxy)! }
+    static let protocolECDSA = "ecdsa"
+    static let protocolEdDSA = "eddsa"
+}
 
-    var path: String {
-        switch self {
-        case .get(let pubKey, _):
-            return "/vault/get/\(pubKey)"
-        case .exist(let pubKey):
-            return "/vault/exist/\(pubKey)"
-        case .sign:
-            return "/vault/sign"
-        case .verifyBackupOTP(let key, let otp):
-            return "/vault/verify/\(key)/\(otp)"
-        }
-    }
+/// Request body for `POST /vault/batch/reshare`.
+struct BatchReshareRequest: Codable {
+    let public_key: String
+    let session_id: String
+    let hex_encryption_key: String
+    let local_party_id: String
+    let old_parties: [String]
+    let encryption_password: String
+    let email: String
+    let protocols: [String]
+}
 
-    var method: HTTPMethod {
-        switch self {
-        case .get, .exist, .verifyBackupOTP:
-            return .get
-        case .sign:
-            return .post
-        }
-    }
-
-    var task: HTTPTask {
-        switch self {
-        case .get, .exist, .verifyBackupOTP:
-            return .requestPlain
-        case .sign(let request):
-            return .requestCodable(request, .jsonEncoding)
-        }
-    }
-
-    var headers: [String: String]? {
-        var base: [String: String] = ["Content-Type": "application/json"]
-        if case .get(_, let password) = self,
-           let pwd = password.data(using: .utf8)?.base64EncodedString() {
-            base["x-password"] = pwd
-        }
-        return base
-    }
-
-    var validationType: ValidationType {
-        switch self {
-        case .get, .verifyBackupOTP:
-            return .noValidation
-        case .exist, .sign:
-            return .successCodes
-        }
-    }
+/// Request body for `POST /vault/batch/import`.
+struct BatchKeyImportRequest: Codable {
+    let name: String
+    let session_id: String
+    let hex_encryption_key: String
+    let local_party_id: String
+    let encryption_password: String
+    let email: String
+    let lib_type: Int
+    let chains: [String]
+    let protocols: [String]
 }
 
 final class FastVaultService {
 
     static let shared = FastVaultService()
 
-    private let endpoint = "https://api.vultisig.com/vault"
-    private let logger = Logger(subsystem: "com.vultisig", category: "FastVaultService")
     private let httpClient: HTTPClientProtocol
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "fast-vault-service")
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
@@ -98,19 +70,19 @@ final class FastVaultService {
     }
 
     func validateAccess(pubKeyECDSA: String, password: String) async -> FastVaultAccessValidationResult {
-        guard password.data(using: .utf8)?.base64EncodedString() != nil else {
+        guard let encodedPassword = password.data(using: .utf8)?.base64EncodedString() else {
             return .networkFailure("Failed to encode FastVault password")
         }
 
         do {
             let response = try await httpClient.request(
-                FastVaultAPI.get(pubKeyECDSA: pubKeyECDSA, password: password)
+                FastVaultAPI.validateAccess(pubKeyECDSA: pubKeyECDSA, base64Password: encodedPassword)
             )
-            let responseBody = String(data: response.data, encoding: .utf8)?
+            let body = String(data: response.data, encoding: .utf8)?
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
             switch response.response.statusCode {
-            case 200 ... 299:
+            case 200...299:
                 return .valid
             case 401, 403:
                 return .invalidPassword
@@ -119,7 +91,7 @@ final class FastVaultService {
             default:
                 return .requestFailed(
                     statusCode: response.response.statusCode,
-                    responseBody: responseBody
+                    responseBody: body
                 )
             }
         } catch {
@@ -137,9 +109,10 @@ final class FastVaultService {
 
     func exist(pubKeyECDSA: String) async -> Bool {
         do {
-            _ = try await httpClient.request(FastVaultAPI.exist(pubKeyECDSA: pubKeyECDSA))
+            _ = try await httpClient.request(FastVaultAPI.exists(pubKeyECDSA: pubKeyECDSA))
             return true
         } catch {
+            logger.info("FastVault exist check returned false: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -160,13 +133,44 @@ final class FastVaultService {
         encryptionPassword: String,
         email: String,
         lib_type: Int
-    ) {
+    ) async throws {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type)
+        let req = VaultCreateRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            hex_chain_code: hexChainCode,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type
+        )
+        try await send(.create(req), operation: "create")
+    }
 
-        Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
-            self.logger.info("Sent FastVault create request successfully")
-        }
+    func batchCreate(
+        name: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        hexChainCode: String,
+        encryptionPassword: String,
+        email: String,
+        lib_type: Int,
+        protocols: [String]
+    ) async throws {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchKeygenRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            hex_chain_code: hexChainCode,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type,
+            protocols: protocols
+        )
+        try await send(.batchCreate(req), operation: "batch keygen")
     }
 
     func keyImport(
@@ -178,13 +182,68 @@ final class FastVaultService {
         email: String,
         lib_type: Int,
         chains: [String]
-    ) {
+    ) async throws {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = KeyImportRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, chains: chains)
+        let req = KeyImportRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            hex_chain_code: hexChainCode,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type,
+            chains: chains
+        )
+        try await send(.keyImport(req), operation: "import")
+    }
 
-        Utils.sendRequest(urlString: "\(endpoint)/import", method: "POST", headers: [:], body: req) { _ in
-            self.logger.info("Sent FastVault import request successfully")
-        }
+    func batchKeyImport(
+        name: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword: String,
+        email: String,
+        lib_type: Int,
+        chains: [String],
+        protocols: [String]
+    ) async throws {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchKeyImportRequest(
+            name: name,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            local_party_id: localPartyID,
+            encryption_password: encryptionPassword,
+            email: email,
+            lib_type: lib_type,
+            chains: chains,
+            protocols: protocols
+        )
+        try await send(.batchKeyImport(req), operation: "batch import")
+    }
+
+    func batchReshare(
+        publicKeyECDSA: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword: String,
+        email: String,
+        oldParties: [String],
+        protocols: [String]
+    ) async throws {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
+        let req = BatchReshareRequest(
+            public_key: publicKeyECDSA,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            local_party_id: localPartyID,
+            old_parties: oldParties,
+            encryption_password: encryptionPassword,
+            email: email,
+            protocols: protocols
+        )
+        try await send(.batchReshare(req), operation: "batch reshare")
     }
 
     func reshare(
@@ -198,23 +257,22 @@ final class FastVaultService {
         oldParties: [String],
         oldResharePrefix: String,
         lib_type: Int
-    ) {
+    ) async throws {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = ReshareRequest(name: name,
-                                 public_key: publicKeyECDSA,
-                                 session_id: sessionID,
-                                 hex_encryption_key: hexEncryptionKey,
-                                 hex_chain_code: hexChainCode,
-                                 local_party_id: localPartyID,
-                                 old_parties: oldParties,
-                                 encryption_password: encryptionPassword,
-                                 email: email,
-                                 old_reshare_prefix: oldResharePrefix,
-                                 lib_type: lib_type)
-
-        Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
-            self.logger.info("Sent FastVault reshare request successfully")
-        }
+        let req = ReshareRequest(
+            name: name,
+            public_key: publicKeyECDSA,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            hex_chain_code: hexChainCode,
+            local_party_id: localPartyID,
+            old_parties: oldParties,
+            encryption_password: encryptionPassword,
+            email: email,
+            old_reshare_prefix: oldResharePrefix,
+            lib_type: lib_type
+        )
+        try await send(.reshare(req), operation: "reshare")
     }
 
     func sign(
@@ -227,25 +285,33 @@ final class FastVaultService {
         vaultPassword: String,
         chain: String
     ) async throws {
-        let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword, chain: chain)
-
+        let request = KeysignRequest(
+            public_key: publicKeyEcdsa,
+            messages: keysignMessages,
+            session: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            derive_path: derivePath,
+            is_ecdsa: isECDSA,
+            vault_password: vaultPassword,
+            chain: chain
+        )
         do {
-            _ = try await httpClient.request(FastVaultAPI.sign(request: request))
-        } catch HTTPError.statusCode(let code, let data) {
-            let responseBody = data.flatMap { String(data: $0, encoding: .utf8) }?
+            _ = try await httpClient.request(FastVaultAPI.sign(request))
+        } catch let HTTPError.statusCode(code, data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) }?
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            throw FastVaultServiceError.signFailed(statusCode: code, responseBody: responseBody)
+            throw FastVaultServiceError.signFailed(statusCode: code, responseBody: body)
         } catch {
-            throw FastVaultServiceError.invalidResponse
+            throw FastVaultServiceError.networkFailure(error)
         }
     }
 
     func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> Bool {
         do {
-            let response = try await httpClient.request(
-                FastVaultAPI.verifyBackupOTP(ecdsaKey: ecdsaKey, otpCode: OTPCode)
+            _ = try await httpClient.request(
+                FastVaultAPI.verifyBackupOTP(pubKeyECDSA: ecdsaKey, code: OTPCode)
             )
-            return response.response.statusCode == 200
+            return true
         } catch {
             logger.error("FastVault backup verification failed: \(error.localizedDescription, privacy: .public)")
             return false
@@ -258,7 +324,7 @@ final class FastVaultService {
         hexEncryptionKey: String,
         encryptionPassword: String,
         email: String
-    ) {
+    ) async throws {
         let req = CreateMldsaRequest(
             public_key: publicKeyECDSA,
             session_id: sessionID,
@@ -266,10 +332,7 @@ final class FastVaultService {
             encryption_password: encryptionPassword,
             email: email
         )
-
-        Utils.sendRequest(urlString: "\(endpoint)/mldsa", method: "POST", headers: [:], body: req) { _ in
-            self.logger.info("Sent FastVault MLDSA keygen request successfully")
-        }
+        try await send(.singleKeygen(req), operation: "mldsa keygen")
     }
 
     func migrate(
@@ -277,39 +340,64 @@ final class FastVaultService {
         sessionID: String,
         hexEncryptionKey: String,
         encryptionPassword: String,
-        email: String) {
-        let req = MigrationRequest(public_key: publicKeyECDSA,
-                                 session_id: sessionID,
-                                 hex_encryption_key: hexEncryptionKey,
-                                 encryption_password: encryptionPassword,
-                                 email: email)
+        email: String
+    ) async throws {
+        let req = MigrationRequest(
+            public_key: publicKeyECDSA,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            encryption_password: encryptionPassword,
+            email: email
+        )
+        try await send(.migrate(req), operation: "migrate")
+    }
+}
 
-        Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
-            self.logger.info("Sent FastVault migration request successfully")
+private extension FastVaultService {
+    func send(_ target: FastVaultAPI, operation: String) async throws {
+        do {
+            _ = try await httpClient.request(target)
+            logger.info("FastVault \(operation, privacy: .public) request succeeded")
+        } catch let HTTPError.statusCode(code, data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) }?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            logger.error("FastVault \(operation, privacy: .public) failed: HTTP \(code) \(body ?? "", privacy: .public)")
+            throw FastVaultServiceError.registrationFailed(
+                operation: operation,
+                statusCode: code,
+                responseBody: body
+            )
+        } catch {
+            logger.error("FastVault \(operation, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+            throw FastVaultServiceError.networkFailure(error)
         }
     }
 }
 
 enum FastVaultServiceError: Error, LocalizedError {
-    case invalidSignURL
-    case invalidResponse
+    case missingEncryptionKey
     case signFailed(statusCode: Int, responseBody: String?)
+    case registrationFailed(operation: String, statusCode: Int, responseBody: String?)
+    case networkFailure(Error)
 
     var errorDescription: String? {
         switch self {
-        case .invalidSignURL:
-            return "FastVault sign URL is invalid"
-        case .invalidResponse:
-            return "FastVault sign returned an invalid response"
+        case .missingEncryptionKey:
+            return "FastVault encryption key is missing"
         case .signFailed(let statusCode, let responseBody):
-            let body: String
-            if let responseBody, !responseBody.isEmpty {
-                body = responseBody
-            } else {
-                body = "empty response body"
-            }
-            return "FastVault sign failed with status \(statusCode): \(body)"
+            return "FastVault sign failed with status \(statusCode): \(describeBody(responseBody))"
+        case .registrationFailed(let operation, let statusCode, let responseBody):
+            return "FastVault \(operation) failed with status \(statusCode): \(describeBody(responseBody))"
+        case .networkFailure(let error):
+            return "FastVault network error: \(error.localizedDescription)"
         }
+    }
+
+    private func describeBody(_ body: String?) -> String {
+        guard let body, !body.isEmpty else {
+            return "empty response body"
+        }
+        return body
     }
 }
 

@@ -10,6 +10,7 @@ import Foundation
 enum BlockaidAPI {
     case scanBitcoinTransaction(BitcoinScanTransactionRequestJson)
     case scanEVMTransaction(EthereumScanTransactionRequestJson)
+    case simulateEVMTransaction(EthereumSimulateTransactionRequestJson)
     case scanSolanaTransaction(SolanaScanTransactionRequestJson)
     case scanSuiTransaction(SuiScanTransactionRequestJson)
 }
@@ -25,6 +26,8 @@ extension BlockaidAPI: TargetType {
             return "/bitcoin/transaction-raw/scan"
         case .scanEVMTransaction:
             return "/evm/transaction/scan"
+        case .simulateEVMTransaction:
+            return "/evm/json-rpc/scan"
         case .scanSolanaTransaction:
             return "/solana/message/scan"
         case .scanSuiTransaction:
@@ -41,6 +44,8 @@ extension BlockaidAPI: TargetType {
         case .scanBitcoinTransaction(let request):
             return .requestCodable(request, .jsonEncoding)
         case .scanEVMTransaction(let request):
+            return .requestCodable(request, .jsonEncoding)
+        case .simulateEVMTransaction(let request):
             return .requestCodable(request, .jsonEncoding)
         case .scanSolanaTransaction(let request):
             return .requestCodable(request, .jsonEncoding)

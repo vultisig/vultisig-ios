@@ -28,9 +28,6 @@ struct ChainDetailScreenContainer: View {
         if supportsDefiTab {
             newTabs.append(.defi)
         }
-        if SettingsViewModel.shared.agentEnabled {
-            newTabs.append(.agent)
-        }
         self.tabs = newTabs
     }
 
@@ -72,8 +69,6 @@ struct ChainDetailScreenContainer: View {
                     default:
                         DefiChainMainScreen(vault: vault, group: group)
                     }
-                case .agent:
-                    AgentConversationsView()
                 case .camera:
                     EmptyView()
                 }
