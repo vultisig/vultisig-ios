@@ -115,6 +115,25 @@ final class ThorchainAntiRektTests: XCTestCase {
         XCTAssertEqual(mock.lastStreamingQuantity, 10)
     }
 
+    func test_maybeUpgradeToStreaming_missingMaxStreamingQuantity_stillFetchesStreaming() async {
+        // Rapid quotes (interval=0) typically omit max_streaming_quantity.
+        // We must still fetch streaming — passing 0 tells THORChain to auto-pick.
+        let rapid = makeQuote(expectedAmountOut: "24079", feesTotal: "43440", maxStreamingQuantity: nil)
+        let streaming = makeQuote(expectedAmountOut: "68000", feesTotal: "4000")
+        let mock = MockSwapProvider(response: .success(streaming))
+
+        let result = await SwapService.shared.maybeUpgradeToStreaming(
+            rapid: rapid, service: mock, provider: .thorchain,
+            address: "addr", fromAsset: "BTC.BTC", toAsset: "TRX.TRX",
+            amount: "100000000", referredCode: "", vultTierDiscount: 0
+        )
+
+        XCTAssertEqual(result.expectedAmountOut, streaming.expectedAmountOut)
+        XCTAssertEqual(mock.callCount, 1)
+        XCTAssertEqual(mock.lastInterval, 1)
+        XCTAssertEqual(mock.lastStreamingQuantity, 0)
+    }
+
     func test_maybeUpgradeToStreaming_aboveThreshold_streamingWorse_returnsRapid() async {
         let rapid = makeQuote(expectedAmountOut: "24079", feesTotal: "43440", maxStreamingQuantity: 10)
         let streaming = makeQuote(expectedAmountOut: "20000", feesTotal: "10000")

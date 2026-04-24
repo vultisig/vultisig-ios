@@ -374,25 +374,21 @@ extension SwapService {
         vultTierDiscount: Int
     ) async -> ThorchainSwapQuote {
         guard Self.supportsStreamingFallback(provider) else {
-            logger.info("[anti-rekt] provider=\(String(describing: provider), privacy: .public) not eligible → using RAPID")
             return rapid
         }
 
         let slippageBps = Self.rapidSlippageBps(fromQuote: rapid) ?? 0
-        logger.info("[anti-rekt] rapid slippage=\(slippageBps, privacy: .public) bps, threshold=\(Self.streamingSlippageThresholdBps, privacy: .public) bps, fromAsset=\(fromAsset, privacy: .public), toAsset=\(toAsset, privacy: .public)")
+        let threshold = Self.streamingSlippageThresholdBps
 
-        guard slippageBps > Self.streamingSlippageThresholdBps else {
-            logger.info("[anti-rekt] slippage ≤ threshold → using RAPID (memo=\(rapid.memo, privacy: .public))")
+        guard slippageBps > threshold else {
+            logger.info("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) slippage=\(slippageBps, privacy: .public)bps ≤ \(threshold, privacy: .public)bps → RAPID out=\(rapid.expectedAmountOut, privacy: .public)")
             return rapid
         }
 
+        // `max_streaming_quantity` is typically absent on rapid (interval=0) quotes,
+        // so we pass 0 — THORChain's `streaming_quantity=0` means "protocol decides
+        // optimal" and the chosen quantity is baked into the returned memo.
         let streamingQuantity = rapid.maxStreamingQuantity ?? 0
-        guard streamingQuantity > 0 else {
-            logger.info("[anti-rekt] max_streaming_quantity missing/zero → using RAPID")
-            return rapid
-        }
-
-        logger.info("[anti-rekt] fetching STREAMING quote (interval=1, quantity=\(streamingQuantity, privacy: .public))")
 
         do {
             let streaming = try await service.fetchSwapQuotes(
@@ -408,10 +404,10 @@ extension SwapService {
             let chosen = Self.selectBetterQuote(rapid: rapid, streaming: streaming)
             let pickedStreaming = chosen.expectedAmountOut == streaming.expectedAmountOut &&
                 chosen.expectedAmountOut != rapid.expectedAmountOut
-            logger.info("[anti-rekt] rapid out=\(rapid.expectedAmountOut, privacy: .public), streaming out=\(streaming.expectedAmountOut, privacy: .public) → using \(pickedStreaming ? "STREAMING" : "RAPID", privacy: .public) (memo=\(chosen.memo, privacy: .public))")
+            logger.info("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) slippage=\(slippageBps, privacy: .public)bps > \(threshold, privacy: .public)bps, rapid=\(rapid.expectedAmountOut, privacy: .public), streaming=\(streaming.expectedAmountOut, privacy: .public) → \(pickedStreaming ? "STREAMING" : "RAPID", privacy: .public)")
             return chosen
         } catch {
-            logger.warning("[anti-rekt] streaming fetch failed, falling back to RAPID: \(error.localizedDescription, privacy: .public)")
+            logger.warning("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) streaming fetch failed → RAPID: \(error.localizedDescription, privacy: .public)")
             return rapid
         }
     }
