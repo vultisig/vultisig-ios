@@ -12,7 +12,7 @@ import sys
 
 LOCALIZABLES_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "VultisigApp", "Localizables"
+    "VultisigApp", "Core", "Localizables"
 )
 
 LOCALE_DIRS = ["en.lproj", "de.lproj", "es.lproj", "hr.lproj", "it.lproj", "ko.lproj", "pt.lproj", "zh-Hans.lproj"]

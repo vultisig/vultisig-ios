@@ -102,10 +102,7 @@ struct JoinKeysignDoneSummary: View {
                     coin: keysignPayload.coin,
                     amountCrypto: keysignPayload.toAmountWithTickerString,
                     amountFiat: keysignPayload.toSendAmountFiatString,
-                    heroTitle: viewModel.decodedFunctionName,
-                    heroAmount: nil,
-                    heroTicker: nil,
-                    heroImage: nil,
+                    hero: viewModel.heroContent,
                     hash: viewModel.txid,
                     explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                     memo: viewModel.memo ?? "",
@@ -156,24 +153,36 @@ struct JoinKeysignDoneSummary: View {
                 getGeneralCell(
                     title: "amount",
                     description: tokenDisplay,
-                    isVerticalStacked: true
+                    isVerticalStacked: true,
+                    isWarning: viewModel.decodedTokenIsUnlimited
                 )
             }
-            if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+            if hasTransactionDetails {
                 Separator()
-                getGeneralCell(
-                    title: "functionSignature",
-                    description: signature,
-                    isVerticalStacked: true
-                )
-            }
-            if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
-                Separator()
-                getGeneralCell(
-                    title: "functionArguments",
-                    description: args,
-                    isVerticalStacked: true
-                )
+                DisclosureSection(title: "transactionDetails") {
+                    if let signature = viewModel.decodedFunctionSignature, !signature.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("functionSignature".localized)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .font(Theme.fonts.bodySMedium)
+                            Text(signature)
+                                .foregroundStyle(Theme.colors.turquoise)
+                                .font(Theme.fonts.bodySMedium)
+                                .textSelection(.enabled)
+                        }
+                    }
+                    if let args = viewModel.decodedFunctionArguments, !args.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("functionArguments".localized)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .font(Theme.fonts.bodySMedium)
+                            Text(args)
+                                .foregroundStyle(Theme.colors.turquoise)
+                                .font(Theme.fonts.bodySMedium)
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
             }
             Separator()
             getGeneralCell(
@@ -195,6 +204,12 @@ struct JoinKeysignDoneSummary: View {
         }
     }
 
+    private var hasTransactionDetails: Bool {
+        let hasSignature = !(viewModel.decodedFunctionSignature?.isEmpty ?? true)
+        let hasArguments = !(viewModel.decodedFunctionArguments?.isEmpty ?? true)
+        return hasSignature || hasArguments
+    }
+
     private var hasHeroSection: Bool {
         viewModel.decodedFunctionName != nil
     }
@@ -203,17 +218,28 @@ struct JoinKeysignDoneSummary: View {
         appViewModel.restart()
     }
 
-    private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
-        ZStack {
+    private func getGeneralCell(
+        title: String,
+        description: String,
+        isVerticalStacked: Bool = false,
+        isWarning: Bool = false
+    ) -> some View {
+        let textColor: Color = isWarning ? Theme.colors.alertWarning : Theme.colors.textPrimary
+        return ZStack {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textTertiary)
 
-                    Text(description)
-                        .foregroundColor(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
+                    HStack(spacing: 6) {
+                        Text(description)
+                            .foregroundColor(textColor)
+                            .font(Theme.fonts.bodySMedium)
+                        if isWarning {
+                            Icon(named: "triangle-alert", color: textColor, size: 14)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -222,7 +248,10 @@ struct JoinKeysignDoneSummary: View {
                         .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
                     Text(description)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundColor(textColor)
+                    if isWarning {
+                        Icon(named: "triangle-alert", color: textColor, size: 14)
+                    }
                 }
                 .font(Theme.fonts.bodySMedium)
             }

@@ -45,7 +45,11 @@ struct KeysignCustomMessageConfirmView: View {
                 if let tokenDisplay = viewModel.decodedTokenDisplay,
                    !tokenDisplay.isEmpty {
                     Separator()
-                    getPrimaryCell(title: "amount", value: tokenDisplay)
+                    getPrimaryCell(
+                        title: "amount",
+                        value: tokenDisplay,
+                        isWarning: viewModel.decodedTokenIsUnlimited
+                    )
                 }
                 if hasTransactionDetails {
                     Separator()
@@ -183,14 +187,20 @@ struct KeysignCustomMessageConfirmView: View {
         }
     }
 
-    private func getPrimaryCell(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private func getPrimaryCell(title: String, value: String, isWarning: Bool = false) -> some View {
+        let textColor: Color = isWarning ? Theme.colors.alertWarning : Theme.colors.textPrimary
+        return VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            Text(value)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+            HStack(spacing: 6) {
+                Text(value)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(textColor)
+                if isWarning {
+                    Icon(named: "triangle-alert", color: textColor, size: 14)
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
