@@ -934,6 +934,7 @@
 "Unstake" = "Poništi ulog";
 "unstakeCoin" = "Povuci %@";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
+"unverifiedFunction" = "Neprovjerena funkcija";
 "updateNow" = "Ažuriraj sada";
 "upgradeNow" = "Nadogradi sada";
 "upgradeYourVault" = "Nadogradi trezor";

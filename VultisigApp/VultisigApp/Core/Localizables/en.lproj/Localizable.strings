@@ -950,6 +950,7 @@
 "Unstake" = "Unstake";
 "unstakeCoin" = "Unstake %@";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
+"unverifiedFunction" = "Unverified function";
 "updateNow" = "Update Now";
 "upgradeNow" = "Upgrade now";
 "upgradeYourVault" = "Upgrade your vault";

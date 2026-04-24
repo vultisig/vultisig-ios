@@ -949,6 +949,7 @@
 "Unstake" = "언스테이킹";
 "unstakeCoin" = "%@ 언스테이킹";
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
+"unverifiedFunction" = "확인되지 않은 함수";
 "updateNow" = "지금 업데이트";
 "upgradeNow" = "지금 업그레이드";
 "upgradeYourVault" = "볼트 업그레이드";
