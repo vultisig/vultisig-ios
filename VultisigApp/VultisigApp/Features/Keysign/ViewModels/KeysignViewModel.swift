@@ -596,8 +596,6 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
-                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
-                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -612,8 +610,6 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
-                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
-                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -698,10 +694,6 @@ class KeysignViewModel: ObservableObject {
 
         // Save to pending transactions for status tracking
         savePendingTransaction()
-
-        if !txid.isEmpty && txid != "Transaction already broadcasted." {
-            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": txid])
-        }
     }
 
     private func savePendingTransaction() {
