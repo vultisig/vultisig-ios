@@ -21,11 +21,22 @@ If lint fails, fix all warnings before proceeding to build.
 ### Step 2: Build (only if lint passes)
 
 ```bash
-xcodebuild -project VultisigApp/VultisigApp.xcodeproj \
+make build-check     # regenerate + compile (pipefail enabled, fails loudly)
+make test            # builds + runs tests — prefer when test feedback is needed
+```
+
+`make build-check` is what the batch/agent automation uses — it runs `make generate` first, then `xcodebuild build` with `set -o pipefail` so a failed build doesn't silently pass due to the trailing `tail -20`.
+
+For a custom destination or scheme, drop to `xcodebuild` directly (remember `set -o pipefail`):
+
+```bash
+set -o pipefail
+cd VultisigApp && xcodebuild build \
+    -project VultisigApp.xcodeproj \
     -scheme VultisigApp \
     -sdk iphonesimulator \
     -destination 'generic/platform=iOS Simulator' \
-    build 2>&1 | tail -20
+    -skipPackagePluginValidation 2>&1 | tail -20
 ```
 
 ## Output

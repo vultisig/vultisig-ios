@@ -56,7 +56,7 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 
 ### Verification
 
-- [ ] 1.16 Update `project.pbxproj` (remove deleted file references)
+- [ ] 1.16 Run `make generate` to refresh project references after deletions
 - [ ] 1.17 Verify build succeeds on both iOS and macOS targets
 - [ ] 1.18 Run SwiftLint — no new warnings
 
@@ -76,7 +76,7 @@ Audit confirmed **14 unused files** and **1 empty directory**. Every item below 
 - [ ] 2.3 Move `iOS/AppDelegate.swift` and `macOS/MacAppDelegate.swift` into `App/`
 - [ ] 2.4 Move `Views/Components/` contents into `Components/`, preserving subdirectory structure:
   - `Buttons/`, `Cells/`, `TextFields/`, `Banners/`, `Loaders/`, `Sheet/`, `Toolbar/`, `Screen/`, `Animations/`, `Background/`, `Icons/`, `ImageView/`, `Layout/`, `List/`, `Navigation Header/`, `Navigation Items/`, `Picker/`, `ScrollView/`, `SegmentedControls/`, `TabBar/`, `Text/`, `TextEditor/`, `Tooltip/`, `ViewModifiers/`, `Forms/`, `Swap/`, `banxa/`, `ActionBanner/`
-- [ ] 2.5 Update all import paths / file references in `project.pbxproj`
+- [ ] 2.5 Run `make generate` so the project picks up the new file locations; update Swift import paths as needed
 - [ ] 2.6 Verify build succeeds on both iOS and macOS targets
 - [ ] 2.7 Run SwiftLint — no new warnings
 
@@ -292,5 +292,5 @@ For each feature: move its views from `Views/`, view models from `View Models/`,
 2. **No logic changes** — only file moves and import path updates. If a file needs refactoring, that's a separate PR.
 3. **Build must pass** after every task group. Never merge a broken build.
 4. **SwiftLint must pass** — no new warnings.
-5. **Update `project.pbxproj`** via `/add-xcode-files` skill — never edit manually.
+5. **Do not edit `project.pbxproj`** — it is generated from `VultisigApp/project.yml` by XcodeGen. Moves/renames/deletions of Swift files are picked up automatically by the next `make generate` run.
 6. **Do not touch `Tss/`** internal structure — only move the directory as a unit.
