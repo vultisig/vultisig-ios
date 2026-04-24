@@ -29,9 +29,8 @@ final class DKLSMessenger {
     }
 
     /// Uploads a setup message to the relay server.
-    /// Setup message routing uses only the explicit `additionalHeader` parameter, NOT `self.messageID`.
-    /// This keeps setup message namespace independent of exchange message namespace (matching Android).
-    /// `self.messageID` is used only for TSS round-trip message exchange (send/pull/delete).
+    /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
+    /// so callers can route a setup message into a different namespace than the TSS exchange.
     func uploadSetupMessage(message: String, _ additionalHeader: String?) async throws {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
@@ -41,6 +40,9 @@ final class DKLSMessenger {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let messageID = self.messageID {
+            req.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
         if let additionalHeader {
             req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
@@ -75,7 +77,8 @@ final class DKLSMessenger {
     }
 
     /// Downloads a setup message from the relay server.
-    /// Setup message routing uses only the explicit `additionalHeader` parameter, NOT `self.messageID`.
+    /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
+    /// so callers can route a setup message into a different namespace than the TSS exchange.
     func downloadSetupMessage(_ additionalHeader: String?) async throws -> String {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
@@ -85,6 +88,9 @@ final class DKLSMessenger {
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let messageID = self.messageID {
+            req.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
         if let additionalHeader {
             req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
