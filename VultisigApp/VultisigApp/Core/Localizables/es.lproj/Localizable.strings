@@ -934,6 +934,7 @@
 "Unstake" = "Unstake";
 "unstakeCoin" = "Retirar %@";
 "unsupportedFileTypeError" = "Tipo de archivo no soportado, inténtalo de nuevo";
+"unverifiedFunction" = "Función no verificada";
 "updateNow" = "Actualizar ahora";
 "upgradeNow" = "Actualizar ahora";
 "upgradeYourVault" = "Actualizar bóveda";
