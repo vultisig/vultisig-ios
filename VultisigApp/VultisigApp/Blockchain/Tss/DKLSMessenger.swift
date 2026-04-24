@@ -14,7 +14,7 @@ private let logger = Logger(subsystem: "messenger", category: "dkls")
 final class DKLSMessenger {
     let mediatorURL: String
     let sessionID: String
-    let messageID: String?
+    var messageID: String?
     let encryptionKeyHex: String
     var counter: Int64 = 1
 
@@ -28,6 +28,9 @@ final class DKLSMessenger {
         self.encryptionKeyHex = encryptionKeyHex
     }
 
+    /// Uploads a setup message to the relay server.
+    /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
+    /// so callers can route a setup message into a different namespace than the TSS exchange.
     func uploadSetupMessage(message: String, _ additionalHeader: String?) async throws {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
@@ -40,10 +43,8 @@ final class DKLSMessenger {
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
-        // additionalHeader override the message_id
-        // currently additionalHeader only used in DKLS reshare
         if let additionalHeader {
-            req.setValue(additionalHeader, forHTTPHeaderField: "message-id")
+            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
 
         let encryptedBody = message.aesEncryptGCM(key: self.encryptionKeyHex)
@@ -75,6 +76,9 @@ final class DKLSMessenger {
         throw HelperError.runtimeError("fail to download setup message after 10 retries")
     }
 
+    /// Downloads a setup message from the relay server.
+    /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
+    /// so callers can route a setup message into a different namespace than the TSS exchange.
     func downloadSetupMessage(_ additionalHeader: String?) async throws -> String {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
@@ -88,7 +92,7 @@ final class DKLSMessenger {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
         if let additionalHeader {
-            req.setValue(additionalHeader, forHTTPHeaderField: "message-id")
+            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
         let (data, resp) = try await URLSession.shared.data(for: req)
         if let httpResponse = resp as? HTTPURLResponse {

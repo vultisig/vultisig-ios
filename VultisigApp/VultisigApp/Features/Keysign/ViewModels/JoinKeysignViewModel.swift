@@ -13,7 +13,11 @@ private typealias ContractCallHeroDisplay = (
     display: String,
     amountText: String,
     ticker: String,
-    logo: String
+    logo: String,
+    /// True when the amount is a MAX_UINT256 sentinel that we're labeling
+    /// "Unlimited". The UI should highlight this as a warning since granting
+    /// unlimited approval is the riskiest case an unsuspecting user can sign.
+    isUnlimited: Bool
 )
 
 enum JoinKeysignStatus {
@@ -57,9 +61,13 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedFunctionArguments: String?
     @Published var decodedFunctionName: String?
     @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
     @Published var decodedTokenAmount: String?
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var didLoadSimulation: Bool = false
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -408,6 +416,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.decodedTokenAmount = resolvedTokenDisplay?.amountText
             self.decodedTokenTicker = resolvedTokenDisplay?.ticker
             self.decodedTokenLogo = resolvedTokenDisplay?.logo
+            self.decodedTokenIsUnlimited = resolvedTokenDisplay?.isUnlimited ?? false
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -482,7 +491,8 @@ class JoinKeysignViewModel: ObservableObject {
                 display: "\(label) \(ticker)",
                 amountText: label,
                 ticker: ticker,
-                logo: logo
+                logo: logo,
+                isUnlimited: true
             )
         }
 
@@ -505,7 +515,8 @@ class JoinKeysignViewModel: ObservableObject {
             display: "\(formatted) \(ticker)",
             amountText: formatted,
             ticker: ticker,
-            logo: logo
+            logo: logo,
+            isUnlimited: false
         )
     }
 
@@ -524,6 +535,62 @@ class JoinKeysignViewModel: ObservableObject {
     private func capitalizeFirstCharacter(_ value: String) -> String {
         guard let first = value.first else { return value }
         return first.uppercased() + value.dropFirst()
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
+        didLoadSimulation = true
+    }
+
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
+    var heroContent: HeroContent? {
+        if let sim = blockaidSimulation {
+            switch sim {
+            case .transfer(let coin, _):
+                return .send(
+                    title: decodedFunctionName,
+                    coin: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: coin.ticker,
+                        logo: coin.logo
+                    )
+                )
+            case .swap(let from, let to, _, _):
+                return .swap(
+                    title: decodedFunctionName,
+                    from: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: from.ticker,
+                        logo: from.logo
+                    ),
+                    to: HeroCoinAmount(
+                        amount: sim.heroToAmountText ?? "",
+                        ticker: to.ticker,
+                        logo: to.logo
+                    )
+                )
+            }
+        }
+
+        if didLoadSimulation,
+           blockaidSimulation == nil,
+           let name = decodedFunctionName {
+            return .title(text: name, caption: "unverifiedFunction".localized)
+        }
+        return nil
     }
 
     var providerName: String {
