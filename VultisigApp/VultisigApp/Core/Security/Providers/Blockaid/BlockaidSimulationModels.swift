@@ -178,3 +178,109 @@ struct BlockaidEvmSimulationJson: Codable {
         }
     }
 }
+
+// MARK: - Solana Simulation Response
+
+/// Solana scan response from `/solana/message/scan` invoked with
+/// `options: ["simulation", "validation"]`. Simulation drives the hero,
+/// validation drives the "Scanned by Blockaid" header — a single call covers
+/// both and matches the shape returned by the existing validation-only path.
+struct BlockaidSolanaSimulationResponseJson: Codable {
+    let result: BlockaidSolanaSimulationResultJson?
+    let status: String?
+    let error: String?
+
+    struct BlockaidSolanaSimulationResultJson: Codable {
+        let simulation: BlockaidSolanaSimulationJson?
+        let validation: BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.BlockaidSolanaValidationJson?
+    }
+}
+
+/// Mirrors `BlockaidSolanaSimulation` in
+/// `core-chain/security/blockaid/tx/simulation/api/core.ts`. Note the
+/// intentional divergences from EVM: `account_assets_diff` (singular "diff")
+/// instead of `assets_diffs`, and `in` / `out` as single nullable objects
+/// rather than arrays.
+struct BlockaidSolanaSimulationJson: Codable {
+    let accountSummary: AccountSummary?
+
+    enum CodingKeys: String, CodingKey {
+        case accountSummary = "account_summary"
+    }
+
+    struct AccountSummary: Codable {
+        let accountAssetsDiff: [AccountAssetDiff]?
+
+        enum CodingKeys: String, CodingKey {
+            case accountAssetsDiff = "account_assets_diff"
+        }
+    }
+
+    struct AccountAssetDiff: Codable {
+        let asset: Asset
+        let assetType: String?
+        let `in`: BalanceChange?
+        let out: BalanceChange?
+
+        enum CodingKeys: String, CodingKey {
+            case asset
+            case assetType = "asset_type"
+            case `in`
+            case out
+        }
+    }
+
+    struct Asset: Codable {
+        /// `"SOL"` for native SOL, `"TOKEN"` for SPL tokens.
+        let type: String?
+        let name: String?
+        let symbol: String?
+        /// Mint address for SPL tokens. Nil for native SOL (use the wrapped-SOL
+        /// mint sentinel when rendering).
+        let address: String?
+        let decimals: Int?
+        let logo: String?
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case name
+            case symbol
+            case address
+            case decimals
+            case logo
+        }
+    }
+
+    /// Blockaid serialises Solana `raw_value` as a JSON number (unlike the EVM
+    /// payload, which quotes it as a string). Accept both so the strict Swift
+    /// decoder tolerates the shape Blockaid actually returns.
+    struct BalanceChange: Codable {
+        let rawValue: String?
+
+        init(rawValue: String?) {
+            self.rawValue = rawValue
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case rawValue = "raw_value"
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let str = try? container.decode(String.self, forKey: .rawValue) {
+                self.rawValue = str
+            } else if let uint = try? container.decode(UInt64.self, forKey: .rawValue) {
+                self.rawValue = String(uint)
+            } else if let int = try? container.decode(Int64.self, forKey: .rawValue) {
+                self.rawValue = String(int)
+            } else {
+                self.rawValue = nil
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(rawValue, forKey: .rawValue)
+        }
+    }
+}

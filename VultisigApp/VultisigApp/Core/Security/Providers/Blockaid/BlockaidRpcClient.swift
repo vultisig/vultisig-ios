@@ -83,6 +83,18 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         return response.data
     }
 
+    func simulateSolanaTransaction(
+        address: String,
+        rawTransactions: [String]
+    ) async throws -> BlockaidSolanaSimulationResponseJson {
+        let request = buildSolanaSimulateRequest(address: address, rawTransactions: rawTransactions)
+        let response = try await httpClient.request(
+            BlockaidAPI.scanSolanaTransaction(request),
+            responseType: BlockaidSolanaSimulationResponseJson.self
+        )
+        return response.data
+    }
+
     func scanSuiTransaction(
         address: String,
         serializedTransaction: String
@@ -175,6 +187,24 @@ private extension BlockaidRpcClient {
             accountAddress: address,
             encoding: BlockaidConstants.solanaEncoding,
             transactions: [serializedMessage],
+            method: BlockaidConstants.solanaSignAndSend
+        )
+    }
+
+    func buildSolanaSimulateRequest(
+        address: String,
+        rawTransactions: [String]
+    ) -> SolanaScanTransactionRequestJson {
+        // Ask for both simulation AND validation in the same call so the dApp
+        // hero gets balance changes + the "Scanned by Blockaid" header state
+        // without a second round-trip.
+        return SolanaScanTransactionRequestJson(
+            chain: BlockaidConstants.solanaChain,
+            metadata: CommonMetadataJson(url: BlockaidConstants.vultisigDomain),
+            options: ["simulation", "validation"],
+            accountAddress: address,
+            encoding: BlockaidConstants.solanaEncoding,
+            transactions: rawTransactions,
             method: BlockaidConstants.solanaSignAndSend
         )
     }

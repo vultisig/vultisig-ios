@@ -24,6 +24,10 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
     private(set) var simulateCallCount = 0
     private(set) var simulatedMemos: [String] = []
 
+    var simulateSolanaResult: Result<BlockaidSolanaSimulationResponseJson, Error> = .failure(StubError.notStubbed)
+    private(set) var simulateSolanaCallCount = 0
+    private(set) var simulatedSolanaRawTransactions: [[String]] = []
+
     func simulateEVMTransaction(
         chain: Chain,
         from: String,
@@ -34,6 +38,15 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
         simulateCallCount += 1
         simulatedMemos.append(data)
         return try simulateResult.get()
+    }
+
+    func simulateSolanaTransaction(
+        address: String,
+        rawTransactions: [String]
+    ) async throws -> BlockaidSolanaSimulationResponseJson {
+        simulateSolanaCallCount += 1
+        simulatedSolanaRawTransactions.append(rawTransactions)
+        return try simulateSolanaResult.get()
     }
 
     func scanEVMTransaction(
