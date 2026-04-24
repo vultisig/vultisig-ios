@@ -34,6 +34,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var encryptionKeyHex: String?
     var chains: [Chain]?
 
+    @AppStorage("tssBatchEnabled") private var tssBatchEnabled: Bool = false
+
+    var isTssBatch: Bool {
+        vault.libType == .DKLS && tssBatchEnabled
+    }
+
+
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
