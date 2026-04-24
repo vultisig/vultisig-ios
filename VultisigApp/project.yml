@@ -53,7 +53,7 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    branch: main
+    revision: ea0f4311b24eb99793d4236f4cf93d5f2095ccc0
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

@@ -50,6 +50,27 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         return response.data
     }
 
+    func simulateEVMTransaction(
+        chain: Chain,
+        from: String,
+        to: String,
+        amount: String,
+        data: String
+    ) async throws -> BlockaidEvmSimulationResponseJson {
+        let request = buildEthereumSimulateRequest(
+            chain: chain,
+            from: from,
+            to: to,
+            data: data,
+            amount: amount
+        )
+        let response = try await httpClient.request(
+            BlockaidAPI.simulateEVMTransaction(request),
+            responseType: BlockaidEvmSimulationResponseJson.self
+        )
+        return response.data
+    }
+
     func scanSolanaTransaction(
         address: String,
         serializedMessage: String
@@ -58,6 +79,18 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         let response = try await httpClient.request(
             BlockaidAPI.scanSolanaTransaction(request),
             responseType: BlockaidTransactionScanResponseJson.self
+        )
+        return response.data
+    }
+
+    func simulateSolanaTransaction(
+        address: String,
+        rawTransactions: [String]
+    ) async throws -> BlockaidSolanaSimulationResponseJson {
+        let request = buildSolanaSimulateRequest(address: address, rawTransactions: rawTransactions)
+        let response = try await httpClient.request(
+            BlockaidAPI.scanSolanaTransaction(request),
+            responseType: BlockaidSolanaSimulationResponseJson.self
         )
         return response.data
     }
@@ -116,6 +149,33 @@ private extension BlockaidRpcClient {
         )
     }
 
+    func buildEthereumSimulateRequest(
+        chain: Chain,
+        from: String,
+        to: String,
+        data: String,
+        amount: String
+    ) -> EthereumSimulateTransactionRequestJson {
+        return EthereumSimulateTransactionRequestJson(
+            data: EthereumSimulateTransactionRequestJson.DataJson(
+                method: "eth_sendTransaction",
+                params: [
+                    EthereumSimulateTransactionRequestJson.DataJson.ParamsJson(
+                        from: from,
+                        to: to,
+                        value: amount,
+                        data: data
+                    )
+                ]
+            ),
+            chain: chain.toBlockaidName(),
+            metadata: EthereumSimulateTransactionRequestJson.MetadataJson(
+                domain: BlockaidConstants.vultisigDomain
+            ),
+            options: ["simulation", "validation"]
+        )
+    }
+
     func buildSolanaScanRequest(
         address: String,
         serializedMessage: String
@@ -127,6 +187,24 @@ private extension BlockaidRpcClient {
             accountAddress: address,
             encoding: BlockaidConstants.solanaEncoding,
             transactions: [serializedMessage],
+            method: BlockaidConstants.solanaSignAndSend
+        )
+    }
+
+    func buildSolanaSimulateRequest(
+        address: String,
+        rawTransactions: [String]
+    ) -> SolanaScanTransactionRequestJson {
+        // Ask for both simulation AND validation in the same call so the dApp
+        // hero gets balance changes + the "Scanned by Blockaid" header state
+        // without a second round-trip.
+        return SolanaScanTransactionRequestJson(
+            chain: BlockaidConstants.solanaChain,
+            metadata: CommonMetadataJson(url: BlockaidConstants.vultisigDomain),
+            options: ["simulation", "validation"],
+            accountAddress: address,
+            encoding: BlockaidConstants.solanaEncoding,
+            transactions: rawTransactions,
             method: BlockaidConstants.solanaSignAndSend
         )
     }
