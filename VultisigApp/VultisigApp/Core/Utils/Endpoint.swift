@@ -472,8 +472,6 @@ class Endpoint {
         "\(cetusApiBase)/v2/sui/prices"
     }
 
-    static let rippleServiceRpc = "https://xrplcluster.com"
-
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
 
     /// Polkadot RPC endpoint for JSON-RPC calls
@@ -493,41 +491,12 @@ class Endpoint {
         return "https://api.vultisig.com/tao-tx/v1?hash=\(txHash)"
     }
 
-    static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
-
-    static func fetchTonBalance(address: String) -> String {
-        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false"
-    }
-
-    static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)"
-    }
-
-    static func tonApiRunGetMethod() -> String {
-        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
-    }
-
-    /// Builds the URL for fetching jetton master contract info from the Toncenter v3 API.
-    /// - Parameter jettonAddress: The jetton master contract address to query.
-    /// - Returns: The fully-qualified endpoint URL string.
-    static func fetchTonJettonMasterInfo(jettonAddress: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/jetton/masters?address=\(jettonAddress)&limit=1"
-    }
-
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
 
     static func fetchFourByteSignature(hexSignature: String) -> URL {
         return "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at".asUrl
-    }
-
-    static func fetchExtendedAddressInformation(address: String) -> String {
-        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)"
-    }
-
-    static func broadcastTonTransaction() -> String {
-        return "https://api.vultisig.com/ton/v2/sendBocReturnHash"
     }
 
     static func bitcoinLabelTxHash(_ value: String) -> String {
@@ -540,23 +509,6 @@ class Endpoint {
 
     static func blockchairStats(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/stats".asUrl
-    }
-
-    static func blockchairBroadcast(_ chainName: String) -> URL {
-        "\(vultisigApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
-    }
-
-    static func bitcoinBroadcast() -> URL {
-        "\(vultisigApiProxy)/bitcoin/".asUrl
-    }
-
-    static func dashRpc() -> URL {
-        "\(vultisigApiProxy)/dash/".asUrl
-    }
-
-    static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
-        // ?state=latest
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
     }
 
     static func ethereumLabelTxHash(_ value: String) -> String {

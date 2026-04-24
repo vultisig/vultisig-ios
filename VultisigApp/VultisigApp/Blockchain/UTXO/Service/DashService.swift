@@ -14,30 +14,23 @@ actor DashService {
 
     static let shared = DashService()
 
-    private static let encoder = JSONEncoder()
-    private static let decoder = JSONDecoder()
+    private let httpClient: HTTPClientProtocol
 
-    private init() {}
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func fetchUtxos(address: String) async throws -> [UtxoInfo] {
-        let body = DashRpcRequest(
-            method: "getaddressutxos",
-            params: [["addresses": [address]]]
+        let response = try await httpClient.request(
+            DashRpcAPI.getAddressUtxos(addresses: [address]),
+            responseType: DashRpcResponse<[DashUtxo]>.self
         )
 
-        var request = URLRequest(url: Endpoint.dashRpc())
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try Self.encoder.encode(body)
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let decoded = try Self.decoder.decode(DashRpcResponse<[DashUtxo]>.self, from: data)
-
-        if let error = decoded.error {
+        if let error = response.data.error {
             throw DashServiceError.rpcError(code: error.code, message: error.message)
         }
 
-        guard let utxos = decoded.result else {
+        guard let utxos = response.data.result else {
             throw DashServiceError.missingResult
         }
 
@@ -52,33 +45,4 @@ actor DashService {
             )
         }
     }
-}
-
-// MARK: - Models
-
-private struct DashRpcRequest: Encodable {
-    let jsonrpc: String = "1.0"
-    let id: String = "vultisig"
-    let method: String
-    let params: [[String: [String]]]
-}
-
-private struct DashRpcResponse<T: Decodable>: Decodable {
-    let result: T?
-    let error: DashRpcError?
-    let id: String?
-}
-
-private struct DashRpcError: Decodable {
-    let code: Int
-    let message: String
-}
-
-private struct DashUtxo: Decodable {
-    let address: String
-    let txid: String
-    let outputIndex: Int
-    let script: String
-    let satoshis: Int64
-    let height: Int
 }

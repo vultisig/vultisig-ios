@@ -7,10 +7,16 @@
 
 import Foundation
 import BigInt
+import OSLog
 
 actor BlockchairService {
 
-    private init() {}
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockchair-service")
+    private let httpClient: HTTPClientProtocol
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     static let shared = BlockchairService()
 
@@ -20,15 +26,13 @@ actor BlockchairService {
 
     func fetchBlockchairData(coin: CoinMeta, address: String) async throws -> Blockchair {
         let coinName = coin.chain.name.lowercased()
-        let url = Endpoint.blockchairDashboard(address, coinName)
-        let (data, _) = try await URLSession.shared.data(from: url)
 
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let response = try await httpClient.request(
+            BlockchairAPI.dashboard(address: address, chain: coinName),
+            responseType: BlockchairResponse.self
+        )
 
-        let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-
-        guard let d = decodedData.data[address] else {
+        guard let d = response.data.data[address] else {
             throw Errors.fetchBlockchairDataFailed
         }
 
@@ -65,13 +69,13 @@ actor BlockchairService {
     /// Clear UTXO cache for a specific address to force fresh UTXO fetch
     func clearUTXOCache(for coin: Coin) {
         blockchairData.remove(coin.blockchairKey)
-        print("Cleared UTXO cache for \(coin.chain.name) address: \(coin.address)")
+        logger.info("Cleared UTXO cache for \(coin.chain.name) address: \(coin.address)")
     }
 
     /// Clear all UTXO cache
     func clearAllUTXOCache() {
         blockchairData.clear()
-        print("Cleared all UTXO cache")
+        logger.info("Cleared all UTXO cache")
     }
 }
 
