@@ -2,8 +2,6 @@
 //  CosmosServiceStruct.swift
 //  VultisigApp
 //
-//  Refactored to use struct instead of classes
-//
 
 import Foundation
 import OSLog
@@ -12,22 +10,35 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-ser
 
 struct CosmosServiceStruct {
     let config: CosmosServiceConfig
+    private let httpClient: HTTPClientProtocol
+
+    init(config: CosmosServiceConfig, httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.config = config
+        self.httpClient = httpClient
+    }
 
     // MARK: - Balance Operations
 
     func fetchBalances(coin: CoinMeta, address: String) async throws -> [CosmosBalance] {
-        if coin.isNativeToken
+        let usesNativeBalancesEndpoint = coin.isNativeToken
             || (!coin.isNativeToken && coin.contractAddress.contains("ibc/"))
             || (!coin.isNativeToken && coin.contractAddress.contains("factory/"))
-            || (!coin.isNativeToken && !coin.contractAddress.contains("terra")) {
-            guard let url = config.balanceURL(forAddress: address) else {
-                return [CosmosBalance]()
+            || (!coin.isNativeToken && !coin.contractAddress.contains("terra"))
+
+        if usesNativeBalancesEndpoint {
+            guard let baseURL = config.baseURL else {
+                return []
             }
 
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-            return balanceResponse.balances
+            let endpoint: CosmosAPI.Endpoint = config.usesSpendableBalances
+                ? .spendableBalance(address: address)
+                : .balance(address: address)
 
+            let response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: endpoint),
+                responseType: CosmosBalanceResponse.self
+            )
+            return response.data.balances
         } else {
             let balance = try await fetchWasmTokenBalances(coin: coin, address: address)
             return [CosmosBalance(denom: coin.contractAddress, amount: balance)]
@@ -38,32 +49,25 @@ struct CosmosServiceStruct {
 
     func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTraceDenomTrace? {
         let hash = coin.contractAddress.replacingOccurrences(of: "ibc/", with: "")
-        guard let url = config.ibcDenomTraceURL(hash: hash) else {
+        guard let baseURL = config.baseURL else {
             return nil
         }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .ibcDenomTrace(hash: hash)),
+                responseType: CosmosIbcDenomTrace.self
+            )
 
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(CosmosIbcDenomTrace.self, from: data)
-
-            if let denomTrace = response.denomTrace {
+            if let denomTrace = response.data.denomTrace {
                 return denomTrace
-            } else if let error = response.error {
-                print("Error fetching IBC denom traces: \(error)")
-                // Handle "not implemented" error
-                return nil
-            } else if let code = response.code, let message = response.message {
-                print("Error fetching IBC denom traces - Code: \(code), Message: \(message)")
-                // Handle general error
-                return nil
-            } else {
-                // Handle unexpected response
-                return nil
+            } else if let error = response.data.error {
+                logger.error("IBC denom trace: \(String(describing: error))")
+            } else if let code = response.data.code, let message = response.data.message {
+                logger.error("IBC denom trace - code: \(code), message: \(message)")
             }
+            return nil
         } catch {
-            // Return nil in case of any error
             return nil
         }
     }
@@ -72,75 +76,60 @@ struct CosmosServiceStruct {
 
     func fetchWasmTokenBalances(coin: CoinMeta, address: String) async throws -> String {
         let payload = "{\"balance\":{\"address\":\"\(address)\"}}"
-        let base64Payload = payload.data(using: .utf8)?.base64EncodedString()
-
-        guard let base64Payload else {
+        guard let base64Payload = payload.data(using: .utf8)?.base64EncodedString() else {
+            return "0"
+        }
+        guard let baseURL = config.baseURL else {
             return "0"
         }
 
-        guard let url = config.wasmTokenBalanceURL(contractAddress: coin.contractAddress, base64Payload: base64Payload) else {
-            return "0"
-        }
-
-        let (data, _) = try await URLSession.shared.data(from: url)
-
-        if let balance = Utils.extractResultFromJson(fromData: data, path: "data.balance") as? String {
-            return balance
-        }
-
-        return "0"
+        let response = try await httpClient.request(
+            CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenBalance(contractAddress: coin.contractAddress, base64Payload: base64Payload)),
+            responseType: CosmosWasmTokenBalanceResponse.self
+        )
+        return response.data.data.balance
     }
 
     // MARK: - Block Operations
 
     func fetchLatestBlock() async throws -> String {
-        guard let url = config.latestBlockURL() else {
+        guard let baseURL = config.baseURL else {
             return "0"
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-
-        if let block = Utils.extractResultFromJson(fromData: data, path: "block.header.height") as? String {
-            return block
-        }
-
-        return "0"
+        let response = try await httpClient.request(
+            CosmosAPI(baseURL: baseURL, endpoint: .latestBlock),
+            responseType: CosmosLatestBlockResponse.self
+        )
+        return response.data.block.header.height
     }
 
     // MARK: - Account Operations
 
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
-        guard let url = config.accountNumberURL(forAddress: address) else {
+        guard let baseURL = config.baseURL else {
             return nil
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let accountResponse = try JSONDecoder().decode(CosmosAccountsResponse.self, from: data)
-        return accountResponse.account
+        let response = try await httpClient.request(
+            CosmosAPI(baseURL: baseURL, endpoint: .accountNumber(address: address)),
+            responseType: CosmosAccountsResponse.self
+        )
+        return response.data.account
     }
 
     // MARK: - Transaction Operations
 
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
-        guard let url = config.transactionURL(), let jsonData = jsonString.data(using: .utf8) else {
+        guard let baseURL = config.baseURL, let jsonData = jsonString.data(using: .utf8) else {
             return .failure(HelperError.runtimeError("Failed to convert input json to data"))
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = jsonData
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
         do {
-            let (data, resp) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = resp as? HTTPURLResponse else {
-                return .failure(HelperError.runtimeError("Invalid HTTP response"))
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return .failure(HelperError.runtimeError("Status code: \(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"))
-            }
-            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: data)
+            let raw = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .broadcastTransaction(body: jsonData))
+            )
+            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
             let code = response.txResponse?.code
             let rawLog = response.txResponse?.rawLog
             if let code, code == 0 || code == 19 {
@@ -148,10 +137,12 @@ struct CosmosServiceStruct {
                     return .success(txHash)
                 }
             }
-            let responseBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            let responseBody = String(data: raw.data, encoding: .utf8) ?? "Unknown error"
             logger.error("Cosmos broadcast failed: code=\(code ?? -1), rawLog=\(rawLog ?? "nil"), body=\(responseBody)")
             return .failure(HelperError.runtimeError(responseBody))
-
+        } catch HTTPError.statusCode(let code, let data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "Unknown error"
+            return .failure(HelperError.runtimeError("Status code: \(code), \(body)"))
         } catch {
             return .failure(error)
         }
