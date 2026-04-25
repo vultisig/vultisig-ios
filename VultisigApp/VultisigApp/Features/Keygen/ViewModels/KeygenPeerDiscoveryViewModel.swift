@@ -438,7 +438,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
                     libType: vault.libType ?? .GG20,
-                    chains: chains ?? []
+                    chains: chains ?? [],
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
@@ -453,7 +454,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     oldResharePrefix: vault.resharePrefix ?? "",
                     vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
+                    libType: vault.libType ?? .GG20,
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
