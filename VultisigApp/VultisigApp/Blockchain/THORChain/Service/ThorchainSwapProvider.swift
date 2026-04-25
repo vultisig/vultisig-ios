@@ -14,7 +14,31 @@ protocol ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
+        streamingQuantity: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote
+}
+
+extension ThorchainSwapProvider {
+    func fetchSwapQuotes(
+        address: String,
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        interval: Int,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> ThorchainSwapQuote {
+        try await fetchSwapQuotes(
+            address: address,
+            fromAsset: fromAsset,
+            toAsset: toAsset,
+            amount: amount,
+            interval: interval,
+            streamingQuantity: 0,
+            referredCode: referredCode,
+            vultTierDiscount: vultTierDiscount
+        )
+    }
 }
