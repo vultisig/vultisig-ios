@@ -34,6 +34,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var encryptionKeyHex: String?
     var chains: [Chain]?
 
+    @AppStorage("tssBatchEnabled") private var tssBatchEnabled: Bool = false
+
+    var isTssBatch: Bool {
+        let supportsBatch = vault.libType == .DKLS || vault.libType == .KeyImport
+        return supportsBatch && tssBatchEnabled
+    }
+
+
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
@@ -155,12 +163,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         guard let encryptionKeyHex else {
             throw FastVaultServiceError.missingEncryptionKey
         }
-        let isTssBatchEnabled = await FeatureFlagService().isFeatureEnabled(feature: .TssBatch)
+        let supportsBatch = vault.libType == .DKLS || vault.libType == .KeyImport
+        let isTssBatch = supportsBatch && tssBatchEnabled
         let chainNames = chains?.map { $0.name } ?? []
         let libTypeCode = vault.libType == .DKLS ? 1 : 0
         switch tssType {
         case .Keygen:
-            if isTssBatchEnabled {
+            if isTssBatch {
                 try await fastVaultService.batchCreate(
                     name: vault.name,
                     sessionID: sessionID,
@@ -183,7 +192,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 )
             }
         case .KeyImport:
-            if isTssBatchEnabled {
+            if isTssBatch {
                 try await fastVaultService.batchKeyImport(
                     name: vault.name,
                     sessionID: sessionID,
@@ -208,7 +217,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         case .Reshare:
             let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-            if isTssBatchEnabled {
+            if isTssBatch {
                 try await fastVaultService.batchReshare(
                     publicKeyECDSA: pubKeyECDSA,
                     sessionID: sessionID,
@@ -429,7 +438,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
                     libType: vault.libType ?? .GG20,
-                    chains: chains ?? []
+                    chains: chains ?? [],
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
@@ -444,7 +454,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     oldResharePrefix: vault.resharePrefix ?? "",
                     vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
+                    libType: vault.libType ?? .GG20,
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"

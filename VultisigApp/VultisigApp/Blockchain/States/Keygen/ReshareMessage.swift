@@ -16,4 +16,5 @@ struct ReshareMessage {
     let oldResharePrefix: String
     let vaultName: String
     let libType: LibType
+    let isTssBatch: Bool
 }
