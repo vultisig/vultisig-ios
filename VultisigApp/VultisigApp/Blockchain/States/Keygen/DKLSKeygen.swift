@@ -61,7 +61,7 @@ final class DKLSKeygen {
     let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     // Populated by prepareKeyImportSetup. DKLSKeygenWithRetry consumes the stored
     // handle on attempt 0 and falls back to the normal flow on retry.
@@ -75,7 +75,8 @@ final class DKLSKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          isInitiateDevice: Bool,
-         localUI: String?
+         localUI: String?,
+         httpClient: HTTPClientProtocol = HTTPClient()
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -85,7 +86,8 @@ final class DKLSKeygen {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiateDevice
-        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
+        self.httpClient = httpClient
+        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex, httpClient: httpClient)
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
         self.localPrivateSecret = localUI

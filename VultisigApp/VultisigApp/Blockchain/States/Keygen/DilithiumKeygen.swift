@@ -32,7 +32,7 @@ final class DilithiumKeygen {
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     init(vault: Vault,
          tssType: TssType,
@@ -41,7 +41,8 @@ final class DilithiumKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          isInitiateDevice: Bool,
-         setupMessage: [UInt8]
+         setupMessage: [UInt8],
+         httpClient: HTTPClientProtocol = HTTPClient()
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -50,7 +51,8 @@ final class DilithiumKeygen {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiateDevice
-        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
+        self.httpClient = httpClient
+        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex, httpClient: httpClient)
         self.localPartyID = vault.localPartyID
         self.setupMessage = setupMessage
     }

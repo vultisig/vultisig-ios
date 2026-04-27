@@ -37,7 +37,7 @@ final class SchnorrKeygen {
     let publicKeyEdDSA: String
     let localPrivateSecret: String?
     let hexChainCode: String
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     // Populated by prepareKeyImportSetup. SchnorrKeygenWithRetry consumes the stored
     // handle on attempt 0 and falls back to the normal flow on retry.
@@ -52,7 +52,8 @@ final class SchnorrKeygen {
          encryptionKeyHex: String,
          isInitiatedDevice: Bool,
          setupMessage: [UInt8],
-         localUI: String?) {
+         localUI: String?,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -62,10 +63,12 @@ final class SchnorrKeygen {
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiatedDevice
         self.setupMessage = setupMessage
+        self.httpClient = httpClient
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                        sessionID: self.sessionID,
                                        messageID: nil,
-                                       encryptionKeyHex: self.encryptionKeyHex)
+                                       encryptionKeyHex: self.encryptionKeyHex,
+                                       httpClient: httpClient)
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = vault.pubKeyEdDSA
         self.localPrivateSecret = localUI

@@ -28,7 +28,7 @@ final class DKLSKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -38,7 +38,8 @@ final class DKLSKeysign {
          encryptionKeyHex: String,
          chainPath: String,
          isInitiateDevice: Bool,
-         publicKeyECDSA: String) {
+         publicKeyECDSA: String,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -49,6 +50,7 @@ final class DKLSKeysign {
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = publicKeyECDSA
+        self.httpClient = httpClient
     }
 
     func getSignatures() -> [String: TssKeysignResponse] {

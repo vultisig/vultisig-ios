@@ -16,14 +16,16 @@ class MessagePuller: ObservableObject {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "net-message-puller")
     private var currentTask: Task<Void, Error>? = nil
     let encryptGCM: Bool
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     init(encryptionKeyHex: String,
          pubKey: String,
-         encryptGCM: Bool) {
+         encryptGCM: Bool,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.encryptionKeyHex = encryptionKeyHex
         self.vaultPubKey = pubKey
         self.encryptGCM = encryptGCM
+        self.httpClient = httpClient
     }
 
     func stop() {

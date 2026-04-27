@@ -58,9 +58,10 @@ class JoinKeygenViewModel: ObservableObject {
     var encryptionKeyHex: String = ""
     var singleKeygenType: SingleKeygenType = .MLDSA
     var vaults: [Vault] = []
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
-    init() {
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
         self.vault = Vault(name: "Main Vault")
     }
 

@@ -35,7 +35,7 @@ final class SchnorrKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     var keyshare: [UInt8] = []
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -44,7 +44,8 @@ final class SchnorrKeysign {
          vault: Vault,
          encryptionKeyHex: String,
          isInitiateDevice: Bool,
-         publicKeyEdDSA: String) {
+         publicKeyEdDSA: String,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -54,6 +55,7 @@ final class SchnorrKeysign {
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = publicKeyEdDSA
+        self.httpClient = httpClient
     }
 
     func getSignatures() -> [String: TssKeysignResponse] {

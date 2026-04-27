@@ -37,7 +37,7 @@ final class DilithiumKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: DilithiumKeysignResponse]()
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -47,7 +47,8 @@ final class DilithiumKeysign {
          encryptionKeyHex: String,
          chainPath: String,
          isInitiateDevice: Bool,
-         publicKey: String) {
+         publicKey: String,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -58,6 +59,7 @@ final class DilithiumKeysign {
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
         self.publicKey = publicKey
+        self.httpClient = httpClient
     }
 
     func getSignatures() -> [String: DilithiumKeysignResponse] {
