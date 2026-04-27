@@ -322,80 +322,6 @@ class Endpoint {
         max(0, affiliateFeeRate - discount)
     }
 
-    static func fetch1InchSwapQuote(
-        chain: String,
-        source: String,
-        destination: String,
-        amount: String,
-        from: String,
-        slippage: String,
-        referrer: String,
-        fee: Double,
-        isAffiliate: Bool
-    ) -> URL {
-        let isAffiliateParams = isAffiliate
-            ? "&referrer=\(referrer)&fee=\(fee)"
-            : "&referrer=\(referrer)&fee=0"
-
-        return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true&disableEstimate=true\(isAffiliateParams)".asUrl
-    }
-
-    static func fetchLiFiQuote(
-        fromChain: String,
-        toChain: String,
-        fromToken: String,
-        toAddress: String,
-        toToken: String,
-        fromAmount: String,
-        fromAddress: String,
-        integrator: String?,
-        fee: String?
-    ) -> URL {
-        var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
-
-        if let integrator {
-            url = url + "&integrator=\(integrator)"
-        }
-
-        if let fee {
-            url = url + "&fee=\(fee)"
-        }
-
-        return url.asUrl
-    }
-
-    static func fetchTokens(chain: Int) -> String {
-        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
-    }
-
-    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, affiliateBps: Int, sourceIdentifier: String? = nil, referrerAddress: String? = nil) -> URL {
-        let baseUrl = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
-
-        guard affiliateBps > 0, let sourceIdentifier, let referrerAddress else {
-            return baseUrl.asUrl
-        }
-
-        let feeParams = "&source=\(sourceIdentifier)&referral=\(referrerAddress)&feeAmount=\(affiliateBps)&chargeFeeBy=currency_out&isInBps=true&feeReceiver=\(referrerAddress)"
-        return (baseUrl + feeParams).asUrl
-    }
-
-    static func buildKyberSwapTransaction(chain: String) -> URL {
-        return "https://aggregator-api.kyberswap.com/\(chain)/api/v1/route/build".asUrl
-    }
-
-    static func fetchKyberSwapTokens(chainId: String) -> URL {
-        return "https://ks-setting.kyberswap.com/api/v1/tokens?chainIds=\(chainId)&isWhitelisted=true&pageSize=100".asUrl
-    }
-
-    static func fetch1InchsTokensBalance(chain: String, address: String) -> String {
-        return "\(vultisigApiProxy)/1inch/balance/v1.2/\(chain)/balances/\(address)"
-    }
-
-    static func fetch1InchsTokensInfo(chain: String, addresses: [String]) -> String {
-        let addresses = addresses.joined(separator: ",")
-        return "\(vultisigApiProxy)/1inch/token/v1.2/\(chain)/custom?addresses=\(addresses)"
-    }
-
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
@@ -447,31 +373,7 @@ class Endpoint {
     }
 
     static func suiTokenQuote() -> String {
-        "https://api-sui.cetus.zone/v2/sui/swap/count"
-    }
-
-    /// Cetus Aggregator API endpoints
-    static let cetusApiBase = "https://api-sui.cetus.zone"
-
-    static func cetusAggregatorFindRoutes() -> String {
-        "\(cetusApiBase)/router_v2/find_routes"
-    }
-
-    static func cetusAggregatorSwapCount() -> String {
-        "\(cetusApiBase)/v2/sui/swap/count"
-    }
-
-    /// Additional Cetus endpoints for future use
-    static func cetusPoolInfo() -> String {
-        "\(cetusApiBase)/v2/sui/pools"
-    }
-
-    static func cetusTokenInfo() -> String {
-        "\(cetusApiBase)/v2/sui/tokens"
-    }
-
-    static func cetusPriceInfo() -> String {
-        "\(cetusApiBase)/v2/sui/prices"
+        "\(CetusAPI.cetusBaseURL.absoluteString)/v2/sui/swap/count"
     }
 
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
@@ -547,20 +449,6 @@ class Endpoint {
 
     // MARK: - Circle MSCA Endpoints
 
-    static let circleApiBase = "\(vultisigApiProxy)/circle"
-
-    /// GET /wallet?refId=...
-    static func fetchCircleWallets(refId: String) -> String {
-        "\(circleApiBase)/wallet?refId=\(refId)"
-    }
-
-    /// POST /create
-    static func createCircleWallet() -> String {
-        "\(circleApiBase)/create"
-    }
-
-    // Note: Balance and Yield are not available via this proxy.
-    // We must use standard EVM RPC calls to the wallet address.
 
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"

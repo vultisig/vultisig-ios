@@ -13,6 +13,13 @@ class UTXOTransactionsService: ObservableObject {
 
     private static let httpClient: HTTPClientProtocol = HTTPClient()
 
+    /// Broadcasts a Bitcoin transaction via the Vultisig proxy.
+    ///
+    /// Field note: the Blockchair-fronted Bitcoin proxy occasionally returns a
+    /// txid before the transaction has propagated to the wider mempool, so a
+    /// successful response here does not guarantee the network has accepted
+    /// the broadcast yet. Callers should treat the txid as best-effort and
+    /// poll a separate explorer if confirmation matters.
     static func broadcastBitcoinTransaction(signedTransaction: String) async throws -> String {
         let response = try await httpClient.request(
             BitcoinBroadcastAPI.broadcast(signedTransaction: signedTransaction)
