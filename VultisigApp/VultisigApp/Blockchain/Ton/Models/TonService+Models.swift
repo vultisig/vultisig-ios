@@ -19,18 +19,6 @@ struct JettonWalletInfo: Codable {
     let data_hash: String?
 }
 
-struct RunGetMethodResponse: Codable {
-    let ok: Bool
-    let result: RunGetMethodResult?
-    let error: String?
-}
-
-struct RunGetMethodResult: Codable {
-    let stack: [StackItem]?
-    let gas_used: Int64?
-    let exit_code: Int?
-}
-
 struct StackItem: Codable {
     let type: String?
     let value: StackValue?

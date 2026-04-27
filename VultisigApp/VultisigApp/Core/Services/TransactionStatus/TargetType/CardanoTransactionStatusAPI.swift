@@ -15,7 +15,7 @@ enum CardanoTransactionStatusAPI: TargetType {
     case getTxStatus(txHash: String)
 
     var baseURL: URL {
-        URL(string: Endpoint.cardanoServiceRpc)!
+        URL(string: "https://api.koios.rest/api/v1")!
     }
 
     var path: String {

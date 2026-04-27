@@ -16,9 +16,9 @@ enum THORChainBondsAPI: TargetType {
     var baseURL: URL {
         switch self {
         case .getNodeDetails, .getChurnInterval:
-            return URL(string: "https://thornode.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
         case .getBondedNodes, .getChurns:
-            return URL(string: "https://midgard.thorchain.network/v2")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_midgard/v2")!
         }
     }
 

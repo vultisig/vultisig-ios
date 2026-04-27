@@ -653,31 +653,22 @@ class KeysignViewModel: ObservableObject {
                     let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:
-                    UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction) { result in
-                        switch result {
-                        case .success(let transactionHash):
-                            self.txid = transactionHash
-                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
-                            Task {
-                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
-                            }
-                        case .failure(let error):
-                            self.handleBroadcastError(error: error, transactionType: transactionType)
-                        }
+                    do {
+                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction)
+                        self.txid = transactionHash
+                        // Fire-and-forget: don't block the broadcast confirmation on cache eviction.
+                        Task { await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin) }
+                    } catch {
+                        self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
                 case .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
-                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
-                        switch result {
-                        case .success(let transactionHash):
-                            self.txid = transactionHash
-                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
-                            Task {
-                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
-                            }
-                        case .failure(let error):
-                            self.handleBroadcastError(error: error, transactionType: transactionType)
-                        }
+                    do {
+                        let transactionHash = try await UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction)
+                        self.txid = transactionHash
+                        Task { await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin) }
+                    } catch {
+                        self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
                 case .cardano:
                     do {

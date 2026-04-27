@@ -1,59 +1,40 @@
 import Foundation
 import WalletCore
 import BigInt
+import OSLog
 
 class TonService {
 
     static let shared = TonService()
 
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-service")
+    private let httpClient: HTTPClientProtocol = HTTPClient()
+
     func broadcastTransaction(_ obj: String) async throws -> String {
+        let response = try await httpClient.request(
+            TonAPI.broadcastTransaction(boc: obj),
+            responseType: ApiResponse<TonBroadcastSuccessResponse>.self
+        )
 
-        let body: [String: Any] = ["boc": obj]
-        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
-        guard let url = URL(string: Endpoint.broadcastTonTransaction()) else {
-            throw URLError(.badURL)
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = dataPayload
-        let (data, response) = try await URLSession.shared.data(for: request)
-        print("Ton broadcast response: \(String(data: data, encoding: .utf8) ?? "")")
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-
-        switch httpResponse.statusCode {
-        case 200..<300:
-            let result = try JSONDecoder().decode(ApiResponse<TonBroadcastSuccessResponse>.self, from: data)
-            return result.result?.hash ?? ""
-        case 500:
-            let result = try JSONDecoder().decode(ApiResponse<String>.self, from: data)
-            let duplicate = result.error?.contains("duplicate message") ?? false
+        if response.response.statusCode == 500 {
+            // TON wraps "duplicate message" under ApiResponse.error; decode the
+            // same envelope and treat duplicates as soft-success (returning "").
+            let duplicate = response.data.error?.contains("duplicate message") ?? false
             if duplicate {
                 return ""
-            } else {
-                throw NSError(domain: "Server Error", code: 500, userInfo: [NSLocalizedDescriptionKey: result.error ?? "Unknown server error"])
             }
-        default:
-            throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
+            throw NSError(domain: "Server Error", code: 500, userInfo: [NSLocalizedDescriptionKey: response.data.error ?? "Unknown server error"])
         }
+
+        return response.data.result?.hash ?? ""
     }
 
     func getTONBalance(address: String) async throws -> String {
-
-        guard let url = URL(string: Endpoint.fetchTonBalance(address: address)) else {
-            throw URLError(.badURL)
-        }
-        let request = URLRequest(url: url)
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        if let balance = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
-            return balance
-        }
-
-        return .zero
+        let response = try await httpClient.request(
+            TonAPI.addressInformation(address: address),
+            responseType: TonAddressInformation.self
+        )
+        return response.data.balance ?? .zero
     }
 
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
@@ -65,80 +46,59 @@ class TonService {
     }
 
     func getWalletState(_ address: String) async throws -> String {
-        guard let url = URL(string: Endpoint.fetchTonBalance(address: address)) else {
-            throw URLError(.badURL)
-        }
-        let request = URLRequest(url: url)
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        if let status = Utils.extractResultFromJson(fromData: data, path: "status") as? String {
-            return status
-        }
-
-        return "uninit" // Default to uninitialized if status not found
+        let response = try await httpClient.request(
+            TonAPI.addressInformation(address: address),
+            responseType: TonAddressInformation.self
+        )
+        return response.data.status ?? "uninit"
     }
 
     func getJettonBalance(coin: CoinMeta, address: String) async throws -> String {
-        // Use Vultisig proxy jetton wallets endpoint (matches Android)
-        guard let url = URL(string: Endpoint.fetchTonJettonBalance(address: address, jettonAddress: coin.contractAddress)) else {
-            throw URLError(.badURL)
-        }
-
-        let request = URLRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        // Check for HTTP errors
-        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-            let body = String(data: data, encoding: .utf8) ?? "<non-utf8>"
-            print("[TON] getJettonBalance non-200: \(httpResponse.statusCode) url=\(url) body=\(body)")
-            return String.zero
-        }
-
-        // Parse using proper Codable struct
         do {
-            let jettonResponse = try JSONDecoder().decode(JettonWalletsResponse.self, from: data)
+            let response = try await httpClient.request(
+                TonAPI.jettonWallets(ownerAddress: address, jettonMasterAddress: coin.contractAddress),
+                responseType: JettonWalletsResponse.self
+            )
 
-            // Find matching jetton wallet by contract address
             let normalizedCoinAddress = TONAddressConverter.toUserFriendly(address: coin.contractAddress, bounceable: true, testnet: false) ?? coin.contractAddress
 
-            for wallet in jettonResponse.jetton_wallets {
+            for wallet in response.data.jetton_wallets {
                 let normalizedJettonAddress = TONAddressConverter.toUserFriendly(address: wallet.jetton, bounceable: true, testnet: false) ?? wallet.jetton
-
                 if normalizedJettonAddress == normalizedCoinAddress {
                     return wallet.balance
                 }
             }
+            return String.zero
+        } catch HTTPError.statusCode(let code, let data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "<non-utf8>"
+            logger.error("getJettonBalance non-200: \(code) body=\(body)")
+            return String.zero
         } catch {
-            print("❌ Failed to parse jetton balance response: \(error)")
+            logger.error("Failed to parse jetton balance response: \(error.localizedDescription)")
+            return String.zero
         }
-
-        return String.zero
     }
 
     /// Fetches jetton token metadata (name, symbol, decimals) from the Toncenter v3 `/jetton/masters` endpoint.
     /// - Parameter contractAddress: The jetton master contract address to look up.
     /// - Returns: A tuple of the token's display name, ticker symbol, and decimal precision.
-    /// - Throws: `URLError` when the address is invalid, the server returns an error, or no master entry is found.
+    /// - Throws: `URLError` when the server returns an error or no master entry is found.
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
-        guard let url = URL(string: Endpoint.fetchTonJettonMasterInfo(jettonAddress: contractAddress)) else {
-            throw URLError(.badURL)
-        }
-
-        let request = URLRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+        let mastersResponse: JettonMastersResponse
+        do {
+            let response = try await httpClient.request(
+                TonAPI.jettonMasters(jettonAddress: contractAddress),
+                responseType: JettonMastersResponse.self
+            )
+            mastersResponse = response.data
+        } catch HTTPError.statusCode {
             throw URLError(.badServerResponse)
         }
-
-        let mastersResponse = try JSONDecoder().decode(JettonMastersResponse.self, from: data)
 
         guard let master = mastersResponse.jetton_masters.first else {
             throw URLError(.resourceUnavailable)
         }
 
-        // Try rich metadata first (contains name & symbol reliably)
         var name = ""
         var symbol = ""
         var decimals = 0
@@ -153,7 +113,6 @@ class TonService {
             }
         }
 
-        // Fall back to jetton_content fields
         if let content = master.jetton_content {
             if name.isEmpty { name = content.name ?? "" }
             if symbol.isEmpty { symbol = content.symbol ?? "" }
@@ -166,26 +125,16 @@ class TonService {
     }
 
     func getSpecificTransactionInfo(_ coin: Coin) async throws -> (UInt64, UInt64) {
-
         let now = Date()
         let futureDate = now.addingTimeInterval(600)
         let expireAt = UInt64(futureDate.timeIntervalSince1970)
 
-        guard let url = URL(string: Endpoint.fetchExtendedAddressInformation(address: coin.address)) else {
-            throw URLError(.badURL)
-        }
+        let response = try await httpClient.request(
+            TonAPI.extendedAddressInformation(address: coin.address),
+            responseType: TonExtendedAddressInformation.self
+        )
 
-        let request = URLRequest(url: url)
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        var seqno = UInt64(0)
-        if let rseqno = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? UInt64 {
-            seqno = rseqno
-        } else if let rseqnoString = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? String {
-            seqno = UInt64(rseqnoString) ?? 0
-        }
-
+        let seqno = response.data.result?.accountState?.seqno ?? 0
         return (seqno, expireAt)
     }
 
@@ -193,73 +142,49 @@ class TonService {
         return await runGetWalletAddress(owner: ownerAddress, master: masterAddress)
     }
 
-    // Too complex to use a struct.
     private func runGetWalletAddress(owner: String, master: String) async -> String? {
         guard let boc = TONAddressConverter.toBoc(address: owner) else { return nil }
-        let payload: [String: Any] = [
-            "address": master,
-            "method": "get_wallet_address",
-            "stack": [["tvm.Slice", boc]]
-        ]
-        guard let url = URL(string: Endpoint.tonApiRunGetMethod()) else { return nil }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try? JSONSerialization.data(withJSONObject: payload)
-        do {
-            let (data, _) = try await URLSession.shared.data(for: req)
 
-            // First attempt: strict model
-            if let response = try? JSONDecoder().decode(RunGetMethodResponse.self, from: data),
-               response.ok == true,
-               let result = response.result {
-                if let parsed = parseJettonWalletFromStack(result.stack) { return parsed }
+        do {
+            // `RunGetMethodFlexibleResponse` is a strict superset of the older
+            // RunGetMethodResponse shape — every `StackItem` decodes as
+            // `.object(StackItem)`, and array-shaped stack entries decode as
+            // `.array(...)`. One typed decode covers both server variants.
+            let response = try await httpClient.request(
+                TonAPI.runGetMethod(address: master, method: "get_wallet_address", stack: [["tvm.Slice", boc]]),
+                responseType: RunGetMethodFlexibleResponse.self
+            )
+
+            guard response.data.ok != false, let stack = response.data.result?.stack else {
+                return nil
             }
 
-            // Fallback: flexible model that matches array- or object-shaped stack entries
-            if let flex = try? JSONDecoder().decode(RunGetMethodFlexibleResponse.self, from: data),
-               flex.ok == nil || flex.ok == true,
-               let stack = flex.result?.stack {
-                for entry in stack {
-                    switch entry {
-                    case .object(let item):
-                        if let boc = item.boc, let addr = TONAddressConverter.fromBoc(boc: boc) {
-                            return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
-                        }
-                        if let value = item.value {
-                            let blob = value.bytes ?? value.b64 ?? value.boc
-                            if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
-                                return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
-                            }
-                        }
-                    case .array(let arr):
-                        if let v = arr.value {
-                            let blob = v.bytes ?? v.b64 ?? v.boc
-                            if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
-                                return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
-                            }
-                        }
-                    }
+            for entry in stack {
+                if let address = decodeJettonWalletAddress(from: entry) {
+                    return address
                 }
             }
         } catch {
-            print("Error running Ton API: \(error.localizedDescription)")
+            logger.error("Error running Ton get_wallet_address: \(error.localizedDescription)")
         }
         return nil
     }
 
-    private func parseJettonWalletFromStack(_ stack: [StackItem]?) -> String? {
-        guard let stack = stack else { return nil }
-
-        for item in stack {
-            // Try direct boc field first
+    private func decodeJettonWalletAddress(from entry: FlexibleStackEntry) -> String? {
+        switch entry {
+        case .object(let item):
             if let boc = item.boc, let addr = TONAddressConverter.fromBoc(boc: boc) {
                 return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
             }
-
-            // Try value field
             if let value = item.value {
                 let blob = value.bytes ?? value.b64 ?? value.boc
+                if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
+                    return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
+                }
+            }
+        case .array(let arr):
+            if let v = arr.value {
+                let blob = v.bytes ?? v.b64 ?? v.boc
                 if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
                     return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
                 }

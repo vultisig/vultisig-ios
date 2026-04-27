@@ -12,11 +12,10 @@ import BigInt
 class CetusAggregatorService {
     static let shared = CetusAggregatorService()
 
-    private let baseURL: String
-    private let jsonDecoder = JSONDecoder()
+    private let httpClient: HTTPClientProtocol
 
-    init(baseURL: String = Endpoint.cetusApiBase) {
-        self.baseURL = baseURL
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
     }
 
     /// Find routes for swapping tokens using Cetus aggregator
@@ -27,44 +26,20 @@ class CetusAggregatorService {
     /// - Returns: CetusRouteResponse containing swap routes and price information
     /// - Throws: NSError if HTTP request fails or API returns an error
     func findRoutes(fromToken: String, toToken: String, amount: String) async throws -> CetusRouteResponse {
-        let url = URL(string: "\(baseURL)/router_v2/find_routes")!
-
-        // Convert amount string to UInt64 for API
         guard let amountValue = UInt64(amount) else {
             throw NSError(domain: "CetusAggregatorService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid amount format"])
         }
 
-        let requestBody: [String: Any] = [
-            "from": fromToken,
-            "target": toToken,  // Changed from "to" to "target"
-            "amount": amountValue,
-            "by_amount_in": true
-        ]
+        let response = try await httpClient.request(
+            CetusAPI.findRoutes(fromToken: fromToken, toToken: toToken, amount: amountValue),
+            responseType: CetusAPIResponse.self
+        )
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-        request.timeoutInterval = 10
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        // Validate HTTP response status
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "CetusAggregatorService",
-                          code: (response as? HTTPURLResponse)?.statusCode ?? -1,
-                          userInfo: [NSLocalizedDescriptionKey: "HTTP request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)"])
+        if response.data.code != 200 || response.data.data == nil {
+            throw NSError(domain: "CetusAggregatorService", code: response.data.code, userInfo: [NSLocalizedDescriptionKey: response.data.msg])
         }
 
-        let apiResponse = try jsonDecoder.decode(CetusAPIResponse.self, from: data)
-
-        // Check if the API returned an error or no data
-        if apiResponse.code != 200 || apiResponse.data == nil {
-            throw NSError(domain: "CetusAggregatorService", code: apiResponse.code, userInfo: [NSLocalizedDescriptionKey: apiResponse.msg])
-        }
-
-        guard let data = apiResponse.data else {
+        guard let data = response.data.data else {
             throw NSError(domain: "CetusAggregatorService", code: 2, userInfo: [NSLocalizedDescriptionKey: "No data returned from API"])
         }
 
