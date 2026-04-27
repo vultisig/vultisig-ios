@@ -128,36 +128,26 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             discountBps: vultTierDiscount
         )
 
+        let target = ThorchainStagenetAPI.swapQuote(
+            env: env,
+            fromAsset: fromAsset,
+            toAsset: toAsset,
+            amount: amount,
+            destination: address,
+            streamingInterval: String(interval),
+            affiliates: affiliates,
+            affiliateBps: affiliateBps
+        )
+
         do {
-            let response = try await httpClient.request(
-                ThorchainStagenetAPI.swapQuote(
-                    env: env,
-                    fromAsset: fromAsset,
-                    toAsset: toAsset,
-                    amount: amount,
-                    destination: address,
-                    streamingInterval: String(interval),
-                    affiliates: affiliates,
-                    affiliateBps: affiliateBps
-                ),
-                responseType: ThorchainSwapQuote.self
-            )
-            return response.data
-        } catch HTTPError.decodingFailed, HTTPError.statusCode {
-            let raw = try await httpClient.request(
-                ThorchainStagenetAPI.swapQuote(
-                    env: env,
-                    fromAsset: fromAsset,
-                    toAsset: toAsset,
-                    amount: amount,
-                    destination: address,
-                    streamingInterval: String(interval),
-                    affiliates: affiliates,
-                    affiliateBps: affiliateBps
-                )
-            )
-            let swapError = try JSONDecoder().decode(ThorchainSwapError.self, from: raw.data)
-            throw swapError
+            let raw = try await httpClient.request(target)
+            return try ThorchainService.decodeSwapQuoteOrError(from: raw.data)
+        } catch let error as HTTPError {
+            if case .statusCode(_, let data?) = error,
+               let swapError = try? JSONDecoder().decode(ThorchainSwapError.self, from: data) {
+                throw swapError
+            }
+            throw error
         }
     }
 

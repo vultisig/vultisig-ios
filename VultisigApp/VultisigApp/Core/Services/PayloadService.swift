@@ -78,7 +78,7 @@ final class PayloadService {
         do {
             _ = try await httpClient.request(PayloadAPI.upload(baseURL: baseURL, hash: hash, payload: payload))
         } catch {
-            throw PayloadServiceError.NetworkError(message: "fail to upload payload to relay server")
+            throw PayloadServiceError.NetworkError(message: "fail to upload payload to relay server: \(error)")
         }
         return hash
     }
@@ -91,7 +91,7 @@ final class PayloadService {
             let response = try await httpClient.request(PayloadAPI.get(baseURL: baseURL, hash: hash))
             return String(data: response.data, encoding: .utf8) ?? ""
         } catch {
-            throw PayloadServiceError.NetworkError(message: "fail to get payload to relay server")
+            throw PayloadServiceError.NetworkError(message: "fail to get payload from relay server: \(error)")
         }
     }
 }

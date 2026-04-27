@@ -132,37 +132,37 @@ class ThorchainService: ThorchainSwapProvider {
             discountBps: vultTierDiscount
         )
 
+        let target = ThorchainMainnetAPI.swapQuote(
+            fromAsset: fromAsset,
+            toAsset: toAsset,
+            amount: amount,
+            destination: address,
+            streamingInterval: String(interval),
+            affiliates: affiliates,
+            affiliateBps: affiliateBps
+        )
+
+        // THORChain returns a typed swap-error body (sometimes with HTTP 200,
+        // sometimes 4xx) for invalid quotes. Fetch raw bytes once and try the
+        // success shape first, falling back to the error shape — avoids a
+        // second round-trip on the error path.
         do {
-            let response = try await httpClient.request(
-                ThorchainMainnetAPI.swapQuote(
-                    fromAsset: fromAsset,
-                    toAsset: toAsset,
-                    amount: amount,
-                    destination: address,
-                    streamingInterval: String(interval),
-                    affiliates: affiliates,
-                    affiliateBps: affiliateBps
-                ),
-                responseType: ThorchainSwapQuote.self
-            )
-            return response.data
-        } catch HTTPError.decodingFailed, HTTPError.statusCode {
-            // THORChain sometimes returns a typed swap-error body for invalid quotes.
-            // Re-fetch the raw bytes and try to decode the error variant.
-            let raw = try await httpClient.request(
-                ThorchainMainnetAPI.swapQuote(
-                    fromAsset: fromAsset,
-                    toAsset: toAsset,
-                    amount: amount,
-                    destination: address,
-                    streamingInterval: String(interval),
-                    affiliates: affiliates,
-                    affiliateBps: affiliateBps
-                )
-            )
-            let swapError = try JSONDecoder().decode(ThorchainSwapError.self, from: raw.data)
-            throw swapError
+            let raw = try await httpClient.request(target)
+            return try Self.decodeSwapQuoteOrError(from: raw.data)
+        } catch let error as HTTPError {
+            if case .statusCode(_, let data?) = error,
+               let swapError = try? JSONDecoder().decode(ThorchainSwapError.self, from: data) {
+                throw swapError
+            }
+            throw error
         }
+    }
+
+    static func decodeSwapQuoteOrError(from data: Data) throws -> ThorchainSwapQuote {
+        if let quote = try? JSONDecoder().decode(ThorchainSwapQuote.self, from: data) {
+            return quote
+        }
+        throw try JSONDecoder().decode(ThorchainSwapError.self, from: data)
     }
 
     func fetchFeePrice() async throws -> UInt64 {

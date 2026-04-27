@@ -26,6 +26,13 @@ enum BitcoinBroadcastAPI: TargetType {
     var headers: [String: String]? {
         ["Content-Type": "text/plain"]
     }
+
+    // The Bitcoin broadcast proxy returns the raw txid as a 200 body on
+    // success but can also return a non-2xx with a useful error string when
+    // the proxy desyncs. The pre-migration code returned that body to the
+    // caller for any status; preserve that passthrough here so the message
+    // surfaces upstream instead of being swallowed by validation.
+    var validationType: ValidationType { .noValidation }
 }
 
 // MARK: - Blockchair (BCH/LTC/DOGE/DASH/ZEC)

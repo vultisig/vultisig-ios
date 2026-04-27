@@ -172,4 +172,16 @@ enum ThorchainStagenetAPI: TargetType {
             return .successCodes
         }
     }
+
+    /// The pools list is ~100KB and is fetched inside `withRetry(maxAttempts: 3)`;
+    /// the pre-migration session config used a 10s request timeout to avoid
+    /// the retry chain blocking up to 3 minutes on a slow node.
+    var timeoutInterval: TimeInterval {
+        switch self {
+        case .pools:
+            return 10
+        default:
+            return 60
+        }
+    }
 }
