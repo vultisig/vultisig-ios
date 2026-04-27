@@ -14,9 +14,9 @@ enum THORChainLPsAPI: TargetType {
     var baseURL: URL {
         switch self {
         case .getLiquidityProviderDetails:
-            return URL(string: "https://thornode.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
         default:
-            return URL(string: "https://midgard.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_midgard")!
         }
     }
 

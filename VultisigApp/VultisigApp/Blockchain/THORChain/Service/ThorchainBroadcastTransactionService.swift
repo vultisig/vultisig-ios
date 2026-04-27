@@ -13,7 +13,7 @@ import Foundation
 enum ThorchainBroadcastAPI: TargetType {
     case broadcast(body: Data)
 
-    var baseURL: URL { URL(string: "https://thornode.thorchain.network")! }
+    var baseURL: URL { URL(string: "https://gateway.liquify.com/chain/thorchain_api")! }
     var path: String { "/cosmos/tx/v1beta1/txs" }
     var method: HTTPMethod { .post }
     var task: HTTPTask {
