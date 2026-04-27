@@ -17,37 +17,48 @@ class PolkadotService: RpcService {
     private var cachePolkadotBalance: ThreadSafeDictionary<String, (data: BigInt, timestamp: Date)> = ThreadSafeDictionary()
     private var cachePolkadotGenesisBlockHash: ThreadSafeDictionary<String, (data: String, timestamp: Date)> = ThreadSafeDictionary()
 
+    // System.Account storage key prefix: twox128("System") ++ twox128("Account")
+    private static let systemAccountPrefix = "26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9"
+
     private func fetchBalance(address: String) async throws -> BigInt {
         let cacheKey = "polkadot-\(address)-balance"
         if let cachedData: BigInt = Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*1) {
             return cachedData
         }
 
-        let body = ["key": address]
-        let maxRetries = 3
-        let retryDelay: UInt64 = 1_000_000_000 // 1 second in nanoseconds
-
-        for attempt in 1...maxRetries {
-            do {
-                let requestBody = try JSONEncoder().encode(body)
-                let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
-
-                if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
-                    let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
-                    let bigIntResult = decimalBalance.description.toBigInt()
-                    self.cachePolkadotBalance.set(cacheKey, (data: bigIntResult, timestamp: Date()))
-                    return bigIntResult
-                }
-            } catch {
-                print("PolkadotService > fetchBalance > Error encoding JSON: \(error), Attempt: \(attempt) of \(maxRetries)")
-                if attempt < maxRetries {
-                    try await Task.sleep(nanoseconds: retryDelay)
-                } else {
-                    return BigInt.zero
-                }
-            }
+        guard let pubkey = AnyAddress(string: address, coin: .polkadot)?.data() else {
+            return BigInt.zero
         }
-        return BigInt.zero
+        let blake2Hash = Hash.blake2b(data: pubkey, size: 16) // 128-bit
+        let storageKey = "0x" + Self.systemAccountPrefix + blake2Hash.toHexString() + pubkey.toHexString()
+
+        let result: String = try await sendRPCRequest(method: "state_getStorage", params: [storageKey]) { result in
+            guard let hex = result as? String else {
+                return ""
+            }
+            return hex
+        }
+
+        guard !result.isEmpty else {
+            return BigInt.zero
+        }
+
+        // SCALE AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
+        let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
+        guard hex.count >= 64 else { return BigInt.zero }
+
+        // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
+        let freeHex = String(hex[hex.index(hex.startIndex, offsetBy: 32)..<hex.index(hex.startIndex, offsetBy: 64)])
+        var beHex = ""
+        for i in stride(from: freeHex.count - 2, through: 0, by: -2) {
+            let start = freeHex.index(freeHex.startIndex, offsetBy: i)
+            let end = freeHex.index(start, offsetBy: 2)
+            beHex += String(freeHex[start..<end])
+        }
+
+        let balance = BigInt(beHex, radix: 16) ?? BigInt.zero
+        self.cachePolkadotBalance.set(cacheKey, (data: balance, timestamp: Date()))
+        return balance
     }
 
     private func fetchNonce(address: String) async throws -> BigInt {
