@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AddressQRCodeHeader: View {
     let vault: Vault
-    let groupedChain: GroupedChain
+    let chain: Chain
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
 
     var body: some View {
@@ -40,7 +40,7 @@ struct AddressQRCodeHeader: View {
             vault: vault,
             type: .Address,
             viewModel: shareSheetViewModel,
-            title: groupedChain.name
+            title: chain.name
         )
     }
 }
@@ -48,7 +48,7 @@ struct AddressQRCodeHeader: View {
 #Preview {
     AddressQRCodeHeader(
         vault: Vault.example,
-        groupedChain: GroupedChain.example,
+        chain: .bitcoin,
         shareSheetViewModel: ShareSheetViewModel()
     )
 }

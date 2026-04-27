@@ -225,8 +225,8 @@ struct VaultMainScreen: View {
         }
     }
 
-    func onCopy(_ group: GroupedChain) {
-        addressToCopy = group.nativeCoin
+    func onCopy(_ chain: Chain) {
+        addressToCopy = vault.nativeCoin(for: chain)
     }
 
     func refresh() {
@@ -260,19 +260,22 @@ struct VaultMainScreen: View {
     func onAction(_ action: CoinAction) {
         var vaultAction: VaultAction?
 
+        let selectedChain = viewModel.selectedChain
+        let selectedNativeCoin = selectedChain.flatMap { vault.nativeCoin(for: $0) }
+
         switch action {
         case .send:
-            vaultAction = .send(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false)
+            vaultAction = .send(coin: selectedNativeCoin, hasPreselectedCoin: false)
         case .swap:
-            guard let fromCoin = viewModel.selectedGroup?.nativeCoin else { return }
+            guard let fromCoin = selectedNativeCoin else { return }
             vaultAction = .swap(fromCoin: fromCoin)
         case .deposit, .bridge, .memo:
-            vaultAction = .function(coin: viewModel.selectedGroup?.nativeCoin)
+            vaultAction = .function(coin: selectedNativeCoin)
         case .buy:
             vaultAction = .buy(
-                address: viewModel.selectedGroup?.address ?? "",
-                blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
-                coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? ""
+                address: selectedChain.flatMap { vault.address(for: $0) } ?? "",
+                blockChainCode: selectedChain?.banxaBlockchainCode ?? "",
+                coinType: selectedNativeCoin?.ticker ?? ""
             )
         case .sell:
             break

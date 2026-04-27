@@ -14,7 +14,7 @@ enum TokenSelectionAsset: Hashable {
 
 struct TokenSelectionScreen: View {
     let vault: Vault
-    let group: GroupedChain
+    let chain: Chain
     @Binding var isPresented: Bool
     var onCustomToken: () -> Void
 
@@ -44,13 +44,13 @@ struct TokenSelectionScreen: View {
             emptyStateBuilder: { EmptyView() }
         )
         .onAppear {
-            tokenViewModel.loadData(groupedChain: group, vault: vault)
+            tokenViewModel.loadData(chain: chain, vault: vault)
         }
         .onDisappear {
             tokenViewModel.cancelLoading()
         }
         .onReceive(tokenViewModel.$searchText) { _ in
-            tokenViewModel.updateSearchedTokens(groupedChain: group)
+            tokenViewModel.updateSearchedTokens(chain: chain, vault: vault)
         }
     }
 
@@ -80,7 +80,7 @@ struct TokenSelectionScreen: View {
 #Preview {
     TokenSelectionScreen(
         vault: .example,
-        group: .example,
+        chain: .bitcoin,
         isPresented: .constant(true),
         onCustomToken: {}
     )

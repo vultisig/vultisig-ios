@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ChainDetailScreenContainer: View {
-    @ObservedObject var group: GroupedChain
-    let vault: Vault
+    let chain: Chain
+    @ObservedObject var vault: Vault
 
     @State private var selectedTab: HomeTab = .wallet
     @State private var refreshTrigger: Bool = false
@@ -20,15 +20,19 @@ struct ChainDetailScreenContainer: View {
     @Environment(\.openURL) var openURL
     @Environment(\.router) var router
 
-    init(group: GroupedChain, vault: Vault) {
-        self.group = group
+    init(chain: Chain, vault: Vault) {
+        self.chain = chain
         self.vault = vault
-        let supportsDefiTab = vault.availableDefiChains.contains(group.chain)
+        let supportsDefiTab = vault.availableDefiChains.contains(chain)
         var newTabs: [HomeTab] = [.wallet]
         if supportsDefiTab {
             newTabs.append(.defi)
         }
         self.tabs = newTabs
+    }
+
+    private var nativeCoin: Coin? {
+        vault.nativeCoin(for: chain)
     }
 
     var body: some View {
@@ -40,33 +44,35 @@ struct ChainDetailScreenContainer: View {
             Group {
                 switch tab {
                 case .wallet:
-                    ChainDetailScreen(
-                        nativeCoin: group.nativeCoin,
-                        vault: vault,
-                        refreshTrigger: $refreshTrigger,
-                        onAddressCopy: { addressToCopy = $0 }
-                    )
-                    #if os(macOS)
-                    .crossPlatformToolbar(ignoresTopEdge: true) {
-                        CustomToolbarItem(placement: .trailing) {
-                            RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
-                        }
-                        CustomToolbarItem(placement: .trailing) {
-                            ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
-                                Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                    if let nativeCoin {
+                        ChainDetailScreen(
+                            nativeCoin: nativeCoin,
+                            vault: vault,
+                            refreshTrigger: $refreshTrigger,
+                            onAddressCopy: { addressToCopy = $0 }
+                        )
+                        #if os(macOS)
+                        .crossPlatformToolbar(ignoresTopEdge: true) {
+                            CustomToolbarItem(placement: .trailing) {
+                                RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
+                            }
+                            CustomToolbarItem(placement: .trailing) {
+                                ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
+                                    Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                                }
+                            }
+                            CustomToolbarItem(placement: .trailing) {
+                                ToolbarButton(image: "square-3d", action: onExplorer)
                             }
                         }
-                        CustomToolbarItem(placement: .trailing) {
-                            ToolbarButton(image: "square-3d", action: onExplorer)
-                        }
+                        #endif
                     }
-                    #endif
                 case .defi:
-                    switch group.chain {
+                    switch chain {
                     case .tron:
                         TronView(vault: vault)
                     default:
-                        DefiChainMainScreen(vault: vault, group: group)
+                        DefiChainMainScreen(vault: vault, chain: chain)
                     }
                 case .camera:
                     EmptyView()
@@ -102,22 +108,23 @@ struct ChainDetailScreenContainer: View {
         router.navigate(to: TransactionHistoryRoute.list(
             pubKeyECDSA: vault.pubKeyECDSA,
             vaultName: vault.name,
-            chainFilter: group.chain
+            chainFilter: chain
         ))
     }
 
     func onExplorer() {
-        if
-            let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
-            let linkURL = URL(string: url) {
-            openURL(linkURL)
-        }
+        guard
+            let address = vault.address(for: chain),
+            let url = Endpoint.getExplorerByAddressURLByGroup(chain: chain, address: address),
+            let linkURL = URL(string: url)
+        else { return }
+        openURL(linkURL)
     }
 }
 
 #Preview {
     ChainDetailScreenContainer(
-        group: .example,
+        chain: .bitcoin,
         vault: .example
     )
     .environmentObject(AppViewModel())

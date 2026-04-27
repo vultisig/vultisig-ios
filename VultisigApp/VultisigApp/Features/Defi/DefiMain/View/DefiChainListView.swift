@@ -18,9 +18,13 @@ struct DefiChainListView: View {
 
     var onCustomizeChains: () -> Void
 
+    private var items: [DefiMainItem] {
+        viewModel.filteredItems(in: vault)
+    }
+
     var body: some View {
         Group {
-            if !viewModel.filteredGroups.isEmpty {
+            if !items.isEmpty {
                 chainList
             } else {
                 CustomizeChainsActionBanner(
@@ -32,29 +36,44 @@ struct DefiChainListView: View {
     }
 
     var chainList: some View {
-        ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
+        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
             Button {
-                if group.name == "Circle" {
-                    guard enableUsdcIfNeeded() else { return }
-                    router.navigate(to: CircleRoute.main(vault: vault))
-                } else {
-                    switch group.chain {
-                    case .thorChain, .mayaChain:
-                        router.navigate(to: VaultRoute.defiChain(group: group, vault: vault))
-                    case .tron:
-                        router.navigate(to: TronRoute.main(vault: vault))
-                    default:
-                        break
-                    }
-                }
+                handleSelection(item)
             } label: {
-                DefiChainCellView(group: group, vault: vault)
+                cell(for: item)
                     .commonListItemContainer(
                         index: index,
-                        itemsCount: viewModel.filteredGroups.count
+                        itemsCount: items.count
                     )
             }
-          }
+        }
+    }
+
+    @ViewBuilder
+    private func cell(for item: DefiMainItem) -> some View {
+        switch item {
+        case .circle:
+            DefiCircleRow(vault: vault)
+        case .chain(let chain):
+            DefiChainCellView(chain: chain, vault: vault)
+        }
+    }
+
+    private func handleSelection(_ item: DefiMainItem) {
+        switch item {
+        case .circle:
+            guard enableUsdcIfNeeded() else { return }
+            router.navigate(to: CircleRoute.main(vault: vault))
+        case .chain(let chain):
+            switch chain {
+            case .thorChain, .mayaChain:
+                router.navigate(to: VaultRoute.defiChain(chain: chain, vault: vault))
+            case .tron:
+                router.navigate(to: TronRoute.main(vault: vault))
+            default:
+                break
+            }
+        }
     }
 
     @discardableResult

@@ -10,7 +10,7 @@ import SwiftUI
 struct DefiChainMainScreen: View {
     @Environment(\.router) var router
     @ObservedObject var vault: Vault
-    let group: GroupedChain
+    let chain: Chain
 
     @StateObject var viewModel: DefiChainMainViewModel
     @StateObject var bondViewModel: DefiChainBondViewModel
@@ -21,19 +21,23 @@ struct DefiChainMainScreen: View {
     @State private var isLoading = false
     @State private var error: HelperError?
 
-    init(vault: Vault, group: GroupedChain) {
+    init(vault: Vault, chain: Chain) {
         self.vault = vault
-        self.group = group
-        self._bondViewModel = StateObject(wrappedValue: DefiChainBondViewModel(vault: vault, chain: group.chain))
-        self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: group.chain))
-        self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: group.chain))
-        self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: group.chain))
+        self.chain = chain
+        self._bondViewModel = StateObject(wrappedValue: DefiChainBondViewModel(vault: vault, chain: chain))
+        self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: chain))
+        self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
+        self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
+    }
+
+    private var nativeCoin: Coin? {
+        vault.nativeCoin(for: chain)
     }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
-                DefiChainBalanceView(vault: vault, groupedChain: group)
+                DefiChainBalanceView(vault: vault, chain: chain)
                 positionsSegmentedControlView
                 selectedPositionView
             }
@@ -88,13 +92,15 @@ struct DefiChainMainScreen: View {
         Group {
             switch viewModel.selectedPosition {
             case .bond:
-                DefiChainBondedView(
-                    viewModel: bondViewModel,
-                    coin: group.nativeCoin,
-                    onBond: { onTransactionToPresent(.bond(coin: group.nativeCoin.toCoinMeta(), node: $0?.address)) },
-                    onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
-                    emptyStateView: { emptyStateView }
-                )
+                if let nativeCoin {
+                    DefiChainBondedView(
+                        viewModel: bondViewModel,
+                        coin: nativeCoin,
+                        onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
+                        onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
+                        emptyStateView: { emptyStateView }
+                    )
+                }
             case .stake:
                 DefiChainStakedView(
                     viewModel: stakeViewModel,
@@ -293,6 +299,6 @@ private extension DefiChainMainScreen {
 }
 
 #Preview {
-    DefiChainMainScreen(vault: .example, group: .example)
+    DefiChainMainScreen(vault: .example, chain: .thorChain)
         .environmentObject(HomeViewModel())
 }

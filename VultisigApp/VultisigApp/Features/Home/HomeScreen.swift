@@ -643,9 +643,10 @@ extension HomeScreen {
         let deeplinkChain = selectedVault.coins.first(where: {
             $0.isNativeToken && selectedChain == $0.chain
         })
+        let fallbackCoin = vaultDetailViewModel.selectedChain.flatMap { selectedVault.nativeCoin(for: $0) }
         vaultRoute = .mainAction(
             .send(
-                coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
+                coin: deeplinkChain ?? fallbackCoin,
                 hasPreselectedCoin: true))
     }
 
