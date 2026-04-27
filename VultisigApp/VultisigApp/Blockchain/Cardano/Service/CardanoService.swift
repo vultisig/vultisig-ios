@@ -144,11 +144,23 @@ class CardanoService {
     /// - Parameter signedTransaction: The signed transaction in CBOR hex format
     /// - Returns: The transaction hash
     func broadcastTransaction(signedTransaction: String) async throws -> String {
-        let response = try await httpClient.request(
-            CardanoAPI.submitTransaction(cbor: signedTransaction),
-            responseType: CardanoSubmitTransactionResponse.self
-        )
-        let body = response.data
+        // The endpoint returns 200 on success and 400 with a JSON-RPC error
+        // envelope on Ogmios-level errors (e.g. code 3117 "already in mempool").
+        // The TargetType accepts both codes; decode the envelope here, but if
+        // the 400 body isn't a recognisable JSON-RPC envelope, surface the
+        // raw body in an HTTP-style error rather than a generic decoding error.
+        let raw = try await httpClient.request(CardanoAPI.submitTransaction(cbor: signedTransaction))
+        let body: CardanoSubmitTransactionResponse
+        do {
+            body = try JSONDecoder().decode(CardanoSubmitTransactionResponse.self, from: raw.data)
+        } catch {
+            let bodyText = String(data: raw.data, encoding: .utf8) ?? "<non-utf8 body>"
+            throw NSError(
+                domain: "CardanoServiceError",
+                code: raw.response.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "HTTP \(raw.response.statusCode): \(bodyText)"]
+            )
+        }
 
         if let error = body.error {
             if error.code == 3117 {

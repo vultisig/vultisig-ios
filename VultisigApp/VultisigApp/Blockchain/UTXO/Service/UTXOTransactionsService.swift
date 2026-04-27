@@ -30,8 +30,9 @@ class UTXOTransactionsService: ObservableObject {
         )
 
         if response.response.statusCode == 400 {
-            let reason = response.data.context?.error ?? "Failed to broadcast transaction"
-            throw NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to broadcast transaction. Error: \(reason)"])
+            let message = response.data.context?.error.map { "Failed to broadcast transaction. Error: \($0)" }
+                ?? "Failed to broadcast transaction"
+            throw NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: message])
         }
 
         guard let hash = response.data.data?.transactionHash else {
