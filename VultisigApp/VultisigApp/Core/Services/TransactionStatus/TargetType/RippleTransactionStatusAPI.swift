@@ -11,11 +11,11 @@ enum RippleTransactionStatusAPI: TargetType {
     case getTx(txHash: String)
 
     var baseURL: URL {
-        URL(string: Endpoint.rippleServiceRpc)!
+        URL(string: "https://xrplcluster.com")!
     }
 
     var path: String {
-        ""  // RPC endpoint doesn't use path
+        "/"
     }
 
     var method: HTTPMethod {

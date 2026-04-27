@@ -426,8 +426,6 @@ class Endpoint {
 
     static let seiServiceRpcService = "https://evm-rpc.sei-apis.com"
 
-    static let solanaServiceRpc = "https://api.vultisig.com/solana/"
-
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
 
     static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
@@ -474,8 +472,6 @@ class Endpoint {
         "\(cetusApiBase)/v2/sui/prices"
     }
 
-    static let rippleServiceRpc = "https://xrplcluster.com"
-
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
 
     /// Polkadot RPC endpoint for JSON-RPC calls
@@ -495,41 +491,12 @@ class Endpoint {
         return "https://api.vultisig.com/tao-tx/v1?hash=\(txHash)"
     }
 
-    static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
-
-    static func fetchTonBalance(address: String) -> String {
-        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false"
-    }
-
-    static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)"
-    }
-
-    static func tonApiRunGetMethod() -> String {
-        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
-    }
-
-    /// Builds the URL for fetching jetton master contract info from the Toncenter v3 API.
-    /// - Parameter jettonAddress: The jetton master contract address to query.
-    /// - Returns: The fully-qualified endpoint URL string.
-    static func fetchTonJettonMasterInfo(jettonAddress: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/jetton/masters?address=\(jettonAddress)&limit=1"
-    }
-
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
 
     static func fetchFourByteSignature(hexSignature: String) -> URL {
         return "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at".asUrl
-    }
-
-    static func fetchExtendedAddressInformation(address: String) -> String {
-        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)"
-    }
-
-    static func broadcastTonTransaction() -> String {
-        return "https://api.vultisig.com/ton/v2/sendBocReturnHash"
     }
 
     static func bitcoinLabelTxHash(_ value: String) -> String {
@@ -542,23 +509,6 @@ class Endpoint {
 
     static func blockchairStats(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/stats".asUrl
-    }
-
-    static func blockchairBroadcast(_ chainName: String) -> URL {
-        "\(vultisigApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
-    }
-
-    static func bitcoinBroadcast() -> URL {
-        "\(vultisigApiProxy)/bitcoin/".asUrl
-    }
-
-    static func dashRpc() -> URL {
-        "\(vultisigApiProxy)/dash/".asUrl
-    }
-
-    static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
-        // ?state=latest
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
     }
 
     static func ethereumLabelTxHash(_ value: String) -> String {
@@ -629,156 +579,6 @@ class Endpoint {
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
-    static func fetchOsmosisAccountBalance(address: String) -> String {
-        "https://osmosis-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchOsmosisAccountNumber(_ address: String) -> String {
-        "https://osmosis-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchOsmosisWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
-        "https://osmosis-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
-    }
-
-    static func fetchOsmosisIbcDenomTraces(hash: String) -> String {
-        "https://osmosis-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
-    }
-
-    static func fetchOsmosisLatestBlock() -> String {
-        "https://osmosis-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
-    }
-
-    static func fetchAkashAccountBalance(address: String) -> String {
-        "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchAkashAccountNumber(_ address: String) -> String {
-        "https://akash-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchQbtcAccountBalance(address: String) -> String {
-        "https://api.vultisig.com/qbtc-rpc/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchQbtcAccountNumber(_ address: String) -> String {
-        "https://api.vultisig.com/qbtc-rpc/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastQbtcTransaction = "https://api.vultisig.com/qbtc-rpc/cosmos/tx/v1beta1/txs"
-
-    static func fetchNobleAccountBalance(address: String) -> String {
-        "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchNobleAccountNumber(_ address: String) -> String {
-        "https://noble-api.polkachu.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastNobleTransaction = "https://noble-api.polkachu.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchCosmosAccountBalance(address: String) -> String {
-        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchCosmosAccountNumber(_ address: String) -> String {
-        "https://cosmos-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchCosmosWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
-        "https://cosmos-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
-    }
-
-    static func fetchCosmosIbcDenomTraces(hash: String) -> String {
-        "https://cosmos-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
-    }
-
-    static func fetchCosmosLatestBlock() -> String {
-        "https://cosmos-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
-    }
-
-    static func fetchTerraAccountBalance(address: String) -> String {
-        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
-    }
-
-    static func fetchTerraAccountNumber(_ address: String) -> String {
-        "https://terra-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastTerraTransaction = "https://terra-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchTerraIbcDenomTraces(hash: String) -> String {
-        "https://terra-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
-    }
-
-    static func fetchTerraWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
-        "https://terra-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
-    }
-
-    static func fetchTerraLatestBlock() -> String {
-        "https://terra-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
-    }
-
-    static func fetchTerraClassicAccountBalance(address: String) -> String {
-        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
-    }
-
-    static func fetchTerraClassicAccountNumber(_ address: String) -> String {
-        "https://terra-classic-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchTerraClassicIbcDenomTraces(hash: String) -> String {
-        "https://terra-classic-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
-    }
-
-    static func fetchTerraClassicWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
-        "https://terra-classic-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
-    }
-
-    static func fetchTerraClassicLatestBlock() -> String {
-        "https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
-    }
-
-    static func fetchDydxAccountBalance(address: String) -> String {
-        "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchDydxAccountNumber(_ address: String) -> String {
-        "https://dydx-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastDydxTransaction = "https://dydx-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchKujiraAccountBalance(address: String) -> String {
-        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchKujiraAccountNumber(_ address: String) -> String {
-        "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
-    }
-
-    static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
-    static func fetchKujiraWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
-        "https://kujira-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
-    }
-
-    static func fetchKujiraIbcDenomTraces(hash: String) -> String {
-        "https://kujira-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
-    }
-
-    static func fetchKujiraLatestBlock() -> String {
-        "https://kujira-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
-    }
-
     static func getSwapProgressURL(txid: String) -> String {
         return "https://runescan.io/tx/\(txid.stripHexPrefix())"
     }
@@ -801,17 +601,6 @@ class Endpoint {
 
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
-
-    /// Cardano endpoints - Using Koios API (free, open source, no API key required)
-    static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
-
-    static func fetchCardanoBalance() -> String {
-        return "\(cardanoServiceRpc)/address_info"
-    }
-
-    static func fetchCardanoUTXOs() -> String {
-        return "\(cardanoServiceRpc)/address_utxos"
-    }
 
     static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
@@ -899,10 +688,6 @@ class Endpoint {
         case .qbtc:
             return ""
         }
-    }
-
-    static func cardanoBroadcast() -> URL {
-        return "\(vultisigApiProxy)/ada/".asUrl
     }
 
     static func getExplorerByAddressURL(chain: Chain, address: String) -> String? {
