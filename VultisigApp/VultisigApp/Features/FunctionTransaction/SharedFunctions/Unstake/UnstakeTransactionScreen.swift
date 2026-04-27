@@ -24,32 +24,12 @@ struct UnstakeTransactionScreen: View {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            autocompoundToggle
+            EmptyView()
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
-        }
-    }
-
-    @ViewBuilder
-    var autocompoundToggle: some View {
-        if viewModel.supportsAutocompound {
-            AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
-        }
-    }
-}
-
-struct AutocompoundToggle: View {
-    @Binding var isEnabled: Bool
-    var body: some View {
-        HStack {
-            Text("enableAutoCompounding".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Spacer()
-            VultiToggle(isOn: $isEnabled)
         }
     }
 }
@@ -59,7 +39,7 @@ struct AutocompoundToggle: View {
         viewModel: UnstakeTransactionViewModel(
             coin: .example,
             vault: .example,
-            defaultAutocompound: false
+            isAutocompound: false
         )
     ) { _ in }
 }

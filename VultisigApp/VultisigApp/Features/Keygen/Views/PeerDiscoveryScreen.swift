@@ -479,6 +479,7 @@ struct PeerDiscoveryScreen: View {
             keyImportInput: keyImportInput,
             singleKeygenType: singleKeygenType,
             isInitiateDevice: true,
+            isTssBatch: viewModel.isTssBatch,
             hideBackButton: $hideBackButton
         )
     }

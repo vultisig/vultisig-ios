@@ -48,7 +48,13 @@ enum BlockChainSpecific: Codable, Hashable {
             return MayaChainHelper.MayaChainGas.description.toBigInt() // Maya uses 10e10
         case .Cosmos(_, _, let gas, _, _):
             return gas.description.toBigInt()
-        case .Solana:
+        case .Solana(_, _, _, let fromAddressPubKey, let toAddressPubKey, _):
+            // Include ATA rent when the recipient's associated token account must be
+            // created alongside the SPL transfer (sender has an ATA, recipient does not).
+            if let from = fromAddressPubKey, !from.isEmpty,
+               toAddressPubKey == nil || toAddressPubKey?.isEmpty == true {
+                return SolanaHelper.defaultFeeInLamports + SolanaHelper.ataRentLamports
+            }
             return SolanaHelper.defaultFeeInLamports
         case .Sui(_, _, let gasBudget):
             return gasBudget

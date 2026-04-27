@@ -23,6 +23,12 @@ struct SendCryptoVerifySummary {
     let amount: String
     let coinTicker: String
     let keysignPayload: KeysignPayload?
+    let hero: HeroContent?
+    /// Resolved token display for EVM contract calls, e.g. "0.3 USDC" or "Unlimited USDC".
+    let tokenDisplay: String?
+    /// True when `tokenDisplay` is the "Unlimited" sentinel for an approval —
+    /// the render should highlight it with a warning icon and warning color.
+    let tokenDisplayIsUnlimited: Bool
 
     init(
         fromName: String,
@@ -42,7 +48,10 @@ struct SendCryptoVerifySummary {
         coinImage: String,
         amount: String,
         coinTicker: String,
-        keysignPayload: KeysignPayload? = nil
+        keysignPayload: KeysignPayload? = nil,
+        hero: HeroContent? = nil,
+        tokenDisplay: String? = nil,
+        tokenDisplayIsUnlimited: Bool = false
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
@@ -61,5 +70,8 @@ struct SendCryptoVerifySummary {
         self.amount = amount
         self.coinTicker = coinTicker
         self.keysignPayload = keysignPayload
+        self.hero = hero
+        self.tokenDisplay = tokenDisplay
+        self.tokenDisplayIsUnlimited = tokenDisplayIsUnlimited
     }
 }

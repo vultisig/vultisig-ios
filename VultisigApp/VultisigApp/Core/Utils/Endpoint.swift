@@ -287,11 +287,13 @@ class Endpoint {
         toAsset: String,
         amount: String,
         interval: String,
+        streamingQuantity: String = "",
         referredCode: String,
         vultTierDiscount: Int
     ) -> URL {
         let affiliateParams = buildAffiliateParams(chain: chain, referredCode: referredCode, discountBps: vultTierDiscount)
-        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(affiliateParams)".asUrl
+        let streamingQuantityParam = streamingQuantity.isEmpty ? "" : "&streaming_quantity=\(streamingQuantity)"
+        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(streamingQuantityParam)\(affiliateParams)".asUrl
     }
 
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
@@ -507,6 +509,13 @@ class Endpoint {
 
     static func tonApiRunGetMethod() -> String {
         return "\(vultisigApiProxy)/ton/v2/runGetMethod"
+    }
+
+    /// Builds the URL for fetching jetton master contract info from the Toncenter v3 API.
+    /// - Parameter jettonAddress: The jetton master contract address to query.
+    /// - Returns: The fully-qualified endpoint URL string.
+    static func fetchTonJettonMasterInfo(jettonAddress: String) -> String {
+        return "\(vultisigApiProxy)/ton/v3/jetton/masters?address=\(jettonAddress)&limit=1"
     }
 
     static func fetchMemoInfo(hash: String) -> URL {

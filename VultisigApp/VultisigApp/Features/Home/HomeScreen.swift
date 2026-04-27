@@ -40,15 +40,13 @@ struct HomeScreen: View {
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
+    @ObservedObject private var transactionPoller = TransactionStatusPoller.shared
     @Environment(\.modelContext) private var modelContext
 
     var tabs: [HomeTab] {
         var baseTabs: [HomeTab] = [.wallet]
         if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
             baseTabs.append(.defi)
-        }
-        if SettingsViewModel.shared.agentEnabled {
-            baseTabs.append(.agent)
         }
         return baseTabs
     }
@@ -81,6 +79,21 @@ struct HomeScreen: View {
             } else {
                 presetValuesForDeeplink()
             }
+        }
+        .onChange(of: appViewModel.restartNavigation) { _, newValue in
+            guard newValue else { return }
+            if let vault = appViewModel.selectedVault {
+                transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
+            }
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                await MainActor.run {
+                    shouldRefresh = true
+                }
+            }
+        }
+        .onChange(of: transactionPoller.completedTransactionCount) { _, _ in
+            shouldRefresh = true
         }
         .onChange(of: deeplinkViewModel.type) { _, newValue in
             if newValue != nil {
@@ -145,8 +158,6 @@ struct HomeScreen: View {
                             vault: selectedVault,
                             showBalanceInHeader: $defiShowPortfolioHeader
                         )
-                    case .agent:
-                        AgentConversationsView()
                     case .camera:
                         EmptyView()
                     }
@@ -159,7 +170,6 @@ struct HomeScreen: View {
             }
 
             header(vault: selectedVault)
-                .showIf(selectedTab != .agent)
         }
     }
 
@@ -336,8 +346,6 @@ extension HomeScreen {
             showOpaqueHeader = defiShowPortfolioHeader
         case .wallet:
             showOpaqueHeader = walletShowPortfolioHeader
-        case .agent:
-            showOpaqueHeader = false
         case .camera:
             return
         }
@@ -481,6 +489,7 @@ extension HomeScreen {
         Task { @MainActor in
             await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
         }
+        transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
     }
 
     private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {

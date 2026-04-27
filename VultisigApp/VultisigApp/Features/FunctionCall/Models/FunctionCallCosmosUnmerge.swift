@@ -8,6 +8,9 @@
 import SwiftUI
 import Foundation
 import Combine
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-cosmos-unmerge")
 
 /**
  * THORCHAIN - FUNCTION: "EXECUTE CONTRACT - UNMERGE"
@@ -57,22 +60,39 @@ class FunctionCallCosmosUnmerge: ObservableObject {
 
     func initialize() {
         setupValidation()
-        loadAvailableTokens()
+        loadStaticMergeTokens()
         preSelectToken()
+
+        Task { @MainActor in
+            await loadOnChainMergeTokens()
+        }
     }
 
-    private func loadAvailableTokens() {
-        // Find available merge tokens that have balances
-        let availableTokens = ThorchainMergeTokens.tokensToMerge.filter { tokenInfo in
-            vault.coins.contains { coin in
-                coin.chain == .thorChain &&
-                !coin.isNativeToken &&
-                coin.ticker.lowercased() == tokenInfo.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
-            }
+    private func loadStaticMergeTokens() {
+        // Show every known kujira-migration token by default so the user can
+        // pick any asset they may hold a merged position in, even when the
+        // coin hasn't been added to the vault yet.
+        tokens = ThorchainMergeTokens.tokensToMerge.map { tokenInfo in
+            IdentifiableString(value: tokenInfo.denom.uppercased())
         }
+    }
 
-        for token in availableTokens {
-            tokens.append(.init(value: token.denom.uppercased()))
+    @MainActor
+    private func loadOnChainMergeTokens() async {
+        let thorAddress = vault.coins.first(where: { $0.chain == .thorChain })?.address ?? ""
+        guard !thorAddress.isEmpty else { return }
+
+        do {
+            let accounts = try await ThorchainService.shared.fetchAllRujiMergeBalances(thorAddr: thorAddress)
+            let existing = Set(tokens.map { ThorchainService.normalizeRujiSymbol($0.value) })
+
+            for account in accounts {
+                let ticker = ThorchainService.normalizeRujiSymbol(account.symbol)
+                guard !ticker.isEmpty, !existing.contains(ticker) else { continue }
+                tokens.append(IdentifiableString(value: "THOR.\(ticker)"))
+            }
+        } catch {
+            logger.error("Failed to fetch on-chain merge accounts: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -134,7 +154,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             let thorAddress = vault.coins.first(where: { $0.chain == .thorChain })?.address ?? ""
 
             guard !thorAddress.isEmpty else {
-                print("ERROR: No THORChain address found in vault")
+                logger.error("No THORChain address found in vault")
                 balanceLabel = NSLocalizedString("noThorAddressFound", comment: "")
                 amount = 0
                 totalShares = "0"
@@ -163,7 +183,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             updateBalanceLabel()
             objectWillChange.send() // Force UI update after setting values
         } catch {
-            print("Error fetching merged balance: \(error)")
+            logger.error("Error fetching merged balance: \(error.localizedDescription, privacy: .public)")
             balanceLabel = NSLocalizedString("errorLoadingBalance", comment: "")
             amount = 0
             availableBalance = 0

@@ -19,6 +19,7 @@ struct SwapVerifyView: View {
 
     @State var fastPasswordPresented = false
     @State private var signButtonDisabled = false
+    @State private var retryBannerText: String?
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -27,6 +28,7 @@ struct SwapVerifyView: View {
             Background()
             view
         }
+        .withBanner(text: $retryBannerText)
         .onReceive(timer) { _ in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
@@ -43,6 +45,9 @@ struct SwapVerifyView: View {
             Task {
                 await verifyViewModel.scan(transaction: tx)
             }
+        }
+        .onAppear {
+            consumePendingRetry()
         }
         .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
@@ -223,6 +228,17 @@ struct SwapVerifyView: View {
                 onSignPress()
             }.disabled(signButtonDisabled)
         }
+    }
+
+    private func consumePendingRetry() {
+        guard let reason = swapViewModel.pendingRetryReason else { return }
+        retryBannerText = reason.userFacingMessage
+        swapViewModel.pendingRetryReason = nil
+        swapViewModel.refreshData(
+            tx: tx,
+            vault: vault,
+            referredCode: referredViewModel.savedReferredCode
+        )
     }
 
     private func onSignPress() {

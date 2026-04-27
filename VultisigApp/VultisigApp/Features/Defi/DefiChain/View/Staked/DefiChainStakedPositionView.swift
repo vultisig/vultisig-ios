@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct DefiChainStakedPositionView: View {
+    @Environment(\.openURL) private var openURL
+
     let position: StakePosition
     let fiatAmount: String
     var onStake: () -> Void
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
+    var onTransfer: () -> Void
 
     var stakedAmount: String {
         AmountFormatter.formatCryptoAmount(value: position.amount, coin: position.coin)
@@ -49,6 +52,8 @@ struct DefiChainStakedPositionView: View {
     var hasEstimatedReward: Bool { position.estimatedReward != nil }
     var hasNextPayout: Bool { position.nextPayout != nil }
 
+    var isCompound: Bool { position.type == .compound }
+
     var body: some View {
         ContainerView {
             VStack(spacing: 16) {
@@ -75,9 +80,19 @@ struct DefiChainStakedPositionView: View {
             )
 
             VStack(alignment: .leading, spacing: .zero) {
-                Text(title)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
+                HStack(spacing: 6) {
+                    Text(title)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+
+                    if isCompound {
+                        Button(action: openAutocompounderInfo) {
+                            Icon(named: "circle-info", color: Theme.colors.textTertiary, size: 14)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("autocompounderInfo".localized)
+                    }
+                }
 
                 HiddenBalanceText(stakedAmount)
                     .font(Theme.fonts.priceTitle1)
@@ -93,6 +108,10 @@ struct DefiChainStakedPositionView: View {
             }
             Spacer()
         }
+    }
+
+    func openAutocompounderInfo() {
+        openURL(StaticURL.Defi.tcyAutoCompounderInfo)
     }
 
     @ViewBuilder
@@ -160,7 +179,7 @@ struct DefiChainStakedPositionView: View {
     @ViewBuilder
     var stakeButtonsView: some View {
         switch position.type {
-        case .stake, .compound:
+        case .stake:
             VStack(alignment: .leading, spacing: 16) {
                 PrimaryButton(title: withdrawTitle, action: onWithdraw)
                     .showIf(canWithdraw)
@@ -172,8 +191,32 @@ struct DefiChainStakedPositionView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
             }
+        case .compound:
+            VStack(alignment: .leading, spacing: 16) {
+                PrimaryButton(title: withdrawTitle, action: onWithdraw)
+                    .showIf(canWithdraw)
+                PrimaryButton(title: "transfer".localized, action: onTransfer)
+                compoundButtonsView
+
+                if let unstakeMessage = position.unstakeMessage {
+                    Text(unstakeMessage)
+                        .font(Theme.fonts.caption10)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
+            }
         case .index:
             indexButtonsView
+        }
+    }
+
+    var compoundButtonsView: some View {
+        HStack(alignment: .top, spacing: 16) {
+            DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
+                onUnstake()
+            }.disabled(unstakeDisabled)
+            DefiButton(title: addButonTitle, icon: "plus-circle") {
+                onStake()
+            }
         }
     }
 
@@ -244,7 +287,8 @@ struct DefiChainStakedPositionView: View {
             fiatAmount: "",
             onStake: {},
             onUnstake: {},
-            onWithdraw: {}
+            onWithdraw: {},
+            onTransfer: {}
         )
 
         DefiChainStakedPositionView(
@@ -262,7 +306,8 @@ struct DefiChainStakedPositionView: View {
             fiatAmount: "",
             onStake: {},
             onUnstake: {},
-            onWithdraw: {}
+            onWithdraw: {},
+            onTransfer: {}
         )
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)

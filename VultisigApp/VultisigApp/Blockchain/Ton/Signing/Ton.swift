@@ -6,9 +6,12 @@
 //
 
 import Foundation
+import OSLog
 import Tss
 import WalletCore
 import BigInt
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-helper")
 
 enum TonHelper {
 
@@ -16,13 +19,16 @@ enum TonHelper {
     static let defaultFee: BigInt = BigInt(50_000_000) // 0.05 TON
     static let defaultJettonFee: BigInt = BigInt(80_000_000) // 0.08 TON
 
+    // TonConnect sendTransaction caps at 4 messages per request.
+    static let maxTonConnectMessages = 4
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
         guard keysignPayload.coin.chain.ticker == "TON" else {
             throw HelperError.runtimeError("coin is not TON")
         }
 
-        guard case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount, let jettonAddress, _) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, _, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
 
@@ -30,50 +36,13 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
 
-        let transfer: TheOpenNetworkTransfer
-
-        // Check if this is a jetton transfer
-        if !jettonAddress.isEmpty {
-            // Build jetton transfer
-            transfer = try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress)
-        } else {
-
-            // Build native TON transfer
-            guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
-                throw HelperError.runtimeError("fail to get to address")
-            }
-
-            let baseMode = TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
-            var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | baseMode)
-            if sendMaxAmount {
-                sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue | baseMode)
-            }
-
-            var hexAmount = keysignPayload.toAmount.toEvenLengthHexString()
-            if sendMaxAmount {
-                hexAmount = "0x00"
-            }
-            guard let amountData = Data(hexString: hexAmount) else {
-                throw HelperError.runtimeError("invalid amount data")
-            }
-
-            transfer = TheOpenNetworkTransfer.with {
-                $0.dest = toAddress.description
-                $0.amount = amountData
-                $0.mode = sendMode
-
-                if let memo = keysignPayload.memo {
-                    $0.comment = memo
-                }
-                $0.bounceable = bounceable
-            }
-        }
+        let messages = try buildTransfers(keysignPayload: keysignPayload)
 
         let sequenceNumberUInt32 = UInt32(sequenceNumber.description) ?? 0
         let expireAtUInt32 = UInt32(expireAt.description) ?? 0
 
         let input = TheOpenNetworkSigningInput.with {
-            $0.messages = [transfer]
+            $0.messages = messages
             $0.sequenceNumber = sequenceNumberUInt32
             $0.expireAt = expireAtUInt32
             $0.walletVersion = TheOpenNetworkWalletVersion.walletV4R2
@@ -83,6 +52,103 @@ enum TonHelper {
         let serializedData = try input.serializedData()
 
         return serializedData
+    }
+
+    private static func buildTransfers(keysignPayload: KeysignPayload) throws -> [TheOpenNetworkTransfer] {
+        guard case .Ton(_, _, let bounceable, let sendMaxAmount, let jettonAddress, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Ton chain specific")
+        }
+
+        // TonConnect sendTransaction: build one Transfer per tonMessage (up to 4),
+        // threading stateInit and custom payloads through.
+        if let signTon = keysignPayload.signTon {
+            guard !signTon.tonMessages.isEmpty else {
+                throw HelperError.runtimeError("tonMessages must not be empty")
+            }
+            guard signTon.tonMessages.count <= maxTonConnectMessages else {
+                throw HelperError.runtimeError("TonConnect allows at most \(maxTonConnectMessages) messages, got \(signTon.tonMessages.count)")
+            }
+            return try signTon.tonMessages.map { try buildTonConnectTransfer(message: $0) }
+        }
+
+        // App-initiated TON send (native or jetton) — preserve existing single-transfer behavior.
+        if !jettonAddress.isEmpty {
+            return [try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress)]
+        }
+
+        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
+            throw HelperError.runtimeError("fail to get to address")
+        }
+
+        let baseMode = TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
+        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | baseMode)
+        if sendMaxAmount {
+            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue | baseMode)
+        }
+
+        var hexAmount = keysignPayload.toAmount.toEvenLengthHexString()
+        if sendMaxAmount {
+            hexAmount = "0x00"
+        }
+        guard let amountData = Data(hexString: hexAmount) else {
+            throw HelperError.runtimeError("invalid amount data")
+        }
+
+        let transfer = TheOpenNetworkTransfer.with {
+            $0.dest = toAddress.description
+            $0.amount = amountData
+            $0.mode = sendMode
+
+            if let memo = keysignPayload.memo {
+                $0.comment = memo
+            }
+            $0.bounceable = bounceable
+        }
+
+        return [transfer]
+    }
+
+    private static func buildTonConnectTransfer(message: TonMessage) throws -> TheOpenNetworkTransfer {
+        guard let toAddress = AnyAddress(string: message.to, coin: .ton) else {
+            throw HelperError.runtimeError("invalid TonConnect destination: \(message.to)")
+        }
+
+        guard let amountBig = BigInt(message.amount), amountBig > 0 else {
+            throw HelperError.runtimeError("invalid TonConnect amount: \(message.amount)")
+        }
+        guard let amountData = Data(hexString: amountBig.toEvenLengthHexString()) else {
+            throw HelperError.runtimeError("invalid TonConnect amount bytes")
+        }
+
+        let mode = UInt32(
+            TheOpenNetworkSendMode.payFeesSeparately.rawValue |
+            TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
+        )
+
+        return TheOpenNetworkTransfer.with {
+            $0.dest = toAddress.description
+            $0.amount = amountData
+            $0.mode = mode
+            $0.bounceable = isBounceable(address: message.to)
+            if let stateInit = message.stateInit, !stateInit.isEmpty {
+                $0.stateInit = stateInit
+            }
+            if let payload = message.payload, !payload.isEmpty {
+                $0.customPayload = payload
+            }
+        }
+    }
+
+    /// TonConnect conveys bounce intent per-address through the friendly-address tag byte:
+    /// addresses starting with `E` (mainnet) or `k` (testnet) carry the bounceable tag
+    /// (0x11 / 0x91); `U` / `0` carry the non-bounceable tag (0x51 / 0xD1). Raw format
+    /// (`0:…` / `-1:…`) has no prefix signal — default to non-bounceable, matching the
+    /// typical contract-deployment flow that enables stateInit.
+    private static func isBounceable(address: String) -> Bool {
+        guard !address.contains(":"), let first = address.first else {
+            return false
+        }
+        return first == "E" || first == "k"
     }
 
     static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String) throws -> TheOpenNetworkTransfer {
@@ -106,7 +172,7 @@ enum TonHelper {
         let forwardAmountMsg: BigInt = 1
 
         let amount = keysignPayload.toAmount.toEvenLengthHexString()
-        print("hex amount: \(amount)")
+        logger.debug("hex amount: \(amount, privacy: .public)")
         guard let amountData = Data(hexString: amount) else {
             throw HelperError.runtimeError("Invalid amount data")
         }
@@ -148,7 +214,7 @@ enum TonHelper {
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
-            print(preSigningOutput.errorMessage)
+            logger.error("preSigningOutput error: \(preSigningOutput.errorMessage, privacy: .public)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.data.hexString]
@@ -183,7 +249,7 @@ enum TonHelper {
                                                                              publicKeys: publicKeys)
 
         let output = try TheOpenNetworkSigningOutput(serializedBytes: compileWithSignature)
-        print("Ton signed transaction output encoded: \(output.hash.hexString)")
+        logger.info("Ton signed transaction output encoded: \(output.hash.hexString, privacy: .public)")
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: output.hash.hexString)
 

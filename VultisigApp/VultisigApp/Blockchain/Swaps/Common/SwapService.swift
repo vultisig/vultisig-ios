@@ -6,9 +6,16 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-service")
 
 struct SwapService {
     static let shared = SwapService()
+
+    /// Fall back from rapid to streaming THORChain swap when rapid slippage
+    /// (`fees.total` share of output) exceeds this threshold. 300 bps = 3%.
+    static let streamingSlippageThresholdBps = 300
 
     func fetchQuote(
         amount: Decimal,
@@ -172,7 +179,7 @@ private extension SwapService {
             // THORChain expects integer amounts - truncate any floating point residuals
             let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
 
-            let quote = try await service.fetchSwapQuotes(
+            let rapidQuote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
@@ -182,14 +189,26 @@ private extension SwapService {
                 vultTierDiscount: vultTierDiscount
             )
 
-            guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
+            guard let expected = Decimal(string: rapidQuote.expectedAmountOut), !expected.isZero else {
                 throw SwapError.swapAmountTooSmall
             }
 
-            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
+            if let minSwapAmountDecimal = Decimal(string: rapidQuote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
                 let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
                 throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
             }
+
+            let quote = await maybeUpgradeToStreaming(
+                rapid: rapidQuote,
+                service: service,
+                provider: provider,
+                address: toCoin.address,
+                fromAsset: fromCoin.swapAsset,
+                toAsset: toCoin.swapAsset,
+                amount: truncatedAmount.description,
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
+            )
 
             switch service {
             case _ as ThorchainService:
@@ -288,5 +307,108 @@ private extension SwapService {
         )
         print("LiFi Quote: \(response.quote)")
         return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
+    }
+}
+
+// MARK: - THORChain anti-rekt streaming fallback
+
+extension SwapService {
+    /// Slippage in basis points from a THORChain rapid quote. Prefers the
+    /// authoritative `fees.total_bps` returned by the node, computed as
+    /// `total × 10_000 / (expected_amount_out + total)`. Falls back to the
+    /// same formula locally when the field is absent (older nodes, Maya).
+    ///
+    /// Returns `nil` when inputs cannot be parsed; callers should treat that
+    /// as "do not trigger streaming".
+    static func rapidSlippageBps(fromQuote quote: ThorchainSwapQuote) -> Int? {
+        if let totalBps = quote.fees.totalBps {
+            return totalBps
+        }
+
+        guard let feesTotal = Double(quote.fees.total),
+              let expected = Double(quote.expectedAmountOut) else {
+            return nil
+        }
+
+        let gross = feesTotal + expected
+        guard gross > 0, feesTotal > 0 else { return 0 }
+
+        return Int((feesTotal * 10_000) / gross)
+    }
+
+    /// Pick the better quote between rapid and streaming. Returns streaming only
+    /// when its `expected_amount_out` is strictly greater than rapid's.
+    static func selectBetterQuote(
+        rapid: ThorchainSwapQuote,
+        streaming: ThorchainSwapQuote
+    ) -> ThorchainSwapQuote {
+        guard let rapidOut = Decimal(string: rapid.expectedAmountOut),
+              let streamingOut = Decimal(string: streaming.expectedAmountOut) else {
+            return rapid
+        }
+        return streamingOut > rapidOut ? streaming : rapid
+    }
+
+    /// Only THORChain providers opt into streaming fallback. Maya is excluded
+    /// (different liquidity profile; separate ticket if parity is wanted).
+    static func supportsStreamingFallback(_ provider: SwapProvider) -> Bool {
+        switch provider {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return true
+        case .mayachain, .oneinch, .kyberswap, .lifi:
+            return false
+        }
+    }
+}
+
+extension SwapService {
+    func maybeUpgradeToStreaming(
+        rapid: ThorchainSwapQuote,
+        service: ThorchainSwapProvider,
+        provider: SwapProvider,
+        address: String,
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async -> ThorchainSwapQuote {
+        guard Self.supportsStreamingFallback(provider) else {
+            return rapid
+        }
+
+        let slippageBps = Self.rapidSlippageBps(fromQuote: rapid) ?? 0
+        let threshold = Self.streamingSlippageThresholdBps
+
+        guard slippageBps > threshold else {
+            logger.info("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) slippage=\(slippageBps, privacy: .public)bps ≤ \(threshold, privacy: .public)bps → RAPID out=\(rapid.expectedAmountOut, privacy: .public)")
+            return rapid
+        }
+
+        // `max_streaming_quantity` is typically absent on rapid (interval=0) quotes,
+        // so we pass 0 — THORChain's `streaming_quantity=0` means "protocol decides
+        // optimal" and the chosen quantity is baked into the returned memo.
+        let streamingQuantity = rapid.maxStreamingQuantity ?? 0
+
+        do {
+            let streaming = try await service.fetchSwapQuotes(
+                address: address,
+                fromAsset: fromAsset,
+                toAsset: toAsset,
+                amount: amount,
+                interval: 1,
+                streamingQuantity: streamingQuantity,
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
+            )
+            let chosen = Self.selectBetterQuote(rapid: rapid, streaming: streaming)
+            let pickedStreaming = chosen.expectedAmountOut == streaming.expectedAmountOut &&
+                chosen.expectedAmountOut != rapid.expectedAmountOut
+            logger.info("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) slippage=\(slippageBps, privacy: .public)bps > \(threshold, privacy: .public)bps, rapid=\(rapid.expectedAmountOut, privacy: .public), streaming=\(streaming.expectedAmountOut, privacy: .public) → \(pickedStreaming ? "STREAMING" : "RAPID", privacy: .public)")
+            return chosen
+        } catch {
+            logger.warning("[anti-rekt] \(fromAsset, privacy: .public)→\(toAsset, privacy: .public) streaming fetch failed → RAPID: \(error.localizedDescription, privacy: .public)")
+            return rapid
+        }
     }
 }

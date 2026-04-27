@@ -11,6 +11,7 @@ struct SendCryptoDoneHeaderView: View {
     let coin: Coin?
     let cryptoAmount: String
     let fiatAmount: String
+    let hero: HeroContent?
     let status: TransactionStatus
 
     var body: some View {
@@ -19,22 +20,10 @@ struct SendCryptoDoneHeaderView: View {
                 .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
-                if let coin {
-                    AsyncImageView(
-                        logo: coin.logo,
-                        size: CGSize(width: 32, height: 32),
-                        ticker: coin.ticker,
-                        tokenChainLogo: coin.tokenChainLogo
-                    )
-                }
-
-                VStack(spacing: 4) {
-                    Text(cryptoAmount)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Text(fiatAmount)
-                        .font(Theme.fonts.caption10)
-                        .foregroundStyle(Theme.colors.textTertiary)
+                if let hero {
+                    HeroContentView(content: hero)
+                } else {
+                    defaultCoinDisplay
                 }
             }
             .padding(16)
@@ -45,6 +34,27 @@ struct SendCryptoDoneHeaderView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
+        }
+    }
+
+    @ViewBuilder
+    private var defaultCoinDisplay: some View {
+        if let coin {
+            AsyncImageView(
+                logo: coin.logo,
+                size: CGSize(width: 32, height: 32),
+                ticker: coin.ticker,
+                tokenChainLogo: coin.tokenChainLogo
+            )
+        }
+
+        VStack(spacing: 4) {
+            Text(cryptoAmount)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Text(fiatAmount)
+                .font(Theme.fonts.caption10)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 }

@@ -32,6 +32,7 @@ struct ColorSystem: ColorSystemProtocol {
     var bgAlert: Color { .init(hex: "362B17") }
     var bgError: Color { .init(hex: "2B1111") }
     var bgNeutral: Color { .init(hex: "061B3A") }
+    var bgTooltip: Color { .init(hex: "F5F5F5") }
 
     var primaryAccent1: Color { .init(hex: "042D9A") }
     var primaryAccent2: Color { .init(hex: "0439C7") }
@@ -45,7 +46,7 @@ struct ColorSystem: ColorSystemProtocol {
 
     var border: Color { .init(hex: "1B3F73") }
     var borderLight: Color { .init(hex: "11284A") }
-    var borderExtraLight: Color { .init(hex: "FFFFFF").opacity(0.2) }
+    var borderExtraLight: Color { .init(hex: "FFFFFF").opacity(0.03) }
 
     var alertSuccess: Color { .init(hex: "13C89D") }
     var alertError: Color { .init(hex: "FF5C5C") }

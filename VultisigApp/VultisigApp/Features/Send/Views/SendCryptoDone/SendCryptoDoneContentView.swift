@@ -43,6 +43,7 @@ struct SendCryptoDoneContentView: View {
                     coin: input.coin,
                     cryptoAmount: input.amountCrypto,
                     fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
+                    hero: input.hero,
                     status: statusViewModel.status
                 )
 

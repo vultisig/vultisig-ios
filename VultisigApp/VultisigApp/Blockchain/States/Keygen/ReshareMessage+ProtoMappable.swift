@@ -21,6 +21,7 @@ extension ReshareMessage: ProtoMappable {
         self.oldResharePrefix = proto.oldResharePrefix
         self.vaultName = proto.vaultName
         self.libType = proto.libType.toLibType()
+        self.isTssBatch = proto.isTssBatch
     }
 
     func mapToProtobuff() -> VSReshareMessage {
@@ -35,6 +36,7 @@ extension ReshareMessage: ProtoMappable {
             $0.oldResharePrefix = oldResharePrefix
             $0.vaultName = vaultName
             $0.libType = libType.toVSLibType()
+            $0.isTssBatch = isTssBatch
         }
     }
 }

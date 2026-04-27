@@ -9,10 +9,13 @@ iOS/macOS wallet app with SwiftUI, SwiftData, and DKLS23 TSS implementation. Swi
 ```bash
 git clone https://github.com/vultisig/vultisig-ios.git
 cd vultisig-ios
+make bootstrap    # install XcodeGen + SwiftLint and generate VultisigApp.xcodeproj
 open VultisigApp/VultisigApp.xcodeproj
 # Build: Cmd+B | Run: Cmd+R
-# CLI: xcodebuild -project VultisigApp/VultisigApp.xcodeproj -scheme VultisigApp -sdk iphonesimulator build
-# Lint: swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
+# Tests:    make test
+# UI tests: make ui_test
+# Regenerate after changing project.yml or adding/renaming files: make generate
+# Lint:     swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
 ```
 
 ## Before You Change Code
@@ -20,9 +23,9 @@ open VultisigApp/VultisigApp.xcodeproj
 1. Run `swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/` to establish baseline
 2. If touching `Services/Tss/`: extra caution — changes affect signing across all platforms
 3. If touching `Model/`: SwiftData schema changes affect migrations
-4. If touching `project.pbxproj`: use `/add-xcode-files` skill, never edit directly
+4. If adding/removing/renaming Swift files: just create them in place under `VultisigApp/VultisigApp/` — XcodeGen picks them up on the next `make generate` run. Never edit `project.pbxproj` (it is generated).
 5. If adding/removing strings: update ALL 7 locale files (use `/localize` skill)
-6. If adding new .swift files: use `/add-xcode-files` to update project.pbxproj
+6. If changing `project.yml` (targets, packages, xcframeworks): run `make generate` and commit only `project.yml` and `Package.resolved`.
 7. If deleting a screen: remove route, ViewModel, strings — full cleanup
 
 ## Patterns

@@ -12,6 +12,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     @Binding var securityScannerState: SecurityScannerState
     let contentPadding: CGFloat
     let contentFooter: () -> ContentFooter
+    @State private var isTransactionDetailsExpanded: Bool = false
 
     init(input: SendCryptoVerifySummary, securityScannerState: Binding<SecurityScannerState>, contentPadding: CGFloat = 0) where ContentFooter == EmptyView {
         self.input = input
@@ -51,8 +52,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            summaryTitle
-            summaryCoinDetails
+            heroHeader
             Separator()
 
             Group {
@@ -71,25 +71,19 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.toAddress.isNotEmpty)
 
-            if let signature = input.decodedFunctionSignature, !signature.isEmpty {
-                getValueCell(for: "functionSignature", with: signature, isMultiLine: true, color: Theme.colors.turquoise)
+            if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
+                getValueCell(
+                    for: "amount",
+                    with: tokenDisplay,
+                    color: input.tokenDisplayIsUnlimited ? Theme.colors.alertWarning : nil,
+                    trailingIcon: input.tokenDisplayIsUnlimited ? "triangle-alert" : nil
+                )
                 Separator()
+            }
 
-                if let args = input.decodedFunctionArguments, !args.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("functionArguments", comment: ""))
-                            .foregroundColor(Theme.colors.textTertiary)
-                            .font(Theme.fonts.bodySMedium)
-
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            Text(args)
-                                .foregroundColor(Theme.colors.turquoise)
-                                .font(Theme.fonts.bodySMedium)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    Separator()
-                }
+            if hasTransactionDetails {
+                transactionDetailsSection
+                Separator()
             } else {
                 Group {
                     getValueCell(for: "memo", with: input.memo, isMultiLine: true)
@@ -123,6 +117,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signSolana = input.keysignPayload?.signSolana {
                     Separator()
                     SignSolanaDisplayView(signSolana: signSolana)
+                } else if let signTon = input.keysignPayload?.signTon,
+                          let coin = input.keysignPayload?.coin {
+                    Separator()
+                    SignTonDisplayView(
+                        signTon: signTon,
+                        coinTicker: coin.ticker,
+                        coinDecimals: coin.decimals
+                    )
                 }
             }
         }
@@ -143,7 +145,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         secondRowText: String? = nil,
         image: String? = nil,
         isMultiLine: Bool = false,
-        color: Color? = nil
+        color: Color? = nil,
+        trailingIcon: String? = nil
     ) -> some View {
         HStack(spacing: 4) {
             Text(title.localized)
@@ -163,6 +166,27 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
+            } else if let bracketValue {
+                HStack(spacing: 4) {
+                    if let image {
+                        Image(image)
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                    }
+                    HStack(spacing: 4) {
+                        Text(value)
+                            .foregroundStyle(color ?? Theme.colors.textPrimary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .layoutPriority(1)
+                        Text("(\(bracketValue))")
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             } else {
                 HStack(spacing: 4) {
                     if let image {
@@ -170,26 +194,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                             .resizable()
                             .frame(width: 16, height: 16)
                     }
-
-                    if let bracketValue {
-                        HStack(spacing: 4) {
-                            Text(value)
-                                .foregroundStyle(color ?? Theme.colors.textPrimary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                                .layoutPriority(1)
-                            Text("(\(bracketValue))")
-                                .foregroundStyle(Theme.colors.textTertiary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(value)
-                            .foregroundStyle(color ?? Theme.colors.textPrimary)
-                            .lineLimit(isMultiLine ? nil : 1)
-                            .truncationMode(.middle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(value)
+                        .foregroundStyle(color ?? Theme.colors.textPrimary)
+                        .lineLimit(isMultiLine ? nil : 1)
+                        .truncationMode(.middle)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: image == nil ? .infinity : nil, alignment: .trailing)
+                    if let trailingIcon {
+                        Icon(named: trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -199,30 +211,109 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    var summaryTitle: some View {
-        Text(NSLocalizedString("youreSending", comment: ""))
-            .foregroundStyle(Theme.colors.textSecondary)
-            .font(Theme.fonts.bodyMMedium)
+    @ViewBuilder
+    var heroHeader: some View {
+        if let hero = input.hero {
+            HeroContentView(content: hero)
+                .padding(.bottom, 8)
+        } else {
+            VStack(spacing: 8) {
+                Text(NSLocalizedString("youreSending", comment: ""))
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .font(Theme.fonts.bodyMMedium)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                HStack(spacing: 8) {
+                    Image(input.coinImage)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .cornerRadius(32)
+
+                    Text(input.amount)
+                        .foregroundStyle(Theme.colors.textPrimary)
+
+                    Text(input.coinTicker)
+                        .foregroundStyle(Theme.colors.textTertiary)
+
+                    Spacer()
+                }
+                .font(Theme.fonts.bodyLMedium)
+            }
             .padding(.bottom, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
-    var summaryCoinDetails: some View {
-        HStack(spacing: 8) {
-            Image(input.coinImage)
-                .resizable()
-                .frame(width: 24, height: 24)
-                .cornerRadius(32)
+    var hasTransactionDetails: Bool {
+        let hasSignature = !(input.decodedFunctionSignature?.isEmpty ?? true)
+        let hasArguments = !(input.decodedFunctionArguments?.isEmpty ?? true)
+        return hasSignature || hasArguments
+    }
 
-            Text(input.amount)
-                .foregroundStyle(Theme.colors.textPrimary)
+    var transactionDetailsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation {
+                    isTransactionDetailsExpanded.toggle()
+                }
+            } label: {
+                HStack(alignment: .center) {
+                    Text("transactionDetails".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                    Spacer()
+                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                        .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
+                }
+            }
+            .buttonStyle(.borderless)
 
-            Text(input.coinTicker)
-                .foregroundStyle(Theme.colors.textTertiary)
+            if isTransactionDetailsExpanded {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let signature = input.decodedFunctionSignature, !signature.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("functionSignature".localized)
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                                    .font(Theme.fonts.bodySMedium)
 
-            Spacer()
+                                Text(signature)
+                                    .foregroundStyle(Theme.colors.turquoise)
+                                    .font(Theme.fonts.bodySMedium)
+                                    .textSelection(.enabled)
+                            }
+                        }
+
+                        if let args = input.decodedFunctionArguments, !args.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("functionArguments".localized)
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                                    .font(Theme.fonts.bodySMedium)
+
+                                Text(args)
+                                    .foregroundStyle(Theme.colors.turquoise)
+                                    .font(Theme.fonts.bodySMedium)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                }
+                .frame(maxHeight: 300)
+                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+            }
         }
-        .font(Theme.fonts.bodyLMedium)
+    }
+
+    /// True when the hero doesn't already show a resolved amount/coin, so the
+    /// "amount" detail row should render with the fallback `tokenDisplay` value.
+    var shouldShowAmountRow: Bool {
+        switch input.hero {
+        case nil, .title:
+            return true
+        case .send, .swap:
+            return false
+        }
     }
 
 }

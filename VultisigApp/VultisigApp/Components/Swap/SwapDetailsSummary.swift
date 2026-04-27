@@ -48,6 +48,7 @@ struct SwapDetailsSummary: View {
 
                             expandableFees
                         }
+                        .padding(.top, 16)
                     }
                 } else {
                     totalFeesLabel(showChevron: false)

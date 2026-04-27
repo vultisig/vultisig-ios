@@ -9,6 +9,17 @@ import BigInt
 import SwiftData
 import SwiftUI
 
+private typealias ContractCallHeroDisplay = (
+    display: String,
+    amountText: String,
+    ticker: String,
+    logo: String,
+    /// True when the amount is a MAX_UINT256 sentinel that we're labeling
+    /// "Unlimited". The UI should highlight this as a warning since granting
+    /// unlimited approval is the riskiest case an unsuspecting user can sign.
+    isUnlimited: Bool
+)
+
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
     case DiscoverService
@@ -48,6 +59,15 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedMemo: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var decodedFunctionName: String?
+    @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
+    @Published var decodedTokenAmount: String?
+    @Published var decodedTokenTicker: String?
+    @Published var decodedTokenLogo: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var didLoadSimulation: Bool = false
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -367,13 +387,15 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+        let candidates = [keysignPayload?.memo, customMessagePayload?.message]
+        guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
         }
 
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
-        if keysignPayload?.coin.chainType == .EVM, memo.hasPrefix("0x") {
+        let isEvm = resolvedContractCallChain()?.chainType == .EVM
+        if isEvm, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
 
@@ -381,9 +403,20 @@ class JoinKeysignViewModel: ObservableObject {
         // This handles known selectors (Transfer, Approve), Kyber, etc.
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
 
+        let functionName = parsedParams.flatMap {
+            ContractCallExtractor.evmFunctionName(from: $0.functionSignature)
+        }.map(capitalizeFirstCharacter)
+        let resolvedTokenDisplay = resolveTokenDisplay(parsedParams: parsedParams)
+
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
             self.decodedMemo = extensionDecoded
+            self.decodedFunctionName = functionName
+            self.decodedTokenDisplay = resolvedTokenDisplay?.display
+            self.decodedTokenAmount = resolvedTokenDisplay?.amountText
+            self.decodedTokenTicker = resolvedTokenDisplay?.ticker
+            self.decodedTokenLogo = resolvedTokenDisplay?.logo
+            self.decodedTokenIsUnlimited = resolvedTokenDisplay?.isUnlimited ?? false
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -411,6 +444,153 @@ class JoinKeysignViewModel: ObservableObject {
                 self.decodedFunctionArguments = nil
             }
         }
+    }
+
+    private func resolveTokenDisplay(
+        parsedParams: ParsedMemoParams?
+    ) -> ContractCallHeroDisplay? {
+        guard let params = parsedParams else { return nil }
+        guard let pair = ContractCallExtractor.extract(
+            signature: params.functionSignature,
+            argsJson: params.functionArguments,
+            toAddress: keysignPayload?.toAddress
+        ) else { return nil }
+
+        guard let chain = resolvedContractCallChain() else { return nil }
+        let addressLower = pair.tokenAddress.lowercased()
+
+        // Check vault first (user has added it), then built-in tokens registry.
+        let ticker: String
+        let decimals: Int
+        let logo: String
+        if let vaultMatch = vault.coins.first(where: {
+            $0.chain == chain && $0.contractAddress.lowercased() == addressLower
+        }) {
+            ticker = vaultMatch.ticker
+            decimals = vaultMatch.decimals
+            logo = vaultMatch.logo
+        } else if let builtIn = TokensStore.findTokenMeta(
+            chain: chain,
+            contractAddress: pair.tokenAddress
+        ) {
+            ticker = builtIn.ticker
+            decimals = builtIn.decimals
+            logo = builtIn.logo
+        } else {
+            return nil
+        }
+
+        guard let amount = BigInt(pair.rawAmount) else { return nil }
+
+        // MAX_UINT256 is a sentinel. For approvals → "Unlimited". For withdraw/repay
+        // the exact amount depends on on-chain state — return nil (skip display).
+        if pair.rawAmount == ContractCallExtractor.maxUInt256Decimal,
+           let funcName = ContractCallExtractor.evmFunctionName(from: params.functionSignature) {
+            guard let label = ContractCallExtractor.sentinelLabelFor(funcName: funcName) else { return nil }
+            return (
+                display: "\(label) \(ticker)",
+                amountText: label,
+                ticker: ticker,
+                logo: logo,
+                isUnlimited: true
+            )
+        }
+
+        let divisor = BigInt(10).power(decimals)
+        let whole = amount / divisor
+        let remainder = amount % divisor
+        let formatted: String
+        if remainder == 0 {
+            formatted = "\(whole)"
+        } else {
+            let remainderStr = String(remainder)
+            let padded = String(repeating: "0", count: max(0, decimals - remainderStr.count)) + remainderStr
+            var trimmed = padded
+            while trimmed.hasSuffix("0") {
+                trimmed.removeLast()
+            }
+            formatted = trimmed.isEmpty ? "\(whole)" : "\(whole).\(trimmed)"
+        }
+        return (
+            display: "\(formatted) \(ticker)",
+            amountText: formatted,
+            ticker: ticker,
+            logo: logo,
+            isUnlimited: false
+        )
+    }
+
+    private func resolvedContractCallChain() -> Chain? {
+        if let chain = keysignPayload?.coin.chain {
+            return chain
+        }
+
+        guard let chainValue = customMessagePayload?.chain, !chainValue.isEmpty else {
+            return nil
+        }
+
+        return Chain(rawValue: chainValue) ?? Chain(name: chainValue)
+    }
+
+    private func capitalizeFirstCharacter(_ value: String) -> String {
+        guard let first = value.first else { return value }
+        return first.uppercased() + value.dropFirst()
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
+        didLoadSimulation = true
+    }
+
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
+    var heroContent: HeroContent? {
+        if let sim = blockaidSimulation {
+            switch sim {
+            case .transfer(let coin, _):
+                return .send(
+                    title: decodedFunctionName,
+                    coin: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: coin.ticker,
+                        logo: coin.logo
+                    )
+                )
+            case .swap(let from, let to, _, _):
+                return .swap(
+                    title: decodedFunctionName,
+                    from: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: from.ticker,
+                        logo: from.logo
+                    ),
+                    to: HeroCoinAmount(
+                        amount: sim.heroToAmountText ?? "",
+                        ticker: to.ticker,
+                        logo: to.logo
+                    )
+                )
+            }
+        }
+
+        if didLoadSimulation,
+           blockaidSimulation == nil,
+           let name = decodedFunctionName {
+            return .title(text: name, caption: "unverifiedFunction".localized)
+        }
+        return nil
     }
 
     var providerName: String {

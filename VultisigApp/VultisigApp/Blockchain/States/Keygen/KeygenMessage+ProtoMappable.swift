@@ -19,6 +19,7 @@ extension KeygenMessage: ProtoMappable {
         self.vaultName = proto.vaultName
         self.libType = proto.libType.toLibType()
         self.chains = proto.chains.compactMap { Chain(name: $0) }
+        self.isTssBatch = proto.isTssBatch
     }
 
     func mapToProtobuff() -> VSKeygenMessage {
@@ -31,6 +32,7 @@ extension KeygenMessage: ProtoMappable {
             $0.vaultName = vaultName
             $0.libType = libType.toVSLibType()
             $0.chains = chains.map { $0.name }
+            $0.isTssBatch = isTssBatch
         }
     }
 }

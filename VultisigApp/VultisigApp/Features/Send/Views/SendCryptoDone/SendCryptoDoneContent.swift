@@ -14,6 +14,7 @@ struct SendCryptoContent: Hashable {
     let coin: Coin
     let amountCrypto: String
     let amountFiat: String
+    var hero: HeroContent? = nil
     let hash: String
     let explorerLink: String
     let memo: String

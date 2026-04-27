@@ -17,6 +17,14 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
+    var decodedFunctionName: String? = nil
+    var decodedTokenAmount: String? = nil
+    var decodedTokenTicker: String? = nil
+    var decodedTokenLogo: String? = nil
+    var decodedTokenDisplay: String? = nil
+    var decodedTokenIsUnlimited: Bool = false
+    var decodedFunctionSignature: String? = nil
+    var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
 
     @State var showAlert = false
@@ -60,6 +68,8 @@ struct KeysignView: View {
             case .KeysignFailed:
                 sendCryptoKeysignView
                     .padding(.horizontal, 16)
+            case .KeysignRetryRequested:
+                retryRequestedView
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
                     .padding(.horizontal, 16)
@@ -112,6 +122,21 @@ struct KeysignView: View {
             }
     }
 
+    var retryRequestedView: some View {
+        SendCryptoKeysignView(
+            title: viewModel.retryReason?.userFacingMessage ?? .empty,
+            showError: true,
+            errorButtonTitle: "tryAgain".localized,
+            errorAction: {
+                guard let reason = viewModel.retryReason else { return }
+                transferViewModel?.retryBroadcast(reason: reason)
+            }
+        )
+        .onAppear {
+            showError = true
+        }
+    }
+
     var keysignVaultMismatchErrorView: some View {
         KeysignVaultMismatchErrorView()
             .onAppear {
@@ -137,6 +162,14 @@ struct KeysignView: View {
             encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: self.isInitiateDevice
         )
+        viewModel.decodedFunctionName = decodedFunctionName
+        viewModel.decodedTokenAmount = decodedTokenAmount
+        viewModel.decodedTokenTicker = decodedTokenTicker
+        viewModel.decodedTokenLogo = decodedTokenLogo
+        viewModel.decodedTokenDisplay = decodedTokenDisplay
+        viewModel.decodedTokenIsUnlimited = decodedTokenIsUnlimited
+        viewModel.decodedFunctionSignature = decodedFunctionSignature
+        viewModel.decodedFunctionArguments = decodedFunctionArguments
     }
 
     private func movetoDoneView() {

@@ -29,9 +29,12 @@ struct KeysignMessageConfirmView: View {
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,
                         amount: viewModel.keysignPayload?.toAmountString ?? .empty,
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
-                        keysignPayload: viewModel.keysignPayload
+                        keysignPayload: viewModel.keysignPayload,
+                        hero: viewModel.heroContent,
+                        tokenDisplay: viewModel.decodedTokenDisplay,
+                        tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited
                     ),
-                    securityScannerState: .constant(.idle)
+                    securityScannerState: $viewModel.securityScannerState
                 )
 
                 PrimaryButton(title: "joinTransactionSigning") {
@@ -39,8 +42,10 @@ struct KeysignMessageConfirmView: View {
                 }
             }
             .task {
-                await viewModel.loadThorchainID()
-                await viewModel.loadFunctionName()
+                async let thor: Void = viewModel.loadThorchainID()
+                async let fn: Void = viewModel.loadFunctionName()
+                async let sim: Void = viewModel.loadSimulation()
+                _ = await (thor, fn, sim)
             }
         }
         .navigationTitle("sendOverview")

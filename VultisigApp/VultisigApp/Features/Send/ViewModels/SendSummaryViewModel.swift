@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-11-19.
 //
 
+import BigInt
 import Foundation
 
 @MainActor
@@ -30,11 +31,20 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func swapFeeString(_ tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let networkFee = fromCoin.fiat(value: tx.fee)
+
+        if let swapFeeBigInt = tx.quote?.evmSwapFeeBigInt {
+            let nativeCoin = feeCoin(tx: tx)
+            let feeDecimal = nativeCoin.decimal(for: swapFeeBigInt)
+            let swapFee = nativeCoin.fiat(decimal: feeDecimal)
+            return (swapFee + networkFee).formatToFiat(includeCurrencySymbol: true)
+        }
+
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
 
-        let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        let fee = tx.toCoin.fiat(value: inboundFee) + networkFee
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 

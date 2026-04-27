@@ -17,6 +17,7 @@ enum KeysignStatus {
     case KeysignMLDSA
     case KeysignFinished
     case KeysignFailed
+    case KeysignRetryRequested
     case KeysignVaultMismatch
 }
 enum TssKeysignError: Error {
@@ -33,6 +34,21 @@ class KeysignViewModel: ObservableObject {
     @Published var txid: String = .empty
     @Published var approveTxid: String?
     @Published var decodedMemo: String?
+    @Published var decodedFunctionName: String?
+    @Published var decodedTokenAmount: String?
+    @Published var decodedTokenTicker: String?
+    @Published var decodedTokenLogo: String?
+    @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
+    @Published var decodedFunctionSignature: String?
+    @Published var decodedFunctionArguments: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var didLoadSimulation: Bool = false
+    @Published var retryReason: BroadcastRetryReason?
+
+    private var broadcastRetryCount = 0
+    private static let maxBroadcastRetries = 1
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -100,8 +116,9 @@ class KeysignViewModel: ObservableObject {
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
 
-        // Load extension memo decoding
-        await loadFunctionName()
+        async let fn: Void = loadFunctionName()
+        async let sim: Void = loadSimulation()
+        _ = await (fn, sim)
     }
 
     func loadFunctionName() async {
@@ -123,8 +140,64 @@ class KeysignViewModel: ObservableObject {
         do {
             decodedMemo = try await MemoDecodingService.shared.decode(memo: memo)
         } catch {
-            print("EVM memo decoding error: \(error.localizedDescription)")
+            logger.error("EVM memo decoding error: \(error.localizedDescription)")
         }
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
+        didLoadSimulation = true
+    }
+
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
+    var heroContent: HeroContent? {
+        if let sim = blockaidSimulation {
+            switch sim {
+            case .transfer(let coin, _):
+                return .send(
+                    title: decodedFunctionName,
+                    coin: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: coin.ticker,
+                        logo: coin.logo
+                    )
+                )
+            case .swap(let from, let to, _, _):
+                return .swap(
+                    title: decodedFunctionName,
+                    from: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: from.ticker,
+                        logo: from.logo
+                    ),
+                    to: HeroCoinAmount(
+                        amount: sim.heroToAmountText ?? "",
+                        ticker: to.ticker,
+                        logo: to.logo
+                    )
+                )
+            }
+        }
+
+        if didLoadSimulation,
+           blockaidSimulation == nil,
+           let name = decodedFunctionName {
+            return .title(text: name, caption: "unverifiedFunction".localized)
+        }
+        return nil
     }
 
     func getTransactionExplorerURL(txid: String) -> String {
@@ -584,8 +657,6 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
-                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
-                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -600,8 +671,6 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
-                            // Notify Agent chat of successful broadcast (callback fires after broadcastTransaction() returns)
-                            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": transactionHash])
                             // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
                             Task {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
@@ -686,10 +755,6 @@ class KeysignViewModel: ObservableObject {
 
         // Save to pending transactions for status tracking
         savePendingTransaction()
-
-        if !txid.isEmpty && txid != "Transaction already broadcasted." {
-            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": txid])
-        }
     }
 
     private func savePendingTransaction() {
@@ -725,16 +790,27 @@ class KeysignViewModel: ObservableObject {
     }
 
     func handleBroadcastError(error: Error, transactionType: SignedTransactionType) {
+        if let retryable = error as? RetryableBroadcastError,
+           broadcastRetryCount < Self.maxBroadcastRetries {
+            broadcastRetryCount += 1
+            logger.warning("broadcast failed with retryable error (\(retryable.retryReason.userFacingMessage, privacy: .public)); requesting retry")
+            DispatchQueue.main.async {
+                self.retryReason = retryable.retryReason
+                self.status = .KeysignRetryRequested
+            }
+            return
+        }
+
         var errMessage: String = ""
         switch error {
         case HelperError.runtimeError(let errDetail):
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
-            print("code:\(code), message:\(message)")
+            logger.error("rpc error code:\(code), message:\(message, privacy: .public)")
             if message == "already known"
                 || message == "replacement transaction underpriced"
                 || message.contains("This transaction has already been processed") {
-                print("the transaction already broadcast,code:\(code)")
+                logger.info("the transaction already broadcast, code:\(code)")
                 self.txid = transactionType.transactionHash
                 return
             }
@@ -742,14 +818,14 @@ class KeysignViewModel: ObservableObject {
 
             // Check for Cardano "already broadcasted" errors
             if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
-                print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
+                logger.info("Cardano transaction already broadcast - using hash from transactionType \(transactionType.transactionHash, privacy: .public)")
                 self.txid = transactionType.transactionHash
                 return
             }
 
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
-        print(errMessage)
+        logger.error("\(errMessage, privacy: .public)")
         DispatchQueue.main.async {
             self.keysignError = errMessage
             self.status = .KeysignFailed
