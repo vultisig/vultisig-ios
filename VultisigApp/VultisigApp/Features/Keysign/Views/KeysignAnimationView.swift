@@ -39,13 +39,17 @@ struct KeysignAnimationView: View {
     }
 
     private func setupAnimation() {
+        guard animationVM == nil else { return }
         let vm = RiveViewModel(fileName: "keysign", autoPlay: true)
         vm.fit = .layout
         vm.layoutScaleFactor = RiveViewModel.layoutScaleFactorAutomatic
         vm.riveModel?.enableAutoBind { instance in
-            animationVMInstance = instance
-            instance.booleanProperty(fromPath: "Connected")?.value = connected
-            applyCoinLogo(coinLogo)
+            // Rive does not guarantee callbacks land on the main actor.
+            Task { @MainActor in
+                animationVMInstance = instance
+                instance.booleanProperty(fromPath: "Connected")?.value = connected
+                applyCoinLogo(coinLogo)
+            }
         }
         animationVM = vm
     }
@@ -68,6 +72,7 @@ struct KeysignAnimationView: View {
                 logger.warning("RiveRenderImage init returned nil for \(logo, privacy: .public)")
                 return
             }
+            guard !Task.isCancelled else { return }
             property.setValue(renderImage)
         }
     }
@@ -86,6 +91,10 @@ struct KeysignAnimationView: View {
         }
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                logger.warning("Non-success response for coin logo \(url.absoluteString, privacy: .public)")
+                return nil
+            }
             URLCache.imageCache.storeCachedResponse(CachedURLResponse(response: response, data: data), for: request)
             return data
         } catch {
