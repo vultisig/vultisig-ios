@@ -834,6 +834,10 @@ class KeysignViewModel: ObservableObject {
         if await isAlreadyOnChain(transactionType: transactionType) {
             logger.info("transaction already on-chain via peer broadcast — using hash \(transactionType.transactionHash, privacy: .public)")
             self.txid = transactionType.transactionHash
+            self.approveTxid = transactionType.approveTransactionHash
+            if let coin = keysignPayload?.coin, coin.chainType == .UTXO {
+                await BlockchairService.shared.clearUTXOCache(for: coin)
+            }
             return
         }
 
