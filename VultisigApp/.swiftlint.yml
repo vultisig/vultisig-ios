@@ -39,7 +39,7 @@ analyzer_rules:
 # Custom rules enforce repo conventions that standard SwiftLint rules can't.
 # These fire as warnings today so existing violations are visible but don't
 # block the build; Architecture 3.i flips them to `error` after the HTTPClient
-# migration is complete. See docs/refactors/03-unify-httpclient.md.
+# migration is complete.
 custom_rules:
   no_raw_urlsession:
     name: "Raw URLSession outside Core/Networking"
