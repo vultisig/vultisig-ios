@@ -20,6 +20,8 @@ struct DilithiumKeysignResponse: Codable {
     }
 }
 
+private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dilithium-keysign")
+
 final class DilithiumKeysign {
     let keysignCommittee: [String]
     let mediatorURL: String
@@ -35,6 +37,7 @@ final class DilithiumKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: DilithiumKeysignResponse]()
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
+    private let httpClient: HTTPClientProtocol = HTTPClient()
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -191,39 +194,39 @@ final class DilithiumKeysign {
     }
 
     func pullInboundMessages(handle: vscore.Handle, messageID: String) async throws -> Bool {
-        let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
-        print("start pulling inbound messages from:\(urlString)")
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("invalid url string: \(urlString)")
+        guard let baseURL = URL(string: mediatorURL) else {
+            throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
+        logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(messageID, forHTTPHeaderField: "message_id")
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
-            let (data, resp) = try await URLSession.shared.data(for: request)
-            guard let httpResp = resp as? HTTPURLResponse else {
-                throw HelperError.runtimeError("fail to convert resp to http url response")
+            let response: HTTPResponse<Data>
+            do {
+                response = try await httpClient.request(TssRelayAPI(
+                    baseURL: baseURL,
+                    endpoint: .pollInboundMessages(
+                        sessionID: sessionID,
+                        localPartyID: localPartyID,
+                        messageID: messageID
+                    )
+                ))
+            } catch let HTTPError.statusCode(code, _) {
+                throw HelperError.runtimeError("invalid status code: \(code)")
             }
-            switch httpResp.statusCode {
-            case 200 ... 299:
-                if !data.isEmpty {
-                    isFinished = try await processInboundMessage(handle: handle,
-                                                                 data: data,
-                                                                 messageID: messageID)
-                    if isFinished {
-                        return true
-                    }
-                } else {
-                    try await Task.sleep(for: .milliseconds(100))
+
+            if !response.data.isEmpty {
+                isFinished = try await processInboundMessage(handle: handle,
+                                                             data: response.data,
+                                                             messageID: messageID)
+                if isFinished {
+                    return true
                 }
-                // success
-            default:
-                throw HelperError.runtimeError("invalid status code: \(httpResp.statusCode)")
+            } else {
+                try await Task.sleep(for: .milliseconds(100))
             }
+
             let currentTime = DispatchTime.now()
             let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
             let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
@@ -277,14 +280,18 @@ final class DilithiumKeysign {
     }
 
     func deleteMessageFromServer(hash: String, messageID: String) async throws {
-        let urlString = "\(mediatorURL)/message/\(self.sessionID)/\(self.localPartyID)/\(hash)"
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("invalid url string: \(urlString)")
+        guard let baseURL = URL(string: mediatorURL) else {
+            throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
-        request.addValue(messageID, forHTTPHeaderField: "message_id")
-        let (_, _) = try await URLSession.shared.data(for: request)
+        _ = try await httpClient.request(TssRelayAPI(
+            baseURL: baseURL,
+            endpoint: .deleteMessage(
+                sessionID: sessionID,
+                localPartyID: localPartyID,
+                hash: hash,
+                messageID: messageID
+            )
+        ))
     }
 
     func DilithiumKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {

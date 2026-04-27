@@ -9,7 +9,7 @@ import Mediator
 import OSLog
 import Tss
 
-private let logger = Logger(subsystem: "messenger", category: "tss")
+private let logger = Logger(subsystem: "com.vultisig.app", category: "net-tss-messenger")
 final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let mediatorUrl: String
     let sessionID: String
@@ -20,6 +20,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let isKeygen: Bool
     var vaultPubKey = ""
     let encryptGCM: Bool
+    private let httpClient: HTTPClientProtocol
 
     var counter: Int64 = 1
     init(mediatorUrl: String,
@@ -28,7 +29,8 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
          encryptionKeyHex: String,
          vaultPubKey: String,
          isKeygen: Bool,
-         encryptGCM: Bool) {
+         encryptGCM: Bool,
+         httpClient: HTTPClientProtocol = HTTPClient()) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
@@ -36,6 +38,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         self.vaultPubKey = vaultPubKey
         self.isKeygen = isKeygen
         self.encryptGCM = encryptGCM
+        self.httpClient = httpClient
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {
@@ -51,27 +54,15 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             logger.error("body is nil")
             return
         }
-        let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
-        let url = URL(string: urlString)
-        guard let url else {
-            logger.error("URL can't be construct from: \(urlString)")
+        guard let baseURL = URL(string: mediatorUrl) else {
+            logger.error("URL can't be construct from: \(self.mediatorUrl)")
             return
         }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let messageID = self.messageID {
-            req.setValue(messageID, forHTTPHeaderField: "message_id")
-        }
-        if isKeygen {
-            req.setValue("vultisig", forHTTPHeaderField: "keygen")
-        }
-        var encryptedBody: String? = nil
+
+        let encryptedBody: String?
         if self.encryptGCM {
-            print("decrypt with AES+GCM")
             encryptedBody = body.aesEncryptGCM(key: self.encryptionKeyHex)
         } else {
-            print("decrypt with AES+CBC")
             encryptedBody = body.aesEncrypt(key: self.encryptionKeyHex)
         }
         guard let encryptedBody else {
@@ -85,33 +76,60 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
                           hash: Utils.getMessageBodyHash(msg: body),
                           sequenceNo: self.counter)
         self.counter += 1
-        do {
-            let jsonEncode = JSONEncoder()
-            let encodedBody = try jsonEncode.encode(msg)
-            req.httpBody = encodedBody
-        } catch {
-            logger.error("fail to encode body into json string,\(error)")
-            return
+
+        // The TssMessenger Objective-C protocol is synchronous (Go callback),
+        // so we kick the HTTP work onto a detached Task and let it retry
+        // independently — preserving the original fire-and-forget semantics.
+        let httpClient = self.httpClient
+        let messageID = self.messageID
+        let isKeygen = self.isKeygen
+        let sessionID = self.sessionID
+        Task.detached {
+            await Self.sendWithRetry(
+                httpClient: httpClient,
+                baseURL: baseURL,
+                sessionID: sessionID,
+                msg: msg,
+                messageID: messageID,
+                addLegacyKeygenHeader: isKeygen,
+                retry: 3
+            )
         }
-        let retry = 3
-        self.sendWithRetry(req: req, msg: msg, retry: retry)
     }
 
-    func sendWithRetry(req: URLRequest, msg: Message, retry: Int) {
-        URLSession.shared.dataTask(with: req) { _, resp, err in
-            if let err {
-                logger.error("fail to send message,error:\(err)")
-                if retry == 0 {
-                    return
-                } else {
-                    self.sendWithRetry(req: req, msg: msg, retry: retry - 1)
-                }
-            }
-            guard let resp = resp as? HTTPURLResponse, (200 ... 299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+    private static func sendWithRetry(
+        httpClient: HTTPClientProtocol,
+        baseURL: URL,
+        sessionID: String,
+        msg: Message,
+        messageID: String?,
+        addLegacyKeygenHeader: Bool,
+        retry: Int
+    ) async {
+        var remaining = retry
+        repeat {
+            do {
+                _ = try await httpClient.request(TssRelayAPI(
+                    baseURL: baseURL,
+                    endpoint: .sendMessage(
+                        sessionID: sessionID,
+                        message: msg,
+                        messageID: messageID,
+                        addLegacyKeygenHeader: addLegacyKeygenHeader
+                    )
+                ))
+                logger.debug("send message (\(msg.hash) to (\(msg.to)) successfully")
                 return
+            } catch let HTTPError.statusCode(code, _) {
+                logger.error("invalid response code: \(code)")
+                return
+            } catch {
+                logger.error("fail to send message,error:\(error.localizedDescription)")
+                if remaining == 0 {
+                    return
+                }
+                remaining -= 1
             }
-            logger.debug("send message (\(msg.hash) to (\(msg.to)) successfully")
-        }.resume()
+        } while remaining >= 0
     }
 }
