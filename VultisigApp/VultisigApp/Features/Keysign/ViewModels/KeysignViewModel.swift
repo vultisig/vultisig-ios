@@ -662,7 +662,7 @@ class KeysignViewModel: ObservableObject {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
                             }
                         case .failure(let error):
-                            self.handleBroadcastError(error: error, transactionType: transactionType)
+                            Task { await self.handleBroadcastError(error: error, transactionType: transactionType) }
                         }
                     }
                 case .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
@@ -676,14 +676,14 @@ class KeysignViewModel: ObservableObject {
                                 await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
                             }
                         case .failure(let error):
-                            self.handleBroadcastError(error: error, transactionType: transactionType)
+                            Task { await self.handleBroadcastError(error: error, transactionType: transactionType) }
                         }
                     }
                 case .cardano:
                     do {
                         self.txid = try await CardanoService.shared.broadcastTransaction(signedTransaction: tx.rawTransaction)
                     } catch {
-                        self.handleBroadcastError(error: error, transactionType: transactionType)
+                        await self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
                 case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
                     let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
@@ -745,7 +745,7 @@ class KeysignViewModel: ObservableObject {
                 self.txid = regularTxHash
             }
         } catch {
-            handleBroadcastError(error: error, transactionType: transactionType)
+            await handleBroadcastError(error: error, transactionType: transactionType)
         }
 
         if txid == "Transaction already broadcasted." {
@@ -789,7 +789,7 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
-    func handleBroadcastError(error: Error, transactionType: SignedTransactionType) {
+    func handleBroadcastError(error: Error, transactionType: SignedTransactionType) async {
         if let retryable = error as? RetryableBroadcastError,
            broadcastRetryCount < Self.maxBroadcastRetries {
             broadcastRetryCount += 1
@@ -825,10 +825,45 @@ class KeysignViewModel: ObservableObject {
 
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
+
+        // Chain-agnostic fallback: when a co-signing peer wins the broadcast
+        // race, our broadcast call fails (mempool / sequence / duplicate
+        // errors) but the signed tx is already on-chain. Look it up by hash
+        // before declaring failure — every chain has the same deterministic
+        // hash so this works without per-chain string matching.
+        if await isAlreadyOnChain(transactionType: transactionType) {
+            logger.info("transaction already on-chain via peer broadcast — using hash \(transactionType.transactionHash, privacy: .public)")
+            self.txid = transactionType.transactionHash
+            return
+        }
+
         logger.error("\(errMessage, privacy: .public)")
         DispatchQueue.main.async {
             self.keysignError = errMessage
             self.status = .KeysignFailed
+        }
+    }
+
+    /// Best-effort check that the signed tx is already accepted on the chain
+    /// (mempool or block). Returns true only on positive evidence — any
+    /// transient lookup failure or `notFound` falls through so the caller
+    /// surfaces the original broadcast error.
+    private func isAlreadyOnChain(transactionType: SignedTransactionType) async -> Bool {
+        guard let chain = keysignPayload?.coin.chain else { return false }
+        let hash = transactionType.transactionHash
+        guard !hash.isEmpty else { return false }
+
+        do {
+            let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
+            switch result.status {
+            case .confirmed, .pending:
+                return true
+            case .notFound, .failed:
+                return false
+            }
+        } catch {
+            logger.warning("hash-verify lookup failed for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return false
         }
     }
 
