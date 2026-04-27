@@ -43,8 +43,13 @@ class PolkadotService: RpcService {
             return BigInt.zero
         }
 
-        // SCALE AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
-        let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
+        // SCALE AccountInfo (frame_system + pallet_balances v47):
+        //   nonce(u32) + consumers(u32) + providers(u32) + sufficients(u32)
+        //   + AccountData { free(u128), reserved(u128), frozen(u128), flags(u128) }
+        // `free` is always at byte offset 16, length 16 (u128 LE) — stable across
+        // the misc_frozen/fee_frozen -> frozen/flags runtime migration since
+        // `free` is always the first AccountData field.
+        let hex = result.stripHexPrefix()
         guard hex.count >= 64 else { return BigInt.zero }
 
         // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
