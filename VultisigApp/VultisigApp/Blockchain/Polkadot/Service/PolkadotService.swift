@@ -26,7 +26,7 @@ class PolkadotService: RpcService {
             return cachedData
         }
 
-        guard let pubkey = AnyAddress(string: address, coin: .polkadot)?.data() else {
+        guard let pubkey = AnyAddress(string: address, coin: .polkadot)?.data else {
             return BigInt.zero
         }
         let blake2Hash = Hash.blake2b(data: pubkey, size: 16) // 128-bit
