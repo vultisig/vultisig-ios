@@ -204,12 +204,14 @@ class Endpoint {
     }
 
     static func fetchTcyAutoCompoundStatus() -> String {
-        "https://gateway.liquify.com/chain/thorchain_rpc/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
+        // Cosmos SDK / CosmWasm paths route through `thorchain_api` on the
+        // Liquify gateway; `thorchain_rpc` only serves Tendermint RPC.
+        "https://gateway.liquify.com/chain/thorchain_api/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
     }
 
     static func fetchTcyAutoCompoundBalance(address: String) -> String {
         // Query user's sTCY balance using cosmos bank API - URL encode the denom
-        "https://gateway.liquify.com/chain/thorchain_rpc/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
+        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
     }
 
     static func fetchYRunePrice() -> String {
