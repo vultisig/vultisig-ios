@@ -327,7 +327,11 @@ class KeysignViewModel: ObservableObject {
             if let customMessagePayload {
                 txid = customMessagePayload.message
             }
-            status = .KeysignFinished
+            // broadcastTransaction owns its terminal status — don't overwrite a
+            // failure (or retry request) set by handleBroadcastError.
+            if status != .KeysignFailed && status != .KeysignRetryRequested {
+                status = .KeysignFinished
+            }
         } catch {
             logger.error("TSS keysign failed, error: \(error.localizedDescription)")
             keysignError = error.localizedDescription
@@ -356,7 +360,9 @@ class KeysignViewModel: ObservableObject {
         if let customMessagePayload {
             txid = customMessagePayload.message
         }
-        status = .KeysignFinished
+        if status != .KeysignFailed && status != .KeysignRetryRequested {
+            status = .KeysignFinished
+        }
     }
     // Return value bool indicate whether keysign should be retried
     func keysignOneMessageWithRetry(msg: String, attempt: UInt8) async throws {
@@ -794,10 +800,8 @@ class KeysignViewModel: ObservableObject {
            broadcastRetryCount < Self.maxBroadcastRetries {
             broadcastRetryCount += 1
             logger.warning("broadcast failed with retryable error (\(retryable.retryReason.userFacingMessage, privacy: .public)); requesting retry")
-            DispatchQueue.main.async {
-                self.retryReason = retryable.retryReason
-                self.status = .KeysignRetryRequested
-            }
+            self.retryReason = retryable.retryReason
+            self.status = .KeysignRetryRequested
             return
         }
 
@@ -812,14 +816,16 @@ class KeysignViewModel: ObservableObject {
                 || message.contains("This transaction has already been processed") {
                 logger.info("the transaction already broadcast, code:\(code)")
                 self.txid = transactionType.transactionHash
+                self.approveTxid = transactionType.approveTransactionHash
                 return
             }
         default:
 
             // Check for Cardano "already broadcasted" errors
-            if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
+            if error.localizedDescription.contains("BadInputsUTxO") {
                 logger.info("Cardano transaction already broadcast - using hash from transactionType \(transactionType.transactionHash, privacy: .public)")
                 self.txid = transactionType.transactionHash
+                self.approveTxid = transactionType.approveTransactionHash
                 return
             }
 
@@ -842,10 +848,8 @@ class KeysignViewModel: ObservableObject {
         }
 
         logger.error("\(errMessage, privacy: .public)")
-        DispatchQueue.main.async {
-            self.keysignError = errMessage
-            self.status = .KeysignFailed
-        }
+        self.keysignError = errMessage
+        self.status = .KeysignFailed
     }
 
     /// Best-effort check that the signed tx is already accepted on the chain
