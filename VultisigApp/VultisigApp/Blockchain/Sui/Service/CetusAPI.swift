@@ -8,7 +8,7 @@ import Foundation
 enum CetusAPI: TargetType {
     case findRoutes(fromToken: String, toToken: String, amount: UInt64)
 
-    private static let cetusBaseURL = URL(string: "https://api-sui.cetus.zone")!
+    static let cetusBaseURL = URL(string: "https://api-sui.cetus.zone")!
 
     var baseURL: URL { Self.cetusBaseURL }
 

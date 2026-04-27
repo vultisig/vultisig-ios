@@ -36,9 +36,8 @@ struct KyberSwapService {
             referrerAddress: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
-        let routeResponse = try await decodeKyberResponse(
-            try await httpClient.request(KyberSwapAPI.routes(chain: chain, params: params)),
-            successType: KyberSwapRouteResponse.self
+        let routeResponse: KyberSwapRouteResponse = try await fetchAndDecodeKyber(
+            KyberSwapAPI.routes(chain: chain, params: params)
         )
 
         // Try with gas estimation first, retry without if TransferHelper error occurs
@@ -50,16 +49,26 @@ struct KyberSwapService {
         )
     }
 
+    /// Performs a request and routes the body through `decodeKyberResponse`.
+    /// `KyberSwapAPI` only whitelists 200/400, so 5xx responses arrive as
+    /// `HTTPError.statusCode(_, data?)`; we still want to map their typed
+    /// error envelope to `KyberSwapError` instead of leaking a generic HTTP error.
+    private func fetchAndDecodeKyber<T: Decodable>(_ target: TargetType) async throws -> T {
+        do {
+            let response = try await httpClient.request(target)
+            return try decodeKyberResponse(response.data)
+        } catch HTTPError.statusCode(_, let data?) {
+            return try decodeKyberResponse(data)
+        }
+    }
+
     /// KyberSwap returns either a success envelope (`code == 0`) or an error
     /// envelope that shares the same top-level keys. HTTP 400 is reserved for
     /// validation/execution errors with structured messages. This decodes the
     /// error envelope first and maps known messages to typed
     /// `KyberSwapError` cases before falling back to the success model.
-    private func decodeKyberResponse<T: Decodable>(
-        _ response: HTTPResponse<Data>,
-        successType: T.Type
-    ) throws -> T {
-        if let error = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: response.data),
+    private func decodeKyberResponse<T: Decodable>(_ data: Data) throws -> T {
+        if let error = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: data),
            error.code != 0 {
             if error.message.contains("execution reverted") {
                 throw KyberSwapError.transactionWillRevert(message: error.message)
@@ -73,7 +82,7 @@ struct KyberSwapService {
             throw KyberSwapError.apiError(code: error.code, message: error.message, details: error.details)
         }
 
-        return try JSONDecoder().decode(T.self, from: response.data)
+        return try JSONDecoder().decode(T.self, from: data)
     }
 
     private func buildTransactionWithFallback(
@@ -127,9 +136,8 @@ struct KyberSwapService {
             feeReceiver: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
-        var buildResponse = try await decodeKyberResponse(
-            try await httpClient.request(KyberSwapAPI.buildTransaction(chain: chain, body: buildPayload)),
-            successType: KyberSwapQuote.self
+        var buildResponse: KyberSwapQuote = try await fetchAndDecodeKyber(
+            KyberSwapAPI.buildTransaction(chain: chain, body: buildPayload)
         )
 
         let gasPrice = routeResponse.data.routeSummary.gasPrice

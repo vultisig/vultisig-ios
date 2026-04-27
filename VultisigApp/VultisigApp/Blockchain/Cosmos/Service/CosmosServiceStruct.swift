@@ -83,11 +83,19 @@ struct CosmosServiceStruct {
             return "0"
         }
 
-        let response = try await httpClient.request(
-            CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenBalance(contractAddress: coin.contractAddress, base64Payload: base64Payload)),
-            responseType: CosmosWasmTokenBalanceResponse.self
-        )
-        return response.data.data.balance
+        // Pre-migration code returned "0" on any decode failure (via
+        // Utils.extractResultFromJson); preserve that so balance screens keep
+        // rendering 0 instead of surfacing a generic decoding error.
+        do {
+            let response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenBalance(contractAddress: coin.contractAddress, base64Payload: base64Payload)),
+                responseType: CosmosWasmTokenBalanceResponse.self
+            )
+            return response.data.data.balance
+        } catch HTTPError.decodingFailed(let error) {
+            logger.warning("Wasm token balance decode failed for \(coin.contractAddress, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return "0"
+        }
     }
 
     // MARK: - Block Operations
@@ -97,11 +105,16 @@ struct CosmosServiceStruct {
             return "0"
         }
 
-        let response = try await httpClient.request(
-            CosmosAPI(baseURL: baseURL, endpoint: .latestBlock),
-            responseType: CosmosLatestBlockResponse.self
-        )
-        return response.data.block.header.height
+        do {
+            let response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .latestBlock),
+                responseType: CosmosLatestBlockResponse.self
+            )
+            return response.data.block.header.height
+        } catch HTTPError.decodingFailed(let error) {
+            logger.warning("Latest block decode failed: \(error.localizedDescription, privacy: .public)")
+            return "0"
+        }
     }
 
     // MARK: - Account Operations

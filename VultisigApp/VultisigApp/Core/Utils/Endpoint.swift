@@ -371,7 +371,7 @@ class Endpoint {
     }
 
     static func suiTokenQuote() -> String {
-        "https://api-sui.cetus.zone/v2/sui/swap/count"
+        "\(CetusAPI.cetusBaseURL.absoluteString)/v2/sui/swap/count"
     }
 
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"

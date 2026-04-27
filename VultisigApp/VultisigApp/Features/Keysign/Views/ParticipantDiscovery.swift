@@ -65,6 +65,15 @@ class ParticipantDiscovery: ObservableObject {
                     try await Task.sleep(for: .seconds(1))
                 } catch is CancellationError {
                     return
+                } catch let HTTPError.statusCode(code, _) {
+                    // Transient relay errors (5xx, etc.) shouldn't kill the
+                    // polling loop — the keysign session would silently never
+                    // discover the other participants. Log and retry.
+                    self.logger.error("Relay returned status code \(code); retrying")
+                    try? await Task.sleep(for: .seconds(1))
+                } catch HTTPError.timeout, HTTPError.networkError(_) {
+                    self.logger.error("Relay request failed transiently; retrying")
+                    try? await Task.sleep(for: .seconds(1))
                 } catch {
                     self.logger.error("Error during participant discovery: \(error.localizedDescription)")
                     return

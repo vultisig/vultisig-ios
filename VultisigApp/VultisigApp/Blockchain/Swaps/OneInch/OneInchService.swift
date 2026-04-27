@@ -7,14 +7,12 @@
 
 import Foundation
 import BigInt
-import OSLog
 
 struct OneInchService {
 
     static let shared = OneInchService()
     static let referredFee = 0.5
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "oneinch-service")
     private let httpClient: HTTPClientProtocol = HTTPClient()
 
     private var nullAddress: String {
