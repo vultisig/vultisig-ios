@@ -9,8 +9,8 @@ import Foundation
 import SwiftUI
 
 class VaultDetailViewModel: ObservableObject {
-    @Published var selectedGroup: GroupedChain? = nil
-    @Published var groups = [GroupedChain]()
+    @Published var selectedChain: Chain? = nil
+    @Published var chains = [Chain]()
     @Published var searchText: String = ""
     @Published var vaultBanners: [VaultBannerType] = []
 
@@ -19,8 +19,8 @@ class VaultDetailViewModel: ObservableObject {
 
     @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
 
-    var filteredGroups: [GroupedChain] {
-        return logic.filteredGroups(searchText: searchText, groups: groups)
+    func filteredChains(in vault: Vault) -> [Chain] {
+        logic.filteredChains(searchText: searchText, chains: chains, vault: vault)
     }
 
     var availableActions: [CoinAction] {
@@ -31,22 +31,23 @@ class VaultDetailViewModel: ObservableObject {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task { [weak self] in
             guard let self else { return }
-            let updatedGroups = await self.logic.updateBalance(vault: vault)
+            let updated = await self.logic.updateBalance(vault: vault)
             if !Task.isCancelled {
                 await MainActor.run {
-                    self.groups = updatedGroups
+                    self.chains = updated
                 }
             }
         }
     }
 
     func groupChains(vault: Vault) {
-        self.groups = logic.groupChains(vault: vault)
+        chains = logic.sortedChains(vault: vault)
     }
 
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
-        Task {@MainActor in
-            selectedGroup = await logic.getGroup(groups: groups, viewModel: viewModel)
+        let currentChains = chains
+        Task { @MainActor in
+            selectedChain = await logic.preferredChain(chains: currentChains, viewModel: viewModel)
         }
     }
 
@@ -80,38 +81,40 @@ class VaultDetailViewModel: ObservableObject {
 // MARK: - VaultDetailLogic
 
 struct VaultDetailLogic {
-    private let groupedChainListBuilder = GroupedChainListBuilder()
     private let balanceService = BalanceService.shared
 
-    func filteredGroups(searchText: String, groups: [GroupedChain]) -> [GroupedChain] {
+    func filteredChains(searchText: String, chains: [Chain], vault: Vault) -> [Chain] {
         guard !searchText.isEmpty else {
-            return groups
+            return chains
         }
-        return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
+        return chains.filter { chain in
+            let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
+            let tickerMatches = vault.nativeCoin(for: chain)?.ticker
+                .localizedCaseInsensitiveContains(searchText) ?? false
+            return nameMatches || tickerMatches
         }
     }
 
-    func updateBalance(vault: Vault) async -> [GroupedChain] {
+    func updateBalance(vault: Vault) async -> [Chain] {
         await balanceService.updateBalances(vault: vault)
-        return groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+        return await MainActor.run { sortedChains(vault: vault) }
     }
 
-    func groupChains(vault: Vault) -> [GroupedChain] {
-        return groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+    func sortedChains(vault: Vault) -> [Chain] {
+        sortedChains(
+            chains: vault.chainsWithCoins,
+            value: { vault.coins(for: $0).totalBalanceInFiatDecimal }
+        )
     }
 
-    func getGroup(groups: [GroupedChain], viewModel: CoinSelectionViewModel) async -> GroupedChain? {
-        for group in groups {
-            let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
-
-            for action in actions {
-                if action == .swap {
-                    return group
-                }
+    func preferredChain(chains: [Chain], viewModel: CoinSelectionViewModel) async -> Chain? {
+        for chain in chains {
+            let actions = await viewModel.actionResolver.resolveActions(for: chain)
+            if actions.contains(.swap) {
+                return chain
             }
         }
-        return groups.first
+        return chains.first
     }
 
     func setupBanners(for vault: Vault, appClosedBanners: [String]) -> [VaultBannerType] {
@@ -133,67 +136,19 @@ struct VaultDetailLogic {
                 }
             }
     }
-}
 
-struct GroupedChainListBuilder {
-    func groupChains<T: Comparable>(
-        for vault: Vault,
-        sortedBy keyPath: KeyPath<GroupedChain, T>,
+    func sortedChains<T: Comparable>(
+        chains: [Chain],
         ascending: Bool = false,
-        filterBy: (GroupedChain) -> Bool = { _ in true }
-    ) -> [GroupedChain] {
-        var groups = [GroupedChain]()
-
-        for coin in vault.coins {
-            addCoin(coin, groups: &groups)
-        }
-
-        groups.sort {
-            let lhsValue = $0[keyPath: keyPath]
-            let rhsValue = $1[keyPath: keyPath]
-
+        value: (Chain) -> T
+    ) -> [Chain] {
+        chains.sorted { lhs, rhs in
+            let lhsValue = value(lhs)
+            let rhsValue = value(rhs)
             if lhsValue == rhsValue {
-                return $0.chain.index < $1.chain.index
+                return lhs.index < rhs.index
             }
             return ascending ? lhsValue < rhsValue : lhsValue > rhsValue
         }
-
-        return groups.filter(filterBy)
-    }
-
-    func addCoin(_ coin: Coin, groups: inout [GroupedChain]) {
-        let group = groups.first { group in
-            group.address == coin.address && group.chain == coin.chain
-        }
-
-        guard let group else {
-            let chain = GroupedChain(
-                chain: coin.chain,
-                address: coin.address,
-                logo: coin.chain.logo,
-                count: 1,
-                coins: [coin]
-            )
-
-            groups.append(chain)
-            return
-        }
-
-        // Check if coin already exists in group to prevent duplicates
-        // Match by ID, or fall back to matching by exact ticker and contract address
-        let isDuplicate = group.coins.contains { existing in
-            existing.id == coin.id ||
-            (existing.ticker.lowercased() == coin.ticker.lowercased() &&
-             existing.contractAddress.lowercased() == coin.contractAddress.lowercased())
-        }
-
-        if !isDuplicate {
-            group.coins.append(coin)
-            group.count += 1
-        }
-        if coin.isNativeToken {
-            group.logo = coin.chain.logo
-        }
-        return
     }
 }

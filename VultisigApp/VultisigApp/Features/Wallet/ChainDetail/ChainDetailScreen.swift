@@ -34,16 +34,6 @@ struct ChainDetailScreen: View {
         vault.coins(for: nativeCoin.chain)
     }
 
-    var groupedChain: GroupedChain {
-        return GroupedChain(
-            chain: nativeCoin.chain,
-            address: nativeCoin.address,
-            logo: nativeCoin.chain.logo,
-            count: coins.count,
-            coins: coins
-        )
-    }
-
     init(
         nativeCoin: Coin,
         vault: Vault,
@@ -93,7 +83,7 @@ struct ChainDetailScreen: View {
         .crossPlatformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
                 vault: vault,
-                group: groupedChain,
+                chain: nativeCoin.chain,
                 isPresented: $showManageTokens
             )
         }

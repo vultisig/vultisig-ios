@@ -219,6 +219,14 @@ final class Vault: ObservableObject, Codable {
         coins.filter { $0.chain == chain }
     }
 
+    func address(for chain: Chain) -> String? {
+        coins.first(where: { $0.chain == chain })?.address
+    }
+
+    var chainsWithCoins: [Chain] {
+        coins.map { $0.chain }.uniqueBy { $0 }
+    }
+
     func getKeyshare(pubKey: String) -> String? {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
     }

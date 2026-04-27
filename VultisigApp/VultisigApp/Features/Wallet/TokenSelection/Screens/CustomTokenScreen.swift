@@ -11,7 +11,7 @@ import WalletCore
 
 struct CustomTokenScreen: View {
     let vault: Vault
-    @ObservedObject var group: GroupedChain
+    let chain: Chain
     @Binding var isPresented: Bool
     var onClose: () -> Void
 
@@ -83,7 +83,7 @@ struct CustomTokenScreen: View {
             }
         }
         .onLoad {
-            tokenViewModel.loadData(groupedChain: group, vault: vault)
+            tokenViewModel.loadData(chain: chain, vault: vault)
         }
         .onChange(of: contractAddress) { _, newValue in
             validateAddress(newValue)
@@ -162,7 +162,7 @@ struct CustomTokenScreen: View {
         error = nil
 
         do {
-            if ChainType.Solana == group.chain.chainType {
+            if ChainType.Solana == chain.chainType {
 
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])
 
@@ -187,9 +187,9 @@ struct CustomTokenScreen: View {
                 // EVM, TRON, and TON all share the same (name, symbol, decimals) lookup pattern
                 let tokenInfo: (name: String, symbol: String, decimals: Int)
 
-                switch group.chain.chainType {
+                switch chain.chainType {
                 case .EVM:
-                    let service = try EvmService.getService(forChain: group.chain)
+                    let service = try EvmService.getService(forChain: chain)
                     tokenInfo = try await service.getTokenInfo(contractAddress: contractAddress)
                 case .Tron:
                     tokenInfo = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
@@ -204,10 +204,9 @@ struct CustomTokenScreen: View {
                 let (name, symbol, decimals) = tokenInfo
 
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
-                    let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
-                    if let nativeToken = nativeTokenOptional {
+                    if vault.nativeCoin(for: chain) != nil {
                         self.token = CoinMeta(
-                            chain: nativeToken.chain,
+                            chain: chain,
                             ticker: symbol,
                             logo: .empty,
                             decimals: decimals,
@@ -252,7 +251,7 @@ struct CustomTokenScreen: View {
     /// Updates ``isValidAddress`` accordingly.
     /// - Parameter address: The raw address string entered by the user.
     private func validateAddress(_ address: String) {
-        isValidAddress = AddressService.validateAddress(address: address, group: group)
+        isValidAddress = AddressService.validateAddress(address: address, chain: chain)
     }
 
     /// Persists the resolved custom token to the vault and dismisses the screen.

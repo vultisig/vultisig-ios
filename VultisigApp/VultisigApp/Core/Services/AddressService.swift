@@ -151,29 +151,6 @@ struct AddressService {
         return chain.coinType.validate(address: address)
     }
 
-    static func validateAddress(address: String, group: GroupedChain) -> Bool {
-        let firstCoinOptional = group.coins.first
-        if let firstCoin = firstCoinOptional {
-            if firstCoin.chain == .mayaChain {
-                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-            }
-            if firstCoin.chain == .thorChainChainnet {
-                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
-            }
-            if firstCoin.chain == .thorChainStagenet {
-                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
-            }
-            if firstCoin.chain == .qbtc {
-                return AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc")
-            }
-            if firstCoin.chain == .bittensor {
-                return BittensorHelper.isValidAddress(address)
-            }
-            return firstCoin.coinType.validate(address: address)
-        }
-
-        return false
-    }
 }
 
 private extension AddressService {
