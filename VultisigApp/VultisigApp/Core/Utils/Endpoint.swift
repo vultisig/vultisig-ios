@@ -488,8 +488,6 @@ class Endpoint {
     // TODO: Switch to Vultisig proxy once ready: "https://api.vultisig.com/dot/"
     static let polkadotTransactionStatusRpc = "https://assethub-polkadot.api.subscan.io"
 
-    static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
-
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
