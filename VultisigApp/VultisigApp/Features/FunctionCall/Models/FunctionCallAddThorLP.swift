@@ -42,6 +42,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Domain models
     var tx: SendTransaction
     private var vault: Vault
+    private let isThorchainEnabled: Bool
 
     // MARK: Addressable conformance helpers
     var addressFields: [String: String] {
@@ -57,6 +58,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
+        self.isThorchainEnabled = vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
     }
 
     func initialize() {
@@ -305,6 +307,12 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
 
     private func setupValidation() {
+        guard isThorchainEnabled else {
+            customErrorMessage = "thorChainNotEnabledForLP".localized
+            isTheFormValid = false
+            return
+        }
+
         // Recompute amount validity when amount or selectedPool changes
         Publishers.CombineLatest($amount, $selectedPool)
             .receive(on: DispatchQueue.main)
