@@ -13,4 +13,3 @@ fi
 # Emit an empty JSON object so the harness sees a successful hook output.
 echo '{}'
 exit 0
-EOF
