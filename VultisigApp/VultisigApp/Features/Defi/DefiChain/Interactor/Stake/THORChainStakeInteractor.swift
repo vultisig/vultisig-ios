@@ -63,15 +63,17 @@ private extension THORChainStakeInteractor {
                 )
             } catch {
                 logger.error("Error fetching \(ticker) staking details: \(error.localizedDescription)")
+                // Reuse previously persisted metadata so APR / rewards / nextPayout don't disappear on transient failures
+                let previous = await previousPosition(for: coin, vault: vault)
                 return StakePosition(
                     coin: coinMeta,
                     type: .stake,
                     amount: coin.stakedBalanceDecimal,
-                    apr: nil,
-                    estimatedReward: nil,
-                    nextPayout: nil,
-                    rewards: nil,
-                    rewardCoin: nil,
+                    apr: previous?.apr,
+                    estimatedReward: previous?.estimatedReward,
+                    nextPayout: previous?.nextPayout,
+                    rewards: previous?.rewards,
+                    rewardCoin: previous?.rewardCoin,
                     vault: vault
                 )
             }
@@ -117,6 +119,21 @@ private extension THORChainStakeInteractor {
                 vault: vault
             )
         }
+    }
+
+    @MainActor
+    private func previousPosition(for coin: Coin, vault: Vault) -> PreviousStakeMetadata? {
+        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
+        guard let existing = vault.stakePositions.first(where: { $0.id == id }) else {
+            return nil
+        }
+        return PreviousStakeMetadata(
+            apr: existing.apr,
+            estimatedReward: existing.estimatedReward,
+            nextPayout: existing.nextPayout,
+            rewards: existing.rewards,
+            rewardCoin: existing.rewardCoin
+        )
     }
 
     @MainActor

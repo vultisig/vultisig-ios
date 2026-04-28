@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-bond-view-model")
 
 final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
@@ -63,8 +66,13 @@ final class DefiChainBondViewModel: ObservableObject {
         self.canUnbond = await canUnbondTask
         self.canAddBond = await canAddBondTask
 
-        let (active, available) = await fetchTask
-        self.activeBondedNodes = active
-        self.availableNodes = available
+        do {
+            let (active, available) = try await fetchTask
+            self.activeBondedNodes = active
+            self.availableNodes = available
+        } catch {
+            // Preserve last-known UI state on transient failures so cached positions stay visible
+            logger.error("Failed to refresh bond positions for chain \(chain.rawValue, privacy: .public): \(error)")
+        }
     }
 }
