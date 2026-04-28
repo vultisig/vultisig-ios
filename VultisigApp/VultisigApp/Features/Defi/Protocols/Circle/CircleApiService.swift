@@ -13,6 +13,7 @@ enum CircleApiError: Error {
     case serverError(String)
     case unauthorized
     case unknown
+    case notFound
     case apiError(statusCode: Int, body: String?)
 }
 
@@ -50,6 +51,11 @@ struct CircleApiService {
             )
             return response.data.first?.address
         } catch HTTPError.statusCode(let code, let data) {
+            // Distinguish "wallet missing" (404) from outages so callers don't
+            // POST a duplicate wallet on a 5xx/proxy failure.
+            if code == 404 {
+                throw CircleApiError.notFound
+            }
             let body = data.flatMap { String(data: $0, encoding: .utf8) }
             throw CircleApiError.apiError(statusCode: code, body: body)
         }
@@ -60,8 +66,12 @@ struct CircleApiService {
             throw CircleApiError.invalidUrl
         }
 
-        if let existing = try? await fetchWallet(ethAddress: ethAddress) {
-            return existing
+        do {
+            if let existing = try await fetchWallet(ethAddress: ethAddress) {
+                return existing
+            }
+        } catch CircleApiError.notFound {
+            // Fall through to POST a new wallet.
         }
 
         let payload = CircleCreateWalletRequest(

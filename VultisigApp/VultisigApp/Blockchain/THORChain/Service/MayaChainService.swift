@@ -95,37 +95,33 @@ class MayachainService: ThorchainSwapProvider {
         )
         let streamingQuantityParam = streamingQuantity > 0 ? String(streamingQuantity) : nil
 
+        let target = MayaChainAPI.swapQuote(
+            fromAsset: fromAsset,
+            toAsset: toAsset,
+            amount: amount,
+            destination: address,
+            streamingInterval: String(interval),
+            streamingQuantity: streamingQuantityParam,
+            affiliate: affiliate,
+            affiliateBps: affiliateBps
+        )
+
+        // Maya sometimes returns a structured swap error body with a
+        // non-2xx status or a shape that doesn't decode as ThorchainSwapQuote.
+        // Fetch raw bytes once and try the success shape first, falling back
+        // to the error shape — avoids a second round-trip on the error path.
         do {
-            let response = try await httpClient.request(
-                MayaChainAPI.swapQuote(
-                    fromAsset: fromAsset,
-                    toAsset: toAsset,
-                    amount: amount,
-                    destination: address,
-                    streamingInterval: String(interval),
-                    streamingQuantity: streamingQuantityParam,
-                    affiliate: affiliate,
-                    affiliateBps: affiliateBps
-                ),
-                responseType: ThorchainSwapQuote.self
-            )
-            return response.data
-        } catch HTTPError.decodingFailed, HTTPError.statusCode {
-            // Maya sometimes returns a structured swap error body with a
-            // non-2xx status or a shape that doesn't decode as ThorchainSwapQuote.
-            // Re-fetch raw bytes and attempt the error decode.
-            let raw = try await httpClient.request(MayaChainAPI.swapQuote(
-                fromAsset: fromAsset,
-                toAsset: toAsset,
-                amount: amount,
-                destination: address,
-                streamingInterval: String(interval),
-                streamingQuantity: streamingQuantityParam,
-                affiliate: affiliate,
-                affiliateBps: affiliateBps
-            ))
-            let swapError = try JSONDecoder().decode(MayachainSwapError.self, from: raw.data)
-            throw swapError
+            let raw = try await httpClient.request(target)
+            if let quote = try? JSONDecoder().decode(ThorchainSwapQuote.self, from: raw.data) {
+                return quote
+            }
+            throw try JSONDecoder().decode(MayachainSwapError.self, from: raw.data)
+        } catch let error as HTTPError {
+            if case .statusCode(_, let data?) = error,
+               let swapError = try? JSONDecoder().decode(MayachainSwapError.self, from: data) {
+                throw swapError
+            }
+            throw error
         }
     }
 

@@ -41,7 +41,9 @@ class ThorchainStagenetService: ThorchainSwapProvider {
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
         let balances: [CosmosBalance] = try await fetchBalances(address)
         var coinMetaList = [CoinMeta]()
-        for balance in balances {
+        // Native RUNE is the chain's main asset and is added separately;
+        // including it here would surface a duplicate non-native row.
+        for balance in balances where balance.denom.caseInsensitiveCompare("rune") != .orderedSame {
             var ticker: String
             var decimals: Int
             var logo: String

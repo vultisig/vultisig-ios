@@ -26,7 +26,14 @@ class TonService {
             throw NSError(domain: "Server Error", code: 500, userInfo: [NSLocalizedDescriptionKey: response.data.error ?? "Unknown server error"])
         }
 
-        return response.data.result?.hash ?? ""
+        guard let hash = response.data.result?.hash else {
+            throw NSError(
+                domain: "TonService",
+                code: response.response.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "Missing result.hash in TON broadcast response"]
+            )
+        }
+        return hash
     }
 
     func getTONBalance(address: String) async throws -> String {

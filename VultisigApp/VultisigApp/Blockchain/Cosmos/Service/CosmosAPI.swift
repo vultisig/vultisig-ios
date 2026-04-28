@@ -36,7 +36,11 @@ struct CosmosAPI: TargetType {
         case .broadcastTransaction:
             return "/cosmos/tx/v1beta1/txs"
         case .wasmTokenBalance(let contractAddress, let base64Payload):
-            return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+            // Base64 can include `/` and `=`, which the URL parser would
+            // otherwise treat as path separators / query delimiters.
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encodedPayload = base64Payload.addingPercentEncoding(withAllowedCharacters: allowed) ?? base64Payload
+            return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
         case .ibcDenomTrace(let hash):
             return "/ibc/apps/transfer/v1/denom_traces/\(hash)"
         case .latestBlock:

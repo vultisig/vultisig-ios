@@ -38,11 +38,14 @@ class CardanoService {
             )
 
             return response.data.compactMap { utxo in
-                guard let valueInt = Int64(utxo.value) else { return nil }
+                guard
+                    let valueInt = Int64(utxo.value),
+                    let index = UInt32(exactly: utxo.txIndex)
+                else { return nil }
                 return UtxoInfo(
                     hash: utxo.txHash,
                     amount: valueInt,
-                    index: UInt32(utxo.txIndex)
+                    index: index
                 )
             }
         } catch {

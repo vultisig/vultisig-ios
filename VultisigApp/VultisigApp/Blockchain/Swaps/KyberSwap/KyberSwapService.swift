@@ -57,8 +57,17 @@ struct KyberSwapService {
         do {
             let response = try await httpClient.request(target)
             return try decodeKyberResponse(response.data)
-        } catch HTTPError.statusCode(_, let data?) {
-            return try decodeKyberResponse(data)
+        } catch HTTPError.statusCode(let statusCode, let data?) {
+            // Try to map the body to a typed KyberSwapError. If decoding the
+            // error envelope itself fails (e.g. 5xx returns HTML), surface the
+            // original HTTP status instead of a misleading DecodingError.
+            do {
+                return try decodeKyberResponse(data)
+            } catch let kyberError as KyberSwapError {
+                throw kyberError
+            } catch {
+                throw HTTPError.statusCode(statusCode, data)
+            }
         }
     }
 

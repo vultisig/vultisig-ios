@@ -89,7 +89,12 @@ final class PayloadService {
         }
         do {
             let response = try await httpClient.request(PayloadAPI.get(baseURL: baseURL, hash: hash))
-            return String(data: response.data, encoding: .utf8) ?? ""
+            guard let payload = String(data: response.data, encoding: .utf8) else {
+                throw PayloadServiceError.NetworkError(message: "relay returned a non-UTF8 payload")
+            }
+            return payload
+        } catch let error as PayloadServiceError {
+            throw error
         } catch {
             throw PayloadServiceError.NetworkError(message: "fail to get payload from relay server: \(error)")
         }

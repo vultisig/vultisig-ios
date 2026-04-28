@@ -30,10 +30,11 @@ class PhoneCheckUpdateViewModel: ObservableObject {
 
             do {
                 let latestVersion = try await logic.fetchLatestAppStoreVersion(bundleID: bundleID)
-                let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
-                let fullCurrentVersion = currentVersion + "." + build
 
-                switch logic.compareVersions(fullCurrentVersion, latestVersion) {
+                // Compare marketing versions only — CFBundleVersion is an
+                // internal build counter and mixing it in (e.g. "1.2.300" vs
+                // "1.2.1") flips the ordering and suppresses real updates.
+                switch logic.compareVersions(currentVersion, latestVersion) {
                 case .orderedAscending:
                     self.isUpdateAvailable = true
                     if isAutoCheck {
@@ -46,7 +47,7 @@ class PhoneCheckUpdateViewModel: ObservableObject {
                     self.showDetails = true
                 }
 
-                self.updateTextValues(fullCurrentVersion, latestVersion)
+                self.updateTextValues(currentVersion, latestVersion)
             } catch {
                 logger.error("Could not fetch the latest version from the App Store: \(error.localizedDescription)")
                 self.showError = true
@@ -91,8 +92,7 @@ struct PhoneCheckUpdateLogic {
             throw LookupError.missingVersion
         }
 
-        let buildNumber = first.bundleVersion ?? "0"
-        return version + "." + buildNumber
+        return version
     }
 
     func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {

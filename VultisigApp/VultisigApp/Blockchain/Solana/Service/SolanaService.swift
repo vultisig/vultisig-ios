@@ -58,10 +58,11 @@ class SolanaService {
         )
 
         if let error = response.data.error {
+            // -32002 is Solana's generic preflight-failure code, not specific
+            // to expired blockhashes — match on the message instead.
             let lowered = error.message.lowercased()
             if lowered.contains("blockhash not found") ||
-                lowered.contains("block height exceeded") ||
-                error.code == -32002 {
+                lowered.contains("block height exceeded") {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
             }
             throw SolanaServiceError.rpcError(message: error.message, code: error.code)

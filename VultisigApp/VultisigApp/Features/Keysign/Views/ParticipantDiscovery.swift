@@ -52,7 +52,12 @@ class ParticipantDiscovery: ObservableObject {
                     } else {
                         do {
                             let peers = try JSONDecoder().decode([String].self, from: response.data)
+                            // The detached task can outlive a stop()/restart;
+                            // bail before mutating peersFound so a stale poll
+                            // can't leak peers into a fresh session.
+                            guard !Task.isCancelled else { return }
                             await MainActor.run {
+                                guard !Task.isCancelled else { return }
                                 for peer in peers where peer != localParty && !self.peersFound.contains(peer) {
                                     self.peersFound.append(peer)
                                 }
