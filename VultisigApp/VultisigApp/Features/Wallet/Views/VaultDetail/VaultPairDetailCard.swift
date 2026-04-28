@@ -26,7 +26,7 @@ struct VaultPairDetailCard: View {
         VStack(spacing: 24) {
             if isForSharing {
                 // Header for sharing
-                Image("VultisigLogo")
+                Image("vultisig-logo")
                     .resizable()
                     .frame(width: 48, height: 48)
                     .foregroundColor(Theme.colors.textPrimary)

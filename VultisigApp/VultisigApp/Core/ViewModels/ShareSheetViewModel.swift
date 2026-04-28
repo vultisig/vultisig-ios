@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "share-sheet-view-model")
 
 @MainActor
 class ShareSheetViewModel: ObservableObject {
@@ -19,8 +22,10 @@ class ShareSheetViewModel: ObservableObject {
         type: QRShareSheetType,
         addressData: String = "",
         vaultName: String = "",
+        vaultType: String = "",
         amount: String = "",
         toAddress: String = "",
+        coinLogo: String = "",
         fromAmount: String = "",
         toAmount: String = ""
     ) {
@@ -32,8 +37,10 @@ class ShareSheetViewModel: ObservableObject {
                 vaultName: vaultName,
                 amount: amount,
                 toAddress: toAddress,
+                coinLogo: coinLogo,
                 fromAmount: fromAmount,
                 toAmount: toAmount,
+                vaultType: vaultType,
                 address: addressData
             )
         )
@@ -43,7 +50,7 @@ class ShareSheetViewModel: ObservableObject {
         self.qrCodeData = qrCodeData
     }
     func clear() {
-        print("clear image reference")
+        logger.debug("clear image reference")
         renderedImage = nil
         qrCodeData = nil
     }

@@ -412,6 +412,7 @@
 "joinKeysign" = "Partecipa a Keysign";
 "joinReshare" = "Unisciti alla ricondivisione";
 "joinSend" = "Unisciti a Invia";
+"joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
 "keyCopied" = "Copiatura chiave";
 "keygen" = "Generazione chiavi";
@@ -778,6 +779,8 @@
 "settings" = "Impostazioni";
 "share" = "Compartilhar";
 "shareOf" = "Condividi %d di %d";
+"shareQRType" = "Tipo";
+"shareQRTypeFormat" = "%d-di-%d";
 "sharesBalance" = "Quote ( Saldo: %@ )";
 "sharesLabel" = "Quote";
 "shareTheApp" = "Condividi l'App";

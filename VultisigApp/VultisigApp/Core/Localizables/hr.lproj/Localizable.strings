@@ -412,6 +412,7 @@
 "joinKeysign" = "Pridružite se Keysign-u";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "joinSend" = "Pridruži se Slanju";
+"joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";
@@ -778,6 +779,8 @@
 "settings" = "Postavke";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";
+"shareQRType" = "Vrsta";
+"shareQRTypeFormat" = "%d-od-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Podijelite aplikaciju";

@@ -48,7 +48,7 @@ struct VaultDetailQRCode: View {
     }
 
     var logo: some View {
-        Image("VultisigLogoTemplate")
+        Image("vultisig-logo")
             .resizable()
             .frame(width: 32, height: 32)
             .foregroundColor(Theme.colors.bgPrimary)

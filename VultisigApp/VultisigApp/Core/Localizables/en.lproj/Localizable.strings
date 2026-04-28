@@ -418,6 +418,7 @@
 "joinKeysign" = "Join Keysign";
 "joinReshare" = "Join Reshare";
 "joinSend" = "Join Send";
+"joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
 "keyCopied" = "Key copied";
 "keygen" = "Keygen";
@@ -788,6 +789,8 @@
 "settings" = "Settings";
 "share" = "Share";
 "shareOf" = "share %d of %d";
+"shareQRType" = "Type";
+"shareQRTypeFormat" = "%d-of-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Share the App";
