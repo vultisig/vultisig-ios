@@ -5,9 +5,18 @@
 //  Created by Gaston Mazzeo on 21/11/2025.
 //
 
+import Foundation
 import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-bond-interactor")
+
+private struct BondPositionDraft: Sendable {
+    let node: BondNode
+    let amount: Decimal
+    let apy: Double
+    let nextReward: Decimal
+    let nextChurn: Date?
+}
 
 struct THORChainBondInteractor: BondInteractor {
     private let thorchainAPIService = THORChainAPIService()
@@ -21,28 +30,32 @@ struct THORChainBondInteractor: BondInteractor {
         let networkInfo = try await thorchainAPIService.getNetworkBondInfo()
         let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
 
-        // Parallelize per-node metric calculations
-        let activeNodes: [BondPosition] = await withTaskGroup(of: BondPosition?.self) { group in
+        let runeAddress = runeCoin.address
+        let runeCoinMeta = runeCoin.toCoinMeta()
+        let nextChurn = networkInfo.nextChurnDate
+
+        // Parallelize per-node metric calculations into Sendable drafts —
+        // BondPosition is a SwiftData @Model and cannot cross actor boundaries.
+        let drafts: [BondPositionDraft] = await withTaskGroup(of: BondPositionDraft?.self) { group in
             for node in bondedNodes.nodes {
                 group.addTask {
                     do {
-                        let myBondMetrics = try await thorchainAPIService.calculateBondMetrics(
+                        let metrics = try await thorchainAPIService.calculateBondMetrics(
                             nodeAddress: node.address,
-                            myBondAddress: runeCoin.address
+                            myBondAddress: runeAddress
                         )
-                        let nodeState = BondNodeState(fromAPIStatus: myBondMetrics.nodeStatus) ?? .standby
+                        let nodeState = BondNodeState(fromAPIStatus: metrics.nodeStatus) ?? .standby
                         let bondNode = BondNode(
-                            coin: runeCoin.toCoinMeta(),
+                            coin: runeCoinMeta,
                             address: node.address,
                             state: nodeState
                         )
-                        return BondPosition(
+                        return BondPositionDraft(
                             node: bondNode,
-                            amount: myBondMetrics.myBond,
-                            apy: myBondMetrics.apy,
-                            nextReward: myBondMetrics.myAward,
-                            nextChurn: networkInfo.nextChurnDate,
-                            vault: vault
+                            amount: metrics.myBond,
+                            apy: metrics.apy,
+                            nextReward: metrics.myAward,
+                            nextChurn: nextChurn
                         )
                     } catch {
                         logger.error("Error calculating metrics for node \(node.address): \(error)")
@@ -51,29 +64,29 @@ struct THORChainBondInteractor: BondInteractor {
                 }
             }
 
-            var results: [BondPosition] = []
+            var results: [BondPositionDraft] = []
             for await result in group {
-                if let position = result {
-                    results.append(position)
+                if let draft = result {
+                    results.append(draft)
                 }
             }
             return results
         }
 
         let bondedNodeAddresses = Set(bondedNodes.nodes.map(\.address))
-        let availableNodesList = vultiNodeAddresses
+        let availableNodes = vultiNodeAddresses
             .filter { !bondedNodeAddresses.contains($0) }
-            .map { BondNode(coin: runeCoin.toCoinMeta(), address: $0, state: .active) }
-
-        let finalActiveNodes = activeNodes
-        let finalAvailableNodes = Array(availableNodesList)
+            .map { BondNode(coin: runeCoinMeta, address: $0, state: .active) }
 
         // Only persist when we have data — avoid wiping stored positions on transient failures
-        if !finalActiveNodes.isEmpty || bondedNodes.nodes.isEmpty {
-            await savePositions(positions: finalActiveNodes, vault: vault)
-        }
+        let shouldPersist = !drafts.isEmpty || bondedNodes.nodes.isEmpty
 
-        return (finalActiveNodes, finalAvailableNodes)
+        return await materialize(
+            drafts: drafts,
+            available: availableNodes,
+            vault: vault,
+            persist: shouldPersist
+        )
     }
 
     func canUnbond() async -> Bool {
@@ -91,11 +104,29 @@ struct THORChainBondInteractor: BondInteractor {
 
 private extension THORChainBondInteractor {
     @MainActor
-    func savePositions(positions: [BondPosition], vault: Vault) {
-        do {
-            try DefiPositionsStorageService().upsert(positions, for: vault)
-        } catch {
-            logger.error("An error occurred while saving bond positions: \(error)")
+    func materialize(
+        drafts: [BondPositionDraft],
+        available: [BondNode],
+        vault: Vault,
+        persist: Bool
+    ) -> (active: [BondPosition], available: [BondNode]) {
+        let active = drafts.map { draft in
+            BondPosition(
+                node: draft.node,
+                amount: draft.amount,
+                apy: draft.apy,
+                nextReward: draft.nextReward,
+                nextChurn: draft.nextChurn,
+                vault: vault
+            )
         }
+        if persist {
+            do {
+                try DefiPositionsStorageService().upsert(active, for: vault)
+            } catch {
+                logger.error("An error occurred while saving bond positions: \(error)")
+            }
+        }
+        return (active, available)
     }
 }

@@ -72,7 +72,7 @@ final class DefiChainBondViewModel: ObservableObject {
             self.availableNodes = available
         } catch {
             // Preserve last-known UI state on transient failures so cached positions stay visible
-            logger.error("Failed to refresh bond positions for chain \(chain.rawValue, privacy: .public): \(error)")
+            logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
         }
     }
 }
