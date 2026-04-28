@@ -778,6 +778,8 @@
 "settings" = "设置";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
+"shareQRType" = "类型";
+"shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "份额 ( 余额: %@ )";
 "sharesLabel" = "份额";
 "shareTheApp" = "分享应用";

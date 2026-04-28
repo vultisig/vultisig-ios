@@ -118,6 +118,20 @@ struct PeerDiscoveryScreen: View {
         Int(ceil(Double(count) * 2.0 / 3.0))
     }
 
+    var vaultTypeDescription: String {
+        let total: Int
+        switch tssType {
+        case .Reshare, .Migrate, .SingleKeygen:
+            total = vault.signers.count
+        case .Keygen, .KeyImport:
+            guard isFixedDeviceMode else { return .empty }
+            total = totalDeviceCount
+        }
+        guard total > 0 else { return .empty }
+        let threshold = thresholdForCount(total)
+        return String(format: "shareQRTypeFormat".localized, threshold, total)
+    }
+
     var continueButtonTitle: String {
         let count = viewModel.selections.count
         if count < minRequiredDevices {
@@ -534,7 +548,9 @@ struct PeerDiscoveryScreen: View {
             qrCodeImage: qrCodeImage,
             qrCodeData: qrCodeString,
             displayScale: displayScale,
-            type: .Keygen
+            type: .Keygen,
+            vaultName: vault.name,
+            vaultType: vaultTypeDescription
         )
     }
 }

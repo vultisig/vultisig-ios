@@ -262,6 +262,7 @@ struct KeysignDiscoveryView: View {
             vaultName: vault.name,
             amount: previewType == .Send ? keysignPayload?.toAmountWithTickerString ?? "" : "",
             toAddress: previewType == .Send ? keysignPayload?.toAddress ?? "" : "",
+            coinLogo: previewType == .Send ? keysignPayload?.coin.logo ?? "" : "",
             fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )

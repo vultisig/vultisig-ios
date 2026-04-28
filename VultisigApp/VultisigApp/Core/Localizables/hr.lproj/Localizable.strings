@@ -778,6 +778,8 @@
 "settings" = "Postavke";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";
+"shareQRType" = "Vrsta";
+"shareQRTypeFormat" = "%d-od-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Podijelite aplikaciju";

@@ -788,6 +788,8 @@
 "settings" = "설정";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";
+"shareQRType" = "유형";
+"shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "공유 ( 잔액: %@ )";
 "sharesLabel" = "공유";
 "shareTheApp" = "앱 공유";

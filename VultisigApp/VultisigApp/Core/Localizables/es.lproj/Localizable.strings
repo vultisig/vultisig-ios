@@ -778,6 +778,8 @@
 "settings" = "Configuración";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";
+"shareQRType" = "Tipo";
+"shareQRTypeFormat" = "%d-de-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Compartir La App";
