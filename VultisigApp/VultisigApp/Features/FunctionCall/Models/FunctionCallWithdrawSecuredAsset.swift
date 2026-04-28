@@ -385,7 +385,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     func toString() -> String {
-        return "SECURE-:\(destinationAddress)"
+        return "\(Self.memoPrefix)\(destinationAddress)"
     }
 
     var balance: String {
@@ -409,6 +409,23 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         dict.set("destinationAddress", destinationAddress)
         return dict
     }
+
+    /// Withdraw uses MsgDeposit on THORChain, so the network fee is always paid
+    /// in RUNE. `tx.coin` is the secured asset (non-native) at verify time, so
+    /// the shared `FunctionCallViewModel.feesInReadable(tx:vault:)` helper has
+    /// trouble resolving the native from it across staging chains. Resolve from
+    /// the THORChain native we already track on this model.
+    static func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+        guard let native = vault.coins.first(where: { thorChains.contains($0.chain) && $0.isNativeToken }) else {
+            return .empty
+        }
+        let fee = native.decimal(for: tx.gas)
+        return RateProvider.shared.fiatBalanceString(value: fee, coin: native)
+    }
+
+    /// Memo prefix used for withdraw-secured-asset operations. Lets the verify
+    /// screen identify this flow without holding a reference to the model.
+    static let memoPrefix = "SECURE-:"
 
     func getView() -> AnyView {
         AnyView(FunctionCallWithdrawSecuredAssetView(model: self).onAppear {

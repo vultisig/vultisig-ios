@@ -76,7 +76,7 @@ struct FunctionCallVerifyScreen: View {
                 memo: "",
                 memoFunctionDictionary: depositViewModel.memoDictionary(for: tx.memoFunctionDictionary),
                 feeCrypto: tx.gasInReadable,
-                feeFiat: depositViewModel.feesInReadable(tx: tx, vault: vault),
+                feeFiat: feesInReadable(),
                 coinImage: tx.coin.logo,
                 amount: getAmount(),
                 coinTicker: tx.coin.ticker
@@ -113,6 +113,17 @@ struct FunctionCallVerifyScreen: View {
                 }
             }
         }
+    }
+
+    /// Withdraw Secured Asset sets `tx.coin` to the secured asset (non-native
+    /// THORChain coin), which the shared helper can't resolve into a fee-paying
+    /// native coin. Route that case to the model's RUNE-aware override so the
+    /// fee row matches the bond/unbond format with both crypto and fiat values.
+    private func feesInReadable() -> String {
+        if tx.memo.hasPrefix(FunctionCallWithdrawSecuredAsset.memoPrefix) {
+            return FunctionCallWithdrawSecuredAsset.feesInReadable(tx: tx, vault: vault)
+        }
+        return depositViewModel.feesInReadable(tx: tx, vault: vault)
     }
 
     private func getAmount() -> String {
