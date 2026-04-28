@@ -270,6 +270,8 @@
 "enableDKLS" = "Enable DKLS";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "enablePushNotifications" = "Enable push notifications";
+"enableThorchain" = "Enable THORChain";
+"enablingThorchain" = "Enabling THORChain...";
 "EnglishUK" = "English (UK)";
 "enter4Characters" = "Enter up to 4 characters";
 "enter4DigitCode" = "Enter 4-character code";

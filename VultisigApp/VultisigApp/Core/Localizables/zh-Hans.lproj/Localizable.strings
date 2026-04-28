@@ -264,6 +264,8 @@
 "enableDKLS" = "启用 DKLS";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
+"enableThorchain" = "启用 THORChain";
+"enablingThorchain" = "正在启用 THORChain...";
 "EnglishUK" = "英语（英国）";
 "enter4Characters" = "输入最多 4 个字符";
 "enter4DigitCode" = "输入4位代码";

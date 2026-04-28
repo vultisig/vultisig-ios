@@ -270,6 +270,8 @@
 "enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
 "enablePushNotifications" = "푸시 알림 활성화";
+"enableThorchain" = "THORChain 활성화";
+"enablingThorchain" = "THORChain 활성화 중...";
 "EnglishUK" = "영어 (영국)";
 "enter4Characters" = "최대 4자 입력";
 "enter4DigitCode" = "4자리 코드 입력";

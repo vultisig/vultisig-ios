@@ -264,6 +264,8 @@
 "enableDKLS" = "Ativar DKLS";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "enablePushNotifications" = "Ativar notificações push";
+"enableThorchain" = "Ativar THORChain";
+"enablingThorchain" = "Ativando THORChain...";
 "EnglishUK" = "Inglês (UK)";
 "enter4Characters" = "Digite 4 caracteres";
 "enter4DigitCode" = "Insira código de 4 dígitos";

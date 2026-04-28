@@ -264,6 +264,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
+"enableThorchain" = "THORChain aktivieren";
+"enablingThorchain" = "THORChain wird aktiviert...";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
 "enter4DigitCode" = "4-stelligen Code eingeben";

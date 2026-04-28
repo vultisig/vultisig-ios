@@ -264,6 +264,8 @@
 "enableDKLS" = "Habilitar DKLS";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
 "enablePushNotifications" = "Activar notificaciones push";
+"enableThorchain" = "Activar THORChain";
+"enablingThorchain" = "Activando THORChain...";
 "EnglishUK" = "Inglés (UK)";
 "enter4Characters" = "Ingresa 4 caracteres";
 "enter4DigitCode" = "Ingresa código de 4 dígitos";

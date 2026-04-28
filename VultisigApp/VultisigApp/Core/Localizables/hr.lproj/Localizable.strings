@@ -264,6 +264,8 @@
 "enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
+"enableThorchain" = "Omogući THORChain";
+"enablingThorchain" = "Omogućavanje THORChain-a...";
 "EnglishUK" = "Engleski (UK)";
 "enter4Characters" = "Unesi 4 znaka";
 "enter4DigitCode" = "Unesite 4-znamenkasti kod";

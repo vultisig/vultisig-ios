@@ -6,6 +6,9 @@
 import SwiftUI
 import Foundation
 import Combine
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-add-thor-lp")
 
 // MARK: - Main ViewModel
 
@@ -42,7 +45,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Domain models
     var tx: SendTransaction
     private var vault: Vault
-    private let isThorchainEnabled: Bool
+    @Published private(set) var isThorchainEnabled: Bool
+    @Published var isEnablingThorchain: Bool = false
 
     // MARK: Addressable conformance helpers
     var addressFields: [String: String] {
@@ -62,9 +66,33 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
 
     func initialize() {
+        cancellables.removeAll()
         prefillPairedAddress()
         setupValidation()
         loadInitialState()
+    }
+
+    @MainActor
+    func enableThorchain() async {
+        guard !isEnablingThorchain, !isThorchainEnabled else { return }
+        guard let runeMeta = TokensStore.TokenSelectionAssets.first(where: {
+            $0.chain == .thorChain && $0.isNativeToken
+        }) else { return }
+
+        isEnablingThorchain = true
+        defer { isEnablingThorchain = false }
+
+        do {
+            try await CoinService.addToChain(assets: [runeMeta], to: vault)
+        } catch {
+            logger.error("Failed to enable THORChain for LP: \(error.localizedDescription, privacy: .public)")
+            return
+        }
+
+        isThorchainEnabled = vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
+        if isThorchainEnabled {
+            initialize()
+        }
     }
 
     private func loadInitialState() {
@@ -313,6 +341,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             return
         }
 
+        customErrorMessage = nil
+
         // Recompute amount validity when amount or selectedPool changes
         Publishers.CombineLatest($amount, $selectedPool)
             .receive(on: DispatchQueue.main)
@@ -388,6 +418,17 @@ struct FunctionCallAddThorLPView: View {
     @ObservedObject var model: FunctionCallAddThorLP
 
     var body: some View {
+        Group {
+            if model.isThorchainEnabled {
+                formView
+            } else {
+                EnableThorchainCTASection(model: model)
+            }
+        }
+        .withLoading(text: "enablingThorchain".localized, isLoading: $model.isEnablingThorchain)
+    }
+
+    private var formView: some View {
         VStack {
             PoolSelectorSection(model: model)
 
@@ -415,6 +456,32 @@ struct FunctionCallAddThorLPView: View {
                 isValid: Binding(get: { model.amountValid }, set: { model.amountValid = $0 })
             )
         }
+    }
+}
+
+struct EnableThorchainCTASection: View {
+    @ObservedObject var model: FunctionCallAddThorLP
+
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundStyle(Theme.colors.alertWarning)
+
+                Text("thorChainNotEnabledForLP".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            PrimaryButton(title: "enableThorchain", isLoading: model.isEnablingThorchain) {
+                Task { await model.enableThorchain() }
+            }
+        }
+        .padding(16)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(12)
     }
 }
 
