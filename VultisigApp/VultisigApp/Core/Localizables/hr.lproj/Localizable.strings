@@ -412,6 +412,7 @@
 "joinKeysign" = "Pridružite se Keysign-u";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "joinSend" = "Pridruži se Slanju";
+"joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";

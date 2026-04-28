@@ -412,6 +412,7 @@
 "joinKeysign" = "Unirse a Keysign";
 "joinReshare" = "Unirse al compartir";
 "joinSend" = "Unirse a Enviar";
+"joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
 "keyCopied" = "Clave copiada";
 "keygen" = "Generación de claves";

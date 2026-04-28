@@ -118,15 +118,22 @@ struct PeerDiscoveryScreen: View {
         Int(ceil(Double(count) * 2.0 / 3.0))
     }
 
-    var vaultTypeDescription: String {
-        let total: Int
+    var explicitParticipantCount: Int? {
         switch tssType {
-        case .Reshare, .Migrate, .SingleKeygen:
-            total = vault.signers.count
+        case .Reshare:
+            return nil
+        case .Migrate, .SingleKeygen:
+            return vault.signers.count
         case .Keygen, .KeyImport:
-            guard isFixedDeviceMode else { return .empty }
-            total = totalDeviceCount
+            if setupType != nil || selectedTab != .secure {
+                return totalDeviceCount
+            }
+            return nil
         }
+    }
+
+    var vaultTypeDescription: String {
+        guard let total = explicitParticipantCount else { return .empty }
         guard total > 0 else { return .empty }
         let threshold = thresholdForCount(total)
         return String(format: "shareQRTypeFormat".localized, threshold, total)

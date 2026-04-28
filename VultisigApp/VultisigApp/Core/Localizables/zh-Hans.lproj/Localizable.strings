@@ -412,6 +412,7 @@
 "joinKeysign" = "加入密钥签名";
 "joinReshare" = "加入重新共享";
 "joinSend" = "加入发送";
+"joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
 "keyCopied" = "密钥已复制";
 "keygen" = "密钥生成";

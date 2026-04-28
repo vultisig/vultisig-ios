@@ -418,6 +418,7 @@
 "joinKeysign" = "키사인 참여";
 "joinReshare" = "재공유 참여";
 "joinSend" = "전송 참여";
+"joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
 "keyCopied" = "키 복사됨";
 "keygen" = "키젠";

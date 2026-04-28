@@ -412,6 +412,7 @@
 "joinKeysign" = "Participar do Keysign";
 "joinReshare" = "Juntar-se ao compartilhamento";
 "joinSend" = "Juntar-se ao Envio";
+"joinSwap" = "Participar da troca";
 "joinTransactionSigning" = "Junte -se à assinatura da transação";
 "keyCopied" = "Chave copiada";
 "keygen" = "Geração de chaves";
