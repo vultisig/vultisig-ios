@@ -471,7 +471,7 @@
 "lpUnitsCannotBeZero" = "LP 单位不能为零";
 "lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
 "lpUnitsLabel" = "LP单位";
-"madeVaultBackupPrompt" = "我已进行保险库备份";
+"madeVaultBackupPrompt" = "我已进行保险库备份以便日后恢复";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
@@ -1020,7 +1020,7 @@
 "vaultSetup4Title" = "安全保险库";
 "vaultShareBackupsViewTitle1" = "您将创建新的保险库份额备份";
 "vaultShareBackupsViewTitle2" = "，像以前一样存储它们";
-"vaultType" = "保险库份额";
+"vaultType" = "保险库部分";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
 "vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的保险库类型。请确保两个设备使用相同的保险库类型。";
@@ -1073,7 +1073,7 @@
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";
-"youArePermanentlyDeletingVault" = "您正在永久删除您的保险库";
+"youArePermanentlyDeletingVault" = "您正在从此应用中永久删除您的保险库份额";
 "youreSending" = "您正在发送";
 "youreSwapping" = "您正在交换";
 "yourFriendsReferralCode" = "您朋友的推荐码";

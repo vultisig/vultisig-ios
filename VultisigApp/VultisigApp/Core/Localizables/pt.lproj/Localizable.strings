@@ -471,7 +471,7 @@
 "lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
 "lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Fiz um backup do cofre";
+"madeVaultBackupPrompt" = "Fiz um backup do cofre para restaurar mais tarde";
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
 "managePositions" = "Gerenciar posições";
@@ -1072,7 +1072,7 @@
 "youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "youAreInLocalMode" = "Você está no modo local";
-"youArePermanentlyDeletingVault" = "Você está excluindo permanentemente seu cofre";
+"youArePermanentlyDeletingVault" = "Você está excluindo permanentemente sua parte do cofre deste aplicativo";
 "youreSending" = "Você está enviando";
 "youreSwapping" = "Você está trocando";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";
