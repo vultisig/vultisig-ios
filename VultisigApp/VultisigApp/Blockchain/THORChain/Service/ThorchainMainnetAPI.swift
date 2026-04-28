@@ -52,9 +52,11 @@ enum ThorchainMainnetAPI: TargetType {
         switch self {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .poolInfo, .pools,
-             .poolLiquidityProvider, .swapQuote, .tcyStaker:
+             .poolLiquidityProvider, .swapQuote, .tcyStaker,
+             .tcyAutoCompoundStatus:
+            // CosmWasm smart-query lives on the REST/LCD host, not RPC.
             return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
-        case .networkStatus, .tcyAutoCompoundStatus:
+        case .networkStatus:
             return URL(string: "https://gateway.liquify.com/chain/thorchain_rpc")!
         case .resolveTNS(_, let chain):
             let isStagenet = (chain == .thorChainChainnet || chain == .thorChainStagenet)
@@ -72,7 +74,11 @@ enum ThorchainMainnetAPI: TargetType {
         case .accountNumber(let addr):
             return "/auth/accounts/\(addr)"
         case .denomMetadata(let denom):
-            return "/cosmos/bank/v1beta1/denoms_metadata/\(denom)"
+            // THORChain denoms can contain `/` (e.g. `x/staking-tcy`, `ibc/...`),
+            // which would otherwise split into extra path components.
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encodedDenom = denom.addingPercentEncoding(withAllowedCharacters: allowed) ?? denom
+            return "/cosmos/bank/v1beta1/denoms_metadata/\(encodedDenom)"
         case .allDenomMetadata:
             return "/cosmos/bank/v1beta1/denoms_metadata"
         case .networkInfo:

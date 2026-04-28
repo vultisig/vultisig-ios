@@ -19,37 +19,29 @@ class CardanoService {
     }
 
     func getBalance(address: String) async throws -> String {
-        do {
-            let response = try await httpClient.request(
-                CardanoAPI.addressInfo(addresses: [address]),
-                responseType: [CardanoAddressInfo].self
-            )
-            return response.data.first?.balance ?? "0"
-        } catch {
-            return "0"
-        }
+        let response = try await httpClient.request(
+            CardanoAPI.addressInfo(addresses: [address]),
+            responseType: [CardanoAddressInfo].self
+        )
+        return response.data.first?.balance ?? "0"
     }
 
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        do {
-            let response = try await httpClient.request(
-                CardanoAPI.addressUtxos(addresses: [coin.address]),
-                responseType: [CardanoUtxoEntry].self
-            )
+        let response = try await httpClient.request(
+            CardanoAPI.addressUtxos(addresses: [coin.address]),
+            responseType: [CardanoUtxoEntry].self
+        )
 
-            return response.data.compactMap { utxo in
-                guard
-                    let valueInt = Int64(utxo.value),
-                    let index = UInt32(exactly: utxo.txIndex)
-                else { return nil }
-                return UtxoInfo(
-                    hash: utxo.txHash,
-                    amount: valueInt,
-                    index: index
-                )
-            }
-        } catch {
-            return []
+        return response.data.compactMap { utxo in
+            guard
+                let valueInt = Int64(utxo.value),
+                let index = UInt32(exactly: utxo.txIndex)
+            else { return nil }
+            return UtxoInfo(
+                hash: utxo.txHash,
+                amount: valueInt,
+                index: index
+            )
         }
     }
 

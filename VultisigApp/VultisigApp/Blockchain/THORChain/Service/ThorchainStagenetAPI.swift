@@ -101,7 +101,11 @@ enum ThorchainStagenetAPI: TargetType {
         case .accountNumber(_, let addr):
             return "/auth/accounts/\(addr)"
         case .denomMetadata(_, let denom):
-            return "/cosmos/bank/v1beta1/denoms_metadata/\(denom)"
+            // THORChain denoms can contain `/` (e.g. `x/staking-tcy`, `ibc/...`),
+            // which would otherwise split into extra path components.
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encodedDenom = denom.addingPercentEncoding(withAllowedCharacters: allowed) ?? denom
+            return "/cosmos/bank/v1beta1/denoms_metadata/\(encodedDenom)"
         case .allDenomMetadata:
             return "/cosmos/bank/v1beta1/denoms_metadata"
         case .networkInfo:

@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import OSLog
 
 class MayachainService: ThorchainSwapProvider {
     static let shared = MayachainService()
 
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-service")
     private let httpClient: HTTPClientProtocol
 
     private init(httpClient: HTTPClientProtocol = HTTPClient()) {
@@ -66,7 +68,7 @@ class MayachainService: ThorchainSwapProvider {
             }
             return coinMetaList
         } catch {
-            print("Error in fetchTokens: \(error)")
+            logger.error("Error in fetchTokens: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
@@ -165,7 +167,7 @@ class MayachainService: ThorchainSwapProvider {
             )
             return response.data.filter { $0.bondable }.map { $0.asset }
         } catch {
-            print("Error fetching MayaChain deposit assets: \(error)")
+            logger.error("Error fetching MayaChain deposit assets: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }
