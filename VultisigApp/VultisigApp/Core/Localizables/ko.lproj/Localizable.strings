@@ -245,9 +245,9 @@
 "downloadViaGitHub" = "GitHub을 통해 다운로드";
 "dropFileHere" = "여기에 파일을 드롭하세요...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "ECDSA 키";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "EdDSA 키";
 "editAddress" = "주소 편집";
 "editFolder" = "폴더 편집";
 "editFriendsReferral" = "친구 추천 코드 편집";
@@ -478,7 +478,7 @@
 "lpUnitsCannotBeZero" = "LP 단위는 0이 될 수 없습니다";
 "lpUnitsExceeded" = "사용 가능한 LP 단위 초과 (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "볼트 백업을 완료했습니다";
+"madeVaultBackupPrompt" = "나중에 복원할 수 있도록 볼트 백업을 완료했습니다";
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
@@ -1037,7 +1037,7 @@
 "vaultSetup4Title" = "Secure Vault";
 "vaultShareBackupsViewTitle1" = "새 볼트 공유 백업을 생성합니다";
 "vaultShareBackupsViewTitle2" = ", 이전과 같이 저장하세요";
-"vaultType" = "볼트 공유";
+"vaultType" = "볼트 부분";
 "vaultTypeDoesnotMatch" = "볼트 유형이 일치하지 않습니다";
 "vaultTypeMismatch" = "볼트 유형이 일치하지 않습니다, 초기 기기와 페어 기기의 볼트 유형이 다릅니다";
 "vaultTypeMismatchDescription" = "초기 기기와 페어링 기기의 볼트 유형이 다릅니다. 두 기기가 동일한 볼트 유형을 사용하는지 확인하세요.";
@@ -1090,7 +1090,7 @@
 "youAreEnteringAnewEra" = "새로운 시대로 접어들어 오래된 시드 문구를 뒤로하고 있습니다. 필요한 것:";
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";
-"youArePermanentlyDeletingVault" = "볼트를 영구적으로 삭제하고 있습니다";
+"youArePermanentlyDeletingVault" = "이 앱에서 볼트 부분을 영구적으로 삭제하고 있습니다";
 "youreSending" = "전송 중입니다";
 "youreSwapping" = "스왑 중입니다";
 "yourFriendsReferralCode" = "친구 추천 코드";

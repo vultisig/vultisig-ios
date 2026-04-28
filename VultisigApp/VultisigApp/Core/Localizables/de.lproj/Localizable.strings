@@ -472,7 +472,7 @@
 "lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt";
+"madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
 "manageNotificationsInSettings" = "Du kannst Benachrichtigungen in den Systemeinstellungen verwalten.";
 "managePositions" = "Positionen verwalten";
@@ -1075,7 +1075,7 @@
 "youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "youAreInLocalMode" = "Du bist im lokalen Modus";
-"youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresor dauerhaft";
+"youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresoranteil dauerhaft aus dieser App";
 "youreSending" = "Du sendest";
 "youreSwapping" = "Du tauschst";
 "yourFriendsReferralCode" = "Ihr Freundesversuchscode";

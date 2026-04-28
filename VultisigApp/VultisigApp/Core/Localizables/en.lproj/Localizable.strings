@@ -245,9 +245,9 @@
 "downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "ECDSA Key";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "EdDSA Key";
 "editAddress" = "Edit Address";
 "editFolder" = "Edit folder";
 "editFriendsReferral" = "Edit Friends Referral";
@@ -478,7 +478,7 @@
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
 "lpUnitsExceeded" = "Exceeds available LP units (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "I have made a vault backup";
+"madeVaultBackupPrompt" = "I have made a vault backup to restore later";
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "manageNotificationsInSettings" = "You can manage notifications in system settings.";
 "managePositions" = "Manage Positions";
@@ -1038,7 +1038,7 @@
 "vaultSetup4Title" = "Secure Vault";
 "vaultShareBackupsViewTitle1" = "You’ll create new Vault Share backups";
 "vaultShareBackupsViewTitle2" = ", store them as you did before";
-"vaultType" = "Vault Share";
+"vaultType" = "Vault Part";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
 "vaultTypeMismatchDescription" = "The initiating device and pairing device have different vault types. Please ensure both devices use the same vault type.";
@@ -1091,7 +1091,7 @@
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";
-"youArePermanentlyDeletingVault" = "You are permanently deleting your vault";
+"youArePermanentlyDeletingVault" = "You are permanently deleting your vault share from this app";
 "youreSending" = "You’re sending";
 "youreSwapping" = "You’re swapping";
 "yourFriendsReferralCode" = "Your Friend Referral Code";

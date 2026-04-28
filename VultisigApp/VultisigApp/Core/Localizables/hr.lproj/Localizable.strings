@@ -472,7 +472,7 @@
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta";
+"madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
 "managePositions" = "Upravljaj pozicijama";
@@ -1075,7 +1075,7 @@
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
-"youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
+"youArePermanentlyDeletingVault" = "Trajno brišete svoj dio trezora iz ove aplikacije";
 "youreSending" = "Šalješ";
 "youreSwapping" = "Zamjenjuješ";
 "yourFriendsReferralCode" = "Kod vašeg prijatelja za upućivanje prijatelja";
