@@ -181,13 +181,12 @@ struct QRShareSheetImage: View {
 
     var signature: some View {
         VStack(spacing: 8) {
-            Image("VultisigLogoTemplate")
-                .renderingMode(.template)
+            Image("vultisig-logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 33, height: 33)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text("vultisig")
+            Text("Vultisig")
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
@@ -214,7 +213,7 @@ private extension QRShareSheetImage {
 
 #Preview {
     QRShareSheetImage(
-        image: Image("VultisigLogo"),
+        image: Image("vultisig-logo"),
         type: .Send,
         vaultName: Vault.example.name,
         amount: "100 USDC",
