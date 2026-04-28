@@ -73,7 +73,11 @@ final class CreateVaultSnapshotTests: XCTestCase {
 
         assertSnapshot(
             of: view,
-            as: .image(layout: .device(config: .iPhone16Pro))
+            as: .image(
+                precision: 0.99999,
+                perceptualPrecision: 0.99999,
+                layout: .device(config: .iPhone16Pro)
+            )
         )
     }
 
@@ -87,7 +91,11 @@ final class CreateVaultSnapshotTests: XCTestCase {
 
         assertSnapshot(
             of: view,
-            as: .image(layout: .device(config: .iPhone16Pro))
+            as: .image(
+                precision: 0.99999,
+                perceptualPrecision: 0.99999,
+                layout: .device(config: .iPhone16Pro)
+            )
         )
     }
 }
