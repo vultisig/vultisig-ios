@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct VaultChainCellView: View {
-    @ObservedObject var group: GroupedChain
+    let chain: Chain
     let vault: Vault
     var onCopy: () -> Void
 
@@ -16,15 +16,25 @@ struct VaultChainCellView: View {
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
+    private var chainCoins: [Coin] { vault.coins(for: chain) }
+
+    private var fiatBalance: String {
+        chainCoins.totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    private var cryptoBalance: String {
+        vault.nativeCoin(for: chain)?.balanceStringWithTicker ?? ""
+    }
+
     var body: some View {
         Button {
-            router.navigate(to: VaultRoute.chainDetail(group: group, vault: vault))
+            router.navigate(to: VaultRoute.chainDetail(chain: chain, vault: vault))
         } label: {
             GroupedChainCellView(
-                group: group,
+                chain: chain,
                 vault: vault,
-                fiatBalance: group.totalBalanceInFiatString,
-                cryptoBalance: group.nativeCoin.balanceStringWithTicker,
+                fiatBalance: fiatBalance,
+                cryptoBalance: cryptoBalance,
                 onCopy: onCopy
             )
             .contentShape(Rectangle())
@@ -34,6 +44,6 @@ struct VaultChainCellView: View {
 }
 
 #Preview {
-    VaultChainCellView(group: .example, vault: .example) {}
+    VaultChainCellView(chain: .bitcoin, vault: .example) {}
         .environmentObject(HomeViewModel())
 }

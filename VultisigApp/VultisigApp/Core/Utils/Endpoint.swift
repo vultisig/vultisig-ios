@@ -289,11 +289,13 @@ class Endpoint {
         toAsset: String,
         amount: String,
         interval: String,
+        streamingQuantity: String = "",
         referredCode: String,
         vultTierDiscount: Int
     ) -> URL {
         let affiliateParams = buildAffiliateParams(chain: chain, referredCode: referredCode, discountBps: vultTierDiscount)
-        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(affiliateParams)".asUrl
+        let streamingQuantityParam = streamingQuantity.isEmpty ? "" : "&streaming_quantity=\(streamingQuantity)"
+        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(streamingQuantityParam)\(affiliateParams)".asUrl
     }
 
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
@@ -385,8 +387,6 @@ class Endpoint {
     // Using public Subscan API temporarily
     // TODO: Switch to Vultisig proxy once ready: "https://api.vultisig.com/dot/"
     static let polkadotTransactionStatusRpc = "https://assethub-polkadot.api.subscan.io"
-
-    static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
 
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"

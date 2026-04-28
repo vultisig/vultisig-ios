@@ -85,6 +85,7 @@ class MayachainService: ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
+        streamingQuantity: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -92,6 +93,7 @@ class MayachainService: ThorchainSwapProvider {
             referredCode: referredCode,
             discountBps: vultTierDiscount
         )
+        let streamingQuantityParam = streamingQuantity > 0 ? String(streamingQuantity) : nil
 
         do {
             let response = try await httpClient.request(
@@ -101,6 +103,7 @@ class MayachainService: ThorchainSwapProvider {
                     amount: amount,
                     destination: address,
                     streamingInterval: String(interval),
+                    streamingQuantity: streamingQuantityParam,
                     affiliate: affiliate,
                     affiliateBps: affiliateBps
                 ),
@@ -117,6 +120,7 @@ class MayachainService: ThorchainSwapProvider {
                 amount: amount,
                 destination: address,
                 streamingInterval: String(interval),
+                streamingQuantity: streamingQuantityParam,
                 affiliate: affiliate,
                 affiliateBps: affiliateBps
             ))

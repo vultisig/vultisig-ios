@@ -58,22 +58,21 @@ struct KeysignView: View {
     var content: some View {
         ZStack {
             switch viewModel.status {
-            case .CreatingInstance:
-                SendCryptoKeysignView()
-            case .KeysignECDSA:
-                SendCryptoKeysignView()
-            case .KeysignEdDSA:
-                SendCryptoKeysignView()
-            case .KeysignMLDSA:
-                SendCryptoKeysignView()
+            case .CreatingInstance,
+                    .KeysignECDSA,
+                    .KeysignEdDSA,
+                    .KeysignMLDSA:
+                SendCryptoKeysignView(coinLogo: keysignPayload?.coin.logo)
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
                 sendCryptoKeysignView
+                    .padding(.horizontal, 16)
             case .KeysignRetryRequested:
                 retryRequestedView
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
+                    .padding(.horizontal, 16)
             }
 
             PopupCapsule(text: "hashCopied", showPopup: $showAlert)

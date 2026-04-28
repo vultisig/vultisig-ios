@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DefiChainCellView: View {
-    @ObservedObject var group: GroupedChain
+    let chain: Chain
     let vault: Vault
 
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -17,30 +17,32 @@ struct DefiChainCellView: View {
 
     @State var balanceFiat: String = ""
 
+    private var nativeCoin: Coin? { vault.nativeCoin(for: chain) }
+
+    private var defiBalance: Decimal {
+        vault.coins(for: chain).totalDefiBalanceInFiatDecimal
+    }
+
     var body: some View {
-        if group.name == "Circle" {
-             DefiCircleRow(vault: vault)
-        } else {
-            GroupedChainCellView(
-                group: group,
-                vault: vault,
-                fiatBalance: balanceFiat,
-                cryptoBalance: group.nativeCoin.defiBalanceStringWithTicker
-            )
-            .buttonStyle(.plain)
-            .onAppear { updateBalance() }
-            .onChange(of: group.defiBalanceInFiatDecimal) { _, _ in
-                updateBalance()
-            }
+        GroupedChainCellView(
+            chain: chain,
+            vault: vault,
+            fiatBalance: balanceFiat,
+            cryptoBalance: nativeCoin?.defiBalanceStringWithTicker ?? ""
+        )
+        .buttonStyle(.plain)
+        .onAppear { updateBalance() }
+        .onChange(of: defiBalance) { _, _ in
+            updateBalance()
         }
     }
 
     func updateBalance() {
-        balanceFiat = service.totalBalanceInFiatString(for: group.chain, vault: vault)
+        balanceFiat = service.totalBalanceInFiatString(for: chain, vault: vault)
     }
 }
 
 #Preview {
-    DefiChainCellView(group: .example, vault: .example)
+    DefiChainCellView(chain: .ethereum, vault: .example)
         .environmentObject(HomeViewModel())
 }

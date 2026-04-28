@@ -17,6 +17,7 @@ enum MayaChainAPI: TargetType {
         amount: String,
         destination: String,
         streamingInterval: String,
+        streamingQuantity: String?,
         affiliate: String?,
         affiliateBps: String?
     )
@@ -53,7 +54,7 @@ enum MayaChainAPI: TargetType {
         switch self {
         case .balances, .accountNumber, .pools:
             return .requestPlain
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let affiliate, let affiliateBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -61,6 +62,7 @@ enum MayaChainAPI: TargetType {
                 "destination": dest,
                 "streaming_interval": interval
             ]
+            if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliate = affiliate { params["affiliate"] = affiliate }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
             return .requestParameters(params, .urlEncoding)

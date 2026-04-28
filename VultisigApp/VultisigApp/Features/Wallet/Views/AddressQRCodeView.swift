@@ -10,7 +10,7 @@ import SwiftUI
 struct AddressQRCodeView: View {
     let addressData: String
     let vault: Vault
-    let groupedChain: GroupedChain
+    let chain: Chain
     @Binding var showSheet: Bool
     @Binding var isLoading: Bool
 
@@ -84,7 +84,7 @@ struct AddressQRCodeView: View {
     AddressQRCodeView(
         addressData: "123456789",
         vault: Vault.example,
-        groupedChain: GroupedChain.example,
+        chain: .bitcoin,
         showSheet: .constant(true),
         isLoading: .constant(false)
     )
@@ -113,7 +113,7 @@ extension AddressQRCodeView {
                     vault: vault,
                     type: .Address,
                     viewModel: shareSheetViewModel,
-                    title: groupedChain.name
+                    title: chain.name
                 )
             }
         }
@@ -147,7 +147,7 @@ extension AddressQRCodeView {
     var headerMac: some View {
         AddressQRCodeHeader(
             vault: vault,
-            groupedChain: groupedChain,
+            chain: chain,
             shareSheetViewModel: shareSheetViewModel
         )
     }

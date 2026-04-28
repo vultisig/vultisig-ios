@@ -33,7 +33,7 @@ struct ReceiveChainSelectionScreen: View {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
-                    if !viewModel.filteredGroups.isEmpty {
+                    if !filteredChains.isEmpty {
                         list
                     } else {
                         emptyMessage
@@ -72,22 +72,26 @@ struct ReceiveChainSelectionScreen: View {
         .sheetStyle()
     }
 
+    var filteredChains: [Chain] {
+        viewModel.filteredChains(in: vault)
+    }
+
     var list: some View {
         LazyVStack(spacing: 0) {
-            ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.name) { offset, chain in
+            ForEach(Array(filteredChains.enumerated()), id: \.element) { offset, chain in
                 cell(for: chain)
-                    .commonListItemContainer(index: offset, itemsCount: viewModel.filteredGroups.count)
+                    .commonListItemContainer(index: offset, itemsCount: filteredChains.count)
             }
         }
     }
 
-    func cell(for chain: GroupedChain) -> some View {
+    func cell(for chain: Chain) -> some View {
         Button {
-            selectedCoin = chain.nativeCoin
+            selectedCoin = vault.nativeCoin(for: chain)
             showBottomSheet = true
         } label: {
             HStack {
-                ReceiveChainSelectionRowView(chain: chain.chain)
+                ReceiveChainSelectionRowView(chain: chain)
                 Spacer()
             }
             .padding(.horizontal, 22)

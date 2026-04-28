@@ -57,10 +57,10 @@ struct VaultRouter {
             viewBuilder.buildCustomMessageScreen(vault: vault)
         case .onChainSecurity:
             viewBuilder.buildOnChainSecurityScreen()
-        case .chainDetail(let groupedChain, let vault):
-            viewBuilder.buildChainDetailScreen(groupedChain: groupedChain, vault: vault)
-        case .defiChain(let groupedChain, let vault):
-            viewBuilder.buildDefiChainDetailScreen(groupedChain: groupedChain, vault: vault)
+        case .chainDetail(let chain, let vault):
+            viewBuilder.buildChainDetailScreen(chain: chain, vault: vault)
+        case .defiChain(let chain, let vault):
+            viewBuilder.buildDefiChainDetailScreen(chain: chain, vault: vault)
         }
     }
 }

@@ -30,6 +30,7 @@ enum ThorchainMainnetAPI: TargetType {
         amount: String,
         destination: String,
         streamingInterval: String,
+        streamingQuantity: String?,
         affiliates: String?,
         affiliateBps: String?
     )
@@ -119,7 +120,7 @@ enum ThorchainMainnetAPI: TargetType {
         case .allDenomMetadata:
             return .requestParameters(["pagination.limit": "1000"], .urlEncoding)
 
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let affiliates, let affiliateBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -127,6 +128,7 @@ enum ThorchainMainnetAPI: TargetType {
                 "destination": dest,
                 "streaming_interval": interval
             ]
+            if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliates = affiliates { params["affiliate"] = affiliates }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
             return .requestParameters(params, .urlEncoding)
