@@ -32,9 +32,12 @@ class ParticipantDiscovery: ObservableObject {
         }
 
         self.task?.cancel()
-        self.task = Task.detached { [httpClient] in
+        self.task = Task.detached { [weak self, httpClient, logger = self.logger] in
             repeat {
                 if Task.isCancelled {
+                    return
+                }
+                guard self != nil else {
                     return
                 }
                 do {
@@ -46,9 +49,9 @@ class ParticipantDiscovery: ObservableObject {
                     )
 
                     if response.response.statusCode == 404 {
-                        self.logger.error("Session not found, maybe it is not started yet")
+                        logger.error("Session not found, maybe it is not started yet")
                     } else if response.data.isEmpty {
-                        self.logger.error("No participants available yet")
+                        logger.error("No participants available yet")
                     } else {
                         do {
                             let peers = try JSONDecoder().decode([String].self, from: response.data)
@@ -57,13 +60,13 @@ class ParticipantDiscovery: ObservableObject {
                             // can't leak peers into a fresh session.
                             guard !Task.isCancelled else { return }
                             await MainActor.run {
-                                guard !Task.isCancelled else { return }
+                                guard let self, !Task.isCancelled else { return }
                                 for peer in peers where peer != localParty && !self.peersFound.contains(peer) {
                                     self.peersFound.append(peer)
                                 }
                             }
                         } catch {
-                            self.logger.error("Failed to decode response to JSON: \(error.localizedDescription)")
+                            logger.error("Failed to decode response to JSON: \(error.localizedDescription)")
                         }
                     }
 
@@ -74,13 +77,13 @@ class ParticipantDiscovery: ObservableObject {
                     // Transient relay errors (5xx, etc.) shouldn't kill the
                     // polling loop — the keysign session would silently never
                     // discover the other participants. Log and retry.
-                    self.logger.error("Relay returned status code \(code); retrying")
+                    logger.error("Relay returned status code \(code); retrying")
                     try? await Task.sleep(for: .seconds(1))
                 } catch HTTPError.timeout, HTTPError.networkError(_) {
-                    self.logger.error("Relay request failed transiently; retrying")
+                    logger.error("Relay request failed transiently; retrying")
                     try? await Task.sleep(for: .seconds(1))
                 } catch {
-                    self.logger.error("Error during participant discovery: \(error.localizedDescription)")
+                    logger.error("Error during participant discovery: \(error.localizedDescription)")
                     return
                 }
             } while !Task.isCancelled

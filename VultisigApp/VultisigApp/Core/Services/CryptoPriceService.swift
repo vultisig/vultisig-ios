@@ -61,9 +61,9 @@ enum CryptoPriceAPI: TargetType {
         case .lifiTokenPrice:
             return "/v1/token"
         case .mayaChainPool(let asset):
-            // Endpoint.fetchMayaChainPoolInfo path-encodes the asset; TargetType's
-            // URLComponents-based builder handles this for us.
-            return "/mayachain/pool/\(asset)"
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encodedAsset = asset.addingPercentEncoding(withAllowedCharacters: allowed) ?? asset
+            return "/mayachain/pool/\(encodedAsset)"
         }
     }
 
