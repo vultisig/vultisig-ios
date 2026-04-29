@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "feat/qbtc-claim-with-proof-tx-type",
-        "revision" : "312e6ae"
+        "revision" : "312e6aec4b75fecd5122558cf99674f2b2726bed"
       }
     },
     {
