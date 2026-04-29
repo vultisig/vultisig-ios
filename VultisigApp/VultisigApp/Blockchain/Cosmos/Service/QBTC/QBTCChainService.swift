@@ -16,6 +16,7 @@ import OSLog
 enum QBTCChainServiceError: LocalizedError {
     case invalidLatestBlockTime(String)
     case invalidParamValue(String)
+    case broadcastFailed(rawLog: String, code: Int)
 
     var errorDescription: String? {
         switch self {
@@ -23,7 +24,30 @@ enum QBTCChainServiceError: LocalizedError {
             return "Could not parse QBTC latest block time: \(raw)"
         case .invalidParamValue(let raw):
             return "Invalid QBTC param value: \(raw)"
+        case .broadcastFailed(let rawLog, let code):
+            return "QBTC broadcast failed (code \(code)): \(rawLog)"
         }
+    }
+}
+
+/// Cosmos broadcast `tx_response` shape — minimal subset we care about.
+struct QBTCBroadcastResponse: Codable {
+    let txResponse: TxResponse?
+
+    struct TxResponse: Codable {
+        let txhash: String?
+        let code: Int?
+        let rawLog: String?
+
+        enum CodingKeys: String, CodingKey {
+            case txhash
+            case code
+            case rawLog = "raw_log"
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case txResponse = "tx_response"
     }
 }
 
@@ -75,6 +99,45 @@ final class QBTCChainService {
             responseType: QBTCParamResponse.self
         )
         return try Self.parseDisabledFlag(response.data.param.value)
+    }
+
+    /// Broadcasts a signed claim transaction. `txBytesBase64` is the
+    /// base64-encoded `TxRaw`; `txHashHex` is the locally-computed hash
+    /// (uppercased SHA-256 of the TxRaw — see `QBTCHelper.assembleClaimTxRaw`).
+    /// Treats `"tx already exists in cache"` as idempotent success so a
+    /// retry of an already-broadcast tx returns the same hash, mirroring
+    /// `vultisig-sdk/.../broadcastClaimTx.ts:36-79`.
+    func broadcastClaim(txBytesBase64: String, txHashHex: String) async throws -> String {
+        let body = Self.makeBroadcastBody(txBytesBase64: txBytesBase64)
+        let response = try await httpClient.request(
+            QBTCChainAPI.broadcastTx(body: body),
+            responseType: QBTCBroadcastResponse.self
+        )
+        return try Self.parseBroadcastResponse(response.data, txHashHex: txHashHex)
+    }
+
+    static func makeBroadcastBody(txBytesBase64: String) -> Data {
+        // Hand-crafted JSON to exactly match `cosmos.tx.v1beta1.BroadcastTxRequest`.
+        let json = "{\"tx_bytes\":\"\(txBytesBase64)\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
+        return Data(json.utf8)
+    }
+
+    /// Returns the tx hash on success or idempotent replay; throws on
+    /// real broadcast failure.
+    static func parseBroadcastResponse(_ response: QBTCBroadcastResponse, txHashHex: String) throws -> String {
+        let code = response.txResponse?.code ?? 0
+        let rawLog = response.txResponse?.rawLog ?? ""
+
+        if code == 0 {
+            return response.txResponse?.txhash ?? txHashHex
+        }
+        // Idempotent replay — the chain already has this tx in its
+        // mempool / cache. Treat as success so retry-after-network-blip
+        // doesn't surface as an error to the user.
+        if rawLog.contains("tx already exists in cache") {
+            return response.txResponse?.txhash ?? txHashHex
+        }
+        throw QBTCChainServiceError.broadcastFailed(rawLog: rawLog, code: code)
     }
 
     // MARK: - Pure helpers (testable without network)

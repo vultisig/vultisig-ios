@@ -99,4 +99,53 @@ final class QBTCChainServiceTests: XCTestCase {
         // 10 minutes = 600 seconds = 600 * 1e9 ns
         XCTAssertEqual(QBTCChainService.claimTimeoutNs, 600_000_000_000)
     }
+
+    // MARK: - broadcast body + response parser
+
+    func testMakeBroadcastBodyMatchesCosmosBroadcastTxRequest() {
+        let body = QBTCChainService.makeBroadcastBody(txBytesBase64: "AAA=")
+        let bodyString = String(data: body, encoding: .utf8)
+        XCTAssertEqual(bodyString, #"{"tx_bytes":"AAA=","mode":"BROADCAST_MODE_SYNC"}"#)
+    }
+
+    func testParseBroadcastResponseSuccessReturnsServerHash() throws {
+        let response = QBTCBroadcastResponse(
+            txResponse: .init(txhash: "ABC123", code: 0, rawLog: "")
+        )
+        let hash = try QBTCChainService.parseBroadcastResponse(response, txHashHex: "LOCALDEFAULT")
+        XCTAssertEqual(hash, "ABC123")
+    }
+
+    func testParseBroadcastResponseSuccessFallsBackToLocalHashWhenServerOmitsIt() throws {
+        let response = QBTCBroadcastResponse(txResponse: .init(txhash: nil, code: 0, rawLog: nil))
+        let hash = try QBTCChainService.parseBroadcastResponse(response, txHashHex: "LOCALDEFAULT")
+        XCTAssertEqual(hash, "LOCALDEFAULT")
+    }
+
+    func testParseBroadcastResponseTreatsKnownIdempotentReplayAsSuccess() throws {
+        let response = QBTCBroadcastResponse(
+            txResponse: .init(
+                txhash: "PRIORHASH",
+                code: 19,
+                rawLog: "tx already exists in cache"
+            )
+        )
+        let hash = try QBTCChainService.parseBroadcastResponse(response, txHashHex: "LOCALDEFAULT")
+        XCTAssertEqual(hash, "PRIORHASH")
+    }
+
+    func testParseBroadcastResponseThrowsOnGenuineFailure() {
+        let response = QBTCBroadcastResponse(
+            txResponse: .init(
+                txhash: nil,
+                code: 7,
+                rawLog: "no valid claimable UTXOs found"
+            )
+        )
+        XCTAssertThrowsError(try QBTCChainService.parseBroadcastResponse(response, txHashHex: "X")) { error in
+            guard let err = error as? QBTCChainServiceError, case .broadcastFailed = err else {
+                return XCTFail("expected broadcastFailed, got \(error)")
+            }
+        }
+    }
 }

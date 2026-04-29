@@ -13,6 +13,7 @@ enum QBTCChainAPI {
     case authAccount(address: String)
     case latestBlock
     case params(name: String)
+    case broadcastTx(body: Data)
 }
 
 extension QBTCChainAPI: TargetType {
@@ -29,30 +30,49 @@ extension QBTCChainAPI: TargetType {
             return "/cosmos/base/tendermint/v1beta1/blocks/latest"
         case .params(let name):
             return "/qbtc/v1/params/\(name)"
+        case .broadcastTx:
+            return "/cosmos/tx/v1beta1/txs"
         }
     }
 
     var method: HTTPMethod {
-        .get
+        switch self {
+        case .authAccount, .latestBlock, .params:
+            return .get
+        case .broadcastTx:
+            return .post
+        }
     }
 
     var task: HTTPTask {
-        .requestPlain
+        switch self {
+        case .authAccount, .latestBlock, .params:
+            return .requestPlain
+        case .broadcastTx(let body):
+            return .requestData(body)
+        }
     }
 
     var headers: [String: String]? {
-        nil
+        switch self {
+        case .broadcastTx:
+            return ["Content-Type": "application/json"]
+        case .authAccount, .latestBlock, .params:
+            return nil
+        }
     }
 
-    /// Auth-account is the only endpoint where 404 is expected (fresh
-    /// account) and must be accepted by the caller, not raised as an
-    /// error. The other two use default success-only validation.
+    /// `authAccount` accepts 404 as fresh-account; `broadcastTx` accepts
+    /// 4xx so the caller can inspect the chain's `tx_response` and detect
+    /// idempotent replays via the `"tx already exists in cache"` body.
     var validationType: ValidationType {
         switch self {
         case .authAccount:
             return .customCodes(Array(200...299) + [404])
         case .latestBlock, .params:
             return .successCodes
+        case .broadcastTx:
+            return .customCodes(Array(200...299) + Array(400...499))
         }
     }
 }
