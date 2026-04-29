@@ -57,7 +57,7 @@ struct QBTCClaimSelectionView: View {
             }
 
             PrimaryButton(title: "qbtcClaimConfirm".localized) {
-                viewModel.openPasswordSheet()
+                viewModel.confirmTapped()
             }
             .disabled(!viewModel.canConfirm)
         }

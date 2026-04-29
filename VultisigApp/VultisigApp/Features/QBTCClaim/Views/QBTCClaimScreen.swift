@@ -50,6 +50,8 @@ struct QBTCClaimScreen: View {
                 viewModel: viewModel,
                 errorMessage: viewModel.lastClaimError
             )
+        case .awaitingPeer:
+            QBTCClaimAwaitingPeerView(viewModel: viewModel)
         case .claiming:
             QBTCClaimRunningView(phase: viewModel.orchestrator.phase)
         case .done(let result):
