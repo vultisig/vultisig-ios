@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-bond-view-model")
 
 final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
@@ -29,7 +32,7 @@ final class DefiChainBondViewModel: ObservableObject {
     }
 
     var hasBondPositions: Bool {
-        vault.bondPositions.contains { $0.node.coin.chain == chain }
+        vault.defiPositions.contains { $0.bonds.contains(where: { $0.chain == chain }) }
     }
     private let interactor: BondInteractor?
     private let chain: Chain
@@ -63,8 +66,13 @@ final class DefiChainBondViewModel: ObservableObject {
         self.canUnbond = await canUnbondTask
         self.canAddBond = await canAddBondTask
 
-        let (active, available) = await fetchTask
-        self.activeBondedNodes = active
-        self.availableNodes = available
+        do {
+            let (active, available) = try await fetchTask
+            self.activeBondedNodes = active
+            self.availableNodes = available
+        } catch {
+            // Preserve last-known UI state on transient failures so cached positions stay visible
+            logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
+        }
     }
 }
