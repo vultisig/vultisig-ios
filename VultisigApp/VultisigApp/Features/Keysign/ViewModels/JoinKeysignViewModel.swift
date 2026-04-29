@@ -222,6 +222,13 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+        // QBTC claim payloads carry a `qbtcClaimContext` and don't have a
+        // standard tx body; the QBTCClaimJoinDriver computes the round-1
+        // message hash itself. Skip the standard factory so it doesn't
+        // fail trying to build sighashes from a body that isn't there.
+        if keysignPayload.qbtcClaimContext != nil {
+            return
+        }
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
@@ -296,10 +303,13 @@ class JoinKeysignViewModel: ObservableObject {
                 }
             }
 
-            // Multi-round QBTC claim fork — if the QR carries a
-            // qbtcClaimContext, hand off to the QBTC-claim peer driver
-            // and step the standard single-keysign flow aside.
-            if let payload = keysignMsg.payload, let context = payload.qbtcClaimContext {
+            // Multi-round QBTC claim fork — if the loaded payload carries
+            // a qbtcClaimContext, hand off to the QBTC-claim peer driver
+            // and step the standard single-keysign flow aside. Reads from
+            // `self.keysignPayload` so it covers both inline payloads and
+            // ones fetched from the relay via `ensureKeysignPayload` (the
+            // QR threshold is 2 KB and a 50-UTXO claim easily exceeds it).
+            if let payload = self.keysignPayload, let context = payload.qbtcClaimContext {
                 let baseSession = KeysignSessionInfo(
                     sessionId: context.baseSessionID,
                     encryptionKeyHex: keysignMsg.encryptionKeyHex,
@@ -323,6 +333,11 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func manageQrCodeStates() {
+        // QBTC claim flow drives its own status transitions via
+        // `qbtcClaimDriver.phase`; don't let the standard flow override.
+        if status == .QBTCClaim {
+            return
+        }
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch
