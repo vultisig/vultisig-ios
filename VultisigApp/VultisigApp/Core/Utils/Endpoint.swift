@@ -677,6 +677,12 @@ class Endpoint {
     /// `/prove`. See `QBTCProofServiceAPI`.
     static let qbtcProofServiceBaseURL = "https://api.vultisig.com/qbtc-proof"
 
+    /// Base URL for the QBTC chain REST (Cosmos SDK gRPC-gateway).
+    /// Endpoints under this base: `/cosmos/auth/v1beta1/accounts/{addr}`,
+    /// `/cosmos/base/tendermint/v1beta1/blocks/latest`,
+    /// `/qbtc/v1/params/{name}`, `/cosmos/tx/v1beta1/txs`. See `QBTCChainAPI`.
+    static let qbtcRestBaseURL = "https://api.vultisig.com/qbtc-rpc"
+
     static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
