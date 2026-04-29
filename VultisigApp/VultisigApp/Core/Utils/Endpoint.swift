@@ -671,6 +671,12 @@ class Endpoint {
 
     static let broadcastQbtcTransaction = "https://api.vultisig.com/qbtc-rpc/cosmos/tx/v1beta1/txs"
 
+    /// Base URL for the QBTC PLONK proof service (vultisig-proxied).
+    /// SDK default is `https://proof.qbtc.network`; we use the proxied URL
+    /// to match `vultisig-windows`. Endpoints under this base: `/health`,
+    /// `/prove`. See `QBTCProofServiceAPI`.
+    static let qbtcProofServiceBaseURL = "https://api.vultisig.com/qbtc-proof"
+
     static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
