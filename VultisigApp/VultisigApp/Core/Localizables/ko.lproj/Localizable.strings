@@ -270,6 +270,8 @@
 "enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
 "enablePushNotifications" = "푸시 알림 활성화";
+"enableThorchain" = "THORChain 활성화";
+"enablingThorchain" = "THORChain 활성화 중...";
 "EnglishUK" = "영어 (영국)";
 "enter4Characters" = "최대 4자 입력";
 "enter4DigitCode" = "4자리 코드 입력";
@@ -874,6 +876,7 @@
 "thisVaultOnly" = "이 볼트만";
 "thorAddressAutoFilled" = "THORChain 주소 (자동 채워짐)";
 "thorAddressNotFound" = "볼트에서 THORChain 주소를 찾을 수 없습니다. RUNE이 볼트에 있는지 확인하세요.";
+"thorChainNotEnabledForLP" = "이 볼트에서 THORChain이 활성화되어 있지 않습니다. 이 기능을 사용하려면 THORChain을 활성화하세요.";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
 "timeout" = "시간 초과";
 "title" = "제목";
@@ -1090,7 +1093,7 @@
 "youAreEnteringAnewEra" = "새로운 시대로 접어들어 오래된 시드 문구를 뒤로하고 있습니다. 필요한 것:";
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";
-"youArePermanentlyDeletingVault" = "이 앱에서 볼트 부분을 영구적으로 삭제하고 있습니다";
+"youArePermanentlyDeletingVault" = "이 앱에서 볼트 공유를 영구적으로 삭제하고 있습니다";
 "youreSending" = "전송 중입니다";
 "youreSwapping" = "스왑 중입니다";
 "yourFriendsReferralCode" = "친구 추천 코드";

@@ -264,6 +264,8 @@
 "enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
+"enableThorchain" = "Omogući THORChain";
+"enablingThorchain" = "Omogućavanje THORChain-a...";
 "EnglishUK" = "Engleski (UK)";
 "enter4Characters" = "Unesi 4 znaka";
 "enter4DigitCode" = "Unesite 4-znamenkasti kod";
@@ -865,6 +867,7 @@
 "thisVaultOnly" = "Samo ovaj trezor";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";

@@ -264,6 +264,8 @@
 "enableDKLS" = "Habilitar DKLS";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
 "enablePushNotifications" = "Activar notificaciones push";
+"enableThorchain" = "Activar THORChain";
+"enablingThorchain" = "Activando THORChain...";
 "EnglishUK" = "Inglés (UK)";
 "enter4Characters" = "Ingresa 4 caracteres";
 "enter4DigitCode" = "Ingresa código de 4 dígitos";
@@ -865,6 +867,7 @@
 "thisVaultOnly" = "Solo esta bóveda";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";
 "title" = "Título";
@@ -1022,7 +1025,7 @@
 "vaultSetup4Title" = "Bóveda segura";
 "vaultShareBackupsViewTitle1" = "Crearás nuevas copias de seguridad de la bóveda";
 "vaultShareBackupsViewTitle2" = ", guárdalas como hiciste antes";
-"vaultType" = "Parte del Bóveda";
+"vaultType" = "Parte de la bóveda";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
 "vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";
 "vaultTypeMismatchDescription" = "El dispositivo iniciador y el dispositivo de emparejamiento tienen diferentes tipos de Vault. Asegúrate de que ambos dispositivos usen el mismo tipo de Vault.";

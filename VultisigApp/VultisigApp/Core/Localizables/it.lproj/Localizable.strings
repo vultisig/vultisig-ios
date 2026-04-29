@@ -264,6 +264,8 @@
 "enableDKLS" = "Abilita DKLS";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
 "enablePushNotifications" = "Attiva notifiche push";
+"enableThorchain" = "Attiva THORChain";
+"enablingThorchain" = "Attivazione di THORChain...";
 "EnglishUK" = "Inglese (UK)";
 "enter4Characters" = "Inserisci 4 caratteri";
 "enter4DigitCode" = "Inserisci codice a 4 cifre";
@@ -865,6 +867,7 @@
 "thisVaultOnly" = "Solo questo Vault";
 "thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
+"thorChainNotEnabledForLP" = "THORChain non è abilitato su questo caveau. Abilita THORChain per utilizzare questa funzione.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";
 "title" = "Titolo";
