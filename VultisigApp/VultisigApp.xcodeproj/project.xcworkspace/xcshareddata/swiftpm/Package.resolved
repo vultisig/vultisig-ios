@@ -32,7 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "revision" : "ea0f4311b24eb99793d4236f4cf93d5f2095ccc0"
+        "branch" : "feat/qbtc-claim-with-proof-tx-type",
+        "revision" : "ccc5e98"
       }
     },
     {

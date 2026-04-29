@@ -53,7 +53,10 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    revision: ea0f4311b24eb99793d4236f4cf93d5f2095ccc0
+    # TEMPORARY: tracking the QBTC claim transaction-type branch
+    # (vultisig/commondata#83). Switch back to a `revision: <sha>` pin
+    # once the PR merges to keep the dependency reproducible.
+    branch: feat/qbtc-claim-with-proof-tx-type
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19
