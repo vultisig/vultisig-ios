@@ -51,12 +51,19 @@ final class QBTCClaimOrchestrator: ObservableObject {
     typealias BroadcastClaim = (Data, String) async throws -> String
     typealias RunBtcRound = (QBTCClaimBtcRoundInput) async throws -> QBTCClaimBtcRoundResult
     typealias RunMldsaRound = (QBTCClaimMldsaRoundInput) async throws -> Data
+    /// Pushes the round-2 prep message between rounds. No-op for
+    /// FastVault (Vultiserver doesn't need a separate prep message —
+    /// it's already aware of both rounds via two `signWithServer` POSTs).
+    /// SecureVault implementation publishes the prep via the relay's
+    /// message channel for the peer device to pick up.
+    typealias PushRound2Prep = (QBTCClaimRound2Prep) async throws -> Void
 
     private let generateProof: GenerateProof
     private let fetchAccountInfo: FetchAccountInfo
     private let broadcastClaim: BroadcastClaim
     private let runBtcRound: RunBtcRound
     private let runMldsaRound: RunMldsaRound
+    private let pushRound2Prep: PushRound2Prep
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim")
 
@@ -65,13 +72,15 @@ final class QBTCClaimOrchestrator: ObservableObject {
         fetchAccountInfo: @escaping FetchAccountInfo,
         broadcastClaim: @escaping BroadcastClaim,
         runBtcRound: @escaping RunBtcRound,
-        runMldsaRound: @escaping RunMldsaRound
+        runMldsaRound: @escaping RunMldsaRound,
+        pushRound2Prep: @escaping PushRound2Prep = { _ in }
     ) {
         self.generateProof = generateProof
         self.fetchAccountInfo = fetchAccountInfo
         self.broadcastClaim = broadcastClaim
         self.runBtcRound = runBtcRound
         self.runMldsaRound = runMldsaRound
+        self.pushRound2Prep = pushRound2Prep
     }
 
     /// Resets to `.idle`. Call when the user dismisses an error and
@@ -158,6 +167,21 @@ final class QBTCClaimOrchestrator: ObservableObject {
             mldsaPublicKey: mldsaPubKey,
             accountNumber: accountInfo.accountNumber,
             sequence: accountInfo.sequence
+        )
+
+        // Push the round-2 prep to the peer (SecureVault) — no-op for
+        // FastVault. The peer reconstructs the SignDoc independently
+        // from this + the round-1 qbtcClaimContext and verifies before
+        // signing. See [[v2-secure-vault-design]].
+        try await pushRound2Prep(
+            QBTCClaimRound2Prep(
+                proofHex: proof.proof,
+                messageHashHex: proof.messageHash,
+                addressHashHex: proof.addressHash,
+                qbtcAddressHashHex: proof.qbtcAddressHash,
+                accountNumber: accountInfo.accountNumber,
+                sequence: accountInfo.sequence
+            )
         )
 
         // Round 2 — MLDSA. NEW MPC session (the round runner is responsible
