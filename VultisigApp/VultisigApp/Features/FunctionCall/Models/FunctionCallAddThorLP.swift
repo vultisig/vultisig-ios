@@ -45,7 +45,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Domain models
     var tx: SendTransaction
     private var vault: Vault
-    private(set) var isThorchainEnabled: Bool {
+    var isThorchainEnabled: Bool {
         vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
     }
     @Published var isEnablingThorchain: Bool = false
