@@ -867,7 +867,7 @@
 "thisVaultOnly" = "Solo questo Vault";
 "thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
-"thorChainNotEnabledForLP" = "THORChain non è abilitato su questo vault. Abilita THORChain per utilizzare questa funzione.";
+"thorChainNotEnabledForLP" = "THORChain non è abilitato su questo caveau. Abilita THORChain per utilizzare questa funzione.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";
 "title" = "Titolo";

@@ -45,7 +45,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Domain models
     var tx: SendTransaction
     private var vault: Vault
-    @Published private(set) var isThorchainEnabled: Bool
+    private(set) var isThorchainEnabled: Bool {
+        vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
+    }
     @Published var isEnablingThorchain: Bool = false
 
     // MARK: Addressable conformance helpers
@@ -62,7 +64,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
-        self.isThorchainEnabled = vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
     }
 
     func initialize() {
@@ -85,11 +86,10 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         do {
             try await CoinService.addToChain(assets: [runeMeta], to: vault)
         } catch {
-            logger.error("Failed to enable THORChain for LP: \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to enable THORChain for LP: \(error.localizedDescription, privacy: .private)")
             return
         }
 
-        isThorchainEnabled = vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
         if isThorchainEnabled {
             initialize()
         }
