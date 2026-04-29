@@ -27,12 +27,12 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getNetworkFees,
                 .getConstants:
-            return URL(string: "https://thornode.thorchain.network/thorchain")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_api/thorchain")!
         case .getThornameLookup,
              .getAddressLookup,
              .getHealth,
              .getNetworkInfo:
-            return URL(string: "https://midgard.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_midgard")!
         }
     }
 

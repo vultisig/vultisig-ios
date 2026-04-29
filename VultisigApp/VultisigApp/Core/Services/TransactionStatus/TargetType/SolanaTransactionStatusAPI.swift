@@ -11,11 +11,11 @@ enum SolanaTransactionStatusAPI: TargetType {
     case getSignatureStatuses(txHash: String)
 
     var baseURL: URL {
-        URL(string: Endpoint.solanaServiceRpc)!
+        URL(string: "https://api.vultisig.com")!
     }
 
     var path: String {
-        ""  // RPC endpoint doesn't use path
+        "/solana/"
     }
 
     var method: HTTPMethod {

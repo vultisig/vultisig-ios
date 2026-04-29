@@ -2,84 +2,56 @@
 //  RippleService.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 08/12/24.
-//
 
 import Foundation
-import SwiftUI
 import WalletCore
 import BigInt
+import OSLog
 
 class RippleService {
 
     static let shared = RippleService()
 
-    private let rpcURL2 = URL(string: Endpoint.rippleServiceRpc)!
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
+    private let httpClient: HTTPClientProtocol = HTTPClient()
 
     func broadcastTransaction(_ hex: String) async throws -> String {
+        let response = try await httpClient.request(
+            RippleAPI.submit(txBlob: hex),
+            responseType: RippleSubmitResponse.self
+        )
 
-        do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "submit",
-                "params": [
+        let result = response.data.result
 
-                    [
-                        "tx_blob": hex
-                    ]
-
-                ]
-            ]
-
-            let data = try await postRequest(with: requestBody, url: rpcURL2)
-
-            if let engine_result = Utils.extractResultFromJson(fromData: data, path: "result.engine_result") as? String {
-                if engine_result != "tesSUCCESS" {
-                    if let engine_result_message = Utils.extractResultFromJson(fromData: data, path: "result.engine_result_message") as? String {
-                        if engine_result_message.lowercased() == "This sequence number has already passed.".lowercased() {
-                            if let result = Utils.extractResultFromJson(fromData: data, path: "result.tx_json.hash") as? String {
-                                return result.description
-                            }
-                        }
-                        return engine_result_message.description
-                    }
+        if let engineResult = result?.engineResult, engineResult != "tesSUCCESS" {
+            if let message = result?.engineResultMessage {
+                if message.lowercased() == "This sequence number has already passed.".lowercased(),
+                   let hash = result?.txJson?.hash {
+                    return hash
                 }
+                return message
             }
-
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result.tx_json.hash") as? String {
-                return result.description
-            }
-
-        } catch {
-            print("Error in Broadcast XRP Transaction")
-            throw error
         }
 
-        return ""
+        return result?.txJson?.hash ?? ""
     }
 
     func getBalance(address: String) async throws -> String {
-        // Fetch account info and server state in parallel
-        async let accountInfoTask = self.fetchAccountsInfo(for: address)
-        async let serverStateTask = self.fetchServerState()
+        async let accountInfoTask = fetchAccountsInfo(for: address)
+        async let serverStateTask = fetchServerState()
 
         let (accountInfo, serverState) = try await (accountInfoTask, serverStateTask)
 
-        // Get total balance
         guard let totalBalanceStr = accountInfo?.result?.accountData?.balance,
               let totalBalance = BigInt(totalBalanceStr) else {
             return "0"
         }
 
-        // Calculate reserved balance
         let ownerCount = BigInt(accountInfo?.result?.accountData?.ownerCount ?? 0)
-        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 1000000) // Default 1 XRP
-        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 200000)     // Default 0.2 XRP
+        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 1000000)
+        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 200000)
 
         let reservedBalance = reservedBase + (ownerCount * reserveInc)
-
-        // Calculate available balance
         let availableBalance = max(totalBalance - reservedBalance, BigInt(0))
 
         return availableBalance.description
@@ -87,88 +59,29 @@ class RippleService {
 
     func fetchServerState() async throws -> RippleServerStateResponse? {
         do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "server_state",
-                "params": [[:]]
-            ]
-
-            let data = try await postRequest(with: requestBody, url: rpcURL2)
-
-            let decoder = JSONDecoder()
-            guard let response = try? decoder.decode(RippleServerStateResponse.self, from: data) else { return nil }
-
-            return response
+            let response = try await httpClient.request(
+                RippleAPI.serverState,
+                responseType: RippleServerStateResponse.self
+            )
+            return response.data
         } catch {
-            print("Error in fetchServerState: \(error)")
+            logger.error("fetchServerState: \(error.localizedDescription)")
             throw error
         }
     }
 
-    func fetchAccountsInfo(for walletAddress: String) async throws
-        -> RippleAccountResponse? {
+    func fetchAccountsInfo(for walletAddress: String) async throws -> RippleAccountResponse? {
         do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "account_info",
-                "params": [
-
-                    [
-                        "account": walletAddress,
-                        "ledger_index": "current",
-                        "queue": true
-                    ]
-
-                    ]
-            ]
-
-            let data = try await postRequest(with: requestBody, url: rpcURL2)
-
-            let decoder = JSONDecoder()
-            guard let response = try? decoder.decode(RippleAccountResponse.self, from: data) else { return nil }
-
-            return response
+            let response = try await httpClient.request(
+                RippleAPI.accountInfo(account: walletAddress),
+                responseType: RippleAccountResponse.self
+            )
+            return response.data
         } catch {
-            print("Error in fetchTokenAccountsByOwner:")
+            logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
         }
     }
-
-    private func postRequest(with body: [String: Any], url: URL) async throws -> Data {
-        do {
-            var request = URLRequest(url: url)
-            request.cachePolicy = .returnCacheDataElseLoad
-            request.httpMethod = "POST"
-            request.addValue(
-                "application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONSerialization.data(
-                withJSONObject: body, options: [])
-
-            let (data, response) = try await URLSession.shared.data(
-                for: request)
-
-            if let httpResponse = response as? HTTPURLResponse,
-                let cacheControl = httpResponse.allHeaderFields["Cache-Control"] as? String,
-                cacheControl.contains("max-age") == false {
-
-                // Set a default caching duration if none is provided
-                let userInfo = ["Cache-Control": "max-age=120"]  // 2 minutes
-                let cachedResponse = CachedURLResponse(
-                    response: httpResponse, data: data, userInfo: userInfo,
-                    storagePolicy: .allowed)
-                URLCache.shared.storeCachedResponse(
-                    cachedResponse, for: request)
-            }
-
-            return data
-        } catch {
-            print("Error in postRequest:")
-            throw error
-        }
-    }
-
 }
 
 struct RippleAccountResponse: Codable {
