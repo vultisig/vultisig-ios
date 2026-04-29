@@ -31,9 +31,12 @@ struct SwapService {
             throw SwapError.routeUnavailable
         }
 
-        // Fetch every eligible provider in parallel, then rank by net output.
-        // We can't return on first success — that's how same-chain ERC20→ETH used to pick
-        // THORChain over an aggregator (issue #4268).
+        // Fetch every eligible provider in parallel, then rank by net output. Returning on
+        // first success would honour the priority order baked into `resolveAllProviders`,
+        // which is fine when only one provider is eligible but produces poor outcomes on
+        // same-chain ERC20 routes where THORChain is listed first yet routes through its
+        // Router with a costly `depositWithExpiry` deposit and a destination amount that's
+        // typically lower than what an aggregator returns.
         let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
             for provider in providers {
                 group.addTask {
@@ -62,7 +65,7 @@ struct SwapService {
         }
 
         let quotes = results.compactMap { try? $0.get() }
-        if let best = Self.selectBestQuote(quotes: quotes, fromCoin: fromCoin, toCoin: toCoin) {
+        if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
             return best
         }
 
@@ -74,49 +77,32 @@ struct SwapService {
         throw firstError ?? SwapError.routeUnavailable
     }
 
-    /// Pick the quote with the highest net output. Three-tier ranking:
-    /// 1. Compare in fiat (output value − source-chain gas) when every quote can be priced.
-    /// 2. Fall back to net output in `toCoin` units when rates are missing.
-    /// 3. Fall back to the first quote (priority order from `resolveAllProviders`) when neither
-    ///    metric is computable for any quote.
-    static func selectBestQuote(quotes: [SwapQuote], fromCoin: Coin, toCoin: Coin) -> SwapQuote? {
+    /// Pick the quote with the highest net output in `toCoin` units. Every provider in a
+    /// candidate set swaps to the same `toCoin`, so the destination amount is directly
+    /// comparable. Falls back to the first quote (priority order from `resolveAllProviders`)
+    /// when no quote produces a comparable amount.
+    static func selectBestQuote(
+        quotes: [SwapQuote],
+        toCoin: Coin
+    ) -> SwapQuote? {
         guard !quotes.isEmpty else { return nil }
 
-        let byFiat = quotes.compactMap { quote -> (SwapQuote, Decimal)? in
-            guard let value = quote.rankableFiatValue(fromCoin: fromCoin, toCoin: toCoin) else { return nil }
-            return (quote, value)
-        }
-
-        if let best = byFiat.max(by: { $0.1 < $1.1 }) {
-            logSelection(quotes: quotes, picked: best.0, metric: "fiat", values: byFiat.map { ($0.0, $0.1) })
-            return best.0
-        }
-
-        let byToAmount = quotes.compactMap { quote -> (SwapQuote, Decimal)? in
+        let ranked = quotes.compactMap { quote -> (SwapQuote, Decimal)? in
             guard let value = quote.expectedNetToAmount(toCoin: toCoin) else { return nil }
             return (quote, value)
         }
 
-        if let best = byToAmount.max(by: { $0.1 < $1.1 }) {
-            logSelection(quotes: quotes, picked: best.0, metric: "toCoin", values: byToAmount.map { ($0.0, $0.1) })
+        if let best = ranked.max(by: { $0.1 < $1.1 }) {
+            let summary = ranked
+                .map { "\($0.0.displayName ?? "?")=\($0.1)" }
+                .joined(separator: ", ")
+            let pickedName = best.0.displayName ?? "?"
+            logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] → \(pickedName, privacy: .public)")
             return best.0
         }
 
         logger.warning("[swap-rank] no quote was rankable, returning first by priority")
         return quotes.first
-    }
-
-    private static func logSelection(
-        quotes: [SwapQuote],
-        picked: SwapQuote,
-        metric: String,
-        values: [(SwapQuote, Decimal)]
-    ) {
-        let summary = values
-            .map { "\($0.0.displayName ?? "?")=\($0.1)" }
-            .joined(separator: ", ")
-        let pickedName = picked.displayName ?? "?"
-        logger.info("[swap-rank] metric=\(metric, privacy: .public) candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] → \(pickedName, privacy: .public)")
     }
 
     private func fetchQuoteForProvider(

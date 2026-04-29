@@ -9,9 +9,17 @@ import BigInt
 extension SwapQuote {
 
     /// Expected output amount in `toCoin` units, net of provider/inbound/outbound fees.
-    /// THORChain/Maya: `expectedAmountOut` is already net of inbound + swap + outbound fees.
-    /// LiFi/1inch/KyberSwap: `dstAmount` is the swapped amount; LiFi additionally subtracts the
-    /// integrator fee that is charged on the output side.
+    /// Used to rank quotes from different providers — every provider in a candidate set swaps
+    /// to the same `toCoin`, so this value is directly comparable.
+    ///
+    /// - THORChain/Maya: `expectedAmountOut` is already net of inbound + swap + outbound fees.
+    /// - 1inch/KyberSwap: `dstAmount` is net of swap fees.
+    /// - LiFi: `dstAmount` minus integrator fee (charged on the output side).
+    ///
+    /// Source-chain gas is intentionally excluded: aggregators on a given chain consume similar
+    /// gas (~200k units), so the destination output dominates the comparison. THORChain Router
+    /// gas on EVM is large but isn't exposed at quote time. A future refinement can subtract gas
+    /// once a native-token price lookup is wired in.
     func expectedNetToAmount(toCoin: Coin) -> Decimal? {
         switch self {
         case .thorchain(let quote),
@@ -32,55 +40,5 @@ extension SwapQuote {
             let fee = amount * (integratorFee ?? 0)
             return amount - fee
         }
-    }
-
-    /// Source-chain gas cost in `fromCoin` native units, when estimable from the quote.
-    /// Aggregator quotes carry `gas`/`gasPrice` directly. THORChain Router deposits on EVM are
-    /// estimated via the project's standard swap gas constant (matches how 1inch/Kyber/LiFi normalize
-    /// missing gas). For non-EVM source chains the gas is paid in the native coin and is not exposed
-    /// at quote time, so we return `nil` and skip gas in the comparison.
-    func sourceChainGasInNative(fromCoin: Coin) -> Decimal? {
-        switch self {
-        case .oneinch(let quote, _),
-             .kyberswap(let quote, _),
-             .lifi(let quote, _, _):
-            guard fromCoin.chain.chainType == .EVM else { return nil }
-            return evmGasInNative(gas: quote.tx.gas, gasPrice: quote.tx.gasPrice, fromCoin: fromCoin)
-
-        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
-            // THORChain/Maya only have an EVM-side gas cost when the source chain is EVM
-            // (Router `depositWithExpiry`). For non-EVM source chains the gas is paid in the
-            // native coin and is not exposed at quote time.
-            guard fromCoin.chain.chainType == .EVM else { return nil }
-            // No gasPrice in THORChain quotes — we can't quantify the EVM Router gas at quote time
-            // without an extra RPC call. Returning nil keeps THORChain comparable on net output
-            // alone; ranking still penalizes it whenever an aggregator's net output is higher.
-            return nil
-        }
-    }
-
-    /// Comparable net value of the quote, in fiat. Subtracts source-chain gas when available.
-    /// Returns `nil` if either the destination price or destination amount can't be resolved —
-    /// in that case callers should fall back to ranking by `expectedNetToAmount`.
-    func rankableFiatValue(fromCoin: Coin, toCoin: Coin) -> Decimal? {
-        guard let netToAmount = expectedNetToAmount(toCoin: toCoin) else { return nil }
-
-        let outFiat = RateProvider.shared.fiatBalance(value: netToAmount, coin: toCoin)
-        guard outFiat > 0 else { return nil }
-
-        if let gasNative = sourceChainGasInNative(fromCoin: fromCoin) {
-            let gasFiat = RateProvider.shared.fiatBalance(value: gasNative, coin: fromCoin)
-            return outFiat - gasFiat
-        }
-
-        return outFiat
-    }
-
-    private func evmGasInNative(gas: Int64, gasPrice: String, fromCoin _: Coin) -> Decimal? {
-        let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
-        guard let gasPriceWei = BigInt(gasPrice), gasPriceWei > 0 else { return nil }
-        let totalWei = gasPriceWei * BigInt(normalizedGas)
-        // Gas is always denominated in the chain's native token (18 decimals on EVM)
-        return Decimal(string: totalWei.description).map { $0 / pow(Decimal(10), 18) }
     }
 }
