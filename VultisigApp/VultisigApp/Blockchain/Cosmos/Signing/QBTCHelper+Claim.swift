@@ -2,13 +2,15 @@
 //  QBTCHelper+Claim.swift
 //  VultisigApp
 //
-//  Protobuf encoding for MsgClaimWithProof and the surrounding TxBody.
-//  Mirrors vultisig-sdk/.../buildClaimTx.ts byte-for-byte. Reuses the
+//  Protobuf encoding for MsgClaimWithProof, TxBody, AuthInfo, SignDoc,
+//  and TxRaw. Mirrors vultisig-sdk/.../buildClaimTx.ts and
+//  vultisig-windows/.../buildClaimSignDoc.ts byte-for-byte. Reuses the
 //  appendProto* helpers from QBTCHelper.swift, which already match the
 //  SDK's proto3 default-skip behaviour (skip zero varints, skip empty
 //  strings/bytes).
 //
 
+import CryptoSwift
 import Foundation
 
 /// Inputs needed to assemble a `MsgClaimWithProof` cosmos message.
@@ -129,6 +131,117 @@ extension QBTCHelper {
         var txBody = Data()
         txBody.appendProtoBytes(fieldNumber: 1, data: anyMsg)
         return txBody
+    }
+
+    // MARK: - SignDoc / TxRaw assembly
+    //
+    // Mirrors vultisig-windows/.../buildClaimSignDoc.ts. The claim tx is
+    // gas-free: AuthInfo encodes only `gas_limit`, no fee coins. A single
+    // MLDSA signer (the claimer) authenticates the cosmos transaction;
+    // BTC ownership is proven by the ZK proof inside the message body.
+
+    /// Encodes `cosmos.tx.v1beta1.AuthInfo` for a claim. Single MLDSA
+    /// signer (`/cosmos.crypto.mldsa.PubKey`) in SIGN_MODE_DIRECT. Fee
+    /// contains only `gas_limit` (no `amount` coins, no `payer`).
+    static func buildClaimAuthInfo(mldsaPublicKey: Data, sequence: UInt64) -> Data {
+        // PubKey message: field 1 = key (bytes)
+        var pubKeyMsg = Data()
+        pubKeyMsg.appendProtoBytes(fieldNumber: 1, data: mldsaPublicKey)
+
+        // Any wrapping the PubKey
+        var pubKeyAny = Data()
+        pubKeyAny.appendProtoString(fieldNumber: 1, value: QBTCClaimConfig.mldsaPubKeyTypeURL)
+        pubKeyAny.appendProtoBytes(fieldNumber: 2, data: pubKeyMsg)
+
+        // ModeInfo.Single: SIGN_MODE_DIRECT = 1
+        var singleMode = Data()
+        singleMode.appendProtoVarint(fieldNumber: 1, value: 1)
+
+        var modeInfo = Data()
+        modeInfo.appendProtoBytes(fieldNumber: 1, data: singleMode)
+
+        // SignerInfo: field 1 = public_key, field 2 = mode_info, field 3 = sequence
+        var signerInfo = Data()
+        signerInfo.appendProtoBytes(fieldNumber: 1, data: pubKeyAny)
+        signerInfo.appendProtoBytes(fieldNumber: 2, data: modeInfo)
+        signerInfo.appendProtoVarint(fieldNumber: 3, value: sequence)
+
+        // Fee: field 1 = amount (NONE — gas-free claim), field 2 = gas_limit
+        var fee = Data()
+        fee.appendProtoVarint(fieldNumber: 2, value: QBTCClaimConfig.gasLimit)
+
+        // AuthInfo: field 1 = signer_infos (repeated), field 2 = fee
+        var authInfo = Data()
+        authInfo.appendProtoBytes(fieldNumber: 1, data: signerInfo)
+        authInfo.appendProtoBytes(fieldNumber: 2, data: fee)
+        return authInfo
+    }
+
+    /// Result of `buildClaimSignDoc` — the artifacts the orchestrator
+    /// threads forward into the MLDSA round and the broadcast step.
+    struct ClaimSignDocArtifacts: Equatable {
+        let authInfoBytes: Data
+        let signDocBytes: Data
+        /// Lowercased hex of `SHA256(signDocBytes)`. This is the exact
+        /// string the MLDSA TSS keysign signs and the key the iOS
+        /// `DilithiumKeysign` result is looked up by — keep formatting
+        /// identical at both sites.
+        let signDocHashHex: String
+    }
+
+    /// Builds the SignDoc and computes its SHA-256. Convenience wrapper
+    /// around `buildClaimAuthInfo` + cosmos `SignDoc` (fields 1..4).
+    /// Defaults to `QBTCClaimConfig.chainId` so callers don't drift.
+    static func buildClaimSignDoc(
+        bodyBytes: Data,
+        mldsaPublicKey: Data,
+        accountNumber: UInt64,
+        sequence: UInt64,
+        chainId: String = QBTCClaimConfig.chainId
+    ) -> ClaimSignDocArtifacts {
+        let authInfoBytes = buildClaimAuthInfo(mldsaPublicKey: mldsaPublicKey, sequence: sequence)
+
+        // SignDoc: field 1 = body_bytes, field 2 = auth_info_bytes,
+        // field 3 = chain_id, field 4 = account_number.
+        var signDoc = Data()
+        signDoc.appendProtoBytes(fieldNumber: 1, data: bodyBytes)
+        signDoc.appendProtoBytes(fieldNumber: 2, data: authInfoBytes)
+        signDoc.appendProtoString(fieldNumber: 3, value: chainId)
+        signDoc.appendProtoVarint(fieldNumber: 4, value: accountNumber)
+
+        let hashHex = signDoc.sha256().toHexString()
+        return ClaimSignDocArtifacts(
+            authInfoBytes: authInfoBytes,
+            signDocBytes: signDoc,
+            signDocHashHex: hashHex
+        )
+    }
+
+    /// Result of `assembleClaimTxRaw`. `txHashHex` is uppercased to
+    /// match the SDK and the windows app (their tx-hash links use
+    /// uppercase hex).
+    struct ClaimTxRawArtifacts: Equatable {
+        let txRawBytes: Data
+        let txHashHex: String
+    }
+
+    /// Wraps the body, auth info, and MLDSA signature into a
+    /// `cosmos.tx.v1beta1.TxRaw` and computes its SHA-256 hash locally.
+    /// The chain accepts the broadcast as idempotent on retry by hash.
+    static func assembleClaimTxRaw(
+        bodyBytes: Data,
+        authInfoBytes: Data,
+        mldsaSignature: Data
+    ) -> ClaimTxRawArtifacts {
+        // TxRaw: field 1 = body_bytes, field 2 = auth_info_bytes,
+        // field 3 = signatures (repeated bytes; one entry).
+        var txRaw = Data()
+        txRaw.appendProtoBytes(fieldNumber: 1, data: bodyBytes)
+        txRaw.appendProtoBytes(fieldNumber: 2, data: authInfoBytes)
+        txRaw.appendProtoBytes(fieldNumber: 3, data: mldsaSignature)
+
+        let hashHex = txRaw.sha256().toHexString().uppercased()
+        return ClaimTxRawArtifacts(txRawBytes: txRaw, txHashHex: hashHex)
     }
 
     // MARK: - Hex helpers (file-private)
