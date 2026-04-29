@@ -148,6 +148,7 @@ final class QBTCClaimDispatchTests: XCTestCase {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: Self.validClaim,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )

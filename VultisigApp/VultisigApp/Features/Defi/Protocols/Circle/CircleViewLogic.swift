@@ -167,6 +167,7 @@ struct CircleViewLogic {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )

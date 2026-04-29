@@ -127,6 +127,12 @@ extension KeysignPayload: ProtoMappable {
         // see nil and simply sign the relayed message hashes without claim UX.
         self.qbtcClaimPayload = nil
 
+        // QBTC claim context DOES round-trip — the peer needs it to compute
+        // round-1's message hash and reconstruct round-2's SignDoc.
+        self.qbtcClaimContext = proto.hasQbtcClaimContext
+            ? QBTCClaimContext(proto: proto.qbtcClaimContext)
+            : nil
+
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
     }
@@ -158,6 +164,10 @@ extension KeysignPayload: ProtoMappable {
                 $0.contractPayload = .tronTriggerSmartContractPayload(tronTriggerSmartContractPayload.mapToProtobuff())
             } else if let tronTransferAssetContractPayload {
                 $0.contractPayload = .tronTransferAssetContractPayload(tronTransferAssetContractPayload.mapToProtobuff())
+            }
+
+            if let qbtcClaimContext {
+                $0.qbtcClaimContext = qbtcClaimContext.mapToProtobuff()
             }
 
             $0.skipBroadcast = skipBroadcast

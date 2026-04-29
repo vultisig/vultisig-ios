@@ -200,6 +200,7 @@ private extension BlockaidSimulationServiceTests {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )
@@ -223,6 +224,7 @@ private extension BlockaidSimulationServiceTests {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )
@@ -266,6 +268,7 @@ private extension BlockaidSimulationServiceTests {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: signData
         )

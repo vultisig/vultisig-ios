@@ -62,6 +62,7 @@ struct KeysignPayloadFactory {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
+                qbtcClaimContext: nil,
                 skipBroadcast: false,
                 signData: nil
             )
@@ -95,6 +96,7 @@ struct KeysignPayloadFactory {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )
@@ -155,6 +157,7 @@ struct KeysignPayloadFactory {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )
@@ -198,6 +201,7 @@ struct KeysignPayloadFactory {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )

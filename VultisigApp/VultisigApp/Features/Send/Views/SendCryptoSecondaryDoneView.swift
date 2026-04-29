@@ -265,6 +265,7 @@ struct SendCryptoSecondaryDoneView: View {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
+                qbtcClaimContext: nil,
                 skipBroadcast: false,
                 signData: .signDirect(SignDirect(
                     bodyBytes: "CoQBChEvdHlwZXMuTXNnRGVwb3NpdBJvCiIKFQoDTFRDEgNMVEMaA0xUQyAAKAAwARIHMzAwMDAwMBgAEjNzZWN1cmUtOmx0YzFxYzU2cTk5MHZ6ajNhODlkNTQ0ZHZqMjhncnJweHFxMHB3NjRocTQaFBI3D9EKptI1k4QaGmv4caOIQebx",
@@ -308,6 +309,7 @@ struct SendCryptoSecondaryDoneView: View {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
+                qbtcClaimContext: nil,
                 skipBroadcast: true,
                 signData: .signAmino(SignAmino(
                     fee: CosmosFee(

@@ -106,6 +106,7 @@ final class BlockChainService {
             tronTriggerSmartContractPayload: payload.tronTriggerSmartContractPayload,
             tronTransferAssetContractPayload: payload.tronTransferAssetContractPayload,
             qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: payload.skipBroadcast,
             signData: nil
         )
@@ -462,6 +463,7 @@ private extension BlockChainService {
                     tronTriggerSmartContractPayload: nil,
                     tronTransferAssetContractPayload: nil,
                     qbtcClaimPayload: nil,
+                    qbtcClaimContext: nil,
                     skipBroadcast: false,
                     signData: nil
                 )
