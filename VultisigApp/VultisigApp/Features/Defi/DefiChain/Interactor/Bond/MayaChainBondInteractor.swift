@@ -5,9 +5,18 @@
 //  Created by Gaston Mazzeo on 23/11/2025.
 //
 
+import Foundation
 import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-bond-interactor")
+
+private struct BondPositionDraft: Sendable {
+    let node: BondNode
+    let amount: Decimal
+    let apy: Double
+    let nextReward: Decimal
+    let nextChurn: Date?
+}
 
 struct MayaChainBondInteractor: BondInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
@@ -19,92 +28,95 @@ struct MayaChainBondInteractor: BondInteractor {
             return ([], [])
         }
 
-        // Fetch network-wide bond info once (APR and next churn date)
         let networkInfo = try await mayaChainAPIService.getNetworkBondInfo()
-
-        // Fetch bonded nodes for this address
         let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: cacaoCoin.address)
 
-        // Map each bonded node to BondPosition with metrics
-        var activeNodes: [BondPosition] = []
+        let cacaoAddress = cacaoCoin.address
+        let cacaoCoinMeta = cacaoCoin.toCoinMeta()
+        let nextChurn = networkInfo.nextChurnDate
+
+        var drafts: [BondPositionDraft] = []
         var bondedNodeAddresses: Set<String> = []
 
         for node in bondedNodes.nodes {
             bondedNodeAddresses.insert(node.address)
 
             do {
-                // Calculate metrics for this node using shared network info
-                let myBondMetrics = try await mayaChainAPIService.calculateBondMetrics(
+                let metrics = try await mayaChainAPIService.calculateBondMetrics(
                     nodeAddress: node.address,
-                    myBondAddress: cacaoCoin.address
+                    myBondAddress: cacaoAddress
                 )
-
-                // Parse node state from API status
-                let nodeState = BondNodeState(fromAPIStatus: myBondMetrics.nodeStatus) ?? .standby
-
-                // Create BondNode
+                let nodeState = BondNodeState(fromAPIStatus: metrics.nodeStatus) ?? .standby
                 let bondNode = BondNode(
-                    coin: cacaoCoin.toCoinMeta(),
+                    coin: cacaoCoinMeta,
                     address: node.address,
                     state: nodeState
                 )
-
-                // Create BondPosition with calculated metrics
-                let activeNode = BondPosition(
-                    node: bondNode,
-                    amount: myBondMetrics.myBond,
-                    apy: myBondMetrics.apr,
-                    nextReward: myBondMetrics.myAward,
-                    nextChurn: networkInfo.nextChurnDate,
-                    vault: vault
+                drafts.append(
+                    BondPositionDraft(
+                        node: bondNode,
+                        amount: metrics.myBond,
+                        apy: metrics.apr,
+                        nextReward: metrics.myAward,
+                        nextChurn: nextChurn
+                    )
                 )
-
-                activeNodes.append(activeNode)
             } catch {
                 logger.error("Error calculating metrics for node \(node.address): \(error)")
-                // Continue with other nodes even if one fails
             }
         }
 
-        // Filter available nodes to exclude already bonded nodes
-        let availableNodesList = vultiNodeAddresses
+        let availableNodes = vultiNodeAddresses
             .filter { !bondedNodeAddresses.contains($0) }
-            .map { BondNode(coin: cacaoCoin.toCoinMeta(), address: $0, state: .active) }
-
-        // Create local copies to safely pass to MainActor
-        let finalActiveNodes = activeNodes
-        let finalAvailableNodes = Array(availableNodesList)
+            .map { BondNode(coin: cacaoCoinMeta, address: $0, state: .active) }
 
         // Only persist when we have data — avoid wiping stored positions on transient failures
-        if !finalActiveNodes.isEmpty || bondedNodes.nodes.isEmpty {
-            await savePositions(positions: finalActiveNodes, vault: vault)
-        }
-        return (finalActiveNodes, finalAvailableNodes)
+        let shouldPersist = !drafts.isEmpty || bondedNodes.nodes.isEmpty
+
+        return await materialize(
+            drafts: drafts,
+            available: availableNodes,
+            vault: vault,
+            persist: shouldPersist
+        )
     }
 
     // swiftlint:disable:next async_without_await
     func canUnbond() async -> Bool {
-        // Maya allows unbonding when vaults are not migrating
-        // For now, return true - can be enhanced with actual migration check if needed
         true
     }
 
     // swiftlint:disable:next async_without_await
     func canAddBond(vault _: Vault) async -> Bool {
-        // Matches THORChain and Android: the bond form itself enumerates bondable LP
-        // pools and validates submission. Pre-gating the CTA on LP availability stranded
-        // users with CACAO but no LPs and made discovering the flow impossible.
         return true
     }
 }
 
 private extension MayaChainBondInteractor {
     @MainActor
-    func savePositions(positions: [BondPosition], vault: Vault) {
-        do {
-            try DefiPositionsStorageService().upsert(positions, for: vault)
-        } catch {
-            logger.error("An error occurred while saving bonded positions: \(error)")
+    func materialize(
+        drafts: [BondPositionDraft],
+        available: [BondNode],
+        vault: Vault,
+        persist: Bool
+    ) -> (active: [BondPosition], available: [BondNode]) {
+        let active = drafts.map { draft in
+            BondPosition(
+                node: draft.node,
+                amount: draft.amount,
+                apy: draft.apy,
+                nextReward: draft.nextReward,
+                nextChurn: draft.nextChurn,
+                vault: vault
+            )
         }
+        if persist {
+            do {
+                try DefiPositionsStorageService().upsert(active, for: vault)
+            } catch {
+                logger.error("An error occurred while saving bonded positions: \(error)")
+            }
+        }
+        return (active, available)
     }
 }
