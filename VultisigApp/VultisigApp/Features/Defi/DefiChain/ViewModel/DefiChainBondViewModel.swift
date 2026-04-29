@@ -32,7 +32,7 @@ final class DefiChainBondViewModel: ObservableObject {
     }
 
     var hasBondPositions: Bool {
-        vault.bondPositions.contains { $0.node.coin.chain == chain }
+        vault.defiPositions.contains { $0.bonds.contains(where: { $0.chain == chain }) }
     }
     private let interactor: BondInteractor?
     private let chain: Chain
