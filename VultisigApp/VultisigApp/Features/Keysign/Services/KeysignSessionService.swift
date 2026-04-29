@@ -35,6 +35,10 @@ enum KeysignSessionServiceError: LocalizedError {
     case fastVaultPeerTimeout
     case startSessionFailed(statusCode: Int)
     case kickoffFailed(statusCode: Int)
+    case invalidSetupMessageBody
+    case setupMessageEncryptFailed
+    case setupMessageDecryptFailed
+    case setupMessageTimeout
 
     var errorDescription: String? {
         switch self {
@@ -46,6 +50,14 @@ enum KeysignSessionServiceError: LocalizedError {
             return "Failed to register with the relay (status \(code))"
         case .kickoffFailed(let code):
             return "Failed to kick off the keysign committee (status \(code))"
+        case .invalidSetupMessageBody:
+            return "Setup message body was not valid UTF-8"
+        case .setupMessageEncryptFailed:
+            return "Failed to encrypt setup message body"
+        case .setupMessageDecryptFailed:
+            return "Failed to decrypt setup message body"
+        case .setupMessageTimeout:
+            return "Timed out waiting for the setup message from the initiator"
         }
     }
 }
@@ -174,6 +186,95 @@ final class KeysignSessionService {
             throw KeysignSessionServiceError.kickoffFailed(statusCode: code)
         }
         logger.info("Kickoff sent (session=\(session.sessionId, privacy: .public), participants=\(participants.count))")
+    }
+
+    // MARK: - Out-of-band relay messages
+    //
+    // Used by the multi-round QBTC claim flow to push round-2 prep
+    // (proof + hashes + account info) from the initiator to the peer
+    // device between rounds. The relay's `/setup-message/{sessionID}`
+    // endpoint holds the encrypted body until the peer downloads it
+    // — fits the "send a payload before the next keysign starts" use
+    // case exactly. Body is AES-GCM-encrypted with `session.encryptionKeyHex`.
+
+    /// Uploads an encrypted out-of-band message to the relay's
+    /// setup-message slot for the given session and `messageID`.
+    /// The peer downloads it via the symmetric `/setup-message`
+    /// GET path with the same `messageID` header.
+    func pushSetupMessage(
+        session: KeysignSessionInfo,
+        messageID: String,
+        body: Data
+    ) async throws {
+        guard let plaintext = String(data: body, encoding: .utf8) else {
+            throw KeysignSessionServiceError.invalidSetupMessageBody
+        }
+        guard let encryptedBody = plaintext.aesEncryptGCM(key: session.encryptionKeyHex),
+              let encryptedData = encryptedBody.data(using: .utf8) else {
+            throw KeysignSessionServiceError.setupMessageEncryptFailed
+        }
+        guard let baseURL = URL(string: session.serverAddr) else {
+            throw KeysignSessionServiceError.startSessionFailed(statusCode: -1)
+        }
+        let httpClient = HTTPClient()
+        do {
+            _ = try await httpClient.request(TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .uploadSetupMessage(
+                    sessionID: session.sessionId,
+                    body: encryptedData,
+                    messageID: messageID,
+                    additionalHeader: nil
+                )
+            ))
+        } catch let HTTPError.statusCode(code, _) {
+            throw KeysignSessionServiceError.startSessionFailed(statusCode: code)
+        }
+        logger.info("Pushed relay setup-message (session=\(session.sessionId, privacy: .public), messageID=\(messageID, privacy: .public))")
+    }
+
+    /// Pulls an out-of-band setup-message from the relay. Decrypts with
+    /// `session.encryptionKeyHex`. Polls with backoff up to `timeout`.
+    /// Used by the SecureVault peer device to wait for round-2 prep.
+    func pollSetupMessage(
+        session: KeysignSessionInfo,
+        messageID: String,
+        timeout: TimeInterval
+    ) async throws -> Data {
+        guard let baseURL = URL(string: session.serverAddr) else {
+            throw KeysignSessionServiceError.startSessionFailed(statusCode: -1)
+        }
+        let httpClient = HTTPClient()
+        let started = Date()
+        repeat {
+            do {
+                let response = try await httpClient.request(TssRelayAPI(
+                    baseURL: baseURL,
+                    endpoint: .downloadSetupMessage(
+                        sessionID: session.sessionId,
+                        messageID: messageID,
+                        additionalHeader: nil
+                    )
+                ))
+                guard let encryptedString = String(data: response.data, encoding: .utf8) else {
+                    throw KeysignSessionServiceError.invalidSetupMessageBody
+                }
+                guard let plaintext = encryptedString.aesDecryptGCM(key: session.encryptionKeyHex),
+                      let plainData = plaintext.data(using: .utf8) else {
+                    throw KeysignSessionServiceError.setupMessageDecryptFailed
+                }
+                return plainData
+            } catch let HTTPError.statusCode(code, _) where code == 404 {
+                // Not yet available — back off and retry.
+                if Date().timeIntervalSince(started) > timeout {
+                    throw KeysignSessionServiceError.setupMessageTimeout
+                }
+                try await Task.sleep(for: .seconds(1))
+            } catch let HTTPError.statusCode(code, _) {
+                throw KeysignSessionServiceError.startSessionFailed(statusCode: code)
+            }
+        } while !Task.isCancelled
+        throw CancellationError()
     }
 
     // MARK: - Peer awaiting

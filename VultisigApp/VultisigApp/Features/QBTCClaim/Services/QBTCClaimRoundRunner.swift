@@ -142,10 +142,12 @@ final class QBTCClaimRoundRunner {
 // MARK: - Convenience init wiring
 
 extension QBTCClaimOrchestrator {
-    /// Default production wiring. Tests should use the explicit closure
-    /// initializer to inject mocks.
+    /// Production wiring for the FastVault path. Both rounds use
+    /// independent sessions; Vultiserver acts as the second share.
+    /// `pushRound2Prep` is a no-op (Vultiserver is woken via two
+    /// `signWithServer` POSTs instead of a relay setup-message).
     @MainActor
-    static func makeProduction() -> QBTCClaimOrchestrator {
+    static func makeFastVault() -> QBTCClaimOrchestrator {
         let proofService = QBTCProofService()
         let chainService = QBTCChainService()
         let runner = QBTCClaimRoundRunner()
@@ -161,5 +163,45 @@ extension QBTCClaimOrchestrator {
             runBtcRound: { try await runner.runBtcRound(input: $0) },
             runMldsaRound: { try await runner.runMldsaRound(input: $0) }
         )
+    }
+
+    /// Production wiring for the SecureVault path. Both rounds share
+    /// the base session (per-round IDs derive from
+    /// `{baseSession.sessionId}-{round}`); the peer device has already
+    /// scanned the QR and joined the relay (this is what makes
+    /// `participants` known here). `pushRound2Prep` writes the
+    /// proof+hashes+account info to the relay's setup-message slot
+    /// so the peer can reconstruct round-2's SignDoc.
+    @MainActor
+    static func makeSecureVault(
+        baseSession: KeysignSessionInfo,
+        participants: [String]
+    ) -> QBTCClaimOrchestrator {
+        let proofService = QBTCProofService()
+        let chainService = QBTCChainService()
+        let driver = QBTCClaimSecureVaultRoundDriver(
+            baseSession: baseSession,
+            participants: participants
+        )
+        return QBTCClaimOrchestrator(
+            generateProof: { try await proofService.generateProof($0) },
+            fetchAccountInfo: { try await chainService.getAccountInfoForClaim(qbtcAddress: $0) },
+            broadcastClaim: { txRawBytes, txHashHex in
+                try await chainService.broadcastClaim(
+                    txBytesBase64: txRawBytes.base64EncodedString(),
+                    txHashHex: txHashHex
+                )
+            },
+            runBtcRound: { try await driver.runBtcRound(input: $0) },
+            runMldsaRound: { try await driver.runMldsaRound(input: $0) },
+            pushRound2Prep: { try await driver.pushRound2Prep($0) }
+        )
+    }
+
+    /// Backwards-compatible alias for FastVault wiring. Older callers
+    /// (the v1 ViewModel) used `makeProduction()`.
+    @MainActor
+    static func makeProduction() -> QBTCClaimOrchestrator {
+        makeFastVault()
     }
 }
