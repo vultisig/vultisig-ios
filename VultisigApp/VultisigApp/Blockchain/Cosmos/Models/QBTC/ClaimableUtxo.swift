@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct ClaimableUtxo: Equatable, Hashable {
+struct ClaimableUtxo: Codable, Hashable {
     let txid: String
     let vout: UInt32
     /// BTC amount in satoshis.

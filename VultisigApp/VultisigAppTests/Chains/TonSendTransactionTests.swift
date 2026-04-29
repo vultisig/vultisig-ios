@@ -53,6 +53,7 @@ final class TonSendTransactionTests: XCTestCase {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
             skipBroadcast: false,
             signData: signData
         )

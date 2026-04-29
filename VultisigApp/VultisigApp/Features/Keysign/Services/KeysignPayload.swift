@@ -22,6 +22,10 @@ struct KeysignPayload: Codable, Hashable {
     let tronTransferContractPayload: TronTransferContractPayload?
     let tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?
     let tronTransferAssetContractPayload: TronTransferAssetContractPayload?
+    /// Set on the initiating device when constructing a QBTC claim. Local-only:
+    /// not round-tripped through the proto `KeysignPayload`. See
+    /// `QBTCClaimPayload` for rationale.
+    let qbtcClaimPayload: QBTCClaimPayload?
     let skipBroadcast: Bool
     let signData: SignData?
 
@@ -104,6 +108,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferContractPayload: nil,
         tronTriggerSmartContractPayload: nil,
         tronTransferAssetContractPayload: nil,
+        qbtcClaimPayload: nil,
         skipBroadcast: false,
         signData: nil
     )

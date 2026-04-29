@@ -125,6 +125,7 @@ struct TronViewLogic {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
             skipBroadcast: false,
             signData: nil
         )
@@ -168,6 +169,7 @@ struct TronViewLogic {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

@@ -61,6 +61,7 @@ final class EVMChainsHelperTest: XCTestCase {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

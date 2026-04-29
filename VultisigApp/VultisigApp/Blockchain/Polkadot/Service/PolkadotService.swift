@@ -217,6 +217,7 @@ class PolkadotService: RpcService {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

@@ -122,6 +122,11 @@ extension KeysignPayload: ProtoMappable {
             self.tronTransferAssetContractPayload = nil
         }
 
+        // QBTC claim payload is local-only — never round-tripped through proto.
+        // The initiating device sets it; peer devices in a SecureVault flow
+        // see nil and simply sign the relayed message hashes without claim UX.
+        self.qbtcClaimPayload = nil
+
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
     }
