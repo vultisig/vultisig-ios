@@ -56,6 +56,12 @@ struct JoinKeysignView: View {
                 NoCameraPermissionView()
             case .VaultTypeDoesntMatch:
                 KeysignWrongVaultTypeErrorView()
+            case .QBTCClaim:
+                if let driver = viewModel.qbtcClaimDriver {
+                    QBTCClaimJoinView(driver: driver)
+                } else {
+                    keysignFailedText
+                }
             }
 
         }

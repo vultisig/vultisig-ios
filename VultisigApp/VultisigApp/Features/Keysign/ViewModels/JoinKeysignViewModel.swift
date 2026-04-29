@@ -31,6 +31,10 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
     case VaultTypeDoesntMatch
+    /// Multi-round QBTC claim — driven by `qbtcClaimDriver` rather than
+    /// the standard single-keysign flow. Set when the scanned QR carries
+    /// a `qbtcClaimContext`. See [[v2-secure-vault-design]].
+    case QBTCClaim
 }
 
 @MainActor
@@ -50,6 +54,10 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    /// Set when the scanned QR carries a `qbtcClaimContext`. The standard
+    /// single-keysign flow steps aside while this driver runs the
+    /// peer-side multi-round flow. See [[v2-secure-vault-design]].
+    @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
@@ -286,6 +294,27 @@ class JoinKeysignViewModel: ObservableObject {
                     AppViewModel.shared.set(selectedVault: correctVault)
                     logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                 }
+            }
+
+            // Multi-round QBTC claim fork — if the QR carries a
+            // qbtcClaimContext, hand off to the QBTC-claim peer driver
+            // and step the standard single-keysign flow aside.
+            if let payload = keysignMsg.payload, let context = payload.qbtcClaimContext {
+                let baseSession = KeysignSessionInfo(
+                    sessionId: context.baseSessionID,
+                    encryptionKeyHex: keysignMsg.encryptionKeyHex,
+                    serviceName: keysignMsg.serviceName,
+                    localPartyId: self.localPartyID,
+                    serverAddr: Endpoint.vultisigRelay
+                )
+                let driver = QBTCClaimJoinDriver(
+                    vault: self.vault,
+                    context: context,
+                    baseSession: baseSession
+                )
+                self.qbtcClaimDriver = driver
+                self.status = .QBTCClaim
+                Task { await driver.run() }
             }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"

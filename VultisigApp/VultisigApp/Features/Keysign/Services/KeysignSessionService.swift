@@ -35,6 +35,7 @@ enum KeysignSessionServiceError: LocalizedError {
     case fastVaultPeerTimeout
     case startSessionFailed(statusCode: Int)
     case kickoffFailed(statusCode: Int)
+    case kickoffTimeout
     case invalidSetupMessageBody
     case setupMessageEncryptFailed
     case setupMessageDecryptFailed
@@ -50,6 +51,8 @@ enum KeysignSessionServiceError: LocalizedError {
             return "Failed to register with the relay (status \(code))"
         case .kickoffFailed(let code):
             return "Failed to kick off the keysign committee (status \(code))"
+        case .kickoffTimeout:
+            return "The initiator did not start the keysign committee in time."
         case .invalidSetupMessageBody:
             return "Setup message body was not valid UTF-8"
         case .setupMessageEncryptFailed:
@@ -274,6 +277,36 @@ final class KeysignSessionService {
                 throw KeysignSessionServiceError.startSessionFailed(statusCode: code)
             }
         } while !Task.isCancelled
+        throw CancellationError()
+    }
+
+    // MARK: - Kickoff awaiting (peer side)
+
+    /// Polls `GET {serverAddr}/start/{sessionID}` until the initiator
+    /// has POSTed the participant list (HTTP 200 + non-empty body).
+    /// Returns the participants. Used by the peer device to learn the
+    /// committee after the initiator has kicked off the keysign.
+    func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String] {
+        guard let url = URL(string: "\(session.serverAddr)/start/\(session.sessionId)") else {
+            throw KeysignSessionServiceError.kickoffFailed(statusCode: -1)
+        }
+        let started = Date()
+        while !Task.isCancelled {
+            if Date().timeIntervalSince(started) > timeout {
+                throw KeysignSessionServiceError.kickoffTimeout
+            }
+            do {
+                let (data, response) = try await urlSession.data(from: url)
+                if let http = response as? HTTPURLResponse,
+                   (200...299).contains(http.statusCode),
+                   !data.isEmpty {
+                    return try JSONDecoder().decode([String].self, from: data)
+                }
+            } catch {
+                logger.debug("awaitKeysignStart poll error (will retry): \(error.localizedDescription)")
+            }
+            try await Task.sleep(for: .seconds(1))
+        }
         throw CancellationError()
     }
 
