@@ -264,6 +264,8 @@
 "enableDKLS" = "启用 DKLS";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
+"enableThorchain" = "启用 THORChain";
+"enablingThorchain" = "正在启用 THORChain...";
 "EnglishUK" = "英语（英国）";
 "enter4Characters" = "输入最多 4 个字符";
 "enter4DigitCode" = "输入4位代码";
@@ -412,6 +414,7 @@
 "joinKeysign" = "加入密钥签名";
 "joinReshare" = "加入重新共享";
 "joinSend" = "加入发送";
+"joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
 "keyCopied" = "密钥已复制";
 "keygen" = "密钥生成";
@@ -471,7 +474,7 @@
 "lpUnitsCannotBeZero" = "LP 单位不能为零";
 "lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
 "lpUnitsLabel" = "LP单位";
-"madeVaultBackupPrompt" = "我已进行保险库备份";
+"madeVaultBackupPrompt" = "我已进行保险库备份以便日后恢复";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
@@ -778,6 +781,8 @@
 "settings" = "设置";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
+"shareQRType" = "类型";
+"shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "份额 ( 余额: %@ )";
 "sharesLabel" = "份额";
 "shareTheApp" = "分享应用";
@@ -862,6 +867,7 @@
 "thisVaultOnly" = "仅此保险库";
 "thorAddressAutoFilled" = "THORChain 地址 (自动填充)";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
+"thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";
 "title" = "标题";
@@ -1020,7 +1026,7 @@
 "vaultSetup4Title" = "安全保险库";
 "vaultShareBackupsViewTitle1" = "您将创建新的保险库份额备份";
 "vaultShareBackupsViewTitle2" = "，像以前一样存储它们";
-"vaultType" = "保险库份额";
+"vaultType" = "保险库部分";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
 "vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的保险库类型。请确保两个设备使用相同的保险库类型。";
@@ -1073,7 +1079,7 @@
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";
-"youArePermanentlyDeletingVault" = "您正在永久删除您的保险库";
+"youArePermanentlyDeletingVault" = "您正在从此应用中永久删除您的保险库份额";
 "youreSending" = "您正在发送";
 "youreSwapping" = "您正在交换";
 "yourFriendsReferralCode" = "您朋友的推荐码";

@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-stake-interactor")
 
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
@@ -28,7 +31,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
             let health = try? await mayaChainAPIService.getHealth(shouldCache: false),
             let mimir = try? await mayaChainAPIService.getMimir()
         else {
-            print("Could not fetch health and mimir for Maya chain")
+            logger.error("Could not fetch health and mimir for Maya chain")
             return []
         }
 
@@ -70,18 +73,19 @@ struct MayaChainStakeInteractor: StakeInteractor {
             await savePositions(positions: positions)
             return positions
         } catch {
-            print("Error fetching Maya CACAO staking details: \(error.localizedDescription)")
+            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription)")
 
-            // Fallback to using local staked balance if API fails
+            // Reuse previously persisted metadata so APR / rewards / nextPayout don't disappear on transient failures
+            let previous = await previousPosition(for: cacaoCoin, vault: vault)
             let fallbackPosition = StakePosition(
                 coin: cacaoCoin.toCoinMeta(),
                 type: .stake,
                 amount: cacaoCoin.stakedBalanceDecimal,
-                apr: nil,
-                estimatedReward: nil,
-                nextPayout: nil,
-                rewards: nil,
-                rewardCoin: nil,
+                apr: previous?.apr,
+                estimatedReward: previous?.estimatedReward,
+                nextPayout: previous?.nextPayout,
+                rewards: previous?.rewards,
+                rewardCoin: previous?.rewardCoin,
                 vault: vault
             )
 
@@ -92,11 +96,26 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
 private extension MayaChainStakeInteractor {
     @MainActor
+    func previousPosition(for coin: Coin, vault: Vault) -> PreviousStakeMetadata? {
+        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
+        guard let existing = vault.stakePositions.first(where: { $0.id == id }) else {
+            return nil
+        }
+        return PreviousStakeMetadata(
+            apr: existing.apr,
+            estimatedReward: existing.estimatedReward,
+            nextPayout: existing.nextPayout,
+            rewards: existing.rewards,
+            rewardCoin: existing.rewardCoin
+        )
+    }
+
+    @MainActor
     func savePositions(positions: [StakePosition]) {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {
-            print("An error occurred while saving staked positions: \(error)")
+            logger.error("An error occurred while saving staked positions: \(error)")
         }
     }
 

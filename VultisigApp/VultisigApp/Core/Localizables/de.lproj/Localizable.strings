@@ -264,6 +264,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
+"enableThorchain" = "THORChain aktivieren";
+"enablingThorchain" = "THORChain wird aktiviert...";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
 "enter4DigitCode" = "4-stelligen Code eingeben";
@@ -412,6 +414,7 @@
 "joinKeysign" = "Keysign beitreten";
 "joinReshare" = "Erneutem Teilen beitreten";
 "joinSend" = "Senden beitreten";
+"joinSwap" = "Tausch beitreten";
 "joinTransactionSigning" = "Verbinden Sie die Transaktionsunterzeichnung";
 "keyCopied" = "Schlüssel kopiert";
 "keygen" = "Schlüsselerzeugung";
@@ -471,7 +474,7 @@
 "lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt";
+"madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
 "manageNotificationsInSettings" = "Du kannst Benachrichtigungen in den Systemeinstellungen verwalten.";
 "managePositions" = "Positionen verwalten";
@@ -778,6 +781,8 @@
 "settings" = "Einstellungen";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";
+"shareQRType" = "Typ";
+"shareQRTypeFormat" = "%d-von-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Die App teilen";
@@ -862,6 +867,7 @@
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";
 "title" = "Titel";
@@ -1072,7 +1078,7 @@
 "youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "youAreInLocalMode" = "Du bist im lokalen Modus";
-"youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresor dauerhaft";
+"youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresoranteil dauerhaft aus dieser App";
 "youreSending" = "Du sendest";
 "youreSwapping" = "Du tauschst";
 "yourFriendsReferralCode" = "Ihr Freundesversuchscode";

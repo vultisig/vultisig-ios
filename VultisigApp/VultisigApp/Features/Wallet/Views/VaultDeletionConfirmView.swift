@@ -59,6 +59,7 @@ struct VaultDeletionConfirmView: View {
             Text("youArePermanentlyDeletingVault".localized)
                 .font(Theme.fonts.footnote)
                 .foregroundColor(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
         }
     }
 

@@ -52,7 +52,8 @@ struct DefiPositionsStorageService {
         )
         let allExistingPositions = try Storage.shared.modelContext.fetch(allVaultPositionsDescriptor)
 
-        // If no new positions, delete all existing ones for this vault
+        // Callers MUST distinguish failure from a genuine empty result before passing []:
+        // an empty array here will delete all persisted positions for the vault.
         if positions.isEmpty {
             for existingPosition in allExistingPositions {
                 Storage.shared.modelContext.delete(existingPosition)

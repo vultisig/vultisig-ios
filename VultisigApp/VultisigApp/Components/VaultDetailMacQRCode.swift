@@ -52,7 +52,7 @@ struct VaultDetailMacQRCode: View {
     }
 
     var logo: some View {
-        Image("VultisigLogoTemplate")
+        Image("vultisig-logo")
             .resizable()
             .frame(width: 64, height: 64)
             .foregroundColor(Theme.colors.bgPrimary)

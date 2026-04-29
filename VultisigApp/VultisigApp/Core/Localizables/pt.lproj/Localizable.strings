@@ -264,6 +264,8 @@
 "enableDKLS" = "Ativar DKLS";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "enablePushNotifications" = "Ativar notificações push";
+"enableThorchain" = "Ativar THORChain";
+"enablingThorchain" = "Ativando THORChain...";
 "EnglishUK" = "Inglês (UK)";
 "enter4Characters" = "Digite 4 caracteres";
 "enter4DigitCode" = "Insira código de 4 dígitos";
@@ -412,6 +414,7 @@
 "joinKeysign" = "Participar do Keysign";
 "joinReshare" = "Juntar-se ao compartilhamento";
 "joinSend" = "Juntar-se ao Envio";
+"joinSwap" = "Participar da troca";
 "joinTransactionSigning" = "Junte -se à assinatura da transação";
 "keyCopied" = "Chave copiada";
 "keygen" = "Geração de chaves";
@@ -471,7 +474,7 @@
 "lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
 "lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Fiz um backup do cofre";
+"madeVaultBackupPrompt" = "Fiz um backup do cofre para restaurar mais tarde";
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
 "managePositions" = "Gerenciar posições";
@@ -778,6 +781,8 @@
 "settings" = "Configurações";
 "share" = "Compartilhar";
 "shareOf" = "compartilhar %d de %d";
+"shareQRType" = "Tipo";
+"shareQRTypeFormat" = "%d-de-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Compartilhar o App";
@@ -862,6 +867,7 @@
 "thisVaultOnly" = "Apenas este cofre";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "timeout" = "Tempo esgotado";
 "title" = "Título";
@@ -1072,7 +1078,7 @@
 "youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "youAreInLocalMode" = "Você está no modo local";
-"youArePermanentlyDeletingVault" = "Você está excluindo permanentemente seu cofre";
+"youArePermanentlyDeletingVault" = "Você está excluindo permanentemente sua parte do cofre deste aplicativo";
 "youreSending" = "Você está enviando";
 "youreSwapping" = "Você está trocando";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";

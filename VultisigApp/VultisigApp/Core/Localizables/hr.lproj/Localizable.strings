@@ -264,6 +264,8 @@
 "enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
+"enableThorchain" = "Omogući THORChain";
+"enablingThorchain" = "Omogućavanje THORChain-a...";
 "EnglishUK" = "Engleski (UK)";
 "enter4Characters" = "Unesi 4 znaka";
 "enter4DigitCode" = "Unesite 4-znamenkasti kod";
@@ -412,6 +414,7 @@
 "joinKeysign" = "Pridružite se Keysign-u";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "joinSend" = "Pridruži se Slanju";
+"joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";
@@ -471,7 +474,7 @@
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta";
+"madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
 "managePositions" = "Upravljaj pozicijama";
@@ -778,6 +781,8 @@
 "settings" = "Postavke";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";
+"shareQRType" = "Vrsta";
+"shareQRTypeFormat" = "%d-od-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Podijelite aplikaciju";
@@ -862,6 +867,7 @@
 "thisVaultOnly" = "Samo ovaj trezor";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";
@@ -1072,7 +1078,7 @@
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
-"youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
+"youArePermanentlyDeletingVault" = "Trajno brišete svoj dio trezora iz ove aplikacije";
 "youreSending" = "Šalješ";
 "youreSwapping" = "Zamjenjuješ";
 "yourFriendsReferralCode" = "Kod vašeg prijatelja za upućivanje prijatelja";

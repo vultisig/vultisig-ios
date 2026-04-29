@@ -245,9 +245,9 @@
 "downloadViaGitHub" = "GitHub을 통해 다운로드";
 "dropFileHere" = "여기에 파일을 드롭하세요...";
 "ECDSA" = "ECDSA";
-"ECDSAKey" = "ECDSA";
+"ECDSAKey" = "ECDSA 키";
 "EdDSA" = "EdDSA";
-"EdDSAKey" = "EdDSA";
+"EdDSAKey" = "EdDSA 키";
 "editAddress" = "주소 편집";
 "editFolder" = "폴더 편집";
 "editFriendsReferral" = "친구 추천 코드 편집";
@@ -270,6 +270,8 @@
 "enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
 "enablePushNotifications" = "푸시 알림 활성화";
+"enableThorchain" = "THORChain 활성화";
+"enablingThorchain" = "THORChain 활성화 중...";
 "EnglishUK" = "영어 (영국)";
 "enter4Characters" = "최대 4자 입력";
 "enter4DigitCode" = "4자리 코드 입력";
@@ -418,6 +420,7 @@
 "joinKeysign" = "키사인 참여";
 "joinReshare" = "재공유 참여";
 "joinSend" = "전송 참여";
+"joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
 "keyCopied" = "키 복사됨";
 "keygen" = "키젠";
@@ -477,7 +480,7 @@
 "lpUnitsCannotBeZero" = "LP 단위는 0이 될 수 없습니다";
 "lpUnitsExceeded" = "사용 가능한 LP 단위 초과 (%@)";
 "lpUnitsLabel" = "LPUNITS";
-"madeVaultBackupPrompt" = "볼트 백업을 완료했습니다";
+"madeVaultBackupPrompt" = "나중에 복원할 수 있도록 볼트 백업을 완료했습니다";
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
@@ -788,6 +791,8 @@
 "settings" = "설정";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";
+"shareQRType" = "유형";
+"shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "공유 ( 잔액: %@ )";
 "sharesLabel" = "공유";
 "shareTheApp" = "앱 공유";
@@ -871,6 +876,7 @@
 "thisVaultOnly" = "이 볼트만";
 "thorAddressAutoFilled" = "THORChain 주소 (자동 채워짐)";
 "thorAddressNotFound" = "볼트에서 THORChain 주소를 찾을 수 없습니다. RUNE이 볼트에 있는지 확인하세요.";
+"thorChainNotEnabledForLP" = "이 볼트에서 THORChain이 활성화되어 있지 않습니다. 이 기능을 사용하려면 THORChain을 활성화하세요.";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
 "timeout" = "시간 초과";
 "title" = "제목";
@@ -1034,7 +1040,7 @@
 "vaultSetup4Title" = "Secure Vault";
 "vaultShareBackupsViewTitle1" = "새 볼트 공유 백업을 생성합니다";
 "vaultShareBackupsViewTitle2" = ", 이전과 같이 저장하세요";
-"vaultType" = "볼트 공유";
+"vaultType" = "볼트 부분";
 "vaultTypeDoesnotMatch" = "볼트 유형이 일치하지 않습니다";
 "vaultTypeMismatch" = "볼트 유형이 일치하지 않습니다, 초기 기기와 페어 기기의 볼트 유형이 다릅니다";
 "vaultTypeMismatchDescription" = "초기 기기와 페어링 기기의 볼트 유형이 다릅니다. 두 기기가 동일한 볼트 유형을 사용하는지 확인하세요.";
@@ -1087,7 +1093,7 @@
 "youAreEnteringAnewEra" = "새로운 시대로 접어들어 오래된 시드 문구를 뒤로하고 있습니다. 필요한 것:";
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";
-"youArePermanentlyDeletingVault" = "볼트를 영구적으로 삭제하고 있습니다";
+"youArePermanentlyDeletingVault" = "이 앱에서 볼트 공유를 영구적으로 삭제하고 있습니다";
 "youreSending" = "전송 중입니다";
 "youreSwapping" = "스왑 중입니다";
 "yourFriendsReferralCode" = "친구 추천 코드";

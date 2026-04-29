@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-enum QRShareSheetType: String {
-    case Keygen = "joinKeygen"
-    case Send = "joinSend"
-    case Swap = "joinSwap"
-    case Address = "address"
+enum QRShareSheetType {
+    case Keygen
+    case Send
+    case Swap
+    case Address
 }
 
 struct QRShareSheetImage: View {
@@ -20,132 +20,208 @@ struct QRShareSheetImage: View {
 
     let vaultName: String
 
-    // Send
+    // Send (Keysign)
     let amount: String
     let toAddress: String
+    let coinLogo: String
 
     // Swap
     let fromAmount: String
     let toAmount: String
 
+    // Keygen
+    let vaultType: String
+
     // Address
     let address: String
-
-    let padding: CGFloat = 15
-    let cornerRadius: CGFloat = 30
 
     var body: some View {
         content
     }
 
     var view: some View {
-        VStack(spacing: 32) {
-            qrCode
-            titleContent
-            description
-            Spacer()
-            logo
-        }
-        .padding(.vertical, 48)
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .multilineTextAlignment(.center)
-    }
-
-    var titleContent: some View {
-        Text(NSLocalizedString(type.rawValue, comment: ""))
-            .font(Theme.fonts.bodyMMedium)
-            .frame(maxWidth: 200)
-            .lineLimit(2)
-            .foregroundColor(Theme.colors.textPrimary)
-            .multilineTextAlignment(.center)
-    }
-
-    var description: some View {
-        ZStack {
-            switch type {
-            case .Keygen:
-                keygenDescription
-            case .Send:
-                sendDescription
-            case .Swap:
-                swapDescription
-            case .Address:
-                addressDescription
-            }
+        VStack(spacing: 16) {
+            qrCard
+            metadataCard
+            signature
         }
         .padding(.horizontal, 30)
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    var keygenDescription: some View {
-        Text(NSLocalizedString("previewKeygenDescription", comment: ""))
+    var qrCard: some View {
+        image
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .padding(qrInnerPadding)
+            .background(Theme.colors.bgSurface1)
+            .overlay(
+                RoundedRectangle(cornerRadius: cardCornerRadius)
+                    .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
     }
 
-    var sendDescription: some View {
-        VStack(spacing: 10) {
-            vaultText
-            amountText
-            toAddressText
+    var metadataCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            metadataRows
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            RoundedRectangle(cornerRadius: cardCornerRadius)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
+    }
+
+    @ViewBuilder
+    var metadataRows: some View {
+        switch type {
+        case .Send:
+            VStack(spacing: 14) {
+                metadataRow(label: "vault".localized) {
+                    Text(vaultName)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                separator
+                metadataRow(label: "amount".localized) {
+                    HStack(spacing: 4) {
+                        if !coinLogo.isEmpty {
+                            AsyncImageView(
+                                logo: coinLogo,
+                                size: CGSize(width: 16, height: 16),
+                                ticker: "",
+                                tokenChainLogo: nil
+                            )
+                            .frame(width: 16, height: 16)
+                        }
+                        Text(amount)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+                separator
+                metadataRow(label: "to".localized) {
+                    Text(toAddress.truncatedAddress)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+            }
+        case .Keygen:
+            VStack(spacing: 14) {
+                metadataRow(label: "vault".localized) {
+                    Text(vaultName)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                if !vaultType.isEmpty {
+                    separator
+                    metadataRow(label: "shareQRType".localized) {
+                        Text(vaultType)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+            }
+        case .Swap:
+            VStack(spacing: 14) {
+                metadataRow(label: "vault".localized) {
+                    Text(vaultName)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                separator
+                metadataRow(label: "from".localized) {
+                    Text(fromAmount)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                separator
+                metadataRow(label: "to".localized) {
+                    Text(toAmount)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+            }
+        case .Address:
+            Text(address)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    var swapDescription: some View {
-        VStack(spacing: 10) {
-            vaultText
-            fromAmountText
-            toAmountText
+    func metadataRow<Trailing: View>(
+        label: String,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        HStack {
+            Text(label)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer(minLength: 16)
+            trailing()
         }
     }
 
-    var vaultText: some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString("vault", comment: "") + ":")
-            Text(vaultName)
+    var separator: some View {
+        Rectangle()
+            .fill(Theme.colors.borderLight)
+            .frame(height: 1)
+    }
+
+    var signature: some View {
+        VStack(spacing: 8) {
+            Image("vultisig-logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 33, height: 33)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Text("Vultisig")
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 
-    var amountText: some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString("amount", comment: "") + ":")
-            Text(amount)
+    var title: String {
+        switch type {
+        case .Keygen:
+            return "joinKeygen".localized
+        case .Send:
+            return "joinKeysign".localized
+        case .Swap:
+            return "joinSwap".localized
+        case .Address:
+            return "address".localized
         }
     }
+}
 
-    var toAddressText: some View {
-        HStack(alignment: .top, spacing: 4) {
-            Text(NSLocalizedString("to", comment: "") + ":")
-            Text(toAddress)
-        }
-    }
-
-    var fromAmountText: some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString("from", comment: "") + ":")
-            Text(fromAmount)
-        }
-    }
-
-    var toAmountText: some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString("to", comment: "") + ":")
-            Text(toAmount)
-        }
-    }
-
-    var addressDescription: some View {
-        Text(address)
-    }
+private extension QRShareSheetImage {
+    var cardCornerRadius: CGFloat { 24 }
+    var qrInnerPadding: CGFloat { 16 }
 }
 
 #Preview {
     QRShareSheetImage(
-        image: Image("VultisigLogo"),
-        type: .Keygen,
+        image: Image("vultisig-logo"),
+        type: .Send,
         vaultName: Vault.example.name,
-        amount: "10",
-        toAddress: "toAddress",
+        amount: "100 USDC",
+        toAddress: "0xe3F8345678901234567890123456CE1e8b2",
+        coinLogo: "usdc",
         fromAmount: "10",
         toAmount: "10",
+        vaultType: "2-of-3",
         address: "addressData"
     )
     .ignoresSafeArea()
@@ -153,80 +229,25 @@ struct QRShareSheetImage: View {
 }
 
 #if os(iOS)
-import SwiftUI
-
 extension QRShareSheetImage {
     var content: some View {
         ZStack {
-            Background()
+            Theme.colors.bgPrimary.ignoresSafeArea()
             view
         }
-        .frame(width: 375, height: 800)
-    }
-
-    var qrCode: some View {
-        image
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .padding(24)
-            .cornerRadius(cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Theme.colors.border, lineWidth: 2)
-            )
-            .padding(.horizontal, padding)
-    }
-
-    var logo: some View {
-        VStack(spacing: 16) {
-            Image("VultisigLogo")
-                .resizable()
-                .frame(width: 110, height: 110)
-
-            Text("vultisig.com")
-        }
-        .offset(y: -20)
+        .frame(width: 375, height: 720)
     }
 }
 #endif
 
 #if os(macOS)
-import SwiftUI
-
 extension QRShareSheetImage {
     var content: some View {
         ZStack {
-            Background()
+            Theme.colors.bgPrimary.ignoresSafeArea()
             view
         }
         .frame(width: 900, height: 1500)
-    }
-
-    var qrCode: some View {
-        image
-            .resizable()
-            .frame(width: 700, height: 700)
-            .frame(width: 800, height: 800)
-            .background(Theme.colors.bgButtonPrimary.opacity(0.15))
-            .cornerRadius(cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [24]))
-            )
-            .padding(.horizontal, padding)
-            .offset(x: 20, y: 20)
-            .padding(.bottom, 50)
-    }
-
-    var logo: some View {
-        VStack(spacing: 16) {
-            Image("VultisigLogo")
-                .resizable()
-                .frame(width: 110, height: 110)
-
-            Text("vultisig.com")
-        }
-        .offset(y: -20)
     }
 }
 #endif
