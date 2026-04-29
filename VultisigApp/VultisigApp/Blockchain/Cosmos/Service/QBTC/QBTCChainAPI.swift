@@ -18,8 +18,10 @@ enum QBTCChainAPI {
 
 extension QBTCChainAPI: TargetType {
     var baseURL: URL {
-        // swiftlint:disable:next force_unwrapping
-        URL(string: Endpoint.qbtcRestBaseURL)!
+        guard let url = URL(string: Endpoint.qbtcRestBaseURL) else {
+            preconditionFailure("Invalid QBTC REST base URL: \(Endpoint.qbtcRestBaseURL)")
+        }
+        return url
     }
 
     var path: String {

@@ -66,12 +66,16 @@ extension ClaimProofRequest {
     }
 
     /// Zero-pads a hex string on the LEFT to a fixed byte width.
-    /// 1 byte = 2 hex chars. Crashes (precondition) if the input is
-    /// already wider than the target, since that's a programmer error.
+    /// 1 byte = 2 hex chars. If the input is wider than the target,
+    /// trips an `assertionFailure` in debug and falls through with the
+    /// untouched string in release — wider-than-target indicates a
+    /// programmer error, but we don't want to crash production users.
     static func padSigHex(_ hex: String, byteLength: Int) -> String {
         let target = byteLength * 2
-        precondition(hex.count <= target,
-                     "padSigHex: \(hex.count)-char hex exceeds target \(target) (byteLength=\(byteLength))")
+        guard hex.count <= target else {
+            assertionFailure("padSigHex: \(hex.count)-char hex exceeds target \(target) (byteLength=\(byteLength))")
+            return hex
+        }
         let padded = hex.count < target
             ? String(repeating: "0", count: target - hex.count) + hex
             : hex

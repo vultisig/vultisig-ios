@@ -19,11 +19,14 @@ import OSLog
 import Tss
 
 enum QBTCClaimRoundError: LocalizedError {
+    case missingMldsaPublicKey
     case signatureMissing(String)
     case malformedMldsaSignature(String)
 
     var errorDescription: String? {
         switch self {
+        case .missingMldsaPublicKey:
+            return "Vault is missing the ML-DSA public key needed for the QBTC claim"
         case .signatureMissing(let hash):
             return "MPC session completed without producing a signature for \(hash)"
         case .malformedMldsaSignature(let hex):
@@ -94,6 +97,9 @@ final class QBTCClaimRoundRunner {
     // MARK: - MLDSA round (round 2)
 
     func runMldsaRound(input: QBTCClaimMldsaRoundInput) async throws -> Data {
+        guard let mldsaPublicKey = input.vault.publicKeyMLDSA44, !mldsaPublicKey.isEmpty else {
+            throw QBTCClaimRoundError.missingMldsaPublicKey
+        }
         let session = try sessionService.newSession(vault: input.vault)
         let discovery = ParticipantDiscovery()
         defer { discovery.stop() }
@@ -124,7 +130,7 @@ final class QBTCClaimRoundRunner {
             encryptionKeyHex: session.encryptionKeyHex,
             chainPath: QBTCClaimConfig.mldsaDerivePath,
             isInitiateDevice: true,
-            publicKey: input.vault.publicKeyMLDSA44 ?? ""
+            publicKey: mldsaPublicKey
         )
         try await dilithium.DilithiumKeysignWithRetry()
 

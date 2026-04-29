@@ -15,8 +15,10 @@ enum QBTCProofServiceAPI {
 
 extension QBTCProofServiceAPI: TargetType {
     var baseURL: URL {
-        // swiftlint:disable:next force_unwrapping
-        URL(string: Endpoint.qbtcProofServiceBaseURL)!
+        guard let url = URL(string: Endpoint.qbtcProofServiceBaseURL) else {
+            preconditionFailure("Invalid QBTC proof service base URL: \(Endpoint.qbtcProofServiceBaseURL)")
+        }
+        return url
     }
 
     var path: String {

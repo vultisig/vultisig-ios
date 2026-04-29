@@ -31,12 +31,23 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 1, amount: 40_000)
     ]
 
+    /// The orchestrator now validates that the proof service's hash
+    /// echoes match the locally-computed `QBTCClaimHashes`, so the mock
+    /// response must echo those exact values back.
     static func makeProofResponse() -> ClaimProofResponse {
-        ClaimProofResponse(
+        // swiftlint:disable:next force_try
+        let hashes = try! QBTCClaimHashes.computeAll(
+            btcAddress: btcAddress,
+            // swiftlint:disable:next force_unwrapping
+            compressedPubkey: Data(hexString: btcCompressedPubkeyHex)!,
+            qbtcAddress: qbtcAddress,
+            chainId: QBTCClaimConfig.chainId
+        )
+        return ClaimProofResponse(
             proof: String(repeating: "ff", count: 200),
-            messageHash: String(repeating: "bb", count: 32),
-            addressHash: String(repeating: "cc", count: 20),
-            qbtcAddressHash: String(repeating: "dd", count: 32),
+            messageHash: hashes.messageHash.toHexString(),
+            addressHash: hashes.addressHash.toHexString(),
+            qbtcAddressHash: hashes.qbtcAddressHash.toHexString(),
             utxos: utxos.map(ClaimProofUtxoRef.init),
             claimerAddress: qbtcAddress
         )
@@ -189,6 +200,38 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         await orchestrator.run(Self.makeRunInput())
         guard case .failed = orchestrator.phase else {
             return XCTFail("expected .failed, got \(orchestrator.phase)")
+        }
+    }
+
+    func testProofHashMismatchSurfacesAsFailedPhase() async {
+        // Proof service echoes hashes that don't match the locally
+        // computed values — orchestrator must abort before signing
+        // round 2 instead of trusting the response.
+        let tamperedResponse = ClaimProofResponse(
+            proof: String(repeating: "ff", count: 200),
+            messageHash: String(repeating: "bb", count: 32),
+            addressHash: String(repeating: "cc", count: 20),
+            qbtcAddressHash: String(repeating: "dd", count: 32),
+            utxos: Self.utxos.map(ClaimProofUtxoRef.init),
+            claimerAddress: Self.qbtcAddress
+        )
+
+        let orchestrator = makeOrchestrator(
+            generateProof: { _ in tamperedResponse },
+            fetchAccountInfo: { _ in Self.makeAccountInfo() },
+            broadcastClaim: { _, _ in XCTFail("should not broadcast"); throw CancellationError() },
+            runBtcRound: { _ in
+                QBTCClaimBtcRoundResult(
+                    rHex: String(repeating: "01", count: 24),
+                    sHex: String(repeating: "02", count: 32)
+                )
+            },
+            runMldsaRound: { _ in XCTFail("should not reach mldsa"); throw CancellationError() }
+        )
+
+        await orchestrator.run(Self.makeRunInput())
+        guard case .failed = orchestrator.phase else {
+            return XCTFail("expected .failed for proof hash mismatch, got \(orchestrator.phase)")
         }
     }
 

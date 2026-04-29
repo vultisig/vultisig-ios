@@ -76,6 +76,9 @@ final class QBTCClaimSecureVaultRoundDriver {
     // MARK: - Round 2 (MLDSA, Dilithium)
 
     func runMldsaRound(input: QBTCClaimMldsaRoundInput) async throws -> Data {
+        guard let mldsaPublicKey = input.vault.publicKeyMLDSA44, !mldsaPublicKey.isEmpty else {
+            throw QBTCClaimRoundError.missingMldsaPublicKey
+        }
         let session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 1)
         try await sessionService.kickoffCommittee(session: session, participants: participants)
 
@@ -88,7 +91,7 @@ final class QBTCClaimSecureVaultRoundDriver {
             encryptionKeyHex: session.encryptionKeyHex,
             chainPath: QBTCClaimConfig.mldsaDerivePath,
             isInitiateDevice: true,
-            publicKey: input.vault.publicKeyMLDSA44 ?? ""
+            publicKey: mldsaPublicKey
         )
         try await dilithium.DilithiumKeysignWithRetry()
 

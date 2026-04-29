@@ -161,7 +161,9 @@ final class KeysignSessionService {
     /// `KeysignDiscoveryViewModel.startKeysignSession`; QBTC claim
     /// (round runner + future v2 peer side) does it via this method.
     func registerAsParticipant(session: KeysignSessionInfo) async throws {
-        let url = URL(string: "\(session.serverAddr)/\(session.sessionId)")!
+        guard let url = URL(string: "\(session.serverAddr)/\(session.sessionId)") else {
+            throw KeysignSessionServiceError.startSessionFailed(statusCode: -1)
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -177,7 +179,9 @@ final class KeysignSessionService {
     /// POST `{serverAddr}/start/{sessionId}` with the participant list —
     /// the relay's "everyone has joined; start the keysign" trigger.
     func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws {
-        let url = URL(string: "\(session.serverAddr)/start/\(session.sessionId)")!
+        guard let url = URL(string: "\(session.serverAddr)/start/\(session.sessionId)") else {
+            throw KeysignSessionServiceError.kickoffFailed(statusCode: -1)
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -149,14 +149,27 @@ final class QBTCClaimOrchestrator: ObservableObject {
         async let accountTask = fetchAccountInfo(input.qbtcCoin.address)
         let (proof, accountInfo) = try await (proofTask, accountTask)
 
+        // Treat the proof service's hash echoes as advisory only — the
+        // local hashes computed above are the source of truth for the
+        // on-chain message. Any mismatch means the service tampered
+        // with (or recomputed) the metadata and we must fail before
+        // signing or broadcasting.
+        let addressHashHex = hashes.addressHash.toHexString()
+        let qbtcAddressHashHex = hashes.qbtcAddressHash.toHexString()
+        guard proof.messageHash.lowercased() == messageHashHex.lowercased(),
+              proof.addressHash.lowercased() == addressHashHex.lowercased(),
+              proof.qbtcAddressHash.lowercased() == qbtcAddressHashHex.lowercased() else {
+            throw QBTCClaimOrchestratorError.proofHashMismatch
+        }
+
         // Build the cosmos artifacts for the MLDSA round.
         let claimMessage = QBTCClaimMessage(
             claimer: input.qbtcCoin.address,
             utxos: input.utxos,
             proofHex: proof.proof,
-            messageHashHex: proof.messageHash,
-            addressHashHex: proof.addressHash,
-            qbtcAddressHashHex: proof.qbtcAddressHash
+            messageHashHex: messageHashHex,
+            addressHashHex: addressHashHex,
+            qbtcAddressHashHex: qbtcAddressHashHex
         )
         let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
         guard let mldsaPubKey = Data(hexString: input.qbtcCoin.hexPublicKey) else {
@@ -176,9 +189,9 @@ final class QBTCClaimOrchestrator: ObservableObject {
         try await pushRound2Prep(
             QBTCClaimRound2Prep(
                 proofHex: proof.proof,
-                messageHashHex: proof.messageHash,
-                addressHashHex: proof.addressHash,
-                qbtcAddressHashHex: proof.qbtcAddressHash,
+                messageHashHex: messageHashHex,
+                addressHashHex: addressHashHex,
+                qbtcAddressHashHex: qbtcAddressHashHex,
                 accountNumber: accountInfo.accountNumber,
                 sequence: accountInfo.sequence
             )
@@ -221,6 +234,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
 enum QBTCClaimOrchestratorError: LocalizedError {
     case invalidBtcPublicKey
     case invalidMldsaPublicKey
+    case proofHashMismatch
 
     var errorDescription: String? {
         switch self {
@@ -228,6 +242,8 @@ enum QBTCClaimOrchestratorError: LocalizedError {
             return "Invalid Bitcoin public key on the vault's BTC coin"
         case .invalidMldsaPublicKey:
             return "Invalid MLDSA public key on the vault's QBTC coin"
+        case .proofHashMismatch:
+            return "Proof service returned hashes that do not match the local computation; aborting claim"
         }
     }
 }

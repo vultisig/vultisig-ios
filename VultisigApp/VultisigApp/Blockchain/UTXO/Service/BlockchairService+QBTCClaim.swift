@@ -36,10 +36,12 @@ extension ClaimableUtxo {
     init?(blockchair: Blockchair.BlockchairUtxo) {
         guard let txid = blockchair.transactionHash,
               !txid.isEmpty,
-              let index = blockchair.index, index >= 0,
-              let value = blockchair.value, value >= 0 else {
+              let index = blockchair.index,
+              let vout = UInt32(exactly: index),
+              let value = blockchair.value,
+              let amount = UInt64(exactly: value) else {
             return nil
         }
-        self.init(txid: txid, vout: UInt32(index), amount: UInt64(value))
+        self.init(txid: txid, vout: vout, amount: amount)
     }
 }

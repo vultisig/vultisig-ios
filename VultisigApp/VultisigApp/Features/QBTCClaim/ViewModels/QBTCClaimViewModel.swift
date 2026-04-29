@@ -163,6 +163,10 @@ final class QBTCClaimViewModel: ObservableObject {
             }
 
             self.utxos = fetchedUtxos
+            // Reconcile selection against the freshly fetched set so a
+            // reload that drops UTXOs doesn't leave stale ids selected.
+            let validIds = Set(fetchedUtxos.map(\.id))
+            selectedIds.formIntersection(validIds)
             if fetchedUtxos.isEmpty {
                 state = .blocked(reason: .noUtxos)
             } else {
