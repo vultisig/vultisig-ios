@@ -22,7 +22,7 @@ struct QBTCClaimResultView: View {
             Text("qbtcClaimSuccessTitle".localized)
                 .font(Theme.fonts.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text(formattedTotal)
+            Text(QBTCClaimAmountFormatter.formatBtc(sats: result.totalSatsClaimed))
                 .font(Theme.fonts.priceTitle1)
                 .foregroundStyle(Theme.colors.textPrimary)
             Text("qbtcClaimSuccessDetail".localized)
@@ -51,10 +51,5 @@ struct QBTCClaimResultView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-
-    private var formattedTotal: String {
-        let btc = Decimal(result.totalSatsClaimed) / Decimal(100_000_000)
-        return "\(btc.formatToDecimal(digits: 8)) BTC"
     }
 }

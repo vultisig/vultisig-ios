@@ -16,7 +16,11 @@ struct QBTCClaimSelectionView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let errorMessage {
-                errorBanner(errorMessage)
+                InfoBannerView(
+                    description: errorMessage,
+                    type: .error,
+                    leadingIcon: "exclamationmark.triangle.fill"
+                )
             }
 
             ScrollView {
@@ -51,7 +55,7 @@ struct QBTCClaimSelectionView: View {
                     .font(Theme.fonts.bodySRegular)
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                Text(formatSats(viewModel.totalSatsSelected))
+                Text(QBTCClaimAmountFormatter.formatBtc(sats: viewModel.totalSatsSelected))
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
@@ -62,27 +66,6 @@ struct QBTCClaimSelectionView: View {
             .disabled(!viewModel.canConfirm)
         }
         .padding(.top, 8)
-    }
-
-    @ViewBuilder
-    private func errorBanner(_ message: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(Theme.colors.alertError)
-            Text(message)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(12)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(8)
-    }
-
-    private func formatSats(_ sats: UInt64) -> String {
-        // 8 decimals — Bitcoin convention.
-        let btc = Decimal(sats) / Decimal(100_000_000)
-        return "\(btc.formatToDecimal(digits: 8)) BTC"
     }
 }
 
@@ -105,7 +88,7 @@ struct QBTCClaimUtxoRow: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
                 Spacer()
-                Text(formatSats(utxo.amount))
+                Text(QBTCClaimAmountFormatter.formatBtc(sats: utxo.amount))
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
@@ -123,8 +106,13 @@ struct QBTCClaimUtxoRow: View {
         let suffix = utxo.txid.suffix(6)
         return "\(prefix)…\(suffix)"
     }
+}
 
-    private func formatSats(_ sats: UInt64) -> String {
+/// Centralised sats → BTC formatting for the claim flow. 8 decimals
+/// (Bitcoin convention) is shared across the selection view and the
+/// success view so totals always render identically.
+enum QBTCClaimAmountFormatter {
+    static func formatBtc(sats: UInt64) -> String {
         let btc = Decimal(sats) / Decimal(100_000_000)
         return "\(btc.formatToDecimal(digits: 8)) BTC"
     }

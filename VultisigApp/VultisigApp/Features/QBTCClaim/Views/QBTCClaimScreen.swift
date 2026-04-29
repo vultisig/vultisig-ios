@@ -64,11 +64,9 @@ struct QBTCClaimScreen: View {
     }
 
     private func openExplorer(_ txHash: String) {
-        guard let coin = viewModel.qbtcCoin else { return }
         let url = "\(Endpoint.qbtcRestBaseURL.replacingOccurrences(of: "/qbtc-rpc", with: ""))/tx/\(txHash)"
         if let parsed = URL(string: url) {
             openURL(parsed)
         }
-        _ = coin
     }
 }
