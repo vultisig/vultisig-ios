@@ -38,6 +38,8 @@ struct HomeRouteBuilder {
                 blockChainCode: blockChainCode,
                 coinType: coinType
             )
+        case .qbtcClaim(let vault):
+            QBTCClaimScreen(vault: vault)
         }
     }
 }

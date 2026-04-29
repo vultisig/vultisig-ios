@@ -152,6 +152,12 @@ struct ChainDetailScreen: View {
                     isLoading: viewModel.tronLoader?.isLoading ?? false
                 )
             }
+
+            if nativeCoin.chain == .qbtc {
+                QBTCClaimSection(
+                    onTap: { navigateToAction(action: .qbtcClaim(vault: vault)) }
+                )
+            }
         }
     }
 
