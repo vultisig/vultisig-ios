@@ -264,6 +264,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
+"enableThorchain" = "THORChain aktivieren";
+"enablingThorchain" = "THORChain wird aktiviert...";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
 "enter4DigitCode" = "4-stelligen Code eingeben";
@@ -865,6 +867,7 @@
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";
 "title" = "Titel";
