@@ -890,6 +890,7 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         case signAmino = "sign_amino"
         case signSolana = "sign_solana"
         case signTon = "sign_ton"
+        case signBitcoin = "sign_bitcoin"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -908,6 +909,9 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         } else if container.contains(.signTon) {
             let signTon = try container.decode(VSSignTon.self, forKey: .signTon)
             self = .signTon(signTon)
+        } else if container.contains(.signBitcoin) {
+            let signBitcoin = try container.decode(VSSignBitcoin.self, forKey: .signBitcoin)
+            self = .signBitcoin(signBitcoin)
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
@@ -929,6 +933,8 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignSolana, forKey: .signSolana)
         case .signTon(let vSSignTon):
             try container.encode(vSSignTon, forKey: .signTon)
+        case .signBitcoin(let vSSignBitcoin):
+            try container.encode(vSSignBitcoin, forKey: .signBitcoin)
         }
     }
 }
@@ -1226,6 +1232,110 @@ extension VSSignTon: @retroactive Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         tonMessages = try container.decode([VSTonMessage].self, forKey: .tonMessages)
+    }
+}
+
+extension VSBitcoinInput: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case hash
+        case index
+        case amount
+        case scriptPubKey = "script_pub_key"
+        case scriptType = "script_type"
+        case sighashType = "sighash_type"
+        case isOurs = "is_ours"
+        case redeemScript = "redeem_script"
+        case sequence
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(hash, forKey: .hash)
+        try container.encode(index, forKey: .index)
+        try container.encode(amount, forKey: .amount)
+        try container.encode(scriptPubKey, forKey: .scriptPubKey)
+        try container.encode(scriptType, forKey: .scriptType)
+        if hasSighashType { try container.encode(sighashType, forKey: .sighashType) }
+        try container.encode(isOurs, forKey: .isOurs)
+        if hasRedeemScript { try container.encode(redeemScript, forKey: .redeemScript) }
+        if hasSequence { try container.encode(sequence, forKey: .sequence) }
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        hash = try container.decode(String.self, forKey: .hash)
+        index = try container.decode(UInt32.self, forKey: .index)
+        amount = try container.decode(Int64.self, forKey: .amount)
+        scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
+        scriptType = try container.decode(String.self, forKey: .scriptType)
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sighashType) {
+            sighashType = value
+        }
+        isOurs = try container.decode(Bool.self, forKey: .isOurs)
+        if let value = try container.decodeIfPresent(String.self, forKey: .redeemScript) {
+            redeemScript = value
+        }
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sequence) {
+            sequence = value
+        }
+    }
+}
+
+extension VSBitcoinOutput: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case amount
+        case address
+        case opReturnData = "op_return_data"
+        case scriptPubKey = "script_pub_key"
+        case isChange = "is_change"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(amount, forKey: .amount)
+        try container.encode(address, forKey: .address)
+        if hasOpReturnData { try container.encode(opReturnData, forKey: .opReturnData) }
+        try container.encode(scriptPubKey, forKey: .scriptPubKey)
+        try container.encode(isChange, forKey: .isChange)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        amount = try container.decode(Int64.self, forKey: .amount)
+        address = try container.decode(String.self, forKey: .address)
+        if let value = try container.decodeIfPresent(String.self, forKey: .opReturnData) {
+            opReturnData = value
+        }
+        scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
+        isChange = try container.decode(Bool.self, forKey: .isChange)
+    }
+}
+
+extension VSSignBitcoin: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case version
+        case locktime
+        case inputs
+        case outputs
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(version, forKey: .version)
+        try container.encode(locktime, forKey: .locktime)
+        try container.encode(inputs, forKey: .inputs)
+        try container.encode(outputs, forKey: .outputs)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        version = try container.decode(UInt32.self, forKey: .version)
+        locktime = try container.decode(UInt32.self, forKey: .locktime)
+        inputs = try container.decode([VSBitcoinInput].self, forKey: .inputs)
+        outputs = try container.decode([VSBitcoinOutput].self, forKey: .outputs)
     }
 }
 

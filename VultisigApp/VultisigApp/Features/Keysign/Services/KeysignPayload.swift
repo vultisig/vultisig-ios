@@ -50,6 +50,13 @@ struct KeysignPayload: Codable, Hashable {
         return solana
     }
 
+    var signBitcoin: SignBitcoin? {
+        guard case let .signBitcoin(bitcoin) = signData else {
+            return nil
+        }
+        return bitcoin
+    }
+
     var signTon: SignTon? {
         guard case let .signTon(ton) = signData else {
             return nil
