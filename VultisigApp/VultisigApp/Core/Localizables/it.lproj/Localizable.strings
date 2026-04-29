@@ -412,6 +412,7 @@
 "joinKeysign" = "Partecipa a Keysign";
 "joinReshare" = "Unisciti alla ricondivisione";
 "joinSend" = "Unisciti a Invia";
+"joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
 "keyCopied" = "Copiatura chiave";
 "keygen" = "Generazione chiavi";
@@ -471,7 +472,7 @@
 "lpUnitsCannotBeZero" = "Le unità LP non possono essere zero";
 "lpUnitsExceeded" = "Supera le unità LP disponibili (%@)";
 "lpUnitsLabel" = "Unità LP";
-"madeVaultBackupPrompt" = "Ho fatto un backup del caveau";
+"madeVaultBackupPrompt" = "Ho fatto un backup del caveau da ripristinare in seguito";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
 "manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
 "managePositions" = "Gestisci posizioni";
@@ -778,6 +779,8 @@
 "settings" = "Impostazioni";
 "share" = "Compartilhar";
 "shareOf" = "Condividi %d di %d";
+"shareQRType" = "Tipo";
+"shareQRTypeFormat" = "%d-di-%d";
 "sharesBalance" = "Quote ( Saldo: %@ )";
 "sharesLabel" = "Quote";
 "shareTheApp" = "Condividi l'App";
@@ -1019,7 +1022,7 @@
 "vaultSetup4Title" = "Vault sicuro";
 "vaultShareBackupsViewTitle1" = "Creerai nuovi backup delle quote del vault";
 "vaultShareBackupsViewTitle2" = ", conservali come fatto in precedenza";
-"vaultType" = "Quota della Cassaforte";
+"vaultType" = "Parte della Cassaforte";
 "vaultTypeDoesnotMatch" = " Il tipo di cassaforte non corrisponde";
 "vaultTypeMismatch" = "Il tipo di vault non corrisponde, il dispositivo di avvio e il dispositivo accoppiato hanno tipi di vault diversi";
 "vaultTypeMismatchDescription" = "Il dispositivo di avvio e il dispositivo di associazione hanno tipi di Vault diversi. Assicurati che entrambi i dispositivi utilizzino lo stesso tipo di Vault.";
@@ -1072,7 +1075,7 @@
 "youAreEnteringAnewEra" = "Stai entrando in una nuova era, lasciando indietro le vecchie seed phrase. Avrai bisogno di:";
 "youAreEnteringAnewEraHighlight" = "lasciando indietro le vecchie seed phrase.";
 "youAreInLocalMode" = "Sei in modalità locale";
-"youArePermanentlyDeletingVault" = "Stai eliminando definitivamente il tuo caveau";
+"youArePermanentlyDeletingVault" = "Stai eliminando definitivamente la tua parte del caveau da questa app";
 "youreSending" = "Stai inviando";
 "youreSwapping" = "Stai scambiando";
 "yourFriendsReferralCode" = "Il tuo codice di riferimento";
