@@ -126,6 +126,10 @@ final class QBTCProofServiceTests: XCTestCase {
 
     // MARK: - JSON decoding
 
+    /// The proof service returns utxos with `txid` only — no `vout`. Locks in
+    /// that `ClaimProofResponse` decodes that shape; reusing the request-side
+    /// `ClaimProofUtxoRef` (which requires `vout`) would fail decoding here.
+    /// Also covers multi-utxo responses, where the bug first surfaced.
     func testResponseDecodesFromSnakeCaseJSON() throws {
         let json = """
         {
@@ -133,7 +137,11 @@ final class QBTCProofServiceTests: XCTestCase {
           "message_hash": "\(String(repeating: "bb", count: 32))",
           "address_hash": "\(String(repeating: "cc", count: 20))",
           "qbtc_address_hash": "\(String(repeating: "dd", count: 32))",
-          "utxos": [{"txid": "\(String(repeating: "aa", count: 32))", "vout": 3}],
+          "pub_key_hash_sha256": "\(String(repeating: "ee", count: 32))",
+          "utxos": [
+            {"txid": "\(String(repeating: "aa", count: 32))"},
+            {"txid": "\(String(repeating: "bb", count: 32))"}
+          ],
           "claimer_address": "qbtc1abc"
         }
         """.data(using: .utf8)!
@@ -143,8 +151,9 @@ final class QBTCProofServiceTests: XCTestCase {
         XCTAssertEqual(decoded.messageHash.count, 64)
         XCTAssertEqual(decoded.addressHash.count, 40)
         XCTAssertEqual(decoded.qbtcAddressHash.count, 64)
-        XCTAssertEqual(decoded.utxos.count, 1)
-        XCTAssertEqual(decoded.utxos[0].vout, 3)
+        XCTAssertEqual(decoded.utxos.count, 2)
+        XCTAssertEqual(decoded.utxos[0].txid, String(repeating: "aa", count: 32))
+        XCTAssertEqual(decoded.utxos[1].txid, String(repeating: "bb", count: 32))
         XCTAssertEqual(decoded.claimerAddress, "qbtc1abc")
     }
 

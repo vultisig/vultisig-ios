@@ -67,9 +67,20 @@ final class QBTCChainService {
     }
 
     /// Fetches the account info plus the latest block, parallelised.
-    /// 404 on the auth endpoint MUST be treated as a fresh account
-    /// (`accountNumber=0, sequence=0`) — the claim is often the first
-    /// transaction the address ever sends.
+    ///
+    /// Fresh-account handling (no existing account at this address): the chain's
+    /// `FreeClaimDecorator` will atomically increment the global counter and
+    /// assign the next number when the claim broadcast hits the ante stack.
+    /// SigVerify then reconstructs the SignDoc with that assigned number, so we
+    /// must sign with the same prediction now. We query the highest-numbered
+    /// existing account and use `highest + 1`.
+    ///
+    /// Race window: another claim could increment the counter between our query
+    /// and the broadcast. If that happens the broadcast fails with code 4
+    /// (`signature verification failed`) and the user retries — the retry sees
+    /// a higher counter and predicts correctly. Stopgap until the chain ships a
+    /// custom sigverify decorator that accepts `account_number=0` for fresh
+    /// claim accounts; tracked as the cleaner long-term fix.
     func getAccountInfoForClaim(qbtcAddress: String) async throws -> QBTCClaimAccountInfo {
         async let accountTask = fetchAuthAccount(address: qbtcAddress)
         async let blockTask = fetchLatestBlock()
@@ -79,8 +90,18 @@ final class QBTCChainService {
         let height = UInt64(block.block.header.height) ?? 0
         let timeoutNs = try computeTimeoutNs(blockTime: block.block.header.time)
 
-        let accountNumber = UInt64(account?.accountNumber ?? "0") ?? 0
-        let sequence = UInt64(account?.sequence ?? "0") ?? 0
+        let accountNumber: UInt64
+        let sequence: UInt64
+        if let account {
+            // Existing account — read the chain-assigned values directly.
+            accountNumber = UInt64(account.accountNumber) ?? 0
+            sequence = UInt64(account.sequence) ?? 0
+        } else {
+            // Fresh account — predict the assigned number.
+            accountNumber = try await predictAssignedAccountNumber()
+            sequence = 0
+            logger.debug("Predicted fresh-account number=\(accountNumber, privacy: .public) for \(qbtcAddress, privacy: .public)")
+        }
 
         return QBTCClaimAccountInfo(
             accountNumber: accountNumber,
@@ -88,6 +109,97 @@ final class QBTCChainService {
             latestBlockHeight: height,
             timeoutNs: timeoutNs
         )
+    }
+
+    /// Hits `/cosmos/auth/v1beta1/accounts?pagination.limit=1000` and scans the
+    /// page for the highest assigned `account_number`, returning `highest + 1`
+    /// as the predicted assignment for the next `FreeClaimDecorator` ante run.
+    ///
+    /// The endpoint paginates by store key (address bytes), not by
+    /// `account_number`, so we have to scan every entry on the page. Both
+    /// `BaseAccount` and `ModuleAccount` share the global account-number
+    /// counter, so both contribute to the max. Returns `0` if no accounts come
+    /// back (effectively genesis — should never happen on QBTC testnet, which
+    /// has at least the fee_collector module account).
+    ///
+    /// If the chain returns a non-empty `next_key`, log a warning — we're only
+    /// scanning the first 1000 accounts and the prediction may be wrong, which
+    /// surfaces to the user as `code 4 signature verification failed` and a
+    /// retry. This is a stopgap until the chain ships a sigverify decorator
+    /// that accepts `account_number=0` for fresh claim accounts.
+    private func predictAssignedAccountNumber() async throws -> UInt64 {
+        let response = try await httpClient.request(
+            QBTCChainAPI.latestAccount,
+            responseType: QBTCAccountsListResponse.self
+        )
+        let highest = response.data.accounts
+            .compactMap { UInt64($0.accountNumber) }
+            .max() ?? 0
+        if let nextKey = response.data.pagination?.nextKey, !nextKey.isEmpty {
+            logger.warning("QBTC accounts list has more pages (next_key present); prediction may underestimate max account_number=\(highest, privacy: .public)")
+        }
+        logger.debug("QBTC predicted assigned account_number=\(highest + 1, privacy: .public) from \(response.data.accounts.count, privacy: .public) accounts")
+        return highest + 1
+    }
+
+    /// Fetches the chain's claim eligibility for a single UTXO. 404 → not
+    /// indexed by bifrost yet; `entitled_amount == 0` → already claimed;
+    /// otherwise claimable with the chain's `entitled_amount` (which the
+    /// chain will mint exactly, even if blockchair reports a different
+    /// `value`).
+    func fetchUtxoStatus(txid: String, vout: UInt32) async throws -> QBTCUtxoStatus {
+        let response = try await httpClient.request(QBTCChainAPI.utxo(txid: txid, vout: vout))
+        if response.response.statusCode == 404 {
+            return .notIndexed
+        }
+        let decoded = try JSONDecoder().decode(QBTCUtxoQueryResponse.self, from: response.data)
+        let entitled = UInt64(decoded.utxo.entitledAmount) ?? 0
+        if entitled == 0 {
+            return .claimed
+        }
+        return .claimable(entitledAmount: entitled)
+    }
+
+    /// Fans out per-UTXO chain-state queries in parallel and keeps only
+    /// claimable entries. The displayed amount is replaced with the chain's
+    /// `entitled_amount` so totals match what will actually be minted.
+    ///
+    /// Fail-open on transient errors (network, 5xx, decode failure): the
+    /// UTXO is kept with its original blockchair amount. Hiding a UTXO the
+    /// user can see in their BTC wallet is worse than letting the broadcast
+    /// reject it. Only definite "claimed" / "not indexed" responses filter.
+    func filterClaimable(_ utxos: [ClaimableUtxo]) async -> [ClaimableUtxo] {
+        guard !utxos.isEmpty else { return [] }
+        return await withTaskGroup(of: (Int, ClaimableUtxo?).self) { group in
+            for (index, utxo) in utxos.enumerated() {
+                group.addTask { [weak self] in
+                    guard let self else { return (index, utxo) }
+                    do {
+                        let status = try await self.fetchUtxoStatus(txid: utxo.txid, vout: utxo.vout)
+                        switch status {
+                        case .claimable(let entitled):
+                            return (index, ClaimableUtxo(txid: utxo.txid, vout: utxo.vout, amount: entitled))
+                        case .claimed:
+                            self.logger.debug("filtering claimed UTXO \(utxo.txid, privacy: .public):\(utxo.vout, privacy: .public)")
+                            return (index, nil)
+                        case .notIndexed:
+                            self.logger.debug("filtering not-indexed UTXO \(utxo.txid, privacy: .public):\(utxo.vout, privacy: .public)")
+                            return (index, nil)
+                        }
+                    } catch {
+                        self.logger.warning("UTXO status query failed for \(utxo.txid, privacy: .public):\(utxo.vout, privacy: .public) — keeping as fail-open: \(error.localizedDescription)")
+                        return (index, utxo)
+                    }
+                }
+            }
+            var collected: [(Int, ClaimableUtxo?)] = []
+            for await result in group {
+                collected.append(result)
+            }
+            return collected
+                .sorted { $0.0 < $1.0 }
+                .compactMap { $0.1 }
+        }
     }
 
     /// Returns `true` iff the chain has the `ClaimWithProofDisabled`

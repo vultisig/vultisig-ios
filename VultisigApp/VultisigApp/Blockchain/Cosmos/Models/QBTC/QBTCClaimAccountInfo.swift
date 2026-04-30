@@ -57,3 +57,62 @@ struct QBTCParamResponse: Codable {
         let value: String
     }
 }
+
+/// Response shape for `GET /cosmos/auth/v1beta1/accounts?pagination.limit=1000`.
+/// Used to scan for the highest-numbered existing account so first-claim flows
+/// can predict the assigned `account_number` for their fresh address. The
+/// chain's `FreeClaimDecorator` atomically increments the global counter, so
+/// the next assignment is `max(account_number) + 1`.
+///
+/// Account-type polymorphism: the `accounts` array mixes `BaseAccount`s
+/// (account_number at the top level) with `ModuleAccount`s like fee_collector
+/// (account_number nested inside `base_account`). The custom decoder normalises
+/// both into `Account.accountNumber`. Both share the global account-number
+/// namespace so they all matter for the max calculation.
+struct QBTCAccountsListResponse: Codable {
+    let accounts: [Account]
+    let pagination: Pagination?
+
+    struct Account: Codable {
+        let accountNumber: String
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let direct = try container.decodeIfPresent(String.self, forKey: .accountNumber) {
+                self.accountNumber = direct
+                return
+            }
+            if let base = try container.decodeIfPresent(BaseAccount.self, forKey: .baseAccount) {
+                self.accountNumber = base.accountNumber
+                return
+            }
+            self.accountNumber = "0"
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(accountNumber, forKey: .accountNumber)
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case accountNumber = "account_number"
+            case baseAccount = "base_account"
+        }
+
+        struct BaseAccount: Codable {
+            let accountNumber: String
+
+            enum CodingKeys: String, CodingKey {
+                case accountNumber = "account_number"
+            }
+        }
+    }
+
+    struct Pagination: Codable {
+        let nextKey: String?
+
+        enum CodingKeys: String, CodingKey {
+            case nextKey = "next_key"
+        }
+    }
+}

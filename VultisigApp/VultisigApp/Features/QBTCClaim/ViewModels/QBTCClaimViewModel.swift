@@ -433,10 +433,18 @@ final class QBTCClaimViewModel: ObservableObject {
     }
 
     private func fetchUtxos(btcCoin: Coin) async throws -> [ClaimableUtxo] {
-        try await blockchairService.fetchQBTCClaimableUtxos(
+        let blockchairUtxos = try await blockchairService.fetchQBTCClaimableUtxos(
             bitcoinCoin: btcCoin.toCoinMeta(),
             address: btcCoin.address
         )
+        // Drop already-claimed (entitled_amount=0) and not-yet-indexed (404)
+        // entries before showing them to the user. Fails open on transient
+        // chain errors — see `QBTCChainService.filterClaimable`.
+        let filtered = await chainService.filterClaimable(blockchairUtxos)
+        if filtered.count != blockchairUtxos.count {
+            logger.debug("Filtered QBTC UTXOs: blockchair=\(blockchairUtxos.count, privacy: .public) claimable=\(filtered.count, privacy: .public)")
+        }
+        return filtered
     }
 
     private func applyOrchestratorPhase(_ phase: QBTCClaimPhase) {

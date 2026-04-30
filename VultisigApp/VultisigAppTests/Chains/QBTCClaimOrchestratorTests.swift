@@ -48,7 +48,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
             messageHash: hashes.messageHash.toHexString(),
             addressHash: hashes.addressHash.toHexString(),
             qbtcAddressHash: hashes.qbtcAddressHash.toHexString(),
-            utxos: utxos.map(ClaimProofUtxoRef.init),
+            utxos: utxos.map { ClaimProofResponseUtxo(txid: $0.txid) },
             claimerAddress: qbtcAddress
         )
     }
@@ -212,7 +212,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
             messageHash: String(repeating: "bb", count: 32),
             addressHash: String(repeating: "cc", count: 20),
             qbtcAddressHash: String(repeating: "dd", count: 32),
-            utxos: Self.utxos.map(ClaimProofUtxoRef.init),
+            utxos: Self.utxos.map { ClaimProofResponseUtxo(txid: $0.txid) },
             claimerAddress: Self.qbtcAddress
         )
 

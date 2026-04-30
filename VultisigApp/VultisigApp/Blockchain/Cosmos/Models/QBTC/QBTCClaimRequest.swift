@@ -92,6 +92,15 @@ extension ClaimProofRequest {
     }
 }
 
+/// One UTXO entry as returned by `POST /prove` — `txid` only. The proof
+/// service strips `vout` on the way back; the caller already has it on the
+/// original `ClaimableUtxo` list, so this is just an echo for sanity-checking.
+/// A separate type from `ClaimProofUtxoRef` so request and response shapes
+/// don't drift.
+struct ClaimProofResponseUtxo: Codable, Equatable {
+    let txid: String
+}
+
 /// Response from `POST /prove`. The hashes are returned for the caller
 /// to feed into `MsgClaimWithProof` — no recomputation required.
 struct ClaimProofResponse: Codable, Equatable {
@@ -99,7 +108,7 @@ struct ClaimProofResponse: Codable, Equatable {
     let messageHash: String
     let addressHash: String
     let qbtcAddressHash: String
-    let utxos: [ClaimProofUtxoRef]
+    let utxos: [ClaimProofResponseUtxo]
     let claimerAddress: String
 
     enum CodingKeys: String, CodingKey {
