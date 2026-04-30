@@ -6,9 +6,13 @@
 //
 
 @testable import VultisigApp
+import SwiftData
 import XCTest
 
+@MainActor
 final class THORChainStakeInteractorTests: XCTestCase {
+
+    // MARK: - scaledAmount
 
     func test_scaledAmount_stcyWithEightDecimals() {
         let result = THORChainStakeInteractor.scaledAmount(rawAmount: 344_000_000, decimals: 8)
@@ -39,5 +43,21 @@ final class THORChainStakeInteractorTests: XCTestCase {
     func test_scaledAmount_preservesSmallFractions() {
         let result = THORChainStakeInteractor.scaledAmount(rawAmount: 1, decimals: 8)
         XCTAssertEqual(result, Decimal(string: "0.00000001"))
+    }
+
+    // MARK: - fetchStakePositions early-return paths
+    //
+    // Branching tests for TCY/RUJI/STCY/YRUNE/default require injecting
+    // `THORChainStakingService` and `ThorchainService` (currently global singletons).
+    // Tracked under [[projects/vultisig/defi-tab-fixes/architecture-review]] as the next
+    // testability win — extract a protocol for the staking service.
+
+    func test_fetchStakePositions_returns_empty_without_rune_coin() async throws {
+        let container = try DefiTestStore.makeInMemoryContainer()
+        let vault = DefiTestStore.makeVault()
+        // No RUNE coin in vault → guard short-circuits.
+        let result = await THORChainStakeInteractor().fetchStakePositions(vault: vault)
+        XCTAssertTrue(result.isEmpty)
+        _ = container // keep alive
     }
 }
