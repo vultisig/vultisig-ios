@@ -89,9 +89,8 @@ struct JoinKeysignGasViewModel {
     }
 
     private func calculateCardanoTotalFee(payload: KeysignPayload) -> BigInt? {
-        let helper = CardanoHelper()
         do {
-            let planFee = try helper.calculateDynamicFee(keysignPayload: payload)
+            let planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: payload)
             return planFee > 0 ? planFee : nil
         } catch {
             return nil

@@ -133,8 +133,7 @@ struct SendCryptoVerifyLogic {
 
         switch tx.coin.chain {
         case .cardano:
-            let cardanoHelper = CardanoHelper()
-            planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+            planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
 
         default: // UTXO chains
             guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {

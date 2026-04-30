@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Send ADA",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Cardano",
+        "ticker": "ADA",
+        "address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+        "decimals": 6,
+        "price_provider_id": "cardano",
+        "is_native_token": true,
+        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+        "logo": "ada.png"
+      },
+      "to_address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+      "to_amount": "2000000",
+      "BlockchainSpecific": {
+        "Cardano": {
+          "byte_fee": 44,
+          "send_max_amount": false,
+          "ttl": 190000000
+        }
+      },
+      "utxo_info": [
+        {
+          "hash": "f074134aabbfb13b8aec7cf5465b1e5a862d1cadc175d431c1d9339150db8a1d",
+          "amount": 10000000,
+          "index": 0
+        }
+      ],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["e3d60aeb8700f5a1a44724f0b44c23267b97197b15d30ef9b5fbdad41b1943b1"]
+  },
+  {
+    "name": "Send ADA - max amount",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Cardano",
+        "ticker": "ADA",
+        "address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+        "decimals": 6,
+        "price_provider_id": "cardano",
+        "is_native_token": true,
+        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+        "logo": "ada.png"
+      },
+      "to_address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+      "to_amount": "10000000",
+      "BlockchainSpecific": {
+        "Cardano": {
+          "byte_fee": 44,
+          "send_max_amount": true,
+          "ttl": 190000000
+        }
+      },
+      "utxo_info": [
+        {
+          "hash": "f074134aabbfb13b8aec7cf5465b1e5a862d1cadc175d431c1d9339150db8a1d",
+          "amount": 10000000,
+          "index": 0
+        }
+      ],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["d681b85a798708c5d0e3cfd491363527889c72c6812419c2de246773a31fc120"]
+  }
+]

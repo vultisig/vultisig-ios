@@ -140,10 +140,9 @@ class CardanoHelper {
 
     /// Calculate dynamic transaction fee using WalletCore's transaction planning
     /// Similar to how UTXO chains calculate fees dynamically
-    func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
+    static func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
         // Reuse existing getPreSignedInputData and deserialize it
-        let inputData = try CardanoHelper.getPreSignedInputData(keysignPayload: keysignPayload)
-        let input = try CardanoSigningInput(serializedBytes: inputData)
+        let input = try getPreSignedInputData(keysignPayload: keysignPayload)
         let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
 
         // Check for transaction plan errors
@@ -156,14 +155,14 @@ class CardanoHelper {
 
     /// Calculate dynamic fee for Cardano transaction using WalletCore planning
     /// This replaces the fixed fee approach with actual transaction size calculation
-    func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
+    static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
         let plan = try getCardanoTransactionPlan(keysignPayload: keysignPayload)
         return BigInt(plan.fee)
     }
 
     // MARK: - Helper Functions
 
-    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> CardanoSigningInput {
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
         }
@@ -215,11 +214,11 @@ class CardanoHelper {
             input.utxos.append(utxo)
         }
 
-        return try input.serializedData()
+        return input
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -227,7 +226,19 @@ class CardanoHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
+    
+    static func getCardanoPreSignInputData(keysignPayload: KeysignPayload) throws -> Data {
+        var input = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
+        // Check for transaction plan errors
+        if plan.error != .ok {
+            throw HelperError.runtimeError("Transaction plan error: \(plan.error)")
+        }
 
+        input.plan = plan
+        input.transferMessage.forceFee = plan.fee
+        return try input.serializedData()
+    }
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -242,7 +253,7 @@ class CardanoHelper {
             throw HelperError.runtimeError("failed to create EdDSA public key for verification")
         }
 
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
 
