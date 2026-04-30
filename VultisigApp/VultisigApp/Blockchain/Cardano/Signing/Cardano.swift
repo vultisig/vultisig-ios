@@ -218,11 +218,7 @@ class CardanoHelper {
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        var input = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let plan = try getCardanoTransactionPlan(keysignPayload: keysignPayload)
-        input.plan = plan
-        input.transferMessage.forceFee = plan.fee
-        let inputData = try input.serializedData()
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -230,7 +226,19 @@ class CardanoHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
+    
+    static func getCardanoPreSignInputData(keysignPayload: KeysignPayload) throws -> Data {
+        var input = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
+        // Check for transaction plan errors
+        if plan.error != .ok {
+            throw HelperError.runtimeError("Transaction plan error: \(plan.error)")
+        }
 
+        input.plan = plan
+        input.transferMessage.forceFee = plan.fee
+        return try input.serializedData()
+    }
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -245,8 +253,7 @@ class CardanoHelper {
             throw HelperError.runtimeError("failed to create EdDSA public key for verification")
         }
 
-        let input = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let inputData = try input.serializedData()
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
 
