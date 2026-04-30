@@ -14,6 +14,8 @@ struct KyberSwapService {
     static let sourceIdentifier = "vultisig-ios"
     static let referrerAddress = "0x8E247a480449c84a5fDD25974A8501f3EFa4ABb9"
 
+    private let httpClient: HTTPClientProtocol = HTTPClient()
+
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
@@ -22,8 +24,7 @@ struct KyberSwapService {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
 
-        let routeUrl = Endpoint.fetchKyberSwapRoute(
-            chain: chain,
+        let params = KyberSwapAPI.RouteParams(
             tokenIn: sourceAddress,
             tokenOut: destinationAddress,
             amountIn: amount,
@@ -35,22 +36,9 @@ struct KyberSwapService {
             referrerAddress: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
-        var routeRequest = URLRequest(url: routeUrl)
-        routeRequest.allHTTPHeaderFields = [
-            "accept": "application/json",
-            "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier
-        ]
-
-        let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
-
-        if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: routeData) {
-            if errorResponse.code != 0 {
-                throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
-            }
-        }
-
-        let routeResponse = try JSONDecoder().decode(KyberSwapRouteResponse.self, from: routeData)
+        let routeResponse: KyberSwapRouteResponse = try await fetchAndDecodeKyber(
+            KyberSwapAPI.routes(chain: chain, params: params)
+        )
 
         // Try with gas estimation first, retry without if TransferHelper error occurs
         return try await buildTransactionWithFallback(
@@ -59,6 +47,51 @@ struct KyberSwapService {
             from: from,
             affiliateBps: affiliateBps
         )
+    }
+
+    /// Performs a request and routes the body through `decodeKyberResponse`.
+    /// `KyberSwapAPI` only whitelists 200/400, so 5xx responses arrive as
+    /// `HTTPError.statusCode(_, data?)`; we still want to map their typed
+    /// error envelope to `KyberSwapError` instead of leaking a generic HTTP error.
+    private func fetchAndDecodeKyber<T: Decodable>(_ target: TargetType) async throws -> T {
+        do {
+            let response = try await httpClient.request(target)
+            return try decodeKyberResponse(response.data)
+        } catch HTTPError.statusCode(let statusCode, let data?) {
+            // Try to map the body to a typed KyberSwapError. If decoding the
+            // error envelope itself fails (e.g. 5xx returns HTML), surface the
+            // original HTTP status instead of a misleading DecodingError.
+            do {
+                return try decodeKyberResponse(data)
+            } catch let kyberError as KyberSwapError {
+                throw kyberError
+            } catch {
+                throw HTTPError.statusCode(statusCode, data)
+            }
+        }
+    }
+
+    /// KyberSwap returns either a success envelope (`code == 0`) or an error
+    /// envelope that shares the same top-level keys. HTTP 400 is reserved for
+    /// validation/execution errors with structured messages. This decodes the
+    /// error envelope first and maps known messages to typed
+    /// `KyberSwapError` cases before falling back to the success model.
+    private func decodeKyberResponse<T: Decodable>(_ data: Data) throws -> T {
+        if let error = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: data),
+           error.code != 0 {
+            if error.message.contains("execution reverted") {
+                throw KyberSwapError.transactionWillRevert(message: error.message)
+            }
+            if error.message.contains("insufficient allowance") {
+                throw KyberSwapError.insufficientAllowance(message: error.message)
+            }
+            if error.message.contains("insufficient funds") {
+                throw KyberSwapError.insufficientFunds(message: error.message)
+            }
+            throw KyberSwapError.apiError(code: error.code, message: error.message, details: error.details)
+        }
+
+        return try JSONDecoder().decode(T.self, from: data)
     }
 
     private func buildTransactionWithFallback(
@@ -96,8 +129,6 @@ struct KyberSwapService {
         enableGasEstimation: Bool,
         affiliateBps: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
-        let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
-
         let buildPayload = KyberSwapBuildRequest(
             routeSummary: routeResponse.data.routeSummary,
             sender: from,
@@ -114,42 +145,9 @@ struct KyberSwapService {
             feeReceiver: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
         )
 
-        var buildRequest = URLRequest(url: buildUrl)
-        buildRequest.httpMethod = "POST"
-        buildRequest.allHTTPHeaderFields = [
-            "accept": "application/json",
-            "content-type": "application/json",
-            "x-client-id": KyberSwapService.sourceIdentifier
-        ]
-        buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
-
-        let (buildData, _) = try await URLSession.shared.data(for: buildRequest)
-
-        // First check if it's an error response by looking for non-zero code
-        do {
-            let errorResponse = try JSONDecoder().decode(KyberSwapErrorResponse.self, from: buildData)
-            if errorResponse.code != 0 {
-                // Enhanced error handling for gas estimation failures
-                if errorResponse.message.contains("execution reverted") {
-                    throw KyberSwapError.transactionWillRevert(message: errorResponse.message)
-                } else if errorResponse.message.contains("insufficient allowance") {
-                    throw KyberSwapError.insufficientAllowance(message: errorResponse.message)
-                } else if errorResponse.message.contains("insufficient funds") {
-                    throw KyberSwapError.insufficientFunds(message: errorResponse.message)
-                } else {
-                    throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
-                }
-            }
-            // If we get here, it's a success response with code 0, continue to decode
-        } catch let error as KyberSwapError {
-            // Re-throw our parsed errors
-            throw error
-        } catch _ {
-            // If we can't decode as error response, continue to try as success response
-        }
-
-        // If we get here, try to decode as success response
-        var buildResponse = try JSONDecoder().decode(KyberSwapQuote.self, from: buildData)
+        var buildResponse: KyberSwapQuote = try await fetchAndDecodeKyber(
+            KyberSwapAPI.buildTransaction(chain: chain, body: buildPayload)
+        )
 
         let gasPrice = routeResponse.data.routeSummary.gasPrice
 

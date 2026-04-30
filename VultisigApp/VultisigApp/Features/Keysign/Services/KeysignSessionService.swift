@@ -69,17 +69,17 @@ enum KeysignSessionServiceError: LocalizedError {
 final class KeysignSessionService {
     private let mediator: Mediator
     private let fastVaultService: FastVaultService
-    private let urlSession: URLSession
+    private let httpClient: HTTPClientProtocol
     private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-session")
 
     nonisolated init(
         mediator: Mediator = .shared,
         fastVaultService: FastVaultService = .shared,
-        urlSession: URLSession = .shared
+        httpClient: HTTPClientProtocol = HTTPClient()
     ) {
         self.mediator = mediator
         self.fastVaultService = fastVaultService
-        self.urlSession = urlSession
+        self.httpClient = httpClient
     }
 
     // MARK: - Session creation
@@ -161,17 +161,18 @@ final class KeysignSessionService {
     /// `KeysignDiscoveryViewModel.startKeysignSession`; QBTC claim
     /// (round runner + future v2 peer side) does it via this method.
     func registerAsParticipant(session: KeysignSessionInfo) async throws {
-        guard let url = URL(string: "\(session.serverAddr)/\(session.sessionId)") else {
+        guard let baseURL = URL(string: session.serverAddr) else {
             throw KeysignSessionServiceError.startSessionFailed(statusCode: -1)
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode([session.localPartyId])
-
-        let (_, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+        let body = try JSONEncoder().encode([session.localPartyId])
+        do {
+            _ = try await httpClient.request(
+                RelayServerAPI(
+                    baseURL: baseURL,
+                    endpoint: .registerAsParticipant(sessionID: session.sessionId, body: body)
+                )
+            )
+        } catch let HTTPError.statusCode(code, _) {
             throw KeysignSessionServiceError.startSessionFailed(statusCode: code)
         }
     }
@@ -179,17 +180,18 @@ final class KeysignSessionService {
     /// POST `{serverAddr}/start/{sessionId}` with the participant list —
     /// the relay's "everyone has joined; start the keysign" trigger.
     func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws {
-        guard let url = URL(string: "\(session.serverAddr)/start/\(session.sessionId)") else {
+        guard let baseURL = URL(string: session.serverAddr) else {
             throw KeysignSessionServiceError.kickoffFailed(statusCode: -1)
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(participants)
-
-        let (_, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+        let body = try JSONEncoder().encode(participants)
+        do {
+            _ = try await httpClient.request(
+                RelayServerAPI(
+                    baseURL: baseURL,
+                    endpoint: .startSession(sessionID: session.sessionId, body: body)
+                )
+            )
+        } catch let HTTPError.statusCode(code, _) {
             throw KeysignSessionServiceError.kickoffFailed(statusCode: code)
         }
         logger.info("Kickoff sent (session=\(session.sessionId, privacy: .public), participants=\(participants.count))")
@@ -291,7 +293,7 @@ final class KeysignSessionService {
     /// Returns the participants. Used by the peer device to learn the
     /// committee after the initiator has kicked off the keysign.
     func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String] {
-        guard let url = URL(string: "\(session.serverAddr)/start/\(session.sessionId)") else {
+        guard let baseURL = URL(string: session.serverAddr) else {
             throw KeysignSessionServiceError.kickoffFailed(statusCode: -1)
         }
         let started = Date()
@@ -300,11 +302,14 @@ final class KeysignSessionService {
                 throw KeysignSessionServiceError.kickoffTimeout
             }
             do {
-                let (data, response) = try await urlSession.data(from: url)
-                if let http = response as? HTTPURLResponse,
-                   (200...299).contains(http.statusCode),
-                   !data.isEmpty {
-                    return try JSONDecoder().decode([String].self, from: data)
+                let response = try await httpClient.request(
+                    RelayServerAPI(
+                        baseURL: baseURL,
+                        endpoint: .pollSessionStart(sessionID: session.sessionId)
+                    )
+                )
+                if response.response.statusCode == 200, !response.data.isEmpty {
+                    return try JSONDecoder().decode([String].self, from: response.data)
                 }
             } catch {
                 logger.debug("awaitKeysignStart poll error (will retry): \(error.localizedDescription)")

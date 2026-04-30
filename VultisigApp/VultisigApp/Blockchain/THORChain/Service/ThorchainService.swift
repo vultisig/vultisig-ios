@@ -14,6 +14,11 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
+    /// Used by extensions that have already been migrated to HTTPClient
+    /// (ThorchainBroadcastTransactionService, ThorchainService+Yield+Prices).
+    /// The main-class URLSession call sites will migrate in follow-up sub-issues.
+    let httpClient: HTTPClientProtocol = HTTPClient()
+
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
@@ -23,12 +28,11 @@ class ThorchainService: ThorchainSwapProvider {
     private init() {}
 
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
-        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else {
-            return [CosmosBalance]()
-        }
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        return balanceResponse.balances
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.balances(address: address),
+            responseType: CosmosBalanceResponse.self
+        )
+        return response.data.balances
     }
 
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
@@ -92,11 +96,12 @@ class ThorchainService: ThorchainSwapProvider {
             let entries: [Entry]
         }
 
-        let url = Endpoint.resolveTNS(name: name, chain: chain)
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode(Response.self, from: data)
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.resolveTNS(name: name, chain: chain),
+            responseType: Response.self
+        )
 
-        guard let entry = response.entries.first(where: {
+        guard let entry = response.data.entries.first(where: {
             $0.chain.lowercased() == chain.swapAsset.lowercased()
         }) else {
             throw Errors.tnsEntryNotFound
@@ -106,18 +111,11 @@ class ThorchainService: ThorchainSwapProvider {
     }
 
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
-        guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
-            return nil
-        }
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
-        return accountResponse.result.value
-    }
-
-    func get9RRequest(url: URL) -> URLRequest {
-        var req = URLRequest(url: url)
-        req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
-        return req
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.accountNumber(address: address),
+            responseType: THORChainAccountNumberResponse.self
+        )
+        return response.data.result.value
     }
 
     func fetchSwapQuotes(
@@ -130,28 +128,43 @@ class ThorchainService: ThorchainSwapProvider {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
+        let (affiliates, affiliateBps) = ThorchainService.affiliateParams(
+            referredCode: referredCode,
+            discountBps: vultTierDiscount
+        )
 
-        let url = Endpoint.fetchSwapQuoteThorchain(
-            chain: .thorchain,
-            address: address,
+        let target = ThorchainMainnetAPI.swapQuote(
             fromAsset: fromAsset,
             toAsset: toAsset,
             amount: amount,
-            interval: String(interval),
-            streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : "",
-            referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount
+            destination: address,
+            streamingInterval: String(interval),
+            streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
+            affiliates: affiliates,
+            affiliateBps: affiliateBps
         )
 
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-
+        // THORChain returns a typed swap-error body (sometimes with HTTP 200,
+        // sometimes 4xx) for invalid quotes. Fetch raw bytes once and try the
+        // success shape first, falling back to the error shape — avoids a
+        // second round-trip on the error path.
         do {
-            let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
-            return response
-        } catch {
-            let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
+            let raw = try await httpClient.request(target)
+            return try Self.decodeSwapQuoteOrError(from: raw.data)
+        } catch let error as HTTPError {
+            if case .statusCode(_, let data?) = error,
+               let swapError = try? JSONDecoder().decode(ThorchainSwapError.self, from: data) {
+                throw swapError
+            }
             throw error
         }
+    }
+
+    static func decodeSwapQuoteOrError(from data: Data) throws -> ThorchainSwapQuote {
+        if let quote = try? JSONDecoder().decode(ThorchainSwapQuote.self, from: data) {
+            return quote
+        }
+        throw try JSONDecoder().decode(ThorchainSwapError.self, from: data)
     }
 
     func fetchFeePrice() async throws -> UInt64 {
@@ -195,10 +208,12 @@ class ThorchainService: ThorchainSwapProvider {
             logger.debug("network id: \(self.network)")
             return network
         }
-        let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainNetworkInfo)
-        let response = try JSONDecoder().decode(THORChainNetworkStatus.self, from: data)
-        network = response.result.node_info.network
-        return response.result.node_info.network
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.networkStatus,
+            responseType: THORChainNetworkStatus.self
+        )
+        network = response.data.result.node_info.network
+        return response.data.result.node_info.network
     }
 
     func ensureTHORChainChainID() -> String {
@@ -264,6 +279,22 @@ class ThorchainService: ThorchainSwapProvider {
             return chain.swapAsset.uppercased()
         }
     }
+
+    /// Builds `(affiliate, affiliateBps)` query params for THORChain swap quotes.
+    /// THORChain supports nested affiliates: when a referral code is present,
+    /// we emit two entries joined by `/` so the upstream quote splits the fee.
+    /// Returns `(nil, nil)` if no affiliate entry should be sent.
+    static func affiliateParams(referredCode: String, discountBps: Int) -> (String?, String?) {
+        if !referredCode.isEmpty {
+            let feeRate = max(0, THORChainSwaps.referredAffiliateFeeRateBp - discountBps)
+            let addresses = "\(referredCode)/\(THORChainSwaps.affiliateFeeAddress)"
+            let bps = "\(THORChainSwaps.referredUserFeeRateBp)/\(feeRate)"
+            return (addresses, bps)
+        } else {
+            let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+            return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
+        }
+    }
 }
 
 // MARK: - THORChain Pool Prices Functionality
@@ -294,28 +325,13 @@ extension ThorchainService {
     }
 
     private func fetchAssetPrice(assetName: String) async throws -> Double {
-        // Use the generic pool endpoint for all assets
-        let endpoint = Endpoint.fetchPoolInfo(asset: assetName)
-
-        guard let url = URL(string: endpoint) else {
-            throw Errors.invalidURL
-        }
-
-        let (data, response) = try await URLSession.shared.data(from: url)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw Errors.invalidResponse
-        }
-
-        if httpResponse.statusCode != 200 {
-            throw Errors.apiError("HTTP Error: \(httpResponse.statusCode)")
-        }
-
-        let decoder = JSONDecoder()
-        let poolResponse = try decoder.decode(THORChainPoolResponse.self, from: data)
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.poolInfo(asset: assetName),
+            responseType: THORChainPoolResponse.self
+        )
 
         // Convert from 8 decimal places to a decimal value
-        guard let priceValue = Double(poolResponse.assetTorPrice) else {
+        guard let priceValue = Double(response.data.assetTorPrice) else {
             throw Errors.invalidPriceFormat
         }
 
@@ -358,22 +374,14 @@ extension ThorchainService {
     /// - Returns: All merge accounts keyed by their canonical asset symbol.
     func fetchAllRujiMergeBalances(thorAddr: String) async throws -> [RujiMergeAccount] {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
-
-        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
-            throw HelperError.runtimeError("Invalid GraphQL URL")
-        }
-
         let query = String(format: Self.mergedAssetsQuery, id)
-        let bodyData = try JSONSerialization.data(withJSONObject: ["query": query])
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = bodyData
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.rujiGraphQL(query: query),
+            responseType: AccountRootData.self
+        )
 
-        return decoded.data.node?.merge?.accounts.map { account in
+        return response.data.data.node?.merge?.accounts.map { account in
             RujiMergeAccount(
                 symbol: account.pool.mergeAsset.metadata.symbol,
                 shares: account.shares,
@@ -417,27 +425,14 @@ extension ThorchainService {
 
     func fetchRujiStakeBalance(thorAddr: String) async throws -> RujiStakeBalance {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
-
-        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
-            throw HelperError.runtimeError("Invalid GraphQL URL")
-        }
-
         let query = String(format: Self.stakeQuery, id)
 
-        let requestBody: [String: Any] = ["query": query]
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.rujiGraphQL(query: query),
+            responseType: AccountRootData.self
+        )
 
-        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = bodyData
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
-
-        guard let stake =
-                decoded.data.node?.stakingV2?.first else {
+        guard let stake = response.data.data.node?.stakingV2?.first else {
             return .empty
         }
 
@@ -482,19 +477,17 @@ extension ThorchainService {
         // Use sequential requests with small delay to avoid rate limiting
         for pool in pools {
             do {
-                let poolUrlString = Endpoint.fetchThorchainPoolLiquidityProvider(asset: pool.asset, address: address)
-                guard let poolUrl = URL(string: poolUrlString) else { continue }
+                let poolResponse = try await httpClient.request(
+                    ThorchainMainnetAPI.poolLiquidityProvider(asset: pool.asset, address: address)
+                )
 
-                let (poolData, response) = try await URLSession.shared.data(for: get9RRequest(url: poolUrl))
-
-                // Check if we got a 404 (no position in this pool)
-                if let httpResponse = response as? HTTPURLResponse,
-                   httpResponse.statusCode == 404 {
+                // 404 means no position on this pool — TargetType validation accepts it.
+                if poolResponse.response.statusCode == 404 {
                     continue
                 }
 
                 // Try to decode as pool LP response
-                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolData) {
+                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolResponse.data) {
                     // Only add if units > 0
                     if let units = Int64(lpResponse.units), units > 0 {
                         let position = ThorchainLPPosition(
@@ -531,15 +524,11 @@ extension ThorchainService {
 
     /// Fetch pool information for a specific asset
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let urlString = Endpoint.fetchPoolInfo(asset: asset)
-
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("Invalid URL")
-        }
-
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let pool = try JSONDecoder().decode(ThorchainPool.self, from: data)
-        return pool
+        let response = try await httpClient.request(
+            ThorchainMainnetAPI.poolInfo(asset: asset),
+            responseType: ThorchainPool.self
+        )
+        return response.data
     }
 
     /// Get supported pools for LP with caching
@@ -555,20 +544,11 @@ extension ThorchainService {
 
         // Use retry mechanism for network call
         return try await withRetry(maxAttempts: 3) {
-            let urlString = Endpoint.fetchThorchainPools
-
-            guard let url = URL(string: urlString) else {
-                throw HelperError.runtimeError("Invalid URL")
-            }
-
-            // Create a URL session with timeout
-            let config = URLSessionConfiguration.default
-            config.timeoutIntervalForRequest = 10.0 // 10 second timeout
-            config.timeoutIntervalForResource = 15.0
-            let session = URLSession(configuration: config)
-
-            let (data, _) = try await session.data(for: get9RRequest(url: url))
-            let pools = try JSONDecoder().decode([ThorchainPool].self, from: data)
+            let response = try await httpClient.request(
+                ThorchainMainnetAPI.pools,
+                responseType: [ThorchainPool].self
+            )
+            let pools = response.data
 
             // Filter only available pools
             let availablePools = pools.filter { $0.status == "Available" }
@@ -805,47 +785,26 @@ extension ThorchainService {
     }
 
     private func attemptDirectFetch(denom: String) async throws -> DenomMetadata? {
-        let urlString = Endpoint.fetchThorchainDenomMetadata(denom: denom)
-
-        guard let url = URL(string: urlString) else {
-            return nil
-        }
-
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                let metadataResponse = try JSONDecoder().decode(MetadataResponse.self, from: data)
-                return metadataResponse.metadata
-            }
+            let response = try await httpClient.request(
+                ThorchainMainnetAPI.denomMetadata(denom: denom),
+                responseType: MetadataResponse.self
+            )
+            return response.data.metadata
         } catch {
             return nil
         }
-
-        return nil
     }
 
     private func attemptListFetch(denom: String) async throws -> DenomMetadata? {
-        let urlString = Endpoint.fetchThorchainAllDenomMetadata()
-
-        guard let url = URL(string: urlString) else {
-            return nil
-        }
-
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                let metadatasResponse = try JSONDecoder().decode(MetadatasResponse.self, from: data)
-
-                if let metadatas = metadatasResponse.metadatas {
-                    for metadata in metadatas {
-                        if metadata.base == denom {
-                            return metadata
-                        }
-                    }
+            let response = try await httpClient.request(
+                ThorchainMainnetAPI.allDenomMetadata,
+                responseType: MetadatasResponse.self
+            )
+            if let metadatas = response.data.metadatas {
+                for metadata in metadatas where metadata.base == denom {
+                    return metadata
                 }
             }
         } catch {

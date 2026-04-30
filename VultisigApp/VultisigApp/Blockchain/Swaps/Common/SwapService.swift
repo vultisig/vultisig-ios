@@ -31,45 +31,78 @@ struct SwapService {
             throw SwapError.routeUnavailable
         }
 
-        // Start all requests in parallel
-
-        let tasks = providers.map { provider in
-            Task {
-                do {
-                    let quote = try await self.fetchQuoteForProvider(
-                        provider: provider,
-                        amount: amount,
-                        fromCoin: fromCoin,
-                        toCoin: toCoin,
-                        isAffiliate: isAffiliate,
-                        referredCode: referredCode,
-                        vultTierDiscount: vultTierDiscount
-                    )
-                    return Result<SwapQuote, Error>.success(quote)
-                } catch {
-                    return Result<SwapQuote, Error>.failure(error)
+        // Fetch every eligible provider in parallel, then rank by net output. Returning on
+        // first success would honour the priority order baked into `resolveAllProviders`,
+        // which is fine when only one provider is eligible but produces poor outcomes on
+        // same-chain ERC20 routes where THORChain is listed first yet routes through its
+        // Router with a costly `depositWithExpiry` deposit and a destination amount that's
+        // typically lower than what an aggregator returns.
+        let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
+            for provider in providers {
+                group.addTask {
+                    do {
+                        let quote = try await self.fetchQuoteForProvider(
+                            provider: provider,
+                            amount: amount,
+                            fromCoin: fromCoin,
+                            toCoin: toCoin,
+                            isAffiliate: isAffiliate,
+                            referredCode: referredCode,
+                            vultTierDiscount: vultTierDiscount
+                        )
+                        return Result<SwapQuote, Error>.success(quote)
+                    } catch {
+                        return Result<SwapQuote, Error>.failure(error)
+                    }
                 }
             }
-        }
 
-        var lastError: Error?
-
-        // Await results in priority order
-        for task in tasks {
-            switch await task.value {
-            case let .success(quote):
-                // Found a successful quote from the highest priority provider available
-                // Cancel remaining tasks to save resources
-                tasks.forEach { $0.cancel() }
-                return quote
-            case let .failure(error):
-                // This provider failed, try the next one (which is already running)
-                lastError = error
-                continue
+            var collected: [Result<SwapQuote, Error>] = []
+            for await result in group {
+                collected.append(result)
             }
+            return collected
         }
 
-        throw lastError ?? SwapError.routeUnavailable
+        let quotes = results.compactMap { try? $0.get() }
+        if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
+            return best
+        }
+
+        let firstError = results.compactMap { result -> Error? in
+            if case .failure(let error) = result { return error }
+            return nil
+        }.first
+
+        throw firstError ?? SwapError.routeUnavailable
+    }
+
+    /// Pick the quote with the highest net output in `toCoin` units. Every provider in a
+    /// candidate set swaps to the same `toCoin`, so the destination amount is directly
+    /// comparable. Falls back to the first quote (priority order from `resolveAllProviders`)
+    /// when no quote produces a comparable amount.
+    static func selectBestQuote(
+        quotes: [SwapQuote],
+        toCoin: Coin
+    ) -> SwapQuote? {
+        guard !quotes.isEmpty else { return nil }
+
+        let ranked = quotes.compactMap { quote -> (SwapQuote, Decimal)? in
+            guard let value = quote.expectedNetToAmount(toCoin: toCoin) else { return nil }
+            return (quote, value)
+        }
+
+        if let best = ranked.max(by: { $0.1 < $1.1 }) {
+            let summary = ranked
+                .map { "\($0.0.displayName ?? "?")=\($0.1)" }
+                .joined(separator: ", ")
+            let pickedName = best.0.displayName ?? "?"
+            logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] → \(pickedName, privacy: .public)")
+            return best.0
+        }
+
+        logger.warning("[swap-rank] no quote was rankable, returning first by priority")
+        return quotes.first
     }
 
     private func fetchQuoteForProvider(

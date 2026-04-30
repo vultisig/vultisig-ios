@@ -10,8 +10,14 @@ import OSLog
 
 class ParticipantDiscovery: ObservableObject {
     private let logger = Logger(subsystem: "participant-discovery", category: "communication")
+    private let httpClient: HTTPClientProtocol
+
     @Published var peersFound = [String]()
     var task: Task<Void, Error>? = nil
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func stop() {
         self.task?.cancel()
@@ -20,61 +26,64 @@ class ParticipantDiscovery: ObservableObject {
     }
 
     func getParticipants(serverAddr: String, sessionID: String, localParty: String) {
-        let urlString = "\(serverAddr)/\(sessionID)"
-        guard let url = URL(string: urlString) else {
-            self.logger.error("Invalid URL: \(urlString)")
+        guard let baseURL = URL(string: serverAddr) else {
+            self.logger.error("Invalid server address: \(serverAddr)")
             return
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        self.task?.cancel() // cancel any existing task
-        self.task = Task.detached {
+
+        self.task?.cancel()
+        self.task = Task.detached { [weak self, httpClient, logger = self.logger] in
             repeat {
                 if Task.isCancelled {
                     return
                 }
+                guard self != nil else {
+                    return
+                }
                 do {
-                    let (data, resp) = try await URLSession.shared.data(for: request)
-                    guard let httpResponse = resp as? HTTPURLResponse else {
-                        self.logger.error("Invalid response from server")
-                        try await Task.sleep(for: .seconds(1)) // wait for a second to continue
-                        continue
-                    }
+                    // Keep the raw-data path so empty bodies (session warming
+                    // up) and decode failures both short-circuit with a log +
+                    // retry, matching the original polling behavior.
+                    let response = try await httpClient.request(
+                        RelayServerAPI(baseURL: baseURL, endpoint: .getParticipants(sessionID: sessionID))
+                    )
 
-                    switch httpResponse.statusCode {
-                    case 200 ... 299:
-                        if data.isEmpty {
-                            self.logger.error("No participants available yet")
-                            try await Task.sleep(for: .seconds(1)) // wait for a second to continue
-                            continue
-                        }
+                    if response.response.statusCode == 404 {
+                        logger.error("Session not found, maybe it is not started yet")
+                    } else if response.data.isEmpty {
+                        logger.error("No participants available yet")
+                    } else {
                         do {
-                            print("Response data: \(String(data: data, encoding: .utf8) ?? "")")
-                            let decoder = JSONDecoder()
-                            let peers = try decoder.decode([String].self, from: data)
+                            let peers = try JSONDecoder().decode([String].self, from: response.data)
+                            // The detached task can outlive a stop()/restart;
+                            // bail before mutating peersFound so a stale poll
+                            // can't leak peers into a fresh session.
+                            guard !Task.isCancelled else { return }
                             await MainActor.run {
-                                for peer in peers {
-                                    if peer == localParty {
-                                        continue
-                                    }
-                                    if !self.peersFound.contains(peer) {
-                                        self.peersFound.append(peer)
-                                    }
+                                guard let self, !Task.isCancelled else { return }
+                                for peer in peers where peer != localParty && !self.peersFound.contains(peer) {
+                                    self.peersFound.append(peer)
                                 }
                             }
                         } catch {
-                            self.logger.error("Failed to decode response to JSON: \(error)")
+                            logger.error("Failed to decode response to JSON: \(error.localizedDescription)")
                         }
-                    case 404: // success
-                        self.logger.error("Session not found, maybe it is not started yet")
-                    default:
-                        self.logger.error("Server returned status code \(httpResponse.statusCode)")
                     }
 
-                    try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+                    try await Task.sleep(for: .seconds(1))
+                } catch is CancellationError {
+                    return
+                } catch let HTTPError.statusCode(code, _) {
+                    // Transient relay errors (5xx, etc.) shouldn't kill the
+                    // polling loop — the keysign session would silently never
+                    // discover the other participants. Log and retry.
+                    logger.error("Relay returned status code \(code); retrying")
+                    try? await Task.sleep(for: .seconds(1))
+                } catch HTTPError.timeout, HTTPError.networkError(_) {
+                    logger.error("Relay request failed transiently; retrying")
+                    try? await Task.sleep(for: .seconds(1))
                 } catch {
-                    self.logger.error("Error during participant discovery: \(error.localizedDescription)")
+                    logger.error("Error during participant discovery: \(error.localizedDescription)")
                     return
                 }
             } while !Task.isCancelled

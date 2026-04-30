@@ -35,4 +35,23 @@ opt_in_rules:
 analyzer_rules:
   - unused_declaration
   - unused_import
+
+# Custom rules enforce repo conventions that standard SwiftLint rules can't.
+# These fire as warnings today so existing violations are visible but don't
+# block the build; Architecture 3.i flips them to `error` after the HTTPClient
+# migration is complete.
+custom_rules:
+  no_raw_urlsession:
+    name: "Raw URLSession outside Core/Networking"
+    regex: '\bURLSession\b'
+    excluded: ".*/(Core/Networking|VultisigAppTests|VultisigAppUITests)/.*"
+    message: "Use HTTPClient + TargetType (see Core/Networking/) instead of URLSession. Load the networking-guide skill for the pattern."
+    severity: warning
+  no_raw_urlrequest:
+    name: "Raw URLRequest outside Core/Networking"
+    regex: '\bURLRequest\b'
+    excluded: ".*/(Core/Networking|VultisigAppTests|VultisigAppUITests)/.*"
+    message: "URLRequest construction should stay inside Core/Networking/. Define a TargetType and use HTTPClient instead."
+    severity: warning
+
 reporter: "xcode"
