@@ -56,6 +56,13 @@ final class QBTCClaimRoundRunner {
         let discovery = ParticipantDiscovery()
         defer { discovery.stop() }
 
+        // Register on the relay BEFORE inviting Vultiserver. Without this POST, Vultiserver's
+        // outbound MPC messages to this device's localPartyID may never be queued / matched
+        // by the relay, and the iOS poll loop hangs on `/router/message/{sessionID}/{partyID}`
+        // forever. Mirrors `FastVaultKeysignService.executeKeysignCeremony` step 1 and
+        // `KeysignDiscoveryViewModel.startKeysignSession`.
+        try await sessionService.registerAsParticipant(session: session)
+
         let derivePath = input.btcCoin.coinType.derivationPath()
         try await sessionService.wakeFastVaultServer(
             publicKeyEcdsa: input.vault.pubKeyECDSA,
@@ -103,6 +110,9 @@ final class QBTCClaimRoundRunner {
         let session = try sessionService.newSession(vault: input.vault)
         let discovery = ParticipantDiscovery()
         defer { discovery.stop() }
+
+        // See `runBtcRound` for why we register before inviting Vultiserver.
+        try await sessionService.registerAsParticipant(session: session)
 
         try await sessionService.wakeFastVaultServer(
             publicKeyEcdsa: input.vault.pubKeyECDSA,
