@@ -20,6 +20,7 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
+    @State private var refreshErrorToast: String?
 
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -34,7 +35,9 @@ struct DefiChainMainScreen: View {
         vault.nativeCoin(for: chain)
     }
 
-    private var refreshErrorMessage: String? {
+    /// Surfaced via the `.withBanner(...)` toast modifier; the active segment's VM owns the
+    /// underlying error state.
+    private var refreshError: String? {
         switch viewModel.selectedPosition {
         case .bond: return bondViewModel.refreshError
         case .stake: return nil
@@ -47,9 +50,6 @@ struct DefiChainMainScreen: View {
             LazyVStack(spacing: 16) {
                 DefiChainBalanceView(vault: vault, chain: chain)
                 positionsSegmentedControlView
-                if let refreshErrorMessage {
-                    refreshErrorBanner(message: refreshErrorMessage)
-                }
                 selectedPositionView
             }
             .padding(.top, isMacOS ? 60 : 16)
@@ -71,6 +71,9 @@ struct DefiChainMainScreen: View {
         .onChange(of: viewModel.selectedPosition) { _, _ in
             Task { await refresh() }
         }
+        .onChange(of: refreshError) { _, newValue in
+            refreshErrorToast = newValue
+        }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
             DefiChainSelectPositionsScreen(
                 viewModel: viewModel,
@@ -79,6 +82,7 @@ struct DefiChainMainScreen: View {
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {}
         .withLoading(isLoading: $isLoading)
+        .withBanner(text: $refreshErrorToast, style: .error)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),
@@ -86,21 +90,6 @@ struct DefiChainMainScreen: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
             )
         }
-    }
-
-    func refreshErrorBanner(message: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(Theme.colors.alertWarning)
-            Text(message)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Spacer()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Theme.colors.alertWarning.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     var positionsSegmentedControlView: some View {

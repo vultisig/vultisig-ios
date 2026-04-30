@@ -7,8 +7,28 @@
 
 import SwiftUI
 
+enum NotificationBannerStyle {
+    case success
+    case error
+
+    var iconName: String {
+        switch self {
+        case .success: "check"
+        case .error: "triangle-alert"
+        }
+    }
+
+    var accentColor: Color {
+        switch self {
+        case .success: Theme.colors.alertSuccess
+        case .error: Theme.colors.alertError
+        }
+    }
+}
+
 struct NotificationBannerView: View {
     let text: String
+    let style: NotificationBannerStyle
     @State private var progress: Double = 0.0
     @Binding var isVisible: Bool
     @State var isVisibleInternal: Bool = false
@@ -16,6 +36,16 @@ struct NotificationBannerView: View {
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
     private let duration: Double = 1.3
     private let progressDelay: CGFloat = 0.1
+
+    init(
+        text: String,
+        style: NotificationBannerStyle = .success,
+        isVisible: Binding<Bool>
+    ) {
+        self.text = text
+        self.style = style
+        self._isVisible = isVisible
+    }
 
     var body: some View {
         VStack {
@@ -28,11 +58,11 @@ struct NotificationBannerView: View {
 
                     Circle()
                         .trim(from: 0, to: progress)
-                        .stroke(Theme.colors.alertSuccess, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                        .stroke(style.accentColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
                         .frame(width: 18, height: 18)
                         .rotationEffect(.radians(-.pi / 2))
                         .animation(animation.delay(progressDelay), value: progress)
-                    Icon(named: "check", color: Theme.colors.alertSuccess, size: 9)
+                    Icon(named: style.iconName, color: style.accentColor, size: 9)
                 }
 
                 Text(text)
@@ -73,9 +103,11 @@ struct NotificationBannerView: View {
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
         Spacer()
         NotificationBannerView(text: "Address copied", isVisible: .constant(true))
+            .padding(.horizontal, 16)
+        NotificationBannerView(text: "Couldn't refresh", style: .error, isVisible: .constant(true))
             .padding(.horizontal, 16)
         Spacer()
     }
