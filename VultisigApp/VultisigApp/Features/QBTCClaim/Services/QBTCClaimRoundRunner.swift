@@ -121,7 +121,12 @@ final class QBTCClaimRoundRunner {
             derivePath: QBTCClaimConfig.mldsaDerivePath,
             isECDSA: false,
             vaultPassword: input.fastVaultPassword,
-            chain: input.qbtcCoin.chain.name
+            chain: input.qbtcCoin.chain.name,
+            // Vultiserver routes to its MLDSA pipeline only when this flag is set;
+            // without it `is_ecdsa: false` is interpreted as EdDSA and the server
+            // never starts MPC for the QBTC claim's MLDSA round, leaving iOS to
+            // poll `/router/message/...` forever.
+            isMldsa: true
         )
 
         let participants = try await sessionService.awaitFastVaultPeer(

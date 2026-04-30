@@ -138,7 +138,8 @@ final class KeysignSessionService {
         derivePath: String,
         isECDSA: Bool,
         vaultPassword: String,
-        chain: String
+        chain: String,
+        isMldsa: Bool = false
     ) async throws {
         try await fastVaultService.sign(
             publicKeyEcdsa: publicKeyEcdsa,
@@ -148,9 +149,10 @@ final class KeysignSessionService {
             derivePath: derivePath,
             isECDSA: isECDSA,
             vaultPassword: vaultPassword,
-            chain: chain
+            chain: chain,
+            isMldsa: isMldsa
         )
-        logger.info("FastVault sign POSTed (session=\(session.sessionId, privacy: .public), isECDSA=\(isECDSA, privacy: .public))")
+        logger.info("FastVault sign POSTed (session=\(session.sessionId, privacy: .public), isECDSA=\(isECDSA, privacy: .public), isMldsa=\(isMldsa, privacy: .public))")
     }
 
     // MARK: - Relay-session lifecycle
