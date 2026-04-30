@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 final class DefiChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     private let chain: Chain
@@ -26,10 +27,13 @@ final class DefiChainStakeViewModel: ObservableObject {
         self.vault = vault
         self.chain = chain
         self.interactor = DefiInteractorResolver.stakeInteractor(for: chain)
+        self.stakePositions = cachedPositions()
+        self.initialLoadingDone = !stakePositions.isEmpty
     }
 
     func update(vault: Vault) {
         self.vault = vault
+        self.stakePositions = cachedPositions()
     }
 
     func refresh() async {
@@ -38,15 +42,13 @@ final class DefiChainStakeViewModel: ObservableObject {
 }
 
 private extension DefiChainStakeViewModel {
-    @MainActor
-    func loadStakePositions() async {
-        stakePositions = vault.stakePositions
+    func cachedPositions() -> [StakePosition] {
+        vault.stakePositions
             .filter { vaultStakePositions.contains($0.coin) }
             .sorted { $0.amount > $1.amount }
+    }
 
-        if !stakePositions.isEmpty {
-            initialLoadingDone = true
-        }
+    func loadStakePositions() async {
         guard let interactor = interactor else {
             initialLoadingDone = true
             return

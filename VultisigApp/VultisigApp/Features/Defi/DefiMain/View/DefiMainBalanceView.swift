@@ -38,13 +38,16 @@ struct DefiMainBalanceView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.colors.border))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .onAppear { updateBalance() }
+        .onChange(of: vault) { _, _ in
+            updateBalance()
+        }
         .onChange(of: vault.defiPositions) { _, _ in
             updateBalance()
         }
-        .onChange(of: vault.stakePositions) { _, _ in
-            updateBalance()
-        }
-        .onChange(of: vault.bondPositions) { _, _ in
+        .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
+            // SwiftData mutates `vault.stakePositions` / `bondPositions` / `lpPositions` in place;
+            // the parent vault doesn't fire `objectWillChange`, so we recompute on an explicit
+            // notification posted from `DefiPositionsStorageService.upsert`.
             updateBalance()
         }
     }

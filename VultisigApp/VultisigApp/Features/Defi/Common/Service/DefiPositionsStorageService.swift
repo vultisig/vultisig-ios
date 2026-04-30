@@ -8,6 +8,14 @@
 import Foundation
 import SwiftData
 
+extension Notification.Name {
+    /// Posted on the main actor after `DefiPositionsStorageService.upsert(...)` saves changes to
+    /// SwiftData. SwiftUI views observing balance derived from `Vault` relationships should
+    /// recompute on receipt — `@ObservedObject` does not propagate in-place mutations of nested
+    /// `@Model` arrays back to the parent vault.
+    static let defiPositionsDidChange = Notification.Name("com.vultisig.app.defiPositionsDidChange")
+}
+
 struct DefiPositionsStorageService {
     /// Upserts LP positions - updates existing ones or inserts new ones based on their unique ID
     @MainActor
@@ -36,6 +44,7 @@ struct DefiPositionsStorageService {
         }
 
         try Storage.shared.save()
+        NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
 
     /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
@@ -59,6 +68,7 @@ struct DefiPositionsStorageService {
                 Storage.shared.modelContext.delete(existingPosition)
             }
             try Storage.shared.save()
+            NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
             return
         }
 
@@ -86,6 +96,7 @@ struct DefiPositionsStorageService {
         }
 
         try Storage.shared.save()
+        NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
 
     /// Upserts stake positions - updates existing ones or inserts new ones based on their unique ID
@@ -118,5 +129,6 @@ struct DefiPositionsStorageService {
         }
 
         try Storage.shared.save()
+        NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
 }

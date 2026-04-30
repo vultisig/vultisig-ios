@@ -29,24 +29,20 @@ final class DefiChainLPsViewModel: ObservableObject {
         self.vault = vault
         self.chain = chain
         self.interactor = DefiInteractorResolver.lpsInteractor(for: chain)
+        self.lpPositions = cachedPositions()
+        self.initialLoadingDone = !lpPositions.isEmpty
     }
 
     func update(vault: Vault) {
         self.vault = vault
+        self.lpPositions = cachedPositions()
     }
 
     func refresh() async {
         guard hasLPPositions else {
-            lpPositions = []
+            // No LP coins enabled — preserve any prior in-memory state and just mark loaded.
             initialLoadingDone = true
             return
-        }
-
-        lpPositions = vault.lpPositions.filter {
-            vaultLPPositions.contains($0.coin2)
-        }
-        if !lpPositions.isEmpty {
-            initialLoadingDone = true
         }
 
         guard let interactor = interactor else {
@@ -59,5 +55,11 @@ final class DefiChainLPsViewModel: ObservableObject {
             lpPositions = positions
         }
         initialLoadingDone = true
+    }
+}
+
+private extension DefiChainLPsViewModel {
+    func cachedPositions() -> [LPPosition] {
+        vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
     }
 }
