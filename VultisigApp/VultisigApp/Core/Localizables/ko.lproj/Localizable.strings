@@ -187,6 +187,7 @@
 "circleWithdrawAmount" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
+"claim" = "수령";
 "clearFilters" = "필터 초기화";
 "close" = "닫기";
 "coinAddressCopied" = "%@ 주소 복사됨";

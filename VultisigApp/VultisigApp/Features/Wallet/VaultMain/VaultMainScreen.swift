@@ -282,6 +282,9 @@ struct VaultMainScreen: View {
         case .receive:
             showReceiveList = true
             return
+        case .claim:
+            guard let chain = selectedChain, chain == .qbtc else { return }
+            vaultAction = .qbtcClaim(vault: vault)
         }
 
         guard let vaultAction else { return }

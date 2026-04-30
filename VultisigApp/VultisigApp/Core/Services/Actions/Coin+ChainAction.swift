@@ -27,6 +27,10 @@ extension CoinAction {
         .mayaChain,
         .tron
     ]
+
+    static var claimChains: [Chain] = [
+        .qbtc
+    ]
 }
 
 extension Chain {
@@ -38,6 +42,14 @@ extension Chain {
             actions.append(.swap)
         }
         actions.append(.send) // always include send
+
+        // QBTC (and any future claim-supporting chain) gets a Claim CTA next to Send.
+        // The button routes to the QBTC claim flow via `VaultAction.qbtcClaim` —
+        // see `ChainDetailScreen.onAction(_:)`.
+        if CoinAction.claimChains.contains(self) {
+            actions.append(.claim)
+        }
+
         let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
         // when hasBuyEnabledSet has not been set , set it to true
         if hasBuyEnabledSet == nil {

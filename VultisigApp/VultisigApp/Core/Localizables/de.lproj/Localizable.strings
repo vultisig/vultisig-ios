@@ -185,6 +185,7 @@
 "circleWithdrawInstruction" = "Geben Sie Adresse und Betrag zum Abheben ein";
 "circleWithdrawTitle" = "USDC abheben";
 "circleYield" = "Rendite";
+"claim" = "Beanspruchen";
 "clearFilters" = "Filter löschen";
 "close" = "Schließen";
 "coinAddressCopied" = "Münzadresse kopiert";

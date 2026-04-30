@@ -185,6 +185,7 @@
 "circleWithdrawInstruction" = "Digite endereço e valor para sacar";
 "circleWithdrawTitle" = "Sacar USDC";
 "circleYield" = "Rendimento";
+"claim" = "Reivindicar";
 "clearFilters" = "Limpar filtros";
 "close" = "Fechar";
 "coinAddressCopied" = "Endereço %@ copiado";

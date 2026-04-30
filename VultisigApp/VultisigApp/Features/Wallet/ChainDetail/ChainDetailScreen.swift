@@ -153,11 +153,6 @@ struct ChainDetailScreen: View {
                 )
             }
 
-            if nativeCoin.chain == .qbtc {
-                QBTCClaimSection(
-                    onTap: { navigateToAction(action: .qbtcClaim(vault: vault)) }
-                )
-            }
         }
     }
 
@@ -299,6 +294,8 @@ private extension ChainDetailScreen {
             )
         case .sell:
             break
+        case .claim:
+            vaultAction = .qbtcClaim(vault: vault)
         }
 
         guard let vaultAction else { return }

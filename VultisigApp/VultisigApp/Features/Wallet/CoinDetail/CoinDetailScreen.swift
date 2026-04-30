@@ -176,6 +176,10 @@ private extension CoinDetailScreen {
             )
         case .sell:
             break
+        case .claim:
+            // CoinDetailScreen displays a single coin and doesn't carry the vault for the
+            // claim flow. Defer to the chain-level entry point.
+            return
         }
 
         guard let vaultAction else { return }

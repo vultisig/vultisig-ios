@@ -185,6 +185,7 @@
 "circleWithdrawInstruction" = "Ingresa dirección y cantidad a retirar";
 "circleWithdrawTitle" = "Retirar USDC";
 "circleYield" = "Rendimiento";
+"claim" = "Reclamar";
 "clearFilters" = "Borrar filtros";
 "close" = "Cerrar";
 "coinAddressCopied" = "Dirección de moneda copiada";

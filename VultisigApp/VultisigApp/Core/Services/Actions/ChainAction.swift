@@ -16,6 +16,7 @@ enum CoinAction: String, Codable {
     case buy
     case sell
     case receive
+    case claim
 
     var title: String {
         return rawValue.capitalized
@@ -27,7 +28,7 @@ enum CoinAction: String, Codable {
             return Theme.colors.bgButtonPrimary
         case .swap:
             return Theme.colors.primaryAccent4
-        case .deposit, .bridge, .memo, .buy, .sell, .receive:
+        case .deposit, .bridge, .memo, .buy, .sell, .receive, .claim:
             return Theme.colors.primaryAccent3
         }
     }
@@ -46,6 +47,8 @@ enum CoinAction: String, Codable {
             "sell".localized
         case .receive:
             "receive".localized
+        case .claim:
+            "claim".localized
         }
     }
 
@@ -67,6 +70,8 @@ enum CoinAction: String, Codable {
             "shopping-bag-add"
         case .receive:
             "arrow-wall-down"
+        case .claim:
+            "coins-add"
         }
     }
 
@@ -80,7 +85,8 @@ enum CoinAction: String, Codable {
                 .memo,
                 .buy,
                 .sell,
-                .receive:
+                .receive,
+                .claim:
             return false
         }
     }
@@ -89,7 +95,7 @@ enum CoinAction: String, Codable {
         switch self {
         case .deposit, .bridge, .memo:
             return true
-        case .send, .swap, .buy, .sell, .receive:
+        case .send, .swap, .buy, .sell, .receive, .claim:
             return false
         }
     }
