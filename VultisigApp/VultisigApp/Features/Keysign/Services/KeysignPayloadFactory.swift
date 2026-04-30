@@ -198,10 +198,7 @@ struct KeysignPayloadFactory {
             signData: nil
         )
 
-        // Use WalletCore's Cardano transaction planning to select optimal UTXOs
-        let cardanoHelper = CardanoHelper()
-
-        let plan = try cardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
+        let plan = try CardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
         if plan.utxos.isEmpty {
             throw Errors.notEnoughUTXOError
         }

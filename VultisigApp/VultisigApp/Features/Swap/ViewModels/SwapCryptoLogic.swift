@@ -575,8 +575,7 @@ struct SwapCryptoLogic {
                 let planFee: BigInt
                 switch tx.fromCoin.chain {
                 case .cardano:
-                    let cardanoHelper = CardanoHelper()
-                    planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+                    planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
 
                 default: // UTXO chains
                     let utxo = UTXOChainsHelper(coin: tx.fromCoin.coinType)

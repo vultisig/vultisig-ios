@@ -14,6 +14,7 @@ struct LiFiService {
     static let integratorFeeBps: Int = 50
 
     private let integratorName: String = "vultisig-ios"
+    private let httpClient: HTTPClientProtocol = HTTPClient()
 
     func fetchQuotes(
         fromCoin: Coin,
@@ -34,26 +35,29 @@ struct LiFiService {
             integratorFeeString = String(format: "%.3f", NSDecimalNumber(decimal: integratorFee).doubleValue)
         }
 
-        let endpoint = Endpoint.fetchLiFiQuote(
+        let params = LiFiAPI.QuoteParams(
             fromChain: String(fromChain),
             toChain: String(toChain),
             fromToken: fromToken,
-            toAddress: toCoin.address,
             toToken: toToken,
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address,
+            toAddress: toCoin.address,
             integrator: integrator,
             fee: integratorFeeString
         )
 
-        let (data, _) = try await URLSession.shared.data(from: endpoint)
         let response: LifiQuoteResponse
-
         do {
-            response = try JSONDecoder().decode(LifiQuoteResponse.self, from: data)
-        } catch {
-            let error = try JSONDecoder().decode(LiFiSwapError.self, from: data)
-            throw error
+            response = try await httpClient.request(
+                LiFiAPI.quote(params: params),
+                responseType: LifiQuoteResponse.self
+            ).data
+        } catch HTTPError.statusCode(_, let data) {
+            if let data, let error = try? JSONDecoder().decode(LiFiSwapError.self, from: data) {
+                throw error
+            }
+            throw Errors.unexpectedError
         }
 
         switch response {

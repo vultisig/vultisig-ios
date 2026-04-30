@@ -2,163 +2,47 @@
 //  CosmosServiceConfig.swift
 //  VultisigApp
 //
-//  Value type configuration for Cosmos services
-//
 
 import Foundation
 
 struct CosmosServiceConfig {
     let chain: Chain
 
-    // URL builders
-    func balanceURL(forAddress address: String) -> URL? {
-        return URL(string: balanceURLString(forAddress: address))
-    }
-
-    func accountNumberURL(forAddress address: String) -> URL? {
-        return URL(string: accountNumberURLString(forAddress: address))
-    }
-
-    func transactionURL() -> URL? {
-        return URL(string: transactionURLString())
-    }
-
-    func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
-        return URL(string: wasmTokenBalanceURLString(contractAddress: contractAddress, base64Payload: base64Payload))
-    }
-
-    func ibcDenomTraceURL(hash: String) -> URL? {
-        return URL(string: ibcDenomTraceURLString(hash: hash))
-    }
-
-    func latestBlockURL() -> URL? {
-        return URL(string: latestBlockURLString())
-    }
-
-    // Private URL string builders
-    private func balanceURLString(forAddress address: String) -> String {
+    /// REST host for this chain. All `/cosmos/*`, `/ibc/*`, `/cosmwasm/*`
+    /// paths are appended to this by `CosmosAPI`.
+    var baseURL: URL? {
         switch chain {
         case .gaiaChain:
-            return Endpoint.fetchCosmosAccountBalance(address: address)
+            return URL(string: "https://cosmos-rest.publicnode.com")
         case .dydx:
-            return Endpoint.fetchDydxAccountBalance(address: address)
+            return URL(string: "https://dydx-rest.publicnode.com")
         case .kujira:
-            return Endpoint.fetchKujiraAccountBalance(address: address)
+            return URL(string: "https://kujira-rest.publicnode.com")
         case .osmosis:
-            return Endpoint.fetchOsmosisAccountBalance(address: address)
+            return URL(string: "https://osmosis-rest.publicnode.com")
         case .terra:
-            return Endpoint.fetchTerraAccountBalance(address: address)
+            return URL(string: "https://terra-lcd.publicnode.com")
         case .terraClassic:
-            return Endpoint.fetchTerraClassicAccountBalance(address: address)
+            return URL(string: "https://terra-classic-lcd.publicnode.com")
         case .noble:
-            return Endpoint.fetchNobleAccountBalance(address: address)
+            return URL(string: "https://noble-api.polkachu.com")
         case .akash:
-            return Endpoint.fetchAkashAccountBalance(address: address)
+            return URL(string: "https://akash-rest.publicnode.com")
         case .qbtc:
-            return Endpoint.fetchQbtcAccountBalance(address: address)
+            return URL(string: "https://api.vultisig.com/qbtc-rpc")
         default:
-            return ""
+            return nil
         }
     }
 
-    private func accountNumberURLString(forAddress address: String) -> String {
+    /// Terra and Terra Classic expose balances under the
+    /// `spendable_balances` REST path; every other chain uses `balances`.
+    var usesSpendableBalances: Bool {
         switch chain {
-        case .gaiaChain:
-            return Endpoint.fetchCosmosAccountNumber(address)
-        case .dydx:
-            return Endpoint.fetchDydxAccountNumber(address)
-        case .kujira:
-            return Endpoint.fetchKujiraAccountNumber(address)
-        case .osmosis:
-            return Endpoint.fetchOsmosisAccountNumber(address)
-        case .terra:
-            return Endpoint.fetchTerraAccountNumber(address)
-        case .terraClassic:
-            return Endpoint.fetchTerraClassicAccountNumber(address)
-        case .noble:
-            return Endpoint.fetchNobleAccountNumber(address)
-        case .akash:
-            return Endpoint.fetchAkashAccountNumber(address)
-        case .qbtc:
-            return Endpoint.fetchQbtcAccountNumber(address)
+        case .terra, .terraClassic:
+            return true
         default:
-            return ""
-        }
-    }
-
-    private func transactionURLString() -> String {
-        switch chain {
-        case .gaiaChain:
-            return Endpoint.broadcastCosmosTransaction
-        case .dydx:
-            return Endpoint.broadcastDydxTransaction
-        case .kujira:
-            return Endpoint.broadcastKujiraTransaction
-        case .osmosis:
-            return Endpoint.broadcastOsmosisTransaction
-        case .terra:
-            return Endpoint.broadcastTerraTransaction
-        case .terraClassic:
-            return Endpoint.broadcastTerraClassicTransaction
-        case .noble:
-            return Endpoint.broadcastNobleTransaction
-        case .akash:
-            return Endpoint.broadcastAkashTransaction
-        case .qbtc:
-            return Endpoint.broadcastQbtcTransaction
-        default:
-            return ""
-        }
-    }
-
-    private func wasmTokenBalanceURLString(contractAddress: String, base64Payload: String) -> String {
-        switch chain {
-        case .gaiaChain:
-            return Endpoint.fetchCosmosWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload)
-        case .kujira:
-            return Endpoint.fetchKujiraWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload)
-        case .osmosis:
-            return Endpoint.fetchOsmosisWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload)
-        case .terra:
-            return Endpoint.fetchTerraWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload)
-        case .terraClassic:
-            return Endpoint.fetchTerraClassicWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload)
-        default:
-            return ""
-        }
-    }
-
-    private func ibcDenomTraceURLString(hash: String) -> String {
-        switch chain {
-        case .gaiaChain:
-            return Endpoint.fetchCosmosIbcDenomTraces(hash: hash)
-        case .kujira:
-            return Endpoint.fetchKujiraIbcDenomTraces(hash: hash)
-        case .osmosis:
-            return Endpoint.fetchOsmosisIbcDenomTraces(hash: hash)
-        case .terra:
-            return Endpoint.fetchTerraIbcDenomTraces(hash: hash)
-        case .terraClassic:
-            return Endpoint.fetchTerraClassicIbcDenomTraces(hash: hash)
-        default:
-            return ""
-        }
-    }
-
-    private func latestBlockURLString() -> String {
-        switch chain {
-        case .gaiaChain:
-            return Endpoint.fetchCosmosLatestBlock()
-        case .kujira:
-            return Endpoint.fetchKujiraLatestBlock()
-        case .osmosis:
-            return Endpoint.fetchOsmosisLatestBlock()
-        case .terra:
-            return Endpoint.fetchTerraLatestBlock()
-        case .terraClassic:
-            return Endpoint.fetchTerraClassicLatestBlock()
-        default:
-            return ""
+            return false
         }
     }
 
