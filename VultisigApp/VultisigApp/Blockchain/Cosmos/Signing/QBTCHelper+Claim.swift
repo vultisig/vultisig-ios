@@ -21,10 +21,15 @@ struct QBTCClaimMessage {
     let proofHex: String
     /// 64 hex chars.
     let messageHashHex: String
-    /// 40 hex chars.
+    /// 40 hex chars. `RIPEMD160(SHA256(compressed_btc_pubkey))` (Bitcoin Hash160).
     let addressHashHex: String
     /// 64 hex chars.
     let qbtcAddressHashHex: String
+    /// 64 hex chars. `SHA256(compressed_btc_pubkey)` — public input to the ZK
+    /// circuit. Chain natively verifies `RIPEMD160(pubKeyHashSha256) == addressHash`,
+    /// replacing an in-circuit RIPEMD160 gadget with a native operation. See
+    /// `qbtc/proto/qbtc/qbtc/v1/msg_claim_with_proof.proto:43-46`.
+    let pubKeyHashSha256Hex: String
 }
 
 enum QBTCClaimMessageError: LocalizedError {
@@ -86,6 +91,7 @@ extension QBTCHelper {
         try assertHex(input.messageHashHex, name: "message_hash", expected: 64)
         try assertHex(input.addressHashHex, name: "address_hash", expected: 40)
         try assertHex(input.qbtcAddressHashHex, name: "qbtc_address_hash", expected: 64)
+        try assertHex(input.pubKeyHashSha256Hex, name: "pub_key_hash_sha256", expected: 64)
     }
 
     /// Encodes a single `UTXORef` as protobuf bytes:
@@ -111,6 +117,7 @@ extension QBTCHelper {
         msg.appendProtoString(fieldNumber: 4, value: input.messageHashHex)
         msg.appendProtoString(fieldNumber: 5, value: input.addressHashHex)
         msg.appendProtoString(fieldNumber: 6, value: input.qbtcAddressHashHex)
+        msg.appendProtoString(fieldNumber: 7, value: input.pubKeyHashSha256Hex)
         return msg
     }
 

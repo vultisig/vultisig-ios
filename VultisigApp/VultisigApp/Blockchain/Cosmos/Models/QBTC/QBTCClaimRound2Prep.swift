@@ -26,6 +26,11 @@ struct QBTCClaimRound2Prep: Codable, Hashable {
     let addressHashHex: String
     /// 64-hex; `qbtc_address_hash` from `/prove`.
     let qbtcAddressHashHex: String
+    /// 64-hex; `SHA256(compressed_btc_pubkey)`. Required by the chain at
+    /// `MsgClaimWithProof.pub_key_hash_sha256` (proto field 7). Initiator
+    /// computes once and ships to the peer over this prep so both sides
+    /// reconstruct identical wire bytes for round-2's SignDoc.
+    let pubKeyHashSha256Hex: String
     /// QBTC chain account number — fetched from `/cosmos/auth/.../accounts/{addr}`
     /// (404 ⇒ 0 fresh-account).
     let accountNumber: UInt64

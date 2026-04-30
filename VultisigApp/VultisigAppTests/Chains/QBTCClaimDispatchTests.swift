@@ -25,6 +25,7 @@ final class QBTCClaimDispatchTests: XCTestCase {
         messageHashHex: String(repeating: "bb", count: 32),
         addressHashHex: String(repeating: "cc", count: 20),
         qbtcAddressHashHex: String(repeating: "dd", count: 32),
+        pubKeyHashSha256Hex: String(repeating: "ee", count: 32),
         utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 100_000)]
     )
 

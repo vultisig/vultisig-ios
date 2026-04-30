@@ -16,6 +16,7 @@ final class QBTCClaimMessageTests: XCTestCase {
     static let validMessageHash = String(repeating: "bb", count: 32)
     static let validAddressHash = String(repeating: "cc", count: 20)
     static let validQbtcAddressHash = String(repeating: "dd", count: 32)
+    static let validPubKeyHashSha256 = String(repeating: "ee", count: 32)
     static let validUtxo = ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 1000)
 
     static func makeInput(
@@ -24,7 +25,8 @@ final class QBTCClaimMessageTests: XCTestCase {
         proofHex: String = validProof,
         messageHashHex: String = validMessageHash,
         addressHashHex: String = validAddressHash,
-        qbtcAddressHashHex: String = validQbtcAddressHash
+        qbtcAddressHashHex: String = validQbtcAddressHash,
+        pubKeyHashSha256Hex: String = validPubKeyHashSha256
     ) -> QBTCClaimMessage {
         QBTCClaimMessage(
             claimer: claimer,
@@ -32,7 +34,8 @@ final class QBTCClaimMessageTests: XCTestCase {
             proofHex: proofHex,
             messageHashHex: messageHashHex,
             addressHashHex: addressHashHex,
-            qbtcAddressHashHex: qbtcAddressHashHex
+            qbtcAddressHashHex: qbtcAddressHashHex,
+            pubKeyHashSha256Hex: pubKeyHashSha256Hex
         )
     }
 
@@ -185,8 +188,8 @@ final class QBTCClaimMessageTests: XCTestCase {
 
     /// `MsgClaimWithProof` MUST emit fields in field-number order
     /// (claimer=1, utxos=2..., proof=3, messageHash=4, addressHash=5,
-    /// qbtcAddressHash=6) with repeated UTXOs as separate length-delimited
-    /// records (NOT packed).
+    /// qbtcAddressHash=6, pubKeyHashSha256=7) with repeated UTXOs as separate
+    /// length-delimited records (NOT packed).
     func testEncodeMsgClaimWithProofMatchesManualReconstruction() {
         let encoded = QBTCHelper.encodeMsgClaimWithProof(Self.validInput)
 
@@ -199,6 +202,7 @@ final class QBTCClaimMessageTests: XCTestCase {
         expected.appendProtoString(fieldNumber: 4, value: Self.validInput.messageHashHex)
         expected.appendProtoString(fieldNumber: 5, value: Self.validInput.addressHashHex)
         expected.appendProtoString(fieldNumber: 6, value: Self.validInput.qbtcAddressHashHex)
+        expected.appendProtoString(fieldNumber: 7, value: Self.validInput.pubKeyHashSha256Hex)
 
         XCTAssertEqual(encoded, expected)
     }

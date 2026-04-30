@@ -243,7 +243,8 @@ final class QBTCClaimJoinDriver: ObservableObject {
             proofHex: prep.proofHex,
             messageHashHex: prep.messageHashHex,
             addressHashHex: prep.addressHashHex,
-            qbtcAddressHashHex: prep.qbtcAddressHashHex
+            qbtcAddressHashHex: prep.qbtcAddressHashHex,
+            pubKeyHashSha256Hex: prep.pubKeyHashSha256Hex
         )
         let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
         let artifacts = QBTCHelper.buildClaimSignDoc(

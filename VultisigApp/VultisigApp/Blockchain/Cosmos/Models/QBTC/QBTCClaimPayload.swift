@@ -22,6 +22,10 @@ struct QBTCClaimPayload: Codable, Hashable {
     let addressHashHex: String
     /// 64-char hex; matches `QBTCClaimHashes.qbtcAddressHash`.
     let qbtcAddressHashHex: String
+    /// 64-char hex; `SHA256(compressed_btc_pubkey)`. Required by the chain
+    /// (`MsgClaimWithProof.pub_key_hash_sha256`, proto field 7) — see
+    /// `qbtc/proto/qbtc/qbtc/v1/msg_claim_with_proof.proto:43-46`.
+    let pubKeyHashSha256Hex: String
     /// The UTXOs being claimed. `vout = 0` is encoded as proto3 default-skip
     /// downstream — see `QBTCHelper.encodeUtxoRef`.
     let utxos: [ClaimableUtxo]
@@ -35,7 +39,8 @@ struct QBTCClaimPayload: Codable, Hashable {
             proofHex: proofHex,
             messageHashHex: messageHashHex,
             addressHashHex: addressHashHex,
-            qbtcAddressHashHex: qbtcAddressHashHex
+            qbtcAddressHashHex: qbtcAddressHashHex,
+            pubKeyHashSha256Hex: pubKeyHashSha256Hex
         )
     }
 }

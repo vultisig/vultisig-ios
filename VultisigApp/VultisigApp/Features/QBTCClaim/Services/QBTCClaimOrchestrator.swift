@@ -12,6 +12,7 @@
 
 import Foundation
 import OSLog
+import WalletCore
 
 // MARK: - Round runner protocol (production + test seam)
 
@@ -168,13 +169,19 @@ final class QBTCClaimOrchestrator: ObservableObject {
         let accountInfo = try await fetchAccountInfo(input.qbtcCoin.address)
 
         // Build the cosmos artifacts for the MLDSA round.
+        // `pub_key_hash_sha256` (proto field 7) is `SHA256(compressed_btc_pubkey)`.
+        // The chain natively computes RIPEMD160 of this and matches against
+        // `address_hash`, replacing an in-circuit RIPEMD160 gadget — see
+        // `qbtc/x/qbtc/keeper/handle_msg_claim_with_proof.go:207-216`.
+        let pubKeyHashSha256Hex = Hash.sha256(data: compressedPubkey).toHexString()
         let claimMessage = QBTCClaimMessage(
             claimer: input.qbtcCoin.address,
             utxos: input.utxos,
             proofHex: proof.proof,
             messageHashHex: messageHashHex,
             addressHashHex: addressHashHex,
-            qbtcAddressHashHex: qbtcAddressHashHex
+            qbtcAddressHashHex: qbtcAddressHashHex,
+            pubKeyHashSha256Hex: pubKeyHashSha256Hex
         )
         let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
         guard let mldsaPubKey = Data(hexString: input.qbtcCoin.hexPublicKey) else {
@@ -197,6 +204,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
                 messageHashHex: messageHashHex,
                 addressHashHex: addressHashHex,
                 qbtcAddressHashHex: qbtcAddressHashHex,
+                pubKeyHashSha256Hex: pubKeyHashSha256Hex,
                 accountNumber: accountInfo.accountNumber,
                 sequence: accountInfo.sequence
             )
