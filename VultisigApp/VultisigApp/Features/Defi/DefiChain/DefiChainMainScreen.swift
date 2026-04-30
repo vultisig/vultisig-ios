@@ -34,11 +34,22 @@ struct DefiChainMainScreen: View {
         vault.nativeCoin(for: chain)
     }
 
+    private var refreshErrorMessage: String? {
+        switch viewModel.selectedPosition {
+        case .bond: return bondViewModel.refreshError
+        case .stake: return nil
+        case .liquidityPool: return lpsViewModel.refreshError
+        }
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
                 DefiChainBalanceView(vault: vault, chain: chain)
                 positionsSegmentedControlView
+                if let refreshErrorMessage {
+                    refreshErrorBanner(message: refreshErrorMessage)
+                }
                 selectedPositionView
             }
             .padding(.top, isMacOS ? 60 : 16)
@@ -75,6 +86,21 @@ struct DefiChainMainScreen: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
             )
         }
+    }
+
+    func refreshErrorBanner(message: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Theme.colors.alertWarning)
+            Text(message)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Theme.colors.alertWarning.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     var positionsSegmentedControlView: some View {
@@ -279,15 +305,14 @@ private extension DefiChainMainScreen {
 
 private extension DefiChainMainScreen {
     func refresh() async {
-        Task { await viewModel.refresh() }
-        switch viewModel.selectedPosition {
-        case .bond:
-            await bondViewModel.refresh()
-        case .stake:
-            await stakeViewModel.refresh()
-        case .liquidityPool:
-            await lpsViewModel.refresh()
-        }
+        // Refresh all three position categories in parallel so the aggregate balance shown
+        // in `DefiChainBalanceView` reflects every position type — not just the currently
+        // selected segment. The native-coin balance refresh runs independently.
+        async let mainRefresh: Void = viewModel.refresh()
+        async let bondRefresh: Void = bondViewModel.refresh()
+        async let stakeRefresh: Void = stakeViewModel.refresh()
+        async let lpsRefresh: Void = lpsViewModel.refresh()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
     }
 
     func update(vault: Vault) {

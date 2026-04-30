@@ -13,16 +13,9 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
-    func fetchStakePositions(vault: Vault) async -> [StakePosition] {
-        // Get CACAO coin (native token for MayaChain)
-        guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
-            return []
-        }
-
-        // Check if user has CACAO staking enabled in vault DeFi positions
-        let vaultStakePositions = vault.defiPositions.first { $0.chain == .mayaChain }?.staking ?? []
-
-        // Only fetch staking details if CACAO is in the enabled positions
+    func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
+        guard let cacaoCoin = await cacaoCoin(in: vault) else { return [] }
+        let vaultStakePositions = await vaultStakePositions(in: vault)
         guard vaultStakePositions.contains(where: { $0.ticker == cacaoCoin.ticker }) else {
             return []
         }
@@ -36,7 +29,6 @@ struct MayaChainStakeInteractor: StakeInteractor {
         }
 
         do {
-            // Fetch CACAO pool position
             let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
 
             // Use value for display amount (includes earnings)
@@ -44,79 +36,43 @@ struct MayaChainStakeInteractor: StakeInteractor {
             // Use units for unstake amount (what can actually be withdrawn)
             let availableToUnstake = position.availableUnits / pow(10, cacaoCoin.decimals)
 
-            // Fetch APR/APY
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
 
-            // Check for withdrawal date
             let unstakeMetadata = calculateUnstakeMetadata(
                 currentHeight: health.lastMayaNode.height,
                 lastDepositHeight: position.lastDepositHeight,
                 maturityBlocks: mimir.cacaoPoolDepositMaturityBlocks
             )
 
-            // Create stake position
-            let stakePosition = StakePosition(
-                coin: cacaoCoin.toCoinMeta(),
-                type: .stake,
-                amount: stakedAmount,
-                availableToUnstake: availableToUnstake,
-                apr: aprData?.apr ?? 0,
-                estimatedReward: nil,  // CACAO pool doesn't show estimated rewards separately
-                nextPayout: nil,  // CACAO pool rewards are continuously accrued
-                rewards: nil,
-                rewardCoin: nil,  // Rewards in CACAO
-                unstakeMetadata: unstakeMetadata,
-                vault: vault
-            )
-
-            let positions = [stakePosition]
-            await savePositions(positions: positions)
-            return positions
+            return [
+                StakePositionData(
+                    coin: cacaoCoin.toCoinMeta(),
+                    type: .stake,
+                    amount: stakedAmount,
+                    availableToUnstake: availableToUnstake,
+                    apr: aprData?.apr ?? 0,
+                    unstakeMetadata: unstakeMetadata
+                )
+            ]
         } catch {
-            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription)")
-
-            // Reuse previously persisted metadata so APR / rewards / nextPayout don't disappear on transient failures
-            let previous = await previousPosition(for: cacaoCoin, vault: vault)
-            let fallbackPosition = StakePosition(
-                coin: cacaoCoin.toCoinMeta(),
-                type: .stake,
-                amount: cacaoCoin.stakedBalanceDecimal,
-                apr: previous?.apr,
-                estimatedReward: previous?.estimatedReward,
-                nextPayout: previous?.nextPayout,
-                rewards: previous?.rewards,
-                rewardCoin: previous?.rewardCoin,
-                vault: vault
-            )
-
-            return [fallbackPosition]
+            // On API failure, omit the position. The previously persisted CACAO @Model
+            // remains untouched in `vault.stakePositions`, so the user keeps seeing
+            // stale data until the next refresh — see THORChainStakeInteractor.
+            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .public)")
+            return []
         }
     }
 }
 
 private extension MayaChainStakeInteractor {
     @MainActor
-    func previousPosition(for coin: Coin, vault: Vault) -> PreviousStakeMetadata? {
-        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
-        guard let existing = vault.stakePositions.first(where: { $0.id == id }) else {
-            return nil
-        }
-        return PreviousStakeMetadata(
-            apr: existing.apr,
-            estimatedReward: existing.estimatedReward,
-            nextPayout: existing.nextPayout,
-            rewards: existing.rewards,
-            rewardCoin: existing.rewardCoin
-        )
+    func cacaoCoin(in vault: Vault) -> Coin? {
+        vault.coins.first { $0.chain == .mayaChain && $0.isNativeToken }
     }
 
     @MainActor
-    func savePositions(positions: [StakePosition]) {
-        do {
-            try DefiPositionsStorageService().upsert(positions)
-        } catch {
-            logger.error("An error occurred while saving staked positions: \(error)")
-        }
+    func vaultStakePositions(in vault: Vault) -> [CoinMeta] {
+        vault.defiPositions.first { $0.chain == .mayaChain }?.staking ?? []
     }
 
     func calculateUnstakeMetadata(

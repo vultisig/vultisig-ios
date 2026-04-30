@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-lps-interactor")
 
 struct THORChainLPsInteractor: LPsInteractor {
     private let thorchainAPIService = THORChainAPIService()
@@ -19,33 +22,30 @@ struct THORChainLPsInteractor: LPsInteractor {
         SettingsAPRPeriod.current.rawValue
     }
 
-    func fetchLPPositions(vault: Vault) async -> [LPPosition] {
+    func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
         guard let runeCoin = vault.runeCoin else { return [] }
-        let vaultLPPositions = vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
+        let vaultLPPositions = await readVaultLPPositions(in: vault)
 
-        do {
-            // Fetch LP positions from THORChain API using configured period for LUVI-based APR
-            let apiPositions = try await thorchainAPIService.getLPPositions(
-                address: runeCoin.address,
-                userLPs: vaultLPPositions,
-                period: aprPeriod
-            )
+        let apiPositions = try await thorchainAPIService.getLPPositions(
+            address: runeCoin.address,
+            userLPs: vaultLPPositions,
+            period: aprPeriod
+        )
 
-            // Convert THORChainLPPosition to LPPosition
-            let positions = try convertToLPPositions(apiPositions, vault: vault)
-            await savePositions(positions: positions)
-            return positions
-
-        } catch {
-            print("Error fetching LP positions: \(error)")
-            return []
-        }
+        let positions = convertToLPPositions(apiPositions)
+        await persistFreshPositions(positions, for: vault)
+        return positions
     }
 }
 
 private extension THORChainLPsInteractor {
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition], vault: Vault) throws -> [LPPosition] {
-        var result: [LPPosition] = []
+    @MainActor
+    func readVaultLPPositions(in vault: Vault) -> [CoinMeta] {
+        vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
+    }
+
+    func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) -> [LPPositionData] {
+        var result: [LPPositionData] = []
 
         for apiPosition in apiPositions {
             // Parse the pool asset (e.g., "BTC.BTC", "ETH.ETH")
@@ -58,20 +58,18 @@ private extension THORChainLPsInteractor {
                 assetTicker = String(assetTicker.split(separator: "-")[0])
             }
 
-            // Find RUNE coin (always coin1)
             guard let runeCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == "RUNE" && $0.isNativeToken
             }) else {
-                print("Could not find RUNE coin")
+                logger.warning("Could not find RUNE coin")
                 continue
             }
 
-            // Find the asset coin (coin2)
             guard let assetCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == assetTicker &&
                 $0.chain.swapAsset.uppercased() == assetChainName
             }) else {
-                print("Could not find asset coin for: \(assetTicker) on \(assetChainName)")
+                logger.warning("Could not find asset coin for: \(assetTicker, privacy: .public) on \(assetChainName, privacy: .public)")
                 continue
             }
 
@@ -80,29 +78,28 @@ private extension THORChainLPsInteractor {
             let runeAmount = apiPosition.currentRuneAmount / pow(10, runeCoin.decimals)
             let assetAmount = apiPosition.currentAssetAmount / pow(10, runeCoin.decimals)
 
-            let lpPosition = LPPosition(
-                coin1: runeCoin,
-                coin1Amount: runeAmount,
-                coin2: assetCoin,
-                coin2Amount: assetAmount,
-                poolName: apiPosition.asset,
-                poolUnits: apiPosition.poolStats.units,
-                apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
-                vault: vault
+            result.append(
+                LPPositionData(
+                    coin1: runeCoin,
+                    coin1Amount: runeAmount,
+                    coin2: assetCoin,
+                    coin2Amount: assetAmount,
+                    poolName: apiPosition.asset,
+                    poolUnits: apiPosition.poolStats.units,
+                    apr: apiPosition.apr // Already in decimal format (e.g., 0.0067 for 0.67%)
+                )
             )
-
-            result.append(lpPosition)
         }
 
         return result
     }
 
     @MainActor
-    func savePositions(positions: [LPPosition]) {
+    func persistFreshPositions(_ positions: [LPPositionData], for vault: Vault) {
         do {
-            try DefiPositionsStorageService().upsert(positions)
+            try DefiPositionsStorageService().upsert(lp: positions, for: vault)
         } catch {
-            print("An error occured while saving LPs positions: \(error)")
+            logger.error("Failed to save LP positions: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

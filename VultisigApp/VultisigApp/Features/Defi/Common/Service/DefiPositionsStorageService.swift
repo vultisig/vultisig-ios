@@ -17,35 +17,59 @@ extension Notification.Name {
 }
 
 struct DefiPositionsStorageService {
-    /// Upserts LP positions - updates existing ones or inserts new ones based on their unique ID
+
+    // MARK: - LP positions
+
+    /// Upserts LP positions for a vault. Materializes value-type DTOs into `@Model` instances inside
+    /// the model context so the interactor never has to construct `LPPosition(... vault:)` itself
+    /// (which would mutate `vault.lpPositions` via the inverse relationship as a side effect).
+    /// Returns the persisted `@Model` array so callers can update `@Published` state from a single
+    /// stable source.
+    @discardableResult
     @MainActor
-    func upsert(_ positions: [LPPosition]) throws {
-        let positionIDs = positions.map { $0.id }
+    func upsert(lp positions: [LPPositionData], for vault: Vault) throws -> [LPPosition] {
+        let ids = positions.map { $0.id(for: vault) }
         let fetchDescriptor = FetchDescriptor<LPPosition>(
             predicate: #Predicate<LPPosition> { position in
-                positionIDs.contains(position.id)
+                ids.contains(position.id)
             }
         )
+        let existing = try Storage.shared.modelContext.fetch(fetchDescriptor)
+        let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        var materialized: [LPPosition] = []
+        materialized.reserveCapacity(positions.count)
 
-        for position in positions {
-            if let existing = existingPositionsByID[position.id] {
-                // Update existing position
-                existing.coin1Amount = position.coin1Amount
-                existing.coin2Amount = position.coin2Amount
-                existing.apr = position.apr
-                existing.lastUpdated = position.lastUpdated
+        for dto in positions {
+            let id = dto.id(for: vault)
+            if let existing = existingByID[id] {
+                existing.coin1Amount = dto.coin1Amount
+                existing.coin2Amount = dto.coin2Amount
+                existing.apr = dto.apr
+                existing.lastUpdated = .now
+                materialized.append(existing)
             } else {
-                // Insert new position
-                Storage.shared.modelContext.insert(position)
+                let model = LPPosition(
+                    coin1: dto.coin1,
+                    coin1Amount: dto.coin1Amount,
+                    coin2: dto.coin2,
+                    coin2Amount: dto.coin2Amount,
+                    poolName: dto.poolName,
+                    poolUnits: dto.poolUnits,
+                    apr: dto.apr,
+                    vault: vault
+                )
+                Storage.shared.modelContext.insert(model)
+                materialized.append(model)
             }
         }
 
         try Storage.shared.save()
         NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
+        return materialized
     }
+
+    // MARK: - Bond positions
 
     /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
     /// Also removes stale positions that are no longer present in the new positions array
@@ -99,36 +123,60 @@ struct DefiPositionsStorageService {
         NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
 
-    /// Upserts stake positions - updates existing ones or inserts new ones based on their unique ID
+    // MARK: - Stake positions
+
+    /// Upserts stake positions for a vault. See `upsert(lp:for:)` for the rationale around
+    /// DTO-based materialization.
+    @discardableResult
     @MainActor
-    func upsert(_ positions: [StakePosition]) throws {
-        let positionIDs = positions.map { $0.id }
+    func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {
+        let ids = positions.map { $0.id(for: vault) }
         let fetchDescriptor = FetchDescriptor<StakePosition>(
             predicate: #Predicate<StakePosition> { position in
-                positionIDs.contains(position.id)
+                ids.contains(position.id)
             }
         )
+        let existing = try Storage.shared.modelContext.fetch(fetchDescriptor)
+        let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        var materialized: [StakePosition] = []
+        materialized.reserveCapacity(positions.count)
 
-        for position in positions {
-            if let existing = existingPositionsByID[position.id] {
-                // Update existing position
-                existing.amount = position.amount
-                existing.apr = position.apr
-                existing.estimatedReward = position.estimatedReward
-                existing.nextPayout = position.nextPayout
-                existing.rewards = position.rewards
-                existing.rewardCoin = position.rewardCoin
-                existing.unstakeMetadata = position.unstakeMetadata
+        for dto in positions {
+            let id = dto.id(for: vault)
+            if let existing = existingByID[id] {
+                existing.coin = dto.coin
+                existing.type = dto.type
+                existing.amount = dto.amount
+                existing.availableToUnstake = dto.availableToUnstake
+                existing.apr = dto.apr
+                existing.estimatedReward = dto.estimatedReward
+                existing.nextPayout = dto.nextPayout
+                existing.rewards = dto.rewards
+                existing.rewardCoin = dto.rewardCoin
+                existing.unstakeMetadata = dto.unstakeMetadata
+                materialized.append(existing)
             } else {
-                // Insert new position
-                Storage.shared.modelContext.insert(position)
+                let model = StakePosition(
+                    coin: dto.coin,
+                    type: dto.type,
+                    amount: dto.amount,
+                    availableToUnstake: dto.availableToUnstake,
+                    apr: dto.apr,
+                    estimatedReward: dto.estimatedReward,
+                    nextPayout: dto.nextPayout,
+                    rewards: dto.rewards,
+                    rewardCoin: dto.rewardCoin,
+                    unstakeMetadata: dto.unstakeMetadata,
+                    vault: vault
+                )
+                Storage.shared.modelContext.insert(model)
+                materialized.append(model)
             }
         }
 
         try Storage.shared.save()
         NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
+        return materialized
     }
 }
