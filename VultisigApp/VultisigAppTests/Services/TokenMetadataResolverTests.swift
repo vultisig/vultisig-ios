@@ -69,6 +69,24 @@ final class TokenMetadataResolverTests: XCTestCase {
         XCTAssertNil(result, "Empty symbol must be treated as a failed lookup.")
     }
 
+    func testResolveReturnsNilOnUnreasonableDecimals() async {
+        // A malicious / misbehaving contract could return any uint16+ value. Downstream
+        // we compute `BigInt(10).power(decimals)`, which would chew CPU for huge values.
+        let resolver = TokenMetadataResolver(fetcher: { _, _ in
+            TokenMetadata(symbol: "EVIL", decimals: 65535)
+        })
+        let result = await resolver.resolve(contractAddress: usdcAddress, on: .ethereum)
+        XCTAssertNil(result, "Decimals outside the sane range must be treated as a failed lookup.")
+    }
+
+    func testResolveAcceptsBoundaryDecimals() async {
+        let resolver = TokenMetadataResolver(fetcher: { _, _ in
+            TokenMetadata(symbol: "EDGE", decimals: 36)
+        })
+        let result = await resolver.resolve(contractAddress: usdcAddress, on: .ethereum)
+        XCTAssertEqual(result, TokenMetadata(symbol: "EDGE", decimals: 36))
+    }
+
     func testResolveDoesNotCacheFailures() async {
         let counter = CallCounter()
         let shouldFail = AtomicBool(true)

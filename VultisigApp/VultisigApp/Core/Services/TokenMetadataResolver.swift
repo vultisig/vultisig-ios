@@ -67,8 +67,15 @@ actor TokenMetadataResolver {
             do {
                 let metadata = try await fetcher(chain, contractAddress)
                 // `RpcEvmService.getTokenInfo` swallows errors and returns empty strings
-                // — treat that as a failed lookup so we don't cache garbage.
-                guard !metadata.symbol.isEmpty else { return nil }
+                // — treat that as a failed lookup so we don't cache garbage. Also bound
+                // `decimals` to a sane range: the contract is untrusted, and downstream
+                // formatting computes `BigInt(10).power(decimals)`. A malicious or
+                // misbehaving contract returning e.g. 65535 would chew CPU during render.
+                // 36 is well above any legitimate token (18 is the de-facto ceiling).
+                guard !metadata.symbol.isEmpty,
+                      (0...36).contains(metadata.decimals) else {
+                    return nil
+                }
                 return metadata
             } catch {
                 logger.warning("Token metadata fetch failed for chain=\(chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
