@@ -8,6 +8,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-request")
 
 /// One UTXO reference in the `/prove` request — `txid` + `vout` only,
 /// no amount (the chain doesn't need amount; that's BTC-side data for UI).
@@ -65,15 +68,20 @@ extension ClaimProofRequest {
         )
     }
 
-    /// Zero-pads a hex string on the LEFT to a fixed byte width.
-    /// 1 byte = 2 hex chars. If the input is wider than the target,
-    /// trips an `assertionFailure` in debug and falls through with the
-    /// untouched string in release — wider-than-target indicates a
-    /// programmer error, but we don't want to crash production users.
+    /// Zero-pads a hex string on the LEFT to a fixed byte width (1 byte = 2 hex chars).
+    ///
+    /// The `r` component on secp256k1 is 32 bytes (64 hex chars), but the prover circuit
+    /// declares a 24-byte width for `signature_r`. The prover treats the value as a
+    /// fixed-width integer, so the extra eight high bytes are interpreted as leading zeros
+    /// of a wider integer — sending the full 32-byte form is what `vultisig-windows` does
+    /// and what the proof service expects in practice. We pass the input through unchanged
+    /// when it exceeds the target rather than trying to slice it (which would corrupt a
+    /// real signature) and let the proof service decide. We log a warning so the case is
+    /// visible in Console.app if a failure ever traces back here.
     static func padSigHex(_ hex: String, byteLength: Int) -> String {
         let target = byteLength * 2
         guard hex.count <= target else {
-            assertionFailure("padSigHex: \(hex.count)-char hex exceeds target \(target) (byteLength=\(byteLength))")
+            logger.warning("padSigHex: \(hex.count)-char hex exceeds target \(target) (byteLength=\(byteLength)); forwarding untruncated — matches vultisig-windows.")
             return hex
         }
         let padded = hex.count < target

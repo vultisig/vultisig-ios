@@ -41,6 +41,18 @@ final class QBTCProofServiceTests: XCTestCase {
         XCTAssertEqual(padded, String(repeating: "0", count: 48))
     }
 
+    /// secp256k1 produces a 32-byte `r` (64 hex chars), but the prover's `signature_r` field is
+    /// declared as 24 bytes. The prover treats the value as a fixed-width integer, so the extra
+    /// 8 high bytes are interpreted as leading zeros — sending the full 32-byte form is what
+    /// vultisig-windows does and what the proof service accepts. iOS used to fire an
+    /// `assertionFailure` here, which crashed every debug-build claim before the proof step.
+    /// This test locks in the pass-through behavior.
+    func testPadSigHexForwardsOverTargetInputUnchanged() {
+        let r32Bytes = String(repeating: "ab", count: 32) // 64 hex chars, > 48 target for r
+        let result = ClaimProofRequest.padSigHex(r32Bytes, byteLength: QBTCClaimConfig.proofServiceRBytes)
+        XCTAssertEqual(result, r32Bytes, "Over-target input must pass through unchanged — match vultisig-windows.")
+    }
+
     // MARK: - ClaimProofRequest convenience init
 
     func testRequestInitPadsBothSignatureComponents() {
