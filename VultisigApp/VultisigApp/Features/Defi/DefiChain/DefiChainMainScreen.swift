@@ -40,7 +40,7 @@ struct DefiChainMainScreen: View {
     private var refreshError: String? {
         switch viewModel.selectedPosition {
         case .bond: return bondViewModel.refreshError
-        case .stake: return nil
+        case .stake: return stakeViewModel.refreshError
         case .liquidityPool: return lpsViewModel.refreshError
         }
     }

@@ -32,9 +32,10 @@ struct THORChainLPsInteractor: LPsInteractor {
             period: aprPeriod
         )
 
-        let positions = convertToLPPositions(apiPositions)
-        await persistFreshPositions(positions, for: vault)
-        return positions
+        // Persistence is the ViewModel's responsibility — it calls
+        // `DefiPositionsStorageService.upsert(lp:for:)` on the returned DTOs. Persisting here
+        // too would double-write and double-fire `.defiPositionsDidChange`.
+        return convertToLPPositions(apiPositions)
     }
 }
 
@@ -92,14 +93,5 @@ private extension THORChainLPsInteractor {
         }
 
         return result
-    }
-
-    @MainActor
-    func persistFreshPositions(_ positions: [LPPositionData], for vault: Vault) {
-        do {
-            try DefiPositionsStorageService().upsert(lp: positions, for: vault)
-        } catch {
-            logger.error("Failed to save LP positions: \(error.localizedDescription, privacy: .public)")
-        }
     }
 }

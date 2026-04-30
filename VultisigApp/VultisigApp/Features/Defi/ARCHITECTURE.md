@@ -4,7 +4,7 @@
 
 ## Layer map
 
-```
+```text
 Views (SwiftUI, MainActor)
   DefiMainScreen / DefiChainMainScreen
   ↓ @ObservedObject Vault, @StateObject VMs
@@ -29,34 +29,34 @@ SwiftData (@Model, MainActor-bound)
 
 ## Known pitfalls
 
-Severity legend: **CRIT** (correctness/data-race), **HIGH** (Swift 6 / fragile contract), **MED** (UX/maintainability), **LOW** (cosmetic).
+Severity legend: **CRIT** (correctness/data-race), **HIGH** (Swift 6 / fragile contract), **MED** (UX/maintainability), **LOW** (cosmetic). Status: ✅ resolved on PR #4274 / ⏳ open.
 
 ### Concurrency / actors
 
-1. **HIGH** — `DefiChain/ViewModel/DefiChainBondViewModel.swift`: class missing `@MainActor`; only `refresh()` has it.
-2. **CRIT** — `DefiChain/Interactor/Stake/THORChainStakeInteractor.swift`, mirrored in Maya: `fetchStakePositions`/`createStakePosition` are not actor-isolated yet read `vault.coins`/`vault.defiPositions`/`vault.runeCoin` and construct `StakePosition(... vault:)` (a `@Model`, not `Sendable`). Works today by single-thread luck; will fail Swift 6 strict concurrency.
-3. **MED** — `DefiChain/DefiChainMainScreen.swift:281-291`: `refresh()` awaits the four VMs sequentially despite no inter-dependence. ~3-4× cold-refresh latency win from `async let`.
-4. **MED** — `DefiChain/Interactor/Bond/THORChainBondInteractor.swift:39-74`: per-node TaskGroup catches return `nil` and silently drop the failing node.
-5. **LOW** — implicit actor hop on `previousPosition`/`savePositions` (caller is non-MainActor; helper is `@MainActor`). Undocumented contract.
+1. ✅ **HIGH** — `DefiChain/ViewModel/DefiChainBondViewModel.swift`: class missing `@MainActor`; only `refresh()` has it. *Resolved: class is now `@MainActor`.*
+2. ⏳ **CRIT** — `DefiChain/Interactor/Stake/THORChainStakeInteractor.swift`, mirrored in Maya: `fetchStakePositions`/`createStakePosition` are not actor-isolated yet read `vault.coins`/`vault.defiPositions`/`vault.runeCoin` and (pre-DTO refactor) constructed `StakePosition(... vault:)` (a `@Model`, not `Sendable`). Works today by single-thread luck; will fail Swift 6 strict concurrency. *Partially resolved: the @Model construction is gone (DTOs); the input-side @Model property reads off MainActor remain. Tracked as the next testability win — ties into the THORChainStakingService protocol extraction.*
+3. ✅ **MED** — `DefiChain/DefiChainMainScreen.swift`: `refresh()` awaited the four VMs sequentially. *Resolved: parallelized via `async let`.*
+4. ⏳ **MED** — `DefiChain/Interactor/Bond/THORChainBondInteractor.swift:39-74`: per-node TaskGroup catches return `nil` and silently drop the failing node.
+5. ⏳ **LOW** — implicit actor hop on `previousPosition`/`savePositions` (caller is non-MainActor; helper is `@MainActor`). Undocumented contract.
 
 ### `@Model` leakage
 
-6. **CRIT** — `StakePosition.swift:35,60`, `LPPosition.swift`: `@Relationship(inverse:)` + `self.vault = vault` in `init` mutates `vault.<positions>` immediately on construction. The mechanism that produced Bug 2.
-7. **HIGH** — Stake and LP interactors return `[StakePosition]`/`[LPPosition]` (`@Model`s). Bond uses `BondPositionDraft: Sendable` and materializes on `@MainActor` — that's the pattern Stake and LP should follow.
-8. **MED** — `DefiPositionsStorageService` LP and Stake `upsert` only insert/update; never delete-stale. Bond `upsert` does. Asymmetry is undocumented.
+6. ✅ **CRIT** — `StakePosition.swift:35,60`, `LPPosition.swift`: `@Relationship(inverse:)` + `self.vault = vault` in `init` mutates `vault.<positions>` immediately on construction. The mechanism that produced Bug 2. *Resolved: interactors return DTOs; `@Model` instances are constructed only inside `DefiPositionsStorageService.upsert(...)` on `@MainActor`. The trap is dead.*
+7. ✅ **HIGH** — Stake and LP interactors returned `[StakePosition]`/`[LPPosition]` (`@Model`s). *Resolved: replaced with `StakePositionData` / `LPPositionData` Sendable structs. Bond's `BondPositionDraft` pre-existed.*
+8. ⏳ **MED** — `DefiPositionsStorageService` LP and Stake `upsert` only insert/update; never delete-stale. Bond `upsert` does. Asymmetry is undocumented.
 
 ### Error handling
 
-9. **MED** — 7 `print(...)` calls in `DefiChain/Interactor/LPs/THORChainLPsInteractor.swift` (`:40,65,74,105`) and `MayaChainLPsInteractor.swift` (`:34,63,93`). Repo rule (`.claude/rules/logging.md`) requires `OSLog`/`Logger`.
-10. **MED** — LP fetch failure swallowed: `catch { print(...); return [] }`. UI can't distinguish "no LPs" from "fetch failed".
-11. **MED** — `DefiChainBondViewModel.refresh()` logs on error but has no `@Published var error`; user has no UI signal.
-12. **LOW** — `DefiPositionsService.lpCoins()`: `(try? await thorchainService.getPools()) ?? []` — silent empty picker on transient network blip.
+9. ✅ **MED** — 7 `print(...)` calls in `DefiChain/Interactor/LPs/THORChainLPsInteractor.swift` and `MayaChainLPsInteractor.swift`. *Resolved: replaced with file-level `Logger`s.*
+10. ✅ **MED** — LP fetch failure swallowed (`catch { print(...); return [] }`). *Resolved: `LPsInteractor.fetchLPPositions(vault:)` now `throws`; the VM catches and surfaces via `refreshError`.*
+11. ✅ **MED** — `DefiChainBondViewModel.refresh()` logged on error but had no `@Published var error`. *Resolved: `refreshError` published on Bond + LP VMs, surfaced via `withBanner(text:style:)` toast on `DefiChainMainScreen`.*
+12. ⏳ **LOW** — `DefiPositionsService.lpCoins()`: `(try? await thorchainService.getPools()) ?? []` — silent empty picker on transient network blip.
 
 ### Testability
 
-13. **CRIT** — Singletons (`Storage.shared`, `THORChainStakingService.shared`, `ThorchainService.shared`, `TokensStore`) and inline-constructed services (`THORChainAPIService()`) leave no DI seam. Defi unit-test surface today is one `scaledAmount` helper.
-14. **HIGH** — `DefiInteractorResolver` is a static enum with no protocol — VMs can't receive a fake.
-15. **HIGH** — VM `init(vault: Vault, ...)` requires a SwiftData `@Model`; tests need a `ModelContainer`.
+13. ⏳ **CRIT** — Singletons (`Storage.shared`, `THORChainStakingService.shared`, `ThorchainService.shared`, `TokensStore`) and inline-constructed services (`THORChainAPIService()`) leave no DI seam. *Partially resolved: VMs accept `interactor:` and `storage:` via init, unblocking VM tests. Service-level singletons remain — tracked as the THORChainStakingService protocol extraction.*
+14. ⏳ **HIGH** — `DefiInteractorResolver` is a static enum with no protocol. *Subsumed by direct VM-init injection; resolver protocol unnecessary for test seam.*
+15. ⏳ **HIGH** — VM `init(vault: Vault, ...)` requires a SwiftData `@Model`; tests need a `ModelContainer`. *Mitigated: `DefiTestStore.makeInMemoryContainer()` test helper boots one in ~5 lines.*
 
 ## Refactor proposals
 

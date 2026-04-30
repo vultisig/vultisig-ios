@@ -27,9 +27,8 @@ struct MayaChainLPsInteractor: LPsInteractor {
             period: aprPeriod
         )
 
-        let positions = convertToLPPositions(apiPositions, cacaoDecimals: mayaCoin.decimals)
-        await persistFreshPositions(positions, for: vault)
-        return positions
+        // Persistence is the ViewModel's responsibility — see THORChainLPsInteractor.
+        return convertToLPPositions(apiPositions, cacaoDecimals: mayaCoin.decimals)
     }
 }
 
@@ -84,14 +83,5 @@ private extension MayaChainLPsInteractor {
         }
 
         return result
-    }
-
-    @MainActor
-    func persistFreshPositions(_ positions: [LPPositionData], for vault: Vault) {
-        do {
-            try DefiPositionsStorageService().upsert(lp: positions, for: vault)
-        } catch {
-            logger.error("Failed to save LP positions: \(error.localizedDescription, privacy: .public)")
-        }
     }
 }

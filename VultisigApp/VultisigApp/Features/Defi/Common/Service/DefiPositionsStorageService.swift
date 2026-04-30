@@ -45,6 +45,7 @@ struct DefiPositionsStorageService {
             if let existing = existingByID[id] {
                 existing.coin1Amount = dto.coin1Amount
                 existing.coin2Amount = dto.coin2Amount
+                existing.poolUnits = dto.poolUnits
                 existing.apr = dto.apr
                 existing.lastUpdated = .now
                 materialized.append(existing)
