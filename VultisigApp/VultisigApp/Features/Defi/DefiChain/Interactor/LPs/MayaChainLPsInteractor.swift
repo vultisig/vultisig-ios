@@ -18,24 +18,31 @@ struct MayaChainLPsInteractor: LPsInteractor {
     }
 
     func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
-        guard let mayaCoin = await mayaCoin(in: vault) else { return [] }
+        // Snapshot CACAO's address + decimals on `MainActor` before the async network call.
+        guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
         let vaultLPPositions = await readVaultLPPositions(in: vault)
 
         let apiPositions = try await mayaAPIService.getLPPositions(
-            address: mayaCoin.address,
+            address: cacao.address,
             userLPs: vaultLPPositions,
             period: aprPeriod
         )
 
         // Persistence is the ViewModel's responsibility — see THORChainLPsInteractor.
-        return convertToLPPositions(apiPositions, cacaoDecimals: mayaCoin.decimals)
+        return convertToLPPositions(apiPositions, cacaoDecimals: cacao.decimals)
     }
+}
+
+private struct CacaoLPSnapshot {
+    let address: String
+    let decimals: Int
 }
 
 private extension MayaChainLPsInteractor {
     @MainActor
-    func mayaCoin(in vault: Vault) -> Coin? {
-        vault.nativeCoin(for: .mayaChain)
+    func cacaoSnapshot(in vault: Vault) -> CacaoLPSnapshot? {
+        guard let coin = vault.nativeCoin(for: .mayaChain) else { return nil }
+        return CacaoLPSnapshot(address: coin.address, decimals: coin.decimals)
     }
 
     @MainActor

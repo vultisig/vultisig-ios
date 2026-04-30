@@ -23,11 +23,13 @@ struct THORChainLPsInteractor: LPsInteractor {
     }
 
     func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
-        guard let runeCoin = vault.runeCoin else { return [] }
+        // Snapshot the RUNE coin's address on `MainActor` before the async network call.
+        // Reading `Coin` properties off the main actor would violate the SwiftData rule.
+        guard let runeAddress = await runeAddress(in: vault) else { return [] }
         let vaultLPPositions = await readVaultLPPositions(in: vault)
 
         let apiPositions = try await thorchainAPIService.getLPPositions(
-            address: runeCoin.address,
+            address: runeAddress,
             userLPs: vaultLPPositions,
             period: aprPeriod
         )
@@ -40,6 +42,11 @@ struct THORChainLPsInteractor: LPsInteractor {
 }
 
 private extension THORChainLPsInteractor {
+    @MainActor
+    func runeAddress(in vault: Vault) -> String? {
+        vault.runeCoin?.address
+    }
+
     @MainActor
     func readVaultLPPositions(in vault: Vault) -> [CoinMeta] {
         vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []

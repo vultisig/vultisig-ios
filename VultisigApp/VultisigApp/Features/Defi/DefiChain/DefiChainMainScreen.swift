@@ -68,9 +68,10 @@ struct DefiChainMainScreen: View {
         .onChange(of: vault.defiPositions) { _, _ in
             Task { await refresh() }
         }
-        .onChange(of: viewModel.selectedPosition) { _, _ in
-            Task { await refresh() }
-        }
+        // Segment switching does NOT refresh — `refresh()` already loads all three position
+        // types in parallel on initial load and pull-to-refresh, so the data the new segment
+        // needs is already cached. Re-running `refresh()` here would fire 4 extra API calls
+        // every time the user swipes between segments.
         .onChange(of: refreshError) { _, newValue in
             refreshErrorToast = newValue
         }

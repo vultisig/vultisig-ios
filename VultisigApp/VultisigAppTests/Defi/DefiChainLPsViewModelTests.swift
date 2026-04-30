@@ -86,7 +86,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
         XCTAssertTrue(vm.initialLoadingDone)
     }
 
-    func testRefreshEmptyPreservesPersistedState() async throws {
+    func testRefreshEmptySuccessClearsStalePositions() async throws {
         let storage = DefiPositionsStorageService()
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
@@ -94,15 +94,15 @@ final class DefiChainLPsViewModelTests: XCTestCase {
             LPPositionData(coin1: rune, coin1Amount: 50, coin2: btc, coin2Amount: 0.5, poolName: "BTC.BTC", poolUnits: "5", apr: 0.04)
         ], for: vault)
 
-        interactor.stub = [] // empty success
+        interactor.stub = [] // empty success — LP API is single-shot, [] means user has no LPs.
 
         let vm = makeViewModel()
         XCTAssertEqual(vm.lpPositions.count, 1)
         await vm.refresh()
 
-        // After empty fetch, persistedPositions() reflects whatever survived — the upsert with []
-        // is a no-op (we proved that in DefiPositionsStorageServiceTests), so persisted stays.
-        XCTAssertEqual(vm.lpPositions.count, 1, "Empty fetch must not clear LP list.")
+        // Storage's LP upsert applies vault-scoped delete-stale, so empty success clears the
+        // list. Failures throw (preserved by `testRefreshFailurePreservesStateAndSetsError`).
+        XCTAssertEqual(vm.lpPositions.count, 0, "Empty LP success clears persisted rows for the vault.")
         XCTAssertNil(vm.refreshError)
     }
 

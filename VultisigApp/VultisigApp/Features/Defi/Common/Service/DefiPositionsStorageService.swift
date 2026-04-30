@@ -28,14 +28,23 @@ struct DefiPositionsStorageService {
     @discardableResult
     @MainActor
     func upsert(lp positions: [LPPositionData], for vault: Vault) throws -> [LPPosition] {
-        let ids = positions.map { $0.id(for: vault) }
-        let fetchDescriptor = FetchDescriptor<LPPosition>(
+        // Vault-scoped delete-stale: rows on this vault whose IDs are not in the input are
+        // removed. Safe for LP because the LP API call is single-shot — the interactor either
+        // throws (VM skips upsert entirely) or returns the user's full LP set, so an absent
+        // ID genuinely means the user no longer holds that pool.
+        let vaultPubKey = vault.pubKeyECDSA
+        let allVaultLPsDescriptor = FetchDescriptor<LPPosition>(
             predicate: #Predicate<LPPosition> { position in
-                ids.contains(position.id)
+                position.id.contains(vaultPubKey)
             }
         )
-        let existing = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        let allExisting = try Storage.shared.modelContext.fetch(allVaultLPsDescriptor)
+        let existingByID = Dictionary(allExisting.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        let newIDs = Set(positions.map { $0.id(for: vault) })
+
+        for stale in allExisting where !newIDs.contains(stale.id) {
+            Storage.shared.modelContext.delete(stale)
+        }
 
         var materialized: [LPPosition] = []
         materialized.reserveCapacity(positions.count)
@@ -128,6 +137,14 @@ struct DefiPositionsStorageService {
 
     /// Upserts stake positions for a vault. See `upsert(lp:for:)` for the rationale around
     /// DTO-based materialization.
+    ///
+    /// **No delete-stale.** The stake interactor fetches per-coin and silently omits any
+    /// coin whose individual fetch failed (per-coin partial-failure protection — see
+    /// `THORChainStakeInteractor.fetchStakePositions`). If we deleted persisted rows for IDs
+    /// missing from the input, a transient failure on one coin would wipe its row from the
+    /// UI until the next successful refresh restored it. Stale rows for fully-exited
+    /// positions are filtered out at display time by the VM (`vaultStakePositions.contains`).
+    /// Bond and LP use single-shot APIs and can safely delete-stale.
     @discardableResult
     @MainActor
     func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {

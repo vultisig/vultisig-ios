@@ -147,7 +147,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(vault.stakePositions.count, 1, "Stake upsert with [] must NOT delete persisted positions; only Bond does delete-stale.")
     }
 
-    func testUpsertLpEmptyArrayDoesNotModifyStorage() throws {
+    func testUpsertLpEmptyArrayDeletesStalePositions() throws {
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
         _ = try service.upsert(lp: [
@@ -156,7 +156,29 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
 
         XCTAssertEqual(vault.lpPositions.count, 1)
 
+        // LP API is single-shot: an empty success means the user has no LPs left for this vault.
+        // Delete-stale is correct here (matches Bond's contract).
         _ = try service.upsert(lp: [], for: vault)
-        XCTAssertEqual(vault.lpPositions.count, 1, "LP upsert with [] must NOT delete persisted positions.")
+        XCTAssertEqual(vault.lpPositions.count, 0, "LP upsert with [] deletes all persisted rows for the vault.")
+    }
+
+    func testUpsertLpDeletesPositionsMissingFromInput() throws {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
+        let eth = CoinMeta.make(chain: .ethereum, ticker: "ETH")
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 1, coin2: btc, coin2Amount: 1, poolName: "BTC.BTC", poolUnits: "1", apr: 0.04),
+            LPPositionData(coin1: rune, coin1Amount: 2, coin2: eth, coin2Amount: 2, poolName: "ETH.ETH", poolUnits: "2", apr: 0.05)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 2)
+
+        // Refresh returns only ETH — the user fully exited BTC. BTC must be removed.
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 2, coin2: eth, coin2Amount: 2, poolName: "ETH.ETH", poolUnits: "2", apr: 0.05)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 1)
+        XCTAssertEqual(vault.lpPositions.first?.coin2.ticker, "ETH")
     }
 }
