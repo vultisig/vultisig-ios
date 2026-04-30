@@ -38,16 +38,17 @@ class THORChainStakingService {
 
     /// Fetch staking details for a given coin and address
     /// - Parameters:
-    ///   - coin: The coin being staked
-    ///   - runeCoin: The RUNE coin (for price lookups)
+    ///   - coinMeta: Metadata of the coin being staked (value type — `@Model` Coin must not cross
+    ///     actor boundaries here)
+    ///   - runeCoinMeta: RUNE coin metadata for price lookups
     ///   - address: The THORChain address
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
-    func fetchStakingDetails(coin: Coin, runeCoin: Coin, address: String) async throws -> StakingDetails {
-        switch coin.ticker.uppercased() {
+    func fetchStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails {
+        switch coinMeta.ticker.uppercased() {
         case "RUJI":
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
-            return try await fetchTcyStakingDetails(coin: coin, runeCoin: runeCoin, address: address)
+            return try await fetchTcyStakingDetails(coinMeta: coinMeta, runeCoinMeta: runeCoinMeta, address: address)
         default:
             throw StakingError.unsupportedCoin
         }
@@ -111,7 +112,7 @@ private extension THORChainStakingService {
 
 private extension THORChainStakingService {
     /// Fetch TCY staking details
-    func fetchTcyStakingDetails(coin: Coin, runeCoin: Coin, address: String) async throws -> StakingDetails {
+    func fetchTcyStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails {
         // 1. Fetch staked amount
         let stakedResponse = try await fetchTcyStakedAmount(address: address)
         let stakedAmount = Decimal(string: stakedResponse.amount) ?? 0
@@ -119,7 +120,7 @@ private extension THORChainStakingService {
         logger.info("TCY Staking - Raw: \(stakedResponse.amount), Decimal: \(String(describing: stakedAmount)), Final: \(String(describing: stakedDecimal))")
 
         // 2. Calculate APY and convert to APR
-        let apy = try await calculateTcyAPY(tcyCoin: coin, runeCoin: runeCoin, address: address, stakedAmount: stakedDecimal)
+        let apy = try await calculateTcyAPY(tcyCoinMeta: coinMeta, runeCoinMeta: runeCoinMeta, address: address, stakedAmount: stakedDecimal)
         let apr = convertAPYtoAPR(apy)
 
         // 3. Calculate next payout
@@ -339,10 +340,11 @@ private extension THORChainStakingService {
 
     /// Calculate TCY APY based on user's historical distributions
     /// Logic mirrors: https://github.com/familiarcow/RUNE-Tools TCY.svelte calculateAPY
-    func calculateTcyAPY(tcyCoin: Coin, runeCoin: Coin, address: String, stakedAmount: Decimal) async throws -> Double {
-        // 1. Get prices using RateProvider
-        let tcyPriceUSD = RateProvider.shared.rate(for: tcyCoin)?.value ?? 0
-        let runePriceUSD = RateProvider.shared.rate(for: runeCoin)?.value ?? 0
+    func calculateTcyAPY(tcyCoinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String, stakedAmount: Decimal) async throws -> Double {
+        // 1. Get prices using RateProvider — uses the CoinMeta overload to keep `@Model` Coin
+        // out of this off-MainActor branch.
+        let tcyPriceUSD = RateProvider.shared.rate(for: tcyCoinMeta)?.value ?? 0
+        let runePriceUSD = RateProvider.shared.rate(for: runeCoinMeta)?.value ?? 0
 
         guard tcyPriceUSD > 0, runePriceUSD > 0, stakedAmount > 0 else {
             return 0

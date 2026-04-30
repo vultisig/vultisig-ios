@@ -7,6 +7,7 @@ import SwiftUI
 
 private struct BannerViewModifier: ViewModifier {
     @Binding var text: String?
+    let style: NotificationBannerStyle
 
     @State private var isVisible: Bool = false
     @State private var displayText: String = ""
@@ -14,7 +15,7 @@ private struct BannerViewModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(
-                NotificationBannerView(text: displayText, isVisible: $isVisible)
+                NotificationBannerView(text: displayText, style: style, isVisible: $isVisible)
                     .padding(.bottom, isMacOS ? 24 : 0)
                     .showIf(isVisible)
                     .zIndex(2)
@@ -32,7 +33,7 @@ private struct BannerViewModifier: ViewModifier {
 }
 
 extension View {
-    func withBanner(text: Binding<String?>) -> some View {
-        modifier(BannerViewModifier(text: text))
+    func withBanner(text: Binding<String?>, style: NotificationBannerStyle = .error) -> some View {
+        modifier(BannerViewModifier(text: text, style: style))
     }
 }

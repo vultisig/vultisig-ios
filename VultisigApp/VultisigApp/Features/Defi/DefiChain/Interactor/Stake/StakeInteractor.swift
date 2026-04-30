@@ -6,5 +6,5 @@
 //
 
 protocol StakeInteractor {
-    func fetchStakePositions(vault: Vault) async -> [StakePosition]
+    func fetchStakePositions(vault: Vault) async -> [StakePositionData]
 }

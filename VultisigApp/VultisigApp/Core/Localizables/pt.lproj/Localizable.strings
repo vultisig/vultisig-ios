@@ -217,6 +217,7 @@
 "customTokenErrorSubtitle" = "Não foi possível encontrar o token. Verifique o endereço do contrato e tente novamente.";
 "date" = "Data";
 "defiPortfolio" = "Portfólio DeFi";
+"defiRefreshFailed" = "Não foi possível atualizar as posições. Puxe para tentar novamente.";
 "delete" = "Deletar";
 "deleteFolder" = "Excluir pasta";
 "deleteVault" = "Deletar seu cofre permanentemente";

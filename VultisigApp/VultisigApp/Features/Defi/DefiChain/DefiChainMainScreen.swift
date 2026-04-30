@@ -20,6 +20,7 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
+    @State private var refreshErrorToast: String?
 
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -32,6 +33,16 @@ struct DefiChainMainScreen: View {
 
     private var nativeCoin: Coin? {
         vault.nativeCoin(for: chain)
+    }
+
+    /// Surfaced via the `.withBanner(...)` toast modifier; the active segment's VM owns the
+    /// underlying error state.
+    private var refreshError: String? {
+        switch viewModel.selectedPosition {
+        case .bond: return bondViewModel.refreshError
+        case .stake: return stakeViewModel.refreshError
+        case .liquidityPool: return lpsViewModel.refreshError
+        }
     }
 
     var body: some View {
@@ -57,8 +68,12 @@ struct DefiChainMainScreen: View {
         .onChange(of: vault.defiPositions) { _, _ in
             Task { await refresh() }
         }
-        .onChange(of: viewModel.selectedPosition) { _, _ in
-            Task { await refresh() }
+        // Segment switching does NOT refresh — `refresh()` already loads all three position
+        // types in parallel on initial load and pull-to-refresh, so the data the new segment
+        // needs is already cached. Re-running `refresh()` here would fire 4 extra API calls
+        // every time the user swipes between segments.
+        .onChange(of: refreshError) { _, newValue in
+            refreshErrorToast = newValue
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
             DefiChainSelectPositionsScreen(
@@ -68,6 +83,7 @@ struct DefiChainMainScreen: View {
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {}
         .withLoading(isLoading: $isLoading)
+        .withBanner(text: $refreshErrorToast, style: .error)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),
@@ -279,15 +295,14 @@ private extension DefiChainMainScreen {
 
 private extension DefiChainMainScreen {
     func refresh() async {
-        Task { await viewModel.refresh() }
-        switch viewModel.selectedPosition {
-        case .bond:
-            await bondViewModel.refresh()
-        case .stake:
-            await stakeViewModel.refresh()
-        case .liquidityPool:
-            await lpsViewModel.refresh()
-        }
+        // Refresh all three position categories in parallel so the aggregate balance shown
+        // in `DefiChainBalanceView` reflects every position type — not just the currently
+        // selected segment. The native-coin balance refresh runs independently.
+        async let mainRefresh: Void = viewModel.refresh()
+        async let bondRefresh: Void = bondViewModel.refresh()
+        async let stakeRefresh: Void = stakeViewModel.refresh()
+        async let lpsRefresh: Void = lpsViewModel.refresh()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
     }
 
     func update(vault: Vault) {

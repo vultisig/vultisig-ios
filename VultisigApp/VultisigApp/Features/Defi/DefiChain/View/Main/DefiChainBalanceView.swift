@@ -13,10 +13,9 @@ struct DefiChainBalanceView: View {
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
-    let service = DefiBalanceService()
-    var balance: String {
-        service.totalBalanceInFiatString(for: chain, vault: vault)
-    }
+    private let service = DefiBalanceService()
+
+    @State private var balance: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -38,6 +37,18 @@ struct DefiChainBalanceView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(backgroundView)
+        .onAppear { updateBalance() }
+        .onChange(of: vault) { _, _ in
+            updateBalance()
+        }
+        .onChange(of: vault.defiPositions) { _, _ in
+            updateBalance()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
+            // SwiftData mutates the vault's nested position arrays in place; the parent vault's
+            // `objectWillChange` does not fire, so observe the explicit upsert notification.
+            updateBalance()
+        }
     }
 
     var backgroundView: some View {
@@ -75,6 +86,10 @@ struct DefiChainBalanceView: View {
             startPoint: UnitPoint(x: 0.5, y: 0),
             endPoint: UnitPoint(x: 0.5, y: 1)
         ).opacity(0.09)
+    }
+
+    func updateBalance() {
+        balance = service.totalBalanceInFiatString(for: chain, vault: vault)
     }
 }
 

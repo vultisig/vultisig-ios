@@ -217,6 +217,7 @@
 "customTokenErrorSubtitle" = "可能的原因：错误的合约、不支持的链或代币已从注册表中删除";
 "date" = "日期";
 "defiPortfolio" = "DeFi 投资组合";
+"defiRefreshFailed" = "无法刷新仓位。下拉重试。";
 "delete" = "删除";
 "deleteFolder" = "删除文件夹";
 "deleteVault" = "永久删除您的保险库";

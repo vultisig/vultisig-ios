@@ -217,6 +217,7 @@
 "customTokenErrorSubtitle" = "Provjerite adresu tokena i pokušajte ponovo.";
 "date" = "Datum";
 "defiPortfolio" = "DeFi Portfelj";
+"defiRefreshFailed" = "Nije moguće osvježiti pozicije. Povuci za ponovni pokušaj.";
 "delete" = "Izbriši";
 "deleteFolder" = "Izbriši mapu";
 "deleteVault" = "Trajno izbrišite vaš sef";

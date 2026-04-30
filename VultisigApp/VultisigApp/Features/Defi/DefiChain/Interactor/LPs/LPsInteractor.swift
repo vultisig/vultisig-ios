@@ -6,5 +6,5 @@
 //
 
 protocol LPsInteractor {
-    func fetchLPPositions(vault: Vault) async -> [LPPosition]
+    func fetchLPPositions(vault: Vault) async throws -> [LPPositionData]
 }

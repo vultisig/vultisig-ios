@@ -1,0 +1,184 @@
+//
+//  DefiPositionsStorageServiceTests.swift
+//  VultisigAppTests
+//
+
+@testable import VultisigApp
+import SwiftData
+import XCTest
+
+@MainActor
+final class DefiPositionsStorageServiceTests: XCTestCase {
+    private var storeToken: DefiTestContextToken!
+    private var vault: Vault!
+    private let service = DefiPositionsStorageService()
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try DefiTestStore.installInMemoryContainer()
+        vault = DefiTestStore.makeVault()
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        DefiTestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
+    // MARK: - Stake upsert
+
+    func testUpsertStakeInsertsNewPosition() throws {
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+
+        let materialized = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        XCTAssertEqual(materialized.count, 1)
+        XCTAssertEqual(materialized.first?.amount, 10)
+        XCTAssertEqual(vault.stakePositions.count, 1, "Inverse relationship should attach the materialized model.")
+    }
+
+    func testUpsertStakeUpdatesExistingInPlace() throws {
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+
+        _ = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        let materialized = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 25, apr: 0.12)
+        ], for: vault)
+
+        XCTAssertEqual(materialized.count, 1)
+        XCTAssertEqual(vault.stakePositions.count, 1, "Same id ⇒ updated in place, no new row.")
+        XCTAssertEqual(materialized.first?.amount, 25)
+        XCTAssertEqual(materialized.first?.apr, 0.12)
+    }
+
+    func testUpsertStakeReturnsModelsInDtoOrder() throws {
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
+
+        let materialized = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 1),
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 2)
+        ], for: vault)
+
+        XCTAssertEqual(materialized.map(\.coin.ticker), ["RUNE", "TCY"])
+    }
+
+    // MARK: - LP upsert
+
+    func testUpsertLpInsertsNewPosition() throws {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
+
+        let materialized = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 100, coin2: btc, coin2Amount: 1, poolName: "BTC.BTC", poolUnits: "10", apr: 0.04)
+        ], for: vault)
+
+        XCTAssertEqual(materialized.count, 1)
+        XCTAssertEqual(vault.lpPositions.count, 1)
+        XCTAssertEqual(materialized.first?.coin2.ticker, "BTC")
+    }
+
+    func testUpsertLpUpdatesExistingInPlace() throws {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
+
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 100, coin2: btc, coin2Amount: 1, poolName: "BTC.BTC", poolUnits: "10", apr: 0.04)
+        ], for: vault)
+
+        let materialized = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 200, coin2: btc, coin2Amount: 2, poolName: "BTC.BTC", poolUnits: "20", apr: 0.08)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 1)
+        XCTAssertEqual(materialized.first?.coin1Amount, 200)
+        XCTAssertEqual(materialized.first?.coin2Amount, 2)
+        XCTAssertEqual(materialized.first?.apr, 0.08)
+    }
+
+    // MARK: - Notifications
+
+    func testUpsertStakePostsDidChangeNotification() async throws {
+        let expectation = expectation(forNotification: .defiPositionsDidChange, object: nil)
+
+        try service.upsert(stake: [
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 1)
+        ], for: vault)
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testUpsertLpPostsDidChangeNotification() async throws {
+        let expectation = expectation(forNotification: .defiPositionsDidChange, object: nil)
+
+        try service.upsert(lp: [
+            LPPositionData(
+                coin1: .make(chain: .thorChain, ticker: "RUNE"),
+                coin1Amount: 1,
+                coin2: .make(chain: .bitcoin, ticker: "BTC"),
+                coin2Amount: 1,
+                poolName: "BTC.BTC",
+                poolUnits: "1",
+                apr: 0.04
+            )
+        ], for: vault)
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    // MARK: - Empty input
+
+    func testUpsertStakeEmptyArrayDoesNotModifyStorage() throws {
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        _ = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 1)
+        ], for: vault)
+
+        XCTAssertEqual(vault.stakePositions.count, 1)
+
+        // Confirm Stake upsert does NOT delete-stale (asymmetric with Bond — documented).
+        _ = try service.upsert(stake: [], for: vault)
+        XCTAssertEqual(vault.stakePositions.count, 1, "Stake upsert with [] must NOT delete persisted positions; only Bond does delete-stale.")
+    }
+
+    func testUpsertLpEmptyArrayDeletesStalePositions() throws {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 1, coin2: btc, coin2Amount: 1, poolName: "BTC.BTC", poolUnits: "1", apr: 0.04)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 1)
+
+        // LP API is single-shot: an empty success means the user has no LPs left for this vault.
+        // Delete-stale is correct here (matches Bond's contract).
+        _ = try service.upsert(lp: [], for: vault)
+        XCTAssertEqual(vault.lpPositions.count, 0, "LP upsert with [] deletes all persisted rows for the vault.")
+    }
+
+    func testUpsertLpDeletesPositionsMissingFromInput() throws {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
+        let eth = CoinMeta.make(chain: .ethereum, ticker: "ETH")
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 1, coin2: btc, coin2Amount: 1, poolName: "BTC.BTC", poolUnits: "1", apr: 0.04),
+            LPPositionData(coin1: rune, coin1Amount: 2, coin2: eth, coin2Amount: 2, poolName: "ETH.ETH", poolUnits: "2", apr: 0.05)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 2)
+
+        // Refresh returns only ETH — the user fully exited BTC. BTC must be removed.
+        _ = try service.upsert(lp: [
+            LPPositionData(coin1: rune, coin1Amount: 2, coin2: eth, coin2Amount: 2, poolName: "ETH.ETH", poolUnits: "2", apr: 0.05)
+        ], for: vault)
+
+        XCTAssertEqual(vault.lpPositions.count, 1)
+        XCTAssertEqual(vault.lpPositions.first?.coin2.ticker, "ETH")
+    }
+}
