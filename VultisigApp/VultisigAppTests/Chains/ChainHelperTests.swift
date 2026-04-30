@@ -141,6 +141,8 @@ final class ChainHelperTests: XCTestCase {
             result += try PolkadotHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .sui:
             result += try SuiHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .cardano:
+            result += try CardanoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
