@@ -93,7 +93,7 @@ private extension THORChainStakeInteractor {
                     rewardCoin: details.rewardsCoin
                 )
             } catch {
-                logger.error("Error fetching \(ticker, privacy: .public) staking details: \(error.localizedDescription, privacy: .public)")
+                logger.error("Error fetching \(ticker, privacy: .public) staking details: \(error.localizedDescription, privacy: .private)")
                 return nil
             }
 

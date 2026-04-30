@@ -59,7 +59,7 @@ final class DefiChainStakeViewModel: ObservableObject {
             try storage.upsert(stake: dtos, for: vault)
             stakePositions = persistedPositions()
         } catch {
-            logger.error("Failed to persist stake positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to persist stake positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
             refreshError = "defiRefreshFailed".localized
         }
         initialLoadingDone = true

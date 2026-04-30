@@ -67,7 +67,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
             // On API failure, omit the position. The previously persisted CACAO @Model
             // remains untouched in `vault.stakePositions`, so the user keeps seeing
             // stale data until the next refresh — see THORChainStakeInteractor.
-            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .private)")
             return []
         }
     }

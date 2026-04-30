@@ -68,7 +68,7 @@ final class DefiChainLPsViewModel: ObservableObject {
             lpPositions = persistedPositions()
         } catch {
             // Preserve last-known UI state and surface error for the screen banner.
-            logger.error("Failed to refresh LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to refresh LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
             refreshError = "defiRefreshFailed".localized
         }
         initialLoadingDone = true
