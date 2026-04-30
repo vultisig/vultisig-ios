@@ -41,6 +41,12 @@ struct DefiMainBalanceView: View {
         .onChange(of: vault) { _, _ in
             updateBalance()
         }
+        .onChange(of: vault.defiChains) { _, _ in
+            // The user toggled a chain in `DefiSelectChainScreen`. `defiChains` is a
+            // value-type `[Chain]` on the vault @Model — `@ObservedObject` re-renders
+            // the view body, but `@State balance` is recomputed only on explicit signals.
+            updateBalance()
+        }
         .onChange(of: vault.defiPositions) { _, _ in
             updateBalance()
         }
