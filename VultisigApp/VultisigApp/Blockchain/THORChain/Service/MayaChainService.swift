@@ -186,7 +186,7 @@ private extension MayachainService {
     /// MayaChain only supports a single affiliate (no nested referral like THORChain).
     /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)
     /// if no affiliate should be sent.
-    static func affiliateParams(referredCode: String, discountBps: Int) -> (String?, String?) {
+    static func affiliateParams(referredCode _: String, discountBps: Int) -> (String?, String?) {
         let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
         return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
     }

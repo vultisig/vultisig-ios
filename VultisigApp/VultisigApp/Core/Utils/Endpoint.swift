@@ -449,7 +449,6 @@ class Endpoint {
 
     // MARK: - Circle MSCA Endpoints
 
-
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }

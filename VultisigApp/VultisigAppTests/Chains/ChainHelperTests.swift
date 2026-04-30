@@ -142,6 +142,7 @@ final class ChainHelperTests: XCTestCase {
         case .sui:
             result += try SuiHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .cardano:
+            keysignPayload.coin.rawBalance = keysignPayload.toAmount.description
             result += try CardanoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")

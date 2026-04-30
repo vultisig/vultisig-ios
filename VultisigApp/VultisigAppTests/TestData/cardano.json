@@ -5,14 +5,14 @@
       "coin": {
         "chain": "Cardano",
         "ticker": "ADA",
-        "address": "addr1q80jemq08fmrcnhyjasasmt9ncn95v07j3j2m4qz62jth5nldvrdcwspjk8flucnzv4tnhkfscl4z5zwnmhvjf0zt8qfmwnjk",
+        "address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
         "decimals": 6,
         "price_provider_id": "cardano",
         "is_native_token": true,
         "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
         "logo": "ada.png"
       },
-      "to_address": "addr1q92cmkgzv9h4e5q7mnrzsuxtgayvg4qr7y3gyx97ukmz3dfx7r9ut96xx8879wez9ltmc2ds8uxs0glt3q56s8pzp8jzl3cl8",
+      "to_address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
       "to_amount": "2000000",
       "BlockchainSpecific": {
         "Cardano": {
@@ -40,14 +40,14 @@
       "coin": {
         "chain": "Cardano",
         "ticker": "ADA",
-        "address": "addr1q80jemq08fmrcnhyjasasmt9ncn95v07j3j2m4qz62jth5nldvrdcwspjk8flucnzv4tnhkfscl4z5zwnmhvjf0zt8qfmwnjk",
+        "address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
         "decimals": 6,
         "price_provider_id": "cardano",
         "is_native_token": true,
         "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
         "logo": "ada.png"
       },
-      "to_address": "addr1q92cmkgzv9h4e5q7mnrzsuxtgayvg4qr7y3gyx97ukmz3dfx7r9ut96xx8879wez9ltmc2ds8uxs0glt3q56s8pzp8jzl3cl8",
+      "to_address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
       "to_amount": "10000000",
       "BlockchainSpecific": {
         "Cardano": {
