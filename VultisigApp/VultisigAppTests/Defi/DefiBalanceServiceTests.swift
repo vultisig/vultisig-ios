@@ -27,24 +27,24 @@ final class DefiBalanceServiceTests: XCTestCase {
 
     // MARK: - Empty vault
 
-    func test_thorchain_balance_zero_when_no_defi_positions() {
+    func testThorchainBalanceZeroWhenNoDefiPositions() {
         let total = service.totalBalanceInFiat(for: .thorChain, vault: vault)
         XCTAssertEqual(total, .zero)
     }
 
-    func test_mayachain_balance_zero_when_no_defi_positions() {
+    func testMayachainBalanceZeroWhenNoDefiPositions() {
         let total = service.totalBalanceInFiat(for: .mayaChain, vault: vault)
         XCTAssertEqual(total, .zero)
     }
 
-    func test_default_chain_balance_zero_when_no_matching_coins() {
+    func testDefaultChainBalanceZeroWhenNoMatchingCoins() {
         let total = service.totalBalanceInFiat(for: .ethereum, vault: vault)
         XCTAssertEqual(total, .zero)
     }
 
     // MARK: - Filter wiring
 
-    func test_thorchain_balance_with_disabled_chain_returns_zero() throws {
+    func testThorchainBalanceWithDisabledChainReturnsZero() throws {
         // Without `defiPositions` containing .thorChain, the THORChain branch short-circuits.
         let storage = DefiPositionsStorageService()
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
@@ -56,7 +56,7 @@ final class DefiBalanceServiceTests: XCTestCase {
         XCTAssertEqual(total, .zero, "No defiPositions entry for thorChain → short-circuits to zero before reading stake/bond/lp.")
     }
 
-    func test_thorchain_persists_stake_through_storage() throws {
+    func testThorchainPersistsStakeThroughStorage() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         let storage = DefiPositionsStorageService()
@@ -75,12 +75,12 @@ final class DefiBalanceServiceTests: XCTestCase {
 
     // MARK: - Multi-chain string formatting
 
-    func test_balance_string_for_chains_returns_formatted_zero_for_no_positions() {
+    func testBalanceStringForChainsReturnsFormattedZeroForNoPositions() {
         let total = service.totalBalanceInFiatString(for: [.thorChain, .mayaChain], vault: vault)
         XCTAssertFalse(total.isEmpty)
     }
 
-    func test_balance_string_for_single_chain_returns_formatted_zero() {
+    func testBalanceStringForSingleChainReturnsFormattedZero() {
         let total = service.totalBalanceInFiatString(for: .thorChain, vault: vault)
         XCTAssertFalse(total.isEmpty)
     }

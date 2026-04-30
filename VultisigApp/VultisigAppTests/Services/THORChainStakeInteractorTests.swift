@@ -52,7 +52,7 @@ final class THORChainStakeInteractorTests: XCTestCase {
     // Tracked under [[projects/vultisig/defi-tab-fixes/architecture-review]] as the next
     // testability win — extract a protocol for the staking service.
 
-    func test_fetchStakePositions_returns_empty_without_rune_coin() async throws {
+    func testFetchStakePositionsReturnsEmptyWithoutRuneCoin() async throws {
         let container = try DefiTestStore.makeInMemoryContainer()
         let vault = DefiTestStore.makeVault()
         // No RUNE coin in vault → guard short-circuits.

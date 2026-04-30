@@ -33,13 +33,13 @@ final class DefiChainStakeViewModelTests: XCTestCase {
 
     // MARK: - Init
 
-    func test_init_with_empty_persisted_positions_marks_initial_loading_pending() {
+    func testInitWithEmptyPersistedPositionsMarksInitialLoadingPending() {
         let vm = makeViewModel()
         XCTAssertTrue(vm.stakePositions.isEmpty)
         XCTAssertFalse(vm.initialLoadingDone)
     }
 
-    func test_init_with_persisted_positions_marks_initial_loading_done() throws {
+    func testInitWithPersistedPositionsMarksInitialLoadingDone() throws {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         try storage.upsert(stake: [
@@ -53,7 +53,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
 
     // MARK: - Refresh
 
-    func test_refresh_success_replaces_published_array() async throws {
+    func testRefreshSuccessReplacesPublishedArray() async throws {
         let vm = makeViewModel()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         interactor.stub = [
@@ -70,7 +70,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
     }
 
     /// Regression test for Bug 2: refresh that returns no DTOs must not flicker the list to empty.
-    func test_refresh_empty_preserves_persisted_state() async throws {
+    func testRefreshEmptyPreservesPersistedState() async throws {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         try storage.upsert(stake: [
@@ -88,7 +88,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertEqual(vm.stakePositions.first?.apr, 0.1)
     }
 
-    func test_refresh_partial_success_only_updates_returned_coins() async throws {
+    func testRefreshPartialSuccessOnlyUpdatesReturnedCoins() async throws {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         let rujiMeta = CoinMeta.make(chain: .thorChain, ticker: "RUJI")
@@ -117,7 +117,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertEqual(ruji?.amount, 200, "Persisted RUJI must remain — partial-failure refresh preserves untouched coins.")
     }
 
-    func test_update_vault_re_snapshots_cache() throws {
+    func testUpdateVaultReSnapshotsCache() throws {
         let vm = makeViewModel()
         XCTAssertTrue(vm.stakePositions.isEmpty)
 

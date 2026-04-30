@@ -27,7 +27,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
 
     // MARK: - Stake upsert
 
-    func test_upsert_stake_inserts_new_position() throws {
+    func testUpsertStakeInsertsNewPosition() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
 
         let materialized = try service.upsert(stake: [
@@ -39,7 +39,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(vault.stakePositions.count, 1, "Inverse relationship should attach the materialized model.")
     }
 
-    func test_upsert_stake_updates_existing_in_place() throws {
+    func testUpsertStakeUpdatesExistingInPlace() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
 
         _ = try service.upsert(stake: [
@@ -56,7 +56,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(materialized.first?.apr, 0.12)
     }
 
-    func test_upsert_stake_returns_models_in_dto_order() throws {
+    func testUpsertStakeReturnsModelsInDtoOrder() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
 
@@ -70,7 +70,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
 
     // MARK: - LP upsert
 
-    func test_upsert_lp_inserts_new_position() throws {
+    func testUpsertLpInsertsNewPosition() throws {
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
 
@@ -83,7 +83,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(materialized.first?.coin2.ticker, "BTC")
     }
 
-    func test_upsert_lp_updates_existing_in_place() throws {
+    func testUpsertLpUpdatesExistingInPlace() throws {
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
 
@@ -103,7 +103,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
 
     // MARK: - Notifications
 
-    func test_upsert_stake_posts_did_change_notification() async throws {
+    func testUpsertStakePostsDidChangeNotification() async throws {
         let expectation = expectation(forNotification: .defiPositionsDidChange, object: nil)
 
         try service.upsert(stake: [
@@ -113,7 +113,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func test_upsert_lp_posts_did_change_notification() async throws {
+    func testUpsertLpPostsDidChangeNotification() async throws {
         let expectation = expectation(forNotification: .defiPositionsDidChange, object: nil)
 
         try service.upsert(lp: [
@@ -133,7 +133,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
 
     // MARK: - Empty input
 
-    func test_upsert_stake_empty_array_does_not_modify_storage() throws {
+    func testUpsertStakeEmptyArrayDoesNotModifyStorage() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         _ = try service.upsert(stake: [
             StakePositionData(coin: runeMeta, type: .stake, amount: 1)
@@ -146,7 +146,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(vault.stakePositions.count, 1, "Stake upsert with [] must NOT delete persisted positions; only Bond does delete-stale.")
     }
 
-    func test_upsert_lp_empty_array_does_not_modify_storage() throws {
+    func testUpsertLpEmptyArrayDoesNotModifyStorage() throws {
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
         _ = try service.upsert(lp: [

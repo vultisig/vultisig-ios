@@ -32,7 +32,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
 
     // MARK: - Init
 
-    func test_init_with_no_persisted_positions_marks_initial_loading_pending() {
+    func testInitWithNoPersistedPositionsMarksInitialLoadingPending() {
         let vm = makeViewModel()
         XCTAssertTrue(vm.lpPositions.isEmpty)
         XCTAssertFalse(vm.initialLoadingDone)
@@ -40,7 +40,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
 
     // MARK: - Refresh
 
-    func test_refresh_success_replaces_persisted_array() async throws {
+    func testRefreshSuccessReplacesPersistedArray() async throws {
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
         interactor.stub = [
@@ -57,7 +57,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
     }
 
     /// Regression: an LP fetch that throws must NOT clear the persisted list, and must surface refreshError.
-    func test_refresh_failure_preserves_state_and_sets_error() async throws {
+    func testRefreshFailurePreservesStateAndSetsError() async throws {
         let storage = DefiPositionsStorageService()
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
@@ -74,7 +74,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.refreshError, "Throw must set refreshError for the screen banner.")
     }
 
-    func test_refresh_no_lps_enabled_marks_loading_done_without_calling_interactor() async {
+    func testRefreshNoLpsEnabledMarksLoadingDoneWithoutCallingInteractor() async {
         // Disable LP coins
         vault.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [], lps: [])]
 
@@ -85,7 +85,7 @@ final class DefiChainLPsViewModelTests: XCTestCase {
         XCTAssertTrue(vm.initialLoadingDone)
     }
 
-    func test_refresh_empty_preserves_persisted_state() async throws {
+    func testRefreshEmptyPreservesPersistedState() async throws {
         let storage = DefiPositionsStorageService()
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")

@@ -16,7 +16,7 @@ import XCTest
 @MainActor
 final class THORChainLPsInteractorTests: XCTestCase {
 
-    func test_fetchLPPositions_returns_empty_without_rune_coin() async throws {
+    func testFetchLPPositionsReturnsEmptyWithoutRuneCoin() async throws {
         let container = try DefiTestStore.makeInMemoryContainer()
         let vault = DefiTestStore.makeVault()
         // No RUNE coin → early-return guard returns [] without an API call.
