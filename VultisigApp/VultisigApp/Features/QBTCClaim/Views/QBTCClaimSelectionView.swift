@@ -83,7 +83,7 @@ struct QBTCClaimUtxoRow: View {
                     Text(shortTxid)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    Text("vout \(utxo.vout)")
+                    Text(String(format: "qbtcClaimVoutFormat".localized, utxo.vout))
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                 }

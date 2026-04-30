@@ -632,8 +632,15 @@
 "pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
 "qbtcClaimBroadcastingDetail" = "La transacción se está enviando a la cadena QBTC.";
 "qbtcClaimBroadcastingTitle" = "Transmitiendo…";
+"qbtcClaimCancelled" = "Reclamo cancelado";
 "qbtcClaimConfirm" = "Reclamar";
 "qbtcClaimEmptyPassword" = "Introduce tu contraseña de Fast Vault para continuar.";
+"qbtcClaimErrorInvalidBtcPublicKey" = "Clave pública de Bitcoin inválida en la moneda BTC del vault.";
+"qbtcClaimErrorInvalidMldsaPublicKey" = "Clave pública MLDSA inválida en la moneda QBTC del vault.";
+"qbtcClaimErrorMalformedMldsaSignature" = "La firma MLDSA no era hexadecimal válido: %@…";
+"qbtcClaimErrorMissingMldsaPublicKey" = "Al vault le falta la clave pública ML-DSA necesaria para el reclamo de QBTC.";
+"qbtcClaimErrorProofHashMismatch" = "El servicio de pruebas devolvió hashes que no coinciden con el cálculo local; cancelando el reclamo.";
+"qbtcClaimErrorSignatureMissing" = "La sesión MPC finalizó sin producir una firma para %@";
 "qbtcClaimFailedToLoadTitle" = "No se pudieron cargar los datos del reclamo";
 "qbtcClaimGeneratingProofDetail" = "Generando una prueba de conocimiento cero de propiedad de UTXOs. Puede tardar hasta cinco minutos: mantén la app abierta.";
 "qbtcClaimGeneratingProofTitle" = "Generando prueba…";
@@ -669,6 +676,7 @@
 "qbtcClaimUnavailableTitle" = "Reclamo no disponible";
 "qbtcClaimUnsupportedAddressTitle" = "Dirección no admitida";
 "qbtcClaimViewOnExplorer" = "Ver en el explorador";
+"qbtcClaimVoutFormat" = "vout %d";
 "ready" = "Listo";
 "Rebond" = "Rebond";
 "rebondAmount" = "Cantidad de rebond (Opcional - dejar vacío para transferir todo el RUNE vinculado)";

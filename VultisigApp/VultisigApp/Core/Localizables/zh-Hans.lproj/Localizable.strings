@@ -633,8 +633,15 @@
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
 "qbtcClaimBroadcastingDetail" = "正在向 QBTC 链提交交易。";
 "qbtcClaimBroadcastingTitle" = "正在广播…";
+"qbtcClaimCancelled" = "认领已取消";
 "qbtcClaimConfirm" = "认领";
 "qbtcClaimEmptyPassword" = "请输入您的 Fast Vault 密码以继续。";
+"qbtcClaimErrorInvalidBtcPublicKey" = "保险库 BTC 币上的 Bitcoin 公钥无效。";
+"qbtcClaimErrorInvalidMldsaPublicKey" = "保险库 QBTC 币上的 MLDSA 公钥无效。";
+"qbtcClaimErrorMalformedMldsaSignature" = "MLDSA 签名不是有效的十六进制:%@…";
+"qbtcClaimErrorMissingMldsaPublicKey" = "保险库缺少 QBTC 认领所需的 ML-DSA 公钥。";
+"qbtcClaimErrorProofHashMismatch" = "证明服务返回的哈希与本地计算不匹配;正在中止认领。";
+"qbtcClaimErrorSignatureMissing" = "MPC 会话已完成,但未为 %@ 生成签名";
 "qbtcClaimFailedToLoadTitle" = "无法加载认领数据";
 "qbtcClaimGeneratingProofDetail" = "正在生成 UTXO 所有权的零知识证明。最长可能需要五分钟 — 请保持应用打开。";
 "qbtcClaimGeneratingProofTitle" = "正在生成证明…";
@@ -670,6 +677,7 @@
 "qbtcClaimUnavailableTitle" = "认领不可用";
 "qbtcClaimUnsupportedAddressTitle" = "不支持的地址";
 "qbtcClaimViewOnExplorer" = "在浏览器中查看";
+"qbtcClaimVoutFormat" = "vout %d";
 "ready" = "就绪";
 "Rebond" = "重新绑定";
 "rebondAmount" = "重新绑定金额（可选 - 留空以转移所有已绑定的 RUNE）";

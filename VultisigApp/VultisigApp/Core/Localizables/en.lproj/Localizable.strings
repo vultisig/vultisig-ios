@@ -640,8 +640,15 @@
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "qbtcClaimBroadcastingDetail" = "The transaction is being submitted to the QBTC chain.";
 "qbtcClaimBroadcastingTitle" = "Broadcasting…";
+"qbtcClaimCancelled" = "Claim cancelled";
 "qbtcClaimConfirm" = "Claim";
 "qbtcClaimEmptyPassword" = "Please enter your Fast Vault password to continue.";
+"qbtcClaimErrorInvalidBtcPublicKey" = "Invalid Bitcoin public key on the vault's BTC coin.";
+"qbtcClaimErrorInvalidMldsaPublicKey" = "Invalid MLDSA public key on the vault's QBTC coin.";
+"qbtcClaimErrorMalformedMldsaSignature" = "MLDSA signature was not valid hex: %@…";
+"qbtcClaimErrorMissingMldsaPublicKey" = "Vault is missing the ML-DSA public key needed for the QBTC claim.";
+"qbtcClaimErrorProofHashMismatch" = "Proof service returned hashes that do not match the local computation; aborting claim.";
+"qbtcClaimErrorSignatureMissing" = "MPC session completed without producing a signature for %@";
 "qbtcClaimFailedToLoadTitle" = "Couldn’t load claim data";
 "qbtcClaimGeneratingProofDetail" = "Generating a zero-knowledge proof of UTXO ownership. This can take up to five minutes — keep the app open.";
 "qbtcClaimGeneratingProofTitle" = "Generating proof…";
@@ -677,6 +684,7 @@
 "qbtcClaimUnavailableTitle" = "Claim unavailable";
 "qbtcClaimUnsupportedAddressTitle" = "Unsupported address";
 "qbtcClaimViewOnExplorer" = "View on explorer";
+"qbtcClaimVoutFormat" = "vout %d";
 "ready" = "Ready";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)";

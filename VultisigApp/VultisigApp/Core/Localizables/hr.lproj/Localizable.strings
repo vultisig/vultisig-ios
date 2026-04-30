@@ -632,8 +632,15 @@
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
 "qbtcClaimBroadcastingDetail" = "Transakcija se šalje na QBTC lanac.";
 "qbtcClaimBroadcastingTitle" = "Slanje…";
+"qbtcClaimCancelled" = "Zahtjev otkazan";
 "qbtcClaimConfirm" = "Zatraži";
 "qbtcClaimEmptyPassword" = "Unesi svoju Fast Vault lozinku za nastavak.";
+"qbtcClaimErrorInvalidBtcPublicKey" = "Nevažeći Bitcoin javni ključ na BTC coinu vaulta.";
+"qbtcClaimErrorInvalidMldsaPublicKey" = "Nevažeći MLDSA javni ključ na QBTC coinu vaulta.";
+"qbtcClaimErrorMalformedMldsaSignature" = "MLDSA potpis nije bio valjan hex: %@…";
+"qbtcClaimErrorMissingMldsaPublicKey" = "Vault nema ML-DSA javni ključ potreban za QBTC zahtjev.";
+"qbtcClaimErrorProofHashMismatch" = "Proof servis vratio je hasheve koji ne odgovaraju lokalnom izračunu; prekidam zahtjev.";
+"qbtcClaimErrorSignatureMissing" = "MPC sesija završila je bez generiranja potpisa za %@";
 "qbtcClaimFailedToLoadTitle" = "Nije moguće učitati podatke za zahtjev";
 "qbtcClaimGeneratingProofDetail" = "Generiranje zero-knowledge dokaza vlasništva nad UTXO-ima. Može potrajati do pet minuta — drži aplikaciju otvorenom.";
 "qbtcClaimGeneratingProofTitle" = "Generiranje dokaza…";
@@ -669,6 +676,7 @@
 "qbtcClaimUnavailableTitle" = "Zahtjev nedostupan";
 "qbtcClaimUnsupportedAddressTitle" = "Nepodržana adresa";
 "qbtcClaimViewOnExplorer" = "Prikaži u exploreru";
+"qbtcClaimVoutFormat" = "vout %d";
 "ready" = "Spreman";
 "Rebond" = "Rebond";
 "rebondAmount" = "Iznos rebond (Opcionalno - ostavite prazno za prijenos svih vezanih RUNE)";

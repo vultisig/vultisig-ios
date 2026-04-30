@@ -38,6 +38,15 @@ struct QBTCClaimScreen: View {
         }
     }
 
+    /// `nil` when the QBTC chain has no public explorer wired up (today
+    /// `Endpoint.getExplorerURL(chain: .qbtc, ...)` returns ""). The
+    /// result view hides its "View on explorer" CTA when this is `nil`.
+    private func explorerURL(for txHash: String) -> URL? {
+        let raw = Endpoint.getExplorerURL(chain: .qbtc, txid: txHash)
+        guard !raw.isEmpty else { return nil }
+        return URL(string: raw)
+    }
+
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
@@ -58,15 +67,9 @@ struct QBTCClaimScreen: View {
             QBTCClaimResultView(
                 result: result,
                 qbtcCoin: viewModel.qbtcCoin,
-                onOpenExplorer: openExplorer
+                explorerURL: explorerURL(for: result.txHashHex),
+                onOpenExplorer: { url in openURL(url) }
             )
-        }
-    }
-
-    private func openExplorer(_ txHash: String) {
-        let url = "\(Endpoint.qbtcRestBaseURL.replacingOccurrences(of: "/qbtc-rpc", with: ""))/tx/\(txHash)"
-        if let parsed = URL(string: url) {
-            openURL(parsed)
         }
     }
 }

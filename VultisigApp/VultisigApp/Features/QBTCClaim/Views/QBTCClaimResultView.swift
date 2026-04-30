@@ -12,7 +12,9 @@ import SwiftUI
 struct QBTCClaimResultView: View {
     let result: QBTCClaimRunResult
     let qbtcCoin: Coin?
-    let onOpenExplorer: (String) -> Void
+    /// `nil` when the chain has no public explorer wired up — the CTA is hidden.
+    let explorerURL: URL?
+    let onOpenExplorer: (URL) -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -45,8 +47,10 @@ struct QBTCClaimResultView: View {
             .background(Theme.colors.bgSurface1)
             .cornerRadius(8)
 
-            PrimaryButton(title: "qbtcClaimViewOnExplorer".localized) {
-                onOpenExplorer(result.txHashHex)
+            if let explorerURL {
+                PrimaryButton(title: "qbtcClaimViewOnExplorer".localized) {
+                    onOpenExplorer(explorerURL)
+                }
             }
         }
         .padding(24)

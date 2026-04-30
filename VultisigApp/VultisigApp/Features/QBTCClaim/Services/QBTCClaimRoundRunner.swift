@@ -26,11 +26,11 @@ enum QBTCClaimRoundError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingMldsaPublicKey:
-            return "Vault is missing the ML-DSA public key needed for the QBTC claim"
+            return "qbtcClaimErrorMissingMldsaPublicKey".localized
         case .signatureMissing(let hash):
-            return "MPC session completed without producing a signature for \(hash)"
+            return String(format: "qbtcClaimErrorSignatureMissing".localized, hash)
         case .malformedMldsaSignature(let hex):
-            return "MLDSA signature was not valid hex: \(hex.prefix(16))…"
+            return String(format: "qbtcClaimErrorMalformedMldsaSignature".localized, String(hex.prefix(16)))
         }
     }
 }

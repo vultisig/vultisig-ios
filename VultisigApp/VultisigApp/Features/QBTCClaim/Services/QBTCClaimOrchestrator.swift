@@ -97,7 +97,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
             try await runInternal(input)
         } catch is CancellationError {
             logger.info("Claim run cancelled")
-            phase = .failed("Claim cancelled")
+            phase = .failed("qbtcClaimCancelled".localized)
         } catch {
             logger.error("Claim failed: \(error.localizedDescription)")
             phase = .failed(error.localizedDescription)
@@ -133,10 +133,14 @@ final class QBTCClaimOrchestrator: ObservableObject {
             )
         )
 
-        // Proof generation (5-min budget). Then fetch account info.
+        // Proof generation (5-min budget). Account info is fetched
+        // AFTER the proof returns: `sequence` and the latest-block
+        // timeout fields would go stale if we paralleled them with the
+        // multi-minute proof call, leading to broadcast-time
+        // sequence/timeout mismatches.
         phase = .generatingProof
         try Task.checkCancellation()
-        async let proofTask = generateProof(
+        let proof = try await generateProof(
             ClaimProofRequest(
                 rHex: btcSig.rHex,
                 sHex: btcSig.sHex,
@@ -146,8 +150,6 @@ final class QBTCClaimOrchestrator: ObservableObject {
                 chainId: QBTCClaimConfig.chainId
             )
         )
-        async let accountTask = fetchAccountInfo(input.qbtcCoin.address)
-        let (proof, accountInfo) = try await (proofTask, accountTask)
 
         // Treat the proof service's hash echoes as advisory only — the
         // local hashes computed above are the source of truth for the
@@ -161,6 +163,9 @@ final class QBTCClaimOrchestrator: ObservableObject {
               proof.qbtcAddressHash.lowercased() == qbtcAddressHashHex.lowercased() else {
             throw QBTCClaimOrchestratorError.proofHashMismatch
         }
+
+        try Task.checkCancellation()
+        let accountInfo = try await fetchAccountInfo(input.qbtcCoin.address)
 
         // Build the cosmos artifacts for the MLDSA round.
         let claimMessage = QBTCClaimMessage(
@@ -239,11 +244,11 @@ enum QBTCClaimOrchestratorError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidBtcPublicKey:
-            return "Invalid Bitcoin public key on the vault's BTC coin"
+            return "qbtcClaimErrorInvalidBtcPublicKey".localized
         case .invalidMldsaPublicKey:
-            return "Invalid MLDSA public key on the vault's QBTC coin"
+            return "qbtcClaimErrorInvalidMldsaPublicKey".localized
         case .proofHashMismatch:
-            return "Proof service returned hashes that do not match the local computation; aborting claim"
+            return "qbtcClaimErrorProofHashMismatch".localized
         }
     }
 }
