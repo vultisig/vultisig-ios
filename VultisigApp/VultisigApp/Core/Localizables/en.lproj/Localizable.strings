@@ -219,6 +219,7 @@
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
 "date" = "Date";
 "defiPortfolio" = "DeFi Portfolio";
+"defiRefreshFailed" = "Couldn't refresh positions. Pull to retry.";
 "delete" = "Delete";
 "deleteFolder" = "Delete Folder";
 "deleteVault" = "Delete your vault permanently";

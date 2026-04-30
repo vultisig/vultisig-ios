@@ -217,6 +217,7 @@
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
 "date" = "Datum";
 "defiPortfolio" = "DeFi Portfolio";
+"defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";
 "delete" = "Löschen";
 "deleteFolder" = "Ordner löschen";
 "deleteVault" = "Lösche deinen Tresor dauerhaft";

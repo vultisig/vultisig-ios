@@ -217,6 +217,7 @@
 "customTokenErrorSubtitle" = "Impossibile trovare il token. Controlla l'indirizzo del contratto e riprova.";
 "date" = "Data";
 "defiPortfolio" = "Portafoglio DeFi";
+"defiRefreshFailed" = "Impossibile aggiornare le posizioni. Trascina per riprovare.";
 "delete" = "Elimina";
 "deleteFolder" = "Elimina cartella";
 "deleteVault" = "Elimina permanentemente la tua cassaforte";
