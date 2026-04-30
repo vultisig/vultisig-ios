@@ -14,7 +14,7 @@ enum NotificationBannerStyle {
     var iconName: String {
         switch self {
         case .success: "check"
-        case .error: "triangle-alert"
+        case .error: "x"
         }
     }
 
