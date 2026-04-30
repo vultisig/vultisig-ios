@@ -9,19 +9,20 @@ import XCTest
 
 @MainActor
 final class DefiBalanceServiceTests: XCTestCase {
-    private var container: ModelContainer!
+    private var storeToken: DefiTestContextToken!
     private var vault: Vault!
     private let service = DefiBalanceService()
 
     override func setUp() async throws {
         try await super.setUp()
-        container = try DefiTestStore.makeInMemoryContainer()
+        storeToken = try DefiTestStore.installInMemoryContainer()
         vault = DefiTestStore.makeVault()
     }
 
     override func tearDown() async throws {
         vault = nil
-        container = nil
+        DefiTestStore.restore(storeToken)
+        storeToken = nil
         try await super.tearDown()
     }
 

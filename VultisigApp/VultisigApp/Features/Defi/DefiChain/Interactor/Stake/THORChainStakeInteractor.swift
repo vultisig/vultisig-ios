@@ -17,13 +17,18 @@ struct THORChainStakeInteractor: StakeInteractor {
     }
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
-        guard let runeCoin = vault.runeCoin else { return [] }
-        let vaultStakePositions = await readVaultStakePositions(vault: vault)
+        // Snapshot every `@Model` value the async branch will need on `MainActor`, then operate
+        // exclusively on value types. Reading `Coin` properties off the main actor would violate
+        // the SwiftData rule (`/.claude/rules/swiftdata.md`) and break under Swift 6 strict
+        // concurrency.
+        guard
+            let runeMeta = await runeMeta(in: vault),
+            let stakeSnapshots = await coinSnapshots(in: vault)
+        else { return [] }
 
         var positions: [StakePositionData] = []
-        for coinMeta in vaultStakePositions {
-            guard let coin = await coin(for: coinMeta, vault: vault) else { continue }
-            if let position = await createStakePosition(for: coin, runeCoin: runeCoin, coinMeta: coinMeta) {
+        for snapshot in stakeSnapshots {
+            if let position = await createStakePosition(snapshot: snapshot, runeMeta: runeMeta) {
                 positions.append(position)
             }
             // On per-coin fetch failures we omit the position. The previously persisted
@@ -35,39 +40,50 @@ struct THORChainStakeInteractor: StakeInteractor {
     }
 }
 
+private struct CoinSnapshot {
+    let meta: CoinMeta
+    let address: String
+    let balance: Decimal
+    let stakedBalance: Decimal
+}
+
 private extension THORChainStakeInteractor {
     @MainActor
-    func readVaultStakePositions(vault: Vault) -> [CoinMeta] {
-        vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []
+    func runeMeta(in vault: Vault) -> CoinMeta? {
+        vault.runeCoin?.toCoinMeta()
     }
 
+    /// Reads the user's enabled stake coins (`vault.defiPositions[.thorChain].staking`),
+    /// resolves each to the matching `vault.coins` row, and snapshots the value-type fields
+    /// into `CoinSnapshot`. Returns `nil` if the vault has no THORChain defiPositions entry.
     @MainActor
-    func coin(for coinMeta: CoinMeta, vault: Vault) -> Coin? {
-        vault.coins.first { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }
+    func coinSnapshots(in vault: Vault) -> [CoinSnapshot]? {
+        let enabled = vault.defiPositions.first { $0.chain == .thorChain }?.staking ?? []
+        return enabled.compactMap { meta -> CoinSnapshot? in
+            guard let coin = vault.coins.first(where: { $0.ticker == meta.ticker && $0.chain == meta.chain }) else {
+                return nil
+            }
+            return CoinSnapshot(
+                meta: meta,
+                address: coin.address,
+                balance: coin.balanceDecimal,
+                stakedBalance: coin.stakedBalanceDecimal
+            )
+        }
     }
 
-    @MainActor
-    func balance(for coin: Coin) -> Decimal {
-        coin.balanceDecimal
-    }
-
-    @MainActor
-    func stakedBalance(for coin: Coin) -> Decimal {
-        coin.stakedBalanceDecimal
-    }
-
-    func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta) async -> StakePositionData? {
-        let ticker = coin.ticker.uppercased()
+    func createStakePosition(snapshot: CoinSnapshot, runeMeta: CoinMeta) async -> StakePositionData? {
+        let ticker = snapshot.meta.ticker.uppercased()
         switch ticker {
         case "TCY", "RUJI":
             do {
                 let details = try await stakingService.fetchStakingDetails(
-                    coin: coin,
-                    runeCoin: runeCoin,
-                    address: coin.address
+                    coinMeta: snapshot.meta,
+                    runeCoinMeta: runeMeta,
+                    address: snapshot.address
                 )
                 return StakePositionData(
-                    coin: coinMeta,
+                    coin: snapshot.meta,
                     type: .stake,
                     amount: details.stakedAmount,
                     apr: details.apr,
@@ -82,25 +98,26 @@ private extension THORChainStakeInteractor {
             }
 
         case "STCY":
-            let rawAmount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
-            let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: coinMeta.decimals)
+            let rawAmount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: snapshot.address)
+            let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
             return StakePositionData(
-                coin: coinMeta,
+                coin: snapshot.meta,
                 type: .compound,
                 amount: amount
             )
 
         case "YRUNE", "YTCY":
             return StakePositionData(
-                coin: coinMeta,
+                coin: snapshot.meta,
                 type: .index,
-                amount: await balance(for: coin)
+                amount: snapshot.balance
             )
+
         default:
             return StakePositionData(
-                coin: coinMeta,
+                coin: snapshot.meta,
                 type: .stake,
-                amount: await stakedBalance(for: coin)
+                amount: snapshot.stakedBalance
             )
         }
     }

@@ -10,13 +10,22 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-stake-interactor")
 
+private struct CacaoSnapshot {
+    let meta: CoinMeta
+    let address: String
+    let decimals: Int
+}
+
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
-        guard let cacaoCoin = await cacaoCoin(in: vault) else { return [] }
+        // Snapshot the value-type fields off the `@Model` Coin while we're on `MainActor`,
+        // then operate exclusively on value types in the async branch.
+        guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
+
         let vaultStakePositions = await vaultStakePositions(in: vault)
-        guard vaultStakePositions.contains(where: { $0.ticker == cacaoCoin.ticker }) else {
+        guard vaultStakePositions.contains(where: { $0.ticker == cacao.meta.ticker }) else {
             return []
         }
 
@@ -29,12 +38,12 @@ struct MayaChainStakeInteractor: StakeInteractor {
         }
 
         do {
-            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
+            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacao.address)
 
             // Use value for display amount (includes earnings)
-            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
+            let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
             // Use units for unstake amount (what can actually be withdrawn)
-            let availableToUnstake = position.availableUnits / pow(10, cacaoCoin.decimals)
+            let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
 
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
 
@@ -46,7 +55,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
             return [
                 StakePositionData(
-                    coin: cacaoCoin.toCoinMeta(),
+                    coin: cacao.meta,
                     type: .stake,
                     amount: stakedAmount,
                     availableToUnstake: availableToUnstake,
@@ -66,8 +75,11 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
 private extension MayaChainStakeInteractor {
     @MainActor
-    func cacaoCoin(in vault: Vault) -> Coin? {
-        vault.coins.first { $0.chain == .mayaChain && $0.isNativeToken }
+    func cacaoSnapshot(in vault: Vault) -> CacaoSnapshot? {
+        guard let coin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
+            return nil
+        }
+        return CacaoSnapshot(meta: coin.toCoinMeta(), address: coin.address, decimals: coin.decimals)
     }
 
     @MainActor

@@ -53,11 +53,11 @@ final class THORChainStakeInteractorTests: XCTestCase {
     // testability win — extract a protocol for the staking service.
 
     func testFetchStakePositionsReturnsEmptyWithoutRuneCoin() async throws {
-        let container = try DefiTestStore.makeInMemoryContainer()
+        let token = try DefiTestStore.installInMemoryContainer()
+        defer { DefiTestStore.restore(token) }
         let vault = DefiTestStore.makeVault()
         // No RUNE coin in vault → guard short-circuits.
         let result = await THORChainStakeInteractor().fetchStakePositions(vault: vault)
         XCTAssertTrue(result.isEmpty)
-        _ = container // keep alive
-    }
+            }
 }
