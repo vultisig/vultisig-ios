@@ -79,7 +79,7 @@ private extension THORChainStakingService {
         // 3. Parse rewards
         let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? "0") ?? .zero
         let rewardsDecimal = Decimal(string: rewardsAmount.description) ?? 0
-        let rewardsFinal = rewardsDecimal / pow(10, 6) // USDC has 6 decimals
+        let rewardsFinal = rewardsDecimal / pow(10, 8) // THORChain normalizes all assets to 8 decimals
 
         // 4. Parse APR — zero out when there are no active rewards
         let aprString = stake.pool?.summary?.apr?.value ?? "0"
