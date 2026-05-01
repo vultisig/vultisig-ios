@@ -22,23 +22,19 @@ struct LongPressPrimaryButton: View {
         PrimaryButton(
             title: title,
             supportsLongPress: true,
-            longPressProgress: $progress
-        ) {}
+            longPressProgress: $progress,
+            action: { if !isPressed { action() } }
+        )
             .onLongPressGesture(
-                minimumDuration: 0,
+                minimumDuration: longPressDuration,
                 maximumDistance: 0,
-                perform: {},
+                perform: longPressAction,
                 onPressingChanged: { pressing in
                     if pressing {
                         startHold()
                     } else {
                         stopHold()
                     }
-            })
-            .simultaneousGesture(TapGesture().onEnded { _ in
-                if !isPressed {
-                    action()
-                }
             })
     }
 }
@@ -62,14 +58,9 @@ private extension LongPressPrimaryButton {
                 progress = 1.0
             }
 
-            // Wait for the long press duration
-            try? await Task.sleep(for: .seconds(longPressDuration))
-
-            guard !Task.isCancelled else {
-                return
-            }
-
-            onLongPressComplete()
+            // Long press completion is handled by onLongPressGesture's `perform:`,
+            // not a manual sleep. Visual progress and haptics are tied to the same
+            // duration so they end together.
         }
     }
 
@@ -87,20 +78,4 @@ private extension LongPressPrimaryButton {
             progress = 0.0
         }
     }
-
-    func onLongPressComplete() {
-        #if os(iOS)
-            HapticFeedbackManager.shared.stopHapticFeedback()
-            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-            impactFeedback.impactOccurred()
-        #endif
-
-        // Delay for smoother transition
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(200))
-            stopHold()
-            longPressAction()
-        }
-    }
-
 }
