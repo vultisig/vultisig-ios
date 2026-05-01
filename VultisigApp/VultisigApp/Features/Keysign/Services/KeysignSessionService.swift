@@ -310,8 +310,15 @@ final class KeysignSessionService {
                         endpoint: .pollSessionStart(sessionID: session.sessionId)
                     )
                 )
+                // The relay returns `[]` (2 bytes, non-empty) before kickoff — only
+                // return once the decoded participants list is actually populated,
+                // otherwise the peer races ahead with an empty committee and DKLS
+                // deadlocks because no participant matches `localPartyID`.
                 if response.response.statusCode == 200, !response.data.isEmpty {
-                    return try JSONDecoder().decode([String].self, from: response.data)
+                    let participants = try JSONDecoder().decode([String].self, from: response.data)
+                    if !participants.isEmpty {
+                        return participants
+                    }
                 }
             } catch {
                 logger.debug("awaitKeysignStart poll error (will retry): \(error.localizedDescription)")
