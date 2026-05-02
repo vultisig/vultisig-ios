@@ -18,7 +18,7 @@ protocol ThorchainServiceProtocol {
     func ensureTHORChainChainID() -> String
     func broadcastTransaction(jsonString: String) async -> Result<String, Error>
     func fetchTcyStakedAmount(address: String) async -> Decimal
-    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal
+    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount]
     func resolveTNS(name: String, chain: Chain) async throws -> String
     func fetchYieldTokenPrice(for contract: String) async -> Double?

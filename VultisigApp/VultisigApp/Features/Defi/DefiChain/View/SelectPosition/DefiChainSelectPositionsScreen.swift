@@ -92,17 +92,44 @@ struct DefiChainSelectPositionsScreen: View {
 
     @MainActor
     func updateVaultDefiPositions() {
-        viewModel.vault.defiPositions.removeAll(where: { $0.chain == viewModel.chain })
-        viewModel.vault.defiPositions.append(
+        let chain = viewModel.chain
+        let vault = viewModel.vault
+
+        let previous = vault.defiPositions.first { $0.chain == chain }
+        let previousStaking = Set(previous?.staking ?? [])
+        let previousLps = Set(previous?.lps ?? [])
+        let newStaking = Set(selection[safe: 1] ?? [])
+        let newLps = Set(selection[safe: 2] ?? [])
+
+        vault.defiPositions.removeAll { $0.chain == chain }
+        vault.defiPositions.append(
             DefiPositions(
-                chain: viewModel.chain,
+                chain: chain,
                 bonds: Array(Set(selection[safe: 0] ?? [])),
-                staking: Array(Set(selection[safe: 1] ?? [])),
-                lps: Array(Set(selection[safe: 2] ?? []))
+                staking: Array(newStaking),
+                lps: Array(newLps)
             )
         )
 
         try? Storage.shared.save()
+
+        // Mirror the enable/disable into persisted position rows so the user sees a row with its
+        // CTA immediately (zero amount) — the next refresh updates the amount.
+        let storage = DefiPositionsStorageService()
+        for added in newStaking.subtracting(previousStaking) {
+            try? storage.addZero(stakeCoin: added, to: vault)
+        }
+        for removed in previousStaking.subtracting(newStaking) {
+            try? storage.removeStake(coin: removed, from: vault)
+        }
+        if let nativeCoin = vault.nativeCoin(for: chain)?.toCoinMeta() {
+            for added in newLps.subtracting(previousLps) {
+                try? storage.addZero(lpCoin2: added, nativeCoin: nativeCoin, to: vault)
+            }
+        }
+        for removed in previousLps.subtracting(newLps) {
+            try? storage.removeLP(coin2: removed, from: vault)
+        }
     }
 }
 

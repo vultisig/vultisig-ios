@@ -38,6 +38,7 @@ struct VaultMainBalanceView: View {
             .foregroundStyle(Theme.colors.textPrimary)
             .contentTransition(.numericText())
             .animation(.interpolatingSpring, value: balanceToShow)
+            .animation(.interpolatingSpring, value: homeViewModel.hideVaultBalance)
     }
 
     var toggleBalanceVisibilityButton: some View {

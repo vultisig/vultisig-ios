@@ -527,7 +527,7 @@ extension ThorchainChainnetService {
         return 0
     }
     // swiftlint:disable:next unused_parameter async_without_await
-    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
+    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
         // Stagenet doesn't support TCY auto-compound
         return 0
     }

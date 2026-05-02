@@ -100,7 +100,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     func fetchAutocompoundBalance() async {
         switch coin.ticker.uppercased() {
         case "TCY":
-            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            let amount = (try? await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)) ?? .zero
             self.autocompoundBalance = coin.valueWithDecimals(value: amount)
         default:
             break

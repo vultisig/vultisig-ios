@@ -15,7 +15,6 @@ import Foundation
 
 final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
     var stub: [StakePositionData] = []
-    var error: Error?
     private(set) var callCount = 0
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
@@ -26,12 +25,10 @@ final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
 
 final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {
     var stub: [LPPositionData] = []
-    var error: Error?
     private(set) var callCount = 0
 
-    func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
+    func fetchLPPositions(vault: Vault) async -> [LPPositionData] {
         callCount += 1
-        if let error { throw error }
         return stub
     }
 }

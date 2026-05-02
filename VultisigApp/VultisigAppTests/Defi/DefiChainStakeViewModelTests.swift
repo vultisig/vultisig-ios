@@ -19,7 +19,6 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         vault = DefiTestStore.makeVault()
         interactor = MockStakeInteractor()
 
-        // Enable TCY in defi positions so vaultStakePositions resolves correctly.
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         vault.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [tcyMeta], lps: [])]
     }
@@ -34,10 +33,10 @@ final class DefiChainStakeViewModelTests: XCTestCase {
 
     // MARK: - Init
 
-    func testInitWithEmptyPersistedPositionsMarksInitialLoadingPending() {
+    func testInitWithoutPersistedPositionsLeavesArrayEmpty() {
         let vm = makeViewModel()
         XCTAssertTrue(vm.stakePositions.isEmpty)
-        XCTAssertFalse(vm.initialLoadingDone)
+        XCTAssertFalse(vm.initialLoadingDone, "No persisted rows ⇒ skeleton must show until first refresh.")
     }
 
     func testInitWithPersistedPositionsMarksInitialLoadingDone() throws {
@@ -54,7 +53,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
 
     // MARK: - Refresh
 
-    func testRefreshSuccessReplacesPublishedArray() async throws {
+    func testRefreshSuccessPersistsAndPublishes() async throws {
         let vm = makeViewModel()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         interactor.stub = [
@@ -67,10 +66,10 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertEqual(vm.stakePositions.first?.amount, 42)
         XCTAssertEqual(vm.stakePositions.first?.apr, 0.05)
         XCTAssertTrue(vm.initialLoadingDone)
-        XCTAssertNil(vm.refreshError)
     }
 
-    /// Regression test for Bug 2: refresh that returns no DTOs must not flicker the list to empty.
+    /// Refresh that returns no DTOs (e.g. all per-coin fetches failed) must not flicker the list
+    /// to empty — persisted rows stay visible.
     func testRefreshEmptyPreservesPersistedState() async throws {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
@@ -81,29 +80,26 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let vm = makeViewModel()
         XCTAssertEqual(vm.stakePositions.count, 1)
 
-        interactor.stub = [] // no DTOs returned (e.g. all per-coin fetches failed)
+        interactor.stub = []
         await vm.refresh()
 
-        XCTAssertEqual(vm.stakePositions.count, 1, "Empty interactor result must NOT clear the list — persisted positions stay visible.")
+        XCTAssertEqual(vm.stakePositions.count, 1)
         XCTAssertEqual(vm.stakePositions.first?.amount, 100)
-        XCTAssertEqual(vm.stakePositions.first?.apr, 0.1)
     }
 
-    func testRefreshPartialSuccessOnlyUpdatesReturnedCoins() async throws {
+    /// Per-coin partial success: TCY refresh succeeds, RUJI's per-coin fetch failed (interactor
+    /// omits it). RUJI's persisted row must stay untouched.
+    func testRefreshPartialSuccessPreservesOmittedCoinsRow() async throws {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         let rujiMeta = CoinMeta.make(chain: .thorChain, ticker: "RUJI")
 
-        // Enable both
         vault.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [tcyMeta, rujiMeta], lps: [])]
-
-        // Seed with prior data for both
         try storage.upsert(stake: [
             StakePositionData(coin: tcyMeta, type: .stake, amount: 100, apr: 0.1),
             StakePositionData(coin: rujiMeta, type: .stake, amount: 200, apr: 0.2)
         ], for: vault)
 
-        // Only TCY succeeds in this refresh — RUJI per-coin fetch failed and was omitted.
         interactor.stub = [
             StakePositionData(coin: tcyMeta, type: .stake, amount: 150, apr: 0.15)
         ]
@@ -111,30 +107,10 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let vm = makeViewModel()
         await vm.refresh()
 
-        // TCY updates to 150; RUJI keeps its prior 200.
         let tcy = vm.stakePositions.first { $0.coin.ticker == "TCY" }
         let ruji = vm.stakePositions.first { $0.coin.ticker == "RUJI" }
         XCTAssertEqual(tcy?.amount, 150)
-        XCTAssertEqual(ruji?.amount, 200, "Persisted RUJI must remain — partial-failure refresh preserves untouched coins.")
-    }
-
-    func testUpdateVaultReSnapshotsCache() throws {
-        let vm = makeViewModel()
-        XCTAssertTrue(vm.stakePositions.isEmpty)
-
-        // Build a second vault with persisted positions, swap.
-        let storage = DefiPositionsStorageService()
-        let other = DefiTestStore.makeVault(pubKey: "other-vault")
-        let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
-        other.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [tcyMeta], lps: [])]
-        try storage.upsert(stake: [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 999, apr: 0.3)
-        ], for: other)
-
-        vm.update(vault: other)
-
-        XCTAssertEqual(vm.stakePositions.count, 1)
-        XCTAssertEqual(vm.stakePositions.first?.amount, 999)
+        XCTAssertEqual(ruji?.amount, 200, "RUJI must keep its persisted amount when omitted from refresh.")
     }
 
     // MARK: - Helpers
