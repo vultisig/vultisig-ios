@@ -101,6 +101,11 @@ struct DefiChainMainScreen: View {
             CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
                 showPositionSelection.toggle()
             }
+            #if os(macOS)
+            CircularAccessoryIconButton(icon: "refresh", type: .secondary) {
+                Task { await refresh() }
+            }
+            #endif
         }
     }
 
