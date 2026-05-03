@@ -46,7 +46,8 @@ final class DefiChainStakeViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.stakeInteractor(for: chain)
         self.storage = storage
-        self.initialLoadingDone = !vault.stakePositions.isEmpty
+        let enabledStakes = vault.defiPositions.first { $0.chain == chain }?.staking ?? []
+        self.initialLoadingDone = vault.stakePositions.contains { enabledStakes.contains($0.coin) }
     }
 
     func update(vault: Vault) {

@@ -24,7 +24,7 @@ final class DefiChainLPsViewModel: ObservableObject {
         vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
     }
 
-    var hasLPPositions: Bool { !vaultLPPositions.isEmpty }
+    var hasLPPositions: Bool { !lpPositions.isEmpty }
 
     var vaultLPPositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.lps ?? []
@@ -40,7 +40,8 @@ final class DefiChainLPsViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.lpsInteractor(for: chain)
         self.storage = storage
-        self.initialLoadingDone = !vault.lpPositions.isEmpty
+        let enabledLPs = vault.defiPositions.first { $0.chain == chain }?.lps ?? []
+        self.initialLoadingDone = vault.lpPositions.contains { enabledLPs.contains($0.coin2) }
     }
 
     func update(vault: Vault) {

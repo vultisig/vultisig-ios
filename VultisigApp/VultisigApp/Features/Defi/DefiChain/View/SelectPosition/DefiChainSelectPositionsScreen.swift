@@ -5,7 +5,10 @@
 //  Created by Gaston Mazzeo on 23/10/2025.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-select-positions")
 
 struct DefiChainSelectPositionsScreen: View {
     @ObservedObject var viewModel: DefiChainMainViewModel
@@ -111,24 +114,44 @@ struct DefiChainSelectPositionsScreen: View {
             )
         )
 
-        try? Storage.shared.save()
+        do {
+            try Storage.shared.save()
+        } catch {
+            logger.error("Failed to save vault defi positions: \(error.localizedDescription, privacy: .private)")
+        }
 
         // Mirror the enable/disable into persisted position rows so the user sees a row with its
         // CTA immediately (zero amount) — the next refresh updates the amount.
         let storage = DefiPositionsStorageService()
         for added in newStaking.subtracting(previousStaking) {
-            try? storage.addZero(stakeCoin: added, to: vault)
+            do {
+                try storage.addZero(stakeCoin: added, to: vault)
+            } catch {
+                logger.error("Failed to add zero stake row for \(added.ticker, privacy: .public): \(error.localizedDescription, privacy: .private)")
+            }
         }
         for removed in previousStaking.subtracting(newStaking) {
-            try? storage.removeStake(coin: removed, from: vault)
+            do {
+                try storage.removeStake(coin: removed, from: vault)
+            } catch {
+                logger.error("Failed to remove stake row for \(removed.ticker, privacy: .public): \(error.localizedDescription, privacy: .private)")
+            }
         }
         if let nativeCoin = vault.nativeCoin(for: chain)?.toCoinMeta() {
             for added in newLps.subtracting(previousLps) {
-                try? storage.addZero(lpCoin2: added, nativeCoin: nativeCoin, to: vault)
+                do {
+                    try storage.addZero(lpCoin2: added, nativeCoin: nativeCoin, to: vault)
+                } catch {
+                    logger.error("Failed to add zero LP row for \(added.ticker, privacy: .public): \(error.localizedDescription, privacy: .private)")
+                }
             }
         }
         for removed in previousLps.subtracting(newLps) {
-            try? storage.removeLP(coin2: removed, from: vault)
+            do {
+                try storage.removeLP(coin2: removed, from: vault)
+            } catch {
+                logger.error("Failed to remove LP row for \(removed.ticker, privacy: .public): \(error.localizedDescription, privacy: .private)")
+            }
         }
     }
 }
