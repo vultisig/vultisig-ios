@@ -346,7 +346,9 @@ private extension BalanceService {
                 let tcyStakedBalance = await service.fetchTcyStakedAmount(address: identifier.address)
 
                 if enableAutoCompoundStakedBalance {
-                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: identifier.address)
+                    // Auto-compound contributes to the displayed balance; on transient failure
+                    // fall back to the staked-only amount rather than blanking the whole row.
+                    let tcyAutoCompoundBalance = (try? await service.fetchTcyAutoCompoundAmount(address: identifier.address)) ?? .zero
                     let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
                     return totalStakedBalance.description
                 }
