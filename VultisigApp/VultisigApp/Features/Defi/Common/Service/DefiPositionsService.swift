@@ -37,6 +37,10 @@ struct DefiPositionsService {
             [
                 TokensStore.cacao
             ]
+        case .tron:
+            [
+                TokensStore.trx
+            ]
         default:
             []
         }

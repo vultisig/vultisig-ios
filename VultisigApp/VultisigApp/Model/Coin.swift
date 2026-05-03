@@ -384,10 +384,6 @@ extension Coin {
         switch chain {
         case .thorChain:
             return thorchainDefiBalanceDecimal
-        case .tron:
-            // TRON staked balance is fetched from TRON API, not stored in stakedBalance
-            // Show the regular balance in the DeFi row
-            return balanceDecimal
         default:
             return stakedBalanceDecimal
         }

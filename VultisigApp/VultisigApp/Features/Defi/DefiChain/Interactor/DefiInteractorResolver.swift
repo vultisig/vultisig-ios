@@ -12,6 +12,8 @@ enum DefiInteractorResolver {
             return THORChainStakeInteractor()
         case .mayaChain:
             return MayaChainStakeInteractor()
+        case .tron:
+            return TronStakeInteractor()
         default:
             return nil  // Chain doesn't support DeFi Stake Tab
         }

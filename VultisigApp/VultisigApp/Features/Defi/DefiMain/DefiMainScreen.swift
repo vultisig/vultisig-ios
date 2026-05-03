@@ -160,6 +160,7 @@ struct DefiMainScreen: View {
 
     func refresh() {
         viewModel.groupChains(vault: vault)
+        Task { await viewModel.refreshExternalChainPositions(vault: vault) }
     }
 
     func clearSearch() {

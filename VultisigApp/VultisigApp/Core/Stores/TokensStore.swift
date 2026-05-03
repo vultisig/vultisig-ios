@@ -2182,6 +2182,16 @@ class TokensStore {
         isNativeToken: true
     )
 
+    static let trx: CoinMeta = CoinMeta(
+        chain: .tron,
+        ticker: "TRX",
+        logo: "tron",
+        decimals: 6,
+        priceProviderId: "tron",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
     // MARK: - Maya Chain LPs Tokens
 
     static let ethWSTETH: CoinMeta = CoinMeta(

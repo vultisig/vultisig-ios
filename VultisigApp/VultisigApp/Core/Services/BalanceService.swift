@@ -394,6 +394,21 @@ private extension BalanceService {
                 return "0"
             }
 
+        case .tron:
+            // Frozen + unfreezing TRX (Stake 2.0). Stored on `Coin.stakedBalance` so the
+            // DeFi row's per-coin display (`defiBalanceStringWithTicker`) matches the
+            // aggregated fiat from `vault.stakePositions`.
+            guard identifier.isNativeToken else { return nil }
+
+            do {
+                let account = try await tron.getAccount(address: identifier.address)
+                let frozenSun = account.frozenBandwidthSun + account.frozenEnergySun + account.unfreezingTotalSun
+                return String(frozenSun)
+            } catch {
+                logger.warning("Error fetching TRON frozen balance: \(error.localizedDescription)")
+                return "0"
+            }
+
         default:
             // All other chains currently don't support staking
             return nil
