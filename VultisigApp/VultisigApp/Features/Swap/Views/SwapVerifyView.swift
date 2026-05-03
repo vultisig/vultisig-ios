@@ -28,7 +28,7 @@ struct SwapVerifyView: View {
             Background()
             view
         }
-        .withBanner(text: $retryBannerText)
+        .withBanner(text: $retryBannerText, style: .error)
         .onReceive(timer) { _ in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
