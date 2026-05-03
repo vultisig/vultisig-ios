@@ -46,8 +46,4 @@ struct StakePositionData: Sendable, Equatable {
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
     }
-
-    func id(for vault: Vault) -> String {
-        "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
-    }
 }

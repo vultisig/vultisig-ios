@@ -60,6 +60,35 @@ final class StakePosition {
         self.vault = vault
         self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }
+
+    convenience init(_ dto: StakePositionData, vault: Vault) {
+        self.init(
+            coin: dto.coin,
+            type: dto.type,
+            amount: dto.amount,
+            availableToUnstake: dto.availableToUnstake,
+            apr: dto.apr,
+            estimatedReward: dto.estimatedReward,
+            nextPayout: dto.nextPayout,
+            rewards: dto.rewards,
+            rewardCoin: dto.rewardCoin,
+            unstakeMetadata: dto.unstakeMetadata,
+            vault: vault
+        )
+    }
+
+    /// Updates everything except the lookup key (`coin`) and the persistent `id`.
+    func apply(_ dto: StakePositionData) {
+        type = dto.type
+        amount = dto.amount
+        availableToUnstake = dto.availableToUnstake
+        apr = dto.apr
+        estimatedReward = dto.estimatedReward
+        nextPayout = dto.nextPayout
+        rewards = dto.rewards
+        rewardCoin = dto.rewardCoin
+        unstakeMetadata = dto.unstakeMetadata
+    }
 }
 
 enum StakePositionType: String, Codable, Equatable {

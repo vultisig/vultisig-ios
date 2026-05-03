@@ -28,43 +28,19 @@ struct DefiPositionsStorageService {
     @discardableResult
     @MainActor
     func upsert(lp positions: [LPPositionData], for vault: Vault) throws -> [LPPosition] {
-        let vaultPubKey = vault.pubKeyECDSA
-        let descriptor = FetchDescriptor<LPPosition>(
-            predicate: #Predicate<LPPosition> { position in
-                position.id.contains(vaultPubKey)
-            }
-        )
         let existingByCoin2 = Dictionary(
-            try Storage.shared.modelContext.fetch(descriptor).map { ($0.coin2, $0) },
+            vault.lpPositions.map { ($0.coin2, $0) },
             uniquingKeysWith: { _, latest in latest }
         )
 
-        var materialized: [LPPosition] = []
-        materialized.reserveCapacity(positions.count)
-        for dto in positions {
+        let materialized = positions.map { dto -> LPPosition in
             if let existing = existingByCoin2[dto.coin2] {
-                existing.coin1 = dto.coin1
-                existing.coin1Amount = dto.coin1Amount
-                existing.coin2Amount = dto.coin2Amount
-                existing.poolName = dto.poolName
-                existing.poolUnits = dto.poolUnits
-                existing.apr = dto.apr
-                existing.lastUpdated = .now
-                materialized.append(existing)
-            } else {
-                let model = LPPosition(
-                    coin1: dto.coin1,
-                    coin1Amount: dto.coin1Amount,
-                    coin2: dto.coin2,
-                    coin2Amount: dto.coin2Amount,
-                    poolName: dto.poolName,
-                    poolUnits: dto.poolUnits,
-                    apr: dto.apr,
-                    vault: vault
-                )
-                Storage.shared.modelContext.insert(model)
-                materialized.append(model)
+                existing.apply(dto)
+                return existing
             }
+            let model = LPPosition(dto, vault: vault)
+            Storage.shared.modelContext.insert(model)
+            return model
         }
 
         try saveAndNotify()
@@ -73,38 +49,26 @@ struct DefiPositionsStorageService {
 
     // MARK: - Bond positions
 
-    /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
-    /// Also removes stale positions that are no longer present in the new positions array
+    /// Upserts the given bond positions and removes any persisted row not in the input.
+    ///
+    /// Empty input deletes everything for the vault — callers MUST distinguish a genuine "user
+    /// has no bonds" from a refresh failure before passing `[]`. Bond uses a single-shot API so
+    /// delete-stale is safe; stake/LP can't (per-row enable/disable).
     @MainActor
     func upsert(_ positions: [BondPosition], for vault: Vault) throws {
-        let vaultPubKey = vault.pubKeyECDSA
+        let newIDs = Set(positions.map(\.id))
 
-        let allVaultPositionsDescriptor = FetchDescriptor<BondPosition>(
-            predicate: #Predicate<BondPosition> { position in
-                position.id.contains(vaultPubKey)
-            }
+        for stale in vault.bondPositions where !newIDs.contains(stale.id) {
+            Storage.shared.modelContext.delete(stale)
+        }
+
+        let existingByID = Dictionary(
+            vault.bondPositions.map { ($0.id, $0) },
+            uniquingKeysWith: { _, latest in latest }
         )
-        let allExistingPositions = try Storage.shared.modelContext.fetch(allVaultPositionsDescriptor)
-
-        // Callers MUST distinguish failure from a genuine empty result before passing []:
-        // an empty array here will delete all persisted positions for the vault.
-        if positions.isEmpty {
-            for existingPosition in allExistingPositions {
-                Storage.shared.modelContext.delete(existingPosition)
-            }
-            try saveAndNotify()
-            return
-        }
-
-        let existingPositionsByID = Dictionary(allExistingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
-        let newPositionIDs = Set(positions.map { $0.id })
-
-        for existingPosition in allExistingPositions where !newPositionIDs.contains(existingPosition.id) {
-            Storage.shared.modelContext.delete(existingPosition)
-        }
 
         for position in positions {
-            if let existing = existingPositionsByID[position.id] {
+            if let existing = existingByID[position.id] {
                 existing.amount = position.amount
                 existing.apy = position.apy
                 existing.nextReward = position.nextReward
@@ -124,50 +88,19 @@ struct DefiPositionsStorageService {
     @discardableResult
     @MainActor
     func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {
-        let ids = positions.map { $0.id(for: vault) }
-        let descriptor = FetchDescriptor<StakePosition>(
-            predicate: #Predicate<StakePosition> { position in
-                ids.contains(position.id)
-            }
-        )
-        let existingByID = Dictionary(
-            try Storage.shared.modelContext.fetch(descriptor).map { ($0.id, $0) },
+        let existingByCoin = Dictionary(
+            vault.stakePositions.map { ($0.coin, $0) },
             uniquingKeysWith: { _, latest in latest }
         )
 
-        var materialized: [StakePosition] = []
-        materialized.reserveCapacity(positions.count)
-        for dto in positions {
-            let id = dto.id(for: vault)
-            if let existing = existingByID[id] {
-                existing.coin = dto.coin
-                existing.type = dto.type
-                existing.amount = dto.amount
-                existing.availableToUnstake = dto.availableToUnstake
-                existing.apr = dto.apr
-                existing.estimatedReward = dto.estimatedReward
-                existing.nextPayout = dto.nextPayout
-                existing.rewards = dto.rewards
-                existing.rewardCoin = dto.rewardCoin
-                existing.unstakeMetadata = dto.unstakeMetadata
-                materialized.append(existing)
-            } else {
-                let model = StakePosition(
-                    coin: dto.coin,
-                    type: dto.type,
-                    amount: dto.amount,
-                    availableToUnstake: dto.availableToUnstake,
-                    apr: dto.apr,
-                    estimatedReward: dto.estimatedReward,
-                    nextPayout: dto.nextPayout,
-                    rewards: dto.rewards,
-                    rewardCoin: dto.rewardCoin,
-                    unstakeMetadata: dto.unstakeMetadata,
-                    vault: vault
-                )
-                Storage.shared.modelContext.insert(model)
-                materialized.append(model)
+        let materialized = positions.map { dto -> StakePosition in
+            if let existing = existingByCoin[dto.coin] {
+                existing.apply(dto)
+                return existing
             }
+            let model = StakePosition(dto, vault: vault)
+            Storage.shared.modelContext.insert(model)
+            return model
         }
 
         try saveAndNotify()
@@ -177,18 +110,10 @@ struct DefiPositionsStorageService {
     // MARK: - Enable / disable position
 
     /// Inserts a zero-amount stake row when the user enables a stake position, so the row is
-    /// visible immediately (with its CTAs) before the first refresh completes. Idempotent: a
-    /// no-op if a row for the coin already exists.
+    /// visible immediately (with its CTAs) before the first refresh completes. Idempotent.
     @MainActor
     func addZero(stakeCoin coin: CoinMeta, to vault: Vault) throws {
-        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
-        let descriptor = FetchDescriptor<StakePosition>(
-            predicate: #Predicate<StakePosition> { position in
-                position.id == id
-            }
-        )
-        guard try Storage.shared.modelContext.fetch(descriptor).isEmpty else { return }
-
+        guard !vault.stakePositions.contains(where: { $0.coin == coin }) else { return }
         let model = StakePosition(
             coin: coin,
             type: StakePositionType.defaultType(for: coin),
@@ -202,13 +127,7 @@ struct DefiPositionsStorageService {
     /// Removes the persisted stake row when the user disables a stake position.
     @MainActor
     func removeStake(coin: CoinMeta, from vault: Vault) throws {
-        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
-        let descriptor = FetchDescriptor<StakePosition>(
-            predicate: #Predicate<StakePosition> { position in
-                position.id == id
-            }
-        )
-        for stale in try Storage.shared.modelContext.fetch(descriptor) {
+        for stale in vault.stakePositions where stale.coin == coin {
             Storage.shared.modelContext.delete(stale)
         }
         try saveAndNotify()
@@ -217,15 +136,7 @@ struct DefiPositionsStorageService {
     /// Inserts a zero-amount LP row paired against the chain's native coin. Idempotent.
     @MainActor
     func addZero(lpCoin2 coin2: CoinMeta, nativeCoin: CoinMeta, to vault: Vault) throws {
-        let vaultPubKey = vault.pubKeyECDSA
-        let descriptor = FetchDescriptor<LPPosition>(
-            predicate: #Predicate<LPPosition> { position in
-                position.id.contains(vaultPubKey)
-            }
-        )
-        let existing = try Storage.shared.modelContext.fetch(descriptor)
-        guard !existing.contains(where: { $0.coin2 == coin2 }) else { return }
-
+        guard !vault.lpPositions.contains(where: { $0.coin2 == coin2 }) else { return }
         let model = LPPosition(
             coin1: nativeCoin,
             coin1Amount: 0,
@@ -243,13 +154,7 @@ struct DefiPositionsStorageService {
     /// Removes the persisted LP row when the user disables an LP position.
     @MainActor
     func removeLP(coin2: CoinMeta, from vault: Vault) throws {
-        let vaultPubKey = vault.pubKeyECDSA
-        let descriptor = FetchDescriptor<LPPosition>(
-            predicate: #Predicate<LPPosition> { position in
-                position.id.contains(vaultPubKey)
-            }
-        )
-        for stale in try Storage.shared.modelContext.fetch(descriptor) where stale.coin2 == coin2 {
+        for stale in vault.lpPositions where stale.coin2 == coin2 {
             Storage.shared.modelContext.delete(stale)
         }
         try saveAndNotify()
