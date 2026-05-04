@@ -81,31 +81,57 @@ final class IntegrationExplorerTests: XCTestCase {
 
     // MARK: - Fallback behaviour
 
-    func testUnknownProviderFallsBackToExplorerLink() {
+    func testUnknownProviderFallsBackToChainExplorer() {
+        // chainRawValue resolves to .thorChain — fallback derives the URL from
+        // Endpoint.getExplorerURL, NOT the stored explorerLink, so it stays in
+        // sync with the rest of the app even if the stored link is stale.
         let url = IntegrationExplorer.url(
             provider: "1Inch",
             txHash: txHash,
             chainRawValue: mainnetChain,
             fallbackExplorerLink: fallback
         )
-        XCTAssertEqual(url?.absoluteString, fallback)
+        XCTAssertEqual(
+            url?.absoluteString,
+            Endpoint.getExplorerURL(chain: .thorChain, txid: txHash)
+        )
     }
 
-    func testKyberSwapFallsBackToExplorerLink() {
+    func testKyberSwapFallsBackToChainExplorer() {
+        let ethereumChain = Chain.ethereum.rawValue
         let url = IntegrationExplorer.url(
             provider: "KyberSwap",
             txHash: txHash,
-            chainRawValue: mainnetChain,
+            chainRawValue: ethereumChain,
             fallbackExplorerLink: fallback
         )
-        XCTAssertEqual(url?.absoluteString, fallback)
+        XCTAssertEqual(
+            url?.absoluteString,
+            Endpoint.getExplorerURL(chain: .ethereum, txid: txHash)
+        )
     }
 
-    func testNilProviderFallsBackToExplorerLink() {
+    func testNilProviderFallsBackToChainExplorer() {
+        let ethereumChain = Chain.ethereum.rawValue
         let url = IntegrationExplorer.url(
             provider: nil,
             txHash: txHash,
-            chainRawValue: mainnetChain,
+            chainRawValue: ethereumChain,
+            fallbackExplorerLink: fallback
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            Endpoint.getExplorerURL(chain: .ethereum, txid: txHash)
+        )
+    }
+
+    func testUnresolvableChainRawValueFallsBackToStoredExplorerLink() {
+        // Last-ditch safety net: if chainRawValue can't be parsed back to a
+        // Chain (e.g. legacy data, deprecated chain), use the stored link.
+        let url = IntegrationExplorer.url(
+            provider: nil,
+            txHash: txHash,
+            chainRawValue: "not-a-real-chain",
             fallbackExplorerLink: fallback
         )
         XCTAssertEqual(url?.absoluteString, fallback)

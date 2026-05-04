@@ -42,6 +42,9 @@ enum IntegrationExplorer {
                 break
             }
         }
+        if let chain = Chain(rawValue: chainRawValue) {
+            return URL(string: Endpoint.getExplorerURL(chain: chain, txid: txHash))
+        }
         return URL(string: fallbackExplorerLink)
     }
 }
