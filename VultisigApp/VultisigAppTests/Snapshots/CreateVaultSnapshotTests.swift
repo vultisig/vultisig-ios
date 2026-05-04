@@ -31,33 +31,24 @@ final class CreateVaultSnapshotTests: XCTestCase {
 
     // MARK: - CreateVaultView
 
-    /// Snapshot after animations settle (buttons appear after 0.3s delays)
+    /// Renders the fully-revealed static layout via `staticForSnapshot: true`,
+    /// which (a) seeds the reveal `@State` flags to `true` so the spring
+    /// animation never triggers, and (b) swaps the Rive logo for a static
+    /// image. The captured frame is a deterministic still — no animations,
+    /// no `asyncAfter`, no live key window.
     func testCreateVaultScreen_iPhone16Pro() {
-        let vc = UIHostingController(
-            rootView: CreateVaultView()
-                .environmentObject(AppViewModel())
-                .environmentObject(DeeplinkViewModel())
-                .colorScheme(.dark)
-        )
-        vc.view.frame = UIScreen.main.bounds
-
-        // Add to key window so onAppear/onLoad triggers fire
-        let window = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first ?? UIWindow()
-        window.rootViewController = vc
-        window.makeKeyAndVisible()
-
-        // Let the run loop process the async dispatches (0.1s + 0.2s + 0.3s delays)
-        let expectation = expectation(description: "Wait for animations")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 2)
+        let view = CreateVaultView(staticForSnapshot: true)
+            .environmentObject(AppViewModel())
+            .environmentObject(DeeplinkViewModel())
+            .colorScheme(.dark)
 
         assertSnapshot(
-            of: vc,
-            as: .image(on: .iPhone16Pro, precision: 0.98, perceptualPrecision: 0.95)
+            of: view,
+            as: .image(
+                precision: 0.99999,
+                perceptualPrecision: 0.99999,
+                layout: .device(config: .iPhone16Pro)
+            )
         )
     }
 
