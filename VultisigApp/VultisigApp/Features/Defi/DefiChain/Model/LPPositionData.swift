@@ -16,8 +16,4 @@ struct LPPositionData: Sendable, Equatable {
     let poolName: String
     let poolUnits: String
     let apr: Double
-
-    func id(for vault: Vault) -> String {
-        "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(poolName)_\(vault.pubKeyECDSA)"
-    }
 }

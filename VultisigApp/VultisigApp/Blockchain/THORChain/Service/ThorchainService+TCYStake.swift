@@ -63,28 +63,30 @@ extension ThorchainService {
         }
     }
 
-    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
-        // Use THORNode endpoint to get all balances and find x/staking-tcy.
-        // Decoded via JSONSerialization rather than a Codable so unknown balance
-        // shapes don't break the lookup.
-        do {
-            let raw = try await httpClient.request(ThorchainMainnetAPI.balances(address: address))
-            if let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
-               let balances = json["balances"] as? [[String: Any]] {
-
-                for balance in balances {
-                    if let denom = balance["denom"] as? String,
-                       denom == "x/staking-tcy",
-                       let amountString = balance["amount"] as? String,
-                       let amount = UInt64(amountString) {
-                        return Decimal(amount)
-                    }
-                }
-            }
-        } catch {
-            print("Error fetching auto-compound balance: \(error.localizedDescription)")
+    /// Fetches the user's `x/staking-tcy` (auto-compound STCY) balance from THORNode.
+    ///
+    /// Throws on transport / decoding failure — callers MUST distinguish this from a
+    /// successful zero. Silently swallowing the error and returning `.zero` (the previous
+    /// behavior) caused persisted STCY positions to be overwritten with zero on every
+    /// transient hiccup.
+    ///
+    /// Returns `.zero` only when the endpoint responds successfully but the user has no
+    /// `x/staking-tcy` balance in the response (genuine zero stake).
+    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
+        let raw = try await httpClient.request(ThorchainMainnetAPI.balances(address: address))
+        guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
+              let balances = json["balances"] as? [[String: Any]] else {
+            throw HelperError.runtimeError("Malformed THORNode balances response")
         }
 
+        for balance in balances {
+            if let denom = balance["denom"] as? String,
+               denom == "x/staking-tcy",
+               let amountString = balance["amount"] as? String,
+               let amount = UInt64(amountString) {
+                return Decimal(amount)
+            }
+        }
         return .zero
     }
 

@@ -19,16 +19,16 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
     }
 
     var formattedLPs: [(position: LPPosition, fiatAmount: String)] {
-        viewModel.lpPositions.compactMap { position -> (position: LPPosition, fiatAmount: Decimal)? in
-            guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin1 }) else {
-                return nil
+        viewModel.lpPositions
+            .map { position -> (position: LPPosition, fiatAmount: Decimal) in
+                // Use `position.coin1` (CoinMeta) for the rate lookup rather than requiring a
+                // matching `Coin` row in `vault.coins`. Otherwise zero-amount placeholders for
+                // freshly-enabled pools disappear here even after the VM has them.
+                let fiatAmount = RateProvider.shared.fiatBalance(value: position.coin1Amount, coin: position.coin1)
+                return (position, fiatAmount)
             }
-
-            let fiatAmount = coin.fiat(decimal: position.coin1Amount)
-            return (position, fiatAmount)
-        }
-        .sorted { $0.fiatAmount > $1.fiatAmount }
-        .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+            .sorted { $0.fiatAmount > $1.fiatAmount }
+            .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
 
     var body: some View {

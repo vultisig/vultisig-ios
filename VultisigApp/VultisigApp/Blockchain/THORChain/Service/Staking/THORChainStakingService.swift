@@ -65,9 +65,19 @@ private extension THORChainStakingService {
         let response = try await httpClient.request(target, responseType: AccountRootData.self)
         let decoded = response.data
 
-        guard let stake = decoded.data.node?.stakingV2?.first(where: {
+        // Distinguish "address has no RUJI stake" (genuine empty) from "response is missing /
+        // partial" (don't trust it). Returning `.empty` for the latter caused persisted RUJI
+        // positions to be silently overwritten with zero on stale GraphQL responses.
+        guard let node = decoded.data.node else {
+            throw StakingError.invalidResponse
+        }
+        guard let stakingV2 = node.stakingV2 else {
+            throw StakingError.invalidResponse
+        }
+        guard let stake = stakingV2.first(where: {
             $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
         }) else {
+            // The address has staking entries but none for RUJI — genuine zero stake.
             return .empty
         }
 
@@ -81,10 +91,9 @@ private extension THORChainStakingService {
         let rewardsDecimal = Decimal(string: rewardsAmount.description) ?? 0
         let rewardsFinal = rewardsDecimal / pow(10, 8) // THORChain normalizes all assets to 8 decimals
 
-        // 4. Parse APR — zero out when there are no active rewards
-        let aprString = stake.pool?.summary?.apr?.value ?? "0"
-        let rawApr = Double(aprString) ?? 0.0
-        let apr: Double? = rewardsAmount > .zero ? rawApr : 0.0
+        // 4. Parse APR. The fractional-rate conversion (12-decimal Bigint → e.g. 0.0116 for
+        // 1.16%) lives on the model itself; see `AccountRootData...APR.fractionalRate`.
+        let apr: Double? = stake.pool?.summary?.apr?.fractionalRate
 
         // 5. Create USDC coin meta for rewards
         let usdcCoin = CoinMeta(
