@@ -189,4 +189,63 @@ final class ExplorerLinkBuilderTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - Real-world displayName / providerName values
+
+    /// `SwapQuote.displayName` returns "Maya protocol" (lowercase p) and
+    /// `SwapPayload.providerName` returns "Maya Protocol" (capital P). For a
+    /// cross-chain swap (e.g. BTC→Maya) `chainRawValue` is the from-chain, so
+    /// without an explicit alias the fallback would route to the wrong chain
+    /// explorer (mempool.space for BTC). Lock the alias in.
+    func testMayaProtocolDisplayNameRoutesToMayaExplorer() {
+        let bitcoinChain = Chain.bitcoin.rawValue
+        let lowercase = ExplorerLinkBuilder.url(
+            provider: "Maya protocol",
+            txHash: txHash,
+            chainRawValue: bitcoinChain,
+            fallbackExplorerLink: fallback
+        )
+        let capital = ExplorerLinkBuilder.url(
+            provider: "Maya Protocol",
+            txHash: txHash,
+            chainRawValue: bitcoinChain,
+            fallbackExplorerLink: fallback
+        )
+        XCTAssertEqual(
+            lowercase?.absoluteString,
+            "https://www.explorer.mayachain.info/tx/ABCDEF1234567890"
+        )
+        XCTAssertEqual(
+            capital?.absoluteString,
+            "https://www.explorer.mayachain.info/tx/ABCDEF1234567890"
+        )
+    }
+
+    func testThorChainStagenetDisplayNameRoutesToStagenetTracker() {
+        // Stagenet alias must work even when chainRawValue isn't the stagenet
+        // raw value (e.g. cross-chain stagenet swap).
+        let url = ExplorerLinkBuilder.url(
+            provider: "THORChain-Stagenet",
+            txHash: txHash,
+            chainRawValue: Chain.bitcoin.rawValue,
+            fallbackExplorerLink: fallback
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://runescan.io/tx/ABCDEF1234567890?network=stagenet"
+        )
+    }
+
+    func testThorChainChainnetDisplayNameRoutesToThorchainTracker() {
+        let url = ExplorerLinkBuilder.url(
+            provider: "THORChain-Chainnet",
+            txHash: txHash,
+            chainRawValue: mainnetChain,
+            fallbackExplorerLink: fallback
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://runescan.io/tx/ABCDEF1234567890"
+        )
+    }
 }

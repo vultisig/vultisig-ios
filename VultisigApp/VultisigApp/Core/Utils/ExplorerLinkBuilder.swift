@@ -72,12 +72,17 @@ enum ExplorerLinkBuilder {
         if let normalized = provider?
             .lowercased()
             .filter({ $0.isLetter || $0.isNumber }) {
+            // Aliases cover every value SwapQuote.displayName and
+            // SwapPayload.providerName can produce, plus the legacy
+            // "thorswap" string from older history entries.
             switch normalized {
             case "lifi":
                 return URL(string: lifiTracker(txid: txHash))
-            case "maya", "mayachain":
+            case "maya", "mayachain", "mayaprotocol":
                 return URL(string: mayaTracker(txid: txHash))
-            case "thorchain", "thorswap":
+            case "thorchainstagenet":
+                return URL(string: thorchainStagenetTracker(txid: txHash))
+            case "thorchain", "thorswap", "thorchainchainnet":
                 if chainRawValue == Chain.thorChainStagenet.rawValue {
                     return URL(string: thorchainStagenetTracker(txid: txHash))
                 }
