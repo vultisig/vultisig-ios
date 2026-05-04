@@ -32,7 +32,7 @@ struct UTXOTransactionCell: View {
 
     var transactionIDCell: some View {
         let id = transaction.txid
-        let url = Endpoint.getExplorerURL(chain: tx.coin.chain, txid: id)
+        let url = ExplorerLinkBuilder.getExplorerURL(chain: tx.coin.chain, txid: id)
         let image = transaction.isSent ? "arrow.up.circle" : "arrow.down.circle"
 
         return TransactionCell(

@@ -202,11 +202,11 @@ class KeysignViewModel: ObservableObject {
 
     func getTransactionExplorerURL(txid: String) -> String {
         guard let keysignPayload else { return .empty }
-        return Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
+        return ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
     }
 
     func getSwapProgressURL(txid: String) -> String? {
-        IntegrationExplorer.progressLink(swapPayload: keysignPayload?.swapPayload, txHash: txid)
+        ExplorerLinkBuilder.progressLink(swapPayload: keysignPayload?.swapPayload, txHash: txid)
     }
 
     func startKeysign() async {

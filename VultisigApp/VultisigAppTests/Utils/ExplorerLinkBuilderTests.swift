@@ -1,12 +1,12 @@
 //
-//  IntegrationExplorerTests.swift
+//  ExplorerLinkBuilderTests.swift
 //  VultisigAppTests
 //
 
 import XCTest
 @testable import VultisigApp
 
-final class IntegrationExplorerTests: XCTestCase {
+final class ExplorerLinkBuilderTests: XCTestCase {
 
     private let mainnetChain = Chain.thorChain.rawValue
     private let stagenetChain = Chain.thorChainStagenet.rawValue
@@ -16,7 +16,7 @@ final class IntegrationExplorerTests: XCTestCase {
     // MARK: - Provider-specific routing
 
     func testLifiProviderReturnsLifiTracker() {
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "LI.FI",
             txHash: txHash,
             chainRawValue: mainnetChain,
@@ -26,7 +26,7 @@ final class IntegrationExplorerTests: XCTestCase {
     }
 
     func testMayaProviderReturnsMayaExplorer() {
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "MayaChain",
             txHash: txHash,
             chainRawValue: mainnetChain,
@@ -40,7 +40,7 @@ final class IntegrationExplorerTests: XCTestCase {
     }
 
     func testThorChainMainnetReturnsRuneScan() {
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "THORChain",
             txHash: txHash,
             chainRawValue: mainnetChain,
@@ -54,7 +54,7 @@ final class IntegrationExplorerTests: XCTestCase {
     }
 
     func testThorChainStagenetReturnsStagenetRuneScan() {
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "THORChain",
             txHash: txHash,
             chainRawValue: stagenetChain,
@@ -67,7 +67,7 @@ final class IntegrationExplorerTests: XCTestCase {
     }
 
     func testThorSwapAliasIsTreatedAsThorChain() {
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "THORSwap",
             txHash: txHash,
             chainRawValue: mainnetChain,
@@ -83,9 +83,9 @@ final class IntegrationExplorerTests: XCTestCase {
 
     func testUnknownProviderFallsBackToChainExplorer() {
         // chainRawValue resolves to .thorChain — fallback derives the URL from
-        // Endpoint.getExplorerURL, NOT the stored explorerLink, so it stays in
+        // ExplorerLinkBuilder.getExplorerURL, NOT the stored explorerLink, so it stays in
         // sync with the rest of the app even if the stored link is stale.
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "1Inch",
             txHash: txHash,
             chainRawValue: mainnetChain,
@@ -93,13 +93,13 @@ final class IntegrationExplorerTests: XCTestCase {
         )
         XCTAssertEqual(
             url?.absoluteString,
-            Endpoint.getExplorerURL(chain: .thorChain, txid: txHash)
+            ExplorerLinkBuilder.getExplorerURL(chain: .thorChain, txid: txHash)
         )
     }
 
     func testKyberSwapFallsBackToChainExplorer() {
         let ethereumChain = Chain.ethereum.rawValue
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: "KyberSwap",
             txHash: txHash,
             chainRawValue: ethereumChain,
@@ -107,13 +107,13 @@ final class IntegrationExplorerTests: XCTestCase {
         )
         XCTAssertEqual(
             url?.absoluteString,
-            Endpoint.getExplorerURL(chain: .ethereum, txid: txHash)
+            ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash)
         )
     }
 
     func testNilProviderFallsBackToChainExplorer() {
         let ethereumChain = Chain.ethereum.rawValue
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: nil,
             txHash: txHash,
             chainRawValue: ethereumChain,
@@ -121,14 +121,14 @@ final class IntegrationExplorerTests: XCTestCase {
         )
         XCTAssertEqual(
             url?.absoluteString,
-            Endpoint.getExplorerURL(chain: .ethereum, txid: txHash)
+            ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash)
         )
     }
 
     func testUnresolvableChainRawValueFallsBackToStoredExplorerLink() {
         // Last-ditch safety net: if chainRawValue can't be parsed back to a
         // Chain (e.g. legacy data, deprecated chain), use the stored link.
-        let url = IntegrationExplorer.url(
+        let url = ExplorerLinkBuilder.url(
             provider: nil,
             txHash: txHash,
             chainRawValue: "not-a-real-chain",
@@ -142,7 +142,7 @@ final class IntegrationExplorerTests: XCTestCase {
     func testLifiMatchingIsCaseInsensitive() {
         let variants = ["LI.FI", "li.fi", "Lifi", "LIFI", "Li.Fi", "li fi"]
         for variant in variants {
-            let url = IntegrationExplorer.url(
+            let url = ExplorerLinkBuilder.url(
                 provider: variant,
                 txHash: txHash,
                 chainRawValue: mainnetChain,
@@ -159,7 +159,7 @@ final class IntegrationExplorerTests: XCTestCase {
     func testThorChainMatchingIsCaseInsensitive() {
         let variants = ["thorchain", "THORCHAIN", "ThorChain", "THOR Chain"]
         for variant in variants {
-            let url = IntegrationExplorer.url(
+            let url = ExplorerLinkBuilder.url(
                 provider: variant,
                 txHash: txHash,
                 chainRawValue: mainnetChain,
@@ -176,7 +176,7 @@ final class IntegrationExplorerTests: XCTestCase {
     func testMayaMatchingIsCaseInsensitive() {
         let variants = ["maya", "MAYA", "Maya", "MayaChain", "maya chain"]
         for variant in variants {
-            let url = IntegrationExplorer.url(
+            let url = ExplorerLinkBuilder.url(
                 provider: variant,
                 txHash: txHash,
                 chainRawValue: mainnetChain,

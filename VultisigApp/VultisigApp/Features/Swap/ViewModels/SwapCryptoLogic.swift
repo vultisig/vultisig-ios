@@ -97,7 +97,7 @@ struct SwapCryptoLogic {
     // MARK: - Formatters & Presentation
 
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
-        IntegrationExplorer.progressLink(quote: tx.quote, txHash: hash, fromChain: tx.fromCoin.chain)
+        ExplorerLinkBuilder.progressLink(quote: tx.quote, txHash: hash, fromChain: tx.fromCoin.chain)
     }
 
     func fromFiatAmount(tx: SwapTransaction) -> String {

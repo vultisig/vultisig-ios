@@ -245,7 +245,7 @@ struct TransactionHistoryDetailSheet: View {
     // MARK: - Explorer Button
 
     private var providerExplorerURL: URL? {
-        IntegrationExplorer.url(for: transaction)
+        ExplorerLinkBuilder.url(for: transaction)
     }
 
     private var explorerButton: some View {
