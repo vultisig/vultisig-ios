@@ -111,6 +111,7 @@ enum THORChainStakingAPI: TargetType {
                   summary {
                     apr {
                       value
+                      status
                     }
                   }
                 }

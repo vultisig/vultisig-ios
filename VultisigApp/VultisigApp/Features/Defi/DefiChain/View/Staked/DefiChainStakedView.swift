@@ -20,16 +20,18 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
     }
 
     var formattedStakePositions: [(position: StakePosition, fiatAmount: String)] {
-        viewModel.stakePositions.compactMap { position -> (position: StakePosition, fiatAmount: Decimal)? in
-            guard let coin = viewModel.vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
-                return nil
+        viewModel.stakePositions
+            .map { position -> (position: StakePosition, fiatAmount: Decimal) in
+                // Use the position's `CoinMeta` for the rate lookup so zero-amount placeholders
+                // (and any position whose `Coin` row isn't yet in `vault.coins` — e.g. when the
+                // background `CoinService.addToChain` call hasn't completed or silently failed)
+                // still render. Filtering by `vault.coins.first(...)` here was the reason
+                // freshly-enabled positions disappeared after a refresh.
+                let fiatAmount = RateProvider.shared.fiatBalance(value: position.amount, coin: position.coin)
+                return (position, fiatAmount)
             }
-
-            let fiatAmount = coin.fiat(decimal: position.amount)
-            return (position, fiatAmount)
-        }
-        .sorted { $0.fiatAmount > $1.fiatAmount }
-        .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+            .sorted { $0.fiatAmount > $1.fiatAmount }
+            .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
 
     var body: some View {

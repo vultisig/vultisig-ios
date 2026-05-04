@@ -21,7 +21,7 @@ final class THORChainLPsInteractorTests: XCTestCase {
         defer { DefiTestStore.restore(token) }
         let vault = DefiTestStore.makeVault()
         // No RUNE coin → early-return guard returns [] without an API call.
-        let result = try await THORChainLPsInteractor().fetchLPPositions(vault: vault)
+        let result = await THORChainLPsInteractor().fetchLPPositions(vault: vault)
         XCTAssertTrue(result.isEmpty)
-            }
+    }
 }

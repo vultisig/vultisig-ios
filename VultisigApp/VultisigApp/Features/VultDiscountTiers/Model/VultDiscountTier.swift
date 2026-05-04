@@ -17,7 +17,7 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
     case ultimate
 
     var id: String { rawValue }
-    var name: String { rawValue }
+    var name: String { rawValue.capitalized }
     var icon: String { "vult-\(rawValue)" }
 
     var bpsDiscount: Int {
