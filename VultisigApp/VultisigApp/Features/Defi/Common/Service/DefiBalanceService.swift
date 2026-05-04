@@ -58,12 +58,13 @@ private extension DefiBalanceService {
         return bondsBalance + stakedBalances + lpBalances
     }
     func tronTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        // For TRON, we show the native TRX balance in fiat
-        // Frozen/staked balance is fetched separately from TRON API in the dashboard
-        guard let trxCoin = vault.nativeCoin(for: .tron) else {
-            return .zero
-        }
-        return trxCoin.balanceInFiatDecimal
+        // The user's Tron DeFi position is the frozen + unfreezing TRX, not the
+        // wallet balance. `BalanceService.fetchStakedBalance` writes the total
+        // (in SUN) to `Coin.stakedBalance`; `stakedBalanceDecimal` divides by
+        // 10^6 to get TRX. Tron has no per-coin opt-in (all frozen TRX is the
+        // position), so we don't gate on `defiPositions`.
+        guard let trxCoin = vault.nativeCoin(for: .tron) else { return .zero }
+        return trxCoin.fiat(decimal: trxCoin.stakedBalanceDecimal)
     }
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {
         let coins = vault.coins

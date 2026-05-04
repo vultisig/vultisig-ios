@@ -85,4 +85,40 @@ final class DefiBalanceServiceTests: XCTestCase {
         let total = service.totalBalanceInFiatString(for: .thorChain, vault: vault)
         XCTAssertFalse(total.isEmpty)
     }
+
+    // MARK: - Tron (issue #4284)
+
+    func testTronCoinDefiBalanceDecimalReturnsStakedNotWallet() {
+        // 100 TRX wallet, 5 TRX frozen. Pre-fix this returned 100 (the bug).
+        let trx = makeTronCoin(rawBalance: "100000000", stakedBalance: "5000000")
+        XCTAssertEqual(trx.balanceDecimal, 100)
+        XCTAssertEqual(trx.stakedBalanceDecimal, 5)
+        XCTAssertEqual(trx.defiBalanceDecimal, 5, "Tron DeFi crypto subtitle must reflect frozen TRX, not wallet TRX.")
+    }
+
+    func testTronTotalBalanceFiatReadsStakedNotWallet() throws {
+        // Register a 0.5 USD/TRX rate so we can distinguish staked × rate from wallet × rate.
+        let trx = makeTronCoin(rawBalance: "100000000", stakedBalance: "5000000")
+        vault.coins = [trx]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "tron", value: 0.5)
+        ])
+
+        let total = service.totalBalanceInFiat(for: .tron, vault: vault)
+        XCTAssertEqual(total, Decimal(5) * Decimal(0.5), "Tron DeFi fiat must be staked × rate, not wallet × rate.")
+        XCTAssertNotEqual(total, Decimal(100) * Decimal(0.5), "Regression guard: must NOT equal wallet × rate.")
+    }
+
+    func testTronTotalBalanceFiatZeroWhenNoTronCoin() {
+        XCTAssertEqual(service.totalBalanceInFiat(for: .tron, vault: vault), .zero)
+    }
+
+    private func makeTronCoin(rawBalance: String, stakedBalance: String) -> Coin {
+        let trxMeta = CoinMeta.make(chain: .tron, ticker: "TRX", decimals: 6)
+        let coin = Coin(asset: trxMeta, address: "TTronTestAddress", hexPublicKey: "")
+        coin.priceProviderId = "tron"
+        coin.rawBalance = rawBalance
+        coin.stakedBalance = stakedBalance
+        return coin
+    }
 }
