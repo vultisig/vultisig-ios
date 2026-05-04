@@ -85,6 +85,9 @@ struct KeysignAnimationView: View {
     }
 
     private func remoteImageData(url: URL) async -> Data? {
+        // URLCache.cachedResponse(for:) requires a request as the cache key;
+        // not a typed HTTP call.
+        // swiftlint:disable:next no_raw_urlrequest
         let request = URLRequest(url: url)
         if let cached = URLCache.imageCache.cachedResponse(for: request) {
             return cached.data
