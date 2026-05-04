@@ -55,7 +55,7 @@ struct UTXOTransactionCell: View {
             address = id
         }
 
-        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
+        let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
 
         return TransactionCell(
             title: "from",
@@ -76,7 +76,7 @@ struct UTXOTransactionCell: View {
             address = transaction.receivedFrom.first ?? ""
         }
 
-        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
+        let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
 
         return TransactionCell(
             title: "to",

@@ -248,4 +248,41 @@ final class ExplorerLinkBuilderTests: XCTestCase {
             "https://runescan.io/tx/ABCDEF1234567890"
         )
     }
+
+    // MARK: - Chain coverage (regression guard)
+
+    /// Every Chain case must produce a non-empty transaction URL except `qbtc`,
+    /// which has no public explorer. This catches the case where a new Chain is
+    /// added to the enum without a corresponding `getExplorerURL` arm — previously
+    /// silent because the switch is exhaustive but a forgotten arm could return
+    /// the empty string and ship without complaint.
+    func testGetExplorerURLProducesNonEmptyURLForEveryChain() {
+        for chain in Chain.allCases where chain != .qbtc {
+            let url = ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: txHash)
+            XCTAssertFalse(
+                url.isEmpty,
+                "Chain \(chain.rawValue) returned an empty transaction URL"
+            )
+        }
+    }
+
+    func testGetExplorerURLReturnsEmptyForQbtc() {
+        XCTAssertEqual(ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash), "")
+    }
+
+    func testGetExplorerByAddressURLProducesNonEmptyURLForEveryChain() {
+        let address = "test-address"
+        for chain in Chain.allCases where chain != .qbtc {
+            let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address)
+            XCTAssertNotNil(url, "Chain \(chain.rawValue) returned nil for address URL")
+            XCTAssertFalse(
+                url?.isEmpty ?? true,
+                "Chain \(chain.rawValue) returned an empty address URL"
+            )
+        }
+    }
+
+    func testGetExplorerByAddressURLReturnsNilForQbtc() {
+        XCTAssertNil(ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"))
+    }
 }
