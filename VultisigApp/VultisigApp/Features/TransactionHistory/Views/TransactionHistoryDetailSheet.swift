@@ -245,17 +245,7 @@ struct TransactionHistoryDetailSheet: View {
     // MARK: - Explorer Button
 
     private var providerExplorerURL: URL? {
-        let hash = transaction.txHash
-        if let provider = transaction.swapProvider?.lowercased() {
-            if provider.contains("lifi") || provider.contains("li.fi") {
-                return URL(string: "https://scan.li.fi/tx/\(hash)")
-            } else if provider.contains("thorchain") || provider.contains("thorswap") {
-                return URL(string: "https://track.ninerealms.com/\(hash)")
-            } else if provider.contains("maya") {
-                return URL(string: "https://www.mayascan.org/tx/\(hash)")
-            }
-        }
-        return URL(string: transaction.explorerLink)
+        ExplorerLinkBuilder.url(for: transaction)
     }
 
     private var explorerButton: some View {

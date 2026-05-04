@@ -74,7 +74,7 @@ struct SwapCryptoDoneView: View {
                     amountCrypto: sendSummaryViewModel.getFromAmount(tx),
                     spender: tx.router ?? "",
                     chain: tx.fromCoin.chain,
-                    explorerLink: Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: approveHash)
+                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: approveHash)
                 )
             }
 
@@ -94,7 +94,7 @@ struct SwapCryptoDoneView: View {
                 feeCrypto: swapSummaryViewModel.totalFeeString(tx: tx),
                 feeFiat: "",
                 chain: tx.fromCoin.chain,
-                explorerLink: Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash),
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: hash),
                 provider: tx.quote?.displayName
             )
         }
@@ -407,7 +407,7 @@ struct SwapCryptoDoneView: View {
         alertTitle = "hashCopied"
         showAlert = true
 
-        let explorerLink = Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
+        let explorerLink = ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
         ClipboardManager.copyToClipboard(explorerLink)
     }
 }
