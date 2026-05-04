@@ -35,6 +35,9 @@ struct KeysignCustomMessageConfirmView: View {
     var summary: some View {
         ScrollView {
             VStack(spacing: 16) {
+                if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
+                    DAppRequestBanner(metadata: metadata)
+                }
                 if hasHeroSection {
                     heroSection
                     Separator()

@@ -215,6 +215,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Token Personalizado";
 "customTokenErrorSubtitle" = "Não foi possível encontrar o token. Verifique o endereço do contrato e tente novamente.";
+"dappRequestFrom" = "Pedido de:";
 "date" = "Data";
 "defiPortfolio" = "Portfólio DeFi";
 "defiRefreshFailed" = "Não foi possível atualizar as posições. Puxe para tentar novamente.";

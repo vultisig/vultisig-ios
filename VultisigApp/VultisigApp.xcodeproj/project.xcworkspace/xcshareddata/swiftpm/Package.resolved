@@ -32,7 +32,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "revision" : "ea0f4311b24eb99793d4236f4cf93d5f2095ccc0"
+        "revision" : "cacb2e348f2ec6871364eb88114b812478846f5f"
       }
     },
     {

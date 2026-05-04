@@ -124,6 +124,16 @@ extension KeysignPayload: ProtoMappable {
 
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
+        if proto.hasDappMetadata {
+            let metadata = DAppMetadata(
+                name: proto.dappMetadata.name,
+                url: proto.dappMetadata.url,
+                iconURL: proto.dappMetadata.iconURL
+            )
+            self.dappMetadata = metadata.isEmpty ? nil : metadata
+        } else {
+            self.dappMetadata = nil
+        }
     }
 
     func mapToProtobuff() -> VSKeysignPayload {
@@ -157,6 +167,13 @@ extension KeysignPayload: ProtoMappable {
 
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
+            if let dappMetadata {
+                $0.dappMetadata = .with {
+                    $0.name = dappMetadata.name
+                    $0.url = dappMetadata.url
+                    $0.iconURL = dappMetadata.iconURL
+                }
+            }
         }
     }
 }

@@ -26,4 +26,7 @@ struct SendCryptoContent: Hashable {
     let fee: FeeDisplay
     let keysignPayload: KeysignPayload?
     let pubKeyECDSA: String
+    /// Forwarded into `SendCryptoDoneHeaderView` so the dApp request banner can
+    /// render above the hero on the done screen.
+    var dappMetadata: DAppMetadata? = nil
 }

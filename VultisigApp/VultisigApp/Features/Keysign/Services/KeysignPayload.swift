@@ -24,6 +24,50 @@ struct KeysignPayload: Codable, Hashable {
     let tronTransferAssetContractPayload: TronTransferAssetContractPayload?
     let skipBroadcast: Bool
     let signData: SignData?
+    let dappMetadata: DAppMetadata?
+
+    /// Memberwise init with `dappMetadata` defaulting to `nil` so existing
+    /// construction sites don't need to opt into the new field. The proto
+    /// mapping is the only producer of non-nil dApp metadata today.
+    init(
+        coin: Coin,
+        toAddress: String,
+        toAmount: BigInt,
+        chainSpecific: BlockChainSpecific,
+        utxos: [UtxoInfo],
+        memo: String?,
+        swapPayload: SwapPayload?,
+        approvePayload: ERC20ApprovePayload?,
+        vaultPubKeyECDSA: String,
+        vaultLocalPartyID: String,
+        libType: String,
+        wasmExecuteContractPayload: WasmExecuteContractPayload?,
+        tronTransferContractPayload: TronTransferContractPayload?,
+        tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?,
+        tronTransferAssetContractPayload: TronTransferAssetContractPayload?,
+        skipBroadcast: Bool,
+        signData: SignData?,
+        dappMetadata: DAppMetadata? = nil
+    ) {
+        self.coin = coin
+        self.toAddress = toAddress
+        self.toAmount = toAmount
+        self.chainSpecific = chainSpecific
+        self.utxos = utxos
+        self.memo = memo
+        self.swapPayload = swapPayload
+        self.approvePayload = approvePayload
+        self.vaultPubKeyECDSA = vaultPubKeyECDSA
+        self.vaultLocalPartyID = vaultLocalPartyID
+        self.libType = libType
+        self.wasmExecuteContractPayload = wasmExecuteContractPayload
+        self.tronTransferContractPayload = tronTransferContractPayload
+        self.tronTriggerSmartContractPayload = tronTriggerSmartContractPayload
+        self.tronTransferAssetContractPayload = tronTransferAssetContractPayload
+        self.skipBroadcast = skipBroadcast
+        self.signData = signData
+        self.dappMetadata = dappMetadata
+    }
 
     var signAmino: SignAmino? {
         guard case let .signAmino(amino) = signData else {
@@ -105,6 +149,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTriggerSmartContractPayload: nil,
         tronTransferAssetContractPayload: nil,
         skipBroadcast: false,
-        signData: nil
+        signData: nil,
+        dappMetadata: nil
     )
 }

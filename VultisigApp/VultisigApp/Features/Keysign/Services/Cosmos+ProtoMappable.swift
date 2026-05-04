@@ -13,7 +13,7 @@ enum SignData: Codable, Hashable {
     case signSolana(SignSolana)
     case signTon(SignTon)
 
-    init(proto: VSKeysignPayload.OneOf_SignData) {
+    init?(proto: VSKeysignPayload.OneOf_SignData) {
         switch proto {
         case .signAmino(let vSSignAmino):
             self = .signAmino(SignAmino(proto: vSSignAmino))
@@ -23,6 +23,11 @@ enum SignData: Codable, Hashable {
             self = .signSolana(SignSolana(proto: vSSignSolana))
         case .signTon(let vSSignTon):
             self = .signTon(SignTon(proto: vSSignTon))
+        case .signBitcoin:
+            // Bitcoin PSBT signing arrived in commondata after iOS shipped
+            // its initial sign-data wrappers. Surface as nil until iOS adds
+            // a corresponding domain type.
+            return nil
         }
     }
 

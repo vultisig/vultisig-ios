@@ -200,6 +200,13 @@ class KeysignViewModel: ObservableObject {
         return nil
     }
 
+    /// dApp identity (name / url / icon) attached to the keysign request, if
+    /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
+    /// metadata is treated as absent.
+    var dappMetadata: DAppMetadata? {
+        keysignPayload?.dappMetadata
+    }
+
     func getTransactionExplorerURL(txid: String) -> String {
         guard let keysignPayload else { return .empty }
         return ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
