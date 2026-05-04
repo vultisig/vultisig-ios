@@ -20,12 +20,10 @@ struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
-        // Snapshot the value-type fields off the `@Model` Coin while we're on `MainActor`,
-        // then operate exclusively on value types in the async branch.
         guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
 
-        let vaultStakePositions = await vaultStakePositions(in: vault)
-        guard vaultStakePositions.contains(where: { $0.ticker == cacao.meta.ticker }) else {
+        let enabled = await vaultStakePositions(in: vault)
+        guard enabled.contains(where: { $0.ticker == cacao.meta.ticker }) else {
             return []
         }
 
@@ -39,12 +37,8 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
         do {
             let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacao.address)
-
-            // Use value for display amount (includes earnings)
             let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
-            // Use units for unstake amount (what can actually be withdrawn)
             let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
-
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
 
             let unstakeMetadata = calculateUnstakeMetadata(
@@ -64,9 +58,6 @@ struct MayaChainStakeInteractor: StakeInteractor {
                 )
             ]
         } catch {
-            // On API failure, omit the position. The previously persisted CACAO @Model
-            // remains untouched in `vault.stakePositions`, so the user keeps seeing
-            // stale data until the next refresh — see THORChainStakeInteractor.
             logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .private)")
             return []
         }
@@ -93,11 +84,7 @@ private extension MayaChainStakeInteractor {
         maturityBlocks: Int64
     ) -> UnstakeMetadata? {
         let differenceBlocks = currentHeight - lastDepositHeight
-
-        // If maturity has been reached, no metadata needed
-        guard differenceBlocks < maturityBlocks else {
-            return nil
-        }
+        guard differenceBlocks < maturityBlocks else { return nil }
 
         let blocksPerDay: Double = 14400
         let blocksRemaining = maturityBlocks - differenceBlocks

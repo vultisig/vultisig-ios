@@ -22,10 +22,6 @@ struct StakePositionData: Sendable, Equatable {
     let rewards: Decimal?
     let rewardCoin: CoinMeta?
     let unstakeMetadata: UnstakeMetadata?
-    /// `true` when the position came from a successful network fetch and should be persisted.
-    /// `false` for fallback values built from cached metadata after an API failure — those
-    /// must not overwrite the persisted record with stale data.
-    let shouldPersist: Bool
 
     init(
         coin: CoinMeta,
@@ -37,8 +33,7 @@ struct StakePositionData: Sendable, Equatable {
         nextPayout: TimeInterval? = nil,
         rewards: Decimal? = nil,
         rewardCoin: CoinMeta? = nil,
-        unstakeMetadata: UnstakeMetadata? = nil,
-        shouldPersist: Bool = true
+        unstakeMetadata: UnstakeMetadata? = nil
     ) {
         self.coin = coin
         self.type = type
@@ -50,10 +45,5 @@ struct StakePositionData: Sendable, Equatable {
         self.rewards = rewards
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
-        self.shouldPersist = shouldPersist
-    }
-
-    func id(for vault: Vault) -> String {
-        "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }
 }

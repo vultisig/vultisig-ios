@@ -35,14 +35,10 @@ struct DefiChainMainScreen: View {
         vault.nativeCoin(for: chain)
     }
 
-    /// Surfaced via the `.withBanner(...)` toast modifier; the active segment's VM owns the
-    /// underlying error state.
+    /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
+    /// today — Stake and LP refreshes silently keep persisted rows on failure (see ViewModels).
     private var refreshError: String? {
-        switch viewModel.selectedPosition {
-        case .bond: return bondViewModel.refreshError
-        case .stake: return stakeViewModel.refreshError
-        case .liquidityPool: return lpsViewModel.refreshError
-        }
+        bondViewModel.refreshError
     }
 
     var body: some View {
@@ -61,7 +57,13 @@ struct DefiChainMainScreen: View {
             viewModel.onLoad()
             Task { await refresh() }
         }
-        .refreshable { await refresh() }
+        .refreshable {
+            // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
+            // When the user lets go, the spinner dismisses and the task is cancelled —
+            // which propagates to every in-flight network call inside `refresh()` and
+            // surfaces as `CancellationError`. Detach so cancellation stops here.
+            await Task { @MainActor in await refresh() }.value
+        }
         .onChange(of: vault) { _, vault in
             update(vault: vault)
         }
