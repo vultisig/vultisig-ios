@@ -17,19 +17,22 @@ struct MayaChainLPsInteractor: LPsInteractor {
         SettingsAPRPeriod.current.rawValue
     }
 
-    func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
-        // Snapshot CACAO's address + decimals on `MainActor` before the async network call.
+    func fetchLPPositions(vault: Vault) async -> [LPPositionData] {
         guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
-        let vaultLPPositions = await readVaultLPPositions(in: vault)
+        let enabled = await readVaultLPPositions(in: vault)
+        guard !enabled.isEmpty else { return [] }
 
-        let apiPositions = try await mayaAPIService.getLPPositions(
-            address: cacao.address,
-            userLPs: vaultLPPositions,
-            period: aprPeriod
-        )
-
-        // Persistence is the ViewModel's responsibility — see THORChainLPsInteractor.
-        return convertToLPPositions(apiPositions, cacaoDecimals: cacao.decimals)
+        do {
+            let apiPositions = try await mayaAPIService.getLPPositions(
+                address: cacao.address,
+                userLPs: enabled,
+                period: aprPeriod
+            )
+            return convert(apiPositions, cacaoDecimals: cacao.decimals)
+        } catch {
+            logger.error("Failed to fetch Maya LP positions: \(error.localizedDescription, privacy: .private)")
+            return []
+        }
     }
 }
 
@@ -50,12 +53,11 @@ private extension MayaChainLPsInteractor {
         vault.defiPositions.first { $0.chain == .mayaChain }?.lps ?? []
     }
 
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition], cacaoDecimals: Int) -> [LPPositionData] {
+    func convert(_ apiPositions: [THORChainLPPosition], cacaoDecimals: Int) -> [LPPositionData] {
         var result: [LPPositionData] = []
         let cacaoCoin = TokensStore.cacao
 
         for apiPosition in apiPositions {
-            // Parse the pool asset (e.g., "BTC.BTC", "ETH.ETH")
             let components = apiPosition.asset.split(separator: ".")
             guard components.count == 2 else { continue }
 
@@ -88,7 +90,6 @@ private extension MayaChainLPsInteractor {
                 )
             )
         }
-
         return result
     }
 }

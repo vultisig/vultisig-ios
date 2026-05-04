@@ -33,7 +33,7 @@ private struct BannerViewModifier: ViewModifier {
 }
 
 extension View {
-    func withBanner(text: Binding<String?>, style: NotificationBannerStyle = .error) -> some View {
+    func withBanner(text: Binding<String?>, style: NotificationBannerStyle = .success) -> some View {
         modifier(BannerViewModifier(text: text, style: style))
     }
 }

@@ -32,7 +32,7 @@ struct SendVerifyScreen: View {
             }
         }
         .screenTitle("verify".localized)
-        .withBanner(text: $retryBannerText)
+        .withBanner(text: $retryBannerText, style: .error)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),

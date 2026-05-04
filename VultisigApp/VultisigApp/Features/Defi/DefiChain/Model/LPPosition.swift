@@ -44,4 +44,28 @@ final class LPPosition {
         self.vault = vault
         self.id = "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(poolName)_\(vault.pubKeyECDSA)"
     }
+
+    convenience init(_ dto: LPPositionData, vault: Vault) {
+        self.init(
+            coin1: dto.coin1,
+            coin1Amount: dto.coin1Amount,
+            coin2: dto.coin2,
+            coin2Amount: dto.coin2Amount,
+            poolName: dto.poolName,
+            poolUnits: dto.poolUnits,
+            apr: dto.apr,
+            vault: vault
+        )
+    }
+
+    /// Updates everything except the lookup key (`coin2`) and the persistent `id`.
+    func apply(_ dto: LPPositionData) {
+        coin1 = dto.coin1
+        coin1Amount = dto.coin1Amount
+        coin2Amount = dto.coin2Amount
+        poolName = dto.poolName
+        poolUnits = dto.poolUnits
+        apr = dto.apr
+        lastUpdated = .now
+    }
 }
