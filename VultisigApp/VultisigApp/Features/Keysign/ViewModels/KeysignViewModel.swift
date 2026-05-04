@@ -827,26 +827,42 @@ class KeysignViewModel: ObservableObject {
     }
 
     /// Best-effort check that the signed tx is already accepted on the chain
-    /// (mempool or block). Returns true only on positive evidence — any
-    /// transient lookup failure or `notFound` falls through so the caller
-    /// surfaces the original broadcast error.
+    /// (mempool or block). Returns true only on positive evidence (`.confirmed`
+    /// or `.pending`); `.failed` is conclusive and fails fast. `.notFound` and
+    /// transient lookup errors are retried with backoff because a peer-broadcast
+    /// tx often takes a few seconds to propagate to our RPC node / indexer
+    /// (Cosmos LCD index lag is the worst offender), and a single early miss
+    /// would otherwise show the user a "failed" screen for a tx that's already
+    /// landing.
     private func isAlreadyOnChain(transactionType: SignedTransactionType) async -> Bool {
         guard let chain = keysignPayload?.coin.chain else { return false }
         let hash = transactionType.transactionHash
         guard !hash.isEmpty else { return false }
 
-        do {
-            let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
-            switch result.status {
-            case .confirmed, .pending:
-                return true
-            case .notFound, .failed:
-                return false
+        let maxAttempts = 3
+        let backoff: Duration = .seconds(2)
+
+        for attempt in 1...maxAttempts {
+            do {
+                let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
+                switch result.status {
+                case .confirmed, .pending:
+                    return true
+                case .failed:
+                    return false
+                case .notFound:
+                    break
+                }
+            } catch {
+                logger.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }
-        } catch {
-            logger.warning("hash-verify lookup failed for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
-            return false
+
+            if attempt < maxAttempts {
+                try? await Task.sleep(for: backoff)
+            }
         }
+
+        return false
     }
 
     func handleHelperError(err: Error) {
