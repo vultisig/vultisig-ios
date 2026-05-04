@@ -373,7 +373,10 @@ struct CoinService {
 
         // Check if URL is reachable and not returning 404
         do {
-            // Try HEAD first to avoid downloading the full image
+            // Try HEAD first to avoid downloading the full image. This is an
+            // asset-liveness probe, not an API call — `HTTPClient`/`TargetType`
+            // is for typed JSON.
+            // swiftlint:disable:next no_raw_urlrequest
             var request = URLRequest(url: url)
             request.httpMethod = "HEAD"
             request.timeoutInterval = 5.0 // 5 second timeout
@@ -386,6 +389,7 @@ struct CoinService {
 
             // If HEAD is not supported (405), try GET with range request
             if httpResponse.statusCode == 405 {
+                // swiftlint:disable:next no_raw_urlrequest
                 var getRequest = URLRequest(url: url)
                 getRequest.httpMethod = "GET"
                 getRequest.setValue("bytes=0-1023", forHTTPHeaderField: "Range") // Only request first 1KB
