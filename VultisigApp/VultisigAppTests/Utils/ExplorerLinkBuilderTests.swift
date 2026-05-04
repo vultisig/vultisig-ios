@@ -53,6 +53,21 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         )
     }
 
+    func testThorChainAliasWithChainnetChainRawValueReturnsChainnetTracker() {
+        // Cross-chain swap *into* THORChain chainnet: provider is "THORChain"
+        // but chainRawValue carries .thorChainChainnet. Must route to chainnet.
+        let url = ExplorerLinkBuilder.url(
+            provider: "THORChain",
+            txHash: txHash,
+            chainRawValue: Chain.thorChainChainnet.rawValue,
+            fallbackExplorerLink: fallback
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://runescan.io/tx/ABCDEF1234567890?network=chainnet"
+        )
+    }
+
     func testThorChainStagenetReturnsStagenetRuneScan() {
         let url = ExplorerLinkBuilder.url(
             provider: "THORChain",
@@ -236,7 +251,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         )
     }
 
-    func testThorChainChainnetDisplayNameRoutesToThorchainTracker() {
+    func testThorChainChainnetDisplayNameRoutesToChainnetTracker() {
         let url = ExplorerLinkBuilder.url(
             provider: "THORChain-Chainnet",
             txHash: txHash,
@@ -245,7 +260,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         )
         XCTAssertEqual(
             url?.absoluteString,
-            "https://runescan.io/tx/ABCDEF1234567890"
+            "https://runescan.io/tx/ABCDEF1234567890?network=chainnet"
         )
     }
 

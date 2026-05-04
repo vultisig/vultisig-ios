@@ -30,7 +30,9 @@ enum ExplorerLinkBuilder {
         switch quote {
         case .thorchain:
             return thorchainTracker(txid: txHash)
-        case .thorchainChainnet, .thorchainStagenet:
+        case .thorchainChainnet:
+            return thorchainChainnetTracker(txid: txHash)
+        case .thorchainStagenet:
             return thorchainStagenetTracker(txid: txHash)
         case .mayachain:
             return mayaTracker(txid: txHash)
@@ -47,7 +49,9 @@ enum ExplorerLinkBuilder {
         switch swapPayload {
         case .thorchain:
             return thorchainTracker(txid: txHash)
-        case .thorchainChainnet, .thorchainStagenet:
+        case .thorchainChainnet:
+            return thorchainChainnetTracker(txid: txHash)
+        case .thorchainStagenet:
             return thorchainStagenetTracker(txid: txHash)
         case .mayachain:
             return mayaTracker(txid: txHash)
@@ -82,7 +86,12 @@ enum ExplorerLinkBuilder {
                 return URL(string: mayaTracker(txid: txHash))
             case "thorchainstagenet":
                 return URL(string: thorchainStagenetTracker(txid: txHash))
-            case "thorchain", "thorswap", "thorchainchainnet":
+            case "thorchainchainnet":
+                return URL(string: thorchainChainnetTracker(txid: txHash))
+            case "thorchain", "thorswap":
+                if chainRawValue == Chain.thorChainChainnet.rawValue {
+                    return URL(string: thorchainChainnetTracker(txid: txHash))
+                }
                 if chainRawValue == Chain.thorChainStagenet.rawValue {
                     return URL(string: thorchainStagenetTracker(txid: txHash))
                 }
@@ -291,6 +300,10 @@ enum ExplorerLinkBuilder {
 
     private static func thorchainTracker(txid: String) -> String {
         "https://runescan.io/tx/\(txid.stripHexPrefix())"
+    }
+
+    private static func thorchainChainnetTracker(txid: String) -> String {
+        "https://runescan.io/tx/\(txid.stripHexPrefix())?network=chainnet"
     }
 
     private static func thorchainStagenetTracker(txid: String) -> String {
