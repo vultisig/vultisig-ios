@@ -206,24 +206,7 @@ class KeysignViewModel: ObservableObject {
     }
 
     func getSwapProgressURL(txid: String) -> String? {
-        switch keysignPayload?.swapPayload {
-        case .thorchain:
-            return Endpoint.getSwapProgressURL(txid: txid)
-        case .thorchainChainnet:
-            return Endpoint.getStagenetSwapProgressURL(txid: txid)
-        case .thorchainStagenet:
-            return Endpoint.getStagenetSwapProgressURL(txid: txid)
-        case .mayachain:
-            return Endpoint.getMayaSwapTracker(txid: txid)
-        case .generic(let payload):
-            if payload.provider == .lifi {
-                return Endpoint.getLifiSwapTracker(txid: txid)
-            } else {
-                return Endpoint.getExplorerURL(chain: payload.fromCoin.chain, txid: txid)
-            }
-        case .none:
-            return nil
-        }
+        IntegrationExplorer.progressLink(swapPayload: keysignPayload?.swapPayload, txHash: txid)
     }
 
     func startKeysign() async {

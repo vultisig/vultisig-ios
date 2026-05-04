@@ -97,20 +97,7 @@ struct SwapCryptoLogic {
     // MARK: - Formatters & Presentation
 
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
-        switch tx.quote {
-        case .thorchain:
-            return Endpoint.getSwapProgressURL(txid: hash)
-        case .thorchainChainnet:
-            return Endpoint.getStagenetSwapProgressURL(txid: hash)
-        case .thorchainStagenet:
-            return Endpoint.getStagenetSwapProgressURL(txid: hash)
-        case .mayachain:
-            return Endpoint.getMayaSwapTracker(txid: hash)
-        case .lifi:
-            return Endpoint.getLifiSwapTracker(txid: hash)
-        case .oneinch, .kyberswap, .none:
-            return Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
-        }
+        IntegrationExplorer.progressLink(quote: tx.quote, txHash: hash, fromChain: tx.fromCoin.chain)
     }
 
     func fromFiatAmount(tx: SwapTransaction) -> String {

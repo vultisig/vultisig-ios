@@ -468,24 +468,8 @@ class Endpoint {
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
-    static func getSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
-    }
-
-    static func getStagenetSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
-    }
-
     static func thorchainNodeExplorerURL(_ address: String) -> String {
         return "https://thorchain.net/node/\(address)"
-    }
-
-    static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.explorer.mayachain.info/tx/\(txid.stripHexPrefix())"
-    }
-
-    static func getLifiSwapTracker(txid: String) -> String {
-        return "https://scan.li.fi/tx/\(txid)"
     }
 
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
