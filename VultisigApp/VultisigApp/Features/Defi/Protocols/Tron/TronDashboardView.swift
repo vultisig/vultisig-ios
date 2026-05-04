@@ -26,14 +26,6 @@ struct TronDashboardView: View {
         return TronViewLogic.formatFiat(balance: model.totalFrozenBalance, trxPrice: trxCoin.price)
     }
 
-    /// Available balance in fiat (using TRX coin price)
-    var availableBalanceFiat: String {
-        guard let trxCoin = vault.nativeCoin(for: .tron) else {
-            return "$0.00"
-        }
-        return TronViewLogic.formatFiat(balance: model.availableBalance, trxPrice: trxCoin.price)
-    }
-
     var body: some View {
         ZStack {
             VaultMainScreenBackground()
@@ -113,7 +105,7 @@ struct TronDashboardView: View {
                             .frame(width: 120, height: 24)
                             .shimmer()
                     } else {
-                        HiddenBalanceText(availableBalanceFiat)
+                        HiddenBalanceText(frozenBalanceFiat)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }

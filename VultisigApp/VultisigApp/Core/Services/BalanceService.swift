@@ -396,6 +396,22 @@ private extension BalanceService {
                 return "0"
             }
 
+        case .tron:
+            // Native TRX is the only stake-able asset on Tron. Frozen (Stake 2.0
+            // bandwidth + energy) plus unfreezing (in cooldown) TRX represent
+            // the user's DeFi position. Returning `nil` on transient failure
+            // preserves the previously persisted value rather than clobbering
+            // it with 0.
+            guard identifier.isNativeToken else { return nil }
+            do {
+                let account = try await TronService.shared.getAccount(address: identifier.address)
+                let totalSun = account.frozenBandwidthSun + account.frozenEnergySun + account.unfreezingTotalSun
+                return Decimal(totalSun).description
+            } catch {
+                logger.warning("Failed to fetch Tron frozen balance for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
+
         default:
             // All other chains currently don't support staking
             return nil
