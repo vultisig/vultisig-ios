@@ -25,18 +25,21 @@ enum IntegrationExplorer {
         chainRawValue: String,
         fallbackExplorerLink: String
     ) -> URL? {
-        if let normalized = provider?.lowercased().replacingOccurrences(of: " ", with: "") {
-            if normalized.contains("lifi") || normalized.contains("li.fi") {
+        if let normalized = provider?
+            .lowercased()
+            .filter({ $0.isLetter || $0.isNumber }) {
+            switch normalized {
+            case "lifi":
                 return URL(string: Endpoint.getLifiSwapTracker(txid: txHash))
-            }
-            if normalized.contains("maya") {
+            case "maya", "mayachain":
                 return URL(string: Endpoint.getMayaSwapTracker(txid: txHash))
-            }
-            if normalized.contains("thorchain") || normalized.contains("thorswap") {
+            case "thorchain", "thorswap":
                 if chainRawValue == Chain.thorChainStagenet.rawValue {
                     return URL(string: Endpoint.getStagenetSwapProgressURL(txid: txHash))
                 }
                 return URL(string: Endpoint.getSwapProgressURL(txid: txHash))
+            default:
+                break
             }
         }
         return URL(string: fallbackExplorerLink)
