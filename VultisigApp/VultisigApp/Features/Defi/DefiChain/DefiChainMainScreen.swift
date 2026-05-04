@@ -21,6 +21,7 @@ struct DefiChainMainScreen: View {
     @State private var isLoading = false
     @State private var error: HelperError?
     @State private var refreshErrorToast: String?
+    @State private var isRefreshing = false
 
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -83,7 +84,13 @@ struct DefiChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true) {}
+        .crossPlatformToolbar(ignoresTopEdge: true) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(onRefresh: { Task { await refresh() } })
+            }
+            #endif
+        }
         .withLoading(isLoading: $isLoading)
         .withBanner(text: $refreshErrorToast, style: .error)
         .alert(item: $error) { error in
@@ -297,6 +304,14 @@ private extension DefiChainMainScreen {
 
 private extension DefiChainMainScreen {
     func refresh() async {
+        guard !isRefreshing else { return }
+
+        isRefreshing = true
+        // `defer` runs even on Task cancellation (e.g. view disappears
+        // mid-refresh). Without it, the flag stays `true` forever and the
+        // guard above silently drops every subsequent refresh call.
+        defer { isRefreshing = false }
+
         // Refresh all three position categories in parallel so the aggregate balance shown
         // in `DefiChainBalanceView` reflects every position type — not just the currently
         // selected segment. The native-coin balance refresh runs independently.
