@@ -7,28 +7,28 @@
 
 import Foundation
 import OSLog
-import SwiftData
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-lps-view-model")
 
 @MainActor
 final class DefiChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
-    @Published private(set) var lpPositions: [LPPosition] = []
-    @Published private(set) var initialLoadingDone: Bool = false
-    @Published private(set) var refreshError: String?
+    @Published private(set) var initialLoadingDone: Bool
 
-    var hasLPPositions: Bool {
-        !vaultLPPositions.isEmpty
+    private let chain: Chain
+    private let interactor: LPsInteractor?
+    private let storage: DefiPositionsStorageService
+
+    /// See `DefiChainStakeViewModel.stakePositions` for why this is computed and not cached.
+    var lpPositions: [LPPosition] {
+        vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
     }
+
+    var hasLPPositions: Bool { !lpPositions.isEmpty }
 
     var vaultLPPositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.lps ?? []
     }
-
-    private let interactor: LPsInteractor?
-    private let storage: DefiPositionsStorageService
-    private let chain: Chain
 
     init(
         vault: Vault,
@@ -40,43 +40,26 @@ final class DefiChainLPsViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.lpsInteractor(for: chain)
         self.storage = storage
-        self.lpPositions = persistedPositions()
-        self.initialLoadingDone = !lpPositions.isEmpty
+        let enabledLPs = vault.defiPositions.first { $0.chain == chain }?.lps ?? []
+        self.initialLoadingDone = vault.lpPositions.contains { enabledLPs.contains($0.coin2) }
     }
 
     func update(vault: Vault) {
         self.vault = vault
-        self.lpPositions = persistedPositions()
     }
 
     func refresh() async {
-        refreshError = nil
-        guard hasLPPositions else {
-            // No LP coins enabled — preserve any prior in-memory state and just mark loaded.
+        guard let interactor else {
             initialLoadingDone = true
             return
         }
 
-        guard let interactor = interactor else {
-            initialLoadingDone = true
-            return
-        }
-
+        let dtos = await interactor.fetchLPPositions(vault: vault)
         do {
-            let dtos = try await interactor.fetchLPPositions(vault: vault)
             try storage.upsert(lp: dtos, for: vault)
-            lpPositions = persistedPositions()
         } catch {
-            // Preserve last-known UI state and surface error for the screen banner.
-            logger.error("Failed to refresh LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
-            refreshError = "defiRefreshFailed".localized
+            logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
         initialLoadingDone = true
-    }
-}
-
-private extension DefiChainLPsViewModel {
-    func persistedPositions() -> [LPPosition] {
-        vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
     }
 }

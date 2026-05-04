@@ -7,6 +7,9 @@
 
 import Foundation
 import Combine
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "unstake-transaction-view-model")
 
 final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
@@ -100,7 +103,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     func fetchAutocompoundBalance() async {
         switch coin.ticker.uppercased() {
         case "TCY":
-            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            let amount: Decimal
+            do {
+                amount = try await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            } catch {
+                logger.error("Failed to fetch TCY autocompound balance: \(error.localizedDescription, privacy: .private)")
+                amount = .zero
+            }
             self.autocompoundBalance = coin.valueWithDecimals(value: amount)
         default:
             break

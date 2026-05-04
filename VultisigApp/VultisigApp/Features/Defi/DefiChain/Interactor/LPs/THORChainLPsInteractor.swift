@@ -13,31 +13,26 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-
 struct THORChainLPsInteractor: LPsInteractor {
     private let thorchainAPIService = THORChainAPIService()
 
-    /// Period for LUVI-based APR calculation. Options: "1h", "24h", "7d", "14d", "30d", "90d", "100d", "180d", "365d", "all"
-    /// - "7d": Weekly performance, higher volatility
-    /// - "30d": Monthly average, balanced view (DEFAULT, matches thorchain.org)
-    /// - "100d": Longer-term average, more stable
-    /// Default is 30d to match thorchain.org and the API default
     var aprPeriod: String {
         SettingsAPRPeriod.current.rawValue
     }
 
-    func fetchLPPositions(vault: Vault) async throws -> [LPPositionData] {
-        // Snapshot the RUNE coin's address on `MainActor` before the async network call.
-        // Reading `Coin` properties off the main actor would violate the SwiftData rule.
+    func fetchLPPositions(vault: Vault) async -> [LPPositionData] {
         guard let runeAddress = await runeAddress(in: vault) else { return [] }
-        let vaultLPPositions = await readVaultLPPositions(in: vault)
+        let enabled = await readVaultLPPositions(in: vault)
+        guard !enabled.isEmpty else { return [] }
 
-        let apiPositions = try await thorchainAPIService.getLPPositions(
-            address: runeAddress,
-            userLPs: vaultLPPositions,
-            period: aprPeriod
-        )
-
-        // Persistence is the ViewModel's responsibility — it calls
-        // `DefiPositionsStorageService.upsert(lp:for:)` on the returned DTOs. Persisting here
-        // too would double-write and double-fire `.defiPositionsDidChange`.
-        return convertToLPPositions(apiPositions)
+        do {
+            let apiPositions = try await thorchainAPIService.getLPPositions(
+                address: runeAddress,
+                userLPs: enabled,
+                period: aprPeriod
+            )
+            return convert(apiPositions)
+        } catch {
+            logger.error("Failed to fetch THORChain LP positions: \(error.localizedDescription, privacy: .private)")
+            return []
+        }
     }
 }
 
@@ -52,11 +47,9 @@ private extension THORChainLPsInteractor {
         vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
     }
 
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) -> [LPPositionData] {
+    func convert(_ apiPositions: [THORChainLPPosition]) -> [LPPositionData] {
         var result: [LPPositionData] = []
-
         for apiPosition in apiPositions {
-            // Parse the pool asset (e.g., "BTC.BTC", "ETH.ETH")
             let components = apiPosition.asset.split(separator: ".")
             guard components.count == 2 else { continue }
 
@@ -81,8 +74,7 @@ private extension THORChainLPsInteractor {
                 continue
             }
 
-            // Convert amounts from base units to decimal
-            // Note: THORChain uses 8 decimals for RUNE
+            // THORChain uses 8 decimals for RUNE
             let runeAmount = apiPosition.currentRuneAmount / pow(10, runeCoin.decimals)
             let assetAmount = apiPosition.currentAssetAmount / pow(10, runeCoin.decimals)
 
@@ -94,11 +86,10 @@ private extension THORChainLPsInteractor {
                     coin2Amount: assetAmount,
                     poolName: apiPosition.asset,
                     poolUnits: apiPosition.poolStats.units,
-                    apr: apiPosition.apr // Already in decimal format (e.g., 0.0067 for 0.67%)
+                    apr: apiPosition.apr
                 )
             )
         }
-
         return result
     }
 }
