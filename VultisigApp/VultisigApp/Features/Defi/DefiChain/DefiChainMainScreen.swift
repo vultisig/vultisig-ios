@@ -307,6 +307,11 @@ private extension DefiChainMainScreen {
         guard !isRefreshing else { return }
 
         isRefreshing = true
+        // `defer` runs even on Task cancellation (e.g. view disappears
+        // mid-refresh). Without it, the flag stays `true` forever and the
+        // guard above silently drops every subsequent refresh call.
+        defer { isRefreshing = false }
+
         // Refresh all three position categories in parallel so the aggregate balance shown
         // in `DefiChainBalanceView` reflects every position type — not just the currently
         // selected segment. The native-coin balance refresh runs independently.
@@ -315,7 +320,6 @@ private extension DefiChainMainScreen {
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
         _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
-        isRefreshing = false
     }
 
     func update(vault: Vault) {
