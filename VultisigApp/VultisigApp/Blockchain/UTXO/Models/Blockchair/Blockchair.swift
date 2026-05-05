@@ -34,5 +34,15 @@ struct Blockchair: Codable {
         let transactionHash: String?
         let index: Int?
         let value: Int?
-	}
+
+        // Blockchair returns `transaction_hash` (snake_case) over the wire. The default
+        // `JSONDecoder` we use through `HTTPClient` doesn't apply
+        // `.convertFromSnakeCase`, so map the field explicitly here. `index` and `value`
+        // are already a single word and need no remap.
+        enum CodingKeys: String, CodingKey {
+            case transactionHash = "transaction_hash"
+            case index
+            case value
+        }
+    }
 }
