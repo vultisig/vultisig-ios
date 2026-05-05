@@ -17,6 +17,19 @@ struct JoinKeysignGasViewModel {
             return (.empty, .empty)
         }
 
+        // When the dApp supplied explicit fee data via signAmino (e.g. Rujira
+        // CosmWasm calls where fee.amount = 0), prefer that over the estimated
+        // blockchainSpecific fee. This prevents the UI from showing a misleading
+        // non-zero network fee when the chain actually charges nothing.
+        // Parity with vultisig-windows PR #3843.
+        if let dappFee = payload.dappSuppliedCosmosFee() {
+            let dappFeeBigInt = BigInt(dappFee)
+            let gasAmount = Decimal(dappFee) / pow(10, nativeToken.decimals)
+            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+            let feeInReadable = feesInReadable(coin: payload.coin, fee: dappFeeBigInt)
+            return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
+        }
+
         if payload.coin.chainType == .EVM {
             let gas = payload.chainSpecific.gas
 

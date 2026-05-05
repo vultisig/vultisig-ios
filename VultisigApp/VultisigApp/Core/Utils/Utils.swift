@@ -10,6 +10,9 @@ import Foundation
 import OSLog
 import SwiftUI
 
+// swiftlint:disable no_raw_urlrequest
+// Legacy callback-based HTTP helpers predating `HTTPClient`/`TargetType`.
+// Disabled file-wide rather than per-call; new code should use `HTTPClient`.
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
     static let context = CIContext()
@@ -688,3 +691,4 @@ enum Utils {
         return sanitizedAddress
     }
 }
+// swiftlint:enable no_raw_urlrequest

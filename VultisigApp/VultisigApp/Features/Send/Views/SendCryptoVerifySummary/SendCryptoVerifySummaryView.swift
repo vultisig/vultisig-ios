@@ -52,6 +52,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
     var summary: some View {
         VStack(spacing: 16) {
+            if let metadata = input.dappMetadata, !metadata.isEmpty {
+                DAppRequestBanner(metadata: metadata)
+            }
             heroHeader
             Separator()
 

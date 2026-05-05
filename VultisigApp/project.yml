@@ -25,7 +25,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     MARKETING_VERSION: "1.36"
-    CURRENT_PROJECT_VERSION: "53"
+    CURRENT_PROJECT_VERSION: "54"
 
 configs:
   Debug: debug
@@ -53,7 +53,7 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    revision: ea0f4311b24eb99793d4236f4cf93d5f2095ccc0
+    revision: 3e2da9e345fbcbcd715ba4ff2a2281e42ee0f8d0
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

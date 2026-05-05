@@ -421,7 +421,7 @@ class JoinKeysignViewModel: ObservableObject {
         let functionName = parsedParams.flatMap {
             ContractCallExtractor.evmFunctionName(from: $0.functionSignature)
         }.map(capitalizeFirstCharacter)
-        let resolvedTokenDisplay = resolveTokenDisplay(parsedParams: parsedParams)
+        let resolvedTokenDisplay = await resolveTokenDisplay(parsedParams: parsedParams)
 
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
@@ -463,7 +463,7 @@ class JoinKeysignViewModel: ObservableObject {
 
     private func resolveTokenDisplay(
         parsedParams: ParsedMemoParams?
-    ) -> ContractCallHeroDisplay? {
+    ) async -> ContractCallHeroDisplay? {
         guard let params = parsedParams else { return nil }
         guard let pair = ContractCallExtractor.extract(
             signature: params.functionSignature,
@@ -474,7 +474,8 @@ class JoinKeysignViewModel: ObservableObject {
         guard let chain = resolvedContractCallChain() else { return nil }
         let addressLower = pair.tokenAddress.lowercased()
 
-        // Check vault first (user has added it), then built-in tokens registry.
+        // Check vault first (user has added it), then built-in tokens registry, then a
+        // live `eth_call` against the contract for unknown tokens.
         let ticker: String
         let decimals: Int
         let logo: String
@@ -491,6 +492,13 @@ class JoinKeysignViewModel: ObservableObject {
             ticker = builtIn.ticker
             decimals = builtIn.decimals
             logo = builtIn.logo
+        } else if let resolved = await TokenMetadataResolver.shared.resolve(
+            contractAddress: pair.tokenAddress,
+            on: chain
+        ) {
+            ticker = resolved.symbol
+            decimals = resolved.decimals
+            logo = "" // No logo asset for resolved-only tokens; the user can add to vault to attach one.
         } else {
             return nil
         }
@@ -622,6 +630,13 @@ class JoinKeysignViewModel: ObservableObject {
 
     var providerName: String {
         keysignPayload?.swapPayload?.providerName ?? .empty
+    }
+
+    /// dApp identity (name / url / icon) attached to the keysign request, if
+    /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
+    /// metadata is treated as absent.
+    var dappMetadata: DAppMetadata? {
+        keysignPayload?.dappMetadata
     }
 
     func getFromAmount() -> String {

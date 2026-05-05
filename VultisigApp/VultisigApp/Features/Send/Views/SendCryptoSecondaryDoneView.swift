@@ -100,7 +100,8 @@ struct SendCryptoSecondaryDoneView: View {
             cryptoAmount: input.amountCrypto,
             fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
             hero: input.hero,
-            status: statusViewModel.status
+            status: statusViewModel.status,
+            dappMetadata: input.dappMetadata
         )
     }
 
