@@ -12,8 +12,7 @@ import XCTest
 @MainActor
 final class SignTonDisplaySnapshotTests: XCTestCase {
 
-    private let coinTicker = "TON"
-    private let coinDecimals = 9
+    private let fromAddress = "UQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ"
 
     override func setUpWithError() throws {
         // Set to true to generate/update reference images, then back to false
@@ -21,20 +20,12 @@ final class SignTonDisplaySnapshotTests: XCTestCase {
     }
 
     func testSingleMessage() {
-        let view = SignTonDisplayView(
-            signTon: SignTon(tonMessages: [
-                TonMessage(
-                    to: "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ",
-                    amount: "1000000000"
-                )
-            ]),
-            coinTicker: coinTicker,
-            coinDecimals: coinDecimals
-        )
-        .frame(width: 361)
-        .padding()
-        .background(Color.black)
-        .colorScheme(.dark)
+        let view = makeView(messages: [
+            TonMessage(
+                to: "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ",
+                amount: "1000000000"
+            )
+        ])
 
         assertSnapshot(
             of: view,
@@ -47,32 +38,24 @@ final class SignTonDisplaySnapshotTests: XCTestCase {
     }
 
     func testMultipleMessagesWithStateInitAndPayload() {
-        let view = SignTonDisplayView(
-            signTon: SignTon(tonMessages: [
-                TonMessage(
-                    to: "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ",
-                    amount: "1500000000",
-                    payload: "te6cckEBAQEADgAAGAAAAABIZWxsbw=="
-                ),
-                TonMessage(
-                    to: "EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG",
-                    amount: "2000000000",
-                    stateInit: "te6ccgECBgEAAWoAART/APSk"
-                ),
-                TonMessage(
-                    to: "EQDtFpEwcFAEcRe5mLVh2N6C0x-_hJEM7W61_JLnSF74p1Oe",
-                    amount: "500000000",
-                    payload: "te6cckEBAQEADgAAGAAAAABIZWxsbw==",
-                    stateInit: "te6ccgECBgEAAWoAART/APSk"
-                )
-            ]),
-            coinTicker: coinTicker,
-            coinDecimals: coinDecimals
-        )
-        .frame(width: 361)
-        .padding()
-        .background(Color.black)
-        .colorScheme(.dark)
+        let view = makeView(messages: [
+            TonMessage(
+                to: "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ",
+                amount: "1500000000",
+                payload: "te6cckEBAQEADgAAGAAAAABIZWxsbw=="
+            ),
+            TonMessage(
+                to: "EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG",
+                amount: "2000000000",
+                stateInit: "te6ccgECBgEAAWoAART/APSk"
+            ),
+            TonMessage(
+                to: "EQDtFpEwcFAEcRe5mLVh2N6C0x-_hJEM7W61_JLnSF74p1Oe",
+                amount: "500000000",
+                payload: "te6cckEBAQEADgAAGAAAAABIZWxsbw==",
+                stateInit: "te6ccgECBgEAAWoAART/APSk"
+            )
+        ])
 
         assertSnapshot(
             of: view,
@@ -95,15 +78,7 @@ final class SignTonDisplaySnapshotTests: XCTestCase {
             TonMessage(to: addr, amount: "\((index + 1) * 100_000_000)")
         }
 
-        let view = SignTonDisplayView(
-            signTon: SignTon(tonMessages: messages),
-            coinTicker: coinTicker,
-            coinDecimals: coinDecimals
-        )
-        .frame(width: 361)
-        .padding()
-        .background(Color.black)
-        .colorScheme(.dark)
+        let view = makeView(messages: messages)
 
         assertSnapshot(
             of: view,
@@ -113,5 +88,18 @@ final class SignTonDisplaySnapshotTests: XCTestCase {
                 layout: .device(config: .iPhone16Pro)
             )
         )
+    }
+
+    private func makeView(messages: [TonMessage]) -> some View {
+        SignTonDisplayView(
+            signTon: SignTon(tonMessages: messages),
+            keysignPayload: nil,
+            vault: Vault.example,
+            fromAddress: fromAddress
+        )
+        .frame(width: 361)
+        .padding()
+        .background(Color.black)
+        .colorScheme(.dark)
     }
 }

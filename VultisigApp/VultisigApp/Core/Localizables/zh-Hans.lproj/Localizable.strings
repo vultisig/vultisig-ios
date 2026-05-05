@@ -302,6 +302,7 @@
 "estimatedReward" = "预计奖励";
 "estNetworkFee" = "预计网络费用";
 "evmChains" = "EVM 链";
+"excessGasRefund" = "多余 Gas 退款";
 "expirationDate" = "到期日期";
 "expiresOn" = "到期于";
 "extendExpiration(inYears)" = "延长到期时间（年）";
@@ -352,6 +353,7 @@
 "foregroundNotificationGeneric" = "交易待审批";
 "foregroundNotificationSend" = "发送 %@";
 "foregroundNotificationSwap" = "兑换 %@ → %@";
+"forwardTonAmount" = "转发 TON 数量";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
 "foundActiveChainsSubtitleHighlight" = "%d分钟";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
@@ -407,6 +409,7 @@
 "invalidVaultData" = "无效的保险库数据";
 "Italian" = "意大利语";
 "iUnderstand" = "我了解";
+"jettonTransfer" = "Jetton 转账";
 "joiningKeygen" = "正在加入密钥生成/份额过程，请稍候...";
 "joinKeygen" = "加入密钥生成";
 "joinKeygenConnectionDisclaimer" = "连接有问题？\n请改用个人热点连接。\n或尝试不同的网络";
@@ -515,6 +518,7 @@
 "nextAward" = "下次奖励";
 "nextChurn" = "下次淘汰";
 "nextPayout" = "下次支付";
+"nftTransfer" = "NFT 转账";
 "no" = "否";
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
@@ -632,6 +636,7 @@
 "providerLabel" = "提供商（可选）";
 "pushNotifications" = "推送通知";
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
+"rawPayload" = "原始数据";
 "ready" = "就绪";
 "Rebond" = "重新绑定";
 "rebondAmount" = "重新绑定金额（可选 - 留空以转移所有已绑定的 RUNE）";
@@ -875,9 +880,6 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
-"tonConnectMessages" = "消息";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";

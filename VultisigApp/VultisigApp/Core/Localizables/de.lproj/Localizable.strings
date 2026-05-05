@@ -302,6 +302,7 @@
 "estimatedReward" = "Geschätzte Belohnung";
 "estNetworkFee" = "Geschätzte Netzwerkgebühr";
 "evmChains" = "EVM -Ketten";
+"excessGasRefund" = "Erstattung überschüssiger Gas";
 "expirationDate" = "Ablaufdatum";
 "expiresOn" = "Läuft ab";
 "extendExpiration(inYears)" = "Ausweitung des Ablaufs (in Jahren)";
@@ -352,6 +353,7 @@
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
 "foregroundNotificationSend" = "Senden %@";
 "foregroundNotificationSwap" = "Tausch %@ → %@";
+"forwardTonAmount" = "Weitergeleiteter TON-Betrag";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
@@ -407,6 +409,7 @@
 "invalidVaultData" = "Ungültige Tresordaten";
 "Italian" = "Italienisch";
 "iUnderstand" = "Ich verstehe";
+"jettonTransfer" = "Jetton-Transfer";
 "joiningKeygen" = "Beitritt zum Keygen";
 "joinKeygen" = "Keygen beitreten";
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
@@ -515,6 +518,7 @@
 "nextAward" = "Nächste Belohnung";
 "nextChurn" = "Nächstes Ausscheiden";
 "nextPayout" = "Nächste Auszahlung";
+"nftTransfer" = "NFT-Transfer";
 "no" = "Nein";
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
 "noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung deines Vaults und die Wahrscheinlichkeit eines Timeouts.";
@@ -631,6 +635,7 @@
 "providerLabel" = "Anbieter (optional)";
 "pushNotifications" = "Push-Benachrichtigungen";
 "pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
+"rawPayload" = "Rohdaten";
 "ready" = "Bereit";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond-Betrag (Optional - leer lassen, um alle gebundenen RUNE zu übertragen)";
@@ -875,9 +880,6 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
-"tonConnectMessages" = "Nachrichten";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
