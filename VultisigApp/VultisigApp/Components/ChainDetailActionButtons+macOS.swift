@@ -15,6 +15,8 @@ struct PlatformWebView: NSViewRepresentable {
         let webView = WKWebView()
         webView.setValue(false, forKey: "drawsBackground")
         webView.navigationDelegate = context.coordinator
+        // WKWebView.load takes a request by API; not a typed HTTP call.
+        // swiftlint:disable:next no_raw_urlrequest
         webView.load(URLRequest(url: url))
         return webView
     }

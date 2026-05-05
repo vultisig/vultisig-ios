@@ -391,10 +391,6 @@ class Endpoint {
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
-    static func bittensorExtrinsicUrl(txHash: String) -> String {
-        return "https://api.vultisig.com/tao-tx/v1?hash=\(txHash)"
-    }
-
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }

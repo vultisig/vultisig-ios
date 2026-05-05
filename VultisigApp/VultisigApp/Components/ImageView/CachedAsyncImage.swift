@@ -68,6 +68,10 @@ import SwiftUI
 ///         }
 ///     }
 ///
+// swiftlint:disable no_raw_urlrequest
+// Forked from Apple's `AsyncImage`; `URLRequest` is part of the public API
+// for cache keys, custom headers, and `URLSession` integration. Does not
+// belong behind `HTTPClient`/`TargetType` (which are typed-JSON-API helpers).
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CachedAsyncImage<Content>: View where Content: View {
 
@@ -424,3 +428,4 @@ extension CachedAsyncImage {
     }
 }
 #endif
+// swiftlint:enable no_raw_urlrequest
