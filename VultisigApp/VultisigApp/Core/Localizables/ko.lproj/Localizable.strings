@@ -217,7 +217,7 @@
 "customMemo" = "커스텀 메모";
 "customToken" = "커스텀 토큰";
 "customTokenErrorSubtitle" = "가능한 이유: 잘못된 계약, 지원되지 않는 체인 또는 레지스트리에서 제거된 토큰.";
-"dappRequestFrom" = "요청 출처:";
+"dappRequestFrom" = "요청 출처";
 "date" = "날짜";
 "defiPortfolio" = "DeFi 포트폴리오";
 "defiRefreshFailed" = "포지션을 새로 고칠 수 없습니다. 아래로 당겨 다시 시도하세요.";

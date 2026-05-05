@@ -215,7 +215,7 @@
 "customMemo" = "自定义备注";
 "customToken" = "自定义代币";
 "customTokenErrorSubtitle" = "可能的原因：错误的合约、不支持的链或代币已从注册表中删除";
-"dappRequestFrom" = "请求来自：";
+"dappRequestFrom" = "请求来自";
 "date" = "日期";
 "defiPortfolio" = "DeFi 投资组合";
 "defiRefreshFailed" = "无法刷新仓位。下拉重试。";

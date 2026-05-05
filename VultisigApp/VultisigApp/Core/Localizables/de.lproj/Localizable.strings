@@ -215,7 +215,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Benutzerdefinierten Token";
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
-"dappRequestFrom" = "Anfrage von:";
+"dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
 "defiPortfolio" = "DeFi Portfolio";
 "defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";

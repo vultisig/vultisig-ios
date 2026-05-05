@@ -5,30 +5,36 @@
 
 import SwiftUI
 
-/// Informational banner showing which dApp produced a keysign request.
+/// Informational card showing which dApp produced a keysign request.
 ///
 /// Renders above the transaction hero on Verify and Done screens. Trust
 /// decisions stay with Blockaid — the banner only echoes the metadata the
 /// dApp self-declared so the signer can sanity-check it.
 ///
-/// Layout: 24pt rounded icon + "Request from: <name> (<host>)". Falls back
-/// gracefully when individual fields are missing — empty proto strings are
-/// treated as absent.
+/// Layout mirrors the Windows `DappRequestHeader`: a "Request from" header,
+/// then a row with a 32pt circular icon and a name/host stack. Empty proto
+/// strings are treated as absent so partially-populated metadata still
+/// renders cleanly.
 struct DAppRequestBanner: View {
     let metadata: DAppMetadata
 
-    private static let iconSize: CGFloat = 24
+    private static let iconSize: CGFloat = 32
 
     var body: some View {
-        HStack(spacing: 8) {
-            icon
-            label
-            Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("dappRequestFrom".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            HStack(spacing: 12) {
+                icon
+                infoStack
+                Spacer(minLength: 0)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(20)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(8)
+        .cornerRadius(16)
     }
 
     @ViewBuilder
@@ -39,7 +45,7 @@ struct DAppRequestBanner: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: Self.iconSize, height: Self.iconSize)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(Circle())
             } placeholder: {
                 placeholderIcon
             }
@@ -50,37 +56,32 @@ struct DAppRequestBanner: View {
 
     private var placeholderIcon: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
+            Circle()
                 .fill(Theme.colors.bgSurface1)
                 .frame(width: Self.iconSize, height: Self.iconSize)
             Image(systemName: "globe")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 
-    private var label: some View {
-        Text(labelString)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .lineLimit(1)
-            .truncationMode(.middle)
-    }
-
-    /// Composed display string. Drops the host parens when the host equals the
-    /// name (avoids "Uniswap (uniswap)") or when no host could be parsed, and
-    /// substitutes the host for the name when no name was provided.
-    private var labelString: String {
-        let name = metadata.name
-        let host = metadata.host
-        let prefix = "dappRequestFrom".localized
-        let primary = name.isEmpty ? host : name
-        let needsHost = !name.isEmpty && !host.isEmpty && name != host
-
-        if primary.isEmpty {
-            return prefix
+    private var infoStack: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if !metadata.name.isEmpty {
+                Text(metadata.name)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+            }
+            if !metadata.host.isEmpty {
+                Text(metadata.host)
+                    .font(metadata.name.isEmpty ? Theme.fonts.bodyMMedium : Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
         }
-        return needsHost ? "\(prefix) \(primary) (\(host))" : "\(prefix) \(primary)"
     }
 
     private var remoteIconURL: URL? {
@@ -92,9 +93,9 @@ struct DAppRequestBanner: View {
 #Preview("Full metadata") {
     DAppRequestBanner(
         metadata: DAppMetadata(
-            name: "Uniswap",
-            url: "https://app.uniswap.org/swap",
-            iconURL: "https://app.uniswap.org/favicon.png"
+            name: "Cross-chain swaps across 13+ networks | 1inch",
+            url: "https://1inch.io/",
+            iconURL: "https://1inch.io/favicon.ico"
         )
     )
     .padding()

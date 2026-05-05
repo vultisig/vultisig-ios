@@ -215,7 +215,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Prilagođeni Token";
 "customTokenErrorSubtitle" = "Provjerite adresu tokena i pokušajte ponovo.";
-"dappRequestFrom" = "Zahtjev od:";
+"dappRequestFrom" = "Zahtjev od";
 "date" = "Datum";
 "defiPortfolio" = "DeFi Portfelj";
 "defiRefreshFailed" = "Nije moguće osvježiti pozicije. Povuci za ponovni pokušaj.";
