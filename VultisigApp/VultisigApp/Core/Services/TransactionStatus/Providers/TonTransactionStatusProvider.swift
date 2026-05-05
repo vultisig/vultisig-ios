@@ -8,10 +8,20 @@
 import Foundation
 
 /// TON Transaction Status Logic:
-/// - Uses TON Center API v3 transactionsByMessage endpoint
-/// - Searches for transaction by incoming message hash
-/// - Checks description.aborted field to determine success/failure
-/// - Empty transactions array means transaction not found
+/// - Uses TON Center API v3 `/v3/transactionsByMessage` endpoint, querying by
+///   incoming message hash.
+/// - Empty `transactions` array → not found, keep polling.
+/// - A returned transaction without a `description` block hasn't finished
+///   indexing → keep polling. (Matches Android, avoids prematurely marking
+///   the tx as confirmed before TON Center has populated execution details.)
+/// - `description.aborted == true` → failed.
+/// - `description.compute_ph.exit_code`: nil (non-contract transfer) or 0/1
+///   (TVM success conventions) → confirmed; any other code → failed with the
+///   exit code in the reason string. (Matches the SDK / Windows resolver at
+///   `vultisig-sdk/packages/core/chain/tx/status/resolvers/ton.ts`.)
+///
+/// `lt` (logical time) is intentionally not exposed as `blockNumber` — it is
+/// not a block height and TON has no single block number for a transaction.
 struct TonTransactionStatusProvider: TransactionStatusProvider {
     private let httpClient: HTTPClientProtocol
 
@@ -26,51 +36,39 @@ struct TonTransactionStatusProvider: TransactionStatusProvider {
                 responseType: TonTransactionStatusResponse.self
             )
 
-            // Check if transaction exists
-            guard let transactions = response.data.transactions, !transactions.isEmpty else {
-                return TransactionStatusResult(
-                    status: .notFound,
-                    blockNumber: nil,
-                    confirmations: nil
-                )
-            }
-
-            // Get first transaction (should only be one for a specific message hash)
-            let transaction = transactions[0]
-
-            // Extract logical time as block reference
-            let blockNumber: Int?
-            if let lt = transaction.lt, let ltInt = Int(lt) {
-                blockNumber = ltInt
-            } else {
-                blockNumber = nil
-            }
-
-            // Check if transaction was aborted
-            if let aborted = transaction.description?.aborted, aborted == true {
-                return TransactionStatusResult(
-                    status: .failed(reason: "Transaction aborted"),
-                    blockNumber: blockNumber,
-                    confirmations: nil
-                )
-            }
-
-            // Transaction exists and was not aborted - confirmed
-            return TransactionStatusResult(
-                status: .confirmed,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
+            return resolve(transactions: response.data.transactions)
 
         } catch let error as HTTPError {
             if case .statusCode(let code, _) = error, code == 404 {
-                return TransactionStatusResult(
-                    status: .notFound,
-                    blockNumber: nil,
-                    confirmations: nil
-                )
+                return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
             }
             throw error
         }
+    }
+
+    private func resolve(transactions: [TonTransactionStatusResponse.TonTransaction]?) -> TransactionStatusResult {
+        guard let transaction = transactions?.first else {
+            return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
+        }
+
+        guard let description = transaction.description else {
+            // Transaction is indexed but execution details haven't landed
+            // yet. Poll again rather than declaring success.
+            return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
+        }
+
+        if description.aborted == true {
+            return TransactionStatusResult(status: .failed(reason: "Transaction aborted"), blockNumber: nil, confirmations: nil)
+        }
+
+        if let exitCode = description.computePhase?.exitCode, exitCode != 0, exitCode != 1 {
+            return TransactionStatusResult(
+                status: .failed(reason: "Compute phase exited with code \(exitCode)"),
+                blockNumber: nil,
+                confirmations: nil
+            )
+        }
+
+        return TransactionStatusResult(status: .confirmed, blockNumber: nil, confirmations: nil)
     }
 }

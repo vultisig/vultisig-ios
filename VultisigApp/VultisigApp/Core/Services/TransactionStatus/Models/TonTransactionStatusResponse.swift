@@ -25,6 +25,23 @@ struct TonTransactionStatusResponse: Codable {
         struct TonDescription: Codable {
             let aborted: Bool?  // Whether transaction was aborted
             let destroyed: Bool?  // Whether account was destroyed
+            let computePhase: ComputePhase?  // TVM compute phase result
+
+            struct ComputePhase: Codable {
+                // 0 / 1 = success, anything else = revert. `nil` for non-contract
+                // transfers that have no compute phase.
+                let exitCode: Int?
+
+                enum CodingKeys: String, CodingKey {
+                    case exitCode = "exit_code"
+                }
+            }
+
+            enum CodingKeys: String, CodingKey {
+                case aborted
+                case destroyed
+                case computePhase = "compute_ph"
+            }
         }
 
         enum CodingKeys: String, CodingKey {
