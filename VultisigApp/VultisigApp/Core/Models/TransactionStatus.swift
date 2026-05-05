@@ -39,7 +39,7 @@ struct TransactionStatusResult {
     let blockNumber: Int?
     let confirmations: Int?
 
-    enum TransactionConfirmationStatus {
+    enum TransactionConfirmationStatus: Equatable {
         case notFound
         case pending
         case confirmed
