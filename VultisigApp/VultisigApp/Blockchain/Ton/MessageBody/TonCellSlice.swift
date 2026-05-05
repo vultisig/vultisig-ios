@@ -262,16 +262,27 @@ enum TonBocParser {
         guard cursor + sizeBytes * 3 + offBytes <= bytes.count else {
             throw TonCellError.truncatedBoc
         }
+        // sizeBytes ≤ 4 → reads are ≤ 32 bits → always fit in Int on 64-bit
+        // platforms. `totCellsSize` reads up to 8 bytes (offBytes ≤ 8), so a
+        // hostile header could declare a value beyond Int.max — use the
+        // failable `Int(exactly:)` to surface that as a parse error rather
+        // than a `Int(_:)` trap.
         let cellsCount = Int(readBigEndian(bytes: bytes, offset: cursor, length: sizeBytes))
         cursor += sizeBytes
         let rootsCount = Int(readBigEndian(bytes: bytes, offset: cursor, length: sizeBytes))
         cursor += sizeBytes
         let absentCount = Int(readBigEndian(bytes: bytes, offset: cursor, length: sizeBytes))
         cursor += sizeBytes
-        let totCellsSize = Int(readBigEndian(bytes: bytes, offset: cursor, length: offBytes))
+        let totCellsSizeRaw = readBigEndian(bytes: bytes, offset: cursor, length: offBytes)
+        guard let totCellsSize = Int(exactly: totCellsSizeRaw) else {
+            throw TonCellError.truncatedBoc
+        }
         cursor += offBytes
 
-        guard rootsCount >= 1, absentCount == 0, cellsCount >= rootsCount else {
+        // Single-root BOCs only — the parser returns one `TonCell`, so
+        // accepting `rootsCount > 1` would silently drop siblings and let an
+        // attacker hide payload outside the Verify summary's view.
+        guard rootsCount == 1, absentCount == 0, cellsCount >= rootsCount else {
             throw TonCellError.truncatedBoc
         }
 
