@@ -100,8 +100,18 @@ struct KeysignPayload: Codable, Hashable {
             return nil
         }
 
-        // signAmino path: fee is directly accessible
+        // signAmino path: fee is directly accessible.
+        // Filter by the chain's native fee denom to avoid mixing denominations
+        // (e.g. native token + IBC token fees summed together).
         if let amino = signAmino {
+            let nativeDenom = coin.chain.feeUnit.lowercased()
+            let denomMatched = amino.fee.amount
+                .filter { $0.denom.lowercased() == nativeDenom }
+                .compactMap { UInt64($0.amount) }
+            if !denomMatched.isEmpty {
+                return denomMatched.reduce(0, +)
+            }
+            // Fallback: if no denom matches (single-denom chains), sum all entries
             let total = amino.fee.amount.compactMap { UInt64($0.amount) }.reduce(0, +)
             return total
         }
