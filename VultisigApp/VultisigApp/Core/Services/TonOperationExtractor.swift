@@ -4,10 +4,7 @@
 //
 
 import Foundation
-import OSLog
 import WalletCore
-
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-operation-extractor")
 
 /// Extracts a hero-renderable summary from a TonConnect `[TonMessage]` payload.
 ///

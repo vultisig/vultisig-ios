@@ -12,7 +12,12 @@ import Foundation
 enum TonPublicAPI: TargetType {
     case emulateEvent(boc: String)
 
-    private static let host = URL(string: "https://tonapi.io")!
+    private static let host: URL = {
+        guard let url = URL(string: "https://tonapi.io") else {
+            preconditionFailure("Invalid TonPublicAPI base URL literal")
+        }
+        return url
+    }()
 
     var baseURL: URL { Self.host }
 

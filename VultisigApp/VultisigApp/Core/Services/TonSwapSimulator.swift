@@ -170,10 +170,22 @@ private enum TonApiNumeric: Decodable {
         let container = try decoder.singleValueContainer()
         if let value = try? container.decode(UInt64.self) {
             self = .number(value)
-        } else if let value = try? container.decode(String.self) {
-            self = .string(value)
-        } else {
-            self = .number(0)
+            return
         }
+        if let value = try? container.decode(String.self) {
+            self = .string(value)
+            return
+        }
+        // Fail the decode rather than coercing to zero — `simulate()` already
+        // returns nil on errors, so an unrecognised numeric shape falls back
+        // to the locally-decoded display instead of fabricating a swap with
+        // 0-valued amounts.
+        throw DecodingError.typeMismatch(
+            TonApiNumeric.self,
+            DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected UInt64 or String for TonApiNumeric"
+            )
+        )
     }
 }

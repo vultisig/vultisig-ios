@@ -85,11 +85,9 @@ final class TonCellSliceTests: XCTestCase {
         XCTAssertEqual(op, UInt64(TonOpcode.excesses))
     }
 
-    func test_loadCoins_returnsZeroForEmptyVarUint() throws {
-        // A BOC with one cell containing only the 4-bit length-zero coins.
-        // We assemble it via the excesses fixture: the excesses body is
-        // op(32) + queryId(64), no coins. Instead, exercise loadCoins on a
-        // jetton-transfer body where the amount is non-zero.
+    func test_loadCoins_parsesJettonTransferAmount() throws {
+        // Exercise loadCoins on a jetton-transfer body where the amount field
+        // is non-zero. The body shape is op(32) + queryId(64) + coins(...).
         let base64 = "te6cckEBAQEAWQAArg+KfqUAAAAAAAAwOUBfXhAIAf//////////////////////////////////////////AAvDfWFG0oYX19jwNDNBBL1rKNT9XfaGP9HyTb5nb2Emhh6EgOvlFRU="
         let cell = try TonBocParser.parse(base64: base64)
         let slice = cell.beginParse()

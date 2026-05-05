@@ -37,8 +37,14 @@ struct SignTonDisplayView: View {
                             logo: swap.toLogo
                         )
                     )
-                    if let firstPayload = signTon.tonMessages.first?.payload, !firstPayload.isEmpty {
-                        rawPayloadPanel(payload: firstPayload)
+                    // Surface every BOC body — multi-message swap requests
+                    // (e.g. STON.fi gas + swap) carry distinct payloads per
+                    // message and we lose audit visibility if we keep only
+                    // the first.
+                    ForEach(Array(signTon.tonMessages.enumerated()), id: \.offset) { _, message in
+                        if let payload = message.payload, !payload.isEmpty {
+                            rawPayloadPanel(payload: payload)
+                        }
                     }
                 }
             } else if viewModel.isSimulating {
@@ -290,7 +296,7 @@ struct SignTonDisplayView: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(payload)
-                .font(.system(size: 12, design: .monospaced))
+                .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)

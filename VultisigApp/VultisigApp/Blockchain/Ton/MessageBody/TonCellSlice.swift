@@ -377,11 +377,35 @@ enum TonBocParser {
 
         guard let root = resolved[rootIndex] else { throw TonCellError.truncatedBoc }
         if hasCrc32c {
-            // CRC validation is intentionally skipped — Vultisig reject paths
-            // already gate on parse success, and dropping CRC keeps the
-            // decoder forward-compatible with serializers that omit it.
+            // CRC32C trailer (Castagnoli) covers every byte before the 4-byte
+            // checksum, stored little-endian per `@ton/core`'s deserializer.
+            // Reject mismatches so a corrupted body falls back to the generic
+            // transfer view rather than driving a misleading decode.
+            guard bytes.count >= 4 else { throw TonCellError.truncatedBoc }
+            let crcStart = bytes.count - 4
+            let stored = UInt32(bytes[crcStart])
+                | (UInt32(bytes[crcStart + 1]) << 8)
+                | (UInt32(bytes[crcStart + 2]) << 16)
+                | (UInt32(bytes[crcStart + 3]) << 24)
+            let computed = crc32c(Array(bytes[..<crcStart]))
+            guard stored == computed else { throw TonCellError.invalidCellHeader }
         }
         return root
+    }
+
+    /// CRC-32C (Castagnoli) — polynomial `0x1EDC6F41`, reflected `0x82F63B78`.
+    /// Standard `init = final XOR = 0xFFFFFFFF`. Used to validate the BOC
+    /// trailer when the header sets `hasCrc32c`.
+    private static func crc32c(_ bytes: [UInt8]) -> UInt32 {
+        var crc: UInt32 = 0xFFFFFFFF
+        for byte in bytes {
+            crc ^= UInt32(byte)
+            for _ in 0..<8 {
+                let mask: UInt32 = (crc & 1) != 0 ? 0x82F63B78 : 0
+                crc = (crc >> 1) ^ mask
+            }
+        }
+        return crc ^ 0xFFFFFFFF
     }
 
     private static func isHexBoc(_ payload: String) -> Bool {

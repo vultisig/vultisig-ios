@@ -129,10 +129,23 @@ enum TonKnownRouters {
 
     /// Normalise each address to user-friendly bounceable form so URL-safe
     /// and raw variants of the same address compare as equal. Unparseable
-    /// entries are dropped (and would be developer error, not user input).
+    /// entries are dropped (and would be developer error, not user input);
+    /// in DEBUG builds we trip an assertion so a typo in the literal table
+    /// surfaces during development instead of silently disabling a router.
     private static func normalize(_ addresses: [String]) -> Set<String> {
-        Set(addresses.compactMap {
-            TONAddressConverter.toUserFriendly(address: $0, bounceable: true, testnet: false)
-        })
+        var normalized: [String] = []
+        normalized.reserveCapacity(addresses.count)
+        for address in addresses {
+            if let userFriendly = TONAddressConverter.toUserFriendly(
+                address: address,
+                bounceable: true,
+                testnet: false
+            ) {
+                normalized.append(userFriendly)
+            } else {
+                assertionFailure("TonKnownRouters: invalid address literal '\(address)'")
+            }
+        }
+        return Set(normalized)
     }
 }
