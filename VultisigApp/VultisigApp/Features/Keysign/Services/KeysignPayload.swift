@@ -111,9 +111,7 @@ struct KeysignPayload: Codable, Hashable {
             if !denomMatched.isEmpty {
                 return denomMatched.reduce(0, +)
             }
-            // Fallback: if no denom matches (single-denom chains), sum all entries
-            let total = amino.fee.amount.compactMap { UInt64($0.amount) }.reduce(0, +)
-            return total
+            return nil
         }
 
         // signDirect would require protobuf decoding of authInfoBytes — skip for now.
