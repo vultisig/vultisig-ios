@@ -125,10 +125,13 @@ extension KeysignPayload: ProtoMappable {
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
         if proto.hasDappMetadata {
+            // Treat whitespace-only proto strings as missing — `isEmpty` and
+            // `host` derive from these, so trim once at the boundary rather
+            // than re-normalizing at every consumer.
             let metadata = DAppMetadata(
-                name: proto.dappMetadata.name,
-                url: proto.dappMetadata.url,
-                iconURL: proto.dappMetadata.iconURL
+                name: proto.dappMetadata.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                url: proto.dappMetadata.url.trimmingCharacters(in: .whitespacesAndNewlines),
+                iconURL: proto.dappMetadata.iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
             )
             self.dappMetadata = metadata.isEmpty ? nil : metadata
         } else {

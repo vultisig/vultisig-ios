@@ -60,7 +60,7 @@ struct DAppRequestBanner: View {
                 .fill(Theme.colors.bgSurface1)
                 .frame(width: Self.iconSize, height: Self.iconSize)
             Image(systemName: "globe")
-                .font(.system(size: 16, weight: .semibold))
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
         }
     }
