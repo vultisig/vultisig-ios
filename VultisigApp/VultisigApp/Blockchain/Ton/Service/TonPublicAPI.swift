@@ -40,7 +40,16 @@ enum TonPublicAPI: TargetType {
         case .emulateEvent(let boc):
             // Skip signature verification — we feed in an unsigned BOC built
             // for emulation only (see `TonExternalMessageEmulator`).
-            let body = (try? JSONEncoder().encode(TonEmulateRequest(boc: boc))) ?? Data()
+            // `TonEmulateRequest` is a single-string struct; encoding a
+            // String can never fail, so a thrown error here would signal a
+            // programmer error worth crashing on rather than masking with
+            // an empty body.
+            let body: Data
+            do {
+                body = try JSONEncoder().encode(TonEmulateRequest(boc: boc))
+            } catch {
+                preconditionFailure("Failed to encode TonEmulateRequest: \(error)")
+            }
             return .requestCompositeData(
                 bodyData: body,
                 urlParameters: ["ignore_signature_check": "true"]

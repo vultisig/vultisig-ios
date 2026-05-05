@@ -289,7 +289,21 @@ enum TonBocParser {
             cursor += indexSize
         }
 
-        guard cursor + totCellsSize <= bytes.count else { throw TonCellError.truncatedBoc }
+        // Strict envelope: the buffer must end exactly at the cells data plus
+        // the optional 4-byte CRC trailer. Trailing junk would otherwise let
+        // an attacker hide bytes outside the parser's view.
+        let trailerSize = hasCrc32c ? 4 : 0
+        guard cursor + totCellsSize + trailerSize == bytes.count else {
+            throw TonCellError.truncatedBoc
+        }
+
+        // Each serialized cell needs at least its 2-byte d1+d2 header, so
+        // `cellsCount` is bounded by `totCellsSize / 2`. Without this guard
+        // a malformed header could request an extreme cell count and exhaust
+        // memory before the structural failure surfaces.
+        guard cellsCount <= totCellsSize / 2 else {
+            throw TonCellError.invalidCellHeader
+        }
 
         // Phase 1: parse each cell into raw form (bits + ref indices).
         struct RawCell {
@@ -362,6 +376,12 @@ enum TonBocParser {
             rawCells.append(RawCell(bits: bits, refIndices: refIndices))
         }
 
+        // Cells must consume the declared region exactly — any leftover bytes
+        // mean the header lies about `totCellsSize`.
+        guard cellsCursor == cursor + totCellsSize else {
+            throw TonCellError.invalidCellHeader
+        }
+
         // Phase 2: tie refs together. BOCs serialize children before parents,
         // so iterating from the last cell upward guarantees referenced cells
         // already exist.
@@ -379,10 +399,10 @@ enum TonBocParser {
         if hasCrc32c {
             // CRC32C trailer (Castagnoli) covers every byte before the 4-byte
             // checksum, stored little-endian per `@ton/core`'s deserializer.
-            // Reject mismatches so a corrupted body falls back to the generic
-            // transfer view rather than driving a misleading decode.
-            guard bytes.count >= 4 else { throw TonCellError.truncatedBoc }
-            let crcStart = bytes.count - 4
+            // Anchor `crcStart` to the declared cells boundary (not buffer
+            // end) so the strict envelope check earlier in this function is
+            // the single source of truth for total length.
+            let crcStart = cursor + totCellsSize
             let stored = UInt32(bytes[crcStart])
                 | (UInt32(bytes[crcStart + 1]) << 8)
                 | (UInt32(bytes[crcStart + 2]) << 16)
