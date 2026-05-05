@@ -88,6 +88,29 @@ struct KeysignPayload: Codable, Hashable {
         return coin.fiat(decimal: toAmountDecimal).description
     }
 
+    /// Returns the dApp-supplied fee amount (in base units) for Cosmos-based chains,
+    /// extracted from `signAmino.fee.amount`. Returns `nil` when no dApp signData is
+    /// present or the chain isn't Cosmos-rooted, letting callers fall back to the
+    /// estimated `blockChainSpecific` fee.
+    ///
+    /// Fixes: Rujira CosmWasm calls declare `fee.amount = 0` but the estimate shows
+    /// a non-zero fallback (e.g. 0.02 RUNE). Parity with Windows PR #3843.
+    func dappSuppliedCosmosFee() -> UInt64? {
+        guard coin.chainType == .Cosmos || coin.chainType == .THORChain else {
+            return nil
+        }
+
+        // signAmino path: fee is directly accessible
+        if let amino = signAmino {
+            let total = amino.fee.amount.compactMap { UInt64($0.amount) }.reduce(0, +)
+            return total
+        }
+
+        // signDirect would require protobuf decoding of authInfoBytes — skip for now.
+        // Rujira CosmWasm uses signAmino as the primary signing path.
+        return nil
+    }
+
     static let example = KeysignPayload(
         coin: Coin.example,
         toAddress: "toAddress",
