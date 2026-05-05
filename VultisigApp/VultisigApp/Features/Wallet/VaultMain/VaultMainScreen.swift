@@ -19,6 +19,7 @@ struct VaultMainScreen: View {
     var onCamera: () -> Void
 
     @Environment(\.modelContext) var modelContext
+    @Environment(\.router) var router
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
@@ -294,9 +295,19 @@ struct VaultMainScreen: View {
             showUpgradeVaultSheet = true
         case .backupVault:
             showBackupNow = true
+        case .buyVult:
+            openSwapToVult()
         case .followVultisig:
             openURL(StaticURL.XVultisigURL)
         }
+    }
+
+    private func openSwapToVult() {
+        let vultService = VultTierService()
+        let fromCoin = vault.nativeCoin(for: .ethereum)
+            ?? vault.coins.first(where: { $0.isNativeToken })
+        let toCoin = vultService.getVultToken(for: vault)
+        router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: toCoin, vault: vault))
     }
 
     func onBannerClosed(_ banner: VaultBannerType) {

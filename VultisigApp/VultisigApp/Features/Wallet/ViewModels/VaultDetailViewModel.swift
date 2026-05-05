@@ -131,6 +131,8 @@ struct VaultDetailLogic {
                     return !vault.isBackedUp
                 case .upgradeVault:
                     return vault.libType == .GG20
+                case .buyVult:
+                    return true
                 case .followVultisig:
                     return true
                 }

@@ -16,6 +16,8 @@ struct VaultBannerBackground: View {
             upgradeVaultView
         case .backupVault:
             backupVaultView
+        case .buyVult:
+            buyVultView
         case .followVultisig:
             followVultisigView
         }
@@ -25,6 +27,19 @@ struct VaultBannerBackground: View {
         ZStack(alignment: .trailing) {
             Theme.colors.bgSurface1
             image
+        }
+    }
+
+    var buyVultView: some View {
+        ZStack(alignment: .trailing) {
+            Theme.colors.bgSurface1
+            Image(type.image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 163)
+                .frame(maxHeight: .infinity)
+                .clipped()
+                .accessibilityHidden(true)
         }
     }
 

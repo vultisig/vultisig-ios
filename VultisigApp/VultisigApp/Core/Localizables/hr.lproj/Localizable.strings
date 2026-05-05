@@ -121,6 +121,9 @@
 "broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";
 "broadcastRetryStaleQuote" = "Ponuda istekla — detalji ažurirani. Molimo pokušajte ponovno.";
 "buy" = "Kupi";
+"buyVultBannerButtonTitle" = "Kupi $VULT";
+"buyVultBannerSubtitle" = "I uštedi na naknadama za swap";
+"buyVultBannerTitle" = "Kupi $VULT";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
 "cancel" = "Otkaži";

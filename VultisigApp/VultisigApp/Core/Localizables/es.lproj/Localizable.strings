@@ -121,6 +121,9 @@
 "broadcastRetryStaleNonce" = "Nonce de transacción desactualizado — detalles actualizados. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleQuote" = "Cotización expirada — detalles actualizados. Por favor, inténtalo de nuevo.";
 "buy" = "Comprar";
+"buyVultBannerButtonTitle" = "Comprar $VULT";
+"buyVultBannerSubtitle" = "Y ahorra en comisiones de swap";
+"buyVultBannerTitle" = "Comprar $VULT";
 "cacaoPool" = "Pool de Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ hasta que se alcance la madurez del depósito";
 "cancel" = "Cancelar";
