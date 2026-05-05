@@ -23,35 +23,44 @@ struct SwapDetailsSummary: View {
         !swapViewModel.priceImpactString(tx: tx).isEmpty
     }
 
+    /// Hide the entire Provider + fees block while a quote error is on screen
+    /// (the tooltip already surfaces the error). Keep it visible during loading
+    /// so placeholders still appear, and whenever a valid quote is available.
+    private var isBlockVisible: Bool {
+        swapViewModel.error == nil || swapViewModel.isLoadingQuotes
+    }
+
     var body: some View {
         content
     }
 
     var content: some View {
         VStack(spacing: 16) {
-            if let providerName = tx.quote?.displayName {
-                getSummaryCell(
-                    leadingText: "provider",
-                    trailingText: providerName
-                )
-            }
+            if isBlockVisible {
+                if let providerName = tx.quote?.displayName {
+                    getSummaryCell(
+                        leadingText: "provider",
+                        trailingText: providerName
+                    )
+                }
 
-            if swapViewModel.showTotalFees(tx: tx) {
-                if hasExpandableFees {
-                    ExpandableView(isExpanded: $showFees) {
-                        totalFeesLabel()
-                    } content: {
-                        HStack {
-                            Rectangle()
-                                .frame(width: 1)
-                                .foregroundStyle(Theme.colors.primaryAccent4)
+                if swapViewModel.showTotalFees(tx: tx) {
+                    if hasExpandableFees {
+                        ExpandableView(isExpanded: $showFees) {
+                            totalFeesLabel()
+                        } content: {
+                            HStack {
+                                Rectangle()
+                                    .frame(width: 1)
+                                    .foregroundStyle(Theme.colors.primaryAccent4)
 
-                            expandableFees
+                                expandableFees
+                            }
+                            .padding(.top, 16)
                         }
-                        .padding(.top, 16)
+                    } else {
+                        totalFeesLabel(showChevron: false)
                     }
-                } else {
-                    totalFeesLabel(showChevron: false)
                 }
             }
         }
