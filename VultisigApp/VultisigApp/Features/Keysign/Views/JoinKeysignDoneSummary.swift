@@ -122,10 +122,6 @@ struct JoinKeysignDoneSummary: View {
 
     var signMessageContent: some View {
         VStack(spacing: 18) {
-            if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
-                DAppRequestBanner(metadata: metadata)
-                Separator()
-            }
             if hasHeroSection {
                 doneHeroSection
                 Separator()
