@@ -309,6 +309,7 @@
 "estimatedReward" = "Estimated reward";
 "estNetworkFee" = "Est. network fee";
 "evmChains" = "EVM Chains";
+"excessGasRefund" = "Excess Gas Refund";
 "expirationDate" = "Expiration date";
 "expiresOn" = "Expires on";
 "extendExpiration(inYears)" = "Extend Expiration (in years)";
@@ -359,6 +360,7 @@
 "foregroundNotificationGeneric" = "Transaction pending approval";
 "foregroundNotificationSend" = "Send %@";
 "foregroundNotificationSwap" = "Swap %@ → %@";
+"forwardTonAmount" = "Forward TON Amount";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
@@ -414,6 +416,7 @@
 "invalidVaultData" = "Invalid vault data";
 "Italian" = "Italian";
 "iUnderstand" = "I understand";
+"jettonTransfer" = "Jetton Transfer";
 "joiningKeygen" = "Joining key generation / share process, please wait...";
 "joinKeygen" = "Join Keygen";
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
@@ -523,6 +526,7 @@
 "nextAward" = "Next Award";
 "nextChurn" = "Next Churn";
 "nextPayout" = "Next payout";
+"nftTransfer" = "NFT Transfer";
 "no" = "No";
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\n\nEach extra chain increases the time to generate your vault and possibility of a timeout.";
@@ -640,6 +644,7 @@
 "providerLabel" = "Provider (optional)";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
+"rawPayload" = "Raw Payload";
 "ready" = "Ready";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)";
@@ -886,9 +891,6 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
-"tonConnectMessages" = "Messages";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";

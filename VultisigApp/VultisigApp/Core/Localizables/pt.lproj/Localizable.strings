@@ -303,6 +303,7 @@
 "estimatedReward" = "Recompensa Estimada";
 "estNetworkFee" = "Taxa de rede estimada";
 "evmChains" = "Correntes EVM";
+"excessGasRefund" = "Reembolso de Gás Excedente";
 "expirationDate" = "Data de validade";
 "expiresOn" = "Expira em";
 "extendExpiration(inYears)" = "Estender a expiração (em anos)";
@@ -353,6 +354,7 @@
 "foregroundNotificationGeneric" = "Transação pendente de aprovação";
 "foregroundNotificationSend" = "Enviar %@";
 "foregroundNotificationSwap" = "Trocar %@ → %@";
+"forwardTonAmount" = "Quantia TON Encaminhada";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
@@ -408,6 +410,7 @@
 "invalidVaultData" = "Dados do cofre inválidos";
 "Italian" = "Italiano";
 "iUnderstand" = "Eu entendo";
+"jettonTransfer" = "Transferência de Jetton";
 "joiningKeygen" = "Entrando no keygen";
 "joinKeygen" = "Participar do Keygen";
 "joinKeygenConnectionDisclaimer" = "Problemas de conexão?\nUse uma conexão de hotspot pessoal.\nOu tente uma rede diferente.";
@@ -516,6 +519,7 @@
 "nextAward" = "Próxima Recompensa";
 "nextChurn" = "Próxima Rotação";
 "nextPayout" = "Próximo Pagamento";
+"nftTransfer" = "Transferência de NFT";
 "no" = "Não";
 "noActiveChainsFound" = "Nenhuma chain ativa encontrada";
 "noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\n\nCada chain adicional aumenta o tempo para gerar seu vault e a possibilidade de timeout.";
@@ -632,6 +636,7 @@
 "providerLabel" = "Provedor (opcional)";
 "pushNotifications" = "Notificações push";
 "pushNotificationsDescription" = "Receba notificações quando sua assinatura for necessária ou um dispositivo solicitar acesso.";
+"rawPayload" = "Dados brutos";
 "ready" = "Pronto";
 "Rebond" = "Rebond";
 "rebondAmount" = "Quantidade de rebond (Opcional - deixe vazio para transferir todo o RUNE vinculado)";
@@ -876,9 +881,6 @@
 "to" = "Para";
 "today" = "Hoje";
 "tokens" = "Tokens";
-"tonConnectMessages" = "Mensagens";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Taxa total";
 "track" = "Acompanhar";
 "transaction" = "Transação";

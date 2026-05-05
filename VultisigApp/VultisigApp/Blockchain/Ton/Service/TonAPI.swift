@@ -9,6 +9,7 @@ enum TonAPI: TargetType {
     case addressInformation(address: String)
     case extendedAddressInformation(address: String)
     case jettonWallets(ownerAddress: String, jettonMasterAddress: String)
+    case jettonWalletsByAddress(walletAddress: String)
     case jettonMasters(jettonAddress: String)
     case runGetMethod(address: String, method: String, stack: [[String]])
     case broadcastTransaction(boc: String)
@@ -23,7 +24,7 @@ enum TonAPI: TargetType {
             return "/ton/v3/addressInformation"
         case .extendedAddressInformation:
             return "/ton/v2/getExtendedAddressInformation"
-        case .jettonWallets:
+        case .jettonWallets, .jettonWalletsByAddress:
             return "/ton/v3/jetton/wallets"
         case .jettonMasters:
             return "/ton/v3/jetton/masters"
@@ -36,7 +37,7 @@ enum TonAPI: TargetType {
 
     var method: HTTPMethod {
         switch self {
-        case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonMasters:
+        case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress, .jettonMasters:
             return .get
         case .runGetMethod, .broadcastTransaction:
             return .post
@@ -51,6 +52,8 @@ enum TonAPI: TargetType {
             return .requestParameters(["address": address], .urlEncoding)
         case .jettonWallets(let owner, let master):
             return .requestParameters(["owner_address": owner, "jetton_master_address": master], .urlEncoding)
+        case .jettonWalletsByAddress(let walletAddress):
+            return .requestParameters(["address": walletAddress, "limit": 1], .urlEncoding)
         case .jettonMasters(let jettonAddress):
             return .requestParameters(["address": jettonAddress, "limit": 1], .urlEncoding)
         case .runGetMethod(let address, let method, let stack):

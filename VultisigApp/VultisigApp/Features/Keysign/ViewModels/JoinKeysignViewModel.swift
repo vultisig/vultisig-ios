@@ -387,6 +387,21 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadFunctionName() async {
+        // TON path: TonConnect bodies don't carry an EVM-style 4byte memo, so
+        // skip the EVM decoder entirely and surface a jetton hero straight
+        // from the BOC payloads. Hero appears only when we can resolve the
+        // jetton's display metadata from the active vault.
+        if resolvedContractCallChain() == .ton,
+           let messages = keysignPayload?.signTon?.tonMessages, !messages.isEmpty {
+            let display = TonOperationExtractor.extract(messages: messages, vault: vault)
+            self.decodedTokenDisplay = display?.display
+            self.decodedTokenAmount = display?.amountText
+            self.decodedTokenTicker = display?.ticker
+            self.decodedTokenLogo = display?.logo
+            self.decodedTokenIsUnlimited = false
+            return
+        }
+
         let candidates = [keysignPayload?.memo, customMessagePayload?.message]
         guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
@@ -591,6 +606,18 @@ class JoinKeysignViewModel: ObservableObject {
                     )
                 )
             }
+        }
+
+        // TON-side fallback: when the BOC decoder resolved a jetton hero we
+        // surface it directly, even though Blockaid never simulates TON.
+        if let amount = decodedTokenAmount,
+           let ticker = decodedTokenTicker,
+           let logo = decodedTokenLogo,
+           !amount.isEmpty {
+            return .send(
+                title: decodedFunctionName,
+                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo)
+            )
         }
 
         if didLoadSimulation,

@@ -303,6 +303,7 @@
 "estimatedReward" = "Procijenjena nagrada";
 "estNetworkFee" = "Procijenjena mrežna naknada";
 "evmChains" = "EVM lanci";
+"excessGasRefund" = "Povrat viška goriva";
 "expirationDate" = "Datum isteka";
 "expiresOn" = "Ističe na";
 "extendExpiration(inYears)" = "Produžite istek (u godinama)";
@@ -353,6 +354,7 @@
 "foregroundNotificationGeneric" = "Transakcija čeka odobrenje";
 "foregroundNotificationSend" = "Pošalji %@";
 "foregroundNotificationSwap" = "Zamijeni %@ → %@";
+"forwardTonAmount" = "Iznos prosljeđenog TON-a";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
 "foundActiveChainsSubtitleHighlight" = "%d minuta";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
@@ -408,6 +410,7 @@
 "invalidVaultData" = "Nevažeći podaci spremišta";
 "Italian" = "Talijanski";
 "iUnderstand" = "Razumijem";
+"jettonTransfer" = "Jetton prijenos";
 "joiningKeygen" = "Pridruživanje keygenu";
 "joinKeygen" = "Pridružite se Keygen-u";
 "joinKeygenConnectionDisclaimer" = "Imate problema s povezivanjem?\nKoristite osobnu hotspot vezu.\nIli pokušajte s drugom mrežom.";
@@ -516,6 +519,7 @@
 "nextAward" = "Sljedeća Nagrada";
 "nextChurn" = "Sljedeća Rotacija";
 "nextPayout" = "Sljedeća isplata";
+"nftTransfer" = "NFT prijenos";
 "no" = "Ne";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
 "noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme potrebno za generiranje vašeg vaulta i mogućnost timeouta.";
@@ -632,6 +636,7 @@
 "providerLabel" = "Pružatelj (opcionalno)";
 "pushNotifications" = "Push obavijesti";
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
+"rawPayload" = "Sirovi podaci";
 "ready" = "Spreman";
 "Rebond" = "Rebond";
 "rebondAmount" = "Iznos rebond (Opcionalno - ostavite prazno za prijenos svih vezanih RUNE)";
@@ -876,9 +881,6 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
-"tonConnectMessages" = "Poruke";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";
