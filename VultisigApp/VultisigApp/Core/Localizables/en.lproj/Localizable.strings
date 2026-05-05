@@ -217,6 +217,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Custom Token";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"dappRequestFrom" = "Request from";
 "date" = "Date";
 "defiPortfolio" = "DeFi Portfolio";
 "defiRefreshFailed" = "Couldn't refresh positions. Pull to retry.";

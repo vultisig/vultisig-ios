@@ -34,7 +34,8 @@ struct KeysignMessageConfirmView: View {
                         keysignPayload: viewModel.keysignPayload,
                         hero: viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
-                        tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited
+                        tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
+                        dappMetadata: viewModel.dappMetadata
                     ),
                     securityScannerState: $viewModel.securityScannerState
                 )

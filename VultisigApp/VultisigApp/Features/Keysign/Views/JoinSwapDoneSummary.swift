@@ -45,6 +45,11 @@ struct JoinSwapDoneSummary: View {
         ScrollView {
             VStack {
                 animation
+                if let metadata = keysignViewModel.dappMetadata, !metadata.isEmpty {
+                    DAppRequestBanner(metadata: metadata)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 4)
+                }
                 fromToCards
                 summary
             }

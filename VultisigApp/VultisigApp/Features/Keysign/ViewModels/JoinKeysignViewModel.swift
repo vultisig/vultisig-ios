@@ -605,6 +605,13 @@ class JoinKeysignViewModel: ObservableObject {
         keysignPayload?.swapPayload?.providerName ?? .empty
     }
 
+    /// dApp identity (name / url / icon) attached to the keysign request, if
+    /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
+    /// metadata is treated as absent.
+    var dappMetadata: DAppMetadata? {
+        keysignPayload?.dappMetadata
+    }
+
     func getFromAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)

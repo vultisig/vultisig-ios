@@ -13,6 +13,23 @@ struct SendCryptoDoneHeaderView: View {
     let fiatAmount: String
     let hero: HeroContent?
     let status: TransactionStatus
+    let dappMetadata: DAppMetadata?
+
+    init(
+        coin: Coin?,
+        cryptoAmount: String,
+        fiatAmount: String,
+        hero: HeroContent?,
+        status: TransactionStatus,
+        dappMetadata: DAppMetadata? = nil
+    ) {
+        self.coin = coin
+        self.cryptoAmount = cryptoAmount
+        self.fiatAmount = fiatAmount
+        self.hero = hero
+        self.status = status
+        self.dappMetadata = dappMetadata
+    }
 
     var body: some View {
         VStack(spacing: 36) {
@@ -20,6 +37,9 @@ struct SendCryptoDoneHeaderView: View {
                 .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
+                if let metadata = dappMetadata, !metadata.isEmpty {
+                    DAppRequestBanner(metadata: metadata)
+                }
                 if let hero {
                     HeroContentView(content: hero)
                 } else {
