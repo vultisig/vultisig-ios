@@ -8,12 +8,9 @@ import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
 /// SegmentedControl is set to Limit. Layout mirrors the Figma Place flow
-/// (vultisig-ios#4232 screen 1/2/3): compact single-row asset summary, one
-/// tall "Execute when" card containing the price display + preset pills +
-/// expiry sub-block, and a Place Limit Order CTA at the bottom.
-///
-/// **Note: Place-button color discrepancy** (Figma `#0b4eff` vs iOS theme
-/// turquoise) — tracked in design-flags.md item #1.
+/// (vultisig-ios#4232 screen 1 = full asset swap-form, screens 2/3 = same
+/// asset section above an expanded "Execute when" card with the price
+/// display + preset pills + expiry sub-block).
 struct LimitSwapBodyView: View {
 
     private enum FocusedSection: Hashable {
@@ -21,21 +18,29 @@ struct LimitSwapBodyView: View {
     }
 
     @Bindable var vm: LimitSwapFormViewModel
-    @State private var focusedSection: FocusedSection? = .executeWhen
+    let fromCoin: Coin
+    let toCoin: Coin
+
+    @State private var focusedSection: FocusedSection? = nil
+    @State private var sourceAmountText: String = ""
 
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
+    let onSwapAssets: () -> Void
     let onPlaceOrder: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
-                    LimitAssetSummaryRow(
-                        fromAsset: vm.draft.fromAsset,
-                        toAsset: vm.draft.toAsset,
+                    LimitAssetSwapForm(
+                        vm: vm,
+                        fromCoin: fromCoin,
+                        toCoin: toCoin,
+                        sourceAmountText: $sourceAmountText,
                         onPickFromAsset: onPickFromAsset,
-                        onPickToAsset: onPickToAsset
+                        onPickToAsset: onPickToAsset,
+                        onSwapAssets: onSwapAssets
                     )
 
                     FormExpandableSection(
@@ -68,6 +73,9 @@ struct LimitSwapBodyView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
+        .onChange(of: sourceAmountText) { _, newText in
+            vm.amountChanged(parseAmount(newText, decimals: vm.draft.fromAsset.decimals))
+        }
     }
 
     private var isPlaceable: Bool {
@@ -79,39 +87,87 @@ struct LimitSwapBodyView: View {
         let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
     }
+
+    private func parseAmount(_ text: String, decimals: Int) -> BigInt {
+        let normalized = text.replacingOccurrences(of: ",", with: ".")
+        guard let decimal = Decimal(string: normalized), decimal > 0 else { return 0 }
+        var scaled = Decimal()
+        var input = decimal
+        NSDecimalMultiplyByPowerOf10(&scaled, &input, Int16(decimals), .down)
+        var truncated = Decimal()
+        NSDecimalRound(&truncated, &scaled, 0, .down)
+        return BigInt(NSDecimalNumber(decimal: truncated).stringValue) ?? 0
+    }
 }
 
-// MARK: - Asset summary row (compact single-row, matches Figma)
+// MARK: - Asset swap form (Sell + middle swap button + Buy)
 
-private struct LimitAssetSummaryRow: View {
+private struct LimitAssetSwapForm: View {
 
-    let fromAsset: LimitSwapAsset
-    let toAsset: LimitSwapAsset
+    @Bindable var vm: LimitSwapFormViewModel
+    let fromCoin: Coin
+    let toCoin: Coin
+    @Binding var sourceAmountText: String
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
+    let onSwapAssets: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("limitSwap.asset".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            chip(label: "limitSwap.sell".localized, asset: fromAsset, ticker: fromAsset.ticker, action: onPickFromAsset)
-            chip(label: "limitSwap.buy".localized, asset: toAsset, ticker: toAsset.ticker, action: onPickToAsset)
+            Rectangle()
+                .fill(Theme.colors.borderLight)
+                .frame(height: 1)
 
-            Image(systemName: "checkmark")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Theme.colors.alertSuccess)
+            ZStack {
+                VStack(spacing: 8) {
+                    LimitAssetRow(
+                        kind: .sell,
+                        coin: fromCoin,
+                        asset: vm.draft.fromAsset,
+                        amountText: $sourceAmountText,
+                        amountIsEditable: true,
+                        computedAmount: nil,
+                        usdPricePerUnit: Decimal(fromCoin.price),
+                        onPickAsset: onPickFromAsset
+                    )
 
-            Spacer(minLength: 0)
+                    LimitAssetRow(
+                        kind: .buy,
+                        coin: toCoin,
+                        asset: vm.draft.toAsset,
+                        amountText: .constant(formattedBuyAmount),
+                        amountIsEditable: false,
+                        computedAmount: buyAmountDecimal,
+                        usdPricePerUnit: vm.targetUsdPricePerUnit,
+                        onPickAsset: onPickToAsset
+                    )
+                }
 
-            Image(systemName: "pencil")
-                .font(.system(size: 14))
-                .foregroundStyle(Theme.colors.textTertiary)
+                Button(action: onSwapAssets) {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .frame(width: 32, height: 32)
+                        .background(Theme.colors.primaryAccent3)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .padding(7)
+                        .background(Theme.colors.bgPrimary)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25.5)
+                                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 25.5))
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 52)
-        .background(Theme.colors.bgSurface1)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 12)
+        .background(Theme.colors.bgPrimary)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
@@ -119,37 +175,184 @@ private struct LimitAssetSummaryRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    private func chip(label: String, ticker: String, action: @escaping () -> Void) -> some View {
-        chip(label: label, asset: nil, ticker: ticker, action: action)
+    /// Buy amount = sourceAmount × targetPrice (when target is set).
+    /// `nil` if not yet computable, in which case the row shows "0".
+    private var buyAmountDecimal: Decimal? {
+        let sourceAmount = vm.draft.sourceAmount
+        let targetPrice = vm.draft.targetPrice
+        guard sourceAmount > 0, targetPrice > 0 else { return nil }
+        let sourceDecimal = Decimal(string: sourceAmount.description) ?? 0
+        let sourceNatural = sourceDecimal / pow(10, vm.draft.fromAsset.decimals)
+        return sourceNatural * targetPrice
+    }
+
+    private var formattedBuyAmount: String {
+        guard let amount = buyAmountDecimal else { return "0" }
+        return NSDecimalNumber(decimal: amount).stringValue
     }
 }
 
-private extension LimitAssetSummaryRow {
-    func chip(label: String, asset: LimitSwapAsset?, ticker: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Text(label)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                if let asset, !asset.logo.isEmpty {
-                    AsyncImageView(
-                        logo: asset.logo,
-                        size: CGSize(width: 16, height: 16),
-                        ticker: asset.ticker,
-                        tokenChainLogo: asset.chainLogo
-                    )
-                }
-                Text(ticker)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-            .contentShape(Rectangle())
+// MARK: - Single asset row (chain header + coin pill + amount field)
+
+private enum LimitAssetRowKind {
+    case sell
+    case buy
+
+    var labelKey: String {
+        self == .sell ? "limitSwap.sell" : "limitSwap.buy"
+    }
+
+    var cornerRadii: RectangleCornerRadii {
+        // Mirrors the Figma — Sell rounded top-heavy, Buy bottom-heavy.
+        switch self {
+        case .sell:
+            return .init(topLeading: 24, bottomLeading: 12, bottomTrailing: 12, topTrailing: 24)
+        case .buy:
+            return .init(topLeading: 12, bottomLeading: 24, bottomTrailing: 24, topTrailing: 12)
         }
-        .buttonStyle(.plain)
     }
 }
 
-// MARK: - Execute When content (price + presets + expiry sub-block, all inside one card)
+private struct LimitAssetRow: View {
+
+    let kind: LimitAssetRowKind
+    let coin: Coin
+    let asset: LimitSwapAsset
+    @Binding var amountText: String
+    let amountIsEditable: Bool
+    let computedAmount: Decimal?
+    let usdPricePerUnit: Decimal
+    let onPickAsset: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header: label + chain selector (left) | balance (right)
+            HStack {
+                HStack(spacing: 6) {
+                    Text(kind.labelKey.localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+
+                    Button(action: onPickAsset) {
+                        HStack(spacing: 4) {
+                            if !asset.chainLogo.isEmpty {
+                                AsyncImageView(
+                                    logo: asset.chainLogo,
+                                    size: CGSize(width: 16, height: 16),
+                                    ticker: asset.chain.ticker,
+                                    tokenChainLogo: nil
+                                )
+                            }
+                            Text(asset.chain.name)
+                                .font(Theme.fonts.caption12)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Theme.colors.textTertiary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+
+                if kind == .sell {
+                    Text("\(coin.balanceString) \(coin.ticker)")
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .lineLimit(1)
+                }
+            }
+
+            // Bottom: coin pill (left) | amount + fiat (right)
+            HStack(alignment: .center) {
+                Button(action: onPickAsset) {
+                    HStack(spacing: 8) {
+                        if !asset.logo.isEmpty {
+                            AsyncImageView(
+                                logo: asset.logo,
+                                size: CGSize(width: 36, height: 36),
+                                ticker: asset.ticker,
+                                tokenChainLogo: asset.chainLogo
+                            )
+                        }
+                        Text(asset.ticker)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(Theme.colors.textTertiary)
+                    }
+                    .padding(.leading, 6)
+                    .padding(.trailing, 12)
+                    .padding(.vertical, 6)
+                    .background(Theme.colors.bgSurface2)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 6) {
+                    if amountIsEditable {
+                        TextField("0", text: $amountText)
+                            .font(Theme.fonts.title2)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(1)
+                            #if os(iOS)
+                            .keyboardType(.decimalPad)
+                            #endif
+                    } else {
+                        Text(amountText)
+                            .font(Theme.fonts.title2)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+
+                    Text(fiatLine)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
+                .fill(Color.clear)
+                .overlay(
+                    UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
+                        .stroke(Theme.colors.borderLight, lineWidth: 1)
+                )
+        )
+    }
+
+    private var fiatLine: String {
+        let amount = effectiveAmount
+        guard usdPricePerUnit > 0, amount > 0 else { return "$0.00" }
+        let usd = amount * usdPricePerUnit
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.groupingSeparator = ","
+        let value = formatter.string(from: NSDecimalNumber(decimal: usd)) ?? "0.00"
+        return "$\(value)"
+    }
+
+    private var effectiveAmount: Decimal {
+        if let computedAmount {
+            return computedAmount
+        }
+        let normalized = amountText.replacingOccurrences(of: ",", with: ".")
+        return Decimal(string: normalized) ?? 0
+    }
+}
+
+// MARK: - Execute When content (price + presets + expiry sub-block)
 
 private struct LimitExecuteWhenContent: View {
 
@@ -164,7 +367,7 @@ private struct LimitExecuteWhenContent: View {
     }
 }
 
-// MARK: - Price display (large price + $/asset toggle)
+// MARK: - Price display
 
 private struct LimitPriceDisplay: View {
 
@@ -243,9 +446,6 @@ private struct LimitPriceDisplay: View {
         let assetValue = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         switch vm.draft.displayUnit {
         case .usd:
-            // USD primary = targetPrice (target/source) × usd-per-target-unit.
-            // If usd rate is unavailable (0), fall back to the raw asset value
-            // formatted as USD so the toggle still shows something.
             if vm.targetUsdPricePerUnit > 0 {
                 let usd = vm.draft.targetPrice * vm.targetUsdPricePerUnit
                 return "$\(formatUsd(usd))"
@@ -262,8 +462,6 @@ private struct LimitPriceDisplay: View {
         case .usd:
             return assetLine
         case .asset:
-            // Asset primary → USD subtitle when rate is available, else
-            // the asset/asset rate so the user always sees something.
             if vm.targetUsdPricePerUnit > 0 {
                 let usd = vm.draft.targetPrice * vm.targetUsdPricePerUnit
                 return "$\(formatUsd(usd))"
@@ -282,7 +480,7 @@ private struct LimitPriceDisplay: View {
     }
 }
 
-// MARK: - Preset pills (Market / +1 / +5 / +10%)
+// MARK: - Preset pills
 
 private struct LimitPresetPills: View {
 
@@ -317,7 +515,7 @@ private struct LimitPresetPills: View {
     }
 }
 
-// MARK: - Expiry sub-block (inside the Execute When card, darker background)
+// MARK: - Expiry sub-block
 
 private struct LimitExpirySubBlock: View {
 

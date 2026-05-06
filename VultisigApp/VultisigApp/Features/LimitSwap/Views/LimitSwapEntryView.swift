@@ -30,6 +30,11 @@ struct LimitSwapEntryView: View {
     @State private var confirmationVM: LimitSwapConfirmationViewModel?
     @State private var isConfirmationSheetPresented: Bool = false
 
+    /// `SwapCoinPickerView` declares an `@EnvironmentObject` for this VM and
+    /// will crash at runtime if the picker sheet renders without it. The
+    /// Market path injects it explicitly on its picker sheet too.
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+
     init(initialFromCoin: Coin, initialToCoin: Coin, vault: Vault) {
         self.initialFromCoin = initialFromCoin
         self.initialToCoin = initialToCoin
@@ -43,8 +48,11 @@ struct LimitSwapEntryView: View {
             if let vm {
                 LimitSwapBodyView(
                     vm: vm,
+                    fromCoin: limitFromCoin,
+                    toCoin: limitToCoin,
                     onPickFromAsset: { showFromCoinPicker = true },
                     onPickToAsset: { showToCoinPicker = true },
+                    onSwapAssets: handleSwapAssets,
                     onPlaceOrder: handlePlaceOrder
                 )
             } else {
@@ -72,6 +80,7 @@ struct LimitSwapEntryView: View {
                 selectedCoin: $limitFromCoin,
                 selectedChain: limitFromCoin.chain
             )
+            .environmentObject(coinSelectionViewModel)
         }
         .crossPlatformSheet(isPresented: $showToCoinPicker) {
             SwapCoinPickerView(
@@ -80,6 +89,7 @@ struct LimitSwapEntryView: View {
                 selectedCoin: $limitToCoin,
                 selectedChain: limitToCoin.chain
             )
+            .environmentObject(coinSelectionViewModel)
         }
         .sheet(isPresented: $isConfirmationSheetPresented) {
             if let confirmationVM {
@@ -146,6 +156,14 @@ struct LimitSwapEntryView: View {
             sourceChainKind: chainKind
         )
         isConfirmationSheetPresented = true
+    }
+
+    private func handleSwapAssets() {
+        let oldFrom = limitFromCoin
+        limitFromCoin = limitToCoin
+        limitToCoin = oldFrom
+        // onChange handlers will sync the new coins into the VM via
+        // selectFromAsset/selectToAsset.
     }
 
     private func handleSignAttempt() async {
