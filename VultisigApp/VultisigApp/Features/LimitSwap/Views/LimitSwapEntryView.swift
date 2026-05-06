@@ -11,11 +11,27 @@ import SwiftUI
 /// from `SwapTransaction` for convenience but subsequent changes via the
 /// asset picker stay local — they do not mutate the Market path's
 /// SwapTransaction.
+/// Carries everything the parent (`SwapCryptoView`) needs to drive the
+/// existing keysign state machine for a placed limit order.
+struct LimitSwapSignContext {
+    let payload: KeysignPayload
+    let fromCoin: Coin
+    let toCoin: Coin
+    let sourceAmountText: String
+    let pendingRecord: LimitOrderRecord
+}
+
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
     let initialToCoin: Coin
     let vault: Vault
+
+    /// Invoked once the confirmation sheet's pre-flight passes and the
+    /// limit `KeysignPayload` is assembled. The parent populates
+    /// `swapViewModel` + `tx` and advances the existing keysign state
+    /// machine (currentIndex = 3, pair view).
+    let onLimitPayloadReady: (LimitSwapSignContext) -> Void
 
     @State private var vm: LimitSwapFormViewModel?
 
@@ -35,10 +51,16 @@ struct LimitSwapEntryView: View {
     /// Market path injects it explicitly on its picker sheet too.
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
 
-    init(initialFromCoin: Coin, initialToCoin: Coin, vault: Vault) {
+    init(
+        initialFromCoin: Coin,
+        initialToCoin: Coin,
+        vault: Vault,
+        onLimitPayloadReady: @escaping (LimitSwapSignContext) -> Void
+    ) {
         self.initialFromCoin = initialFromCoin
         self.initialToCoin = initialToCoin
         self.vault = vault
+        self.onLimitPayloadReady = onLimitPayloadReady
         self._limitFromCoin = State(initialValue: initialFromCoin)
         self._limitToCoin = State(initialValue: initialToCoin)
     }
@@ -133,8 +155,16 @@ struct LimitSwapEntryView: View {
             return
         }
 
-        // Phase 1 hardcodes non-referred affiliate (vi/50). Real referral
-        // wiring lands in §8.B.
+        // Real affiliate config: read the vault's referral code (if any)
+        // and compute the affiliate fragment via the same helper the market
+        // path uses. Vault-tier discount defaults to 0 for Phase 1; the
+        // tier-discount lookup ride-along arrives in a follow-up.
+        let referralCode = vault.referralCode?.code ?? ""
+        let (affiliate, affiliateBps) = ThorchainService.affiliateParams(
+            referredCode: referralCode,
+            discountBps: 0
+        )
+
         let inputs = LimitSwapInputs(
             sourceAsset: fromMemo,
             sourceAmount: vm.draft.sourceAmount,
@@ -143,8 +173,8 @@ struct LimitSwapEntryView: View {
             destAddress: destAddress,
             targetPrice: vm.draft.targetPrice,
             expiryHours: vm.draft.expiryHours,
-            affiliate: "vi",
-            affiliateBps: "50"
+            affiliate: affiliate ?? THORChainSwaps.affiliateFeeAddress,
+            affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
         )
 
         let memo = buildLimitSwapMemo(inputs)
@@ -167,11 +197,61 @@ struct LimitSwapEntryView: View {
     }
 
     private func handleSignAttempt() async {
-        guard let confirmationVM else { return }
+        guard let confirmationVM, let vm else { return }
+
+        let fromCoin = limitFromCoin
+        let toCoin = limitToCoin
+        let vaultRef = vault
+        let memo = confirmationVM.memo
+        let sourceAmount = vm.draft.sourceAmount
+        let draft = vm.draft
 
         await confirmationVM.attemptSign {
-            // TODO(§8.B): assemble KeysignPayload, run TSS sign + broadcast,
-            // on success persist via LimitOrderStorageService.
+            // Assemble the KeysignPayload for the source chain (fetches
+            // THORChain inbound + chain-specific + builds via the existing
+            // KeysignPayloadFactory). On any failure, surface to the
+            // confirmation VM's error state via throw — attemptSign swallows
+            // non-byte-cap errors silently for now (richer error UI can land
+            // in a follow-up).
+            let payload = try await buildLimitSwapKeysignPayload(
+                sourceCoin: fromCoin,
+                targetCoin: toCoin,
+                sourceAmount: sourceAmount,
+                memo: memo,
+                vault: vaultRef
+            )
+
+            let record = LimitOrderRecord(
+                inboundTxHash: "",  // Filled in by the parent after broadcast.
+                sourceAsset: draft.fromAsset.memoSymbol ?? "",
+                sourceAmount: sourceAmount.description,
+                sourceDecimals: draft.fromAsset.decimals,
+                targetAsset: draft.toAsset.memoSymbol ?? "",
+                destAddress: draft.toAsset.ticker,
+                targetPrice: draft.targetPrice,
+                expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
+                createdAt: Date(),
+                status: .pending
+            )
+
+            let context = LimitSwapSignContext(
+                payload: payload,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                sourceAmountText: formatNaturalAmount(sourceAmount, decimals: draft.fromAsset.decimals),
+                pendingRecord: record
+            )
+
+            await MainActor.run {
+                isConfirmationSheetPresented = false
+                onLimitPayloadReady(context)
+            }
         }
+    }
+
+    private func formatNaturalAmount(_ raw: BigInt, decimals: Int) -> String {
+        let rawDecimal = Decimal(string: raw.description) ?? 0
+        let natural = rawDecimal / pow(10, decimals)
+        return NSDecimalNumber(decimal: natural).stringValue
     }
 }

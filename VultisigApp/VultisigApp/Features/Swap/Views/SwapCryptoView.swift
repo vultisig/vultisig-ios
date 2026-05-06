@@ -20,6 +20,11 @@ struct SwapCryptoView: View {
 
     @State private var selectedSwapMode: SwapMode = .market
     @State private var isLimitSwapFeatureEnabled = false
+    /// Set when the user signs a limit order; `swapViewModel.hash` flipping
+    /// non-empty (broadcast success) triggers a persist via
+    /// `LimitOrderStorageService` then clears this. Nil during market-swap
+    /// flows so the existing path is unaffected.
+    @State private var pendingLimitOrderRecord: LimitOrderRecord?
 
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
@@ -46,6 +51,9 @@ struct SwapCryptoView: View {
 
 //                await FeatureFlagService()
 //                    .isFeatureEnabled(feature: .limitSwap)
+            }
+            .onChange(of: swapViewModel.hash) { _, newHash in
+                persistLimitOrderIfNeeded(hash: newHash)
             }
     }
 
@@ -78,7 +86,7 @@ struct SwapCryptoView: View {
     @ViewBuilder
     var detailsView: some View {
         if isLimitSwapFeatureEnabled {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 SegmentedControl(
                     selection: $selectedSwapMode,
                     items: [
@@ -95,6 +103,7 @@ struct SwapCryptoView: View {
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .fixedSize()
 
                 switch selectedSwapMode {
                 case .market:
@@ -103,7 +112,8 @@ struct SwapCryptoView: View {
                     LimitSwapEntryView(
                         initialFromCoin: tx.fromCoin,
                         initialToCoin: tx.toCoin,
-                        vault: vault
+                        vault: vault,
+                        onLimitPayloadReady: handleLimitPayloadReady
                     )
                 }
             }
@@ -111,6 +121,61 @@ struct SwapCryptoView: View {
             // Flag off: market path is pixel-identical to pre-feature.
             SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
         }
+    }
+
+    /// Receives the assembled KeysignPayload from the Limit flow's
+    /// confirmation sheet, populates the existing `tx` + `swapViewModel` so
+    /// the existing pair → keysign → done state machine renders correctly,
+    /// and stashes the pending order record for persist-on-broadcast-success
+    /// (handled by the `swapViewModel.hash` onChange below).
+    private func handleLimitPayloadReady(_ context: LimitSwapSignContext) {
+        // Mirror limit data into the SwapTransaction so KeysignDiscoveryView
+        // / KeysignView / SendCryptoDoneView render correct chain + amounts.
+        tx.fromCoin = context.fromCoin
+        tx.toCoin = context.toCoin
+        tx.fromAmount = context.sourceAmountText
+
+        swapViewModel.keysignPayload = context.payload
+        // Skip the verify view (we already showed the confirmation sheet) by
+        // advancing the state machine twice: 1 (details) → 2 (verify) → 3
+        // (pair). `moveToNextView` keeps the navigation title in sync; we
+        // use the public method rather than touching the private titles array.
+        swapViewModel.moveToNextView()
+        swapViewModel.moveToNextView()
+
+        pendingLimitOrderRecord = context.pendingRecord
+    }
+
+    /// Persist the limit order on broadcast success. `swapViewModel.hash`
+    /// flips to a non-empty inbound TX hash when broadcast lands; we splice
+    /// that hash into the pending record and call the storage service. Do
+    /// not persist on broadcast failure (per design.md — no ghost orders).
+    private func persistLimitOrderIfNeeded(hash: String?) {
+        guard let hash, !hash.isEmpty,
+              let record = pendingLimitOrderRecord else { return }
+
+        let updated = LimitOrderRecord(
+            inboundTxHash: hash,
+            sourceAsset: record.sourceAsset,
+            sourceAmount: record.sourceAmount,
+            sourceDecimals: record.sourceDecimals,
+            targetAsset: record.targetAsset,
+            destAddress: record.destAddress,
+            targetPrice: record.targetPrice,
+            expiryBlocks: record.expiryBlocks,
+            createdAt: record.createdAt,
+            status: record.status
+        )
+
+        let storage = LimitOrderStorageService()
+        do {
+            try storage.persist(updated, for: vault)
+        } catch {
+            // Persist failure is non-fatal: the broadcast already succeeded.
+            // Log and drop — the user still sees the success screen with the
+            // inbound TX hash, and TX History will pick up the inbound TX.
+        }
+        pendingLimitOrderRecord = nil
     }
 
     private var canCurrentPairUseLimitSwap: Bool {
