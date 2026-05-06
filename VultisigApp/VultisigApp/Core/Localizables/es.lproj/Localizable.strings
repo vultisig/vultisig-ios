@@ -479,6 +479,7 @@
 "limitSwap.expiry.12h" = "12h";
 "limitSwap.expiry.24h" = "24h";
 "limitSwap.expiry.3d" = "3d";
+"limitSwap.market" = "Mercado";
 "limitSwap.placeOrder" = "Place Limit Order";
 "limitSwap.preset.market" = "Market";
 "limitSwap.preset.plus1" = "+1%";

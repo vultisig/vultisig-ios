@@ -33,10 +33,15 @@ struct LimitSwapEntryView: View {
     /// machine (currentIndex = 3, pair view).
     let onLimitPayloadReady: (LimitSwapSignContext) -> Void
 
-    @State private var vm: LimitSwapFormViewModel?
+    /// Constructed eagerly in `init` from `initialFromCoin` / `initialToCoin`
+    /// so the VM is non-optional throughout the view's lifetime.
+    @State private var vm: LimitSwapFormViewModel
 
-    // Independent coin state. The picker mutates these directly; an onChange
-    // syncs the result into the VM's draft via LimitSwapAsset(coin:).
+    // Independent coin state. Picker bindings (see `pickerBinding(for:)`)
+    // intercept selections to swap sides when the user picks the *other*
+    // currently-selected coin (i.e. picking ETH on the from-side when the
+    // to-side is already ETH inverts the pair instead of producing a
+    // self-pair). An onChange syncs each side into the VM's draft.
     @State private var limitFromCoin: Coin
     @State private var limitToCoin: Coin
 
@@ -63,43 +68,61 @@ struct LimitSwapEntryView: View {
         self.onLimitPayloadReady = onLimitPayloadReady
         self._limitFromCoin = State(initialValue: initialFromCoin)
         self._limitToCoin = State(initialValue: initialToCoin)
+
+        let draft = LimitSwapDraft(
+            fromAsset: LimitSwapAsset(coin: initialFromCoin),
+            toAsset: LimitSwapAsset(coin: initialToCoin)
+        )
+        let interactor = DefaultLimitSwapInteractor(
+            quoteService: ThorchainService.shared,
+            storage: LimitOrderStorageService()
+        )
+        let model = LimitSwapFormViewModel(
+            initialDraft: draft,
+            vault: vault,
+            interactor: interactor
+        )
+        model.targetUsdPricePerUnit = Decimal(initialToCoin.price)
+        self._vm = State(initialValue: model)
     }
 
     var body: some View {
-        Group {
-            if let vm {
-                LimitSwapBodyView(
-                    vm: vm,
-                    fromCoin: limitFromCoin,
-                    toCoin: limitToCoin,
-                    onPickFromAsset: { showFromCoinPicker = true },
-                    onPickToAsset: { showToCoinPicker = true },
-                    onSwapAssets: handleSwapAssets,
-                    onPlaceOrder: handlePlaceOrder
-                )
-            } else {
-                Color.clear
-            }
-        }
-        .onAppear {
-            if vm == nil {
-                let newVM = makeViewModel()
-                newVM.targetUsdPricePerUnit = Decimal(limitToCoin.price)
-                vm = newVM
-            }
+        LimitSwapBodyView(
+            vm: vm,
+            fromCoin: limitFromCoin,
+            toCoin: limitToCoin,
+            onPickFromAsset: { showFromCoinPicker = true },
+            onPickToAsset: { showToCoinPicker = true },
+            onSwapAssets: handleSwapAssets,
+            onPlaceOrder: handlePlaceOrder
+        )
+        .task {
+            // Initial market-price seed when the view appears. `.task` is
+            // the right modifier for async work tied to view lifetime —
+            // SwiftUI cancels the work if the view leaves the hierarchy.
+            await vm.refreshMarketPrice()
+            vm.selectPresetPct(0)
         }
         .onChange(of: limitFromCoin) { _, newCoin in
-            vm?.selectFromAsset(LimitSwapAsset(coin: newCoin))
+            vm.selectFromAsset(LimitSwapAsset(coin: newCoin))
+            Task { @MainActor in
+                await vm.refreshMarketPrice()
+                vm.selectPresetPct(0)
+            }
         }
         .onChange(of: limitToCoin) { _, newCoin in
-            vm?.selectToAsset(LimitSwapAsset(coin: newCoin))
-            vm?.targetUsdPricePerUnit = Decimal(newCoin.price)
+            vm.selectToAsset(LimitSwapAsset(coin: newCoin))
+            vm.targetUsdPricePerUnit = Decimal(newCoin.price)
+            Task { @MainActor in
+                await vm.refreshMarketPrice()
+                vm.selectPresetPct(0)
+            }
         }
         .crossPlatformSheet(isPresented: $showFromCoinPicker) {
             SwapCoinPickerView(
                 vault: vault,
                 showSheet: $showFromCoinPicker,
-                selectedCoin: $limitFromCoin,
+                selectedCoin: pickerBinding(for: .from),
                 selectedChain: limitFromCoin.chain
             )
             .environmentObject(coinSelectionViewModel)
@@ -108,7 +131,7 @@ struct LimitSwapEntryView: View {
             SwapCoinPickerView(
                 vault: vault,
                 showSheet: $showToCoinPicker,
-                selectedCoin: $limitToCoin,
+                selectedCoin: pickerBinding(for: .to),
                 selectedChain: limitToCoin.chain
             )
             .environmentObject(coinSelectionViewModel)
@@ -124,29 +147,50 @@ struct LimitSwapEntryView: View {
         }
     }
 
-    // MARK: - VM construction
+    // MARK: - Picker bindings (swap-on-collision)
 
-    private func makeViewModel() -> LimitSwapFormViewModel {
-        let draft = LimitSwapDraft(
-            fromAsset: LimitSwapAsset(coin: limitFromCoin),
-            toAsset: LimitSwapAsset(coin: limitToCoin)
-        )
-        let interactor = DefaultLimitSwapInteractor(
-            quoteService: ThorchainService.shared,
-            storage: LimitOrderStorageService()
-        )
-        return LimitSwapFormViewModel(
-            initialDraft: draft,
-            vault: vault,
-            interactor: interactor
-        )
+    private enum PickerSide { case from, to }
+
+    /// When the user picks a coin on one side that equals the *other* side's
+    /// current coin, swap their positions instead of producing a self-pair.
+    /// Compares by chain + ticker + contract since `Coin` is a SwiftData
+    /// `@Model` (reference identity wouldn't match across picker/vault
+    /// instances of the same logical asset).
+    private func pickerBinding(for side: PickerSide) -> Binding<Coin> {
+        switch side {
+        case .from:
+            return Binding(
+                get: { limitFromCoin },
+                set: { newCoin in
+                    if sameCoin(newCoin, limitToCoin) {
+                        limitToCoin = limitFromCoin
+                    }
+                    limitFromCoin = newCoin
+                }
+            )
+        case .to:
+            return Binding(
+                get: { limitToCoin },
+                set: { newCoin in
+                    if sameCoin(newCoin, limitFromCoin) {
+                        limitFromCoin = limitToCoin
+                    }
+                    limitToCoin = newCoin
+                }
+            )
+        }
+    }
+
+    private func sameCoin(_ a: Coin, _ b: Coin) -> Bool {
+        a.chain == b.chain
+            && a.ticker == b.ticker
+            && a.contractAddress == b.contractAddress
     }
 
     // MARK: - Place flow
 
     private func handlePlaceOrder() {
-        guard let vm,
-              let fromMemo = vm.draft.fromAsset.memoSymbol,
+        guard let fromMemo = vm.draft.fromAsset.memoSymbol,
               let toMemo = vm.draft.toAsset.memoSymbol,
               let destAddress = vm.destinationAddress(),
               vm.draft.sourceAmount > 0,
@@ -197,7 +241,7 @@ struct LimitSwapEntryView: View {
     }
 
     private func handleSignAttempt() async {
-        guard let confirmationVM, let vm else { return }
+        guard let confirmationVM else { return }
 
         let fromCoin = limitFromCoin
         let toCoin = limitToCoin
