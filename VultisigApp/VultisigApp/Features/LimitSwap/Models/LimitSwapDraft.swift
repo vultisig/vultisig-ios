@@ -48,6 +48,30 @@ struct LimitSwapAsset: Equatable {
     let decimals: Int
     let contractAddress: String
     let isNativeToken: Bool
+    /// Coin logo identifier — pass to `AsyncImageView`'s `logo:` parameter.
+    /// Empty string for tests / placeholder assets where the picker hasn't run.
+    let logo: String
+    /// Chain logo identifier — pass to `AsyncImageView`'s `tokenChainLogo:`
+    /// parameter. Empty string when not available.
+    let chainLogo: String
+
+    init(
+        chain: Chain,
+        ticker: String,
+        decimals: Int,
+        contractAddress: String,
+        isNativeToken: Bool,
+        logo: String = "",
+        chainLogo: String = ""
+    ) {
+        self.chain = chain
+        self.ticker = ticker
+        self.decimals = decimals
+        self.contractAddress = contractAddress
+        self.isNativeToken = isNativeToken
+        self.logo = logo
+        self.chainLogo = chainLogo
+    }
 
     /// THORChain memo asset string form, e.g. `BTC.BTC` or `ETH.USDC-EC7`.
     /// `nil` if the chain isn't currently routable through THORChain.
@@ -68,7 +92,9 @@ extension LimitSwapAsset {
             ticker: coin.ticker,
             decimals: coin.decimals,
             contractAddress: coin.contractAddress,
-            isNativeToken: coin.isNativeToken
+            isNativeToken: coin.isNativeToken,
+            logo: coin.logo,
+            chainLogo: coin.chain.logo
         )
     }
 }

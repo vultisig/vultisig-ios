@@ -25,6 +25,12 @@ final class LimitSwapFormViewModel {
     /// Current market price reference, used for % from market and preset pills.
     var marketPriceRef: Decimal?
 
+    /// USD price per natural unit of the **target** asset. Synced from the
+    /// owning view via `RateProvider`'s cached rate (`Coin.price`). Used by
+    /// the price-display subtitle / $-mode primary; `0` means USD-unavailable
+    /// and the display falls back to asset-only formatting.
+    var targetUsdPricePerUnit: Decimal = 0
+
     var isLoadingMarketPrice = false
     var marketPriceError: Error?
 

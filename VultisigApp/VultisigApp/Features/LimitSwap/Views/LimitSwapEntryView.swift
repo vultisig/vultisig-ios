@@ -53,7 +53,9 @@ struct LimitSwapEntryView: View {
         }
         .onAppear {
             if vm == nil {
-                vm = makeViewModel()
+                let newVM = makeViewModel()
+                newVM.targetUsdPricePerUnit = Decimal(limitToCoin.price)
+                vm = newVM
             }
         }
         .onChange(of: limitFromCoin) { _, newCoin in
@@ -61,6 +63,7 @@ struct LimitSwapEntryView: View {
         }
         .onChange(of: limitToCoin) { _, newCoin in
             vm?.selectToAsset(LimitSwapAsset(coin: newCoin))
+            vm?.targetUsdPricePerUnit = Decimal(newCoin.price)
         }
         .crossPlatformSheet(isPresented: $showFromCoinPicker) {
             SwapCoinPickerView(

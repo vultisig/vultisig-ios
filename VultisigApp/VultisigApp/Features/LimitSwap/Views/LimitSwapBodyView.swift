@@ -96,8 +96,8 @@ private struct LimitAssetSummaryRow: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            chip(label: "limitSwap.sell".localized, ticker: fromAsset.ticker, action: onPickFromAsset)
-            chip(label: "limitSwap.buy".localized, ticker: toAsset.ticker, action: onPickToAsset)
+            chip(label: "limitSwap.sell".localized, asset: fromAsset, ticker: fromAsset.ticker, action: onPickFromAsset)
+            chip(label: "limitSwap.buy".localized, asset: toAsset, ticker: toAsset.ticker, action: onPickToAsset)
 
             Image(systemName: "checkmark")
                 .font(.system(size: 11, weight: .semibold))
@@ -120,11 +120,25 @@ private struct LimitAssetSummaryRow: View {
     }
 
     private func chip(label: String, ticker: String, action: @escaping () -> Void) -> some View {
+        chip(label: label, asset: nil, ticker: ticker, action: action)
+    }
+}
+
+private extension LimitAssetSummaryRow {
+    func chip(label: String, asset: LimitSwapAsset?, ticker: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Text(label)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
+                if let asset, !asset.logo.isEmpty {
+                    AsyncImageView(
+                        logo: asset.logo,
+                        size: CGSize(width: 16, height: 16),
+                        ticker: asset.ticker,
+                        tokenChainLogo: asset.chainLogo
+                    )
+                }
                 Text(ticker)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
@@ -160,6 +174,14 @@ private struct LimitPriceDisplay: View {
         ZStack {
             VStack(spacing: 5) {
                 HStack(spacing: 8) {
+                    if !vm.draft.fromAsset.logo.isEmpty {
+                        AsyncImageView(
+                            logo: vm.draft.fromAsset.logo,
+                            size: CGSize(width: 24, height: 24),
+                            ticker: vm.draft.fromAsset.ticker,
+                            tokenChainLogo: vm.draft.fromAsset.chainLogo
+                        )
+                    }
                     Text("1 \(vm.draft.fromAsset.ticker)")
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
@@ -218,21 +240,45 @@ private struct LimitPriceDisplay: View {
     }
 
     private var formattedPrimaryPrice: String {
-        // TODO(§8): hook into a USD-per-target-asset price feed for proper
-        // $/asset toggle. v1 shows the underlying targetPrice in target-asset
-        // units regardless of toggle. (design-flags.md item #3.)
-        let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
+        let assetValue = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         switch vm.draft.displayUnit {
         case .usd:
-            return "$\(value)"
+            // USD primary = targetPrice (target/source) × usd-per-target-unit.
+            // If usd rate is unavailable (0), fall back to the raw asset value
+            // formatted as USD so the toggle still shows something.
+            if vm.targetUsdPricePerUnit > 0 {
+                let usd = vm.draft.targetPrice * vm.targetUsdPricePerUnit
+                return "$\(formatUsd(usd))"
+            }
+            return "$\(assetValue)"
         case .asset:
-            return "\(value) \(vm.draft.toAsset.ticker)"
+            return "\(assetValue) \(vm.draft.toAsset.ticker)"
         }
     }
 
     private var formattedSubtitle: String {
-        let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
-        return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
+        let assetLine = "\(NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
+        switch vm.draft.displayUnit {
+        case .usd:
+            return assetLine
+        case .asset:
+            // Asset primary → USD subtitle when rate is available, else
+            // the asset/asset rate so the user always sees something.
+            if vm.targetUsdPricePerUnit > 0 {
+                let usd = vm.draft.targetPrice * vm.targetUsdPricePerUnit
+                return "$\(formatUsd(usd))"
+            }
+            return assetLine
+        }
+    }
+
+    private func formatUsd(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? NSDecimalNumber(decimal: value).stringValue
     }
 }
 
