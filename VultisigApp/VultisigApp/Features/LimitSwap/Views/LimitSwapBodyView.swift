@@ -23,8 +23,8 @@ struct LimitSwapBodyView: View {
     let toCoin: Coin
 
     /// Default to the asset section expanded — matches the Figma's first
-    /// screen state (74341:118010). Tapping "Execute when" collapses the
-    /// asset section into its compact summary (Figma 74341:118148).
+    /// screen state (74341:118010). Tapping the section header collapses
+    /// it into its compact summary (Figma 74341:118148).
     @State private var focusedSection: FocusedSection? = .asset
     @State private var sourceAmountText: String = ""
 
@@ -64,10 +64,10 @@ struct LimitSwapBodyView: View {
                     }
 
                     FormExpandableSection(
-                        title: "limitSwap.executeWhen".localized,
+                        title: executeWhenTitle,
                         isValid: vm.draft.targetPrice > 0,
                         value: targetPriceSummary,
-                        showValue: focusedSection != .executeWhen && vm.draft.targetPrice > 0,
+                        showValue: vm.draft.targetPrice > 0,
                         focusedField: $focusedSection,
                         focusedFieldEquals: .executeWhen,
                         onExpand: { isExpanded in
@@ -106,6 +106,18 @@ struct LimitSwapBodyView: View {
         guard vm.draft.targetPrice > 0 else { return "" }
         let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
+    }
+
+    /// Dynamic prompt for the Execute When section header — `"When 1 <ticker>
+    /// is worth"`. The Figma shows an inline coin icon between "1" and the
+    /// ticker; that requires a custom title-view init on `FormExpandableSection`
+    /// (which today only accepts `String`). Text-only fallback for now —
+    /// add the inline icon as a follow-up if the shared component grows a
+    /// `titleView` overload.
+    private var executeWhenTitle: String {
+        let prefix = "limitSwap.executeWhen.headerWhenOne".localized
+        let suffix = "limitSwap.executeWhen.headerIsWorth".localized
+        return "\(prefix) \(vm.draft.fromAsset.ticker) \(suffix)"
     }
 
     /// Asset section is "valid" (and therefore shows the collapsed summary +
@@ -428,25 +440,6 @@ private struct LimitPriceDisplay: View {
     var body: some View {
         ZStack {
             VStack(spacing: 5) {
-                HStack(spacing: 8) {
-                    if !vm.draft.fromAsset.logo.isEmpty {
-                        AsyncImageView(
-                            logo: vm.draft.fromAsset.logo,
-                            size: CGSize(width: 24, height: 24),
-                            ticker: vm.draft.fromAsset.ticker,
-                            tokenChainLogo: vm.draft.fromAsset.chainLogo
-                        )
-                    }
-                    Text("1 \(vm.draft.fromAsset.ticker)")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                }
-                .padding(.leading, 6)
-                .padding(.trailing, 12)
-                .padding(.vertical, 6)
-                .background(Theme.colors.bgSurface2)
-                .clipShape(Capsule())
-
                 Text(formattedPrimaryPrice)
                     .font(Theme.fonts.priceLargeTitle)
                     .foregroundStyle(Theme.colors.textPrimary)

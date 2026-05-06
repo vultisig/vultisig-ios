@@ -479,6 +479,8 @@
 "limitSwap.confirmation.targetPrice" = "Target price";
 "limitSwap.confirmation.title" = "Place Limit Order";
 "limitSwap.executeWhen" = "Execute when";
+"limitSwap.executeWhen.headerIsWorth" = "is worth";
+"limitSwap.executeWhen.headerWhenOne" = "When 1";
 "limitSwap.expiry" = "Expiry";
 "limitSwap.expiry.12h" = "12h";
 "limitSwap.expiry.24h" = "24h";
