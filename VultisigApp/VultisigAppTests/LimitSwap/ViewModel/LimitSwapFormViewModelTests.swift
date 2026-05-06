@@ -202,15 +202,19 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.isLoadingMarketPrice)
     }
 
-    func testRefreshMarketPriceClearsReferenceWhenSourceAmountIsZero() async {
+    func testRefreshMarketPriceFallsBackToOneUnitWhenSourceAmountIsZero() async {
+        // Phase-1 behaviour: the view kicks `refreshMarketPrice()` on appear
+        // before the user has typed anything, so the VM substitutes a 1-unit
+        // (`10^sourceDecimals`) quote rather than early-returning. This
+        // populates `marketPriceRef` for the preset pills + price-field
+        // auto-seed.
         let vm = makeViewModel(sourceAmount: 0)
-        vm.marketPriceRef = 16
         quoteService.marketPriceResult = .success(99)
 
         await vm.refreshMarketPrice()
 
-        XCTAssertNil(vm.marketPriceRef)
-        XCTAssertEqual(quoteService.marketPriceCallCount, 0, "No fetch should occur when source amount is zero")
+        XCTAssertEqual(vm.marketPriceRef, 99)
+        XCTAssertEqual(quoteService.marketPriceCallCount, 1)
     }
 
     func testRefreshMarketPriceFailsWhenTargetChainHasNoVaultCoin() async {

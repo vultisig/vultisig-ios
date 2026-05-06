@@ -41,7 +41,11 @@ func thorchainMemoAsset(for coin: Coin) -> String? {
     )
 }
 
-private func thorchainChainPrefix(for chain: Chain) -> String? {
+/// Returns the THORChain memo prefix for a given chain (e.g. `BTC`, `ETH`,
+/// `THOR`) — i.e. the chain identifier THORChain uses in inbound vault
+/// listings and asset shorthand. Returns `nil` for chains the limit-swap
+/// memo builder doesn't currently know how to encode.
+func thorchainChainPrefix(for chain: Chain) -> String? {
     switch chain {
     case .thorChain, .thorChainChainnet, .thorChainStagenet:
         return "THOR"
@@ -64,4 +68,21 @@ private func thorchainChainPrefix(for chain: Chain) -> String? {
     default:
         return nil
     }
+}
+
+/// Whether a given chain is THORChain-routable per our static prefix table.
+/// Used by the limit-swap picker to filter out chains the memo builder
+/// can't encode (so the user can't pick e.g. SOL and hit a silent failure
+/// when the memo build returns `nil`).
+func isThorchainRoutable(chain: Chain) -> Bool {
+    thorchainChainPrefix(for: chain) != nil
+}
+
+/// Reverse-lookup: given a THORChain chain string (`"BTC"`, `"ETH"`, …),
+/// return our `Chain` enum case. Falls back to `nil` if the symbol isn't
+/// in the prefix table — typically a chain THORChain has added that we
+/// haven't coded a prefix for yet.
+func chainFromThorchainSymbol(_ symbol: String) -> Chain? {
+    let upper = symbol.uppercased()
+    return Chain.allCases.first { thorchainChainPrefix(for: $0) == upper }
 }

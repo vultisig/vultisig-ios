@@ -34,6 +34,14 @@ final class LimitSwapFormViewModel {
     /// flip into the rounded-pct + reset affordance after a manual edit.
     var lastPresetPct: Int?
 
+    /// Set of chains currently routable through THORChain (intersection of
+    /// our static prefix table and THORChain's live `inbound_addresses`,
+    /// minus halted/paused chains, plus `.thorChain` since RUNE deposits
+    /// don't go through an inbound vault). `nil` while loading; the picker
+    /// shows everything (no filter) until populated. Refreshed via
+    /// `refreshSupportedChains()`.
+    var supportedChains: Set<Chain>?
+
     /// USD price per natural unit of the **target** asset. Synced from the
     /// owning view via `RateProvider`'s cached rate (`Coin.price`). Used by
     /// the price-display subtitle / $-mode primary; `0` means USD-unavailable
@@ -110,6 +118,28 @@ final class LimitSwapFormViewModel {
     /// substitutes a 1-unit quote (`10^sourceDecimals`). This lets the view
     /// seed a market reference *before* the user types an amount so the
     /// Market pill and target-price auto-seed work on first paint.
+    /// Fetch the live THORChain inbound list and compute the routable set.
+    /// On fetch failure or empty result, falls back to the static set
+    /// derived from our prefix table — so the picker always has *some*
+    /// non-empty filter rather than silently allowing every chain.
+    func refreshSupportedChains() async {
+        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
+        var chains: Set<Chain> = [.thorChain]
+        for entry in inbounds {
+            guard !entry.halted, !entry.global_trading_paused, !entry.chain_trading_paused else { continue }
+            if let chain = chainFromThorchainSymbol(entry.chain) {
+                chains.insert(chain)
+            }
+        }
+        if chains.count <= 1 {
+            // Inbound fetch didn't return useful data — fall back to the
+            // static routable set so the picker isn't artificially empty.
+            chains = Set(Chain.allCases.filter { isThorchainRoutable(chain: $0) })
+        }
+        supportedChains = chains
+        logger.info("refreshSupportedChains: \(chains.count, privacy: .public) routable chains")
+    }
+
     func refreshMarketPrice() async {
         guard let fromMemo = draft.fromAsset.memoSymbol,
               let toMemo = draft.toAsset.memoSymbol else {

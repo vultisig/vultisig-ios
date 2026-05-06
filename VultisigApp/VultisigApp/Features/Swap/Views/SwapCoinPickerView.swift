@@ -13,6 +13,13 @@ struct SwapCoinPickerView: View {
     @Binding var selectedCoin: Coin
     @State var selectedChain: Chain?
 
+    /// Optional predicate restricting the chain carousel (and therefore the
+    /// coin list) to a subset. `nil` (default) leaves the picker
+    /// unfiltered — the market-swap path passes nothing. The limit-swap
+    /// path passes a closure backed by THORChain's live routable set, so
+    /// the user can't pick a chain the limit-memo builder doesn't know.
+    let chainFilter: ((Chain) -> Bool)?
+
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var searchBarFocused: Bool = false
@@ -29,12 +36,14 @@ struct SwapCoinPickerView: View {
         vault: Vault,
         showSheet: Binding<Bool>,
         selectedCoin: Binding<Coin>,
-        selectedChain: Chain?
+        selectedChain: Chain?,
+        chainFilter: ((Chain) -> Bool)? = nil
     ) {
         self.vault = vault
         self._showSheet = showSheet
         self._selectedCoin = selectedCoin
         self.selectedChain = selectedChain
+        self.chainFilter = chainFilter
         self._viewModel = StateObject(wrappedValue: .init(vault: vault, selectedCoin: selectedCoin.wrappedValue))
     }
 
@@ -90,6 +99,14 @@ struct SwapCoinPickerView: View {
         }
         .onLoad {
             viewModel.setup()
+            // If a chain filter is in effect and the seed `selectedChain`
+            // isn't in the filtered set, default to the first allowed chain
+            // so the carousel never lands on an unselectable highlight.
+            if let chainFilter,
+               let current = selectedChain,
+               !chainFilter(current) {
+                selectedChain = availableChains.first
+            }
             reloadCoins()
         }
         .onChange(of: selectedChain) { _, _ in
@@ -219,9 +236,11 @@ struct SwapCoinPickerView: View {
     }
 
     private var availableChains: [Chain] {
-        return coinSelectionViewModel.chains
+        let base = coinSelectionViewModel.chains
             .filter(\.isSwapAvailable)
             .filter { vault.chains.contains($0) }
+        guard let chainFilter else { return base }
+        return base.filter(chainFilter)
     }
 
     private func reloadCoins() {

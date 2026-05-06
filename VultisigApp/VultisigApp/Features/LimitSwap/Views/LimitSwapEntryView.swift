@@ -97,10 +97,14 @@ struct LimitSwapEntryView: View {
             onPlaceOrder: handlePlaceOrder
         )
         .task {
-            // Initial market-price seed when the view appears. `.task` is
-            // the right modifier for async work tied to view lifetime —
-            // SwiftUI cancels the work if the view leaves the hierarchy.
-            await vm.refreshMarketPrice()
+            // Initial setup: kick the supported-chains fetch in parallel
+            // (filters the picker so the user can't pick a chain THORChain
+            // doesn't route), then seed the market price. `.task` is the
+            // right modifier for async work tied to view lifetime — SwiftUI
+            // cancels the work if the view leaves the hierarchy.
+            async let supportedChains: () = vm.refreshSupportedChains()
+            async let marketPrice: () = vm.refreshMarketPrice()
+            _ = await (supportedChains, marketPrice)
             vm.selectPresetPct(0)
         }
         .onChange(of: limitFromCoin) { _, newCoin in
@@ -123,7 +127,8 @@ struct LimitSwapEntryView: View {
                 vault: vault,
                 showSheet: $showFromCoinPicker,
                 selectedCoin: pickerBinding(for: .from),
-                selectedChain: limitFromCoin.chain
+                selectedChain: limitFromCoin.chain,
+                chainFilter: chainIsThorchainRoutable
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -132,7 +137,8 @@ struct LimitSwapEntryView: View {
                 vault: vault,
                 showSheet: $showToCoinPicker,
                 selectedCoin: pickerBinding(for: .to),
-                selectedChain: limitToCoin.chain
+                selectedChain: limitToCoin.chain,
+                chainFilter: chainIsThorchainRoutable
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -185,6 +191,17 @@ struct LimitSwapEntryView: View {
         a.chain == b.chain
             && a.ticker == b.ticker
             && a.contractAddress == b.contractAddress
+    }
+
+    /// Picker chain filter — uses the live set from `vm.supportedChains`
+    /// when populated, otherwise falls back to the static prefix-table
+    /// check so the picker never opens with a stale unfiltered list during
+    /// the brief window before the inbound fetch resolves.
+    private func chainIsThorchainRoutable(_ chain: Chain) -> Bool {
+        if let supported = vm.supportedChains {
+            return supported.contains(chain)
+        }
+        return isThorchainRoutable(chain: chain)
     }
 
     // MARK: - Place flow
