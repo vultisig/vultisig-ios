@@ -14,6 +14,7 @@ import SwiftUI
 struct LimitSwapBodyView: View {
 
     private enum FocusedSection: Hashable {
+        case asset
         case executeWhen
     }
 
@@ -21,7 +22,10 @@ struct LimitSwapBodyView: View {
     let fromCoin: Coin
     let toCoin: Coin
 
-    @State private var focusedSection: FocusedSection? = nil
+    /// Default to the asset section expanded — matches the Figma's first
+    /// screen state (74341:118010). Tapping "Execute when" collapses the
+    /// asset section into its compact summary (Figma 74341:118148).
+    @State private var focusedSection: FocusedSection? = .asset
     @State private var sourceAmountText: String = ""
 
     let onPickFromAsset: () -> Void
@@ -33,15 +37,31 @@ struct LimitSwapBodyView: View {
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
-                    LimitAssetSwapForm(
-                        vm: vm,
-                        fromCoin: fromCoin,
-                        toCoin: toCoin,
-                        sourceAmountText: $sourceAmountText,
-                        onPickFromAsset: onPickFromAsset,
-                        onPickToAsset: onPickToAsset,
-                        onSwapAssets: onSwapAssets
-                    )
+                    FormExpandableSection(
+                        title: "limitSwap.asset".localized,
+                        isValid: bothAssetsPicked,
+                        showValue: focusedSection != .asset,
+                        focusedField: $focusedSection,
+                        focusedFieldEquals: .asset,
+                        onExpand: { isExpanded in
+                            focusedSection = isExpanded ? .asset : nil
+                        }
+                    ) {
+                        LimitAssetSwapForm(
+                            vm: vm,
+                            fromCoin: fromCoin,
+                            toCoin: toCoin,
+                            sourceAmountText: $sourceAmountText,
+                            onPickFromAsset: onPickFromAsset,
+                            onPickToAsset: onPickToAsset,
+                            onSwapAssets: onSwapAssets
+                        )
+                    } valueView: {
+                        LimitAssetCompactValue(
+                            fromAsset: vm.draft.fromAsset,
+                            toAsset: vm.draft.toAsset
+                        )
+                    }
 
                     FormExpandableSection(
                         title: "limitSwap.executeWhen".localized,
@@ -88,6 +108,14 @@ struct LimitSwapBodyView: View {
         return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
     }
 
+    /// Asset section is "valid" (and therefore shows the collapsed summary +
+    /// checkmark/pencil affordance) once the user has a non-empty pair —
+    /// which is true on launch since we seed from the SwapTransaction's
+    /// initial coins. The check still guards against an empty-ticker edge.
+    private var bothAssetsPicked: Bool {
+        !vm.draft.fromAsset.ticker.isEmpty && !vm.draft.toAsset.ticker.isEmpty
+    }
+
     private func parseAmount(_ text: String, decimals: Int) -> BigInt {
         let normalized = text.replacingOccurrences(of: ",", with: ".")
         guard let decimal = Decimal(string: normalized), decimal > 0 else { return 0 }
@@ -101,6 +129,10 @@ struct LimitSwapBodyView: View {
 }
 
 // MARK: - Asset swap form (Sell + middle swap button + Buy)
+//
+// Inner content of the FormExpandableSection's expanded state. The section
+// header (title + chevron + collapsed-state value display + checkmark +
+// pencil) is provided by FormExpandableSection itself.
 
 private struct LimitAssetSwapForm: View {
 
@@ -113,66 +145,48 @@ private struct LimitAssetSwapForm: View {
     let onSwapAssets: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("limitSwap.asset".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+        ZStack {
+            VStack(spacing: 8) {
+                LimitAssetRow(
+                    kind: .sell,
+                    coin: fromCoin,
+                    asset: vm.draft.fromAsset,
+                    amountText: $sourceAmountText,
+                    amountIsEditable: true,
+                    computedAmount: nil,
+                    usdPricePerUnit: Decimal(fromCoin.price),
+                    onPickAsset: onPickFromAsset
+                )
 
-            Rectangle()
-                .fill(Theme.colors.borderLight)
-                .frame(height: 1)
-
-            ZStack {
-                VStack(spacing: 8) {
-                    LimitAssetRow(
-                        kind: .sell,
-                        coin: fromCoin,
-                        asset: vm.draft.fromAsset,
-                        amountText: $sourceAmountText,
-                        amountIsEditable: true,
-                        computedAmount: nil,
-                        usdPricePerUnit: Decimal(fromCoin.price),
-                        onPickAsset: onPickFromAsset
-                    )
-
-                    LimitAssetRow(
-                        kind: .buy,
-                        coin: toCoin,
-                        asset: vm.draft.toAsset,
-                        amountText: .constant(formattedBuyAmount),
-                        amountIsEditable: false,
-                        computedAmount: buyAmountDecimal,
-                        usdPricePerUnit: vm.targetUsdPricePerUnit,
-                        onPickAsset: onPickToAsset
-                    )
-                }
-
-                Button(action: onSwapAssets) {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .frame(width: 32, height: 32)
-                        .background(Theme.colors.primaryAccent3)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                        .padding(7)
-                        .background(Theme.colors.bgPrimary)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 25.5)
-                                .stroke(Theme.colors.borderLight, lineWidth: 1)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 25.5))
-                }
-                .buttonStyle(.plain)
+                LimitAssetRow(
+                    kind: .buy,
+                    coin: toCoin,
+                    asset: vm.draft.toAsset,
+                    amountText: .constant(formattedBuyAmount),
+                    amountIsEditable: false,
+                    computedAmount: buyAmountDecimal,
+                    usdPricePerUnit: vm.targetUsdPricePerUnit,
+                    onPickAsset: onPickToAsset
+                )
             }
+
+            Button(action: onSwapAssets) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(width: 32, height: 32)
+                    .background(Theme.colors.primaryAccent3)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .padding(7)
+                    .background(Theme.colors.bgPrimary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25.5)
+                            .stroke(Theme.colors.borderLight, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 25.5))
+            }
+            .buttonStyle(.plain)
         }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgPrimary)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.borderLight, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     /// Buy amount = sourceAmount × targetPrice (when target is set).
@@ -189,6 +203,44 @@ private struct LimitAssetSwapForm: View {
     private var formattedBuyAmount: String {
         guard let amount = buyAmountDecimal else { return "0" }
         return NSDecimalNumber(decimal: amount).stringValue
+    }
+}
+
+// MARK: - Compact value view for the collapsed Asset section
+//
+// Renders inline next to the "Asset" title when the section is collapsed
+// (matches Figma 74341:118148). FormExpandableSection adds the checkmark
+// + pencil icons after this view automatically.
+
+private struct LimitAssetCompactValue: View {
+
+    let fromAsset: LimitSwapAsset
+    let toAsset: LimitSwapAsset
+
+    var body: some View {
+        HStack(spacing: 12) {
+            chip(labelKey: "limitSwap.sell", asset: fromAsset)
+            chip(labelKey: "limitSwap.buy", asset: toAsset)
+        }
+    }
+
+    private func chip(labelKey: String, asset: LimitSwapAsset) -> some View {
+        HStack(spacing: 4) {
+            Text(labelKey.localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+            if !asset.logo.isEmpty {
+                AsyncImageView(
+                    logo: asset.logo,
+                    size: CGSize(width: 16, height: 16),
+                    ticker: asset.ticker,
+                    tokenChainLogo: asset.chainLogo
+                )
+            }
+            Text(asset.ticker)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+        }
     }
 }
 
