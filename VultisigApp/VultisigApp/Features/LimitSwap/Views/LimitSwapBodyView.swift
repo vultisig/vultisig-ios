@@ -7,16 +7,13 @@ import BigInt
 import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
-/// SegmentedControl is set to Limit. Bound to LimitSwapFormViewModel from §5.
+/// SegmentedControl is set to Limit. Layout mirrors the Figma Place flow
+/// (vultisig-ios#4232 screen 1/2/3): compact single-row asset summary, one
+/// tall "Execute when" card containing the price display + preset pills +
+/// expiry sub-block, and a Place Limit Order CTA at the bottom.
 ///
-/// Section components reuse the Defi/Bond conventions
-/// (`FormExpandableSection`) per the user's feedback (2026-05-06).
-///
-/// **Note: Place-button color discrepancy.** The Figma uses a blue
-/// `#0b4eff` for the Place Limit Order CTA; no iOS theme token matches it
-/// exactly. Used the standard turquoise `PrimaryButton` here for app-wide
-/// consistency; reconcile with design before ship.
-/// (Tracked in design-flags.md item #1.)
+/// **Note: Place-button color discrepancy** (Figma `#0b4eff` vs iOS theme
+/// turquoise) — tracked in design-flags.md item #1.
 struct LimitSwapBodyView: View {
 
     private enum FocusedSection: Hashable {
@@ -55,8 +52,6 @@ struct LimitSwapBodyView: View {
                         LimitExecuteWhenContent(vm: vm)
                     }
 
-                    LimitExpiryRow(vm: vm)
-
                     if let warning = vm.displayedWarning {
                         LimitWarningRow(warning: warning)
                     }
@@ -86,7 +81,7 @@ struct LimitSwapBodyView: View {
     }
 }
 
-// MARK: - Asset summary row
+// MARK: - Asset summary row (compact single-row, matches Figma)
 
 private struct LimitAssetSummaryRow: View {
 
@@ -96,18 +91,26 @@ private struct LimitAssetSummaryRow: View {
     let onPickToAsset: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        HStack(spacing: 12) {
             Text("limitSwap.asset".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            HStack(spacing: 12) {
-                assetButton(label: "limitSwap.sell".localized, ticker: fromAsset.ticker, action: onPickFromAsset)
-                assetButton(label: "limitSwap.buy".localized, ticker: toAsset.ticker, action: onPickToAsset)
-            }
+            chip(label: "limitSwap.sell".localized, ticker: fromAsset.ticker, action: onPickFromAsset)
+            chip(label: "limitSwap.buy".localized, ticker: toAsset.ticker, action: onPickToAsset)
+
+            Image(systemName: "checkmark")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(Theme.colors.alertSuccess)
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "pencil")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.colors.textTertiary)
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 52)
         .background(Theme.colors.bgSurface1)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -116,32 +119,23 @@ private struct LimitAssetSummaryRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    private func assetButton(label: String, ticker: String, action: @escaping () -> Void) -> some View {
+    private func chip(label: String, ticker: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    Text(ticker)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-                Spacer()
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .semibold))
+            HStack(spacing: 4) {
+                Text(label)
+                    .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
+                Text(ticker)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.colors.bgSurface2)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Execute When content (lives inside the FormExpandableSection)
+// MARK: - Execute When content (price + presets + expiry sub-block, all inside one card)
 
 private struct LimitExecuteWhenContent: View {
 
@@ -151,6 +145,7 @@ private struct LimitExecuteWhenContent: View {
         VStack(spacing: 12) {
             LimitPriceDisplay(vm: vm)
             LimitPresetPills(vm: vm)
+            LimitExpirySubBlock(vm: vm)
         }
     }
 }
@@ -276,9 +271,9 @@ private struct LimitPresetPills: View {
     }
 }
 
-// MARK: - Expiry row (12h / 24h / 3d)
+// MARK: - Expiry sub-block (inside the Execute When card, darker background)
 
-private struct LimitExpiryRow: View {
+private struct LimitExpirySubBlock: View {
 
     @Bindable var vm: LimitSwapFormViewModel
 
@@ -297,12 +292,12 @@ private struct LimitExpiryRow: View {
             }
         }
         .padding(14)
-        .background(Theme.colors.bgSurface1)
+        .background(Theme.colors.bgButtonDisabled.opacity(0.5))
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func pill(titleKey: String, hours: Int) -> some View {
