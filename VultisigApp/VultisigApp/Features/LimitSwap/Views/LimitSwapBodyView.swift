@@ -22,10 +22,10 @@ struct LimitSwapBodyView: View {
     let fromCoin: Coin
     let toCoin: Coin
 
-    /// Default to the asset section expanded — matches the Figma's first
-    /// screen state (74341:118010). Tapping the section header collapses
-    /// it into its compact summary (Figma 74341:118148).
-    @State private var focusedSection: FocusedSection? = .asset
+    /// Default to the Execute When section expanded — flow order is:
+    /// set target price first → then sell amount → Buy amount is computed
+    /// from `sourceAmount × targetPrice`. Tapping a header swaps focus.
+    @State private var focusedSection: FocusedSection? = .executeWhen
     @State private var sourceAmountText: String = ""
 
     let onPickFromAsset: () -> Void
@@ -37,6 +37,23 @@ struct LimitSwapBodyView: View {
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
+                    // Execute When first — the user sets the target price
+                    // here, and the Asset section's Buy amount is computed
+                    // downstream as `sourceAmount × targetPrice`.
+                    FormExpandableSection(
+                        title: executeWhenTitle,
+                        isValid: vm.draft.targetPrice > 0,
+                        value: targetPriceSummary,
+                        showValue: vm.draft.targetPrice > 0,
+                        focusedField: $focusedSection,
+                        focusedFieldEquals: .executeWhen,
+                        onExpand: { isExpanded in
+                            focusedSection = isExpanded ? .executeWhen : nil
+                        }
+                    ) {
+                        LimitExecuteWhenContent(vm: vm)
+                    }
+
                     FormExpandableSection(
                         title: "limitSwap.asset".localized,
                         isValid: bothAssetsPicked,
@@ -61,20 +78,6 @@ struct LimitSwapBodyView: View {
                             fromAsset: vm.draft.fromAsset,
                             toAsset: vm.draft.toAsset
                         )
-                    }
-
-                    FormExpandableSection(
-                        title: executeWhenTitle,
-                        isValid: vm.draft.targetPrice > 0,
-                        value: targetPriceSummary,
-                        showValue: vm.draft.targetPrice > 0,
-                        focusedField: $focusedSection,
-                        focusedFieldEquals: .executeWhen,
-                        onExpand: { isExpanded in
-                            focusedSection = isExpanded ? .executeWhen : nil
-                        }
-                    ) {
-                        LimitExecuteWhenContent(vm: vm)
                     }
 
                     if let warning = vm.displayedWarning {
