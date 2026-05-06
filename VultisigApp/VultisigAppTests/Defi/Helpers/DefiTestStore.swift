@@ -50,7 +50,8 @@ enum DefiTestStore {
             StakePosition.self,
             LPPosition.self,
             CirclePosition.self,
-            DatabaseRate.self
+            DatabaseRate.self,
+            LimitOrder.self
         ])
         let configuration = ModelConfiguration(
             schema: schema,

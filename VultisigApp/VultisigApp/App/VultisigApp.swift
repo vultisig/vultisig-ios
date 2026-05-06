@@ -78,7 +78,8 @@ struct VultisigApp: App {
             CirclePosition.self,
             StoredPendingTransaction.self,
             VaultSettings.self,
-            TransactionHistoryItem.self
+            TransactionHistoryItem.self,
+            LimitOrder.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

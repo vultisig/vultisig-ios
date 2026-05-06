@@ -41,6 +41,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     @Relationship(deleteRule: .cascade) var circlePosition: CirclePosition?
+    @Relationship(deleteRule: .cascade) var limitOrders: [LimitOrder] = []
     @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
 
     enum CodingKeys: CodingKey {
