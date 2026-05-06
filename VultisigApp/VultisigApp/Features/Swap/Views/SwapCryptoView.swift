@@ -42,8 +42,10 @@ struct SwapCryptoView: View {
             .task {
                 // Feature-flag fetch. Default false keeps the tab hidden and
                 // the market-swap path pixel-identical when the flag is off.
-                isLimitSwapFeatureEnabled = await FeatureFlagService()
-                    .isFeatureEnabled(feature: .limitSwap)
+                isLimitSwapFeatureEnabled = true
+
+//                await FeatureFlagService()
+//                    .isFeatureEnabled(feature: .limitSwap)
             }
     }
 
@@ -77,9 +79,19 @@ struct SwapCryptoView: View {
     var detailsView: some View {
         if isLimitSwapFeatureEnabled {
             VStack(spacing: 0) {
-                SwapModeTabBar(
-                    selectedMode: $selectedSwapMode,
-                    isLimitDisabled: !canCurrentPairUseLimitSwap
+                SegmentedControl(
+                    selection: $selectedSwapMode,
+                    items: [
+                        SegmentedControlItem(
+                            value: .market,
+                            title: "swap.tab.market".localized
+                        ),
+                        SegmentedControlItem(
+                            value: .limit,
+                            title: "swap.tab.limit".localized,
+                            isEnabled: canCurrentPairUseLimitSwap
+                        )
+                    ]
                 )
                 .padding(.horizontal, 16)
                 .padding(.top, 8)

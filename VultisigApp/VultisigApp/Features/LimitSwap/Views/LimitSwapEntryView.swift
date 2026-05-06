@@ -6,10 +6,11 @@
 import BigInt
 import SwiftUI
 
-/// Wrapper that owns the `LimitSwapFormViewModel` lifecycle and renders the
-/// body. Lives at this layer so `SwapCryptoView` doesn't need to manage VM
-/// construction itself. The VM is built once on first appearance from the
-/// supplied initial coins; subsequent renders reuse it.
+/// Wrapper that owns the `LimitSwapFormViewModel` lifecycle plus Limit's
+/// **independent** coin selection state. The initial from/to coins seed
+/// from `SwapTransaction` for convenience but subsequent changes via the
+/// asset picker stay local — they do not mutate the Market path's
+/// SwapTransaction.
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
@@ -17,15 +18,33 @@ struct LimitSwapEntryView: View {
     let vault: Vault
 
     @State private var vm: LimitSwapFormViewModel?
+
+    // Independent coin state. The picker mutates these directly; an onChange
+    // syncs the result into the VM's draft via LimitSwapAsset(coin:).
+    @State private var limitFromCoin: Coin
+    @State private var limitToCoin: Coin
+
+    @State private var showFromCoinPicker: Bool = false
+    @State private var showToCoinPicker: Bool = false
+
     @State private var confirmationVM: LimitSwapConfirmationViewModel?
     @State private var isConfirmationSheetPresented: Bool = false
+
+    init(initialFromCoin: Coin, initialToCoin: Coin, vault: Vault) {
+        self.initialFromCoin = initialFromCoin
+        self.initialToCoin = initialToCoin
+        self.vault = vault
+        self._limitFromCoin = State(initialValue: initialFromCoin)
+        self._limitToCoin = State(initialValue: initialToCoin)
+    }
 
     var body: some View {
         Group {
             if let vm {
                 LimitSwapBodyView(
                     vm: vm,
-                    onPickAssetPair: handlePickAssetPair,
+                    onPickFromAsset: { showFromCoinPicker = true },
+                    onPickToAsset: { showToCoinPicker = true },
                     onPlaceOrder: handlePlaceOrder
                 )
             } else {
@@ -36,6 +55,28 @@ struct LimitSwapEntryView: View {
             if vm == nil {
                 vm = makeViewModel()
             }
+        }
+        .onChange(of: limitFromCoin) { _, newCoin in
+            vm?.selectFromAsset(LimitSwapAsset(coin: newCoin))
+        }
+        .onChange(of: limitToCoin) { _, newCoin in
+            vm?.selectToAsset(LimitSwapAsset(coin: newCoin))
+        }
+        .crossPlatformSheet(isPresented: $showFromCoinPicker) {
+            SwapCoinPickerView(
+                vault: vault,
+                showSheet: $showFromCoinPicker,
+                selectedCoin: $limitFromCoin,
+                selectedChain: limitFromCoin.chain
+            )
+        }
+        .crossPlatformSheet(isPresented: $showToCoinPicker) {
+            SwapCoinPickerView(
+                vault: vault,
+                showSheet: $showToCoinPicker,
+                selectedCoin: $limitToCoin,
+                selectedChain: limitToCoin.chain
+            )
         }
         .sheet(isPresented: $isConfirmationSheetPresented) {
             if let confirmationVM {
@@ -52,8 +93,8 @@ struct LimitSwapEntryView: View {
 
     private func makeViewModel() -> LimitSwapFormViewModel {
         let draft = LimitSwapDraft(
-            fromAsset: LimitSwapAsset(coin: initialFromCoin),
-            toAsset: LimitSwapAsset(coin: initialToCoin)
+            fromAsset: LimitSwapAsset(coin: limitFromCoin),
+            toAsset: LimitSwapAsset(coin: limitToCoin)
         )
         let interactor = DefaultLimitSwapInteractor(
             quoteService: ThorchainService.shared,
@@ -68,11 +109,6 @@ struct LimitSwapEntryView: View {
 
     // MARK: - Place flow
 
-    private func handlePickAssetPair() {
-        // TODO(§7 follow-up): wire to the existing market-swap asset picker
-        // sheet. Tracked in design-flags.md item #2.
-    }
-
     private func handlePlaceOrder() {
         guard let vm,
               let fromMemo = vm.draft.fromAsset.memoSymbol,
@@ -81,15 +117,11 @@ struct LimitSwapEntryView: View {
               vm.draft.sourceAmount > 0,
               vm.draft.targetPrice > 0
         else {
-            // The Place button is disabled in the body when these conditions
-            // fail, so reaching here implies an in-flight desync — silently
-            // return until §8.B introduces a richer error pathway.
             return
         }
 
-        // Phase 1 hardcodes non-referred affiliate (vi/50). The full referral
-        // path (myref/vi, 10/35) lands alongside the real sign wiring in §8.B
-        // when the affiliate config is read from vault tier metadata.
+        // Phase 1 hardcodes non-referred affiliate (vi/50). Real referral
+        // wiring lands in §8.B.
         let inputs = LimitSwapInputs(
             sourceAsset: fromMemo,
             sourceAmount: vm.draft.sourceAmount,
@@ -118,10 +150,7 @@ struct LimitSwapEntryView: View {
 
         await confirmationVM.attemptSign {
             // TODO(§8.B): assemble KeysignPayload, run TSS sign + broadcast,
-            // on success persist via LimitOrderStorageService with the
-            // inbound TX hash, then advance to the success screen. For §8.A
-            // the wiring stops here — the byte-cap pre-flight in the VM still
-            // runs (and surfaces in the sheet's error banner if it fails).
+            // on success persist via LimitOrderStorageService.
         }
     }
 }

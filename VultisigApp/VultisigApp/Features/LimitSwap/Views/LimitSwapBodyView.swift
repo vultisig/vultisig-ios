@@ -7,52 +7,82 @@ import BigInt
 import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
-/// Market/Limit tab bar is set to Limit (tab integration lands in §7).
+/// SegmentedControl is set to Limit. Bound to LimitSwapFormViewModel from §5.
+///
+/// Section components reuse the Defi/Bond conventions
+/// (`FormExpandableSection`) per the user's feedback (2026-05-06).
 ///
 /// **Note: Place-button color discrepancy.** The Figma uses a blue
 /// `#0b4eff` for the Place Limit Order CTA; no iOS theme token matches it
 /// exactly. Used the standard turquoise `PrimaryButton` here for app-wide
 /// consistency; reconcile with design before ship.
+/// (Tracked in design-flags.md item #1.)
 struct LimitSwapBodyView: View {
 
-    @Bindable var vm: LimitSwapFormViewModel
-    @State private var isExecuteWhenExpanded: Bool = false
+    private enum FocusedSection: Hashable {
+        case executeWhen
+    }
 
-    let onPickAssetPair: () -> Void
+    @Bindable var vm: LimitSwapFormViewModel
+    @State private var focusedSection: FocusedSection? = .executeWhen
+
+    let onPickFromAsset: () -> Void
+    let onPickToAsset: () -> Void
     let onPlaceOrder: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            LimitAssetSummaryRow(
-                fromAsset: vm.draft.fromAsset,
-                toAsset: vm.draft.toAsset,
-                onTap: onPickAssetPair
-            )
+        VStack(spacing: 12) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 8) {
+                    LimitAssetSummaryRow(
+                        fromAsset: vm.draft.fromAsset,
+                        toAsset: vm.draft.toAsset,
+                        onPickFromAsset: onPickFromAsset,
+                        onPickToAsset: onPickToAsset
+                    )
 
-            LimitExecuteWhenSection(
-                vm: vm,
-                isExpanded: $isExecuteWhenExpanded
-            )
+                    FormExpandableSection(
+                        title: "limitSwap.executeWhen".localized,
+                        isValid: vm.draft.targetPrice > 0,
+                        value: targetPriceSummary,
+                        showValue: focusedSection != .executeWhen && vm.draft.targetPrice > 0,
+                        focusedField: $focusedSection,
+                        focusedFieldEquals: .executeWhen,
+                        onExpand: { isExpanded in
+                            focusedSection = isExpanded ? .executeWhen : nil
+                        }
+                    ) {
+                        LimitExecuteWhenContent(vm: vm)
+                    }
 
-            if let warning = vm.displayedWarning {
-                LimitWarningRow(warning: warning)
+                    LimitExpiryRow(vm: vm)
+
+                    if let warning = vm.displayedWarning {
+                        LimitWarningRow(warning: warning)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
             }
-
-            Spacer(minLength: 0)
 
             PrimaryButton(
                 title: "limitSwap.placeOrder".localized,
                 action: onPlaceOrder
             )
             .disabled(!isPlaceable)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
-        .padding(.bottom, 24)
     }
 
     private var isPlaceable: Bool {
         vm.draft.targetPrice > 0 && vm.draft.sourceAmount > 0
+    }
+
+    private var targetPriceSummary: String {
+        guard vm.draft.targetPrice > 0 else { return "" }
+        let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
+        return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
     }
 }
 
@@ -62,101 +92,66 @@ private struct LimitAssetSummaryRow: View {
 
     let fromAsset: LimitSwapAsset
     let toAsset: LimitSwapAsset
-    let onTap: () -> Void
+    let onPickFromAsset: () -> Void
+    let onPickToAsset: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("limitSwap.asset".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
             HStack(spacing: 12) {
-                Text("limitSwap.asset".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-
-                chip(label: "limitSwap.sell".localized, ticker: fromAsset.ticker)
-                chip(label: "limitSwap.buy".localized, ticker: toAsset.ticker)
-
-                Image(systemName: "checkmark")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.colors.alertSuccess)
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "pencil")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.colors.textTertiary)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .background(Theme.colors.bgPrimary)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func chip(label: String, ticker: String) -> some View {
-        HStack(spacing: 4) {
-            Text(label)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Text(ticker)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
-        }
-        .padding(.horizontal, 8)
-    }
-}
-
-// MARK: - Execute When section
-
-private struct LimitExecuteWhenSection: View {
-
-    @Bindable var vm: LimitSwapFormViewModel
-    @Binding var isExpanded: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
-                }
-            } label: {
-                HStack {
-                    Text("limitSwap.executeWhen".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            if isExpanded {
-                Rectangle()
-                    .fill(Theme.colors.borderLight)
-                    .frame(height: 1)
-
-                LimitPriceDisplay(vm: vm)
-
-                LimitPresetPills(vm: vm)
-
-                LimitExpiryRow(vm: vm)
+                assetButton(label: "limitSwap.sell".localized, ticker: fromAsset.ticker, action: onPickFromAsset)
+                assetButton(label: "limitSwap.buy".localized, ticker: toAsset.ticker, action: onPickToAsset)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 16)
-        .padding(.bottom, 12)
-        .background(Theme.colors.bgPrimary)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.colors.bgSurface1)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func assetButton(label: String, ticker: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                    Text(ticker)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                Spacer()
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.colors.bgSurface2)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Execute When content (lives inside the FormExpandableSection)
+
+private struct LimitExecuteWhenContent: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+
+    var body: some View {
+        VStack(spacing: 12) {
+            LimitPriceDisplay(vm: vm)
+            LimitPresetPills(vm: vm)
+        }
     }
 }
 
@@ -170,7 +165,6 @@ private struct LimitPriceDisplay: View {
         ZStack {
             VStack(spacing: 5) {
                 HStack(spacing: 8) {
-                    // TODO(§7): coin logo when integrated with the asset picker.
                     Text("1 \(vm.draft.fromAsset.ticker)")
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
@@ -178,7 +172,7 @@ private struct LimitPriceDisplay: View {
                 .padding(.leading, 6)
                 .padding(.trailing, 12)
                 .padding(.vertical, 6)
-                .background(Theme.colors.bgSurface1)
+                .background(Theme.colors.bgSurface2)
                 .clipShape(Capsule())
 
                 Text(formattedPrimaryPrice)
@@ -200,7 +194,7 @@ private struct LimitPriceDisplay: View {
                 displayUnitToggle
             }
         }
-        .frame(minHeight: 211)
+        .frame(minHeight: 160)
     }
 
     private var displayUnitToggle: some View {
@@ -231,7 +225,7 @@ private struct LimitPriceDisplay: View {
     private var formattedPrimaryPrice: String {
         // TODO(§8): hook into a USD-per-target-asset price feed for proper
         // $/asset toggle. v1 shows the underlying targetPrice in target-asset
-        // units regardless of toggle.
+        // units regardless of toggle. (design-flags.md item #3.)
         let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         switch vm.draft.displayUnit {
         case .usd:
@@ -303,7 +297,7 @@ private struct LimitExpiryRow: View {
             }
         }
         .padding(14)
-        .background(Theme.colors.bgButtonDisabled.opacity(0.5))
+        .background(Theme.colors.bgSurface1)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
@@ -352,7 +346,7 @@ private struct LimitWarningRow: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Theme.colors.bgPrimary)
+        .background(Theme.colors.bgSurface1)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
