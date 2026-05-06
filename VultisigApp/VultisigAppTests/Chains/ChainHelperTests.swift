@@ -44,7 +44,12 @@ final class ChainHelperTests: XCTestCase {
         for jsonFile in jsonFiles {
             let data = try Data(contentsOf: jsonFile)
             let decoder = JSONDecoder()
-            let testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
+            // Skip files that aren't ChainHelperTestCase arrays — other suites may bundle
+            // their own JSON fixtures (e.g. Fixtures/LimitSwapMemos.json) that flatten to
+            // the same resourcePath at test time.
+            guard let testCases = try? decoder.decode([ChainHelperTestCase].self, from: data) else {
+                continue
+            }
 
             for testCase in testCases {
                 try runTestCase(testCase)
