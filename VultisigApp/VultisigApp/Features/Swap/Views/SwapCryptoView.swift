@@ -18,6 +18,9 @@ struct SwapCryptoView: View {
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
+    @State private var selectedSwapMode: SwapMode = .market
+    @State private var isLimitSwapFeatureEnabled = false
+
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
         self.toCoin = toCoin
@@ -35,6 +38,12 @@ struct SwapCryptoView: View {
                 guard reason != nil else { return }
                 keysignView = nil
                 swapViewModel.stopMediator()
+            }
+            .task {
+                // Feature-flag fetch. Default false keeps the tab hidden and
+                // the market-swap path pixel-identical when the flag is off.
+                isLimitSwapFeatureEnabled = await FeatureFlagService()
+                    .isFeatureEnabled(feature: .limitSwap)
             }
     }
 
@@ -64,8 +73,47 @@ struct SwapCryptoView: View {
         }
     }
 
+    @ViewBuilder
     var detailsView: some View {
-        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
+        if isLimitSwapFeatureEnabled {
+            VStack(spacing: 0) {
+                SwapModeTabBar(
+                    selectedMode: $selectedSwapMode,
+                    isLimitDisabled: !canCurrentPairUseLimitSwap
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                switch selectedSwapMode {
+                case .market:
+                    SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
+                case .limit:
+                    LimitSwapEntryView(
+                        initialFromCoin: tx.fromCoin,
+                        initialToCoin: tx.toCoin,
+                        vault: vault
+                    )
+                }
+            }
+        } else {
+            // Flag off: market path is pixel-identical to pre-feature.
+            SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
+        }
+    }
+
+    private var canCurrentPairUseLimitSwap: Bool {
+        func hasThorchainProvider(_ providers: [SwapProvider]) -> Bool {
+            providers.contains { provider in
+                switch provider {
+                case .thorchain, .thorchainChainnet, .thorchainStagenet:
+                    return true
+                default:
+                    return false
+                }
+            }
+        }
+        return hasThorchainProvider(tx.fromCoin.swapProviders)
+            && hasThorchainProvider(tx.toCoin.swapProviders)
     }
 
     var verifyView: some View {

@@ -8,10 +8,12 @@
 import Foundation
 enum FeatureFlag: String {
     case EncryptGCM
+    case limitSwap
 
     var name: String {
         switch self {
         case .EncryptGCM: return "encrypt-gcm"
+        case .limitSwap: return "limit-swap"
         }
     }
 }

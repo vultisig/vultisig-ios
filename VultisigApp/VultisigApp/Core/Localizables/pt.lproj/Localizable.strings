@@ -851,6 +851,8 @@
 "swap.price_impact.good" = "Bom";
 "swap.price_impact.high" = "Alto";
 "swap.referral_discount" = "Indicação (-%d bps)";
+"swap.tab.limit" = "Limit";
+"swap.tab.market" = "Market";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% isento)";
 "swapAmountTooSmall" = "Valor da troca muito pequeno";

@@ -861,6 +861,8 @@
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
 "swap.referral_discount" = "추천 (-%d bps)";
+"swap.tab.limit" = "Limit";
+"swap.tab.market" = "Market";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 면제)";
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";

@@ -851,6 +851,8 @@
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
 "swap.referral_discount" = "Preporuka (-%d bps)";
+"swap.tab.limit" = "Limit";
+"swap.tab.market" = "Market";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% oslobođenje)";
 "swapAmountTooSmall" = "Iznos zamjene je premali";

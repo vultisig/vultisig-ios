@@ -851,6 +851,8 @@
 "swap.price_impact.good" = "良好";
 "swap.price_impact.high" = "较高";
 "swap.referral_discount" = "推荐 (-%d bps)";
+"swap.tab.limit" = "Limit";
+"swap.tab.market" = "Market";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 豁免)";
 "swapAmountTooSmall" = "交换金额太小";
