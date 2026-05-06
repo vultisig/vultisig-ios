@@ -21,6 +21,28 @@ final class CoinSwapAssetTests: XCTestCase {
         XCTAssertEqual(coin.swapAsset, denom)
     }
 
+    func testSwapAssetReturnsRawThorchainBaseSecuredAssetDenoms() {
+        let securedAssets = [
+            ("BTC", "btc-btc"),
+            ("ETH", "eth-eth"),
+            ("LTC", "ltc-ltc"),
+            ("DOGE", "doge-doge"),
+            ("AVAX", "avax-avax"),
+            ("BNB", "bsc-bnb")
+        ]
+
+        securedAssets.forEach { ticker, denom in
+            let coin = makeCoin(
+                ticker: ticker,
+                chain: .thorChain,
+                contractAddress: denom,
+                isNative: false
+            )
+
+            XCTAssertEqual(coin.swapAsset, denom)
+        }
+    }
+
     func testSwapAssetKeepsThorchainNonSecuredTokenAsThorTicker() {
         let coin = makeCoin(
             ticker: "KUJI",
