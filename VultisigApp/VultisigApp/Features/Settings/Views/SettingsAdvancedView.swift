@@ -66,6 +66,12 @@ struct SettingsAdvancedView: View {
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
+
+            SettingToggleCell(
+                title: "limitSwapToggle",
+                icon: "arrow.up.right.square",
+                isEnabled: $settingsViewModel.limitSwapEnabled
+            )
         }
     }
 }

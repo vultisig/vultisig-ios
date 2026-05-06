@@ -485,6 +485,7 @@
 "limitSwap.sell" = "Sell";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
+"limitSwapToggle" = "Limit Swap";
 "liquidityPools" = "流动性池";
 "loading" = "加载中...";
 "loadingDetails" = "正在加载详情";

@@ -19,12 +19,19 @@ struct SwapCryptoView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State private var selectedSwapMode: SwapMode = .market
-    @State private var isLimitSwapFeatureEnabled = false
+    /// Local feature gate read from advanced settings — no backend fetch.
+    /// Mirrors the `allowSwap` / `isDKLSEnabled` / `tssBatchEnabled` pattern
+    /// used by every other in-app feature toggle.
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     /// Set when the user signs a limit order; `swapViewModel.hash` flipping
     /// non-empty (broadcast success) triggers a persist via
     /// `LimitOrderStorageService` then clears this. Nil during market-swap
     /// flows so the existing path is unaffected.
     @State private var pendingLimitOrderRecord: LimitOrderRecord?
+
+    private var isLimitSwapFeatureEnabled: Bool {
+        settingsViewModel.limitSwapEnabled
+    }
 
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
@@ -43,14 +50,6 @@ struct SwapCryptoView: View {
                 guard reason != nil else { return }
                 keysignView = nil
                 swapViewModel.stopMediator()
-            }
-            .task {
-                // Feature-flag fetch. Default false keeps the tab hidden and
-                // the market-swap path pixel-identical when the flag is off.
-                isLimitSwapFeatureEnabled = true
-
-//                await FeatureFlagService()
-//                    .isFeatureEnabled(feature: .limitSwap)
             }
             .onChange(of: swapViewModel.hash) { _, newHash in
                 persistLimitOrderIfNeeded(hash: newHash)

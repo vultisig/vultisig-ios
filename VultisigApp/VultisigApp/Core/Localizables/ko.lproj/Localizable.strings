@@ -491,6 +491,7 @@
 "limitSwap.sell" = "Sell";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
+"limitSwapToggle" = "Limit Swap";
 "liquidityPools" = "유동성 풀";
 "loading" = "로딩 중...";
 "loadingDetails" = "세부 정보 로딩 중";

@@ -485,6 +485,7 @@
 "limitSwap.sell" = "Sell";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
+"limitSwapToggle" = "Limit Swap";
 "liquidityPools" = "Pool di liquidità";
 "loading" = "Caricamento...";
 "loadingDetails" = "Caricamento dettagli";
