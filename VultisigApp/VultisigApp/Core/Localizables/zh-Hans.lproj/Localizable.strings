@@ -465,6 +465,13 @@
 "legal" = "法律";
 "limitSwap.asset" = "Asset";
 "limitSwap.buy" = "Buy";
+"limitSwap.confirmation.amountIsCorrect" = "The swap amount is correct";
+"limitSwap.confirmation.byteCapError.format" = "Memo too long: %d bytes (max %d). Try a shorter destination address or a non-UTXO source.";
+"limitSwap.confirmation.expiry" = "Expiry";
+"limitSwap.confirmation.signTransaction" = "Sign Transaction";
+"limitSwap.confirmation.subtitle" = "You're placing a limit order";
+"limitSwap.confirmation.targetPrice" = "Target price";
+"limitSwap.confirmation.title" = "Place Limit Order";
 "limitSwap.executeWhen" = "Execute when";
 "limitSwap.expiry" = "Expiry";
 "limitSwap.expiry.12h" = "12h";

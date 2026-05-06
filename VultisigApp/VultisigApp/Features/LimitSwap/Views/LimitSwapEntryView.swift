@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import BigInt
 import SwiftUI
 
 /// Wrapper that owns the `LimitSwapFormViewModel` lifecycle and renders the
@@ -16,6 +17,8 @@ struct LimitSwapEntryView: View {
     let vault: Vault
 
     @State private var vm: LimitSwapFormViewModel?
+    @State private var confirmationVM: LimitSwapConfirmationViewModel?
+    @State private var isConfirmationSheetPresented: Bool = false
 
     var body: some View {
         Group {
@@ -34,7 +37,18 @@ struct LimitSwapEntryView: View {
                 vm = makeViewModel()
             }
         }
+        .sheet(isPresented: $isConfirmationSheetPresented) {
+            if let confirmationVM {
+                LimitSwapConfirmationSheet(
+                    vm: confirmationVM,
+                    onDismiss: { isConfirmationSheetPresented = false },
+                    onSignAttempt: handleSignAttempt
+                )
+            }
+        }
     }
+
+    // MARK: - VM construction
 
     private func makeViewModel() -> LimitSwapFormViewModel {
         let draft = LimitSwapDraft(
@@ -52,16 +66,62 @@ struct LimitSwapEntryView: View {
         )
     }
 
+    // MARK: - Place flow
+
     private func handlePickAssetPair() {
         // TODO(§7 follow-up): wire to the existing market-swap asset picker
-        // sheet. Tracked in design-flags.md item #2 (coin logos depend on
-        // this integration).
+        // sheet. Tracked in design-flags.md item #2.
     }
 
     private func handlePlaceOrder() {
-        // TODO(§8): present the confirmation sheet, run Blockaid scan, gate
-        // Sign on the "swap amount is correct" checkbox, assemble
-        // KeysignPayload with the limit memo, run the byte-cap pre-flight,
-        // and persist the LimitOrder on broadcast success.
+        guard let vm,
+              let fromMemo = vm.draft.fromAsset.memoSymbol,
+              let toMemo = vm.draft.toAsset.memoSymbol,
+              let destAddress = vm.destinationAddress(),
+              vm.draft.sourceAmount > 0,
+              vm.draft.targetPrice > 0
+        else {
+            // The Place button is disabled in the body when these conditions
+            // fail, so reaching here implies an in-flight desync — silently
+            // return until §8.B introduces a richer error pathway.
+            return
+        }
+
+        // Phase 1 hardcodes non-referred affiliate (vi/50). The full referral
+        // path (myref/vi, 10/35) lands alongside the real sign wiring in §8.B
+        // when the affiliate config is read from vault tier metadata.
+        let inputs = LimitSwapInputs(
+            sourceAsset: fromMemo,
+            sourceAmount: vm.draft.sourceAmount,
+            sourceDecimals: vm.draft.fromAsset.decimals,
+            targetAsset: toMemo,
+            destAddress: destAddress,
+            targetPrice: vm.draft.targetPrice,
+            expiryHours: vm.draft.expiryHours,
+            affiliate: "vi",
+            affiliateBps: "50"
+        )
+
+        let memo = buildLimitSwapMemo(inputs)
+        let chainKind = vm.draft.fromAsset.chain.chainType
+
+        confirmationVM = LimitSwapConfirmationViewModel(
+            draft: vm.draft,
+            memo: memo,
+            sourceChainKind: chainKind
+        )
+        isConfirmationSheetPresented = true
+    }
+
+    private func handleSignAttempt() async {
+        guard let confirmationVM else { return }
+
+        await confirmationVM.attemptSign {
+            // TODO(§8.B): assemble KeysignPayload, run TSS sign + broadcast,
+            // on success persist via LimitOrderStorageService with the
+            // inbound TX hash, then advance to the success screen. For §8.A
+            // the wiring stops here — the byte-cap pre-flight in the VM still
+            // runs (and surfaces in the sheet's error banner if it fails).
+        }
     }
 }
