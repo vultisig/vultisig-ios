@@ -41,18 +41,25 @@ struct LimitSwapBodyView: View {
                     // here, and the Asset section's Buy amount is computed
                     // downstream as `sourceAmount × targetPrice`.
                     FormExpandableSection(
-                        title: executeWhenTitle,
                         isValid: vm.draft.targetPrice > 0,
-                        value: targetPriceSummary,
                         showValue: vm.draft.targetPrice > 0,
                         focusedField: $focusedSection,
                         focusedFieldEquals: .executeWhen,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .executeWhen : nil
+                        },
+                        titleView: {
+                            LimitExecuteWhenTitle(asset: vm.draft.fromAsset)
+                        },
+                        content: { LimitExecuteWhenContent(vm: vm) },
+                        valueView: {
+                            Text(targetPriceSummary)
+                                .font(Theme.fonts.caption12)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                         }
-                    ) {
-                        LimitExecuteWhenContent(vm: vm)
-                    }
+                    )
 
                     FormExpandableSection(
                         title: "limitSwap.asset".localized,
@@ -109,18 +116,6 @@ struct LimitSwapBodyView: View {
         guard vm.draft.targetPrice > 0 else { return "" }
         let value = NSDecimalNumber(decimal: vm.draft.targetPrice).stringValue
         return "\(value) \(vm.draft.toAsset.ticker) / \(vm.draft.fromAsset.ticker)"
-    }
-
-    /// Dynamic prompt for the Execute When section header — `"When 1 <ticker>
-    /// is worth"`. The Figma shows an inline coin icon between "1" and the
-    /// ticker; that requires a custom title-view init on `FormExpandableSection`
-    /// (which today only accepts `String`). Text-only fallback for now —
-    /// add the inline icon as a follow-up if the shared component grows a
-    /// `titleView` overload.
-    private var executeWhenTitle: String {
-        let prefix = "limitSwap.executeWhen.headerWhenOne".localized
-        let suffix = "limitSwap.executeWhen.headerIsWorth".localized
-        return "\(prefix) \(vm.draft.fromAsset.ticker) \(suffix)"
     }
 
     /// Asset section is "valid" (and therefore shows the collapsed summary +
@@ -610,6 +605,44 @@ private struct LimitExpirySubBlock: View {
                 .clipShape(RoundedRectangle(cornerRadius: 100))
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Execute When section title
+//
+// "When 1 [icon] <TICKER> is worth" — the icon + ticker reference the
+// source asset (the thing being sold). Ticker is rendered in
+// `textSecondary` to highlight it against the surrounding `textPrimary`
+// header text. Built as a custom titleView for FormExpandableSection
+// because the inline coin logo can't live in a plain String.
+
+private struct LimitExecuteWhenTitle: View {
+
+    let asset: LimitSwapAsset
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("limitSwap.executeWhen.headerWhenOne".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            if !asset.logo.isEmpty {
+                AsyncImageView(
+                    logo: asset.logo,
+                    size: CGSize(width: 16, height: 16),
+                    ticker: asset.ticker,
+                    tokenChainLogo: asset.chainLogo
+                )
+            }
+
+            Text(asset.ticker)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textSecondary)
+
+            Text("limitSwap.executeWhen.headerIsWorth".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
     }
 }
 

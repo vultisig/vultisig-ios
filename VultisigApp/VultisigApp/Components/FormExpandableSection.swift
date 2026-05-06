@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View {
-    let title: String
+    /// Title is type-erased so call sites can pass either a plain String
+    /// (wrapped in a default-styled `Text` by the legacy inits below) or a
+    /// custom view via the `titleView:` ViewBuilder overload (used when the
+    /// header needs inline icons or per-segment styling).
+    let titleContent: AnyView
     let isValid: Bool
     let showValue: Bool
 
@@ -84,7 +88,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder valueView: @escaping () -> ValueView
     ) {
-        self.title = title
+        self.titleContent = Self.defaultTitleView(title)
         self.isValid = isValid
         self.showValue = showValue
         self.focusedField = focusedField
@@ -104,7 +108,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder valueView: @escaping () -> ValueView
     ) {
-        self.title = title
+        self.titleContent = Self.defaultTitleView(title)
         self.isValid = isValid
         self.showValue = showValue
         self.focusedField = focusedField
@@ -112,6 +116,34 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         self.onExpand = onExpand
         self.content = content
         self.valueView = valueView
+    }
+
+    init<TitleView: View>(
+        isValid: Bool,
+        showValue: Bool,
+        focusedField: Binding<T?>,
+        focusedFieldEquals: T,
+        onExpand: @escaping (Bool) -> Void,
+        @ViewBuilder titleView: () -> TitleView,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder valueView: @escaping () -> ValueView
+    ) {
+        self.titleContent = AnyView(titleView())
+        self.isValid = isValid
+        self.showValue = showValue
+        self.focusedField = focusedField
+        self.focusedFieldEquals = [focusedFieldEquals]
+        self.onExpand = onExpand
+        self.content = content
+        self.valueView = valueView
+    }
+
+    private static func defaultTitleView(_ title: String) -> AnyView {
+        AnyView(
+            Text(title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        )
     }
 
     @State var isExpanded = false
@@ -123,9 +155,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
                 onExpand(isExpanded)
             } label: {
                 HStack(spacing: 12) {
-                    Text(title)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                    titleContent
                         .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
 
                     if isValid && !isExpanded {
