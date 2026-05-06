@@ -929,6 +929,17 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignSolana, forKey: .signSolana)
         case .signTon(let vSSignTon):
             try container.encode(vSSignTon, forKey: .signTon)
+        case .signBitcoin:
+            // Bitcoin PSBT signing is not yet exposed through the iOS Codable
+            // surface used by these tests. Fail loudly rather than emit an
+            // empty `sign_data` object that the decoder above would reject.
+            throw EncodingError.invalidValue(
+                self,
+                EncodingError.Context(
+                    codingPath: encoder.codingPath,
+                    debugDescription: "VSKeysignPayload.OneOf_SignData.signBitcoin is not encodable through the test Codable surface."
+                )
+            )
         }
     }
 }

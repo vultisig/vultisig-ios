@@ -112,7 +112,8 @@ struct JoinKeysignDoneSummary: View {
                     toAlias: toAlias(for: keysignPayload),
                     fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat),
                     keysignPayload: viewModel.keysignPayload,
-                    pubKeyECDSA: vault.pubKeyECDSA
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    dappMetadata: viewModel.dappMetadata
                 ),
                 showAlert: $showAlert
             )

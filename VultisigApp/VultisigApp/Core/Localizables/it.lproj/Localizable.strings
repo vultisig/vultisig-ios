@@ -218,6 +218,7 @@
 "customMemo" = "Memo Personalizzato";
 "customToken" = "Token Personalizzato";
 "customTokenErrorSubtitle" = "Impossibile trovare il token. Controlla l'indirizzo del contratto e riprova.";
+"dappRequestFrom" = "Richiesta da";
 "date" = "Data";
 "defiPortfolio" = "Portafoglio DeFi";
 "defiRefreshFailed" = "Impossibile aggiornare le posizioni. Trascina per riprovare.";
@@ -305,6 +306,7 @@
 "estimatedReward" = "Ricompensa Stimata";
 "estNetworkFee" = "Comm. di rete stimata";
 "evmChains" = "Catene EVM";
+"excessGasRefund" = "Rimborso del Gas in Eccesso";
 "expirationDate" = "Data di scadenza";
 "expiresOn" = "Scade";
 "extendExpiration(inYears)" = "Estendere la scadenza (in anni)";
@@ -355,6 +357,7 @@
 "foregroundNotificationGeneric" = "Transazione in attesa di approvazione";
 "foregroundNotificationSend" = "Invia %@";
 "foregroundNotificationSwap" = "Scambia %@ → %@";
+"forwardTonAmount" = "Importo TON Inoltrato";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
@@ -410,6 +413,7 @@
 "invalidVaultData" = "Dati del caveau non validi";
 "Italian" = "Italiano";
 "iUnderstand" = "Ho capito";
+"jettonTransfer" = "Trasferimento Jetton";
 "joiningKeygen" = "Unendosi al keygen";
 "joinKeygen" = "Partecipa a Keygen";
 "joinKeygenConnectionDisclaimer" = "Problemi di connessione?\nUtilizza invece una connessione hotspot personale.\nOppure prova una rete diversa.";
@@ -518,6 +522,7 @@
 "nextAward" = "Prossima Ricompensa";
 "nextChurn" = "Prossima Rotazione";
 "nextPayout" = "Prossimo Pagamento";
+"nftTransfer" = "Trasferimento NFT";
 "no" = "No";
 "noActiveChainsFound" = "Nessuna chain attiva trovata";
 "noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\n\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di timeout.";
@@ -634,6 +639,7 @@
 "providerLabel" = "Fornitore (opzionale)";
 "pushNotifications" = "Notifiche push";
 "pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
+"rawPayload" = "Dati grezzi";
 "ready" = "Pronto";
 "Rebond" = "Rebond";
 "rebondAmount" = "Importo rebond (Opzionale - lascia vuoto per trasferire tutto il RUNE vincolato)";
@@ -878,9 +884,6 @@
 "to" = "A";
 "today" = "Oggi";
 "tokens" = "Token";
-"tonConnectMessages" = "Messaggi";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Commissione totale";
 "track" = "Traccia";
 "transaction" = "Transazione";

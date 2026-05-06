@@ -220,6 +220,7 @@
 "customMemo" = "커스텀 메모";
 "customToken" = "커스텀 토큰";
 "customTokenErrorSubtitle" = "가능한 이유: 잘못된 계약, 지원되지 않는 체인 또는 레지스트리에서 제거된 토큰.";
+"dappRequestFrom" = "요청 출처";
 "date" = "날짜";
 "defiPortfolio" = "DeFi 포트폴리오";
 "defiRefreshFailed" = "포지션을 새로 고칠 수 없습니다. 아래로 당겨 다시 시도하세요.";
@@ -311,6 +312,7 @@
 "estimatedReward" = "예상 보상";
 "estNetworkFee" = "예상 네트워크 수수료";
 "evmChains" = "EVM 체인";
+"excessGasRefund" = "초과 가스 환불";
 "expirationDate" = "만료 날짜";
 "expiresOn" = "만료 날짜";
 "extendExpiration(inYears)" = "만료 연장 (년 단위)";
@@ -361,6 +363,7 @@
 "foregroundNotificationGeneric" = "트랜잭션 승인 대기 중";
 "foregroundNotificationSend" = "%@ 전송";
 "foregroundNotificationSwap" = "%@ → %@ 스왑";
+"forwardTonAmount" = "전달된 TON 금액";
 "foundActiveChainsSubtitle" = "추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";
@@ -416,6 +419,7 @@
 "invalidVaultData" = "유효하지 않은 볼트 데이터";
 "Italian" = "이탈리아어";
 "iUnderstand" = "이해합니다";
+"jettonTransfer" = "Jetton 전송";
 "joiningKeygen" = "키 생성/공유 프로세스에 참여 중입니다. 잠시 기다려 주세요...";
 "joinKeygen" = "키젠 참여";
 "joinKeygenConnectionDisclaimer" = "연결에 문제가 있으신가요?\n개인 핫스팟 연결을 대신 사용하세요.\n또는 다른 네트워크를 시도하세요.";
@@ -525,6 +529,7 @@
 "nextAward" = "다음 보상";
 "nextChurn" = "다음 처른";
 "nextPayout" = "다음 지급";
+"nftTransfer" = "NFT 전송";
 "no" = "아니오";
 "noActiveChainsFound" = "활성 체인을 찾을 수 없습니다";
 "noActiveChainsFoundSubtitle" = "이 시드 문구에서 자산을 감지하지 못했습니다.\n\n추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
@@ -642,6 +647,7 @@
 "providerLabel" = "공급자 (선택 사항)";
 "pushNotifications" = "푸시 알림";
 "pushNotificationsDescription" = "서명이 필요하거나 기기가 액세스를 요청할 때 알림을 받으세요.";
+"rawPayload" = "원시 페이로드";
 "ready" = "준비 완료";
 "Rebond" = "재본드";
 "rebondAmount" = "재본드 금액 (선택 사항 - 모든 본딩된 RUNE을 이전하려면 비워두세요)";
@@ -887,9 +893,6 @@
 "to" = "받는 곳";
 "today" = "오늘";
 "tokens" = "토큰";
-"tonConnectMessages" = "메시지";
-"tonConnectPayloadBadge" = "페이로드";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "총 수수료";
 "track" = "추적";
 "transaction" = "트랜잭션";

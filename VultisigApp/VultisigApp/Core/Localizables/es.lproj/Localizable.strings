@@ -218,6 +218,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Token Personalizado";
 "customTokenErrorSubtitle" = "No pudimos encontrar el token. Por favor, verifica la dirección del contrato e inténtalo de nuevo.";
+"dappRequestFrom" = "Solicitud de";
 "date" = "Fecha";
 "defiPortfolio" = "Portafolio DeFi";
 "defiRefreshFailed" = "No se pudieron actualizar las posiciones. Desliza para reintentar.";
@@ -305,6 +306,7 @@
 "estimatedReward" = "Recompensa estimada";
 "estNetworkFee" = "Comisión estimada de red";
 "evmChains" = "Cadenas EVM";
+"excessGasRefund" = "Reembolso de Gas Excedente";
 "expirationDate" = "Fecha de expiración";
 "expiresOn" = "Vencer";
 "extendExpiration(inYears)" = "Extender el vencimiento (en años)";
@@ -355,6 +357,7 @@
 "foregroundNotificationGeneric" = "Transacción pendiente de aprobación";
 "foregroundNotificationSend" = "Enviar %@";
 "foregroundNotificationSwap" = "Intercambiar %@ → %@";
+"forwardTonAmount" = "Monto de TON Reenviado";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
@@ -410,6 +413,7 @@
 "invalidVaultData" = "Datos del almacén no válidos";
 "Italian" = "Italiano";
 "iUnderstand" = "Entiendo";
+"jettonTransfer" = "Transferencia de Jetton";
 "joiningKeygen" = "Uniéndose al keygen";
 "joinKeygen" = "Unirse a Keygen";
 "joinKeygenConnectionDisclaimer" = "¿Tienes problemas para conectar?\nUsa una conexión de punto de acceso personal.\nO prueba con otra red.";
@@ -518,6 +522,7 @@
 "nextAward" = "Próxima Recompensa";
 "nextChurn" = "Próximo Cambio";
 "nextPayout" = "Próximo pago";
+"nftTransfer" = "Transferencia de NFT";
 "no" = "No";
 "noActiveChainsFound" = "No se encontraron chains activas";
 "noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de timeout.";
@@ -634,6 +639,7 @@
 "providerLabel" = "Proveedor (opcional)";
 "pushNotifications" = "Notificaciones push";
 "pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
+"rawPayload" = "Datos sin procesar";
 "ready" = "Listo";
 "Rebond" = "Rebond";
 "rebondAmount" = "Cantidad de rebond (Opcional - dejar vacío para transferir todo el RUNE vinculado)";
@@ -878,9 +884,6 @@
 "to" = "A";
 "today" = "Hoy";
 "tokens" = "Tokens";
-"tonConnectMessages" = "Mensajes";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Comisión total";
 "track" = "Rastrear";
 "transaction" = "Transacción";

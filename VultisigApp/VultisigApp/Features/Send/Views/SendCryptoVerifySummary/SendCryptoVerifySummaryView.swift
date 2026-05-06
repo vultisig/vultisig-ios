@@ -52,6 +52,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
     var summary: some View {
         VStack(spacing: 16) {
+            if let metadata = input.dappMetadata, !metadata.isEmpty {
+                DAppRequestBanner(metadata: metadata)
+            }
             heroHeader
             Separator()
 
@@ -118,12 +121,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Separator()
                     SignSolanaDisplayView(signSolana: signSolana)
                 } else if let signTon = input.keysignPayload?.signTon,
-                          let coin = input.keysignPayload?.coin {
+                          let coin = input.keysignPayload?.coin,
+                          let vault = input.vault {
                     Separator()
                     SignTonDisplayView(
                         signTon: signTon,
-                        coinTicker: coin.ticker,
-                        coinDecimals: coin.decimals
+                        keysignPayload: input.keysignPayload,
+                        vault: vault,
+                        fromAddress: coin.address
                     )
                 }
             }
