@@ -16,6 +16,8 @@ struct VaultBannerBackground: View {
             upgradeVaultView
         case .backupVault:
             backupVaultView
+        case .buyVult:
+            buyVultView
         case .followVultisig:
             followVultisigView
         }
@@ -25,6 +27,30 @@ struct VaultBannerBackground: View {
         ZStack(alignment: .trailing) {
             Theme.colors.bgSurface1
             image
+        }
+    }
+
+    var buyVultView: some View {
+        ZStack(alignment: .trailing) {
+            Theme.colors.bgSurface1
+            EllipticalGradient(
+                stops: [
+                    Gradient.Stop(color: Color(red: 0.02, green: 0.22, blue: 0.78), location: 0.00),
+                    Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
+                ],
+                center: UnitPoint(x: 0.5, y: 0.5)
+            )
+            .frame(width: 350, height: 350)
+            .position(x: 264, y: 116)
+            .blur(radius: 35)
+            .opacity(0.5)
+            Image(type.image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 163)
+                .frame(maxHeight: .infinity)
+                .clipped()
+                .accessibilityHidden(true)
         }
     }
 

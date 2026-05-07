@@ -103,7 +103,7 @@ private struct CarouselBannerCloseButton: View {
 
 #Preview {
     VStack {
-        CarouselBannerView(banner: VaultBannerType.backupVault) {} onClose: {}
+        CarouselBannerView(banner: VaultBannerType.buyVult) {} onClose: {}
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     .background(Theme.colors.bgPrimary)
