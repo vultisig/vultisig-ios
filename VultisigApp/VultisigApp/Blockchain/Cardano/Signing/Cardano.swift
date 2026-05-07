@@ -45,6 +45,15 @@ class CardanoHelper {
      */
     static let defaultMinUTXOValue: BigInt = 1_400_000 // 1.4 ADA in lovelaces (real-world tested)
 
+    /// Lovelace floor we attach to the recipient output of a CNT send. Cardano
+    /// (Babbage era) requires every output to carry a minimum ADA value that
+    /// scales with the bundle's CBOR size; a single-CNT output is typically
+    /// ~0.85 ADA, but we use 1.5 ADA to leave headroom and avoid the network
+    /// 3125 "insufficiently funded outputs" rejection. Computing the exact
+    /// minimum dynamically is a future enhancement — see the `min-ada-dynamic`
+    /// note in the wiki spec.
+    static let minLovelaceOnTokenOutput: UInt64 = 1_500_000
+
     /// Validate Cardano transaction meets UTXO requirements for both send amount and remaining balance
     /// 
     /// Cardano UTXO Validation Rules:
@@ -167,16 +176,31 @@ class CardanoHelper {
             throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
         }
 
-        // Prevent from accidentally sending all balance
+        let tokenBundle: CardanoTokenBundle? = try makeTokenBundle(for: keysignPayload)
+
+        // `useMaxAmount` is an ADA-only flag — it tells the signer to drain
+        // every input lovelace (minus fee) into the recipient output. For
+        // CNT sends the user's "Send Max" toggle means "send all the token",
+        // and the lovelace floor is fixed at min-UTxO; never set this for
+        // token sends.
         var safeGuardMaxAmount = false
-        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
+        if tokenBundle == nil,
+           let rawBalance = Int64(keysignPayload.coin.rawBalance),
            sendMaxAmount,
            rawBalance > 0,
            rawBalance == Int64(keysignPayload.toAmount) {
             safeGuardMaxAmount = true
         }
 
-        let tokenBundle: CardanoTokenBundle? = try makeTokenBundle(for: keysignPayload)
+        // `transferMessage.amount` is the lovelace value of the recipient
+        // output. For an ADA-only send it's the user-typed amount. For a CNT
+        // send the user-typed amount is denominated in the token's base units
+        // (e.g. 665000 = 0.665 USDM), NOT lovelace — passing it here would
+        // produce an output below Cardano's min-UTxO floor and the network
+        // rejects it with code 3125. Use a conservative floor instead.
+        let recipientLovelace: UInt64 = tokenBundle == nil
+            ? UInt64(keysignPayload.toAmount)
+            : Self.minLovelaceOnTokenOutput
 
         // For Cardano, we don't use UTXOs from Blockchair since it doesn't support Cardano
         // Instead, we create a simplified input structure
@@ -184,7 +208,7 @@ class CardanoHelper {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.changeAddress = keysignPayload.coin.address
-                $0.amount = UInt64(keysignPayload.toAmount)
+                $0.amount = recipientLovelace
                 $0.useMaxAmount = safeGuardMaxAmount
                 if let tokenBundle {
                     $0.tokenAmount = tokenBundle
