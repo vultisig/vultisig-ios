@@ -48,28 +48,28 @@ final class CardanoNativeTokensServiceTests: XCTestCase {
         XCTAssertEqual(m.assetNameHex, "dead")
     }
 
-    // MARK: - hexToAscii pure function
+    // MARK: - String.hexToAscii() extension
 
     func testHexToAsciiDecodesPrintable() {
-        XCTAssertEqual(hexToAscii("474553"), "GES")
-        XCTAssertEqual(hexToAscii("48656c6c6f"), "Hello")
+        XCTAssertEqual("474553".hexToAscii(), "GES")
+        XCTAssertEqual("48656c6c6f".hexToAscii(), "Hello")
     }
 
     func testHexToAsciiOddLengthReturnsEmpty() {
-        XCTAssertEqual(hexToAscii("4"), "")
+        XCTAssertEqual("4".hexToAscii(), "")
     }
 
     func testHexToAsciiNonHexReturnsEmpty() {
-        XCTAssertEqual(hexToAscii("zz"), "")
+        XCTAssertEqual("zz".hexToAscii(), "")
     }
 
     func testHexToAsciiEmptyReturnsEmpty() {
-        XCTAssertEqual(hexToAscii(""), "")
+        XCTAssertEqual("".hexToAscii(), "")
     }
 
     func testHexToAsciiHighBitMaskedToSeven() {
         // SDK uses Buffer.toString('ascii') which masks each byte to 7 bits.
         // 0xC3 (11000011) & 0x7F -> 0x43 ('C').
-        XCTAssertEqual(hexToAscii("c3"), "C")
+        XCTAssertEqual("c3".hexToAscii(), "C")
     }
 }

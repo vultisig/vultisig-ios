@@ -36,6 +36,30 @@ extension String {
     var nilIfEmpty: String? {
         return isEmpty ? nil : self
     }
+
+    /// Trim whitespace + newlines and return `nil` if the result is empty.
+    var trimmedNonEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Decode a hex string into ASCII, masking each byte to 7 bits to match
+    /// Node's `Buffer.from(hex, 'hex').toString('ascii')` behaviour. Returns
+    /// an empty string on odd length or non-hex input. Used for Cardano
+    /// native-token ticker derivation.
+    func hexToAscii() -> String {
+        var bytes: [UInt8] = []
+        var iterator = self.makeIterator()
+        while let high = iterator.next(), let low = iterator.next() {
+            guard
+                let highValue = high.hexDigitValue,
+                let lowValue = low.hexDigitValue
+            else { return "" }
+            bytes.append(UInt8(highValue * 16 + lowValue) & 0x7F)
+        }
+        return String(bytes: bytes, encoding: .ascii) ?? ""
+    }
+
     func toLibType() -> LibType? {
         LibType.allCases.first {
             $0.toString().uppercased() == self.uppercased()

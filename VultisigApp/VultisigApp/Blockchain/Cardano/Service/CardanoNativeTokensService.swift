@@ -42,7 +42,7 @@ actor CardanoNativeTokensService {
         let policyId = asset.policyId.lowercased()
         let assetNameHex = (asset.assetName ?? "").lowercased()
         let assetId = CardanoAssetId.make(policyId: policyId, assetName: assetNameHex)
-        let ticker = hexToAscii(assetNameHex).nonEmptyOrNil
+        let ticker = assetNameHex.hexToAscii().nilIfEmpty
             ?? String(policyId.prefix(8)).uppercased()
         return CardanoTokenMetadata(
             assetId: assetId,
@@ -104,25 +104,4 @@ actor CardanoNativeTokensService {
 
 enum CardanoNativeTokensServiceError: Error, Equatable {
     case assetNotFound(String)
-}
-
-func hexToAscii(_ hex: String) -> String {
-    var bytes: [UInt8] = []
-    var iterator = hex.makeIterator()
-    while let high = iterator.next(), let low = iterator.next() {
-        guard
-            let highValue = high.hexDigitValue,
-            let lowValue = low.hexDigitValue
-        else { return "" }
-        bytes.append(UInt8(highValue * 16 + lowValue) & 0x7F)
-    }
-    return String(bytes: bytes, encoding: .ascii) ?? ""
-}
-
-private extension String {
-    var nonEmptyOrNil: String? { isEmpty ? nil : self }
-    var trimmedNonEmpty: String? {
-        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
-    }
 }
