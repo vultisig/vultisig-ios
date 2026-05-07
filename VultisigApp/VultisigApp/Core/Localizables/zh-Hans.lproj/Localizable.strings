@@ -121,6 +121,9 @@
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
 "buy" = "购买";
+"buyVultBannerButtonTitle" = "购买 $VULT";
+"buyVultBannerSubtitle" = "并节省兑换手续费";
+"buyVultBannerTitle" = "购买 $VULT";
 "cacaoPool" = "Cacao 池";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";
 "cancel" = "取消";

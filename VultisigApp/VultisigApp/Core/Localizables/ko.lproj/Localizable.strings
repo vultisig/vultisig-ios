@@ -129,6 +129,9 @@
 "broadcastRetryStaleNonce" = "트랜잭션 nonce가 오래되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleQuote" = "견적이 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "buy" = "구매";
+"buyVultBannerButtonTitle" = "$VULT 구매";
+"buyVultBannerSubtitle" = "스왑 수수료 절약";
+"buyVultBannerTitle" = "$VULT 구매";
 "cacaoPool" = "Cacao 풀";
 "cacaoUnstakeMaturityMessage" = "입금 만기까지 %@";
 "cancel" = "취소";
