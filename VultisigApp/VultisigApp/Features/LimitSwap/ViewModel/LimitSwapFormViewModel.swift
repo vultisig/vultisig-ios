@@ -54,6 +54,12 @@ final class LimitSwapFormViewModel {
     private let vault: Vault
     private let interactor: LimitSwapInteractor
 
+    /// Tags each in-flight `refreshMarketPrice` so a slower older request
+    /// can't overwrite a faster newer one's `marketPriceRef`/`error` after
+    /// it lands. Pure UUID ordering — no pointer to the actual Task is
+    /// kept, so cancellation is implicit (we just ignore the result).
+    private var marketPriceRequestID = UUID()
+
     init(initialDraft: LimitSwapDraft, vault: Vault, interactor: LimitSwapInteractor) {
         self.draft = initialDraft
         self.vault = vault
@@ -141,6 +147,9 @@ final class LimitSwapFormViewModel {
     }
 
     func refreshMarketPrice() async {
+        let requestID = UUID()
+        marketPriceRequestID = requestID
+
         guard let fromMemo = draft.fromAsset.memoSymbol,
               let toMemo = draft.toAsset.memoSymbol else {
             logger.warning("refreshMarketPrice: missing memo symbol — from=\(self.draft.fromAsset.ticker, privacy: .public) to=\(self.draft.toAsset.ticker, privacy: .public)")
@@ -157,7 +166,13 @@ final class LimitSwapFormViewModel {
 
         isLoadingMarketPrice = true
         marketPriceError = nil
-        defer { isLoadingMarketPrice = false }
+        defer {
+            // Only the most-recent request clears the loading flag — older
+            // ones must not flip a brand-new in-flight request's spinner off.
+            if requestID == marketPriceRequestID {
+                isLoadingMarketPrice = false
+            }
+        }
         do {
             let price = try await interactor.fetchMarketPrice(
                 sourceAsset: fromMemo,
@@ -167,9 +182,13 @@ final class LimitSwapFormViewModel {
                 targetDecimals: draft.toAsset.decimals,
                 destinationAddress: destAddress
             )
+            // Guard against stale-response overwrites: if a newer request
+            // started while this one was awaiting, drop our result.
+            guard requestID == marketPriceRequestID else { return }
             marketPriceRef = price
             logger.info("refreshMarketPrice: \(fromMemo, privacy: .public) → \(toMemo, privacy: .public) = \(price.description, privacy: .public)")
         } catch {
+            guard requestID == marketPriceRequestID else { return }
             marketPriceError = error
             logger.error("refreshMarketPrice failed: \(error.localizedDescription, privacy: .public)")
         }

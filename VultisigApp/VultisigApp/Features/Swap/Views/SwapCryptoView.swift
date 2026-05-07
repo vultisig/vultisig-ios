@@ -5,7 +5,10 @@
 //  Created by Amol Kumar on 2024-03-15.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-crypto-view")
 
 struct SwapCryptoView: View {
     let fromCoin: Coin?
@@ -171,8 +174,10 @@ struct SwapCryptoView: View {
             try storage.persist(updated, for: vault)
         } catch {
             // Persist failure is non-fatal: the broadcast already succeeded.
-            // Log and drop — the user still sees the success screen with the
-            // inbound TX hash, and TX History will pick up the inbound TX.
+            // The user still sees the success screen with the inbound TX
+            // hash, and TX History will pick up the inbound TX. Log so the
+            // failure is debuggable rather than silent.
+            logger.error("LimitOrder persist failed: \(error.localizedDescription, privacy: .public)")
         }
         pendingLimitOrderRecord = nil
     }

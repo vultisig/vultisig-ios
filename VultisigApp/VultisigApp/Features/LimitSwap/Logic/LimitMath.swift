@@ -37,7 +37,7 @@ func evaluateWarning(targetPrice: Decimal, marketPrice: Decimal) -> LimitSwapWar
     if targetPrice <= marketPrice {
         return .priceAtOrBelowMarket
     }
-    let upperBound = marketPrice * Decimal(string: "1.2")!
+    let upperBound = marketPrice * Decimal(12) / Decimal(10)
     if targetPrice > upperBound {
         return .priceFarAboveMarket
     }

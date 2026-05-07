@@ -266,6 +266,11 @@ struct LimitSwapEntryView: View {
         let memo = confirmationVM.memo
         let sourceAmount = vm.draft.sourceAmount
         let draft = vm.draft
+        // Capture the destination address up front so it can't drift mid-task
+        // (e.g. if the user navigates and the VM gets a different toAsset).
+        // Same lookup the inputs build used; mirroring it into the persisted
+        // record ensures TX History shows the correct recipient.
+        let capturedDestAddress = vm.destinationAddress() ?? ""
 
         await confirmationVM.attemptSign {
             // Assemble the KeysignPayload for the source chain (fetches
@@ -288,7 +293,7 @@ struct LimitSwapEntryView: View {
                 sourceAmount: sourceAmount.description,
                 sourceDecimals: draft.fromAsset.decimals,
                 targetAsset: draft.toAsset.memoSymbol ?? "",
-                destAddress: draft.toAsset.ticker,
+                destAddress: capturedDestAddress,
                 targetPrice: draft.targetPrice,
                 expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
                 createdAt: Date(),

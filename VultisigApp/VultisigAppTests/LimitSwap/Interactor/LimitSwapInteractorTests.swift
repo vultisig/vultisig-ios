@@ -144,7 +144,7 @@ final class LimitSwapInteractorTests: XCTestCase {
             sourceAmount: BigInt("1000000000000000000"),
             sourceDecimals: 18,
             targetAsset: "BTC.BTC",
-            destAddress: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+            destAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
             targetPrice: Decimal(string: "0.0625")!,
             expiryHours: 24,
             affiliate: "myref/vi",

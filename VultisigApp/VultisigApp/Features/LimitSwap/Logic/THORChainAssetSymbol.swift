@@ -25,10 +25,14 @@ func thorchainMemoAsset(
     }
     if isNativeToken {
         return "\(prefix).\(ticker)"
-    } else {
-        let suffix = contractAddress.suffix(6).uppercased()
-        return "\(prefix).\(ticker)-\(suffix)"
     }
+    // Token form: `<CHAIN>.<TICKER>-<SUFFIX>` where SUFFIX is the last 6 chars
+    // of the contract address. Reject too-short or whitespace-only contracts
+    // so the memo never gains a trailing `-` (or worse, a malformed suffix).
+    let normalized = contractAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard normalized.count >= 6 else { return nil }
+    let suffix = normalized.suffix(6).uppercased()
+    return "\(prefix).\(ticker)-\(suffix)"
 }
 
 /// Convenience overload over `Coin`.
@@ -82,7 +86,14 @@ func isThorchainRoutable(chain: Chain) -> Bool {
 /// return our `Chain` enum case. Falls back to `nil` if the symbol isn't
 /// in the prefix table — typically a chain THORChain has added that we
 /// haven't coded a prefix for yet.
+///
+/// `"THOR"` matches three `Chain` cases (mainnet, chainnet, stagenet) so
+/// the iteration alone would resolve based on enum order. Pin to canonical
+/// mainnet (`.thorChain`) explicitly — Stagenet and Chainnet are dev
+/// targets that wouldn't show up via a public `inbound_addresses` fetch
+/// in production anyway.
 func chainFromThorchainSymbol(_ symbol: String) -> Chain? {
     let upper = symbol.uppercased()
+    if upper == "THOR" { return .thorChain }
     return Chain.allCases.first { thorchainChainPrefix(for: $0) == upper }
 }

@@ -102,12 +102,16 @@ struct SwapCoinPickerView: View {
             // If a chain filter is in effect and the seed `selectedChain`
             // isn't in the filtered set, default to the first allowed chain
             // so the carousel never lands on an unselectable highlight.
+            // The `onChange(of: selectedChain)` handler triggers
+            // `reloadCoins()` automatically when the assignment lands, so
+            // we skip the redundant call here in that branch.
             if let chainFilter,
                let current = selectedChain,
                !chainFilter(current) {
                 selectedChain = availableChains.first
+            } else {
+                reloadCoins()
             }
-            reloadCoins()
         }
         .onChange(of: selectedChain) { _, _ in
             reloadCoins()
