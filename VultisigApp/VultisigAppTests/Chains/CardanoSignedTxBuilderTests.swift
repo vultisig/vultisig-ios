@@ -4,38 +4,70 @@
 //
 
 @testable import VultisigApp
+import WalletCore
 import XCTest
 
+/// Byte-parity fixtures shared with the SDK's
+/// `packages/sdk/tests/unit/chains/cardano.test.ts`. The pubkey/signature/body
+/// inputs and the expected envelope + Blake2b-256 body hash hex are pinned to
+/// the same values on both platforms — any drift in either implementation
+/// breaks one of these tests.
 final class CardanoSignedTxBuilderTests: XCTestCase {
 
-    private let pubkey = Data(repeating: 0xAA, count: 32)
-    private let sig = Data(repeating: 0xBB, count: 64)
+    // Same constants as `PUB_KEY` / `SIGNATURE` in the SDK test file.
+    private let pubkey = Data(repeating: 0x11, count: 32)
+    private let sig = Data(repeating: 0x22, count: 64)
 
-    // MARK: - Full envelope byte-parity
+    // SDK test: `MINIMAL_BODY_HEX = 'a10200'` — minimal Shelley body { fee: 0 }.
+    private let minimalBodyHex = "a10200"
+
+    // SDK test: text-keyed `{ "hi": 42 }`. Re-encoding through a CBOR encoder
+    // would canonicalise this differently, breaking the signature.
+    private let verbatimBodyHex = "a1626869182a"
+
+    // Blake2b-256 of `a10200` — the sighash that goes to MPC, and is also
+    // the Cardano txid. Computed with `blake2b(body, { dkLen: 32 })`.
+    private let minimalBodyHashHex = "e643da0cf5d24591cb32b2a5e658b2c4659f39ce35c981f62e0abc28e065ada7"
+
+    // MARK: - Full envelope byte-parity (matches SDK `buildSignedCardanoTx`)
 
     func testBuildProducesExpectedEnvelope() throws {
-        let body = Data([0xA0]) // 1-byte body (CBOR empty map for arbitrary fixture)
+        let body = Data(hexString: minimalBodyHex)!
         let signed = try CardanoSignedTxBuilder.build(txBody: body, publicKey: pubkey, signature: sig)
 
-        var expected = Data()
-        expected.append(0x84) // outer array(4)
-        expected.append(body)
-        expected.append(contentsOf: [0xA1, 0x00, 0x81, 0x82]) // witness header
-        expected.append(contentsOf: [0x58, 0x20]) // bytes(32) for pubkey
-        expected.append(pubkey)
-        expected.append(contentsOf: [0x58, 0x40]) // bytes(64) for signature
-        expected.append(sig)
-        expected.append(0xF5) // isValid = true
-        expected.append(0xF6) // auxiliary_data = null
-        XCTAssertEqual(signed, expected)
+        // 84                         array(4)
+        //   <body bytes verbatim>    a1 02 00
+        //   <witness set>             a1 00 81 82 5820 <pk> 5840 <sig>
+        //   f5                        true
+        //   f6                        null
+        let expectedHex = "84"
+            + minimalBodyHex
+            + "a10081825820"
+            + String(repeating: "11", count: 32)
+            + "5840"
+            + String(repeating: "22", count: 64)
+            + "f5f6"
+        XCTAssertEqual(signed.hexString.lowercased(), expectedHex)
     }
 
     func testBuildPreservesTxBodyVerbatim() throws {
-        // Tx body must NOT be re-encoded. Use a body with bytes that a naive
-        // CBOR encoder might canonicalise (e.g. uint widths, map key order).
-        let body = Data([0xA3, 0x00, 0x81, 0x82, 0xD8, 0x18, 0x42, 0x10, 0xFF])
+        // Body that would round-trip differently through a "smart" CBOR
+        // encoder (text-keyed map, single-byte uint becoming two bytes).
+        let body = Data(hexString: verbatimBodyHex)!
         let signed = try CardanoSignedTxBuilder.build(txBody: body, publicKey: pubkey, signature: sig)
         XCTAssertEqual(signed[1..<(1 + body.count)], body)
+        XCTAssertTrue(signed.hexString.lowercased().hasPrefix("84" + verbatimBodyHex))
+    }
+
+    // MARK: - Body hash byte-parity (matches SDK `cardanoTxBodyHash`)
+
+    func testBodyHashMatchesSdkCardanoTxBodyHash() throws {
+        // Cardano defines txid as Blake2b-256 of the body. iOS hashes via
+        // WalletCore (`Hash.blake2b`) and the SDK uses `@noble/hashes/blake2b`
+        // — both must produce the same hex for the same body.
+        let body = Data(hexString: minimalBodyHex)!
+        let hash = Hash.blake2b(data: body, size: 32)
+        XCTAssertEqual(hash.hexString.lowercased(), minimalBodyHashHex)
     }
 
     // MARK: - cborBytes length encoding
