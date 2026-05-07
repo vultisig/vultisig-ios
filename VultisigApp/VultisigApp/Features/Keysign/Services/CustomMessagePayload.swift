@@ -30,6 +30,12 @@ struct CustomMessagePayload: Codable, Hashable {
         if method == "eth_signTypedData_v4" {
             // Handle eth_signTypedData_v4 (EIP-712)
             return keysignMessagesForTypedData()
+        } else if chain.lowercased() == "cardano" {
+            // CIP-30 dApp signing (signTx / signData) — the Windows extension
+            // pre-computes the Blake2b-256 of the tx body (signTx) or the COSE
+            // Sig_structure bytes (signData) and ships them as the message.
+            // Sign verbatim; mirrors getCustomMessageHex.ts in vultisig-windows.
+            return [data.hexString]
         } else if method == "sign_message" && chain.lowercased() == "tron" {
             // TRON: message has TIP-191/legacy header prefix from extension, hash with keccak256
             let hash = data.sha3(.keccak256)
