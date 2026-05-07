@@ -76,9 +76,15 @@ actor CardanoNativeTokensService {
         }
 
         let registry = info.tokenRegistryMetadata
+        // Fallback chain mirrors SDK getCardanoTokenMetadata, with one
+        // extra step: if the asset has no name (empty hex) we fall back
+        // to the policy-id prefix instead of returning an empty ticker.
+        // Matches discoverTokens' behaviour for symmetry between the
+        // auto-discovery path and the manual-add path.
         let ticker = registry?.ticker?.trimmedNonEmpty
             ?? info.assetNameAscii?.trimmedNonEmpty
-            ?? String(parsed.assetName.prefix(8)).uppercased()
+            ?? String(parsed.assetName.prefix(8)).uppercased().nilIfEmpty
+            ?? String(parsed.policyId.prefix(8)).uppercased()
         let decimals = registry?.decimals ?? info.decimals ?? 0
 
         let metadata = CardanoTokenMetadata(

@@ -11,6 +11,7 @@ enum CardanoAssetIdError: Error, Equatable {
     case invalidPolicyIdLength(Int)
     case nonHexPolicyId
     case invalidAssetNameLength(Int)
+    case oddAssetNameLength(Int)
     case nonHexAssetName
 }
 
@@ -42,6 +43,10 @@ enum CardanoAssetId {
         }
         guard assetName.count <= maxAssetNameHexLength else {
             throw CardanoAssetIdError.invalidAssetNameLength(assetName.count)
+        }
+        // Asset name encodes raw bytes — odd-length hex is malformed.
+        guard assetName.count.isMultiple(of: 2) else {
+            throw CardanoAssetIdError.oddAssetNameLength(assetName.count)
         }
         guard isHex(assetName) else {
             throw CardanoAssetIdError.nonHexAssetName

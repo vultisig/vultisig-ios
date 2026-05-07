@@ -57,6 +57,9 @@ final class CardanoNativeTokensServiceTests: XCTestCase {
 
     func testHexToAsciiOddLengthReturnsEmpty() {
         XCTAssertEqual("4".hexToAscii(), "")
+        // Multi-byte odd-length must also reject — earlier impl partial-decoded
+        // and produced "A" for "414".
+        XCTAssertEqual("414".hexToAscii(), "")
     }
 
     func testHexToAsciiNonHexReturnsEmpty() {
@@ -67,9 +70,13 @@ final class CardanoNativeTokensServiceTests: XCTestCase {
         XCTAssertEqual("".hexToAscii(), "")
     }
 
-    func testHexToAsciiHighBitMaskedToSeven() {
-        // SDK uses Buffer.toString('ascii') which masks each byte to 7 bits.
-        // 0xC3 (11000011) & 0x7F -> 0x43 ('C').
-        XCTAssertEqual("c3".hexToAscii(), "C")
+    func testHexToAsciiRejectsNonPrintableBytes() {
+        // 0xC3 is non-ASCII; we reject rather than mask to 0x43 ('C') so
+        // the caller falls back to the policy-id prefix.
+        XCTAssertEqual("c3".hexToAscii(), "")
+        // 0x1F is below the printable range.
+        XCTAssertEqual("1f".hexToAscii(), "")
+        // 0x7F (DEL) is also rejected.
+        XCTAssertEqual("7f".hexToAscii(), "")
     }
 }

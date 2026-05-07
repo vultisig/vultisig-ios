@@ -91,7 +91,10 @@ final class CardanoExtendedUtxoTests: XCTestCase {
         XCTAssertNil(CardanoExtendedUtxo(entry))
     }
 
-    func testSkipsAssetsWithNonNumericQuantity() throws {
+    func testRejectsWholeUtxoWhenAnyAssetIsMalformed() {
+        // Partial decoding here would understate the token bundle and
+        // produce an invalid Cardano body at sign time, so any bad asset
+        // must invalidate the whole UTxO.
         let entry = CardanoExtendedUtxoEntry(
             txHash: "x",
             txIndex: 0,
@@ -101,9 +104,19 @@ final class CardanoExtendedUtxoTests: XCTestCase {
                 CardanoAssetEntry(policyId: "c", assetName: "d", fingerprint: nil, decimals: 0, quantity: "5")
             ]
         )
-        let utxo = try XCTUnwrap(CardanoExtendedUtxo(entry))
-        XCTAssertEqual(utxo.assets.count, 1)
-        XCTAssertEqual(utxo.assets[0].policyId, "c")
+        XCTAssertNil(CardanoExtendedUtxo(entry))
+    }
+
+    func testRejectsUtxoWithNegativeAssetQuantity() {
+        let entry = CardanoExtendedUtxoEntry(
+            txHash: "x",
+            txIndex: 0,
+            value: "1000000",
+            assetList: [
+                CardanoAssetEntry(policyId: "a", assetName: "b", fingerprint: nil, decimals: 0, quantity: "-5")
+            ]
+        )
+        XCTAssertNil(CardanoExtendedUtxo(entry))
     }
 
     // MARK: - Koios JSON wire decoding

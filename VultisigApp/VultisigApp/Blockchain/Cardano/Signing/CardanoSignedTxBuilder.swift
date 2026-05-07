@@ -8,7 +8,6 @@ import Foundation
 enum CardanoSignedTxBuilderError: Error, Equatable {
     case invalidPublicKeyLength(Int)
     case invalidSignatureLength(Int)
-    case bodyTooLarge(Int)
 }
 
 /// Hand-built signed Cardano transaction CBOR envelope.
@@ -20,7 +19,6 @@ enum CardanoSignedTxBuilder {
 
     static let publicKeyLength = 32
     static let signatureLength = 64
-    private static let maxBodyLength = 0xFFFF
 
     static func build(txBody: Data, publicKey: Data, signature: Data) throws -> Data {
         guard publicKey.count == publicKeyLength else {
@@ -28,9 +26,6 @@ enum CardanoSignedTxBuilder {
         }
         guard signature.count == signatureLength else {
             throw CardanoSignedTxBuilderError.invalidSignatureLength(signature.count)
-        }
-        guard txBody.count <= maxBodyLength else {
-            throw CardanoSignedTxBuilderError.bodyTooLarge(txBody.count)
         }
 
         let witness = buildWitness(publicKey: publicKey, signature: signature)

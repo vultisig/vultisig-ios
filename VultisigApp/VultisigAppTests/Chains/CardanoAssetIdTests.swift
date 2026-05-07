@@ -82,6 +82,13 @@ final class CardanoAssetIdTests: XCTestCase {
         }
     }
 
+    func testParseRejectsOddLengthAssetName() {
+        // Asset name encodes raw bytes — odd-length hex is malformed.
+        XCTAssertThrowsError(try CardanoAssetId.parse("\(policy).abc")) { error in
+            XCTAssertEqual(error as? CardanoAssetIdError, .oddAssetNameLength(3))
+        }
+    }
+
     func testParseAcceptsMaxAssetNameLength() throws {
         let max = String(repeating: "f", count: CardanoAssetId.maxAssetNameHexLength)
         let parsed = try CardanoAssetId.parse("\(policy).\(max)")

@@ -30,8 +30,9 @@ extension CardanoExtendedUtxo {
             !entry.txHash.isEmpty
         else { return nil }
 
-        let assets: [CardanoUtxoAsset] = (entry.assetList ?? []).compactMap { asset in
-            guard let quantity = BigInt(asset.quantity) else { return nil }
+        let rawAssets = entry.assetList ?? []
+        let assets: [CardanoUtxoAsset] = rawAssets.compactMap { asset in
+            guard let quantity = BigInt(asset.quantity), quantity >= 0 else { return nil }
             return CardanoUtxoAsset(
                 policyId: asset.policyId.lowercased(),
                 assetNameHex: (asset.assetName ?? "").lowercased(),
@@ -39,6 +40,10 @@ extension CardanoExtendedUtxo {
                 decimals: asset.decimals ?? 0
             )
         }
+        // If any asset failed to parse, reject the whole UTxO — using a
+        // partially-decoded UTxO at sign time would understate the token
+        // bundle and produce an invalid Cardano body.
+        guard assets.count == rawAssets.count else { return nil }
 
         self.init(hash: entry.txHash, index: index, amount: amount, assets: assets)
     }

@@ -43,19 +43,25 @@ extension String {
         return trimmed.isEmpty ? nil : trimmed
     }
 
-    /// Decode a hex string into ASCII, masking each byte to 7 bits to match
-    /// Node's `Buffer.from(hex, 'hex').toString('ascii')` behaviour. Returns
-    /// an empty string on odd length or non-hex input. Used for Cardano
-    /// native-token ticker derivation.
+    /// Decode a hex string into printable ASCII. Returns `""` on odd length,
+    /// non-hex input, or any byte outside the printable-ASCII range
+    /// (`0x20…0x7E`). Used for Cardano native-token ticker derivation:
+    /// callers fall back to a policy-id prefix when this returns empty so
+    /// non-ASCII binary asset names don't surface as garbled tickers.
     func hexToAscii() -> String {
+        guard count.isMultiple(of: 2) else { return "" }
+
         var bytes: [UInt8] = []
+        bytes.reserveCapacity(count / 2)
         var iterator = self.makeIterator()
         while let high = iterator.next(), let low = iterator.next() {
             guard
                 let highValue = high.hexDigitValue,
                 let lowValue = low.hexDigitValue
             else { return "" }
-            bytes.append(UInt8(highValue * 16 + lowValue) & 0x7F)
+            let byte = UInt8(highValue * 16 + lowValue)
+            guard (0x20...0x7E).contains(byte) else { return "" }
+            bytes.append(byte)
         }
         return String(bytes: bytes, encoding: .ascii) ?? ""
     }

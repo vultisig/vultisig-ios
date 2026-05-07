@@ -106,10 +106,11 @@ final class CardanoSignedTxBuilderTests: XCTestCase {
         }
     }
 
-    func testRejectsBodyTooLarge() {
-        let huge = Data(repeating: 0x01, count: 65536)
-        XCTAssertThrowsError(try CardanoSignedTxBuilder.build(txBody: huge, publicKey: pubkey, signature: sig)) { error in
-            XCTAssertEqual(error as? CardanoSignedTxBuilderError, .bodyTooLarge(65536))
-        }
+    func testAcceptsLargeTxBody() throws {
+        // No artificial 64 KiB limit on the body — the envelope appends it
+        // verbatim, not via a length-prefixed CBOR field.
+        let body = Data(repeating: 0xCC, count: 70_000)
+        let signed = try CardanoSignedTxBuilder.build(txBody: body, publicKey: pubkey, signature: sig)
+        XCTAssertEqual(signed[1..<(1 + body.count)], body)
     }
 }
