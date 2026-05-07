@@ -170,46 +170,17 @@ struct KeysignPayloadFactory {
     }
 
     private func selectCardanoUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
-        // Fetch all available UTXOs for Cardano using Koios API
+        // Mirror SDK behaviour: ship every available UTXO at the address as
+        // an input. WalletCore's Cardano signer picks what it needs at
+        // build time. We deliberately don't run `AnySigner.plan(...)` here
+        // because its UTXO selection trips `errorLowBalance` on CNT sends —
+        // see `Cardano.swift:getCardanoPreSignInputData` for the rationale.
         let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: keysignPayload.coin)
 
         guard !cardanoUTXOs.isEmpty else {
             throw Errors.notEnoughUTXOError
         }
 
-        // Create temporary payload with all available UTXOs for WalletCore planning
-        let tmpKeysignPayload = KeysignPayload(
-            coin: keysignPayload.coin,
-            toAddress: keysignPayload.toAddress,
-            toAmount: keysignPayload.toAmount,
-            chainSpecific: keysignPayload.chainSpecific,
-            utxos: cardanoUTXOs,
-            memo: keysignPayload.memo,
-            swapPayload: keysignPayload.swapPayload,
-            approvePayload: keysignPayload.approvePayload,
-            vaultPubKeyECDSA: keysignPayload.vaultPubKeyECDSA,
-            vaultLocalPartyID: keysignPayload.vaultLocalPartyID,
-            libType: keysignPayload.libType,
-            wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
-            tronTransferContractPayload: nil,
-            tronTriggerSmartContractPayload: nil,
-            tronTransferAssetContractPayload: nil,
-            skipBroadcast: keysignPayload.skipBroadcast,
-            signData: nil
-        )
-
-        let plan = try CardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
-        if plan.utxos.isEmpty {
-            throw Errors.notEnoughUTXOError
-        }
-
-        // Convert WalletCore's selected UTXOs back to UtxoInfo format
-        return plan.utxos.map { utxo in
-            UtxoInfo(
-                hash: utxo.outPoint.txHash.toHexString(),
-                amount: Int64(utxo.amount),
-                index: UInt32(utxo.outPoint.outputIndex)
-            )
-        }
+        return cardanoUTXOs
     }
 }

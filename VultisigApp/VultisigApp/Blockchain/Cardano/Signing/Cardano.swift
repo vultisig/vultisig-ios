@@ -138,26 +138,18 @@ class CardanoHelper {
         return (false, nil)
     }
 
-    /// Calculate dynamic transaction fee using WalletCore's transaction planning
-    /// Similar to how UTXO chains calculate fees dynamically
-    static func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
-        // Reuse existing getPreSignedInputData and deserialize it
-        let input = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
-
-        // Check for transaction plan errors
-        if plan.error != .ok {
-            throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
-        }
-
-        return plan
-    }
-
-    /// Calculate dynamic fee for Cardano transaction using WalletCore planning
-    /// This replaces the fixed fee approach with actual transaction size calculation
+    /// Display fee for the Verify screen — we use the static byteFee from
+    /// chainSpecific (default `cardanoDefaultFee = 180_000` lovelace) rather
+    /// than `AnySigner.plan(...)`. WalletCore's Cardano planner trips
+    /// `errorLowBalance` on CNT sends because it can't reconcile a TokenBundle
+    /// output against lovelace-only TxInputs. The SDK doesn't call `plan()`
+    /// for Cardano either — see `vultisig-sdk/.../signingInputs/resolvers/cardano.ts:55`
+    /// (forceFee from byteFee, no planner).
     static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
-        let plan = try getCardanoTransactionPlan(keysignPayload: keysignPayload)
-        return BigInt(plan.fee)
+        guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
+        }
+        return byteFee
     }
 
     // MARK: - Helper Functions
@@ -254,14 +246,16 @@ class CardanoHelper {
 
     static func getCardanoPreSignInputData(keysignPayload: KeysignPayload) throws -> Data {
         var input = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
-        // Check for transaction plan errors
-        if plan.error != .ok {
-            throw HelperError.runtimeError("Transaction plan error: \(plan.error)")
+        // Skip `AnySigner.plan(...)` — WalletCore's Cardano planner trips
+        // `errorLowBalance` on CNT sends because it can't reconcile a
+        // TokenBundle output with lovelace-only TxInputs. Mirror the SDK:
+        // set `forceFee` from chainSpecific.byteFee directly and let the
+        // signer build the body with all inputs available. See
+        // `vultisig-sdk/.../signingInputs/resolvers/cardano.ts:55`.
+        guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
-
-        input.plan = plan
-        input.transferMessage.forceFee = plan.fee
+        input.transferMessage.forceFee = UInt64(byteFee)
         return try input.serializedData()
     }
     static func getSignedTransaction(vaultHexPubKey: String,
