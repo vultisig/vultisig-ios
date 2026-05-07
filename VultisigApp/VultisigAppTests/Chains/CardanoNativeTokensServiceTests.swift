@@ -70,13 +70,25 @@ final class CardanoNativeTokensServiceTests: XCTestCase {
         XCTAssertEqual("".hexToAscii(), "")
     }
 
-    func testHexToAsciiRejectsNonPrintableBytes() {
-        // 0xC3 is non-ASCII; we reject rather than mask to 0x43 ('C') so
-        // the caller falls back to the policy-id prefix.
-        XCTAssertEqual("c3".hexToAscii(), "")
-        // 0x1F is below the printable range.
+    func testHexToAsciiMasksHighBitAndStripsControl() {
+        // 0xC3 is masked to 0x43 ('C') and survives the printable filter.
+        XCTAssertEqual("c3".hexToAscii(), "C")
+        // 0x1F is a control char (US) — stripped.
         XCTAssertEqual("1f".hexToAscii(), "")
-        // 0x7F (DEL) is also rejected.
+        // 0x7F (DEL) is stripped.
         XCTAssertEqual("7f".hexToAscii(), "")
+    }
+
+    func testHexToAsciiHandlesCip68Prefixes() {
+        // CIP-68 fungible token label (333) = 0x0014df10, followed by "USDM".
+        // The leading [NUL, DC4, 0xdf→0x5f='_', DLE] resolves to "_" after
+        // the printable-only filter; full result is "_USDM".
+        XCTAssertEqual("0014df105553444d".hexToAscii(), "_USDM")
+    }
+
+    func testHexToAsciiReturnsEmptyWhenAllBytesAreControl() {
+        // All bytes resolve to control characters → empty so callers fall
+        // back to the policy-id prefix.
+        XCTAssertEqual("00010203".hexToAscii(), "")
     }
 }
