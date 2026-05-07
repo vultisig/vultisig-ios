@@ -136,6 +136,7 @@
 "cacaoUnstakeMaturityMessage" = "입금 만기까지 %@";
 "cancel" = "취소";
 "canLoseFundsPrompt" = "자금을 잃을 수 있음을 인지합니다";
+"cardanoOutputBelowMinAda" = "네트워크 수수료와 Cardano의 최소 UTXO 요구사항(출력당 약 1.4 ADA)을 충당할 ADA가 부족합니다. 먼저 이 볼트에 ADA를 더 보내세요.";
 "chain" = "체인";
 "chainNotAdded" = "체인이 추가되지 않음";
 "chainNotAddedMessage" = "블록체인 %@이(가) 이 볼트에 추가되지 않았습니다. 볼트 설정에서 수동으로 추가하세요.";

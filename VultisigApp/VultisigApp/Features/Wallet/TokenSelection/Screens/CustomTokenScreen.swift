@@ -162,7 +162,34 @@ struct CustomTokenScreen: View {
         error = nil
 
         do {
-            if ChainType.Solana == chain.chainType {
+            if chain == .cardano {
+
+                let normalisedId = contractAddress.lowercased()
+                let metadata: CardanoTokenMetadata
+                do {
+                    metadata = try await CardanoNativeTokensService.shared.resolveMetadata(assetId: normalisedId)
+                } catch CardanoNativeTokensServiceError.assetNotFound {
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+                    return
+                }
+                let coinMeta = CoinMeta(
+                    chain: chain,
+                    ticker: metadata.ticker,
+                    logo: metadata.registryLogo ?? .empty,
+                    decimals: metadata.decimals,
+                    priceProviderId: .empty,
+                    contractAddress: metadata.assetId,
+                    isNativeToken: false
+                )
+                self.token = coinMeta
+                self.tokenName = metadata.ticker
+                self.tokenSymbol = metadata.ticker
+                self.tokenDecimals = metadata.decimals
+                self.showTokenInfo = true
+                self.isLoading = false
+
+            } else if ChainType.Solana == chain.chainType {
 
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])
 
@@ -247,11 +274,17 @@ struct CustomTokenScreen: View {
         }
     }
 
-    /// Validates whether the given address string is a well-formed address for the current chain.
+    /// Validates whether the given input is a well-formed identifier for the current chain.
+    /// For Cardano, the input is a native-token asset id (`policy_id.asset_name` hex);
+    /// other chains validate the input as a contract/account address.
     /// Updates ``isValidAddress`` accordingly.
-    /// - Parameter address: The raw address string entered by the user.
+    /// - Parameter address: The raw input string.
     private func validateAddress(_ address: String) {
-        isValidAddress = AddressService.validateAddress(address: address, chain: chain)
+        if chain == .cardano {
+            isValidAddress = (try? CardanoAssetId.parse(address)) != nil
+        } else {
+            isValidAddress = AddressService.validateAddress(address: address, chain: chain)
+        }
     }
 
     /// Persists the resolved custom token to the vault and dismisses the screen.

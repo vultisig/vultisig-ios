@@ -84,6 +84,10 @@ class BalanceService {
         } catch {
             logger.error("Update Balances error: \(error.localizedDescription)")
         }
+
+        // Phase 4: Discover Cardano native tokens silently — mirrors Windows
+        // CoinFinder behaviour. Failures here must never break a balance refresh.
+        await discoverCardanoNativeTokens(vault: vault)
     }
 
     /// Phase 1: Extract coin identifiers on MainActor
@@ -236,7 +240,7 @@ class BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
 
         case .cardano:
-            return try await cardano.getBalance(address: address)
+            return try await cardano.getBalance(coin: coin, address: address)
 
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
@@ -418,4 +422,51 @@ private extension BalanceService {
         }
     }
 
+    /// Auto-discover Cardano native tokens (CNT) held at the vault's Cardano
+    /// address and add any new ones. Mirrors vultisig-windows' `CoinFinder`
+    /// silent-discovery behaviour. Run after each balance refresh.
+    @MainActor
+    private func discoverCardanoNativeTokens(vault: Vault) async {
+        guard let cardanoNative = vault.coins.first(where: { $0.chain == .cardano && $0.isNativeToken }) else {
+            return
+        }
+
+        let address = cardanoNative.address
+        let knownContractAddresses = Set(
+            vault.coins
+                .filter { $0.chain == .cardano && !$0.isNativeToken }
+                .map { $0.contractAddress.lowercased() }
+        )
+
+        let discovered: [CardanoTokenMetadata]
+        do {
+            discovered = try await CardanoNativeTokensService.shared.discoverTokens(address: address)
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Cardano CNT discovery failed: \(error.localizedDescription)")
+            }
+            return
+        }
+
+        let newTokens = discovered.filter { !knownContractAddresses.contains($0.assetId) }
+        guard !newTokens.isEmpty else { return }
+
+        let newCoinMetas = newTokens.map { metadata in
+            CoinMeta(
+                chain: .cardano,
+                ticker: metadata.ticker,
+                logo: metadata.registryLogo ?? .empty,
+                decimals: metadata.decimals,
+                priceProviderId: .empty,
+                contractAddress: metadata.assetId,
+                isNativeToken: false
+            )
+        }
+
+        do {
+            try await CoinService.addToChain(assets: newCoinMetas, to: vault)
+        } catch {
+            logger.warning("Cardano CNT auto-add failed: \(error.localizedDescription)")
+        }
+    }
 }

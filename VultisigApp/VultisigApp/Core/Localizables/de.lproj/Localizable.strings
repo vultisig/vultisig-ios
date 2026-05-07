@@ -128,6 +128,7 @@
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";
 "cancel" = "Abbrechen";
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
+"cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
 "chain" = "Blockchain";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";
 "chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";

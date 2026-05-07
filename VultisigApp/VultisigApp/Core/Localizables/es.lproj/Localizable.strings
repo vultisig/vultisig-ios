@@ -128,6 +128,7 @@
 "cacaoUnstakeMaturityMessage" = "%@ hasta que se alcance la madurez del depósito";
 "cancel" = "Cancelar";
 "canLoseFundsPrompt" = "Soy consciente de que puedo perder fondos.";
+"cardanoOutputBelowMinAda" = "No hay suficiente ADA para cubrir la tarifa de red y el requisito mínimo de UTXO de Cardano (~1,4 ADA por salida). Envía más ADA a este vault primero.";
 "chain" = "Cadena";
 "chainNotAdded" = "Cadena No Añadida";
 "chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";
