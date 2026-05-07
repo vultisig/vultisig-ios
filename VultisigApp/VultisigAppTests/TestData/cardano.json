@@ -32,7 +32,7 @@
       "vault_public_key_ecdsa": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
       "lib_type": "DKLS"
     },
-    "expected_image_hash": ["243055cee2766b5bef1329a6791b5c9f62cfdbc15789b4bcac12787bcb465085"]
+    "expected_image_hash": ["e3d60aeb8700f5a1a44724f0b44c23267b97197b15d30ef9b5fbdad41b1943b1"]
   },
   {
     "name": "Send ADA - max amount",

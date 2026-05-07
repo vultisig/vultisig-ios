@@ -470,7 +470,7 @@ class KeysignViewModel: ObservableObject {
         return try await t.value
     }
 
-    func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
+    func getSignedTransaction(keysignPayload: KeysignPayload) async throws -> SignedTransactionType {
         var signedTransactions: [SignedTransactionResult] = []
 
         if let approvePayload = keysignPayload.approvePayload {
@@ -519,7 +519,7 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
 
         case .Cardano:
-            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try await CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {
@@ -597,7 +597,7 @@ class KeysignViewModel: ObservableObject {
         let transactionType: SignedTransactionType
 
         do {
-            transactionType = try getSignedTransaction(keysignPayload: keysignPayload)
+            transactionType = try await getSignedTransaction(keysignPayload: keysignPayload)
         } catch {
             return handleHelperError(err: error)
         }

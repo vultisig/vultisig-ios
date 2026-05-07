@@ -213,10 +213,10 @@ class JoinKeysignViewModel: ObservableObject {
         })
     }
 
-    func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+    func prepareKeysignMessages(keysignPayload: KeysignPayload) async {
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
-            let preSignedImageHash = try keysignFactory.getKeysignMessages()
+            let preSignedImageHash = try await keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
@@ -253,7 +253,7 @@ class JoinKeysignViewModel: ObservableObject {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
             }
             if let payload = keysignMsg.payload {
-                self.prepareKeysignMessages(keysignPayload: payload)
+                await self.prepareKeysignMessages(keysignPayload: payload)
             }
             if let payload = keysignMsg.customMessagePayload {
                 self.prepareKeysignMessages(customMessagePayload: payload)
@@ -334,7 +334,7 @@ class JoinKeysignViewModel: ObservableObject {
             let payload = try await payloadService.getPayload(hash: self.payloadID)
             let kp: KeysignPayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
             self.keysignPayload = kp
-            self.prepareKeysignMessages(keysignPayload: kp)
+            await self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
