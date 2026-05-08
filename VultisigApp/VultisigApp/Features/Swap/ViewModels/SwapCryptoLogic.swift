@@ -587,105 +587,15 @@ enum SwapCryptoLogic {
     }
 
     static func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
-        guard tx.isApproveRequired, let spender = tx.router else {
-            return nil
-        }
-        // Approve exact amount - no buffer needed for KyberSwap precision
-        return ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
+        buildApprovePayload(draft: SwapDraft(from: tx))
     }
 
     static func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        guard let quote = tx.quote else {
-            throw Errors.unexpectedError
-        }
-
         let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-        let keysignFactory = KeysignPayloadFactory()
-
-        switch quote {
-        case let .mayachain(quote):
-            let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
-            return try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: toAddress ?? tx.fromCoin.address,
-                amount: tx.amountInCoinDecimal,
-                memo: tx.quote?.memo,
-                chainSpecific: chainSpecific,
-                swapPayload: .mayachain(tx.buildThorchainSwapPayload(
-                    quote: quote,
-                    provider: .mayachain
-                )),
-                approvePayload: buildApprovePayload(tx: tx),
-                vault: vault
-            )
-
-        case let .thorchain(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-            return try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: toAddress,
-                amount: tx.amountInCoinDecimal,
-                memo: quote.memo,
-                chainSpecific: chainSpecific,
-                swapPayload: .thorchain(tx.buildThorchainSwapPayload(
-                    quote: quote,
-                    provider: .thorchain
-                )),
-                approvePayload: buildApprovePayload(tx: tx),
-                vault: vault
-            )
-
-        case let .thorchainChainnet(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-            return try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: toAddress,
-                amount: tx.amountInCoinDecimal,
-                memo: quote.memo,
-                chainSpecific: chainSpecific,
-                swapPayload: .thorchainChainnet(tx.buildThorchainSwapPayload(
-                    quote: quote,
-                    provider: .thorchainChainnet
-                )),
-                approvePayload: buildApprovePayload(tx: tx),
-                vault: vault
-            )
-
-        case let .thorchainStagenet(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-            return try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: toAddress,
-                amount: tx.amountInCoinDecimal,
-                memo: quote.memo,
-                chainSpecific: chainSpecific,
-                swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
-                    quote: quote,
-                    provider: .thorchainStagenet
-                )),
-                approvePayload: buildApprovePayload(tx: tx),
-                vault: vault
-            )
-
-        case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
-            let payload = GenericSwapPayload(
-                fromCoin: tx.fromCoin,
-                toCoin: tx.toCoin,
-                fromAmount: tx.amountInCoinDecimal,
-                toAmountDecimal: tx.toAmountDecimal,
-                quote: evmQuote,
-                provider: quote.swapProviderId ?? .oneInch
-            )
-            return try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: evmQuote.tx.to,
-                amount: tx.amountInCoinDecimal,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: .generic(payload),
-                approvePayload: buildApprovePayload(tx: tx),
-                vault: vault
-            )
-        }
+        return try await buildSwapKeysignPayload(
+            draft: SwapDraft(from: tx),
+            chainSpecific: chainSpecific,
+            vault: vault
+        )
     }
 }
