@@ -14,6 +14,57 @@ import Foundation
 
 extension SwapCryptoLogic {
 
+    /// Compute the network fee for the swap given the chain-specific data already fetched.
+    /// EVM derives from gas price × limit; Cosmos/THORChain/etc. read directly off chainSpecific;
+    /// UTXO + Cardano build a draft transfer via `KeysignPayloadFactory` to plan the fee.
+    static func thorchainFee(
+        for chainSpecific: BlockChainSpecific,
+        draft: SwapDraft,
+        vault: Vault
+    ) async throws -> BigInt {
+        switch chainSpecific {
+        case let .Ethereum(maxFeePerGas, priorityFee, _, gasLimit):
+            return (maxFeePerGas + priorityFee) * gasLimit
+
+        case .UTXO, .Cardano:
+            let keysignFactory = KeysignPayloadFactory()
+            do {
+                let keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: draft.fromCoin,
+                    toAddress: draft.fromCoin.address,
+                    amount: amountInCoinDecimal(draft: draft),
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: nil,
+                    vault: vault
+                )
+
+                let planFee: BigInt
+                switch draft.fromCoin.chain {
+                case .cardano:
+                    planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+                default:
+                    let utxo = UTXOChainsHelper(coin: draft.fromCoin.coinType)
+                    let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+                    planFee = BigInt(plan.fee)
+                }
+
+                if planFee <= 0 && fromAmountDecimal(draft: draft) > 0 {
+                    throw Errors.insufficientFunds
+                }
+                return planFee
+            } catch {
+                if error is KeysignPayloadFactory.Errors {
+                    throw error
+                }
+                throw Errors.insufficientFunds
+            }
+
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
+            return chainSpecific.gas
+        }
+    }
+
     static func buildApprovePayload(draft: SwapDraft) -> ERC20ApprovePayload? {
         guard isApproveRequired(draft: draft), let spender = router(draft: draft) else {
             return nil

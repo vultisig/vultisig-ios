@@ -542,48 +542,7 @@ enum SwapCryptoLogic {
     }
 
     static func thorchainFee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
-        switch chainSpecific {
-        case let .Ethereum(maxFeePerGas, priorityFee, _, gasLimit):
-            return (maxFeePerGas + priorityFee) * gasLimit
-
-        case .UTXO, .Cardano:
-            let keysignFactory = KeysignPayloadFactory()
-            do {
-                let keysignPayload = try await keysignFactory.buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: tx.fromCoin.address,
-                    amount: tx.amountInCoinDecimal,
-                    memo: nil,
-                    chainSpecific: chainSpecific,
-                    swapPayload: nil,
-                    vault: vault
-                )
-
-                let planFee: BigInt
-                switch tx.fromCoin.chain {
-                case .cardano:
-                    planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
-
-                default: // UTXO chains
-                    let utxo = UTXOChainsHelper(coin: tx.fromCoin.coinType)
-                    let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                    planFee = BigInt(plan.fee)
-                }
-
-                if planFee <= 0 && tx.fromAmountDecimal > 0 {
-                    throw Errors.insufficientFunds
-                }
-                return planFee
-            } catch {
-                if error is KeysignPayloadFactory.Errors {
-                    throw error
-                }
-                throw Errors.insufficientFunds
-            }
-
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
-            return chainSpecific.gas
-        }
+        try await thorchainFee(for: chainSpecific, draft: SwapDraft(from: tx), vault: vault)
     }
 
     static func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
