@@ -34,6 +34,19 @@ final class SwapNetworkFeeTests: XCTestCase {
         return Coin(asset: meta, address: "test", hexPublicKey: "test")
     }
 
+    private func makeUsdcCoin() -> Coin {
+        let meta = CoinMeta(
+            chain: .ethereum,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            isNativeToken: false
+        )
+        return Coin(asset: meta, address: "test", hexPublicKey: "test")
+    }
+
     private func makeEvmQuote() -> EVMQuote {
         EVMQuote(
             dstAmount: "0",
@@ -80,6 +93,37 @@ final class SwapNetworkFeeTests: XCTestCase {
         let eth = makeEthCoin()
         tx.fromCoin = eth
         tx.quote = .kyberswap(makeEvmQuote(), fee: BigInt("860870000000000"))
+
+        let result = logic.swapGasString(tx: tx)
+
+        XCTAssertEqual(result, "0.00086087 ETH".localeDecimal)
+    }
+
+    func testSwapGasStringFromNonNativeCoinWithoutNativeInListReturnsEmpty() {
+        // Regression: when `tx.fromCoin` is a non-native ERC20 and `tx.fromCoins`
+        // doesn't contain the chain's native asset, `feeCoin(tx:)` falls back to
+        // `tx.fromCoin`. Without the guard we'd format a wei-denominated fee with
+        // USDC's 6 decimals + "USDC" ticker, producing an absurd number labelled
+        // with the wrong asset. The display should suppress the row instead.
+        let logic = SwapCryptoLogic()
+        let tx = SwapTransaction()
+        tx.fromCoin = makeUsdcCoin()
+        tx.fromCoins = [makeUsdcCoin()] // no native ETH in list
+        tx.quote = .lifi(makeEvmQuote(), fee: BigInt("860870000000000"), integratorFee: nil)
+
+        let result = logic.swapGasString(tx: tx)
+
+        XCTAssertEqual(result, "", "Should return empty when no native asset is available to denominate the fee")
+    }
+
+    func testSwapGasStringFromNonNativeCoinWithNativeInListUsesNativeForDisplay() {
+        // When `tx.fromCoin` is USDC but the user's wallet has ETH on the same
+        // chain, `feeCoin(tx:)` resolves to ETH and the fee renders correctly.
+        let logic = SwapCryptoLogic()
+        let tx = SwapTransaction()
+        tx.fromCoin = makeUsdcCoin()
+        tx.fromCoins = [makeUsdcCoin(), makeEthCoin()]
+        tx.quote = .lifi(makeEvmQuote(), fee: BigInt("860870000000000"), integratorFee: nil)
 
         let result = logic.swapGasString(tx: tx)
 

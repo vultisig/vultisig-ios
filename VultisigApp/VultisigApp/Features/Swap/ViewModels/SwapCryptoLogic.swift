@@ -154,7 +154,11 @@ struct SwapCryptoLogic {
         // Quote-driven swaps: `tx.fee` is the total network fee in the chain's
         // smallest unit (gasPrice × gasLimit for EVM). Format as a native amount
         // so the row reads "0.000861 ETH (~$2.00)" rather than a raw Gwei figure.
+        // `feeCoin(tx:)` falls back to `tx.fromCoin` when the chain's native
+        // asset isn't in `tx.fromCoins` — guard against that to avoid formatting
+        // a wei-denominated fee with an ERC20's decimals/ticker.
         if tx.quote != nil {
+            guard coin.isNativeToken else { return .empty }
             let amount = coin.decimal(for: tx.fee)
             return "\(amount.formatToDecimal(digits: coin.decimals).description) \(coin.ticker)"
         }
