@@ -645,6 +645,13 @@
 "proposalID" = "Proposal ID";
 "provider" = "Provider";
 "providerLabel" = "Provider (optional)";
+"psbtChangeMarker" = "Change";
+"psbtInputs" = "Inputs";
+"psbtNetworkFee" = "Network Fee";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOutputs" = "Outputs";
+"psbtSignedByThisDevice" = "Signed by this device";
+"psbtTransactionDetails" = "Transaction Details (PSBT)";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "rawPayload" = "Raw Payload";

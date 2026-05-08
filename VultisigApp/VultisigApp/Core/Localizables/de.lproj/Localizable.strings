@@ -637,6 +637,13 @@
 "proposalID" = "Proposal ID";
 "provider" = "Anbieter";
 "providerLabel" = "Anbieter (optional)";
+"psbtChangeMarker" = "Wechselgeld";
+"psbtInputs" = "Eingänge";
+"psbtNetworkFee" = "Netzwerkgebühr";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOutputs" = "Ausgänge";
+"psbtSignedByThisDevice" = "Auf diesem Gerät signiert";
+"psbtTransactionDetails" = "Transaktionsdetails (PSBT)";
 "pushNotifications" = "Push-Benachrichtigungen";
 "pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
 "rawPayload" = "Rohdaten";
