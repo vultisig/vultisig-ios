@@ -207,15 +207,9 @@ class CardanoHelper {
             ? UInt64(keysignPayload.toAmount)
             : Self.minLovelaceOnTokenOutput
 
-        // For Cardano, we don't use UTXOs from Blockchair since it doesn't support Cardano
-        // Instead, we create a simplified input structure
-        // Seed `forceFee` with the chain-specific byteFee BEFORE running
-        // `AnySigner.plan(...)`. WalletCore's Cardano `doPlan()` only consults
-        // `transferMessage.forceFee` while the plan is being built (Signer.cpp
-        // 551-555); without it the planner derives a size-based fee that can
-        // diverge from the SDK/Windows planner output, producing a different
-        // body and a different sighash on each MPC peer. Post-plan we re-write
-        // it to `plan.fee` for symmetry with the SDK.
+        // `forceFee` must be set before `AnySigner.plan(...)` — WalletCore's Cardano
+        // `doPlan()` reads it only during planning, so a size-derived fee here would
+        // diverge from the SDK/Windows body and break MPC sighash parity.
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
