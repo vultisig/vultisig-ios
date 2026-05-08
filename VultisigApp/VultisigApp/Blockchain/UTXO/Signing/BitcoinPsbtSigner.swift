@@ -27,6 +27,7 @@ enum BitcoinPsbtSignerError: Error, LocalizedError {
     case invalidRedeemScript(inputIndex: Int)
     case unsupportedSighashType(UInt32)
     case invalidScriptPubKey(inputIndex: Int)
+    case invalidOutputScriptPubKey(outputIndex: Int)
     case negativeAmount(inputIndex: Int, amount: Int64)
     case missingSignature(sighashHex: String)
     case invalidPublicKey(String)
@@ -47,6 +48,8 @@ enum BitcoinPsbtSignerError: Error, LocalizedError {
             return "Unsupported sighash type: 0x\(String(flag, radix: 16)). Only SIGHASH_ALL is supported."
         case .invalidScriptPubKey(let i):
             return "Input #\(i): invalid scriptPubKey hex"
+        case .invalidOutputScriptPubKey(let i):
+            return "Output #\(i): invalid scriptPubKey hex"
         case .negativeAmount(let i, let amount):
             return "Input #\(i): amount must be non-negative, got \(amount)"
         case .missingSignature(let hex):
@@ -75,10 +78,13 @@ enum BitcoinPsbtSigner {
         return hash256(data)
     }
 
-    static func _hashOutputs(_ signBitcoin: SignBitcoin) -> Data {
-        let data = signBitcoin.outputs.reduce(Data()) { acc, output in
-            let scriptBytes = Data(hexString: output.scriptPubKey) ?? Data()
-            return acc + serializeOutput(amount: output.amount, scriptPubKey: scriptBytes)
+    static func _hashOutputs(_ signBitcoin: SignBitcoin) throws -> Data {
+        var data = Data()
+        for (index, output) in signBitcoin.outputs.enumerated() {
+            guard let scriptBytes = Data(hexString: output.scriptPubKey) else {
+                throw BitcoinPsbtSignerError.invalidOutputScriptPubKey(outputIndex: index)
+            }
+            data += serializeOutput(amount: output.amount, scriptPubKey: scriptBytes)
         }
         return hash256(data)
     }
@@ -96,7 +102,7 @@ enum BitcoinPsbtSigner {
 
         let hashPrevouts = _hashPrevouts(signBitcoin)
         let hashSequence = _hashSequence(signBitcoin)
-        let hashOutputs = _hashOutputs(signBitcoin)
+        let hashOutputs = try _hashOutputs(signBitcoin)
 
         var sighashes: [Data] = []
         for (i, input) in signBitcoin.inputs.enumerated() where input.isOurs {

@@ -152,9 +152,39 @@ final class BitcoinPsbtSignerTests: XCTestCase {
             "52b0a642eea2fb7ae638c36f6252b6750293dbe574a806984b8e4d8548339a3b"
         )
         XCTAssertEqual(
-            BitcoinPsbtSigner._hashOutputs(signBitcoin).hexString,
+            try BitcoinPsbtSigner._hashOutputs(signBitcoin).hexString,
             "863ef3e1a92afbfdb97f31ad0fc7683ee943e9abcf2501590ff8f6551f47e5e5"
         )
+    }
+
+    func testInvalidOutputScriptPubKeyThrows() {
+        let input = BitcoinInput(
+            hash: "00".padding(toLength: 64, withPad: "0", startingAt: 0),
+            index: 0,
+            amount: 100_000,
+            scriptPubKey: "00141d0f172a0ecb48aee1be1f2687d2963ae33f71a1",
+            scriptType: "p2wpkh",
+            sighashType: 1,
+            isOurs: true,
+            redeemScript: nil,
+            sequence: 0xFFFFFFFF
+        )
+        let badOutput = BitcoinOutput(
+            amount: 50_000,
+            address: "",
+            opReturnData: nil,
+            scriptPubKey: "not-a-hex-string",
+            isChange: false
+        )
+        let payload = SignBitcoin(version: 2, locktime: 0, inputs: [input], outputs: [badOutput])
+
+        XCTAssertThrowsError(try BitcoinPsbtSigner.preSigningHashes(payload)) { err in
+            guard case BitcoinPsbtSignerError.invalidOutputScriptPubKey(let i) = err else {
+                XCTFail("Expected invalidOutputScriptPubKey, got \(err)")
+                return
+            }
+            XCTAssertEqual(i, 0)
+        }
     }
 
     func testNoOursInputsThrows() {

@@ -17,7 +17,10 @@ struct SignBitcoinDisplayView: View {
 
     private var totalIn: Int64 { signBitcoin.inputs.reduce(0) { $0 + $1.amount } }
     private var totalOut: Int64 { signBitcoin.outputs.reduce(0) { $0 + $1.amount } }
-    private var fee: Int64 { max(0, totalIn - totalOut) }
+    // Show the raw delta — clamping to zero would mask malformed PSBTs from
+    // a co-signer. Negative values are surfaced visually below.
+    private var fee: Int64 { totalIn - totalOut }
+    private var hasInvalidFee: Bool { fee < 0 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -77,7 +80,7 @@ struct SignBitcoinDisplayView: View {
                 .frame(minWidth: 52, alignment: .leading)
             Spacer()
             Text(formatBtc(satoshis: fee))
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(hasInvalidFee ? Theme.colors.alertWarning : Theme.colors.textPrimary)
                 .font(Theme.fonts.priceBodyS)
         }
         .font(Theme.fonts.bodySMedium)
