@@ -112,27 +112,27 @@ struct SendCryptoDoneSummary: View {
                 )
             )
 
-            if SwapCryptoLogic.showFees(tx: tx) {
+            if SwapCryptoLogic.showFees(draft: tx.asDraft) {
                 Separator()
                 getGeneralCell(
                     title: "swapFee",
-                    description: SwapCryptoLogic.swapFeeString(tx: tx)
+                    description: SwapCryptoLogic.swapFeeString(draft: tx.asDraft)
                 )
             }
 
-            if SwapCryptoLogic.showGas(tx: tx) {
+            if SwapCryptoLogic.showGas(draft: tx.asDraft) {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(SwapCryptoLogic.swapGasString(tx: tx))(~\(SwapCryptoLogic.approveFeeString(tx: tx)))"
+                    description: "\(SwapCryptoLogic.swapGasString(draft: tx.asDraft))(~\(SwapCryptoLogic.approveFeeString(draft: tx.asDraft)))"
                 )
             }
 
-            if SwapCryptoLogic.showTotalFees(tx: tx) {
+            if SwapCryptoLogic.showTotalFees(draft: tx.asDraft) {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
+                    description: "\(SwapCryptoLogic.totalFeeString(draft: tx.asDraft))"
                 )
             }
         }
@@ -181,7 +181,7 @@ struct SendCryptoDoneSummary: View {
         Background()
         SendCryptoDoneSummary(
             sendTransaction: nil,
-            swapTransaction: SwapTransaction(),
+            swapTransaction: nil,
             vault: Vault.example,
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",

@@ -7,19 +7,25 @@ import Foundation
 import Mediator
 
 @MainActor
-final class SwapKeysignViewModel: ObservableObject, TransferViewModel {
-    @Published var keysignFinished: Bool = false
-    @Published var pendingRetryReason: BroadcastRetryReason?
+@Observable
+final class SwapKeysignViewModel: TransferViewModel {
+    var keysignFinished: Bool = false
 
     var hash: String?
     var approveHash: String?
+
+    @ObservationIgnored private let retrySignal: SwapRetrySignal
+
+    init(retrySignal: SwapRetrySignal) {
+        self.retrySignal = retrySignal
+    }
 
     func moveToNextView() {
         keysignFinished = true
     }
 
     func retryBroadcast(reason: BroadcastRetryReason) {
-        pendingRetryReason = reason
+        retrySignal.pendingRetryReason = reason
     }
 
     func stopMediator() {

@@ -9,8 +9,16 @@ struct SwapKeysignScreen: View {
     @Environment(\.router) var router
 
     let input: KeysignInput
-    @ObservedObject var tx: SwapTransaction
-    @StateObject var viewModel = SwapKeysignViewModel()
+    let transaction: SwapTransaction
+    let retrySignal: SwapRetrySignal
+    @State var viewModel: SwapKeysignViewModel
+
+    init(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal) {
+        self.input = input
+        self.transaction = transaction
+        self.retrySignal = retrySignal
+        self._viewModel = State(initialValue: SwapKeysignViewModel(retrySignal: retrySignal))
+    }
 
     var body: some View {
         Screen {
@@ -34,20 +42,18 @@ struct SwapKeysignScreen: View {
             guard finished else { return }
             guard let hash = viewModel.hash else { return }
 
-            let chain = tx.fromCoin.chain
+            let chain = transaction.fromCoin.chain
             router.navigate(to: SwapRoute.done(
                 vault: input.vault,
                 hash: hash,
                 approveHash: viewModel.approveHash,
                 chain: chain,
-                tx: tx,
-                progressLink: SwapCryptoLogic.progressLink(tx: tx, hash: hash)
+                transaction: transaction,
+                progressLink: SwapCryptoLogic.progressLink(draft: transaction.asDraft, hash: hash)
             ))
         }
-        .onChange(of: viewModel.pendingRetryReason) { _, reason in
-            guard let reason else { return }
-            tx.pendingRetryReason = reason
-            viewModel.pendingRetryReason = nil
+        .onChange(of: retrySignal.pendingRetryReason) { _, reason in
+            guard reason != nil else { return }
             // Stack: details -> verify -> pair -> keysign. Pop pair + keysign.
             let popCount = min(2, router.navPath.count)
             router.navPath.removeLast(popCount)

@@ -2,7 +2,7 @@
 //  SwapCryptoLogicDraftTests.swift
 //  VultisigAppTests
 //
-//  Per-helper coverage for the §1.5 port of SwapTransaction's instance
+//  Per-helper coverage for the §1.5 port of SwapDraftStore's instance
 //  helpers into SwapCryptoLogic over SwapDraft. Each non-trivial branch
 //  gets a row.
 //

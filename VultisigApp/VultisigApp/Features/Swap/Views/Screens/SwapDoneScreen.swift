@@ -11,7 +11,7 @@ struct SwapDoneScreen: View {
     let hash: String
     let approveHash: String?
     let chain: Chain
-    @ObservedObject var tx: SwapTransaction
+    let transaction: SwapTransaction
     let progressLink: String?
 
     var body: some View {
@@ -23,7 +23,7 @@ struct SwapDoneScreen: View {
                 chain: chain,
                 progressLink: progressLink,
                 sendTransaction: nil,
-                swapTransaction: tx,
+                swapTransaction: transaction,
                 isSend: false
             )
         }

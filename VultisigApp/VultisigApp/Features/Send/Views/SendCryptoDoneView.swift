@@ -125,7 +125,7 @@ struct SendCryptoDoneView: View {
 
     private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
         SwapCryptoDoneView(
-            tx: tx,
+            transaction: tx,
             vault: vault,
             hash: hash,
             approveHash: approveHash,

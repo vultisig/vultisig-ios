@@ -13,28 +13,30 @@ struct SwapRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(tx: SwapTransaction, vault: Vault) -> some View {
-        SwapVerifyScreen(tx: tx, vault: vault)
+    func buildVerifyScreen(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) -> some View {
+        SwapVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
     }
 
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
-        tx: SwapTransaction,
+        transaction: SwapTransaction,
+        retrySignal: SwapRetrySignal,
         keysignPayload: KeysignPayload,
         fastVaultPassword: String?
     ) -> some View {
         SwapPairScreen(
             vault: vault,
-            tx: tx,
+            transaction: transaction,
+            retrySignal: retrySignal,
             keysignPayload: keysignPayload,
             fastVaultPassword: fastVaultPassword
         )
     }
 
     @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: SwapTransaction) -> some View {
-        SwapKeysignScreen(input: input, tx: tx)
+    func buildKeysignScreen(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal) -> some View {
+        SwapKeysignScreen(input: input, transaction: transaction, retrySignal: retrySignal)
     }
 
     @ViewBuilder
@@ -43,7 +45,7 @@ struct SwapRouteBuilder {
         hash: String,
         approveHash: String?,
         chain: Chain,
-        tx: SwapTransaction,
+        transaction: SwapTransaction,
         progressLink: String?
     ) -> some View {
         SwapDoneScreen(
@@ -51,7 +53,7 @@ struct SwapRouteBuilder {
             hash: hash,
             approveHash: approveHash,
             chain: chain,
-            tx: tx,
+            transaction: transaction,
             progressLink: progressLink
         )
     }

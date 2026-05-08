@@ -2,9 +2,9 @@
 //  SwapCryptoLogic+Draft.swift
 //  VultisigApp
 //
-//  Pure helpers ported from `SwapTransaction`'s instance methods +
+//  Pure helpers ported from `SwapDraftStore`'s instance methods +
 //  extension into `SwapCryptoLogic` over `SwapDraft`. The `(tx:)` variants
-//  on `SwapTransaction` stay alive during §1–§4 so existing call sites keep
+//  on `SwapDraftStore` stay alive during §1–§4 so existing call sites keep
 //  working; both go away in §5.
 //
 

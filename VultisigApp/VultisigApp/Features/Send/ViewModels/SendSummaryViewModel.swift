@@ -11,7 +11,7 @@ import Foundation
 @MainActor
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction) -> String {
-        let formattedAmount = tx.fromAmountDecimal.formatForDisplay()
+        let formattedAmount = tx.fromAmount.formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.fromCoin.ticker)"
@@ -21,7 +21,7 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func getToAmount(_ tx: SwapTransaction) -> String {
-        let formattedAmount = tx.toAmountDecimal.formatForDisplay()
+        let formattedAmount = SwapCryptoLogic.toAmountDecimal(draft: tx.asDraft).formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.toCoin.ticker)"
@@ -31,27 +31,19 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func swapFeeString(_ tx: SwapTransaction) -> String {
-        let fromCoin = feeCoin(tx: tx)
-        let networkFee = fromCoin.fiat(value: tx.fee)
+        let networkFee = tx.feeCoin.fiat(value: tx.gas)
 
-        if let swapFeeBigInt = tx.quote?.evmSwapFeeBigInt {
-            let nativeCoin = feeCoin(tx: tx)
-            let feeDecimal = nativeCoin.decimal(for: swapFeeBigInt)
-            let swapFee = nativeCoin.fiat(decimal: feeDecimal)
+        if let swapFeeBigInt = tx.quote.evmSwapFeeBigInt {
+            let feeDecimal = tx.feeCoin.decimal(for: swapFeeBigInt)
+            let swapFee = tx.feeCoin.fiat(decimal: feeDecimal)
             return (swapFee + networkFee).formatToFiat(includeCurrencySymbol: true)
         }
 
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        guard let inboundFeeDecimal = tx.quote.inboundFeeDecimal(toCoin: tx.toCoin) else { return .empty }
 
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let fee = tx.toCoin.fiat(value: inboundFee) + networkFee
         return fee.formatToFiat(includeCurrencySymbol: true)
-    }
-
-    private func feeCoin(tx: SwapTransaction) -> Coin {
-        // Fees are always paid in native token
-        guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-        return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
     }
 
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {

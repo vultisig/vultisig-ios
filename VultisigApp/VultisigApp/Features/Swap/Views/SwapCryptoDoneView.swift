@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SwapCryptoDoneView: View {
-    let tx: SwapTransaction
+    let transaction: SwapTransaction
     let vault: Vault
     let hash: String
     let approveHash: String?
@@ -24,7 +24,7 @@ struct SwapCryptoDoneView: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(
-        tx: SwapTransaction,
+        transaction: SwapTransaction,
         vault: Vault,
         hash: String,
         approveHash: String?,
@@ -33,7 +33,7 @@ struct SwapCryptoDoneView: View {
         showAlert: Binding<Bool>,
         alertTitle: Binding<String>
     ) {
-        self.tx = tx
+        self.transaction = transaction
         self.vault = vault
         self.hash = hash
         self.approveHash = approveHash
@@ -45,10 +45,10 @@ struct SwapCryptoDoneView: View {
         // Initialize status view model with swap transaction details
         _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
             txHash: hash,
-            chain: tx.fromCoin.chain,
-            coinTicker: tx.fromCoin.ticker,
-            amount: "\(tx.fromAmount) \(tx.fromCoin.ticker)",
-            toAddress: tx.toCoin.address,
+            chain: transaction.fromCoin.chain,
+            coinTicker: transaction.fromCoin.ticker,
+            amount: "\(transaction.fromAmount) \(transaction.fromCoin.ticker)",
+            toAddress: transaction.toCoin.address,
             pubKeyECDSA: vault.pubKeyECDSA
         ))
     }
@@ -70,11 +70,11 @@ struct SwapCryptoDoneView: View {
                 TransactionHistoryRecorder.shared.recordApprove(
                     txHash: approveHash,
                     pubKeyECDSA: vault.pubKeyECDSA,
-                    coin: tx.fromCoin,
-                    amountCrypto: sendSummaryViewModel.getFromAmount(tx),
-                    spender: tx.router ?? "",
-                    chain: tx.fromCoin.chain,
-                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: approveHash)
+                    coin: transaction.fromCoin,
+                    amountCrypto: sendSummaryViewModel.getFromAmount(transaction),
+                    spender: SwapCryptoLogic.router(draft: transaction.asDraft) ?? "",
+                    chain: transaction.fromCoin.chain,
+                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: approveHash)
                 )
             }
 
@@ -83,19 +83,19 @@ struct SwapCryptoDoneView: View {
                 txHash: hash,
                 approveTxHash: approveHash,
                 pubKeyECDSA: vault.pubKeyECDSA,
-                fromCoin: tx.fromCoin,
-                toCoin: tx.toCoin,
-                fromAmountCrypto: sendSummaryViewModel.getFromAmount(tx),
-                fromAmountFiat: SwapCryptoLogic.fromFiatAmount(tx: tx),
-                toAmountCrypto: sendSummaryViewModel.getToAmount(tx),
-                toAmountFiat: SwapCryptoLogic.toFiatAmount(tx: tx),
-                fromAddress: tx.fromCoin.address,
-                toAddress: tx.toCoin.address,
-                feeCrypto: SwapCryptoLogic.totalFeeString(tx: tx),
+                fromCoin: transaction.fromCoin,
+                toCoin: transaction.toCoin,
+                fromAmountCrypto: sendSummaryViewModel.getFromAmount(transaction),
+                fromAmountFiat: SwapCryptoLogic.fromFiatAmount(draft: transaction.asDraft),
+                toAmountCrypto: sendSummaryViewModel.getToAmount(transaction),
+                toAmountFiat: SwapCryptoLogic.toFiatAmount(draft: transaction.asDraft),
+                fromAddress: transaction.fromCoin.address,
+                toAddress: transaction.toCoin.address,
+                feeCrypto: SwapCryptoLogic.totalFeeString(draft: transaction.asDraft),
                 feeFiat: "",
-                chain: tx.fromCoin.chain,
-                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: hash),
-                provider: tx.quote?.displayName
+                chain: transaction.fromCoin.chain,
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
+                provider: transaction.quote.displayName
             )
         }
         .onDisappear {
@@ -143,20 +143,20 @@ struct SwapCryptoDoneView: View {
         ZStack {
             HStack(spacing: 8) {
                 getFromToCard(
-                    coin: tx.fromCoin,
+                    coin: transaction.fromCoin,
                     title: sendSummaryViewModel.getFromAmount(
-                        tx
+                        transaction
                     ),
-                    description: SwapCryptoLogic.fromFiatAmount(tx: tx),
+                    description: SwapCryptoLogic.fromFiatAmount(draft: transaction.asDraft),
                     isFrom: true
                 )
 
                 getFromToCard(
-                    coin: tx.toCoin,
+                    coin: transaction.toCoin,
                     title: sendSummaryViewModel.getToAmount(
-                        tx
+                        transaction
                     ),
-                    description: SwapCryptoLogic.toFiatAmount(tx: tx),
+                    description: SwapCryptoLogic.toFiatAmount(draft: transaction.asDraft),
                     isFrom: false
                 )
             }
@@ -224,18 +224,18 @@ struct SwapCryptoDoneView: View {
             getCell(
                 title: "from",
                 value: vault.name,
-                bracketValue: tx.fromCoin.address,
+                bracketValue: transaction.fromCoin.address,
                 bracketMaxWidth: 120
             )
 
             separator
             getCell(
                 title: "to",
-                value: tx.toCoin.address,
+                value: transaction.toCoin.address,
                 valueMaxWidth: 120
             )
 
-            if SwapCryptoLogic.showTotalFees(tx: tx) {
+            if SwapCryptoLogic.showTotalFees(draft: transaction.asDraft) {
                 separator
                 totalFees
             }
@@ -268,7 +268,7 @@ struct SwapCryptoDoneView: View {
         HStack {
             getCell(
                 title: "totalFee",
-                value: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
+                value: "\(SwapCryptoLogic.totalFeeString(draft: transaction.asDraft))"
             )
 
             chevron
@@ -296,11 +296,11 @@ struct SwapCryptoDoneView: View {
 
     var expandableFees: some View {
         VStack(spacing: 4) {
-            if SwapCryptoLogic.showFees(tx: tx) {
+            if SwapCryptoLogic.showFees(draft: transaction.asDraft) {
                 swapFees
             }
 
-            if SwapCryptoLogic.showGas(tx: tx) {
+            if SwapCryptoLogic.showGas(draft: transaction.asDraft) {
                 swapGas
             }
         }
@@ -309,14 +309,14 @@ struct SwapCryptoDoneView: View {
     var swapFees: some View {
         getCell(
             title: "swapFee",
-            value: SwapCryptoLogic.swapFeeString(tx: tx)
+            value: SwapCryptoLogic.swapFeeString(draft: transaction.asDraft)
         )
     }
 
     var swapGas: some View {
         getCell(
             title: "networkFee",
-            value: "\(SwapCryptoLogic.swapGasString(tx: tx))(\(SwapCryptoLogic.approveFeeString(tx: tx)))"
+            value: "\(SwapCryptoLogic.swapGasString(draft: transaction.asDraft))(\(SwapCryptoLogic.approveFeeString(draft: transaction.asDraft)))"
         )
     }
 
@@ -408,7 +408,7 @@ struct SwapCryptoDoneView: View {
         alertTitle = "hashCopied"
         showAlert = true
 
-        let explorerLink = ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
+        let explorerLink = ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash)
         ClipboardManager.copyToClipboard(explorerLink)
     }
 }
@@ -416,7 +416,7 @@ struct SwapCryptoDoneView: View {
 #Preview {
     Screen {
         SwapCryptoDoneView(
-            tx: SwapTransaction(),
+            transaction: SwapTransaction.example,
             vault: Vault.example,
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",

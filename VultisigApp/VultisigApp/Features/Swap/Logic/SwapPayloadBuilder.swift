@@ -6,7 +6,7 @@
 //  body of `SwapCryptoLogic.buildSwapKeysignPayload(tx:vault:)`, with the
 //  chain-specific fetch hoisted out so the builder is testable in isolation.
 //  The legacy `(tx:vault:)` entry point delegates here during the bridge
-//  phase; deleted alongside `SwapTransaction` in §5.
+//  phase; deleted alongside `SwapDraftStore` in §5.
 //
 
 import BigInt

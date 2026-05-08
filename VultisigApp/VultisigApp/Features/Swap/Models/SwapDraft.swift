@@ -2,7 +2,7 @@
 //  SwapDraft.swift
 //  VultisigApp
 //
-//  Pure value-type mirror of `SwapTransaction`. Replaces the `ObservableObject`
+//  Pure value-type mirror of `SwapDraftStore`. Replaces the `ObservableObject`
 //  class as the canonical form state once the swap pilot completes — see
 //  [[projects/vultisig/transaction-model-refactor/spec/proposal]]. During the
 //  transition (§1–§4) the bidirectional adapter in `SwapDraft+Adapter.swift`

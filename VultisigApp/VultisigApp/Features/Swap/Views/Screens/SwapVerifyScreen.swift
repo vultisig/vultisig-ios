@@ -6,13 +6,15 @@
 import SwiftUI
 
 struct SwapVerifyScreen: View {
-    @ObservedObject var tx: SwapTransaction
+    let transaction: SwapTransaction
+    let retrySignal: SwapRetrySignal
     let vault: Vault
 
-    @StateObject var verifyViewModel = SwapVerifyViewModel()
+    @State var verifyViewModel: SwapVerifyViewModel
     @StateObject var referredViewModel = ReferredViewModel()
 
     @State var fastPasswordPresented = false
+    @State var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
     @State private var retryBannerText: String?
 
@@ -20,12 +22,23 @@ struct SwapVerifyScreen: View {
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+    init(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) {
+        self.transaction = transaction
+        self.retrySignal = retrySignal
+        self.vault = vault
+        self._verifyViewModel = State(initialValue: SwapVerifyViewModel(transaction: transaction))
+    }
+
+    private var draft: SwapDraft { verifyViewModel.transaction.asDraft }
+    private var currentTransaction: SwapTransaction { verifyViewModel.transaction }
+
     var body: some View {
+        @Bindable var vm = verifyViewModel
         Screen {
             VStack(spacing: 16) {
                 fields
                 signButton
-                    .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
+                    .disabled(!verifyViewModel.isValidForm(shouldApprove: SwapCryptoLogic.isApproveRequired(draft: draft)) || verifyViewModel.isLoadingFees || signButtonDisabled)
             }
         }
         .screenTitle("swapOverview".localized)
@@ -37,14 +50,14 @@ struct SwapVerifyScreen: View {
         .withBanner(text: $retryBannerText, style: .error)
         .onReceive(timer) { _ in
             Task {
-                await verifyViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
         }
         .onLoad {
             referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
-                await verifyViewModel.scan(transaction: tx)
+                await verifyViewModel.scan()
             }
         }
         .onAppear {
@@ -52,11 +65,9 @@ struct SwapVerifyScreen: View {
         }
         .onDisappear {
             verifyViewModel.isLoading = false
-            if tx.fastVaultPassword.isNotEmpty {
-                tx.fastVaultPassword = .empty
-            }
+            fastVaultPassword = .empty
         }
-        .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
+        .bottomSheet(isPresented: $vm.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
                 verifyViewModel.showSecurityScannerSheet = false
                 signAndMoveToNextView()
@@ -84,7 +95,7 @@ struct SwapVerifyScreen: View {
                 summaryTitle
                 summaryFromTo
 
-                if let providerName = tx.quote?.displayName {
+                if let providerName = currentTransaction.quote.displayName {
                     separator
                     getValueCell(
                         for: "provider",
@@ -93,30 +104,30 @@ struct SwapVerifyScreen: View {
                     )
                 }
 
-                if SwapCryptoLogic.showGas(tx: tx) {
+                if SwapCryptoLogic.showGas(draft: draft) {
                     separator
                     getNetworkFeeCell(
-                        cryptoAmount: SwapCryptoLogic.swapGasString(tx: tx),
-                        fiatAmount: SwapCryptoLogic.approveFeeString(tx: tx)
+                        cryptoAmount: SwapCryptoLogic.swapGasString(draft: draft),
+                        fiatAmount: SwapCryptoLogic.approveFeeString(draft: draft)
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if SwapCryptoLogic.showFees(tx: tx) {
+                if SwapCryptoLogic.showFees(draft: draft) {
                     separator
                     getValueCell(
                         for: "swapFee",
-                        with: SwapCryptoLogic.swapFeeString(tx: tx),
+                        with: SwapCryptoLogic.swapFeeString(draft: draft),
                         bracketValue: nil
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if SwapCryptoLogic.showTotalFees(tx: tx) {
+                if SwapCryptoLogic.showTotalFees(draft: draft) {
                     separator
                     getValueCell(
                         for: "maxTotalFee",
-                        with: SwapCryptoLogic.totalFeeString(tx: tx)
+                        with: SwapCryptoLogic.totalFeeString(draft: draft)
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
@@ -157,22 +168,22 @@ struct SwapVerifyScreen: View {
     var summaryFromTo: some View {
         VStack(spacing: 0) {
             getSwapAssetCell(
-                for: tx.fromAmountDecimal.formatForDisplay(),
-                with: tx.fromCoin.ticker,
-                fiatValue: SwapCryptoLogic.fromFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
-                on: tx.fromCoin.chain,
-                coin: tx.fromCoin,
+                for: currentTransaction.fromAmount.formatForDisplay(),
+                with: currentTransaction.fromCoin.ticker,
+                fiatValue: SwapCryptoLogic.fromFiatAmount(draft: draft).formatToFiat(includeCurrencySymbol: true),
+                on: currentTransaction.fromCoin.chain,
+                coin: currentTransaction.fromCoin,
                 isTo: false
             )
 
             summaryFromToIcons
 
             getSwapAssetCell(
-                for: tx.toAmountDecimal.formatForDisplay(),
-                with: tx.toCoin.ticker,
-                fiatValue: SwapCryptoLogic.toFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
-                on: tx.toCoin.chain,
-                coin: tx.toCoin,
+                for: SwapCryptoLogic.toAmountDecimal(draft: draft).formatForDisplay(),
+                with: currentTransaction.toCoin.ticker,
+                fiatValue: SwapCryptoLogic.toFiatAmount(draft: draft).formatToFiat(includeCurrencySymbol: true),
+                on: currentTransaction.toCoin.chain,
+                coin: currentTransaction.toCoin,
                 isTo: true
             )
         }
@@ -196,18 +207,19 @@ struct SwapVerifyScreen: View {
     }
 
     var checkboxes: some View {
-        VStack(spacing: 16) {
-            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "swapVerifyCheckbox1Description")
-            Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "swapVerifyCheckbox2Description")
+        @Bindable var vm = verifyViewModel
+        return VStack(spacing: 16) {
+            Checkbox(isChecked: $vm.isAmountCorrect, text: "swapVerifyCheckbox1Description")
+            Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
             if showApproveCheckmark {
-                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "swapVerifyCheckbox3Description")
+                Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
             }
         }
     }
 
     @ViewBuilder
     var signButton: some View {
-        if tx.isFastVault {
+        if currentTransaction.isFastVault {
             Text(NSLocalizedString("holdForPairedSign", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
@@ -215,13 +227,13 @@ struct SwapVerifyScreen: View {
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
             } longPressAction: {
-                tx.fastVaultPassword = .empty
+                fastVaultPassword = .empty
                 onSignPress()
             }
             .disabled(signButtonDisabled)
             .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                 FastVaultEnterPasswordView(
-                    password: $tx.fastVaultPassword,
+                    password: $fastVaultPassword,
                     vault: vault,
                     onSubmit: { onSignPress() }
                 )
@@ -234,12 +246,11 @@ struct SwapVerifyScreen: View {
     }
 
     private func consumePendingRetry() {
-        guard let reason = tx.pendingRetryReason else { return }
+        guard let reason = retrySignal.pendingRetryReason else { return }
         retryBannerText = reason.userFacingMessage
-        tx.pendingRetryReason = nil
+        retrySignal.pendingRetryReason = nil
         Task {
             await verifyViewModel.refreshData(
-                tx: tx,
                 vault: vault,
                 referredCode: referredViewModel.savedReferredCode
             )
@@ -256,13 +267,14 @@ struct SwapVerifyScreen: View {
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
-            if let payload = await verifyViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
+            if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
                     router.navigate(to: SwapRoute.pair(
                         vault: vault,
-                        tx: tx,
+                        transaction: currentTransaction,
+                        retrySignal: retrySignal,
                         keysignPayload: payload,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
                     ))
                 }
             }
@@ -271,7 +283,7 @@ struct SwapVerifyScreen: View {
     }
 
     var showApproveCheckmark: Bool {
-        return tx.isApproveRequired
+        SwapCryptoLogic.isApproveRequired(draft: draft)
     }
 
     var separator: some View {

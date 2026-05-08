@@ -2,36 +2,53 @@
 //  SwapVerifyViewModel.swift
 //  VultisigApp
 //
+//  Holds the immutable `SwapTransaction` handed off by SwapDetailsViewModel.
+//  The transaction itself is `var` so the 60s refresh path can swap in an
+//  updated copy with the latest quote/fees — fields like fromCoin/toCoin/
+//  fromAmount stay pinned, but the price-sensitive parts re-fetch.
+//
 
-import SwiftUI
+import BigInt
+import Combine
 import OSLog
+import SwiftUI
 
 @MainActor
-final class SwapVerifyViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
-    private let interactor: SwapInteractor
-    let securityScanViewModel = SecurityScannerViewModel()
+@Observable
+final class SwapVerifyViewModel {
+    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
+    @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored let securityScanViewModel = SecurityScannerViewModel()
+    @ObservationIgnored private var securityScannerCancellable: AnyCancellable?
 
-    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    var transaction: SwapTransaction
+
+    var isAmountCorrect = false
+    var isFeeCorrect = false
+    var isApproveCorrect = false
+
+    var showSecurityScannerSheet: Bool = false
+    var securityScannerState: SecurityScannerState = .idle
+
+    var error: Error?
+    var isLoading = false
+    var isLoadingFees = false
+    var isLoadingTransaction = false
+    var timer: Int = 59
+
+    init(transaction: SwapTransaction, interactor: SwapInteractor = DefaultSwapInteractor.live) {
+        self.transaction = transaction
         self.interactor = interactor
     }
 
-    @Published var isAmountCorrect = false
-    @Published var isFeeCorrect = false
-    @Published var isApproveCorrect = false
-
-    @Published var showSecurityScannerSheet: Bool = false
-    @Published var securityScannerState: SecurityScannerState = .idle
-
-    @Published var error: Error?
-    @Published var isLoading = false
-    @Published var isLoadingFees = false
-    @Published var isLoadingTransaction = false
-    @Published var timer: Int = 59
-
     func onLoad() {
-        securityScanViewModel.$state
-            .assign(to: &$securityScannerState)
+        // SecurityScannerViewModel stays an ObservableObject (used elsewhere),
+        // so we bridge its @Published `state` into our @Observable property via Combine.
+        securityScannerCancellable = securityScanViewModel.$state
+            .receive(on: RunLoop.main)
+            .sink { [weak self] state in
+                self?.securityScannerState = state
+            }
     }
 
     func isValidForm(shouldApprove: Bool) -> Bool {
@@ -42,7 +59,7 @@ final class SwapVerifyViewModel: ObservableObject {
         }
     }
 
-    func scan(transaction: SwapTransaction) async {
+    func scan() async {
         await securityScanViewModel.scan(transaction: transaction)
     }
 
@@ -51,40 +68,45 @@ final class SwapVerifyViewModel: ObservableObject {
         return !securityScannerState.shouldShowWarning
     }
 
-    func updateTimer(tx: SwapTransaction, vault: Vault, referredCode: String) async {
+    func updateTimer(vault: Vault, referredCode: String) async {
         timer -= 1
         if timer < 1 {
-            await refreshData(tx: tx, vault: vault, referredCode: referredCode)
+            await refreshData(vault: vault, referredCode: referredCode)
             timer = 59
         }
     }
 
-    func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) async {
+    func refreshData(vault: Vault, referredCode: String) async {
         isLoadingFees = true
         defer { isLoadingFees = false }
 
         do {
             let result = try await interactor.fetchQuote(
-                draft: SwapDraft(from: tx),
+                draft: transaction.asDraft,
                 vault: vault,
                 referredCode: referredCode
             )
+            var updated = transaction
             if let result {
-                tx.quote = result.quote
-                tx.vultDiscountBps = result.vultDiscountBps
-                tx.referralDiscountBps = result.referralDiscountBps
+                updated = updated.with(
+                    quote: result.quote,
+                    vultDiscountBps: result.vultDiscountBps,
+                    referralDiscountBps: result.referralDiscountBps
+                )
             }
-            if let balanceError = SwapCryptoLogic.balanceError(draft: SwapDraft(from: tx)) {
+            if let balanceError = SwapCryptoLogic.balanceError(draft: updated.asDraft) {
                 throw balanceError
             }
-            let draft = SwapDraft(from: tx)
-            let chainSpecific = try await interactor.fetchChainSpecific(draft: draft)
-            tx.gas = chainSpecific.gas
-            tx.thorchainFee = try await interactor.computeThorchainFee(
-                chainSpecific: chainSpecific,
-                draft: draft,
-                vault: vault
+            let chainSpecific = try await interactor.fetchChainSpecific(draft: updated.asDraft)
+            updated = updated.with(
+                gas: chainSpecific.gas,
+                thorchainFee: try await interactor.computeThorchainFee(
+                    chainSpecific: chainSpecific,
+                    draft: updated.asDraft,
+                    vault: vault
+                )
             )
+            transaction = updated
             error = nil
         } catch {
             guard (error as? URLError)?.code != .cancelled else { return }
@@ -93,12 +115,12 @@ final class SwapVerifyViewModel: ObservableObject {
         }
     }
 
-    func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> KeysignPayload? {
+    func buildSwapKeysignPayload(vault: Vault) async -> KeysignPayload? {
         isLoadingTransaction = true
         defer { isLoadingTransaction = false }
 
         do {
-            return try await interactor.buildSwapKeysignPayload(draft: SwapDraft(from: tx), vault: vault)
+            return try await interactor.buildSwapKeysignPayload(draft: transaction.asDraft, vault: vault)
         } catch {
             self.error = error
             return nil

@@ -13,24 +13,25 @@ struct SwapRouter {
         switch route {
         case .root(let fromCoin, let toCoin, let vault):
             viewBuilder.buildDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
-        case .verify(let tx, let vault):
-            viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
-        case .pair(let vault, let tx, let keysignPayload, let fastVaultPassword):
+        case .verify(let transaction, let retrySignal, let vault):
+            viewBuilder.buildVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
+        case .pair(let vault, let transaction, let retrySignal, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
-                tx: tx,
+                transaction: transaction,
+                retrySignal: retrySignal,
                 keysignPayload: keysignPayload,
                 fastVaultPassword: fastVaultPassword
             )
-        case .keysign(let input, let tx):
-            viewBuilder.buildKeysignScreen(input: input, tx: tx)
-        case .done(let vault, let hash, let approveHash, let chain, let tx, let progressLink):
+        case .keysign(let input, let transaction, let retrySignal):
+            viewBuilder.buildKeysignScreen(input: input, transaction: transaction, retrySignal: retrySignal)
+        case .done(let vault, let hash, let approveHash, let chain, let transaction, let progressLink):
             viewBuilder.buildDoneScreen(
                 vault: vault,
                 hash: hash,
                 approveHash: approveHash,
                 chain: chain,
-                tx: tx,
+                transaction: transaction,
                 progressLink: progressLink
             )
         }
