@@ -641,6 +641,7 @@
 "psbtInputs" = "Ulazi";
 "psbtNetworkFee" = "Mrežna naknada";
 "psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
 "psbtOutputs" = "Izlazi";
 "psbtSignedByThisDevice" = "Potpisano s ovog uređaja";
 "psbtTransactionDetails" = "Detalji transakcije (PSBT)";

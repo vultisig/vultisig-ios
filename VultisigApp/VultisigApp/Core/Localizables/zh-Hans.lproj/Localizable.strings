@@ -642,6 +642,7 @@
 "psbtInputs" = "输入";
 "psbtNetworkFee" = "网络费用";
 "psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
 "psbtOutputs" = "输出";
 "psbtSignedByThisDevice" = "由此设备签名";
 "psbtTransactionDetails" = "交易详情 (PSBT)";

@@ -641,6 +641,7 @@
 "psbtInputs" = "Ingressi";
 "psbtNetworkFee" = "Commissione di rete";
 "psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
 "psbtOutputs" = "Uscite";
 "psbtSignedByThisDevice" = "Firmato da questo dispositivo";
 "psbtTransactionDetails" = "Dettagli transazione (PSBT)";

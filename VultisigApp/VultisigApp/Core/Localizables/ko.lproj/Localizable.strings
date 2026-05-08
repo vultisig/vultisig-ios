@@ -649,6 +649,7 @@
 "psbtInputs" = "입력";
 "psbtNetworkFee" = "네트워크 수수료";
 "psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
 "psbtOutputs" = "출력";
 "psbtSignedByThisDevice" = "이 기기에서 서명됨";
 "psbtTransactionDetails" = "트랜잭션 세부 정보 (PSBT)";

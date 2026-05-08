@@ -162,7 +162,7 @@ struct SignBitcoinDisplayView: View {
 
     private func displayLabel(for output: BitcoinOutput) -> String {
         if output.opReturnData != nil {
-            return "OP_RETURN"
+            return "psbtOpReturn".localized
         }
         if !output.address.isEmpty {
             return output.address
@@ -172,7 +172,7 @@ struct SignBitcoinDisplayView: View {
 
     private func badgeText(for output: BitcoinOutput) -> String? {
         if let data = output.opReturnData {
-            return "psbtOpReturn".localized + ": " + data
+            return String(format: "psbtOpReturnFormat".localized, data)
         }
         if output.isChange {
             return "psbtChangeMarker".localized
