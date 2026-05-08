@@ -59,7 +59,12 @@ struct Screen<Content: View>: View {
     @ViewBuilder
     var container: some View {
         if navigationBarHidden {
+#if os(iOS)
             contentContainer
+                .toolbar(.hidden, for: .navigationBar)
+#else
+            contentContainer
+#endif
         } else {
 #if os(macOS)
             VStack {
@@ -73,6 +78,7 @@ struct Screen<Content: View>: View {
             }
 #else
             contentContainer
+                .navigationBarBackButtonHidden(backButtonHidden)
                 .crossPlatformToolbar(
                     title,
                     ignoresTopEdge: ignoresTopEdge,

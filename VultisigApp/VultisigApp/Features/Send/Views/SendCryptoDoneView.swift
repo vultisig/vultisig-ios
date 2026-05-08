@@ -25,8 +25,6 @@ struct SendCryptoDoneView: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
-
     @State private var showAlert = false
     @State private var alertTitle = "hashCopied"
 
@@ -112,7 +110,6 @@ struct SendCryptoDoneView: View {
             hash: hash,
             approveHash: approveHash,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
         )
     }
 
@@ -134,7 +131,6 @@ struct SendCryptoDoneView: View {
             approveHash: approveHash,
             progressLink: progressLink,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel,
             showAlert: $showAlert,
             alertTitle: $alertTitle
         )

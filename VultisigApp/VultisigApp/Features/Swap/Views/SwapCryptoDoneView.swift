@@ -14,7 +14,6 @@ struct SwapCryptoDoneView: View {
     let approveHash: String?
     let progressLink: String?
     let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
     @Binding var showAlert: Bool
     @Binding var alertTitle: String
 
@@ -31,7 +30,6 @@ struct SwapCryptoDoneView: View {
         approveHash: String?,
         progressLink: String?,
         sendSummaryViewModel: SendSummaryViewModel,
-        swapSummaryViewModel: SwapCryptoViewModel,
         showAlert: Binding<Bool>,
         alertTitle: Binding<String>
     ) {
@@ -41,7 +39,6 @@ struct SwapCryptoDoneView: View {
         self.approveHash = approveHash
         self.progressLink = progressLink
         self.sendSummaryViewModel = sendSummaryViewModel
-        self.swapSummaryViewModel = swapSummaryViewModel
         self._showAlert = showAlert
         self._alertTitle = alertTitle
 
@@ -58,7 +55,10 @@ struct SwapCryptoDoneView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            cards
+            ScrollView {
+                cards
+            }
+            .scrollIndicators(.hidden)
             buttons
         }
         .onAppear {
@@ -86,12 +86,12 @@ struct SwapCryptoDoneView: View {
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
                 fromAmountCrypto: sendSummaryViewModel.getFromAmount(tx),
-                fromAmountFiat: swapSummaryViewModel.fromFiatAmount(tx: tx),
+                fromAmountFiat: SwapCryptoLogic.fromFiatAmount(tx: tx),
                 toAmountCrypto: sendSummaryViewModel.getToAmount(tx),
-                toAmountFiat: swapSummaryViewModel.toFiatAmount(tx: tx),
+                toAmountFiat: SwapCryptoLogic.toFiatAmount(tx: tx),
                 fromAddress: tx.fromCoin.address,
                 toAddress: tx.toCoin.address,
-                feeCrypto: swapSummaryViewModel.totalFeeString(tx: tx),
+                feeCrypto: SwapCryptoLogic.totalFeeString(tx: tx),
                 feeFiat: "",
                 chain: tx.fromCoin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: tx.fromCoin.chain, txid: hash),
@@ -107,6 +107,7 @@ struct SwapCryptoDoneView: View {
     var cards: some View {
         VStack(spacing: 24) {
             TransactionStatusHeaderView(status: statusViewModel.status)
+                .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
                 fromToCards
@@ -146,7 +147,7 @@ struct SwapCryptoDoneView: View {
                     title: sendSummaryViewModel.getFromAmount(
                         tx
                     ),
-                    description: swapSummaryViewModel.fromFiatAmount(tx: tx),
+                    description: SwapCryptoLogic.fromFiatAmount(tx: tx),
                     isFrom: true
                 )
 
@@ -155,7 +156,7 @@ struct SwapCryptoDoneView: View {
                     title: sendSummaryViewModel.getToAmount(
                         tx
                     ),
-                    description: swapSummaryViewModel.toFiatAmount(tx: tx),
+                    description: SwapCryptoLogic.toFiatAmount(tx: tx),
                     isFrom: false
                 )
             }
@@ -234,7 +235,7 @@ struct SwapCryptoDoneView: View {
                 valueMaxWidth: 120
             )
 
-            if swapSummaryViewModel.showTotalFees(tx: tx) {
+            if SwapCryptoLogic.showTotalFees(tx: tx) {
                 separator
                 totalFees
             }
@@ -267,7 +268,7 @@ struct SwapCryptoDoneView: View {
         HStack {
             getCell(
                 title: "totalFee",
-                value: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
+                value: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
             )
 
             chevron
@@ -295,11 +296,11 @@ struct SwapCryptoDoneView: View {
 
     var expandableFees: some View {
         VStack(spacing: 4) {
-            if swapSummaryViewModel.showFees(tx: tx) {
+            if SwapCryptoLogic.showFees(tx: tx) {
                 swapFees
             }
 
-            if swapSummaryViewModel.showGas(tx: tx) {
+            if SwapCryptoLogic.showGas(tx: tx) {
                 swapGas
             }
         }
@@ -308,14 +309,14 @@ struct SwapCryptoDoneView: View {
     var swapFees: some View {
         getCell(
             title: "swapFee",
-            value: swapSummaryViewModel.swapFeeString(tx: tx)
+            value: SwapCryptoLogic.swapFeeString(tx: tx)
         )
     }
 
     var swapGas: some View {
         getCell(
             title: "networkFee",
-            value: "\(swapSummaryViewModel.swapGasString(tx: tx))(\(swapSummaryViewModel.approveFeeString(tx: tx)))"
+            value: "\(SwapCryptoLogic.swapGasString(tx: tx))(\(SwapCryptoLogic.approveFeeString(tx: tx)))"
         )
     }
 
@@ -421,7 +422,6 @@ struct SwapCryptoDoneView: View {
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
             progressLink: nil,
             sendSummaryViewModel: SendSummaryViewModel(),
-            swapSummaryViewModel: SwapCryptoViewModel(),
             showAlert: .constant(false),
             alertTitle: .constant("")
         )
