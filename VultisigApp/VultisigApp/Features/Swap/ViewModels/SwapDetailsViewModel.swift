@@ -9,7 +9,12 @@ import OSLog
 @MainActor
 final class SwapDetailsViewModel: ObservableObject {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
+    private let interactor: SwapInteractor
     private var updateQuoteTask: Task<Void, Never>?
+
+    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+        self.interactor = interactor
+    }
 
     @Published var error: Error?
     @Published var isLoading = false
@@ -34,7 +39,7 @@ final class SwapDetailsViewModel: ObservableObject {
     }
 
     func loadFastVault(tx: SwapTransaction, vault: Vault) async {
-        tx.isFastVault = await SwapCryptoLogic.loadFastVault(vault: vault)
+        tx.isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     func updateCoinLists(tx: SwapTransaction) {
@@ -69,7 +74,7 @@ final class SwapDetailsViewModel: ObservableObject {
 
     func updateBalance(for coin: Coin) {
         Task {
-            await BalanceService.shared.updateBalance(for: coin)
+            await interactor.updateBalance(for: coin)
         }
     }
 
@@ -159,10 +164,18 @@ private extension SwapDetailsViewModel {
         guard !tx.fromAmount.isEmpty else { return }
 
         do {
-            let quote = try await SwapCryptoLogic.fetchQuote(tx: tx, vault: vault, referredCode: referredCode)
-            tx.quote = quote
+            let result = try await interactor.fetchQuote(
+                draft: SwapDraft(from: tx),
+                vault: vault,
+                referredCode: referredCode
+            )
+            if let result {
+                tx.quote = result.quote
+                tx.vultDiscountBps = result.vultDiscountBps
+                tx.referralDiscountBps = result.referralDiscountBps
+            }
 
-            if let balanceError = SwapCryptoLogic.balanceError(tx: tx) {
+            if let balanceError = SwapCryptoLogic.balanceError(draft: SwapDraft(from: tx)) {
                 throw balanceError
             }
         } catch {
@@ -178,9 +191,14 @@ private extension SwapDetailsViewModel {
         guard !tx.fromAmount.isEmpty, !tx.fromAmountDecimal.isZero else { return }
 
         do {
-            let chainSpecific = try await SwapCryptoLogic.fetchChainSpecific(tx: tx)
+            let draft = SwapDraft(from: tx)
+            let chainSpecific = try await interactor.fetchChainSpecific(draft: draft)
             tx.gas = chainSpecific.gas
-            tx.thorchainFee = try await SwapCryptoLogic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            tx.thorchainFee = try await interactor.computeThorchainFee(
+                chainSpecific: chainSpecific,
+                draft: draft,
+                vault: vault
+            )
         } catch {
             logger.warning("Update fees error: \(error.localizedDescription)")
 

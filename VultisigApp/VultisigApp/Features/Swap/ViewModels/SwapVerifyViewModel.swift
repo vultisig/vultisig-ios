@@ -9,7 +9,12 @@ import OSLog
 @MainActor
 final class SwapVerifyViewModel: ObservableObject {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
+    private let interactor: SwapInteractor
     let securityScanViewModel = SecurityScannerViewModel()
+
+    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+        self.interactor = interactor
+    }
 
     @Published var isAmountCorrect = false
     @Published var isFeeCorrect = false
@@ -59,14 +64,27 @@ final class SwapVerifyViewModel: ObservableObject {
         defer { isLoadingFees = false }
 
         do {
-            let quote = try await SwapCryptoLogic.fetchQuote(tx: tx, vault: vault, referredCode: referredCode)
-            tx.quote = quote
-            if let balanceError = SwapCryptoLogic.balanceError(tx: tx) {
+            let result = try await interactor.fetchQuote(
+                draft: SwapDraft(from: tx),
+                vault: vault,
+                referredCode: referredCode
+            )
+            if let result {
+                tx.quote = result.quote
+                tx.vultDiscountBps = result.vultDiscountBps
+                tx.referralDiscountBps = result.referralDiscountBps
+            }
+            if let balanceError = SwapCryptoLogic.balanceError(draft: SwapDraft(from: tx)) {
                 throw balanceError
             }
-            let chainSpecific = try await SwapCryptoLogic.fetchChainSpecific(tx: tx)
+            let draft = SwapDraft(from: tx)
+            let chainSpecific = try await interactor.fetchChainSpecific(draft: draft)
             tx.gas = chainSpecific.gas
-            tx.thorchainFee = try await SwapCryptoLogic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            tx.thorchainFee = try await interactor.computeThorchainFee(
+                chainSpecific: chainSpecific,
+                draft: draft,
+                vault: vault
+            )
             error = nil
         } catch {
             guard (error as? URLError)?.code != .cancelled else { return }
@@ -80,7 +98,7 @@ final class SwapVerifyViewModel: ObservableObject {
         defer { isLoadingTransaction = false }
 
         do {
-            return try await SwapCryptoLogic.buildSwapKeysignPayload(tx: tx, vault: vault)
+            return try await interactor.buildSwapKeysignPayload(draft: SwapDraft(from: tx), vault: vault)
         } catch {
             self.error = error
             return nil
