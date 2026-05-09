@@ -637,6 +637,14 @@
 "proposalID" = "ID Proposta";
 "provider" = "Fornitore";
 "providerLabel" = "Fornitore (opzionale)";
+"psbtChangeMarker" = "Resto";
+"psbtInputs" = "Ingressi";
+"psbtNetworkFee" = "Commissione di rete";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Uscite";
+"psbtSignedByThisDevice" = "Firmato da questo dispositivo";
+"psbtTransactionDetails" = "Dettagli transazione (PSBT)";
 "pushNotifications" = "Notifiche push";
 "pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
 "rawPayload" = "Dati grezzi";
