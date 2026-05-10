@@ -82,7 +82,9 @@ final class SwapVerifyViewModel {
 
         do {
             let result = try await interactor.fetchQuote(
-                draft: transaction.asDraft,
+                amount: transaction.fromAmount,
+                fromCoin: transaction.fromCoin,
+                toCoin: transaction.toCoin,
                 vault: vault,
                 referredCode: referredCode
             )
@@ -94,15 +96,26 @@ final class SwapVerifyViewModel {
                     referralDiscountBps: result.referralDiscountBps
                 )
             }
-            if let balanceError = SwapCryptoLogic.balanceError(draft: updated.asDraft) {
+            if let balanceError = SwapCryptoLogic.balanceError(
+                fromCoin: updated.fromCoin,
+                feeCoin: updated.feeCoin,
+                fromAmount: updated.fromAmount.description,
+                fee: updated.fee
+            ) {
                 throw balanceError
             }
-            let chainSpecific = try await interactor.fetchChainSpecific(draft: updated.asDraft)
+            let chainSpecific = try await interactor.fetchChainSpecific(
+                fromCoin: updated.fromCoin,
+                toCoin: updated.toCoin,
+                fromAmount: updated.fromAmount,
+                quote: updated.quote
+            )
             updated = updated.with(
                 gas: chainSpecific.gas,
                 thorchainFee: try await interactor.computeThorchainFee(
                     chainSpecific: chainSpecific,
-                    draft: updated.asDraft,
+                    fromCoin: updated.fromCoin,
+                    fromAmount: updated.fromAmount,
                     vault: vault
                 )
             )
@@ -120,7 +133,7 @@ final class SwapVerifyViewModel {
         defer { isLoadingTransaction = false }
 
         do {
-            return try await interactor.buildSwapKeysignPayload(draft: transaction.asDraft, vault: vault)
+            return try await interactor.buildSwapKeysignPayload(transaction: transaction, vault: vault)
         } catch {
             self.error = error
             return nil

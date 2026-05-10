@@ -21,7 +21,7 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func getToAmount(_ tx: SwapTransaction) -> String {
-        let formattedAmount = SwapCryptoLogic.toAmountDecimal(draft: tx.asDraft).formatForDisplay()
+        let formattedAmount = tx.toAmountDecimal.formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.toCoin.ticker)"

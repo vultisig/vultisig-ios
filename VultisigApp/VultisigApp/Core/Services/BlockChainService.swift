@@ -160,26 +160,38 @@ final class BlockChainService {
         }
     }
 
-    func fetchSpecific(swapDraft draft: SwapDraft) async throws -> BlockChainSpecific {
-        let quote = "\(String(describing: draft.quote?.hashValue))"
-        let cacheKey =  getCacheKey(for: draft.fromCoin,
-                                    action: .swap,
-                                    sendMaxAmount: false,
-                                    isDeposit: SwapCryptoLogic.isDeposit(draft: draft),
-                                    transactionType: .unspecified,
-                                    fromAddress: draft.fromCoin.address,
-                                    toAddress: nil,  // Swaps don't have a specific toAddress in the same way
-                                    memo: nil,  // Swaps don't have memos
-                                    feeMode: .fast, quote: quote)
-        // Use centralized cache checking method
-        if let cachedResult = shouldUseCache(for: draft.fromCoin.chain, cacheKey: cacheKey) {
+    func fetchSwapBlockChainSpecific(
+        fromCoin: Coin,
+        // swiftlint:disable:next unused_parameter
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BlockChainSpecific {
+        let quoteHash = "\(String(describing: quote?.hashValue))"
+        let isDeposit = SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+        let cacheKey = getCacheKey(
+            for: fromCoin,
+            action: .swap,
+            sendMaxAmount: false,
+            isDeposit: isDeposit,
+            transactionType: .unspecified,
+            fromAddress: fromCoin.address,
+            toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+            memo: nil,  // Swaps don't have memos
+            feeMode: .fast, quote: quoteHash
+        )
+        if let cachedResult = shouldUseCache(for: fromCoin.chain, cacheKey: cacheKey) {
             return cachedResult
         }
 
-        let gasLimit = try await estimateSwapGasLimit(swapDraft: draft)
+        let gasLimit = try await estimateSwapGasLimit(
+            fromCoin: fromCoin,
+            fromAmount: fromAmount,
+            quote: quote
+        )
 
         let action: Action
-        switch draft.quote {
+        switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             action = .transfer
         default:
@@ -187,20 +199,19 @@ final class BlockChainService {
         }
 
         let specific = try await fetchSpecific(
-            for: draft.fromCoin,
+            for: fromCoin,
             action: action,
             sendMaxAmount: false,
-            isDeposit: SwapCryptoLogic.isDeposit(draft: draft),
+            isDeposit: isDeposit,
             transactionType: .unspecified,
             gasLimit: gasLimit,
-            fromAddress: draft.fromCoin.address,
+            fromAddress: fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
             feeMode: .fast,
             amount: nil
         )
-        // Use centralized cache setting method
-        setCacheIfAllowed(for: draft.fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
+        setCacheIfAllowed(for: fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
         return specific
     }
 
@@ -698,26 +709,31 @@ private extension BlockChainService {
         return gas
     }
 
-    func estimateSwapGasLimit(swapDraft draft: SwapDraft) async throws -> BigInt? {
-        if draft.fromCoin.chainType != .EVM {
-            return nil
-        }
-        let service = try EvmService.getService(forChain: draft.fromCoin.chain)
-        switch draft.quote {
+    func estimateSwapGasLimit(
+        fromCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BigInt? {
+        guard fromCoin.chainType == .EVM else { return nil }
+        let service = try EvmService.getService(forChain: fromCoin.chain)
+        switch quote {
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
             // 23000 is too low. Using 120000 (same as ERC20) is safer.
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
-            if draft.fromCoin.isNativeToken {
-                do {
-                    return try await service.estimateGasLimitForSwap(senderAddress: draft.fromCoin.address, toAddress: quote.tx.to, value: SwapCryptoLogic.amountInCoinDecimal(draft: draft), data: quote.tx.data)
-                } catch {
-                    // If estimation fails, return nil to fall back to default gas limit
-                    return nil
-                }
+        case .oneinch(let evmQuote, _), .kyberswap(let evmQuote, _), .lifi(let evmQuote, _, _):
+            guard fromCoin.isNativeToken else { return nil }
+            do {
+                let amountInCoin = fromCoin.raw(for: fromAmount)
+                return try await service.estimateGasLimitForSwap(
+                    senderAddress: fromCoin.address,
+                    toAddress: evmQuote.tx.to,
+                    value: amountInCoin,
+                    data: evmQuote.tx.data
+                )
+            } catch {
+                return nil
             }
-            return nil
         case .none:
             return nil
         }

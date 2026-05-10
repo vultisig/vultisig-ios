@@ -8,10 +8,6 @@
 //  `makeTransaction()` materialises an immutable `SwapTransaction` that the
 //  rest of the flow consumes.
 //
-//  Pure helpers in `SwapCryptoLogic` stay draft-shaped, so the VM exposes a
-//  computed `draft: SwapDraft` snapshot built from its current fields. The
-//  Interactor + formatters call sites keep working unchanged.
-//
 
 import BigInt
 import OSLog
@@ -59,28 +55,6 @@ final class SwapDetailsViewModel {
 
     init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
         self.interactor = interactor
-    }
-
-    // MARK: - Snapshot
-
-    /// Snapshot of the current form state as a value type. Pure helpers
-    /// (`SwapCryptoLogic.foo(draft:)`) and the Interactor consume this.
-    var draft: SwapDraft {
-        SwapDraft(
-            fromAmount: fromAmount,
-            thorchainFee: thorchainFee,
-            gas: gas,
-            vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps,
-            quote: quote,
-            isFastVault: isFastVault,
-            fastVaultPassword: .empty,
-            pendingRetryReason: nil,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromCoins: fromCoins,
-            toCoins: toCoins
-        )
     }
 
     // MARK: - Loading
@@ -172,11 +146,11 @@ final class SwapDetailsViewModel {
     // MARK: - Picker helpers
 
     func pickerFromCoinsForChain() -> [Coin] {
-        SwapCryptoLogic.pickerFromCoins(draft: draft, fromChain: fromChain)
+        SwapCryptoLogic.pickerFromCoins(fromCoins: fromCoins, selected: fromCoin, fromChain: fromChain)
     }
 
     func pickerToCoinsForChain() -> [Coin] {
-        SwapCryptoLogic.pickerToCoins(draft: draft, toChain: toChain)
+        SwapCryptoLogic.pickerToCoins(toCoins: toCoins, selected: toCoin, toChain: toChain)
     }
 
     func handleFromChainUpdate(vault: Vault) {
@@ -200,12 +174,20 @@ final class SwapDetailsViewModel {
     // MARK: - Validation + transaction hand-off
 
     func validateForm() -> Bool {
-        SwapCryptoLogic.validateForm(draft: draft, isLoading: isLoading)
+        SwapCryptoLogic.validateForm(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            quote: quote,
+            fee: fee,
+            toAmount: toAmountDecimal,
+            isSufficientBalance: balanceError == nil,
+            isLoading: isLoading
+        )
     }
 
     /// Materialise an immutable `SwapTransaction` from the current form state.
-    /// Returns nil if the form isn't valid (no quote, zero amount, balance
-    /// insufficient, etc.) — caller can stay on the details screen.
+    /// Returns nil if the form isn't valid.
     func makeTransaction() -> SwapTransaction? {
         guard validateForm(), let quote else { return nil }
         return SwapTransaction(
@@ -218,8 +200,138 @@ final class SwapDetailsViewModel {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
             isFastVault: isFastVault,
-            feeCoin: SwapCryptoLogic.feeCoin(draft: draft)
+            feeCoin: feeCoin
         )
+    }
+}
+
+// MARK: - Convenience computed helpers
+//
+// Sugar over the primitive-taking SwapCryptoLogic free functions. View code
+// reads `vm.swapFeeString` instead of spelling out the args.
+
+extension SwapDetailsViewModel {
+    var feeCoin: Coin {
+        SwapCryptoLogic.feeCoin(fromCoin: fromCoin, fromCoins: fromCoins)
+    }
+
+    var fee: BigInt {
+        SwapCryptoLogic.fee(quote: quote, thorchainFee: thorchainFee)
+    }
+
+    var fromAmountDecimal: Decimal {
+        SwapCryptoLogic.fromAmountDecimal(fromAmount: fromAmount)
+    }
+
+    var amountInCoinDecimal: BigInt {
+        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmount, fromCoin: fromCoin)
+    }
+
+    var toAmountDecimal: Decimal {
+        SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
+    }
+
+    var router: String? {
+        SwapCryptoLogic.router(quote: quote)
+    }
+
+    var isApproveRequired: Bool {
+        SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+    }
+
+    var isDeposit: Bool {
+        SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+    }
+
+    var balanceError: SwapCryptoLogic.Errors? {
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee)
+    }
+
+    var fromFiatAmount: String {
+        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmount)
+    }
+
+    var toFiatAmount: String {
+        SwapCryptoLogic.toFiatAmount(toCoin: toCoin, quote: quote)
+    }
+
+    var showGas: Bool {
+        SwapCryptoLogic.showGas(gas: gas)
+    }
+
+    var showFees: Bool {
+        SwapCryptoLogic.showFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var showTotalFees: Bool {
+        SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var swapFeeString: String {
+        SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapGasString: String {
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+    }
+
+    var approveFeeString: String {
+        SwapCryptoLogic.approveFeeString(feeCoin: feeCoin, fee: fee)
+    }
+
+    var isApproveFeeZero: Bool {
+        SwapCryptoLogic.isApproveFeeZero(fee: fee)
+    }
+
+    var totalFeeString: String {
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var durationString: String {
+        SwapCryptoLogic.durationString(quote: quote)
+    }
+
+    var baseAffiliateFee: String {
+        SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapFeeLabel: String {
+        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmount)
+    }
+
+    var outboundFeeString: String {
+        SwapCryptoLogic.outboundFeeString(quote: quote, toCoin: toCoin)
+    }
+
+    var vultDiscountLabel: String {
+        SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: vultDiscountBps)
+    }
+
+    var referralDiscountLabel: String {
+        SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: referralDiscountBps)
+    }
+
+    var vultDiscount: String {
+        SwapCryptoLogic.vultDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps
+        )
+    }
+
+    var referralDiscount: String {
+        SwapCryptoLogic.referralDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(quote: quote)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(quote: quote)
     }
 }
 
@@ -269,14 +381,20 @@ private extension SwapDetailsViewModel {
         guard !fromAmount.isEmpty else { return }
 
         do {
-            let result = try await interactor.fetchQuote(draft: draft, vault: vault, referredCode: referredCode)
+            let result = try await interactor.fetchQuote(
+                amount: fromAmount.toDecimal(),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vault: vault,
+                referredCode: referredCode
+            )
             if let result {
                 quote = result.quote
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }
 
-            if let balanceError = SwapCryptoLogic.balanceError(draft: draft) {
+            if let balanceError {
                 throw balanceError
             }
         } catch {
@@ -289,14 +407,21 @@ private extension SwapDetailsViewModel {
         gas = .zero
         thorchainFee = .zero
 
-        guard !fromAmount.isEmpty, !draft.fromAmount.toDecimal().isZero else { return }
+        let amountDecimal = fromAmount.toDecimal()
+        guard !fromAmount.isEmpty, !amountDecimal.isZero else { return }
 
         do {
-            let chainSpecific = try await interactor.fetchChainSpecific(draft: draft)
+            let chainSpecific = try await interactor.fetchChainSpecific(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: amountDecimal,
+                quote: quote
+            )
             gas = chainSpecific.gas
             thorchainFee = try await interactor.computeThorchainFee(
                 chainSpecific: chainSpecific,
-                draft: draft,
+                fromCoin: fromCoin,
+                fromAmount: amountDecimal,
                 vault: vault
             )
         } catch {

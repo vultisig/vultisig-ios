@@ -41,10 +41,12 @@ final class MockServiceTests: XCTestCase {
             stubbedResult: .success(.Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil))
         )
 
-        var draft = SwapDraft()
-        draft.fromAmount = "0.1"
-
-        let specific = try await mock.fetchSwapBlockChainSpecific(draft: draft)
+        let specific = try await mock.fetchSwapBlockChainSpecific(
+            fromCoin: .example,
+            toCoin: .example,
+            fromAmount: 0.1,
+            quote: nil
+        )
 
         if case .Cosmos(let accountNumber, _, _, _, _) = specific {
             XCTAssertEqual(accountNumber, 1)
@@ -52,14 +54,19 @@ final class MockServiceTests: XCTestCase {
             XCTFail("Expected Cosmos variant")
         }
         XCTAssertEqual(mock.fetchSwapCallCount, 1)
-        XCTAssertEqual(mock.lastDraft, draft)
+        XCTAssertEqual(mock.lastFromAmount, 0.1)
     }
 
     func testMockBlockChainServiceThrowsStubbedError() async {
         let mock = MockBlockChainService(stubbedResult: .failure(StubError.failed))
 
         do {
-            _ = try await mock.fetchSwapBlockChainSpecific(draft: SwapDraft())
+            _ = try await mock.fetchSwapBlockChainSpecific(
+                fromCoin: .example,
+                toCoin: .example,
+                fromAmount: 0,
+                quote: nil
+            )
             XCTFail("Expected throw")
         } catch {
             XCTAssertEqual(error as? StubError, .failed)

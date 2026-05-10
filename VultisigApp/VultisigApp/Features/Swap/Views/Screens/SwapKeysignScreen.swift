@@ -49,7 +49,7 @@ struct SwapKeysignScreen: View {
                 approveHash: viewModel.approveHash,
                 chain: chain,
                 transaction: transaction,
-                progressLink: SwapCryptoLogic.progressLink(draft: transaction.asDraft, hash: hash)
+                progressLink: transaction.progressLink(hash: hash)
             ))
         }
         .onChange(of: retrySignal.pendingRetryReason) { _, reason in

@@ -72,7 +72,7 @@ struct SwapCryptoDoneView: View {
                     pubKeyECDSA: vault.pubKeyECDSA,
                     coin: transaction.fromCoin,
                     amountCrypto: sendSummaryViewModel.getFromAmount(transaction),
-                    spender: SwapCryptoLogic.router(draft: transaction.asDraft) ?? "",
+                    spender: transaction.router ?? "",
                     chain: transaction.fromCoin.chain,
                     explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: approveHash)
                 )
@@ -86,12 +86,12 @@ struct SwapCryptoDoneView: View {
                 fromCoin: transaction.fromCoin,
                 toCoin: transaction.toCoin,
                 fromAmountCrypto: sendSummaryViewModel.getFromAmount(transaction),
-                fromAmountFiat: SwapCryptoLogic.fromFiatAmount(draft: transaction.asDraft),
+                fromAmountFiat: transaction.fromFiatAmount,
                 toAmountCrypto: sendSummaryViewModel.getToAmount(transaction),
-                toAmountFiat: SwapCryptoLogic.toFiatAmount(draft: transaction.asDraft),
+                toAmountFiat: transaction.toFiatAmount,
                 fromAddress: transaction.fromCoin.address,
                 toAddress: transaction.toCoin.address,
-                feeCrypto: SwapCryptoLogic.totalFeeString(draft: transaction.asDraft),
+                feeCrypto: transaction.totalFeeString,
                 feeFiat: "",
                 chain: transaction.fromCoin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
@@ -147,7 +147,7 @@ struct SwapCryptoDoneView: View {
                     title: sendSummaryViewModel.getFromAmount(
                         transaction
                     ),
-                    description: SwapCryptoLogic.fromFiatAmount(draft: transaction.asDraft),
+                    description: transaction.fromFiatAmount,
                     isFrom: true
                 )
 
@@ -156,7 +156,7 @@ struct SwapCryptoDoneView: View {
                     title: sendSummaryViewModel.getToAmount(
                         transaction
                     ),
-                    description: SwapCryptoLogic.toFiatAmount(draft: transaction.asDraft),
+                    description: transaction.toFiatAmount,
                     isFrom: false
                 )
             }
@@ -235,7 +235,7 @@ struct SwapCryptoDoneView: View {
                 valueMaxWidth: 120
             )
 
-            if SwapCryptoLogic.showTotalFees(draft: transaction.asDraft) {
+            if transaction.showTotalFees {
                 separator
                 totalFees
             }
@@ -268,7 +268,7 @@ struct SwapCryptoDoneView: View {
         HStack {
             getCell(
                 title: "totalFee",
-                value: "\(SwapCryptoLogic.totalFeeString(draft: transaction.asDraft))"
+                value: "\(transaction.totalFeeString)"
             )
 
             chevron
@@ -296,11 +296,11 @@ struct SwapCryptoDoneView: View {
 
     var expandableFees: some View {
         VStack(spacing: 4) {
-            if SwapCryptoLogic.showFees(draft: transaction.asDraft) {
+            if transaction.showFees {
                 swapFees
             }
 
-            if SwapCryptoLogic.showGas(draft: transaction.asDraft) {
+            if transaction.showGas {
                 swapGas
             }
         }
@@ -309,14 +309,14 @@ struct SwapCryptoDoneView: View {
     var swapFees: some View {
         getCell(
             title: "swapFee",
-            value: SwapCryptoLogic.swapFeeString(draft: transaction.asDraft)
+            value: transaction.swapFeeString
         )
     }
 
     var swapGas: some View {
         getCell(
             title: "networkFee",
-            value: "\(SwapCryptoLogic.swapGasString(draft: transaction.asDraft))(\(SwapCryptoLogic.approveFeeString(draft: transaction.asDraft)))"
+            value: "\(transaction.swapGasString)(\(transaction.approveFeeString))"
         )
     }
 

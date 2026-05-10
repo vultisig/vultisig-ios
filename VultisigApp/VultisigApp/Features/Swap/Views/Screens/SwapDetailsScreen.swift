@@ -148,7 +148,7 @@ struct SwapDetailsScreen: View {
             title: "from",
             vault: vault,
             coin: detailsViewModel.fromCoin,
-            fiatAmount: SwapCryptoLogic.fromFiatAmount(draft: detailsViewModel.draft),
+            fiatAmount: detailsViewModel.fromFiatAmount,
             amount: $vm.fromAmount,
             selectedChain: $vm.fromChain,
             showNetworkSelectSheet: $vm.showFromChainSelector,
@@ -164,8 +164,8 @@ struct SwapDetailsScreen: View {
             title: "to",
             vault: vault,
             coin: detailsViewModel.toCoin,
-            fiatAmount: SwapCryptoLogic.toFiatAmount(draft: detailsViewModel.draft),
-            amount: .constant(SwapCryptoLogic.toAmountDecimal(draft: detailsViewModel.draft).formatForDisplay()),
+            fiatAmount: detailsViewModel.toFiatAmount,
+            amount: .constant(detailsViewModel.toAmountDecimal.formatForDisplay()),
             selectedChain: $vm.toChain,
             showNetworkSelectSheet: $vm.showToChainSelector,
             showCoinSelectSheet: $vm.showToCoinSelector,
@@ -328,7 +328,7 @@ extension SwapDetailsScreen {
         case 100:
             let fromCoin = detailsViewModel.fromCoin
             if fromCoin.isNativeToken {
-                let fee = SwapCryptoLogic.fee(draft: detailsViewModel.draft)
+                let fee = detailsViewModel.fee
                 let amountLessFee = fromCoin.rawBalance.toBigInt() - fee
                 let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: fromCoin.decimals) / pow(10, fromCoin.decimals)
                 let amount = amountLessFeeDecimal.truncated(toPlaces: decimalsToUse)

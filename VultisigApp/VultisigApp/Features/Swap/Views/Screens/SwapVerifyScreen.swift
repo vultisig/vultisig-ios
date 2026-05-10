@@ -29,7 +29,6 @@ struct SwapVerifyScreen: View {
         self._verifyViewModel = State(initialValue: SwapVerifyViewModel(transaction: transaction))
     }
 
-    private var draft: SwapDraft { verifyViewModel.transaction.asDraft }
     private var currentTransaction: SwapTransaction { verifyViewModel.transaction }
 
     var body: some View {
@@ -38,7 +37,7 @@ struct SwapVerifyScreen: View {
             VStack(spacing: 16) {
                 fields
                 signButton
-                    .disabled(!verifyViewModel.isValidForm(shouldApprove: SwapCryptoLogic.isApproveRequired(draft: draft)) || verifyViewModel.isLoadingFees || signButtonDisabled)
+                    .disabled(!verifyViewModel.isValidForm(shouldApprove: currentTransaction.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
             }
         }
         .screenTitle("swapOverview".localized)
@@ -104,30 +103,30 @@ struct SwapVerifyScreen: View {
                     )
                 }
 
-                if SwapCryptoLogic.showGas(draft: draft) {
+                if currentTransaction.showGas {
                     separator
                     getNetworkFeeCell(
-                        cryptoAmount: SwapCryptoLogic.swapGasString(draft: draft),
-                        fiatAmount: SwapCryptoLogic.approveFeeString(draft: draft)
+                        cryptoAmount: currentTransaction.swapGasString,
+                        fiatAmount: currentTransaction.approveFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if SwapCryptoLogic.showFees(draft: draft) {
+                if currentTransaction.showFees {
                     separator
                     getValueCell(
                         for: "swapFee",
-                        with: SwapCryptoLogic.swapFeeString(draft: draft),
+                        with: currentTransaction.swapFeeString,
                         bracketValue: nil
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if SwapCryptoLogic.showTotalFees(draft: draft) {
+                if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
                         for: "maxTotalFee",
-                        with: SwapCryptoLogic.totalFeeString(draft: draft)
+                        with: currentTransaction.totalFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
@@ -170,7 +169,7 @@ struct SwapVerifyScreen: View {
             getSwapAssetCell(
                 for: currentTransaction.fromAmount.formatForDisplay(),
                 with: currentTransaction.fromCoin.ticker,
-                fiatValue: SwapCryptoLogic.fromFiatAmount(draft: draft).formatToFiat(includeCurrencySymbol: true),
+                fiatValue: currentTransaction.fromFiatAmount.formatToFiat(includeCurrencySymbol: true),
                 on: currentTransaction.fromCoin.chain,
                 coin: currentTransaction.fromCoin,
                 isTo: false
@@ -179,9 +178,9 @@ struct SwapVerifyScreen: View {
             summaryFromToIcons
 
             getSwapAssetCell(
-                for: SwapCryptoLogic.toAmountDecimal(draft: draft).formatForDisplay(),
+                for: currentTransaction.toAmountDecimal.formatForDisplay(),
                 with: currentTransaction.toCoin.ticker,
-                fiatValue: SwapCryptoLogic.toFiatAmount(draft: draft).formatToFiat(includeCurrencySymbol: true),
+                fiatValue: currentTransaction.toFiatAmount.formatToFiat(includeCurrencySymbol: true),
                 on: currentTransaction.toCoin.chain,
                 coin: currentTransaction.toCoin,
                 isTo: true
@@ -283,7 +282,7 @@ struct SwapVerifyScreen: View {
     }
 
     var showApproveCheckmark: Bool {
-        SwapCryptoLogic.isApproveRequired(draft: draft)
+        currentTransaction.isApproveRequired
     }
 
     var separator: some View {

@@ -2,11 +2,9 @@
 //  SwapPayloadBuilder.swift
 //  VultisigApp
 //
-//  Pure-ish swap payload assembly over `SwapDraft`. Mechanical port of the
-//  body of `SwapCryptoLogic.buildSwapKeysignPayload(tx:vault:)`, with the
-//  chain-specific fetch hoisted out so the builder is testable in isolation.
-//  The legacy `(tx:vault:)` entry point delegates here during the bridge
-//  phase; deleted alongside `SwapDraftStore` in §5.
+//  Pure-ish swap payload assembly. Helpers take only the primitives they
+//  need; both `SwapDetailsViewModel` (form state) and `SwapTransaction`
+//  (immutable hand-off) feed their own fields in.
 //
 
 import BigInt
@@ -19,7 +17,8 @@ extension SwapCryptoLogic {
     /// UTXO + Cardano build a draft transfer via `KeysignPayloadFactory` to plan the fee.
     static func thorchainFee(
         for chainSpecific: BlockChainSpecific,
-        draft: SwapDraft,
+        fromCoin: Coin,
+        fromAmount: Decimal,
         vault: Vault
     ) async throws -> BigInt {
         switch chainSpecific {
@@ -28,11 +27,12 @@ extension SwapCryptoLogic {
 
         case .UTXO, .Cardano:
             let keysignFactory = KeysignPayloadFactory()
+            let amountInCoin = fromCoin.raw(for: fromAmount)
             do {
                 let keysignPayload = try await keysignFactory.buildTransfer(
-                    coin: draft.fromCoin,
-                    toAddress: draft.fromCoin.address,
-                    amount: amountInCoinDecimal(draft: draft),
+                    coin: fromCoin,
+                    toAddress: fromCoin.address,
+                    amount: amountInCoin,
                     memo: nil,
                     chainSpecific: chainSpecific,
                     swapPayload: nil,
@@ -40,16 +40,16 @@ extension SwapCryptoLogic {
                 )
 
                 let planFee: BigInt
-                switch draft.fromCoin.chain {
+                switch fromCoin.chain {
                 case .cardano:
                     planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
                 default:
-                    let utxo = UTXOChainsHelper(coin: draft.fromCoin.coinType)
+                    let utxo = UTXOChainsHelper(coin: fromCoin.coinType)
                     let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
                     planFee = BigInt(plan.fee)
                 }
 
-                if planFee <= 0 && fromAmountDecimal(draft: draft) > 0 {
+                if planFee <= 0 && fromAmount > 0 {
                     throw Errors.insufficientFunds
                 }
                 return planFee
@@ -65,147 +65,169 @@ extension SwapCryptoLogic {
         }
     }
 
-    static func buildApprovePayload(draft: SwapDraft) -> ERC20ApprovePayload? {
-        guard isApproveRequired(draft: draft), let spender = router(draft: draft) else {
+    static func buildApprovePayload(
+        fromCoin: Coin,
+        amount: BigInt,
+        quote: SwapQuote?
+    ) -> ERC20ApprovePayload? {
+        guard isApproveRequired(fromCoin: fromCoin, quote: quote),
+              let spender = router(quote: quote)
+        else {
             return nil
         }
-        // Approve exact amount — no buffer needed for KyberSwap precision.
-        return ERC20ApprovePayload(amount: amountInCoinDecimal(draft: draft), spender: spender)
+        return ERC20ApprovePayload(amount: amount, spender: spender)
     }
 
-    /// Build the THORChain/MayaChain swap payload from a draft + selected quote.
-    /// `now` parameterised so tests can pin the 15-minute expiration deterministically;
-    /// production passes the default `Date()`.
+    /// Build the THORChain/MayaChain swap payload from primitives + selected quote.
+    /// `now` parameterised so tests can pin the 15-minute expiration deterministically.
     static func buildThorchainSwapPayload(
-        draft: SwapDraft,
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
         quote: ThorchainSwapQuote,
         provider: SwapProvider,
         now: Date = Date()
     ) -> THORChainSwapPayload {
-        let vaultAddress = quote.inboundAddress ?? draft.fromCoin.address
-        let expirationTime = now.addingTimeInterval(60 * 15) // 15 mins
+        let vaultAddress = quote.inboundAddress ?? fromCoin.address
+        let expirationTime = now.addingTimeInterval(60 * 15)
         return THORChainSwapPayload(
-            fromAddress: draft.fromCoin.address,
-            fromCoin: draft.fromCoin,
-            toCoin: draft.toCoin,
+            fromAddress: fromCoin.address,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
             vaultAddress: vaultAddress,
             routerAddress: quote.router,
-            fromAmount: amountInCoinDecimal(draft: draft),
-            toAmountDecimal: toAmountDecimal(draft: draft),
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
             toAmountLimit: "0",
             streamingInterval: String(provider.streamingInterval),
             streamingQuantity: "0",
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-            isAffiliate: isAffiliate(draft: draft)
+            isAffiliate: SwapCryptoLogic.isAffiliate
         )
     }
 
-    /// Assemble the final `KeysignPayload` for a swap given a populated draft and the
-    /// chain-specific data already fetched. UTXO-source swaps still hit the network
-    /// inside `KeysignPayloadFactory.buildTransfer` for UTXO selection; non-UTXO
-    /// sources are deterministic given the inputs.
+    /// Assemble the final `KeysignPayload` for a swap given a finalised
+    /// `SwapTransaction` + the chain-specific data already fetched.
     static func buildSwapKeysignPayload(
-        draft: SwapDraft,
+        transaction: SwapTransaction,
         chainSpecific: BlockChainSpecific,
         vault: Vault,
         now: Date = Date()
     ) async throws -> KeysignPayload {
-        guard let quote = draft.quote else {
-            throw Errors.unexpectedError
-        }
-
         let keysignFactory = KeysignPayloadFactory()
+        let fromCoin = transaction.fromCoin
+        let toCoin = transaction.toCoin
+        let amountInCoin = transaction.amountInCoinDecimal
+        let toDecimal = transaction.toAmountDecimal
+        let approvePayload = buildApprovePayload(
+            fromCoin: fromCoin,
+            amount: amountInCoin,
+            quote: transaction.quote
+        )
 
-        switch quote {
+        switch transaction.quote {
         case let .mayachain(quote):
-            let toAddress = draft.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
+            let toAddress = fromCoin.isNativeToken ? quote.inboundAddress : quote.router
             return try await keysignFactory.buildTransfer(
-                coin: draft.fromCoin,
-                toAddress: toAddress ?? draft.fromCoin.address,
-                amount: amountInCoinDecimal(draft: draft),
+                coin: fromCoin,
+                toAddress: toAddress ?? fromCoin.address,
+                amount: amountInCoin,
                 memo: quote.memo,
                 chainSpecific: chainSpecific,
                 swapPayload: .mayachain(buildThorchainSwapPayload(
-                    draft: draft,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
                     quote: quote,
                     provider: .mayachain,
                     now: now
                 )),
-                approvePayload: buildApprovePayload(draft: draft),
+                approvePayload: approvePayload,
                 vault: vault
             )
 
         case let .thorchain(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? draft.fromCoin.address
+            let toAddress = quote.router ?? quote.inboundAddress ?? fromCoin.address
             return try await keysignFactory.buildTransfer(
-                coin: draft.fromCoin,
+                coin: fromCoin,
                 toAddress: toAddress,
-                amount: amountInCoinDecimal(draft: draft),
+                amount: amountInCoin,
                 memo: quote.memo,
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchain(buildThorchainSwapPayload(
-                    draft: draft,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
                     quote: quote,
                     provider: .thorchain,
                     now: now
                 )),
-                approvePayload: buildApprovePayload(draft: draft),
+                approvePayload: approvePayload,
                 vault: vault
             )
 
         case let .thorchainChainnet(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? draft.fromCoin.address
+            let toAddress = quote.router ?? quote.inboundAddress ?? fromCoin.address
             return try await keysignFactory.buildTransfer(
-                coin: draft.fromCoin,
+                coin: fromCoin,
                 toAddress: toAddress,
-                amount: amountInCoinDecimal(draft: draft),
+                amount: amountInCoin,
                 memo: quote.memo,
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainChainnet(buildThorchainSwapPayload(
-                    draft: draft,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
                     quote: quote,
                     provider: .thorchainChainnet,
                     now: now
                 )),
-                approvePayload: buildApprovePayload(draft: draft),
+                approvePayload: approvePayload,
                 vault: vault
             )
 
         case let .thorchainStagenet(quote):
-            let toAddress = quote.router ?? quote.inboundAddress ?? draft.fromCoin.address
+            let toAddress = quote.router ?? quote.inboundAddress ?? fromCoin.address
             return try await keysignFactory.buildTransfer(
-                coin: draft.fromCoin,
+                coin: fromCoin,
                 toAddress: toAddress,
-                amount: amountInCoinDecimal(draft: draft),
+                amount: amountInCoin,
                 memo: quote.memo,
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainStagenet(buildThorchainSwapPayload(
-                    draft: draft,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
                     quote: quote,
                     provider: .thorchainStagenet,
                     now: now
                 )),
-                approvePayload: buildApprovePayload(draft: draft),
+                approvePayload: approvePayload,
                 vault: vault
             )
 
         case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
             let payload = GenericSwapPayload(
-                fromCoin: draft.fromCoin,
-                toCoin: draft.toCoin,
-                fromAmount: amountInCoinDecimal(draft: draft),
-                toAmountDecimal: toAmountDecimal(draft: draft),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: amountInCoin,
+                toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: quote.swapProviderId ?? .oneInch
+                provider: transaction.quote.swapProviderId ?? .oneInch
             )
             return try await keysignFactory.buildTransfer(
-                coin: draft.fromCoin,
+                coin: fromCoin,
                 toAddress: evmQuote.tx.to,
-                amount: amountInCoinDecimal(draft: draft),
+                amount: amountInCoin,
                 memo: nil,
                 chainSpecific: chainSpecific,
                 swapPayload: .generic(payload),
-                approvePayload: buildApprovePayload(draft: draft),
+                approvePayload: approvePayload,
                 vault: vault
             )
         }

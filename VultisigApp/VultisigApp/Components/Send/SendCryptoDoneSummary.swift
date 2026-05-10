@@ -112,27 +112,27 @@ struct SendCryptoDoneSummary: View {
                 )
             )
 
-            if SwapCryptoLogic.showFees(draft: tx.asDraft) {
+            if tx.showFees {
                 Separator()
                 getGeneralCell(
                     title: "swapFee",
-                    description: SwapCryptoLogic.swapFeeString(draft: tx.asDraft)
+                    description: tx.swapFeeString
                 )
             }
 
-            if SwapCryptoLogic.showGas(draft: tx.asDraft) {
+            if tx.showGas {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(SwapCryptoLogic.swapGasString(draft: tx.asDraft))(~\(SwapCryptoLogic.approveFeeString(draft: tx.asDraft)))"
+                    description: "\(tx.swapGasString)(~\(tx.approveFeeString))"
                 )
             }
 
-            if SwapCryptoLogic.showTotalFees(draft: tx.asDraft) {
+            if tx.showTotalFees {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(SwapCryptoLogic.totalFeeString(draft: tx.asDraft))"
+                    description: "\(tx.totalFeeString)"
                 )
             }
         }

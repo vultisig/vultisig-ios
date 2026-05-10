@@ -11,15 +11,26 @@ import Foundation
 final class MockBlockChainService: BlockChainServiceProtocol, @unchecked Sendable {
     var stubbedResult: Result<BlockChainSpecific, Error>
     private(set) var fetchSwapCallCount = 0
-    private(set) var lastDraft: SwapDraft?
+    private(set) var lastFromCoin: Coin?
+    private(set) var lastToCoin: Coin?
+    private(set) var lastFromAmount: Decimal?
+    private(set) var lastQuote: SwapQuote?
 
     init(stubbedResult: Result<BlockChainSpecific, Error>) {
         self.stubbedResult = stubbedResult
     }
 
-    func fetchSwapBlockChainSpecific(draft: SwapDraft) async throws -> BlockChainSpecific {
+    func fetchSwapBlockChainSpecific(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BlockChainSpecific {
         fetchSwapCallCount += 1
-        lastDraft = draft
+        lastFromCoin = fromCoin
+        lastToCoin = toCoin
+        lastFromAmount = fromAmount
+        lastQuote = quote
         return try stubbedResult.get()
     }
 }

@@ -2,11 +2,10 @@
 //  SwapPayloadBuilderTests.swift
 //  VultisigAppTests
 //
-//  Structural coverage for `SwapCryptoLogic.buildSwapKeysignPayload(draft:
+//  Structural coverage for `SwapCryptoLogic.buildSwapKeysignPayload(transaction:
 //  chainSpecific: vault: now:)` — one assertion per quote shape covering
 //  toAddress routing, swapPayload variant wiring, vault propagation, and
-//  approvePayload presence. Goldens skipped per the §1.4 sequencing call;
-//  drift caught by the existing per-helper tests + these structural shapes.
+//  approvePayload presence.
 //
 
 import BigInt
@@ -25,19 +24,17 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testThorchainPayloadRoutesThroughInboundAddressForNativeSource() async throws {
         let vault = makeVault()
-        let draft = makeNativeThorchainSwapDraft(
+        let transaction = makeNativeThorchainTransaction(
             quote: makeThorQuote(inboundAddress: "thor-vault", router: nil)
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: cosmosChainSpecific(),
             vault: vault,
             now: fixedNow
         )
 
-        // For thorchain, the spec is: router ?? inboundAddress ?? fromCoin.address.
-        // Native source with no router should land on inboundAddress.
         XCTAssertEqual(payload.toAddress, "thor-vault")
         XCTAssertEqual(payload.toAmount, BigInt(100_000_000)) // 1.0 RUNE @ 8 decimals
         XCTAssertEqual(payload.memo, "thor-memo")
@@ -55,12 +52,12 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testThorchainPayloadPrefersRouterWhenPresent() async throws {
         let vault = makeVault()
-        let draft = makeNativeThorchainSwapDraft(
+        let transaction = makeNativeThorchainTransaction(
             quote: makeThorQuote(inboundAddress: "thor-vault", router: "thor-router")
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: cosmosChainSpecific(),
             vault: vault,
             now: fixedNow
@@ -73,18 +70,17 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testMayachainPayloadRoutesThroughInboundForNativeSource() async throws {
         let vault = makeVault()
-        let draft = makeNativeMayachainSwapDraft(
+        let transaction = makeNativeMayachainTransaction(
             quote: makeThorQuote(inboundAddress: "maya-vault", router: nil)
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: cosmosChainSpecific(),
             vault: vault,
             now: fixedNow
         )
 
-        // Maya's branch: native source -> inboundAddress.
         XCTAssertEqual(payload.toAddress, "maya-vault")
         guard case let .mayachain(swap) = payload.swapPayload else {
             XCTFail("Expected .mayachain swapPayload variant"); return
@@ -92,16 +88,16 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(swap.expirationTime, expectedExpiration)
     }
 
-    // MARK: - 1Inch / KyberSwap / Lifi (EVM aggregators)
+    // MARK: - 1Inch / KyberSwap / Lifi
 
     func testOneInchPayloadUsesEvmTxToAsTarget() async throws {
         let vault = makeVault()
-        let draft = makeERC20SwapDraft(
+        let transaction = makeERC20Transaction(
             quote: .oneinch(makeEVMQuote(toAddress: "0xOneInchRouter"), fee: BigInt(1_000))
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: ethereumChainSpecific(),
             vault: vault,
             now: fixedNow
@@ -119,12 +115,12 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testKyberSwapPayloadProviderIsKyberSwap() async throws {
         let vault = makeVault()
-        let draft = makeERC20SwapDraft(
+        let transaction = makeERC20Transaction(
             quote: .kyberswap(makeEVMQuote(toAddress: "0xKyber"), fee: BigInt(0))
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: ethereumChainSpecific(),
             vault: vault,
             now: fixedNow
@@ -138,12 +134,12 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testLifiPayloadProviderIsLifi() async throws {
         let vault = makeVault()
-        let draft = makeERC20SwapDraft(
+        let transaction = makeERC20Transaction(
             quote: .lifi(makeEVMQuote(toAddress: "0xLifi"), fee: BigInt(0), integratorFee: nil)
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: ethereumChainSpecific(),
             vault: vault,
             now: fixedNow
@@ -159,12 +155,12 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testApprovePayloadNilForNativeSource() async throws {
         let vault = makeVault()
-        let draft = makeNativeThorchainSwapDraft(
+        let transaction = makeNativeThorchainTransaction(
             quote: makeThorQuote(inboundAddress: "thor-vault", router: nil)
         )
 
         let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: cosmosChainSpecific(),
             vault: vault,
             now: fixedNow
@@ -174,35 +170,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
     }
 
     func testBuildApprovePayloadNilWhenQuoteAbsent() {
-        // EVM aggregator quotes always carry a router (tx.to), so the realistic "no
-        // approve" case for an ERC20 source is when the quote hasn't loaded yet.
-        var draft = makeERC20SwapDraft(
-            quote: .oneinch(makeEVMQuote(toAddress: "0xR"), fee: nil)
-        )
-        draft.quote = nil
-        XCTAssertNil(SwapCryptoLogic.buildApprovePayload(draft: draft))
-    }
-
-    // MARK: - Error path
-
-    func testBuildSwapKeysignPayloadThrowsWhenQuoteNil() async {
-        let vault = makeVault()
-        var draft = makeNativeThorchainSwapDraft(
-            quote: makeThorQuote(inboundAddress: "thor-vault", router: nil)
-        )
-        draft.quote = nil
-
-        do {
-            _ = try await SwapCryptoLogic.buildSwapKeysignPayload(
-                draft: draft,
-                chainSpecific: cosmosChainSpecific(),
-                vault: vault,
-                now: fixedNow
-            )
-            XCTFail("Expected throw")
-        } catch {
-            XCTAssertEqual(error as? SwapCryptoLogic.Errors, .unexpectedError)
-        }
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        XCTAssertNil(SwapCryptoLogic.buildApprovePayload(fromCoin: usdc, amount: 100, quote: nil))
     }
 
     // MARK: - Fixtures
@@ -221,37 +190,55 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    private func makeNativeThorchainSwapDraft(quote: ThorchainSwapQuote) -> SwapDraft {
-        var draft = SwapDraft()
-        draft.fromCoin = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
-        draft.toCoin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
-        draft.fromAmount = "1.0"
-        draft.thorchainFee = BigInt(2_000)
-        draft.quote = .thorchain(quote)
-        return draft
+    private func makeNativeThorchainTransaction(quote: ThorchainSwapQuote) -> SwapTransaction {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        return SwapTransaction(
+            fromCoin: rune,
+            toCoin: btc,
+            fromAmount: 1.0,
+            quote: .thorchain(quote),
+            gas: 0,
+            thorchainFee: BigInt(2_000),
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            isFastVault: false,
+            feeCoin: rune
+        )
     }
 
-    private func makeNativeMayachainSwapDraft(quote: ThorchainSwapQuote) -> SwapDraft {
-        var draft = SwapDraft()
-        draft.fromCoin = makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
-        draft.toCoin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
-        draft.fromAmount = "1.0"
-        draft.thorchainFee = BigInt(2_000)
-        draft.quote = .mayachain(quote)
-        return draft
+    private func makeNativeMayachainTransaction(quote: ThorchainSwapQuote) -> SwapTransaction {
+        let cacao = makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        return SwapTransaction(
+            fromCoin: cacao,
+            toCoin: btc,
+            fromAmount: 1.0,
+            quote: .mayachain(quote),
+            gas: 0,
+            thorchainFee: BigInt(2_000),
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            isFastVault: false,
+            feeCoin: cacao
+        )
     }
 
-    private func makeERC20SwapDraft(quote: SwapQuote) -> SwapDraft {
+    private func makeERC20Transaction(quote: SwapQuote) -> SwapTransaction {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        var draft = SwapDraft()
-        draft.fromCoin = usdc
-        draft.fromCoins = [usdc, eth]
-        draft.toCoin = eth
-        draft.fromAmount = "100"
-        draft.thorchainFee = BigInt(0)
-        draft.quote = quote
-        return draft
+        return SwapTransaction(
+            fromCoin: usdc,
+            toCoin: eth,
+            fromAmount: 100,
+            quote: quote,
+            gas: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            isFastVault: false,
+            feeCoin: eth
+        )
     }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -267,15 +254,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             dustThreshold: nil,
             expectedAmountOut: "100000000",
             expiry: 0,
-            fees: Fees(
-                affiliate: "0",
-                asset: "RUNE",
-                outbound: "0",
-                total: "0",
-                liquidity: nil,
-                slippageBps: nil,
-                totalBps: nil
-            ),
+            fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: inboundAddress,
             inboundConfirmationBlocks: nil,
             inboundConfirmationSeconds: nil,

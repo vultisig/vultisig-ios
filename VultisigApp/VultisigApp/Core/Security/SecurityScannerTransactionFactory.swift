@@ -200,7 +200,7 @@ private extension SecurityScannerTransactionFactory {
                 to: quote.tx.to,
                 amount: quote.tx.value,
                 data: quote.tx.data,
-                isApprovalRequired: SwapCryptoLogic.isApproveRequired(draft: transaction.asDraft)
+                isApprovalRequired: transaction.isApproveRequired
             )
         case .kyberswap(let quote, _):
             try buildSwapSecurityScannerTransaction(
@@ -209,7 +209,7 @@ private extension SecurityScannerTransactionFactory {
                 to: quote.tx.to,
                 amount: quote.tx.value,
                 data: quote.tx.data,
-                isApprovalRequired: SwapCryptoLogic.isApproveRequired(draft: transaction.asDraft)
+                isApprovalRequired: transaction.isApproveRequired
             )
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported

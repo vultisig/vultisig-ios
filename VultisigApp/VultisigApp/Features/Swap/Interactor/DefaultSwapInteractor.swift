@@ -5,11 +5,6 @@
 //  Concrete `SwapInteractor` wiring. Production builds via `.live` with the
 //  existing `.shared` singletons; tests construct directly with mocks.
 //
-//  VultTierService is constructed inline rather than injected because it has
-//  no shared state and isn't on the test surface that motivates this protocol;
-//  if VM tests later need to control discount-tier behaviour, lift it to a
-//  protocol seam at that point.
-//
 
 import BigInt
 import Foundation
@@ -35,9 +30,15 @@ struct DefaultSwapInteractor: SwapInteractor {
         return exists && !isLocalBackup
     }
 
-    func fetchQuote(draft: SwapDraft, vault: Vault, referredCode: String) async throws -> SwapQuoteResult? {
-        guard !SwapCryptoLogic.fromAmountDecimal(draft: draft).isZero else { return nil }
-        guard draft.fromCoin != draft.toCoin else {
+    func fetchQuote(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault,
+        referredCode: String
+    ) async throws -> SwapQuoteResult? {
+        guard !amount.isZero else { return nil }
+        guard fromCoin != toCoin else {
             throw SwapCryptoLogic.Errors.sameAsset
         }
 
@@ -52,11 +53,11 @@ struct DefaultSwapInteractor: SwapInteractor {
                     - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0)
             )
 
-        let fetched = try await quote.fetchQuote(
-            amount: SwapCryptoLogic.fromAmountDecimal(draft: draft),
-            fromCoin: draft.fromCoin,
-            toCoin: draft.toCoin,
-            isAffiliate: SwapCryptoLogic.isAffiliate(draft: draft),
+        let fetched = try await self.quote.fetchQuote(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            isAffiliate: SwapCryptoLogic.isAffiliate,
             referredCode: referredCode,
             vultTierDiscount: vultDiscountBps
         )
@@ -68,22 +69,43 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
     }
 
-    func fetchChainSpecific(draft: SwapDraft) async throws -> BlockChainSpecific {
-        try await blockchain.fetchSwapBlockChainSpecific(draft: draft)
+    func fetchChainSpecific(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BlockChainSpecific {
+        try await blockchain.fetchSwapBlockChainSpecific(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            quote: quote
+        )
     }
 
     func computeThorchainFee(
         chainSpecific: BlockChainSpecific,
-        draft: SwapDraft,
+        fromCoin: Coin,
+        fromAmount: Decimal,
         vault: Vault
     ) async throws -> BigInt {
-        try await SwapCryptoLogic.thorchainFee(for: chainSpecific, draft: draft, vault: vault)
+        try await SwapCryptoLogic.thorchainFee(
+            for: chainSpecific,
+            fromCoin: fromCoin,
+            fromAmount: fromAmount,
+            vault: vault
+        )
     }
 
-    func buildSwapKeysignPayload(draft: SwapDraft, vault: Vault) async throws -> KeysignPayload {
-        let chainSpecific = try await fetchChainSpecific(draft: draft)
+    func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
+        let chainSpecific = try await fetchChainSpecific(
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            fromAmount: transaction.fromAmount,
+            quote: transaction.quote
+        )
         return try await SwapCryptoLogic.buildSwapKeysignPayload(
-            draft: draft,
+            transaction: transaction,
             chainSpecific: chainSpecific,
             vault: vault
         )

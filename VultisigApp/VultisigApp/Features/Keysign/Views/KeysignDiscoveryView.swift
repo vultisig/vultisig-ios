@@ -289,7 +289,7 @@ struct KeysignDiscoveryView: View {
 
     func getSwapToAmount() -> String {
         guard let tx = swapTransaction else { return "" }
-        let toAmount = SwapCryptoLogic.toAmountDecimal(draft: tx.asDraft)
+        let toAmount = tx.toAmountDecimal
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(toAmount.description) \(tx.toCoin.ticker)"

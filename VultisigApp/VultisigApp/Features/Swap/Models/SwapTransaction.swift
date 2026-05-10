@@ -10,11 +10,12 @@
 //  `fastVaultPassword` and `pendingRetryReason` are intentionally NOT here:
 //  the password is gathered on the Pair screen (route param), and the retry
 //  reason is a transient flow-signal between Keysign and Verify (carried by
-//  SwapFlowSignals).
+//  SwapRetrySignal).
 //
 
 import BigInt
 import Foundation
+import SwiftUI
 
 struct SwapTransaction: Hashable {
     let fromCoin: Coin
@@ -32,6 +33,163 @@ struct SwapTransaction: Hashable {
     /// because the sibling-lookup needs access to the full source-chain coin list,
     /// which Verify/Done don't otherwise carry.
     let feeCoin: Coin
+}
+
+extension SwapTransaction {
+    /// Builder for refresh paths in Verify — re-fetched quote/gas/fees produce a new
+    /// SwapTransaction with the same identity fields (fromCoin, toCoin, amount, etc.).
+    func with(
+        quote: SwapQuote? = nil,
+        gas: BigInt? = nil,
+        thorchainFee: BigInt? = nil,
+        vultDiscountBps: Int? = nil,
+        referralDiscountBps: Int? = nil
+    ) -> SwapTransaction {
+        SwapTransaction(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            quote: quote ?? self.quote,
+            gas: gas ?? self.gas,
+            thorchainFee: thorchainFee ?? self.thorchainFee,
+            vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
+            referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
+            isFastVault: isFastVault,
+            feeCoin: feeCoin
+        )
+    }
+}
+
+// MARK: - Convenience computed helpers
+//
+// Sugar over the primitive-taking SwapCryptoLogic free functions so view code
+// reads `transaction.swapFeeString` instead of spelling out the args.
+
+extension SwapTransaction {
+    private var fromAmountString: String { fromAmount.description }
+
+    var fee: BigInt {
+        SwapCryptoLogic.fee(quote: quote, thorchainFee: thorchainFee)
+    }
+
+    var amountInCoinDecimal: BigInt {
+        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmountString, fromCoin: fromCoin)
+    }
+
+    var toAmountDecimal: Decimal {
+        SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
+    }
+
+    var router: String? {
+        SwapCryptoLogic.router(quote: quote)
+    }
+
+    var inboundFeeDecimal: Decimal? {
+        SwapCryptoLogic.inboundFeeDecimal(quote: quote, toCoin: toCoin)
+    }
+
+    var isApproveRequired: Bool {
+        SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+    }
+
+    var isDeposit: Bool {
+        SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+    }
+
+    // MARK: - Display
+
+    var fromFiatAmount: String {
+        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmountString)
+    }
+
+    var toFiatAmount: String {
+        SwapCryptoLogic.toFiatAmount(toCoin: toCoin, quote: quote)
+    }
+
+    var showGas: Bool {
+        SwapCryptoLogic.showGas(gas: gas)
+    }
+
+    var showFees: Bool {
+        SwapCryptoLogic.showFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var showTotalFees: Bool {
+        SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var swapFeeString: String {
+        SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapGasString: String {
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+    }
+
+    var approveFeeString: String {
+        SwapCryptoLogic.approveFeeString(feeCoin: feeCoin, fee: fee)
+    }
+
+    var isApproveFeeZero: Bool {
+        SwapCryptoLogic.isApproveFeeZero(fee: fee)
+    }
+
+    var totalFeeString: String {
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var fromAmountDecimal: Decimal { fromAmount }
+
+    var durationString: String {
+        SwapCryptoLogic.durationString(quote: quote)
+    }
+
+    var baseAffiliateFee: String {
+        SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapFeeLabel: String {
+        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmountString)
+    }
+
+    var outboundFeeString: String {
+        SwapCryptoLogic.outboundFeeString(quote: quote, toCoin: toCoin)
+    }
+
+    var vultDiscountLabel: String {
+        SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: vultDiscountBps)
+    }
+
+    var referralDiscountLabel: String {
+        SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: referralDiscountBps)
+    }
+
+    var vultDiscount: String {
+        SwapCryptoLogic.vultDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps
+        )
+    }
+
+    var referralDiscount: String {
+        SwapCryptoLogic.referralDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(quote: quote)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(quote: quote)
+    }
+
+    func progressLink(hash: String) -> String? {
+        SwapCryptoLogic.progressLink(quote: quote, fromCoin: fromCoin, hash: hash)
+    }
 }
 
 #if DEBUG
@@ -71,49 +229,3 @@ extension SwapTransaction {
     }()
 }
 #endif
-
-extension SwapTransaction {
-    /// Builder for refresh paths in Verify — re-fetched quote/gas/fees produce a new
-    /// SwapTransaction with the same identity fields (fromCoin, toCoin, amount, etc.).
-    func with(
-        quote: SwapQuote? = nil,
-        gas: BigInt? = nil,
-        thorchainFee: BigInt? = nil,
-        vultDiscountBps: Int? = nil,
-        referralDiscountBps: Int? = nil
-    ) -> SwapTransaction {
-        SwapTransaction(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            quote: quote ?? self.quote,
-            gas: gas ?? self.gas,
-            thorchainFee: thorchainFee ?? self.thorchainFee,
-            vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
-            referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
-            isFastVault: isFastVault,
-            feeCoin: feeCoin
-        )
-    }
-
-    /// Bridge to the value-type `SwapDraft` so existing `SwapCryptoLogic.foo(draft:)`
-    /// helpers can be reused from Verify/Done. `fromCoins` is populated with just
-    /// `[fromCoin, feeCoin]` — enough for the helpers that rely on it.
-    var asDraft: SwapDraft {
-        SwapDraft(
-            fromAmount: fromAmount.description,
-            thorchainFee: thorchainFee,
-            gas: gas,
-            vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps,
-            quote: quote,
-            isFastVault: isFastVault,
-            fastVaultPassword: .empty,
-            pendingRetryReason: nil,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromCoins: fromCoin == feeCoin ? [fromCoin] : [fromCoin, feeCoin],
-            toCoins: [toCoin]
-        )
-    }
-}
