@@ -196,7 +196,11 @@ final class Vault: ObservableObject, Codable {
         case .GG20, .DKLS, nil:
             Chain.allCases
         case .KeyImport:
-            chains
+            // KeyImport vaults can only operate on chains whose per-chain TSS
+            // keyshares were derived during import. `coins` may temporarily
+            // drift if a feature inserts an unauthorized native token, so use
+            // `chainPublicKeys` as the authoritative source.
+            chainPublicKeys.map(\.chain)
         }
     }
 
