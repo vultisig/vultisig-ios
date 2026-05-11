@@ -21,7 +21,15 @@ struct EvmServiceConfig {
         func getTokens(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
             switch self {
             case .standard:
-                return await EvmServiceStruct.getTokensStandard(
+                // Mirror the SDK + Windows discovery path: 1inch `/balance` +
+                // `/token` for the chains where 1inch publishes data,
+                // TokensStore-iteration fallback for the rest. The old
+                // Alchemy `getTokenBalances` + heuristic spam blocklist was
+                // dropping legit small-caps — see #4334.
+                if EvmCoinFinder.isSupported(chain: nativeToken.chain) {
+                    return await EvmCoinFinder.find(chain: nativeToken.chain, address: address)
+                }
+                return await EvmServiceStruct.getTokensFallback(
                     nativeToken: nativeToken,
                     address: address,
                     rpcService: rpcService
