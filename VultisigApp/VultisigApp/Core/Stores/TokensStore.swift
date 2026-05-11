@@ -544,7 +544,7 @@ class TokensStore {
             ticker: "USDM",
             logo: "usdm",
             decimals: 6,
-            priceProviderId: "mehen-usd",
+            priceProviderId: "usdm-2",
             contractAddress: "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad.0014df105553444d",
             isNativeToken: false
         ),
@@ -553,7 +553,7 @@ class TokensStore {
             ticker: "iUSD",
             logo: "iusd",
             decimals: 6,
-            priceProviderId: "indigo-protocol-iusd",
+            priceProviderId: "iusd",
             contractAddress: "f66d78b4a3cb3d37afa0ec36461e51ecbde00f26c8f0a68f94b69880.69555344",
             isNativeToken: false
         ),
