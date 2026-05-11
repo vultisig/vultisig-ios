@@ -4,7 +4,8 @@
 //
 //  Phase-aware progress UI. Driven directly by the orchestrator's
 //  `phase` published state. The proof step warns the user about a
-//  potentially long wait (~5 min).
+//  potentially long wait (~5 min) — service-side broadcast happens
+//  in the same round-trip.
 //
 
 import SwiftUI
@@ -33,12 +34,8 @@ struct QBTCClaimRunningView: View {
         switch phase {
         case .idle, .signingBTC:
             return "qbtcClaimSigningBtcTitle".localized
-        case .generatingProof:
+        case .generatingProofAndBroadcasting:
             return "qbtcClaimGeneratingProofTitle".localized
-        case .signingMLDSA:
-            return "qbtcClaimSigningMldsaTitle".localized
-        case .broadcasting:
-            return "qbtcClaimBroadcastingTitle".localized
         case .done, .failed:
             // The screen normally transitions out of .claiming before
             // we render these — fall back gracefully.
@@ -50,12 +47,8 @@ struct QBTCClaimRunningView: View {
         switch phase {
         case .idle, .signingBTC:
             return "qbtcClaimSigningBtcDetail".localized
-        case .generatingProof:
+        case .generatingProofAndBroadcasting:
             return "qbtcClaimGeneratingProofDetail".localized
-        case .signingMLDSA:
-            return "qbtcClaimSigningMldsaDetail".localized
-        case .broadcasting:
-            return "qbtcClaimBroadcastingDetail".localized
         case .done, .failed:
             return ""
         }

@@ -5,22 +5,21 @@
 //  Peer-side driver for the SecureVault QBTC claim flow. Constructed
 //  after `JoinKeysignViewModel.handleQrCodeSuccessResult` detects a
 //  `qbtcClaimContext` on the parsed `KeysignPayload` — the existing
-//  one-QR-one-keysign flow steps aside and this driver runs both
-//  rounds with a wait + verify between them.
+//  one-QR-one-keysign flow steps aside and this driver runs the
+//  single BTC ECDSA round.
+//
+//  Post-qbtc#158: only one MPC round (BTC ECDSA). The initiator
+//  takes over after the round completes — POSTs `/prove` with
+//  `broadcast: true` and the proof service signs + broadcasts the
+//  cosmos tx with its own MLDSA-44 key. The peer device doesn't see
+//  the broadcast directly; it just shows "Signing complete!" once
+//  round 1 ends.
 //
 //  Flow:
 //    1. `awaitRound1Start` — register as participant, poll
 //       `/start/{baseSessionID}-0` until kickoff.
 //    2. `runRound1` — DKLS keysign signing the locally-computed
 //       `messageHashHex`. peer = isInitiateDevice: false.
-//    3. `awaitRound2Prep` — poll `/setup-message/{baseSessionID}-1`
-//       for the round-2 prep (proof + hashes + accountNumber/sequence).
-//    4. `verifyAndBuild` — compare prep's `messageHashHex` to ours,
-//       reconstruct round-2 SignDoc, capture `signDocHashHex`.
-//    5. `awaitRound2Start` — register, wait for kickoff on `-1`.
-//    6. `runRound2` — Dilithium keysign signing the SignDoc hash.
-//
-//  See [[projects/vultisig/qbtc-claim/v2-secure-vault-design]].
 //
 
 import Foundation
@@ -30,10 +29,7 @@ import Tss
 enum QBTCClaimJoinDriverError: LocalizedError {
     case missingBitcoinCoin
     case invalidCompressedPubkey
-    case missingMldsaPubkey
-    case messageHashMismatch(expected: String, got: String)
     case round1SignatureMissing
-    case round2SignatureMissing
 
     var errorDescription: String? {
         switch self {
@@ -41,14 +37,8 @@ enum QBTCClaimJoinDriverError: LocalizedError {
             return "Vault is missing the Bitcoin coin needed for QBTC claim"
         case .invalidCompressedPubkey:
             return "Bitcoin compressed public key is malformed"
-        case .missingMldsaPubkey:
-            return "Vault is missing the ML-DSA public key needed for QBTC claim"
-        case .messageHashMismatch(let expected, let got):
-            return "Round-2 prep is for a different claim than round 1. Expected message hash \(expected.prefix(16))…, got \(got.prefix(16))…"
         case .round1SignatureMissing:
             return "Round 1 keysign completed without producing a signature"
-        case .round2SignatureMissing:
-            return "Round 2 keysign completed without producing a signature"
         }
     }
 }
@@ -58,10 +48,6 @@ final class QBTCClaimJoinDriver: ObservableObject {
     enum Phase: Equatable {
         case awaitingRound1Start
         case signingRound1
-        case awaitingRound2Prep
-        case verifyingRound2Prep
-        case awaitingRound2Start
-        case signingRound2
         case completed
         case failed(String)
     }
@@ -77,9 +63,6 @@ final class QBTCClaimJoinDriver: ObservableObject {
     /// Cap on how long to wait for kickoff. Generous because the
     /// initiator may also be waiting on the user to confirm.
     static let kickoffTimeoutSeconds: TimeInterval = 600
-    /// Cap on how long to wait for the round-2 prep. The proof service
-    /// has a 300 s deadline — we double it to give the initiator headroom.
-    static let round2PrepTimeoutSeconds: TimeInterval = 600
 
     init(
         vault: Vault,
@@ -115,10 +98,6 @@ final class QBTCClaimJoinDriver: ObservableObject {
         guard let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) else {
             throw QBTCClaimJoinDriverError.invalidCompressedPubkey
         }
-        guard let mldsaPubkeyHex = vault.publicKeyMLDSA44, !mldsaPubkeyHex.isEmpty,
-              let mldsaPubkey = Data(hexString: mldsaPubkeyHex) else {
-            throw QBTCClaimJoinDriverError.missingMldsaPubkey
-        }
 
         // Compute round-1 message hash locally — this is what we sign.
         let hashes = try QBTCClaimHashes.computeAll(
@@ -129,7 +108,7 @@ final class QBTCClaimJoinDriver: ObservableObject {
         )
         let messageHashHex = hashes.messageHash.toHexString()
 
-        // Round 1 — wait for kickoff, run DKLS as a non-initiator.
+        // BTC ECDSA round — wait for kickoff, run DKLS as a non-initiator.
         phase = .awaitingRound1Start
         let round1Session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 0)
         try await sessionService.registerAsParticipant(session: round1Session)
@@ -146,44 +125,10 @@ final class QBTCClaimJoinDriver: ObservableObject {
             messageHashHex: messageHashHex
         )
 
-        // Round 2 — wait for the prep, verify, build SignDoc hash.
-        phase = .awaitingRound2Prep
-        let round2Session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 1)
-        let prepData = try await sessionService.pollSetupMessage(
-            session: round2Session,
-            messageID: qbtcClaimRound2PrepMessageID,
-            timeout: Self.round2PrepTimeoutSeconds
-        )
-        let prep = try JSONDecoder().decode(QBTCClaimRound2Prep.self, from: prepData)
-
-        phase = .verifyingRound2Prep
-        guard prep.messageHashHex == messageHashHex else {
-            throw QBTCClaimJoinDriverError.messageHashMismatch(
-                expected: messageHashHex,
-                got: prep.messageHashHex
-            )
-        }
-        let signDocHashHex = try buildRound2SignDocHashHex(prep: prep, mldsaPubkey: mldsaPubkey)
-
-        // Round 2 — wait for kickoff, run Dilithium as a non-initiator.
-        phase = .awaitingRound2Start
-        try await sessionService.registerAsParticipant(session: round2Session)
-        let round2Participants = try await sessionService.awaitKeysignStart(
-            session: round2Session,
-            timeout: Self.kickoffTimeoutSeconds
-        )
-
-        phase = .signingRound2
-        try await runRound2(
-            session: round2Session,
-            participants: round2Participants,
-            signDocHashHex: signDocHashHex
-        )
-
         phase = .completed
     }
 
-    // MARK: - Round runners (peer side)
+    // MARK: - Round runner (peer side)
 
     private func runRound1(
         session: KeysignSessionInfo,
@@ -207,52 +152,5 @@ final class QBTCClaimJoinDriver: ObservableObject {
         guard dkls.getSignatures()[messageHashHex] != nil else {
             throw QBTCClaimJoinDriverError.round1SignatureMissing
         }
-    }
-
-    private func runRound2(
-        session: KeysignSessionInfo,
-        participants: [String],
-        signDocHashHex: String
-    ) async throws {
-        let dilithium = DilithiumKeysign(
-            keysignCommittee: participants,
-            mediatorURL: session.serverAddr,
-            sessionID: session.sessionId,
-            messageToSign: [signDocHashHex],
-            vault: vault,
-            encryptionKeyHex: session.encryptionKeyHex,
-            chainPath: QBTCClaimConfig.mldsaDerivePath,
-            isInitiateDevice: false,
-            publicKey: vault.publicKeyMLDSA44 ?? ""
-        )
-        try await dilithium.DilithiumKeysignWithRetry()
-        guard dilithium.getSignatures()[signDocHashHex] != nil else {
-            throw QBTCClaimJoinDriverError.round2SignatureMissing
-        }
-    }
-
-    // MARK: - Round 2 SignDoc reconstruction
-
-    private func buildRound2SignDocHashHex(
-        prep: QBTCClaimRound2Prep,
-        mldsaPubkey: Data
-    ) throws -> String {
-        let claimMessage = QBTCClaimMessage(
-            claimer: context.claimerAddress,
-            utxos: context.utxos,
-            proofHex: prep.proofHex,
-            messageHashHex: prep.messageHashHex,
-            addressHashHex: prep.addressHashHex,
-            qbtcAddressHashHex: prep.qbtcAddressHashHex,
-            pubKeyHashSha256Hex: prep.pubKeyHashSha256Hex
-        )
-        let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
-        let artifacts = QBTCHelper.buildClaimSignDoc(
-            bodyBytes: bodyBytes,
-            mldsaPublicKey: mldsaPubkey,
-            accountNumber: prep.accountNumber,
-            sequence: prep.sequence
-        )
-        return artifacts.signDocHashHex
     }
 }

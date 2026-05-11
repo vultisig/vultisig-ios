@@ -53,12 +53,10 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # TEMPORARY: tracking the v2 SecureVault context branch which is
-    # stacked on top of the v1 transaction-type branch. Includes BOTH
-    # `TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` (vultisig/commondata#83)
-    # AND the new `QbtcClaimContext` proto for v2. Switch back to a
-    # `revision: <sha>` pin once both PRs merge.
-    branch: feat/qbtc-claim-context
+    # Temporary: pinned to the head of vultisig/commondata#83
+    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + `QbtcClaimContext`).
+    # Flip to a `revision: <merge-sha>` once that PR merges.
+    revision: 93ba3ffa51b50710dad813b564d9a995b682f266
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

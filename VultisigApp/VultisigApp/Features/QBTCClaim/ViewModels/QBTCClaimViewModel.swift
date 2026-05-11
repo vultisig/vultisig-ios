@@ -453,7 +453,7 @@ final class QBTCClaimViewModel: ObservableObject {
             // Orchestrator idle — nothing to mirror. The view model
             // owns its own `state` for the gate / selection / done UI.
             break
-        case .signingBTC, .generatingProof, .signingMLDSA, .broadcasting:
+        case .signingBTC, .generatingProofAndBroadcasting:
             // The screen renders the orchestrator's phase directly via
             // `claimingView(phase:)` — we just need to stay in `.claiming`.
             if state != .claiming {

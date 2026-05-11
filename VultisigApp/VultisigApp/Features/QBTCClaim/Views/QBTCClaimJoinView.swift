@@ -16,7 +16,7 @@ struct QBTCClaimJoinView: View {
     var body: some View {
         VStack(spacing: 24) {
             switch driver.phase {
-            case .awaitingRound1Start, .awaitingRound2Start:
+            case .awaitingRound1Start:
                 progressBlock(
                     title: "qbtcClaimJoinAwaitingStartTitle".localized,
                     detail: "qbtcClaimJoinAwaitingStartDetail".localized
@@ -25,21 +25,6 @@ struct QBTCClaimJoinView: View {
                 progressBlock(
                     title: "qbtcClaimSigningBtcTitle".localized,
                     detail: "qbtcClaimSigningBtcDetail".localized
-                )
-            case .awaitingRound2Prep:
-                progressBlock(
-                    title: "qbtcClaimJoinWaitingPrepTitle".localized,
-                    detail: "qbtcClaimGeneratingProofDetail".localized
-                )
-            case .verifyingRound2Prep:
-                progressBlock(
-                    title: "qbtcClaimJoinVerifyingTitle".localized,
-                    detail: "qbtcClaimJoinVerifyingDetail".localized
-                )
-            case .signingRound2:
-                progressBlock(
-                    title: "qbtcClaimSigningMldsaTitle".localized,
-                    detail: "qbtcClaimSigningMldsaDetail".localized
                 )
             case .completed:
                 resultBlock

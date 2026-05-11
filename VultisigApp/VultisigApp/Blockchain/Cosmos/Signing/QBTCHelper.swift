@@ -41,29 +41,22 @@ struct QBTCHelper {
     // MARK: - Pre-image Hash
 
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        if let claim = keysignPayload.qbtcClaimPayload {
-            let artifacts = try buildClaimArtifacts(keysignPayload: keysignPayload, claim: claim)
-            return [artifacts.signDocHashHex]
-        }
         let signDoc = try buildSignDoc(keysignPayload: keysignPayload)
         let hash = signDoc.sha256()
         return [hash.toHexString()]
     }
 
     // MARK: - Signed Transaction
+    //
+    // The QBTC claim flow does NOT go through this helper any more — the
+    // proof service signs and broadcasts `MsgClaimWithProof` directly
+    // (qbtc#158). This path handles regular sends, IBC transfers, votes,
+    // and staking only.
 
     func getSignedTransaction(
         keysignPayload: KeysignPayload,
         signatures: [String: DilithiumKeysignResponse]
     ) throws -> SignedTransactionResult {
-        if let claim = keysignPayload.qbtcClaimPayload {
-            return try getClaimSignedTransaction(
-                keysignPayload: keysignPayload,
-                claim: claim,
-                signatures: signatures
-            )
-        }
-
         let (bodyBytes, authInfoBytes) = try buildTxComponents(keysignPayload: keysignPayload)
 
         let signDoc = try buildSignDocFromComponents(
@@ -89,69 +82,6 @@ struct QBTCHelper {
         return SignedTransactionResult(
             rawTransaction: broadcastJSON,
             transactionHash: transactionHash
-        )
-    }
-
-    // MARK: - Claim path
-    //
-    // Dispatch when `keysignPayload.qbtcClaimPayload` is set (constructed
-    // by the QBTC claim orchestrator). Body bytes come from
-    // `buildClaimTxBody`; AuthInfo + SignDoc come from §7's
-    // `buildClaimSignDoc` (gas-free, MLDSA single signer); final TxRaw
-    // is assembled by `assembleClaimTxRaw`.
-
-    private func buildClaimArtifacts(
-        keysignPayload: KeysignPayload,
-        claim: QBTCClaimPayload
-    ) throws -> QBTCHelper.ClaimSignDocArtifacts {
-        guard case let .Cosmos(accountNumber, sequence, _, _, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("QBTC claim: missing Cosmos chainSpecific")
-        }
-
-        guard let mldsaPubKey = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("QBTC claim: invalid hex public key")
-        }
-
-        let claimMessage = claim.toClaimMessage(claimer: keysignPayload.coin.address)
-        let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
-
-        return QBTCHelper.buildClaimSignDoc(
-            bodyBytes: bodyBytes,
-            mldsaPublicKey: mldsaPubKey,
-            accountNumber: accountNumber,
-            sequence: sequence,
-            chainId: chainID
-        )
-    }
-
-    private func getClaimSignedTransaction(
-        keysignPayload: KeysignPayload,
-        claim: QBTCClaimPayload,
-        signatures: [String: DilithiumKeysignResponse]
-    ) throws -> SignedTransactionResult {
-        let artifacts = try buildClaimArtifacts(keysignPayload: keysignPayload, claim: claim)
-
-        guard let sig = signatures[artifacts.signDocHashHex] else {
-            throw HelperError.runtimeError("QBTC claim: no signature found for hash \(artifacts.signDocHashHex)")
-        }
-        guard let sigData = Data(hexString: sig.signature) else {
-            throw HelperError.runtimeError("QBTC claim: invalid signature hex")
-        }
-
-        let claimMessage = claim.toClaimMessage(claimer: keysignPayload.coin.address)
-        let bodyBytes = try QBTCHelper.buildClaimTxBody(claimMessage)
-        let txRaw = QBTCHelper.assembleClaimTxRaw(
-            bodyBytes: bodyBytes,
-            authInfoBytes: artifacts.authInfoBytes,
-            mldsaSignature: sigData
-        )
-
-        let txBytesBase64 = txRaw.txRawBytes.base64EncodedString()
-        let broadcastJSON = "{\"tx_bytes\":\"\(txBytesBase64)\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
-
-        return SignedTransactionResult(
-            rawTransaction: broadcastJSON,
-            transactionHash: txRaw.txHashHex
         )
     }
 

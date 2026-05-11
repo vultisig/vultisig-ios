@@ -2,16 +2,17 @@
 //  QBTCClaimRoundRunner.swift
 //  VultisigApp
 //
-//  Production wiring for the orchestrator's two MPC sign rounds.
-//  Each round provisions a fresh MPC session (sessionId + encryption
-//  key), POSTs `FastVaultService.sign(...)` to wake Vultiserver, awaits
-//  the server peer via `ParticipantDiscovery`, kicks off the committee,
-//  then runs the appropriate TSS driver. v1 supports FastVault only;
-//  SecureVault is deferred to v2 (see spec design.md).
+//  Production wiring for the orchestrator's BTC ECDSA round (the only
+//  MPC round under post-qbtc#158: the proof service signs and broadcasts
+//  `MsgClaimWithProof` with its own MLDSA-44 key). Provisions a fresh
+//  MPC session (sessionId + encryption key), POSTs
+//  `FastVaultService.sign(...)` to wake Vultiserver, awaits the server
+//  peer via `ParticipantDiscovery`, kicks off the committee, then runs
+//  DKLS.
 //
-//  No automated test — exercised by manual end-to-end on testnet
-//  (task §14.3). Pure logic in `QBTCClaimOrchestrator` is what's unit
-//  tested via injected closures.
+//  No automated test — exercised by manual end-to-end on testnet (task
+//  §14.3). Pure logic in `QBTCClaimOrchestrator` is what's unit tested
+//  via injected closures.
 //
 
 import Foundation
@@ -19,18 +20,12 @@ import OSLog
 import Tss
 
 enum QBTCClaimRoundError: LocalizedError {
-    case missingMldsaPublicKey
     case signatureMissing(String)
-    case malformedMldsaSignature(String)
 
     var errorDescription: String? {
         switch self {
-        case .missingMldsaPublicKey:
-            return "qbtcClaimErrorMissingMldsaPublicKey".localized
         case .signatureMissing(let hash):
             return String(format: "qbtcClaimErrorSignatureMissing".localized, hash)
-        case .malformedMldsaSignature(let hex):
-            return String(format: "qbtcClaimErrorMalformedMldsaSignature".localized, String(hex.prefix(16)))
         }
     }
 }
@@ -49,7 +44,7 @@ final class QBTCClaimRoundRunner {
         self.sessionService = sessionService
     }
 
-    // MARK: - BTC ECDSA round (round 1)
+    // MARK: - BTC ECDSA round
 
     func runBtcRound(input: QBTCClaimBtcRoundInput) async throws -> QBTCClaimBtcRoundResult {
         let session = try sessionService.newSession(vault: input.vault)
@@ -100,122 +95,43 @@ final class QBTCClaimRoundRunner {
         }
         return QBTCClaimBtcRoundResult(rHex: sig.r, sHex: sig.s)
     }
-
-    // MARK: - MLDSA round (round 2)
-
-    func runMldsaRound(input: QBTCClaimMldsaRoundInput) async throws -> Data {
-        guard let mldsaPublicKey = input.vault.publicKeyMLDSA44, !mldsaPublicKey.isEmpty else {
-            throw QBTCClaimRoundError.missingMldsaPublicKey
-        }
-        let session = try sessionService.newSession(vault: input.vault)
-        let discovery = ParticipantDiscovery()
-        defer { discovery.stop() }
-
-        // See `runBtcRound` for why we register before inviting Vultiserver.
-        try await sessionService.registerAsParticipant(session: session)
-
-        try await sessionService.wakeFastVaultServer(
-            publicKeyEcdsa: input.vault.pubKeyECDSA,
-            keysignMessages: [input.signDocHashHex],
-            session: session,
-            derivePath: QBTCClaimConfig.mldsaDerivePath,
-            isECDSA: false,
-            vaultPassword: input.fastVaultPassword,
-            chain: input.qbtcCoin.chain.name,
-            // Vultiserver routes to its MLDSA pipeline only when this flag is set;
-            // without it `is_ecdsa: false` is interpreted as EdDSA and the server
-            // never starts MPC for the QBTC claim's MLDSA round, leaving iOS to
-            // poll `/router/message/...` forever.
-            isMldsa: true
-        )
-
-        let participants = try await sessionService.awaitFastVaultPeer(
-            discovery: discovery,
-            session: session,
-            timeout: Self.fastVaultPeerWaitSeconds
-        )
-        try await sessionService.kickoffCommittee(session: session, participants: participants)
-
-        let dilithium = DilithiumKeysign(
-            keysignCommittee: participants,
-            mediatorURL: session.serverAddr,
-            sessionID: session.sessionId,
-            messageToSign: [input.signDocHashHex],
-            vault: input.vault,
-            encryptionKeyHex: session.encryptionKeyHex,
-            chainPath: QBTCClaimConfig.mldsaDerivePath,
-            isInitiateDevice: true,
-            publicKey: mldsaPublicKey
-        )
-        try await dilithium.DilithiumKeysignWithRetry()
-
-        let signatures = dilithium.getSignatures()
-        guard let response = signatures[input.signDocHashHex] else {
-            throw QBTCClaimRoundError.signatureMissing(input.signDocHashHex)
-        }
-        guard let signatureBytes = Data(hexString: response.signature) else {
-            throw QBTCClaimRoundError.malformedMldsaSignature(response.signature)
-        }
-        return signatureBytes
-    }
 }
 
 // MARK: - Convenience init wiring
 
 extension QBTCClaimOrchestrator {
-    /// Production wiring for the FastVault path. Both rounds use
-    /// independent sessions; Vultiserver acts as the second share.
-    /// `pushRound2Prep` is a no-op (Vultiserver is woken via two
-    /// `signWithServer` POSTs instead of a relay setup-message).
+    /// Production wiring for the FastVault path. The orchestrator runs
+    /// one DKLS BTC ECDSA round and then POSTs `/prove` with
+    /// `broadcast: true`; the proof service signs the cosmos tx with
+    /// its own MLDSA-44 key and broadcasts.
     @MainActor
     static func makeFastVault() -> QBTCClaimOrchestrator {
         let proofService = QBTCProofService()
-        let chainService = QBTCChainService()
         let runner = QBTCClaimRoundRunner()
         return QBTCClaimOrchestrator(
             generateProof: { try await proofService.generateProof($0) },
-            fetchAccountInfo: { try await chainService.getAccountInfoForClaim(qbtcAddress: $0) },
-            broadcastClaim: { txRawBytes, txHashHex in
-                try await chainService.broadcastClaim(
-                    txBytesBase64: txRawBytes.base64EncodedString(),
-                    txHashHex: txHashHex
-                )
-            },
-            runBtcRound: { try await runner.runBtcRound(input: $0) },
-            runMldsaRound: { try await runner.runMldsaRound(input: $0) }
+            runBtcRound: { try await runner.runBtcRound(input: $0) }
         )
     }
 
-    /// Production wiring for the SecureVault path. Both rounds share
-    /// the base session (per-round IDs derive from
-    /// `{baseSession.sessionId}-{round}`); the peer device has already
-    /// scanned the QR and joined the relay (this is what makes
-    /// `participants` known here). `pushRound2Prep` writes the
-    /// proof+hashes+account info to the relay's setup-message slot
-    /// so the peer can reconstruct round-2's SignDoc.
+    /// Production wiring for the SecureVault path. The base session and
+    /// participants come from the QR handshake — the peer device has
+    /// already scanned and joined the relay. The orchestrator runs one
+    /// DKLS BTC ECDSA round on `{baseSession.sessionId}-0` and then
+    /// POSTs `/prove` with `broadcast: true`.
     @MainActor
     static func makeSecureVault(
         baseSession: KeysignSessionInfo,
         participants: [String]
     ) -> QBTCClaimOrchestrator {
         let proofService = QBTCProofService()
-        let chainService = QBTCChainService()
         let driver = QBTCClaimSecureVaultRoundDriver(
             baseSession: baseSession,
             participants: participants
         )
         return QBTCClaimOrchestrator(
             generateProof: { try await proofService.generateProof($0) },
-            fetchAccountInfo: { try await chainService.getAccountInfoForClaim(qbtcAddress: $0) },
-            broadcastClaim: { txRawBytes, txHashHex in
-                try await chainService.broadcastClaim(
-                    txBytesBase64: txRawBytes.base64EncodedString(),
-                    txHashHex: txHashHex
-                )
-            },
-            runBtcRound: { try await driver.runBtcRound(input: $0) },
-            runMldsaRound: { try await driver.runMldsaRound(input: $0) },
-            pushRound2Prep: { try await driver.pushRound2Prep($0) }
+            runBtcRound: { try await driver.runBtcRound(input: $0) }
         )
     }
 

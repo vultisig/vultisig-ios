@@ -29,6 +29,13 @@ extension ClaimProofUtxoRef {
 /// are zero-padded on the left to fixed widths the prover circuit expects:
 /// `signature_r` to 24 bytes, `signature_s` to 32 bytes. Get this wrong
 /// and the proof silently fails — see `QBTCClaimConfig.proofServiceRBytes`.
+///
+/// `broadcast` enables service-side submission of the resulting
+/// `MsgClaimWithProof` (qbtc proof-service PR #158): the service signs the
+/// cosmos tx with its own MLDSA-44 key, pays the fee, and returns `tx_hash`
+/// on the response. iOS no longer needs to run an MLDSA TSS round or build
+/// the cosmos `SignDoc` / `AuthInfo` / `TxRaw` envelope. Defaults to `true`;
+/// callers that need the old "proof only" mode can set it to `false`.
 struct ClaimProofRequest: Codable, Equatable {
     let signatureR: String
     let signatureS: String
@@ -36,6 +43,7 @@ struct ClaimProofRequest: Codable, Equatable {
     let utxos: [ClaimProofUtxoRef]
     let claimerAddress: String
     let chainId: String
+    let broadcast: Bool
 
     enum CodingKeys: String, CodingKey {
         case signatureR = "signature_r"
@@ -44,6 +52,7 @@ struct ClaimProofRequest: Codable, Equatable {
         case utxos
         case claimerAddress = "claimer_address"
         case chainId = "chain_id"
+        case broadcast
     }
 }
 
@@ -56,7 +65,8 @@ extension ClaimProofRequest {
         compressedPubkeyHex: String,
         utxos: [ClaimableUtxo],
         claimerAddress: String,
-        chainId: String
+        chainId: String,
+        broadcast: Bool = true
     ) {
         self.init(
             signatureR: ClaimProofRequest.padSigHex(rHex, byteLength: QBTCClaimConfig.proofServiceRBytes),
@@ -64,7 +74,8 @@ extension ClaimProofRequest {
             publicKey: compressedPubkeyHex,
             utxos: utxos.map(ClaimProofUtxoRef.init),
             claimerAddress: claimerAddress,
-            chainId: chainId
+            chainId: chainId,
+            broadcast: broadcast
         )
     }
 
@@ -102,7 +113,11 @@ struct ClaimProofResponseUtxo: Codable, Equatable {
 }
 
 /// Response from `POST /prove`. The hashes are returned for the caller
-/// to feed into `MsgClaimWithProof` — no recomputation required.
+/// to feed into `MsgClaimWithProof` — no recomputation required. `txHash`
+/// is populated only when the request set `broadcast: true` and the
+/// service-side submission succeeded (qbtc proof-service PR #158); a nil
+/// `txHash` on a `broadcast: true` request means the broadcast step
+/// failed and the service returned an error we should surface.
 struct ClaimProofResponse: Codable, Equatable {
     let proof: String
     let messageHash: String
@@ -110,6 +125,7 @@ struct ClaimProofResponse: Codable, Equatable {
     let qbtcAddressHash: String
     let utxos: [ClaimProofResponseUtxo]
     let claimerAddress: String
+    let txHash: String?
 
     enum CodingKeys: String, CodingKey {
         case proof
@@ -118,6 +134,7 @@ struct ClaimProofResponse: Codable, Equatable {
         case qbtcAddressHash = "qbtc_address_hash"
         case utxos
         case claimerAddress = "claimer_address"
+        case txHash = "tx_hash"
     }
 }
 

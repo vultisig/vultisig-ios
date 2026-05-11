@@ -8,8 +8,9 @@
 import Foundation
 
 struct QBTCClaimRunResult: Equatable {
-    /// Uppercase hex of `SHA256(TxRaw)`. Locally computed — does NOT come
-    /// from the broadcast response. See `QBTCHelper.assembleClaimTxRaw`.
+    /// Uppercase hex of the on-chain transaction hash. Comes from the
+    /// proof service's `tx_hash` field after service-side broadcast
+    /// (qbtc proof-service PR #158).
     let txHashHex: String
     /// Total satoshis selected across the claim's UTXOs.
     let totalSatsClaimed: UInt64
@@ -21,9 +22,10 @@ struct QBTCClaimRunResult: Equatable {
 enum QBTCClaimPhase: Equatable {
     case idle
     case signingBTC
-    case generatingProof
-    case signingMLDSA
-    case broadcasting
+    /// Proof generation + service-side broadcast happen in a single
+    /// round-trip under the post-#158 flow. The user-visible label
+    /// reflects both ("Generating proof…").
+    case generatingProofAndBroadcasting
     case done(QBTCClaimRunResult)
     /// Failure carries a user-visible message; the screen returns to
     /// UTXO selection with selection intact and shows this in a banner.

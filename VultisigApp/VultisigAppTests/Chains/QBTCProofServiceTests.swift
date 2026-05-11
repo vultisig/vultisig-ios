@@ -112,8 +112,11 @@ final class QBTCProofServiceTests: XCTestCase {
         // Top-level keys MUST be snake_case — the prover does not accept camelCase.
         XCTAssertEqual(Set(dict.keys), [
             "signature_r", "signature_s", "public_key",
-            "utxos", "claimer_address", "chain_id"
+            "utxos", "claimer_address", "chain_id", "broadcast"
         ])
+        // Default is broadcast=true under the post-#158 flow so the proof
+        // service signs and broadcasts MsgClaimWithProof itself.
+        XCTAssertEqual(dict["broadcast"] as? Bool, true)
 
         // utxos[0] keys: txid + vout (no `amount` from ClaimableUtxo).
         let utxos = try XCTUnwrap(dict["utxos"] as? [[String: Any]])

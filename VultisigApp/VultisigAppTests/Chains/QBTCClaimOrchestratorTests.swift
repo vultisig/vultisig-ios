@@ -3,9 +3,13 @@
 //  VultisigAppTests
 //
 //  Phase-machine + error-propagation tests for the orchestrator. The
-//  TSS rounds and external services are stubbed via the closure-shaped
-//  DI on QBTCClaimOrchestrator. The actual MPC session bootstrap is
-//  covered by manual end-to-end testing per task §14.3.
+//  TSS round and proof service are stubbed via the closure-shaped DI on
+//  QBTCClaimOrchestrator. The actual MPC session bootstrap is covered
+//  by manual end-to-end testing per task §14.3.
+//
+//  Post-qbtc#158: the orchestrator runs one BTC ECDSA MPC round and
+//  POSTs `/prove` with `broadcast: true`; the proof service signs and
+//  broadcasts `MsgClaimWithProof` with its own MLDSA-44 key.
 //
 
 import Combine
@@ -31,10 +35,15 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 1, amount: 40_000)
     ]
 
-    /// The orchestrator now validates that the proof service's hash
-    /// echoes match the locally-computed `QBTCClaimHashes`, so the mock
-    /// response must echo those exact values back.
-    static func makeProofResponse() -> ClaimProofResponse {
+    /// The orchestrator validates that the proof service's hash echoes
+    /// match the locally-computed `QBTCClaimHashes`, so the mock response
+    /// must echo those exact values back. Under the post-#158 flow the
+    /// service-side broadcast returns a `tx_hash`; default to a populated
+    /// hash so the orchestrator transitions to `.done`. Pass `txHash: nil`
+    /// to simulate `BROADCAST_NOT_CONFIGURED`-style misconfiguration.
+    static let mockServiceTxHash = String(repeating: "AB", count: 32)
+
+    static func makeProofResponse(txHash: String? = mockServiceTxHash) -> ClaimProofResponse {
         // swiftlint:disable:next force_try
         let hashes = try! QBTCClaimHashes.computeAll(
             btcAddress: btcAddress,
@@ -49,16 +58,8 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
             addressHash: hashes.addressHash.toHexString(),
             qbtcAddressHash: hashes.qbtcAddressHash.toHexString(),
             utxos: utxos.map { ClaimProofResponseUtxo(txid: $0.txid) },
-            claimerAddress: qbtcAddress
-        )
-    }
-
-    static func makeAccountInfo() -> QBTCClaimAccountInfo {
-        QBTCClaimAccountInfo(
-            accountNumber: 42,
-            sequence: 3,
-            latestBlockHeight: 12_345,
-            timeoutNs: 9_000_000_000_000
+            claimerAddress: qbtcAddress,
+            txHash: txHash
         )
     }
 
@@ -95,15 +96,12 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
     func testRunHappyPathTransitionsThroughAllPhases() async throws {
         let orchestrator = makeOrchestrator(
             generateProof: { _ in Self.makeProofResponse() },
-            fetchAccountInfo: { _ in Self.makeAccountInfo() },
-            broadcastClaim: { _, hash in hash },  // echo the local hash
             runBtcRound: { _ in
                 QBTCClaimBtcRoundResult(
                     rHex: String(repeating: "01", count: 24),
                     sHex: String(repeating: "02", count: 32)
                 )
-            },
-            runMldsaRound: { _ in Data(repeating: 0xef, count: 96) }
+            }
         )
 
         var observed: [String] = []
@@ -112,39 +110,35 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         await orchestrator.run(Self.makeRunInput())
         cancellable.cancel()
 
-        // Final state is .done with the locally-computed tx hash.
+        // Final state is .done with the service-returned tx hash, uppercased.
         guard case .done(let result) = orchestrator.phase else {
             return XCTFail("expected .done, got \(orchestrator.phase)")
         }
         XCTAssertEqual(result.totalSatsClaimed, 100_000)
-        XCTAssertFalse(result.txHashHex.isEmpty)
-        XCTAssertEqual(result.txHashHex, result.txHashHex.uppercased())
+        XCTAssertEqual(result.txHashHex, Self.mockServiceTxHash.uppercased())
 
         // Phase transitions in order. The sink fires on subscribe with
         // the current value (.idle), then again on each `phase = ...`.
         XCTAssertEqual(
             observed,
-            ["idle", "signingBTC", "generatingProof", "signingMLDSA", "broadcasting", "done"]
+            ["idle", "signingBTC", "generatingProofAndBroadcasting", "done"]
         )
     }
 
-    // MARK: - Round runners receive expected inputs
+    // MARK: - Round runner receives expected inputs
 
     func testBtcRoundReceivesComputedMessageHash() async throws {
         let captured = Captured<QBTCClaimBtcRoundInput>()
 
         let orchestrator = makeOrchestrator(
             generateProof: { _ in Self.makeProofResponse() },
-            fetchAccountInfo: { _ in Self.makeAccountInfo() },
-            broadcastClaim: { _, hash in hash },
             runBtcRound: { input in
                 await captured.set(input)
                 return QBTCClaimBtcRoundResult(
                     rHex: String(repeating: "01", count: 24),
                     sHex: String(repeating: "02", count: 32)
                 )
-            },
-            runMldsaRound: { _ in Data(repeating: 0xef, count: 96) }
+            }
         )
 
         await orchestrator.run(Self.makeRunInput())
@@ -156,32 +150,27 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         XCTAssertEqual(input.messageHashHex.count, 64) // 32-byte SHA-256 hex
     }
 
-    func testMldsaRoundReceivesSignDocHash() async throws {
-        let captured = Captured<QBTCClaimMldsaRoundInput>()
+    func testProofRequestHasBroadcastFlagSet() async throws {
+        let captured = Captured<ClaimProofRequest>()
 
         let orchestrator = makeOrchestrator(
-            generateProof: { _ in Self.makeProofResponse() },
-            fetchAccountInfo: { _ in Self.makeAccountInfo() },
-            broadcastClaim: { _, hash in hash },
+            generateProof: { req in
+                await captured.set(req)
+                return Self.makeProofResponse()
+            },
             runBtcRound: { _ in
                 QBTCClaimBtcRoundResult(
                     rHex: String(repeating: "01", count: 24),
                     sHex: String(repeating: "02", count: 32)
                 )
-            },
-            runMldsaRound: { input in
-                await captured.set(input)
-                return Data(repeating: 0xef, count: 96)
             }
         )
 
         await orchestrator.run(Self.makeRunInput())
 
         let captured1 = await captured.get()
-        let input = try XCTUnwrap(captured1)
-        XCTAssertEqual(input.qbtcCoin.address, Self.qbtcAddress)
-        XCTAssertEqual(input.fastVaultPassword, "hunter2")
-        XCTAssertEqual(input.signDocHashHex.count, 64)
+        let request = try XCTUnwrap(captured1)
+        XCTAssertTrue(request.broadcast, "orchestrator must request service-side broadcast (#158)")
     }
 
     // MARK: - Error propagation
@@ -191,10 +180,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
 
         let orchestrator = makeOrchestrator(
             generateProof: { _ in XCTFail("should not reach proof"); throw CancellationError() },
-            fetchAccountInfo: { _ in XCTFail("should not reach account info"); throw CancellationError() },
-            broadcastClaim: { _, _ in XCTFail("should not broadcast"); throw CancellationError() },
-            runBtcRound: { _ in throw BtcSignError() },
-            runMldsaRound: { _ in XCTFail("should not reach mldsa"); throw CancellationError() }
+            runBtcRound: { _ in throw BtcSignError() }
         )
 
         await orchestrator.run(Self.makeRunInput())
@@ -205,28 +191,26 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
 
     func testProofHashMismatchSurfacesAsFailedPhase() async {
         // Proof service echoes hashes that don't match the locally
-        // computed values — orchestrator must abort before signing
-        // round 2 instead of trusting the response.
+        // computed values — orchestrator must abort before treating the
+        // service's broadcast as authoritative.
         let tamperedResponse = ClaimProofResponse(
             proof: String(repeating: "ff", count: 200),
             messageHash: String(repeating: "bb", count: 32),
             addressHash: String(repeating: "cc", count: 20),
             qbtcAddressHash: String(repeating: "dd", count: 32),
             utxos: Self.utxos.map { ClaimProofResponseUtxo(txid: $0.txid) },
-            claimerAddress: Self.qbtcAddress
+            claimerAddress: Self.qbtcAddress,
+            txHash: Self.mockServiceTxHash
         )
 
         let orchestrator = makeOrchestrator(
             generateProof: { _ in tamperedResponse },
-            fetchAccountInfo: { _ in Self.makeAccountInfo() },
-            broadcastClaim: { _, _ in XCTFail("should not broadcast"); throw CancellationError() },
             runBtcRound: { _ in
                 QBTCClaimBtcRoundResult(
                     rHex: String(repeating: "01", count: 24),
                     sHex: String(repeating: "02", count: 32)
                 )
-            },
-            runMldsaRound: { _ in XCTFail("should not reach mldsa"); throw CancellationError() }
+            }
         )
 
         await orchestrator.run(Self.makeRunInput())
@@ -235,20 +219,37 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         }
     }
 
-    func testProofServiceFailureSurfacesAsFailedPhase() async {
-        struct ProofError: Error {}
-
+    func testMissingTxHashSurfacesAsFailedPhase() async {
+        // Service returned a proof but no tx_hash — broadcast either
+        // wasn't configured or failed. Orchestrator must fail loudly;
+        // there is no fallback path.
         let orchestrator = makeOrchestrator(
-            generateProof: { _ in throw ProofError() },
-            fetchAccountInfo: { _ in Self.makeAccountInfo() },
-            broadcastClaim: { _, _ in XCTFail("should not broadcast"); throw CancellationError() },
+            generateProof: { _ in Self.makeProofResponse(txHash: nil) },
             runBtcRound: { _ in
                 QBTCClaimBtcRoundResult(
                     rHex: String(repeating: "01", count: 24),
                     sHex: String(repeating: "02", count: 32)
                 )
-            },
-            runMldsaRound: { _ in XCTFail("should not reach mldsa"); throw CancellationError() }
+            }
+        )
+
+        await orchestrator.run(Self.makeRunInput())
+        guard case .failed = orchestrator.phase else {
+            return XCTFail("expected .failed when tx_hash is nil, got \(orchestrator.phase)")
+        }
+    }
+
+    func testProofServiceFailureSurfacesAsFailedPhase() async {
+        struct ProofError: Error {}
+
+        let orchestrator = makeOrchestrator(
+            generateProof: { _ in throw ProofError() },
+            runBtcRound: { _ in
+                QBTCClaimBtcRoundResult(
+                    rHex: String(repeating: "01", count: 24),
+                    sHex: String(repeating: "02", count: 32)
+                )
+            }
         )
 
         await orchestrator.run(Self.makeRunInput())
@@ -273,10 +274,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
 
         let orchestrator = makeOrchestrator(
             generateProof: { _ in XCTFail("should not call"); throw CancellationError() },
-            fetchAccountInfo: { _ in XCTFail("should not call"); throw CancellationError() },
-            broadcastClaim: { _, _ in XCTFail("should not call"); throw CancellationError() },
-            runBtcRound: { _ in XCTFail("should not call"); throw CancellationError() },
-            runMldsaRound: { _ in XCTFail("should not call"); throw CancellationError() }
+            runBtcRound: { _ in XCTFail("should not call"); throw CancellationError() }
         )
 
         await orchestrator.run(bad)
@@ -290,10 +288,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
     func testResetReturnsToIdle() async {
         let orchestrator = makeOrchestrator(
             generateProof: { _ in throw CancellationError() },
-            fetchAccountInfo: { _ in throw CancellationError() },
-            broadcastClaim: { _, _ in throw CancellationError() },
-            runBtcRound: { _ in throw CancellationError() },
-            runMldsaRound: { _ in throw CancellationError() }
+            runBtcRound: { _ in throw CancellationError() }
         )
         await orchestrator.run(Self.makeRunInput())
         guard case .failed = orchestrator.phase else {
@@ -307,17 +302,11 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
 
     private func makeOrchestrator(
         generateProof: @escaping QBTCClaimOrchestrator.GenerateProof,
-        fetchAccountInfo: @escaping QBTCClaimOrchestrator.FetchAccountInfo,
-        broadcastClaim: @escaping QBTCClaimOrchestrator.BroadcastClaim,
-        runBtcRound: @escaping QBTCClaimOrchestrator.RunBtcRound,
-        runMldsaRound: @escaping QBTCClaimOrchestrator.RunMldsaRound
+        runBtcRound: @escaping QBTCClaimOrchestrator.RunBtcRound
     ) -> QBTCClaimOrchestrator {
         QBTCClaimOrchestrator(
             generateProof: generateProof,
-            fetchAccountInfo: fetchAccountInfo,
-            broadcastClaim: broadcastClaim,
-            runBtcRound: runBtcRound,
-            runMldsaRound: runMldsaRound
+            runBtcRound: runBtcRound
         )
     }
 }
@@ -328,9 +317,7 @@ private func phaseName(_ phase: QBTCClaimPhase) -> String {
     switch phase {
     case .idle: return "idle"
     case .signingBTC: return "signingBTC"
-    case .generatingProof: return "generatingProof"
-    case .signingMLDSA: return "signingMLDSA"
-    case .broadcasting: return "broadcasting"
+    case .generatingProofAndBroadcasting: return "generatingProofAndBroadcasting"
     case .done: return "done"
     case .failed: return "failed"
     }
