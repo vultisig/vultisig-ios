@@ -257,7 +257,7 @@ struct SwapVerifyScreen: View {
             if let payload = await verifyViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                 await MainActor.run {
                     router.navigate(to: SwapRoute.pair(
-                        vault: vault,
+                        vaultPubKeyECDSA: vault.pubKeyECDSA,
                         tx: tx,
                         keysignPayload: payload,
                         fastVaultPassword: tx.fastVaultPassword.nilIfEmpty

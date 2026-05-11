@@ -223,7 +223,7 @@ struct SwapDetailsScreen: View {
                 .opacity(SwapCryptoLogic.validateForm(tx: tx, isLoading: detailsViewModel.isLoading) ? 1 : 0.5)
         } else {
             PrimaryButton(title: "continue") {
-                router.navigate(to: SwapRoute.verify(tx: tx, vault: vault))
+                router.navigate(to: SwapRoute.verify(tx: tx, vaultPubKeyECDSA: vault.pubKeyECDSA))
             }
             .disabled(isDisabled)
             .opacity(SwapCryptoLogic.validateForm(tx: tx, isLoading: detailsViewModel.isLoading) ? 1 : 0.5)

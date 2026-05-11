@@ -36,7 +36,7 @@ struct SwapKeysignScreen: View {
 
             let chain = tx.fromCoin.chain
             router.navigate(to: SwapRoute.done(
-                vault: input.vault,
+                vaultPubKeyECDSA: input.vault.pubKeyECDSA,
                 hash: hash,
                 approveHash: viewModel.approveHash,
                 chain: chain,
