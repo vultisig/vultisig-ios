@@ -68,11 +68,16 @@ extension CardanoExtendedUtxo {
         let rawAssets = entry.assetList ?? []
         let assets: [CardanoUtxoAsset] = rawAssets.compactMap { asset in
             guard let quantity = BigInt(asset.quantity), quantity >= 0 else { return nil }
+            let decimals = asset.decimals ?? 0
+            // Negative decimals would leak invalid precision into downstream
+            // amount formatting. Fail-fast on the whole UTxO, consistent with
+            // the rest of this parser.
+            guard decimals >= 0 else { return nil }
             return CardanoUtxoAsset(
                 policyId: asset.policyId.lowercased(),
                 assetNameHex: (asset.assetName ?? "").lowercased(),
                 amount: quantity,
-                decimals: asset.decimals ?? 0
+                decimals: decimals
             )
         }
         // If any asset failed to parse, reject the whole UTxO — using a

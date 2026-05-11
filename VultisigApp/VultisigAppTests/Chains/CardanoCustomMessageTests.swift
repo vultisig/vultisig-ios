@@ -60,4 +60,13 @@ final class CardanoCustomMessageTests: XCTestCase {
         XCTAssertNotEqual(result.first?.count, 64,
                           "Got 64-char hex — looks like a keccak256 hash slipped through")
     }
+
+    func testCardanoBranchTakesPrecedenceOverEthSignTypedDataV4() {
+        // The Cardano branch must run independent of `method`. A payload with
+        // `method == eth_signTypedData_v4` and `chain == cardano` must NOT be
+        // misrouted into the EIP-712 path; it stays on the verbatim path.
+        let blake2bHex = "deadbeef" + String(repeating: "00", count: 28)
+        let payload = makePayload(method: "eth_signTypedData_v4", message: "0x\(blake2bHex)")
+        XCTAssertEqual(payload.keysignMessages, [blake2bHex])
+    }
 }

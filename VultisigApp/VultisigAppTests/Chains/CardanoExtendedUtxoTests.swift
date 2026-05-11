@@ -119,6 +119,21 @@ final class CardanoExtendedUtxoTests: XCTestCase {
         XCTAssertNil(CardanoExtendedUtxo(entry))
     }
 
+    func testRejectsUtxoWithNegativeAssetDecimals() {
+        // Negative decimals would leak invalid precision into downstream amount
+        // formatting; reject the whole UTxO to keep fail-fast semantics aligned
+        // with the rest of this parser.
+        let entry = CardanoExtendedUtxoEntry(
+            txHash: "x",
+            txIndex: 0,
+            value: "1000000",
+            assetList: [
+                CardanoAssetEntry(policyId: "a", assetName: "b", fingerprint: nil, decimals: -1, quantity: "1")
+            ]
+        )
+        XCTAssertNil(CardanoExtendedUtxo(entry))
+    }
+
     // MARK: - Koios JSON wire decoding
 
     func testDecodesKoiosResponseWithAssets() throws {
