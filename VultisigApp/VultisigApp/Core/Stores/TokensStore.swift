@@ -534,6 +534,101 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        // Top 10 Cardano native tokens (CNT). The `contractAddress` is the
+        // dot-separated CardanoAssetId form: `<policyId>.<asset_name_hex>` —
+        // see `Blockchain/Cardano/Models/CardanoAssetId.swift`. The asset_name
+        // hex decodes to the ticker ASCII for most entries; USDM and DJED
+        // carry CIP-67 (label 333) binary prefixes (`0014df10…`).
+        CoinMeta(
+            chain: .cardano,
+            ticker: "USDM",
+            logo: "usdm",
+            decimals: 6,
+            priceProviderId: "mehen-usd",
+            contractAddress: "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad.0014df105553444d",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "iUSD",
+            logo: "iusd",
+            decimals: 6,
+            priceProviderId: "indigo-protocol-iusd",
+            contractAddress: "f66d78b4a3cb3d37afa0ec36461e51ecbde00f26c8f0a68f94b69880.69555344",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "DJED",
+            logo: "djed",
+            decimals: 6,
+            priceProviderId: "djed",
+            contractAddress: "8db269c3ec630e06ae29f74bc39edd1f87c819f1056206e879a1cd61.446a65644d6963726f555344",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "LQ",
+            logo: "lq",
+            decimals: 6,
+            priceProviderId: "liqwid-finance",
+            contractAddress: "da8c30857834c6ae7203935b89278c532b3995245295456f993e1d24.4c51",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "MIN",
+            logo: "min",
+            decimals: 6,
+            priceProviderId: "minswap",
+            contractAddress: "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6.4d494e",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "SNEK",
+            logo: "snek",
+            decimals: 0,
+            priceProviderId: "snek",
+            contractAddress: "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f.534e454b",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "SUNDAE",
+            logo: "sundae",
+            decimals: 6,
+            priceProviderId: "sundaeswap",
+            contractAddress: "9a9693a9a37912a5097918f97918d15240c92ab729a0b7c4aa144d77.53554e444145",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "IAG",
+            logo: "iag",
+            decimals: 6,
+            priceProviderId: "iagon",
+            contractAddress: "5d16cc1a177b5d9ba9cfa9793b07e60f1fb70fea1f8aef064415d114.494147",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "HOSKY",
+            logo: "hosky",
+            decimals: 0,
+            priceProviderId: "hosky",
+            contractAddress: "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235.484f534b59",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .cardano,
+            ticker: "WMTX",
+            logo: "wmtx",
+            decimals: 6,
+            priceProviderId: "world-mobile-token",
+            contractAddress: "e5a42a1a1d3d1da71b0449663c32798725888d2eb0843c4dabeca05a.576f726c644d6f62696c65546f6b656e58",
+            isNativeToken: false
+        ),
         CoinMeta(
             chain: .blast,
             ticker: "AI",
