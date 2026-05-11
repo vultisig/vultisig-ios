@@ -2,59 +2,41 @@
 //  QBTCClaimContext.swift
 //  VultisigApp
 //
-//  Round-1 context for a SecureVault QBTC claim. Round-trips through
-//  the QR'd `KeysignPayload` (proto-backed via `VSQbtcClaimContext`)
-//  so the peer device can compute round-1's message hash independently
-//  and later reconstruct round-2's SignDoc.
+//  Sanity-check context for a SecureVault QBTC claim. Round-trips
+//  through the QR'd `KeysignPayload` (proto-backed via
+//  `VSQbtcClaimContext`). The peer device derives the BTC ECDSA
+//  message hash from `claimerAddress` (plus its own vault BTC
+//  address + pubkey + chain id) and signs THAT, so a compromised
+//  initiator cannot divert the signature to an arbitrary BTC
+//  spending tx.
 //
-//  See [[projects/vultisig/qbtc-claim/v2-secure-vault-design]] for
-//  the protocol and rationale.
+//  Under the post-qbtc#158 flow the proof service signs and broadcasts
+//  `MsgClaimWithProof` itself, so this context no longer carries the
+//  UTXO list or the relay base-session id — those were both for the
+//  deleted round-2 SignDoc reconstruction.
 //
 
 import Foundation
 import VultisigCommonData
 
 struct QBTCClaimContext: Codable, Hashable {
-    /// QBTC bech32 address of the claimer. Used both as round-1's
-    /// `qbtcAddress` input to the message-hash construction and as
-    /// round-2's `claimer` field on `MsgClaimWithProof`.
+    /// QBTC bech32 address of the claimer. The only piece of state the
+    /// peer device can't derive from its own vault — without it the
+    /// peer can't compute the round-1 message hash to sanity-check
+    /// against what the initiator asks it to sign.
     let claimerAddress: String
-    /// User-selected UTXOs being claimed. Round-1 doesn't use these
-    /// for message-hash computation, but they're needed by the peer
-    /// to reconstruct round-2's SignDoc once the round-2 prep arrives
-    /// over the relay.
-    let utxos: [ClaimableUtxo]
-    /// Base relay session id. Per-round sessions use deterministic
-    /// suffixes — `{baseSessionID}-0` (BTC ECDSA) and
-    /// `{baseSessionID}-1` (MLDSA). Both initiator and peer derive
-    /// these from the base.
-    let baseSessionID: String
 
-    init(claimerAddress: String, utxos: [ClaimableUtxo], baseSessionID: String) {
+    init(claimerAddress: String) {
         self.claimerAddress = claimerAddress
-        self.utxos = utxos
-        self.baseSessionID = baseSessionID
     }
 
     init(proto: VSQbtcClaimContext) {
         self.claimerAddress = proto.claimerAddress
-        self.utxos = proto.utxos.map { proto in
-            ClaimableUtxo(txid: proto.txid, vout: proto.vout, amount: proto.amount)
-        }
-        self.baseSessionID = proto.baseSessionID
     }
 
     func mapToProtobuff() -> VSQbtcClaimContext {
         .with {
             $0.claimerAddress = claimerAddress
-            $0.utxos = utxos.map { utxo in
-                VSQbtcClaimUtxoRef.with {
-                    $0.txid = utxo.txid
-                    $0.vout = utxo.vout
-                    $0.amount = utxo.amount
-                }
-            }
-            $0.baseSessionID = baseSessionID
         }
     }
 }

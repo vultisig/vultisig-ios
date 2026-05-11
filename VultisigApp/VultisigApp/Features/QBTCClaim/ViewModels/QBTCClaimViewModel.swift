@@ -255,11 +255,7 @@ final class QBTCClaimViewModel: ObservableObject {
 
         do {
             let baseSession = try sessionService.newSession(vault: vault)
-            let context = QBTCClaimContext(
-                claimerAddress: qbtcCoin.address,
-                utxos: selected,
-                baseSessionID: baseSession.sessionId
-            )
+            let context = QBTCClaimContext(claimerAddress: qbtcCoin.address)
             let payload = makeSecureVaultKeysignPayload(
                 btcCoin: btcCoin,
                 context: context

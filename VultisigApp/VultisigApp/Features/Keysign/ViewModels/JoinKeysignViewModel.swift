@@ -303,15 +303,17 @@ class JoinKeysignViewModel: ObservableObject {
                 }
             }
 
-            // Multi-round QBTC claim fork — if the loaded payload carries
-            // a qbtcClaimContext, hand off to the QBTC-claim peer driver
+            // QBTC claim fork — if the loaded payload carries a
+            // qbtcClaimContext, hand off to the QBTC-claim peer driver
             // and step the standard single-keysign flow aside. Reads from
             // `self.keysignPayload` so it covers both inline payloads and
-            // ones fetched from the relay via `ensureKeysignPayload` (the
-            // QR threshold is 2 KB and a 50-UTXO claim easily exceeds it).
+            // ones fetched from the relay via `ensureKeysignPayload`.
+            // Post-qbtc#158 the peer only runs one BTC ECDSA round; the
+            // session is the keysign message's own session, not a
+            // round-suffixed derivation of a base session.
             if let payload = self.keysignPayload, let context = payload.qbtcClaimContext {
-                let baseSession = KeysignSessionInfo(
-                    sessionId: context.baseSessionID,
+                let session = KeysignSessionInfo(
+                    sessionId: keysignMsg.sessionID,
                     encryptionKeyHex: keysignMsg.encryptionKeyHex,
                     serviceName: keysignMsg.serviceName,
                     localPartyId: self.localPartyID,
@@ -320,7 +322,7 @@ class JoinKeysignViewModel: ObservableObject {
                 let driver = QBTCClaimJoinDriver(
                     vault: self.vault,
                     context: context,
-                    baseSession: baseSession
+                    baseSession: session
                 )
                 self.qbtcClaimDriver = driver
                 self.status = .QBTCClaim

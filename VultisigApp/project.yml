@@ -54,9 +54,9 @@ packages:
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
     # Temporary: pinned to the head of vultisig/commondata#83
-    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + `QbtcClaimContext`).
+    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + slimmed `QbtcClaimContext`).
     # Flip to a `revision: <merge-sha>` once that PR merges.
-    revision: 93ba3ffa51b50710dad813b564d9a995b682f266
+    revision: b378b1d1634cfd913b72ad21a15545d289a96df8
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

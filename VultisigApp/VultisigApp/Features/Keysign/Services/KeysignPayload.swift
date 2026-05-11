@@ -26,9 +26,10 @@ struct KeysignPayload: Codable, Hashable {
     /// not round-tripped through the proto `KeysignPayload`. See
     /// `QBTCClaimPayload` for rationale.
     let qbtcClaimPayload: QBTCClaimPayload?
-    /// Round-1 context for a SecureVault QBTC claim — round-trips through
-    /// the proto so the peer device can compute round-1's message hash and
-    /// later reconstruct round-2's SignDoc. See `QBTCClaimContext`.
+    /// Sanity-check context for a SecureVault QBTC claim — round-trips
+    /// through the proto so the peer device can compute the BTC ECDSA
+    /// message hash locally and refuse to blind-sign whatever the
+    /// initiator asks for. See `QBTCClaimContext`.
     let qbtcClaimContext: QBTCClaimContext?
     let skipBroadcast: Bool
     let signData: SignData?
