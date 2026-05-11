@@ -192,6 +192,7 @@
 "close" = "关闭";
 "coinAddressCopied" = "%@ 地址已复制";
 "coinPool" = "%@ 池";
+"coinServiceChainNotEnabledForKeyImport" = "此导入的保险库未启用 %@ 链";
 "collectedRewards" = "已收集的奖励";
 "compoundedCoin" = "已复利 %@";
 "congratsExclamation" = "恭喜！";
