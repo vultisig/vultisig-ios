@@ -38,6 +38,26 @@ final class KeyImportChainRestrictionTests: XCTestCase {
         XCTAssertEqual(vault.availableChains.count, Chain.allCases.count)
     }
 
+    func testAvailableChains_keyImportLegacyVault_fallsBackToCoinDerivedChains() {
+        // Legacy JSON backups predate `chainPublicKeys` persistence. A vault
+        // restored from that format has libType=KeyImport but an empty
+        // chainPublicKeys list. We must not soft-brick the restored vault:
+        // fall back to coin-derived chains so it keeps working.
+        let vault = Vault(name: "LegacyKeyImport", libType: .KeyImport)
+        vault.chainPublicKeys = []
+        vault.coins.append(makeNativeCoin(chain: .thorChain))
+
+        XCTAssertEqual(vault.availableChains, [.thorChain])
+    }
+
+    func testAssertChainAllowed_keyImportLegacyVault_doesNotBlockWrites() {
+        let vault = Vault(name: "LegacyKeyImport", libType: .KeyImport)
+        vault.chainPublicKeys = []
+        let ethMeta = makeMeta(chain: .ethereum, ticker: "ETH", isNative: true)
+
+        XCTAssertNoThrow(try CoinService.assertChainAllowed(asset: ethMeta, vault: vault))
+    }
+
     // MARK: - CoinService.assertChainAllowed
 
     func testAssertChainAllowed_keyImportVault_throwsForUnauthorizedChain() {

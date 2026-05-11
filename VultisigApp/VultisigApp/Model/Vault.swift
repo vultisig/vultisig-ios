@@ -199,8 +199,10 @@ final class Vault: ObservableObject, Codable {
             // KeyImport vaults can only operate on chains whose per-chain TSS
             // keyshares were derived during import. `coins` may temporarily
             // drift if a feature inserts an unauthorized native token, so use
-            // `chainPublicKeys` as the authoritative source.
-            chainPublicKeys.map(\.chain)
+            // `chainPublicKeys` as the authoritative source. Legacy JSON
+            // backups predate `chainPublicKeys` persistence — fall back to the
+            // coin-derived list so a restored vault stays usable.
+            chainPublicKeys.isEmpty ? chains : chainPublicKeys.map(\.chain)
         }
     }
 

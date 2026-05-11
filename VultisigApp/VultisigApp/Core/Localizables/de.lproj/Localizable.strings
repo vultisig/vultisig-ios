@@ -192,6 +192,7 @@
 "close" = "Schließen";
 "coinAddressCopied" = "Münzadresse kopiert";
 "coinPool" = "%@-Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Chain %@ ist für diesen importierten Vault nicht aktiviert";
 "collectedRewards" = "Gesammelte Belohnungen";
 "compoundedCoin" = "%@ aufgezinst";
 "congratsExclamation" = "Glückwunsch!";

@@ -14,7 +14,7 @@ enum CoinServiceError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .chainNotEnabledForKeyImport(let chain):
-            return "Chain \(chain.name) is not enabled for this imported vault"
+            return String(format: "coinServiceChainNotEnabledForKeyImport".localized, chain.name)
         }
     }
 }
@@ -203,8 +203,12 @@ struct CoinService {
     /// Without this, features like the swap-quote-driven VULT tier check
     /// would silently inject ETH (and discover ERC20s) into a key-import
     /// vault that derived TSS shares only for THORChain.
+    ///
+    /// Legacy JSON backups predate `chainPublicKeys` persistence; skip the
+    /// guard when the list is empty to avoid soft-bricking restored vaults.
     static func assertChainAllowed(asset: CoinMeta, vault: Vault) throws {
         guard vault.libType == .KeyImport else { return }
+        guard !vault.chainPublicKeys.isEmpty else { return }
         guard !vault.chainPublicKeys.contains(where: { $0.chain == asset.chain }) else { return }
         throw CoinServiceError.chainNotEnabledForKeyImport(asset.chain)
     }

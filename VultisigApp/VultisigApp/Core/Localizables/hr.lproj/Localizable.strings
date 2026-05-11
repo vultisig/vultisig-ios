@@ -192,6 +192,7 @@
 "close" = "Zatvori";
 "coinAddressCopied" = "Adresa kopirana";
 "coinPool" = "%@ Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Lanac %@ nije omogućen za ovaj uvezeni vault";
 "collectedRewards" = "Prikupljene nagrade";
 "compoundedCoin" = "%@ Složeno";
 "congratsExclamation" = "Čestitamo!";
