@@ -173,19 +173,24 @@ struct CustomTokenScreen: View {
                     self.isLoading = false
                     return
                 }
-                let coinMeta = CoinMeta(
-                    chain: chain,
-                    ticker: metadata.ticker,
-                    logo: metadata.registryLogo ?? .empty,
-                    decimals: metadata.decimals,
-                    priceProviderId: .empty,
-                    contractAddress: metadata.assetId,
-                    isNativeToken: false
-                )
+                // Prefer the built-in registry entry when we know the asset —
+                // gives us the curated ticker, logo, and `priceProviderId`
+                // (`USDM` instead of the `_USDM` masked from the CIP-67 prefix,
+                // `usdm-2` instead of the empty default).
+                let coinMeta = TokensStore.findTokenMeta(chain: chain, contractAddress: metadata.assetId)
+                    ?? CoinMeta(
+                        chain: chain,
+                        ticker: metadata.ticker,
+                        logo: metadata.registryLogo ?? .empty,
+                        decimals: metadata.decimals,
+                        priceProviderId: .empty,
+                        contractAddress: metadata.assetId,
+                        isNativeToken: false
+                    )
                 self.token = coinMeta
-                self.tokenName = metadata.ticker
-                self.tokenSymbol = metadata.ticker
-                self.tokenDecimals = metadata.decimals
+                self.tokenName = coinMeta.ticker
+                self.tokenSymbol = coinMeta.ticker
+                self.tokenDecimals = coinMeta.decimals
                 self.showTokenInfo = true
                 self.isLoading = false
 

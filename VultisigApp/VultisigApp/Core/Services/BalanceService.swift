@@ -451,8 +451,16 @@ private extension BalanceService {
         let newTokens = discovered.filter { !knownContractAddresses.contains($0.assetId) }
         guard !newTokens.isEmpty else { return }
 
+        // Prefer the built-in registry entry when we know the asset — it carries
+        // a human ticker (`USDM` rather than the `_USDM` derived from masking
+        // the CIP-67 prefix), the bundled logo asset, and a working
+        // `priceProviderId`. Falls back to the API-derived metadata for assets
+        // the registry doesn't know about.
         let newCoinMetas = newTokens.map { metadata in
-            CoinMeta(
+            if let known = TokensStore.findTokenMeta(chain: .cardano, contractAddress: metadata.assetId) {
+                return known
+            }
+            return CoinMeta(
                 chain: .cardano,
                 ticker: metadata.ticker,
                 logo: metadata.registryLogo ?? .empty,

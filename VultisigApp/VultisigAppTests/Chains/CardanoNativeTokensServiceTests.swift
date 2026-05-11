@@ -91,4 +91,30 @@ final class CardanoNativeTokensServiceTests: XCTestCase {
         // back to the policy-id prefix.
         XCTAssertEqual("00010203".hexToAscii(), "")
     }
+
+    // MARK: - TokensStore-vs-auto-discovery dedup invariants
+
+    func testAutoDiscoveredAssetIdMatchesTokensStoreContractAddress() {
+        // The auto-discovery path derives ticker `_USDM` from the CIP-67
+        // prefix, but the curated `TokensStore` entry has ticker `USDM`. The
+        // dedup in `BalanceService.discoverCardanoNativeTokens` (and the
+        // fallback lookup in `CustomTokenScreen`) keys on `metadata.assetId`
+        // vs `CoinMeta.contractAddress` — both must agree byte-for-byte
+        // (lowercase, dot-separated) or the same asset shows up twice.
+        let usdmPolicy = "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad"
+        let usdmAssetName = "0014df105553444d"
+        let entry = CardanoAssetEntry(
+            policyId: usdmPolicy,
+            assetName: usdmAssetName,
+            fingerprint: nil,
+            decimals: 6,
+            quantity: "1"
+        )
+        let discovered = CardanoNativeTokensService.makeMetadata(from: entry)
+        let registry = TokensStore.findTokenMeta(chain: .cardano, contractAddress: discovered.assetId)
+        XCTAssertNotNil(registry, "TokensStore.findTokenMeta must resolve auto-discovered USDM")
+        XCTAssertEqual(registry?.ticker, "USDM")
+        XCTAssertEqual(discovered.ticker, "_USDM",
+                       "Pins the auto-derived ticker so we remember why the registry preference matters")
+    }
 }
