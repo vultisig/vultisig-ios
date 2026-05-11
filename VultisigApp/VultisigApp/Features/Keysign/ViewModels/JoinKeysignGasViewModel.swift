@@ -31,20 +31,14 @@ struct JoinKeysignGasViewModel {
         }
 
         if payload.coin.chainType == .EVM {
-            let gas = payload.chainSpecific.gas
+            let totalFeeWei = payload.chainSpecific.fee
+            let gasAmount = Decimal(totalFeeWei) / pow(10, nativeToken.decimals)
+            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
-                  let gasDecimal = Decimal(string: gas.description) else {
-                return (.empty, .empty)
-            }
-
-            let gasGwei = gasDecimal / weiPerGWeiDecimal
-            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: totalFeeWei)
             feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
-            return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
+            return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
         }
 
         // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
