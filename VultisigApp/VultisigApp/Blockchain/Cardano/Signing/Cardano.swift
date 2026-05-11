@@ -160,14 +160,12 @@ class CardanoHelper {
 
     // MARK: - Helper Functions
 
-    /// Build a WalletCore `CardanoSigningInput`. For CNT sends, pass the
-    /// pre-fetched extended UTXOs so each `TxInput` can carry its per-UTXO
-    /// `tokenAmount` — without that, WalletCore's Cardano planner trips
-    /// `errorLowBalance` because it can't see any tokens in the inputs.
-    /// `extendedUtxos` may be empty for ADA-only sends (no token data needed).
+    /// Build a WalletCore `CardanoSigningInput`. For CNT sends, per-UTxO
+    /// token data is read off the wire from `keysignPayload.utxos[i].cardanoTokens`
+    /// (populated by the initiator in `KeysignPayloadFactory.selectCardanoUTXOs`).
+    /// Both MPC peers consume identical input bytes — no per-device Koios fetch.
     static func getPreSignedInputData(
-        keysignPayload: KeysignPayload,
-        extendedUtxos: [CardanoExtendedUtxo] = []
+        keysignPayload: KeysignPayload
     ) throws -> CardanoSigningInput {
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
@@ -224,12 +222,10 @@ class CardanoHelper {
             $0.ttl = ttl
         }
 
-        // Add UTXOs to the input. For CNT sends, attach per-UTXO token data
-        // by matching on (hash, index) against the extended UTXO list;
-        // without this, the planner can't reconcile a TokenBundle output.
-        let extendedByOutPoint: [String: CardanoExtendedUtxo] = Dictionary(
-            uniqueKeysWithValues: extendedUtxos.map { ("\($0.hash):\($0.index)", $0) }
-        )
+        // Add UTXOs to the input. Per-UTXO token data is carried on the wire
+        // (`UtxoInfo.cardanoTokens`), populated by the initiator before keysign.
+        // Without this, WalletCore's planner can't reconcile a TokenBundle
+        // output against the inputs and trips `errorLowBalance`.
         for inputUtxo in keysignPayload.utxos {
             let utxo = CardanoTxInput.with {
                 $0.outPoint = CardanoOutPoint.with {
@@ -238,8 +234,8 @@ class CardanoHelper {
                 }
                 $0.amount = UInt64(inputUtxo.amount)
                 $0.address = keysignPayload.coin.address
-                if let extended = extendedByOutPoint["\(inputUtxo.hash):\(inputUtxo.index)"] {
-                    $0.tokenAmount = extended.assets.map { asset in
+                if !inputUtxo.cardanoTokens.isEmpty {
+                    $0.tokenAmount = inputUtxo.cardanoTokens.map { asset in
                         CardanoTokenAmount.with {
                             $0.policyID = asset.policyId
                             $0.assetNameHex = asset.assetNameHex
@@ -286,32 +282,12 @@ class CardanoHelper {
         return bundle
     }
 
-    /// Synchronous pre-image hash — used by tests with ADA-only fixtures
-    /// that don't need per-UTXO token data. Real keysign flows go through
-    /// `getPreSignedImageHashAsync(...)` which fetches extended UTXOs from
-    /// Koios so the planner can balance CNT sends.
+    /// Pre-image hash for MPC keysign. Per-UTXO token data is read off the
+    /// wire from `keysignPayload.utxos[i].cardanoTokens` — the initiator
+    /// fetched it from Koios when building the payload, so both peers
+    /// produce identical body bytes by construction.
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        try preSignedImageHash(keysignPayload: keysignPayload, extendedUtxos: [])
-    }
-
-    /// Async pre-image hash. Fetches extended UTXOs (with per-UTXO assets)
-    /// from Koios when the active coin is a CNT — the WalletCore Cardano
-    /// planner needs that token data on inputs to balance the TokenBundle
-    /// output. Both MPC peers fetch independently; Koios returns the same
-    /// UTXO set for the same address so both produce identical body bytes.
-    static func getPreSignedImageHashAsync(keysignPayload: KeysignPayload) async throws -> [String] {
-        let extendedUtxos = try await fetchExtendedUtxosIfNeeded(for: keysignPayload)
-        return try preSignedImageHash(keysignPayload: keysignPayload, extendedUtxos: extendedUtxos)
-    }
-
-    private static func preSignedImageHash(
-        keysignPayload: KeysignPayload,
-        extendedUtxos: [CardanoExtendedUtxo]
-    ) throws -> [String] {
-        let inputData = try getCardanoPreSignInputData(
-            keysignPayload: keysignPayload,
-            extendedUtxos: extendedUtxos
-        )
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -320,11 +296,8 @@ class CardanoHelper {
         return [preSigningOutput.dataHash.hexString]
     }
 
-    static func getCardanoPreSignInputData(
-        keysignPayload: KeysignPayload,
-        extendedUtxos: [CardanoExtendedUtxo] = []
-    ) throws -> Data {
-        var input = try getPreSignedInputData(keysignPayload: keysignPayload, extendedUtxos: extendedUtxos)
+    static func getCardanoPreSignInputData(keysignPayload: KeysignPayload) throws -> Data {
+        var input = try getPreSignedInputData(keysignPayload: keysignPayload)
         let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
         if plan.error != .ok {
             throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
@@ -334,17 +307,9 @@ class CardanoHelper {
         return try input.serializedData()
     }
 
-    /// Fetch extended UTXOs (per-UTXO `asset_list`) from Koios when the
-    /// active coin is a CNT — needed by the planner to balance tokens.
-    /// Returns an empty array for ADA-only sends so we don't pay the
-    /// network cost when it's not required.
-    private static func fetchExtendedUtxosIfNeeded(for keysignPayload: KeysignPayload) async throws -> [CardanoExtendedUtxo] {
-        guard !keysignPayload.coin.contractAddress.isEmpty else { return [] }
-        return try await CardanoService.shared.getExtendedUTXOs(coin: keysignPayload.coin)
-    }
     static func getSignedTransaction(vaultHexPubKey: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) async throws -> SignedTransactionResult {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
 
         // Build the verification key (raw 32-byte EdDSA spending key) — matches TSS output.
         guard let spendingKeyData = Data(hexString: vaultHexPubKey),
@@ -352,11 +317,7 @@ class CardanoHelper {
             throw HelperError.runtimeError("failed to create EdDSA public key for verification")
         }
 
-        let extendedUtxos = try await fetchExtendedUtxosIfNeeded(for: keysignPayload)
-        let inputData = try getCardanoPreSignInputData(
-            keysignPayload: keysignPayload,
-            extendedUtxos: extendedUtxos
-        )
+        let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {

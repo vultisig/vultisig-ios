@@ -6,11 +6,46 @@
 import BigInt
 import Foundation
 
-struct CardanoUtxoAsset: Hashable {
+struct CardanoUtxoAsset: Hashable, Codable {
     let policyId: String
     let assetNameHex: String
     let amount: BigInt
     let decimals: Int
+
+    enum CodingKeys: String, CodingKey {
+        case policyId, assetNameHex, amount, decimals
+    }
+
+    init(policyId: String, assetNameHex: String, amount: BigInt, decimals: Int) {
+        self.policyId = policyId
+        self.assetNameHex = assetNameHex
+        self.amount = amount
+        self.decimals = decimals
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.policyId = try container.decode(String.self, forKey: .policyId)
+        self.assetNameHex = try container.decode(String.self, forKey: .assetNameHex)
+        let amountString = try container.decode(String.self, forKey: .amount)
+        guard let amount = BigInt(amountString) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .amount,
+                in: container,
+                debugDescription: "Cannot parse BigInt from \(amountString)"
+            )
+        }
+        self.amount = amount
+        self.decimals = try container.decodeIfPresent(Int.self, forKey: .decimals) ?? 0
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(policyId, forKey: .policyId)
+        try container.encode(assetNameHex, forKey: .assetNameHex)
+        try container.encode(amount.description, forKey: .amount)
+        try container.encode(decimals, forKey: .decimals)
+    }
 }
 
 struct CardanoExtendedUtxo: Hashable {

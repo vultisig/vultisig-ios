@@ -107,7 +107,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 }
 
                 let keysignFactory = KeysignMessageFactory(payload: finalPayload)
-                let preSignedImageHash = try await keysignFactory.getKeysignMessages()
+                let preSignedImageHash = try keysignFactory.getKeysignMessages()
                 self.keysignMessages = preSignedImageHash.sorted()
                 coin = keysignPayload.coin
             } catch {

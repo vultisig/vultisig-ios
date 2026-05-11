@@ -175,12 +175,31 @@ struct KeysignPayloadFactory {
         // build time. We deliberately don't run `AnySigner.plan(...)` here
         // because its UTXO selection trips `errorLowBalance` on CNT sends —
         // see `Cardano.swift:getCardanoPreSignInputData` for the rationale.
-        let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: keysignPayload.coin)
+        //
+        // The initiator (this code) is the only side that hits Koios; per-UTxO
+        // token data crosses the wire via `UtxoInfo.cardanoTokens`. Cosigners
+        // read those bytes verbatim — no extra Koios call, no fetch-ordering
+        // drift, identical input bytes on both peers by construction.
+        let extendedUTXOs = try await CardanoService.shared.getExtendedUTXOs(coin: keysignPayload.coin)
 
-        guard !cardanoUTXOs.isEmpty else {
+        guard !extendedUTXOs.isEmpty else {
             throw Errors.notEnoughUTXOError
         }
 
-        return cardanoUTXOs
+        return extendedUTXOs.map { utxo in
+            // Sort tokens canonically so the proto serialises identically
+            // regardless of Koios's per-response ordering — keeps the keysign
+            // session id stable across retries.
+            let sortedAssets = utxo.assets.sorted { lhs, rhs in
+                if lhs.policyId != rhs.policyId { return lhs.policyId < rhs.policyId }
+                return lhs.assetNameHex < rhs.assetNameHex
+            }
+            return UtxoInfo(
+                hash: utxo.hash,
+                amount: Int64(utxo.amount),
+                index: utxo.index,
+                cardanoTokens: sortedAssets
+            )
+        }
     }
 }
