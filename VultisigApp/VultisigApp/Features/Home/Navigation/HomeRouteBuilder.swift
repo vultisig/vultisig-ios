@@ -25,7 +25,7 @@ struct HomeRouteBuilder {
                 vault: vault
             )
         case .swap(let fromCoin):
-            SwapRouteBuilder().buildDetailsScreen(fromCoin: fromCoin, toCoin: nil, vault: vault)
+            SwapRouter().buildDetailsScreen(fromCoin: fromCoin, toCoin: nil, vault: vault)
         case .function(let coin):
             FunctionCallRouteBuilder().buildDetailsScreen(
                 defaultCoin: coin,

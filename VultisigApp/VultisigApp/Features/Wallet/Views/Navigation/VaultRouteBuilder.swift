@@ -75,7 +75,7 @@ struct VaultRouteBuilder {
 
     @ViewBuilder
     func buildSwapScreen(fromCoin: Coin?, toCoin: Coin?, vault: Vault) -> some View {
-        SwapRouteBuilder().buildDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+        SwapRouter().buildDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
     }
 
     @ViewBuilder

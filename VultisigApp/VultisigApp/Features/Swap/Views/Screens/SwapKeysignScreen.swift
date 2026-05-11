@@ -48,9 +48,12 @@ struct SwapKeysignScreen: View {
             guard let reason else { return }
             tx.pendingRetryReason = reason
             viewModel.pendingRetryReason = nil
-            // Stack: details -> verify -> pair -> keysign. Pop pair + keysign.
-            let popCount = min(2, router.navPath.count)
-            router.navPath.removeLast(popCount)
+            // Pop back to the verify screen — robust to deep-links that add routes before .root.
+            router.navigateBack { destination in
+                guard let route = destination as? SwapRoute else { return false }
+                if case .verify = route { return true }
+                return false
+            }
         }
         .onDisappear {
             viewModel.stopMediator()

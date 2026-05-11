@@ -8,6 +8,7 @@
 import BigInt
 import Foundation
 
+@MainActor
 class SwapTransaction: ObservableObject, Hashable {
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
@@ -24,11 +25,13 @@ class SwapTransaction: ObservableObject, Hashable {
     @Published var fromCoins: [Coin] = []
     @Published var toCoins: [Coin] = []
 
-    static func == (lhs: SwapTransaction, rhs: SwapTransaction) -> Bool {
+    // Reference-identity equality + hash — no actor-isolated state, safe to call from
+    // nonisolated contexts (e.g. NavigationPath's auto-derived Equatable for SwapRoute).
+    nonisolated static func == (lhs: SwapTransaction, rhs: SwapTransaction) -> Bool {
         lhs === rhs
     }
 
-    func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
     }
 

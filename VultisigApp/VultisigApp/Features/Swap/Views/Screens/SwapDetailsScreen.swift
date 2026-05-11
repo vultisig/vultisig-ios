@@ -21,8 +21,6 @@ struct SwapDetailsScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     var body: some View {
         Screen {
             VStack {
@@ -82,9 +80,8 @@ struct SwapDetailsScreen: View {
                 vault: vault,
                 tx: tx
             )
-            if let fromCoin {
-                tx.fromCoin = fromCoin
-            }
+            // `load(...)` already sets `tx.fromCoin` to `initialFromCoin ?? defaultFromCoin`.
+            // Re-assigning here would re-fire `onChange(of: tx.fromCoin)` → redundant racing quote fetch.
             setData()
         }
         .task {
@@ -95,7 +92,7 @@ struct SwapDetailsScreen: View {
             UIApplication.shared.isIdleTimerDisabled = false
             #endif
         }
-        .onReceive(timer) { _ in
+        .swapRefreshTick {
             detailsViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onChange(of: tx.fromCoin) { _, _ in

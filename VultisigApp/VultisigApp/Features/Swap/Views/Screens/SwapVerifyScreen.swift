@@ -18,8 +18,6 @@ struct SwapVerifyScreen: View {
 
     @Environment(\.router) var router
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     var body: some View {
         Screen {
             VStack(spacing: 16) {
@@ -35,7 +33,7 @@ struct SwapVerifyScreen: View {
             }
         }
         .withBanner(text: $retryBannerText, style: .error)
-        .onReceive(timer) { _ in
+        .swapRefreshTick {
             Task {
                 await verifyViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
