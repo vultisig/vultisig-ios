@@ -646,6 +646,14 @@
 "proposalID" = "제안 ID";
 "provider" = "공급자";
 "providerLabel" = "공급자 (선택 사항)";
+"psbtChangeMarker" = "잔돈";
+"psbtInputs" = "입력";
+"psbtNetworkFee" = "네트워크 수수료";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "출력";
+"psbtSignedByThisDevice" = "이 기기에서 서명됨";
+"psbtTransactionDetails" = "트랜잭션 세부 정보 (PSBT)";
 "pushNotifications" = "푸시 알림";
 "pushNotificationsDescription" = "서명이 필요하거나 기기가 액세스를 요청할 때 알림을 받으세요.";
 "rawPayload" = "원시 페이로드";

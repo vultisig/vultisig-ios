@@ -150,20 +150,29 @@ struct SwapCryptoLogic {
 
     func swapGasString(tx: SwapTransaction) -> String {
         let coin = feeCoin(tx: tx)
-        let decimals = coin.decimals
 
-        // Use tx.fee for swap quotes (which includes corrected gas price calculations)
-        // Fall back to tx.gas for other transaction types
-        let gasValue = tx.quote != nil ? tx.fee : tx.gas
+        // Quote-driven swaps: `tx.fee` is the total network fee in the chain's
+        // smallest unit (gasPrice × gasLimit for EVM). Format as a native amount
+        // so the row reads "0.000861 ETH (~$2.00)" rather than a raw Gwei figure.
+        // `feeCoin(tx:)` falls back to `tx.fromCoin` when the chain's native
+        // asset isn't in `tx.fromCoins` — guard against that to avoid formatting
+        // a wei-denominated fee with an ERC20's decimals/ticker.
+        if tx.quote != nil {
+            guard coin.isNativeToken else { return .empty }
+            let amount = coin.decimal(for: tx.fee)
+            return "\(amount.formatToDecimal(digits: coin.decimals).description) \(coin.ticker)"
+        }
 
+        // No quote: `tx.gas` is a gas price in wei for EVM chains, so display Gwei.
         if coin.chain.chainType == .EVM {
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
-        } else {
-            return "\((Decimal(gasValue) / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
+            return "\((Decimal(tx.gas) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
         }
+
+        let amount = coin.decimal(for: tx.gas)
+        return "\(amount.formatToDecimal(digits: coin.decimals).description) \(coin.ticker)"
     }
 
     func approveFeeString(tx: SwapTransaction) -> String {
