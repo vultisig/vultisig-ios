@@ -297,6 +297,11 @@ class KeygenViewModel: ObservableObject {
             }
 
             try context.save()
+            // Broadcast completion so pending QBTC follow-ups (token-
+            // selection intercept, BTC chain-detail claim banner) can
+            // finish their "add QBTC + show claim" handoff without
+            // threading a closure through the keygen routes.
+            QuantumKeygenNotification.postCompleted(vaultPubKeyECDSA: self.vault.pubKeyECDSA)
             self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate MLDSA key, error: \(error.localizedDescription)")

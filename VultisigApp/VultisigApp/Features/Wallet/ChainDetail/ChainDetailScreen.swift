@@ -22,6 +22,11 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    /// Set when the user taps the QBTC promo banner without an MLDSA
+    /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
+    /// user lands back here with QBTC already added to the vault.
+    @State private var pendingQbtcAddAfterKeygen: Bool = false
+    @AppStorage private var qbtcBannerDismissed: Bool
 
     @StateObject var sendTx = SendTransaction()
 
@@ -32,6 +37,19 @@ struct ChainDetailScreen: View {
 
     var coins: [Coin] {
         vault.coins(for: nativeCoin.chain)
+    }
+
+    private var hasMLDSAKey: Bool {
+        let key = vault.publicKeyMLDSA44
+        return key != nil && !(key?.isEmpty ?? true)
+    }
+
+    private var hasQbtcChain: Bool {
+        vault.coins.contains { $0.chain == .qbtc }
+    }
+
+    private var showsQbtcBanner: Bool {
+        nativeCoin.chain == .bitcoin && !qbtcBannerDismissed && !hasQbtcChain
     }
 
     init(
@@ -45,6 +63,10 @@ struct ChainDetailScreen: View {
         self._refreshTrigger = refreshTrigger
         self.onAddressCopy = onAddressCopy
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
+        self._qbtcBannerDismissed = AppStorage(
+            wrappedValue: false,
+            "qbtcClaimBannerDismissed_\(vault.pubKeyECDSA)"
+        )
     }
 
     var body: some View {
@@ -55,6 +77,7 @@ struct ChainDetailScreen: View {
                         .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
                 }
+                .padding(.bottom, nativeCoin.chain == .qbtc ? 96 : 0)
                 .padding(.horizontal, 16)
                 .padding(.bottom, isMacOS ? 120 : 0)
             }
@@ -64,6 +87,15 @@ struct ChainDetailScreen: View {
         }
         .refreshable {
             refresh()
+        }
+        .overlay(alignment: .bottom) {
+            if nativeCoin.chain == .qbtc {
+                PrimaryButton(title: "claim".localized) {
+                    navigateToAction(action: .qbtcClaim(vault: vault))
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+            }
         }
         .background(MainBackgroundWithNotification())
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
@@ -128,6 +160,9 @@ struct ChainDetailScreen: View {
         .onChange(of: coins) { _, _ in
             refresh()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .qbtcQuantumKeygenCompleted)) { note in
+            handleQuantumKeygenCompleted(note: note)
+        }
     }
 
     var topContentSection: some View {
@@ -142,6 +177,13 @@ struct ChainDetailScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
+
+            if showsQbtcBanner {
+                ClaimQbtcPromoBanner(
+                    onTap: onClaimBannerTapped,
+                    onClose: { qbtcBannerDismissed = true }
+                )
+            }
 
             if viewModel.isTron {
                 TronResourcesCardView(
@@ -294,8 +336,6 @@ private extension ChainDetailScreen {
             )
         case .sell:
             break
-        case .claim:
-            vaultAction = .qbtcClaim(vault: vault)
         }
 
         guard let vaultAction else { return }
@@ -314,6 +354,33 @@ private extension ChainDetailScreen {
 
     func navigateToAction(action: VaultAction) {
         router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
+    }
+
+    func onClaimBannerTapped() {
+        if hasMLDSAKey {
+            navigateToAction(action: .qbtcClaim(vault: vault))
+        } else {
+            pendingQbtcAddAfterKeygen = true
+            router.navigate(to: KeygenRoute.quantumSecurityIntro(vault: vault))
+        }
+    }
+
+    func handleQuantumKeygenCompleted(note: Notification) {
+        guard pendingQbtcAddAfterKeygen else { return }
+        let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
+        guard completedPubKey == vault.pubKeyECDSA else { return }
+        pendingQbtcAddAfterKeygen = false
+        guard let qbtcAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .qbtc && $0.isNativeToken }) else {
+            return
+        }
+        Task { @MainActor in
+            let currentSelection = Set(vault.coins.map { $0.toCoinMeta() })
+            await CoinService.saveAssets(
+                for: vault,
+                selection: currentSelection.union([qbtcAsset])
+            )
+            refresh()
+        }
     }
 }
 

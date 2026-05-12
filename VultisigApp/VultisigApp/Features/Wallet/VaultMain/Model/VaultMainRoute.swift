@@ -10,6 +10,7 @@ enum VaultMainRoute: Equatable, Hashable {
     case createVault
     case mainAction(VaultAction)
     case transactionHistory
+    case quantumSecurityIntro(vault: Vault)
 }
 
 enum VaultAction: Equatable, Hashable {

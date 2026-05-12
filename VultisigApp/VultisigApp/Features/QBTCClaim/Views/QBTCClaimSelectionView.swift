@@ -2,9 +2,10 @@
 //  QBTCClaimSelectionView.swift
 //  VultisigApp
 //
-//  UTXO list + selection + total + Confirm button. The user can
-//  select up to QBTCClaimConfig.maxClaimUtxos (50) UTXOs. Selection
-//  is held on the ViewModel so it survives a failed claim run.
+//  UTXO list + selection + total + dynamic CTA. The user can select
+//  up to QBTCClaimConfig.maxClaimUtxos UTXOs. Selection is held on the
+//  ViewModel so it survives a failed claim run. The CTA flips between
+//  "Claim All" and "Claim X of Y" via `QBTCClaimViewModel.confirmTitle`.
 //
 
 import SwiftUI
@@ -23,6 +24,8 @@ struct QBTCClaimSelectionView: View {
                 )
             }
 
+            headerCard
+
             ScrollView {
                 LazyVStack(spacing: 8) {
                     ForEach(viewModel.utxos, id: \.id) { utxo in
@@ -35,37 +38,53 @@ struct QBTCClaimSelectionView: View {
                 }
             }
 
-            footer
-        }
-    }
-
-    private var footer: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("qbtcClaimSelected".localized)
-                    .font(Theme.fonts.bodySRegular)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-                Text("\(viewModel.selectedIds.count) / \(QBTCClaimConfig.maxClaimUtxos)")
-                    .font(Theme.fonts.priceBodyS)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
-            HStack {
-                Text("qbtcClaimTotal".localized)
-                    .font(Theme.fonts.bodySRegular)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-                Text(QBTCClaimAmountFormatter.formatBtc(sats: viewModel.totalSatsSelected))
-                    .font(Theme.fonts.priceTitle1)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
-
-            PrimaryButton(title: "qbtcClaimConfirm".localized) {
+            PrimaryButton(title: viewModel.confirmTitle) {
                 viewModel.confirmTapped()
             }
             .disabled(!viewModel.canConfirm)
         }
-        .padding(.top, 8)
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("qbtcClaimHeaderTitle".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                Spacer()
+                Button(action: viewModel.toggleSelectAll) {
+                    Text(viewModel.isAllSelected
+                        ? "qbtcClaimDeselectAll".localized
+                        : "qbtcClaimSelectAll".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.primaryAccent4)
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.utxos.isEmpty)
+            }
+
+            Text(QBTCClaimAmountFormatter.formatBtc(sats: viewModel.totalSatsAll))
+                .font(Theme.fonts.priceTitle1)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            Text(String(
+                format: "qbtcClaimHeaderSubtitle".localized,
+                viewModel.selectedIds.count,
+                viewModel.utxos.count
+            ))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Theme.colors.bgSurface1)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 }
 
@@ -83,7 +102,7 @@ struct QBTCClaimUtxoRow: View {
                     Text(shortTxid)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    Text(String(format: "qbtcClaimVoutFormat".localized, utxo.vout))
+                    Text(subtitle)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
@@ -98,6 +117,13 @@ struct QBTCClaimUtxoRow: View {
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
+    }
+
+    private var subtitle: String {
+        if let blockHeight = utxo.blockHeight {
+            return String(format: "qbtcClaimUtxoBlockFormat".localized, blockHeight)
+        }
+        return "qbtcClaimUtxoPending".localized
     }
 
     private var shortTxid: String {

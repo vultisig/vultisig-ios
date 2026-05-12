@@ -129,6 +129,11 @@ struct KeygenRouteBuilder {
     }
 
     @ViewBuilder
+    func buildQuantumSecurityIntroScreen(vault: Vault) -> some View {
+        QuantumSecurityIntroScreen(vault: vault)
+    }
+
+    @ViewBuilder
     func buildReviewYourVaultsScreen(
         vault: Vault,
         tssType: TssType,

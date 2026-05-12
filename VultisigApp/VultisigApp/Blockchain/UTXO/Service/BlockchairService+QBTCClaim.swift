@@ -42,6 +42,7 @@ extension ClaimableUtxo {
               let amount = UInt64(exactly: value) else {
             return nil
         }
-        self.init(txid: txid, vout: vout, amount: amount)
+        let blockHeight = blockchair.blockId.flatMap { $0 > 0 ? UInt32(exactly: $0) : nil }
+        self.init(txid: txid, vout: vout, amount: amount, blockHeight: blockHeight)
     }
 }

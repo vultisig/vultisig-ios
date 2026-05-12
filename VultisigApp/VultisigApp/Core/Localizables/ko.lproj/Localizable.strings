@@ -642,7 +642,6 @@
 "qbtcClaimBroadcastingDetail" = "QBTC 체인에 트랜잭션을 전송하는 중입니다.";
 "qbtcClaimBroadcastingTitle" = "전송 중…";
 "qbtcClaimCancelled" = "청구가 취소됨";
-"qbtcClaimConfirm" = "청구";
 "qbtcClaimEmptyPassword" = "계속하려면 Fast Vault 비밀번호를 입력하세요.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "vault의 BTC 코인에 잘못된 Bitcoin 공개 키가 있습니다.";
 "qbtcClaimErrorInvalidMldsaPublicKey" = "vault의 QBTC 코인에 잘못된 MLDSA 공개 키가 있습니다.";
@@ -671,7 +670,6 @@
 "qbtcClaimPairPeerJoined" = "페어 기기 연결됨";
 "qbtcClaimPairTitle" = "두 번째 기기 연결";
 "qbtcClaimPairWaiting" = "페어 기기 대기 중…";
-"qbtcClaimSelected" = "선택됨";
 "qbtcClaimSigningBtcDetail" = "Bitcoin 키로 소유권 메시지를 서명하는 중입니다.";
 "qbtcClaimSigningBtcTitle" = "Bitcoin 증명 서명 중…";
 "qbtcClaimSigningMldsaDetail" = "포스트 양자 키로 QBTC 트랜잭션을 서명하는 중입니다.";
@@ -679,13 +677,11 @@
 "qbtcClaimSuccessDetail" = "청구가 성공적으로 전송되었습니다.";
 "qbtcClaimSuccessTitle" = "청구 제출됨";
 "qbtcClaimTitle" = "QBTC Claim";
-"qbtcClaimTotal" = "합계";
 "qbtcClaimTxHashLabel" = "트랜잭션 해시";
 "qbtcClaimUnavailableDetail" = "현재 체인에서 청구가 비활성화되어 있습니다. 나중에 다시 시도하세요.";
 "qbtcClaimUnavailableTitle" = "청구 불가";
 "qbtcClaimUnsupportedAddressTitle" = "지원되지 않는 주소";
 "qbtcClaimViewOnExplorer" = "익스플로러에서 보기";
-"qbtcClaimVoutFormat" = "vout %d";
 "ready" = "준비 완료";
 "Rebond" = "재본드";
 "rebondAmount" = "재본드 금액 (선택 사항 - 모든 본딩된 RUNE을 이전하려면 비워두세요)";

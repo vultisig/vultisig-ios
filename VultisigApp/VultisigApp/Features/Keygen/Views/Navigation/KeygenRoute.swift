@@ -10,6 +10,11 @@ import Foundation
 enum KeygenRoute: Hashable {
     case backupNow(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
     case keyImportOverview(tssType: TssType, vault: Vault, email: String?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType)
+    /// Pre-keygen explainer for the QBTC quantum-security flow. "Get
+    /// started" forwards to `fastVaultPassword` or `peerDiscovery` with
+    /// `singleKeygenType: .MLDSA`; completion fires via
+    /// `Notification.Name.qbtcQuantumKeygenCompleted`.
+    case quantumSecurityIntro(vault: Vault)
     case peerDiscovery(
         tssType: TssType,
         vault: Vault,

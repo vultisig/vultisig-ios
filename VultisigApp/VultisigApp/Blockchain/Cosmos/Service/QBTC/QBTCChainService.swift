@@ -82,7 +82,12 @@ final class QBTCChainService {
                         let status = try await self.fetchUtxoStatus(txid: utxo.txid, vout: utxo.vout)
                         switch status {
                         case .claimable(let entitled):
-                            return (index, ClaimableUtxo(txid: utxo.txid, vout: utxo.vout, amount: entitled))
+                            return (index, ClaimableUtxo(
+                                txid: utxo.txid,
+                                vout: utxo.vout,
+                                amount: entitled,
+                                blockHeight: utxo.blockHeight
+                            ))
                         case .claimed:
                             self.logger.debug("filtering claimed UTXO \(utxo.txid, privacy: .public):\(utxo.vout, privacy: .public)")
                             return (index, nil)

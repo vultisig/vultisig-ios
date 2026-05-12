@@ -64,6 +64,8 @@ struct KeygenRouter {
                 selectedVault: selectedVault,
                 sendTx: sendTx
             )
+        case .quantumSecurityIntro(let vault):
+            viewBuilder.buildQuantumSecurityIntroScreen(vault: vault)
         case .reviewYourVaults(let vault, let tssType, let keygenCommittee, let email, let keyImportInput, let isInitiateDevice):
             viewBuilder.buildReviewYourVaultsScreen(
                 vault: vault,

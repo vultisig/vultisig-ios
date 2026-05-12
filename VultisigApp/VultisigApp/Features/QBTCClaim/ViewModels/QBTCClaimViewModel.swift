@@ -121,8 +121,45 @@ final class QBTCClaimViewModel: ObservableObject {
             .reduce(UInt64(0)) { $0 + $1.amount }
     }
 
+    var totalSatsAll: UInt64 {
+        utxos.reduce(UInt64(0)) { $0 + $1.amount }
+    }
+
+    /// Caps the "Select all" affordance at `maxClaimUtxos`. If the vault
+    /// has more UTXOs than the per-claim limit, "all" means "as many as
+    /// we can include in one claim".
+    var selectAllCount: Int {
+        min(utxos.count, QBTCClaimConfig.maxClaimUtxos)
+    }
+
+    var isAllSelected: Bool {
+        !utxos.isEmpty && selectedIds.count == selectAllCount
+    }
+
     var canConfirm: Bool {
         !selectedIds.isEmpty && selectedIds.count <= QBTCClaimConfig.maxClaimUtxos
+    }
+
+    /// Dynamic CTA title: "Claim All" when the current selection covers
+    /// every includable UTXO, otherwise "Claim X of Y".
+    var confirmTitle: String {
+        if isAllSelected {
+            return "qbtcClaimCtaAll".localized
+        }
+        return String(
+            format: "qbtcClaimCtaPartial".localized,
+            selectedIds.count,
+            utxos.count
+        )
+    }
+
+    func toggleSelectAll() {
+        if isAllSelected {
+            selectedIds.removeAll()
+            return
+        }
+        let limit = QBTCClaimConfig.maxClaimUtxos
+        selectedIds = Set(utxos.prefix(limit).map { $0.id })
     }
 
     // MARK: - Lifecycle
