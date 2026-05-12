@@ -36,6 +36,44 @@ extension String {
     var nilIfEmpty: String? {
         return isEmpty ? nil : self
     }
+
+    /// Trim whitespace + newlines and return `nil` if the result is empty.
+    var trimmedNonEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Decode a hex string into ASCII characters, matching Node's
+    /// `Buffer.from(hex, 'hex').toString('ascii')` 7-bit mask but stripping
+    /// non-printable bytes (outside `0x20…0x7E`) so the UI doesn't render
+    /// control characters as garbage. Returns `""` on odd length, non-hex
+    /// input, or when every byte is non-printable.
+    ///
+    /// Used for Cardano native-token ticker derivation. CIP-68 fungible
+    /// tokens (label `(333)` = `0x0014df10`) and CIP-67 reference tokens
+    /// prepend a 4-byte binary label to the asset name; stripping the
+    /// non-printable prefix surfaces the readable ticker (e.g.
+    /// `0014df105553444d` → `_USDM`). Callers fall back to a policy-id
+    /// prefix when this returns empty.
+    func hexToAscii() -> String {
+        guard count.isMultiple(of: 2) else { return "" }
+
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(count / 2)
+        var iterator = self.makeIterator()
+        while let high = iterator.next(), let low = iterator.next() {
+            guard
+                let highValue = high.hexDigitValue,
+                let lowValue = low.hexDigitValue
+            else { return "" }
+            let masked = UInt8(highValue * 16 + lowValue) & 0x7F
+            if (0x20...0x7E).contains(masked) {
+                bytes.append(masked)
+            }
+        }
+        return String(bytes: bytes, encoding: .ascii) ?? ""
+    }
+
     func toLibType() -> LibType? {
         LibType.allCases.first {
             $0.toString().uppercased() == self.uppercased()

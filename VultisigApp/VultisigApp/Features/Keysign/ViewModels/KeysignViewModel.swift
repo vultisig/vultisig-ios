@@ -519,7 +519,7 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
 
         case .Cardano:
-            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {
@@ -668,7 +668,10 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .cardano:
                     do {
-                        self.txid = try await CardanoService.shared.broadcastTransaction(signedTransaction: tx.rawTransaction)
+                        self.txid = try await CardanoService.shared.broadcastTransaction(
+                            signedTransaction: tx.rawTransaction,
+                            precomputedTxId: tx.transactionHash
+                        )
                     } catch {
                         await self.handleBroadcastError(error: error, transactionType: transactionType)
                     }

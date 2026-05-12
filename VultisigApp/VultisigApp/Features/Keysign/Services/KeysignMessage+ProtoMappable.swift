@@ -574,6 +574,15 @@ extension UtxoInfo {
         self.amount = proto.amount
         self.hash = proto.hash
         self.index = proto.index
+        self.cardanoTokens = proto.cardanoTokens.compactMap { asset in
+            guard let amount = BigInt(asset.amount) else { return nil }
+            return CardanoUtxoAsset(
+                policyId: asset.policyID,
+                assetNameHex: asset.assetNameHex,
+                amount: amount,
+                decimals: 0
+            )
+        }
     }
 
     func mapToProtobuff() -> VSUtxoInfo {
@@ -581,6 +590,15 @@ extension UtxoInfo {
             $0.amount = amount
             $0.hash = hash
             $0.index = index
+            if !cardanoTokens.isEmpty {
+                $0.cardanoTokens = cardanoTokens.map { asset in
+                    VSCardanoTokenAsset.with {
+                        $0.policyID = asset.policyId
+                        $0.assetNameHex = asset.assetNameHex
+                        $0.amount = asset.amount.description
+                    }
+                }
+            }
         }
     }
 }

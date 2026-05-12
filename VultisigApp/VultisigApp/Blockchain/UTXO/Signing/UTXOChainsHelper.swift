@@ -11,6 +11,10 @@ struct UtxoInfo: Codable, Hashable {
     let hash: String
     let amount: Int64
     let index: UInt32
+    /// Cardano-only: native assets carried by this UTxO. Empty for non-Cardano
+    /// UTxOs. The initiator fetches these from Koios when building the keysign
+    /// payload so both MPC peers read identical inputs off the wire.
+    var cardanoTokens: [CardanoUtxoAsset] = []
 }
 
 class UTXOChainsHelper {
