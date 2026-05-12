@@ -10,7 +10,6 @@ import Mediator
 import SwiftUI
 import WalletCore
 
-@MainActor
 enum SwapCryptoLogic {
     private static let swapService = SwapService.shared
     private static let blockchainService = BlockChainService.shared

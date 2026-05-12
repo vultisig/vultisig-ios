@@ -160,7 +160,6 @@ final class BlockChainService {
         }
     }
 
-    @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         let quote = "\(String(describing: tx.quote?.hashValue))"
         let cacheKey =  getCacheKey(for: tx.fromCoin,
@@ -699,7 +698,6 @@ private extension BlockChainService {
         return gas
     }
 
-    @MainActor
     func estimateSwapGasLimit(tx: SwapTransaction) async throws -> BigInt? {
         if tx.fromCoin.chainType != .EVM {
             return nil
