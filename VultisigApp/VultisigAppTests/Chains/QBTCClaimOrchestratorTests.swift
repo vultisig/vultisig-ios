@@ -31,8 +31,8 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
     static let qbtcAddress = "qbtc1abc"
 
     static let utxos = [
-        ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 60_000),
-        ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 1, amount: 40_000)
+        ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 60_000, blockHeight: nil),
+        ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 1, amount: 40_000, blockHeight: nil)
     ]
 
     /// The orchestrator validates that the proof service's hash echoes

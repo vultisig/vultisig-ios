@@ -58,9 +58,9 @@ final class QBTCUtxoStatusTests: XCTestCase {
 
     func testFilterClaimableDropsClaimedAndNotIndexed() async {
         let utxos = [
-            ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 100_000), // claimable
-            ClaimableUtxo(txid: Self.txid2, vout: 1, amount: 200_000), // claimed
-            ClaimableUtxo(txid: Self.txid3, vout: 2, amount: 300_000)  // not indexed
+            ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 100_000, blockHeight: nil), // claimable
+            ClaimableUtxo(txid: Self.txid2, vout: 1, amount: 200_000, blockHeight: nil), // claimed
+            ClaimableUtxo(txid: Self.txid3, vout: 2, amount: 300_000, blockHeight: nil)  // not indexed
         ]
         let mock = MockUtxoHTTPClient(routes: [
             "/qbtc/v1/utxo/\(Self.txid1)/0": .ok(body: #"{"utxo":{"txid":"\#(Self.txid1)","entitled_amount":"100000"}}"#),
@@ -80,7 +80,7 @@ final class QBTCUtxoStatusTests: XCTestCase {
         // Blockchair reports 500_000; chain says only 400_000 is entitled.
         // The total in the UI must reflect what the chain will mint, so we
         // overwrite the amount on the way through.
-        let utxos = [ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 500_000)]
+        let utxos = [ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 500_000, blockHeight: nil)]
         let mock = MockUtxoHTTPClient(routes: [
             "/qbtc/v1/utxo/\(Self.txid1)/0": .ok(body: #"{"utxo":{"txid":"\#(Self.txid1)","entitled_amount":"400000"}}"#)
         ])
@@ -97,8 +97,8 @@ final class QBTCUtxoStatusTests: XCTestCase {
         // user attempt the claim than drop something they can see in their
         // BTC wallet because of a flaky chain RPC.
         let utxos = [
-            ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 100_000),
-            ClaimableUtxo(txid: Self.txid2, vout: 1, amount: 200_000)
+            ClaimableUtxo(txid: Self.txid1, vout: 0, amount: 100_000, blockHeight: nil),
+            ClaimableUtxo(txid: Self.txid2, vout: 1, amount: 200_000, blockHeight: nil)
         ]
         let mock = MockUtxoHTTPClient(routes: [
             "/qbtc/v1/utxo/\(Self.txid1)/0": .ok(body: #"{"utxo":{"txid":"\#(Self.txid1)","entitled_amount":"100000"}}"#),
@@ -124,7 +124,7 @@ final class QBTCUtxoStatusTests: XCTestCase {
         let utxos = (0..<5).map { i in
             // Use (i+1) so no amount is 0 — entitled_amount=0 would be
             // interpreted as already-claimed and filtered out.
-            ClaimableUtxo(txid: String(repeating: String(format: "%02x", i), count: 32), vout: UInt32(i), amount: UInt64((i + 1) * 1000))
+            ClaimableUtxo(txid: String(repeating: String(format: "%02x", i), count: 32), vout: UInt32(i), amount: UInt64((i + 1) * 1000), blockHeight: nil)
         }
         var routes: [String: MockResponse] = [:]
         for utxo in utxos {

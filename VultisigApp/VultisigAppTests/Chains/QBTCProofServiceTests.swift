@@ -60,7 +60,7 @@ final class QBTCProofServiceTests: XCTestCase {
             rHex: "deadbeef",
             sHex: "cafebabe",
             compressedPubkeyHex: String(repeating: "02", count: 33),
-            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 100)],
+            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 100, blockHeight: nil)],
             claimerAddress: "qbtc1abc",
             chainId: QBTCClaimConfig.chainId
         )
@@ -78,8 +78,8 @@ final class QBTCProofServiceTests: XCTestCase {
 
     func testRequestInitMapsClaimableUtxosToProofUtxoRefs() {
         let utxos = [
-            ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 1),
-            ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 7, amount: 2)
+            ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 1, blockHeight: nil),
+            ClaimableUtxo(txid: String(repeating: "bb", count: 32), vout: 7, amount: 2, blockHeight: nil)
         ]
         let request = ClaimProofRequest(
             rHex: "01", sHex: "02",
@@ -102,7 +102,7 @@ final class QBTCProofServiceTests: XCTestCase {
         let request = ClaimProofRequest(
             rHex: "01", sHex: "02",
             compressedPubkeyHex: "03",
-            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 5, amount: 10)],
+            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 5, amount: 10, blockHeight: nil)],
             claimerAddress: "qbtc1abc",
             chainId: QBTCClaimConfig.chainId
         )
@@ -194,7 +194,7 @@ final class QBTCProofServiceTests: XCTestCase {
     func testTargetTypeProveIsPostWithLongTimeout() {
         let request = ClaimProofRequest(
             rHex: "01", sHex: "02", compressedPubkeyHex: "03",
-            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 1)],
+            utxos: [ClaimableUtxo(txid: String(repeating: "aa", count: 32), vout: 0, amount: 1, blockHeight: nil)],
             claimerAddress: "qbtc1abc",
             chainId: QBTCClaimConfig.chainId
         )
