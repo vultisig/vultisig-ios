@@ -695,7 +695,7 @@
 "qbtcClaimSigningMldsaTitle" = "Firmando transacción QBTC…";
 "qbtcClaimSuccessDetail" = "Tu reclamo se transmitió correctamente.";
 "qbtcClaimSuccessTitle" = "Reclamo enviado";
-"qbtcClaimTitle" = "QBTC Claim";
+"qbtcClaimTitle" = "Reclamar QBTC";
 "qbtcClaimTxHashLabel" = "Hash de transacción";
 "qbtcClaimUnavailableDetail" = "Reclamar está actualmente desactivado por la cadena. Inténtalo de nuevo más tarde.";
 "qbtcClaimUnavailableTitle" = "Reclamo no disponible";

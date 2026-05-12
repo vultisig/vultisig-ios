@@ -320,6 +320,11 @@ final class KeysignSessionService {
                         return participants
                     }
                 }
+            } catch let HTTPError.statusCode(code, _) {
+                // `RelayServerAPI` validation already accepts 200/404, so any
+                // status that propagates here is a real relay failure (403,
+                // 5xx, etc.) — surface it instead of looping until kickoffTimeout.
+                throw KeysignSessionServiceError.kickoffFailed(statusCode: code)
             } catch {
                 logger.debug("awaitKeysignStart poll error (will retry): \(error.localizedDescription)")
             }

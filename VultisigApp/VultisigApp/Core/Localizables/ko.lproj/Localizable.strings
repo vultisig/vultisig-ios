@@ -695,7 +695,7 @@
 "qbtcClaimSigningMldsaTitle" = "QBTC 트랜잭션 서명 중…";
 "qbtcClaimSuccessDetail" = "청구가 성공적으로 전송되었습니다.";
 "qbtcClaimSuccessTitle" = "청구 제출됨";
-"qbtcClaimTitle" = "QBTC Claim";
+"qbtcClaimTitle" = "QBTC 청구";
 "qbtcClaimTxHashLabel" = "트랜잭션 해시";
 "qbtcClaimUnavailableDetail" = "현재 체인에서 청구가 비활성화되어 있습니다. 나중에 다시 시도하세요.";
 "qbtcClaimUnavailableTitle" = "청구 불가";
