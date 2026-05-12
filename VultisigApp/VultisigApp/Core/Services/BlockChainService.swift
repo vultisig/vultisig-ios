@@ -160,6 +160,7 @@ final class BlockChainService {
         }
     }
 
+    @MainActor
     func fetchSwapBlockChainSpecific(
         fromCoin: Coin,
         // swiftlint:disable:next unused_parameter
@@ -709,6 +710,7 @@ private extension BlockChainService {
         return gas
     }
 
+    @MainActor
     func estimateSwapGasLimit(
         fromCoin: Coin,
         fromAmount: Decimal,

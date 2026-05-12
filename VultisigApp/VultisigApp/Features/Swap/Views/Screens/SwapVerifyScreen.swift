@@ -20,8 +20,6 @@ struct SwapVerifyScreen: View {
 
     @Environment(\.router) var router
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     init(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) {
         self.transaction = transaction
         self.retrySignal = retrySignal
@@ -47,7 +45,7 @@ struct SwapVerifyScreen: View {
             }
         }
         .withBanner(text: $retryBannerText, style: .error)
-        .onReceive(timer) { _ in
+        .swapRefreshTick {
             Task {
                 await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
@@ -269,7 +267,7 @@ struct SwapVerifyScreen: View {
             if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
                     router.navigate(to: SwapRoute.pair(
-                        vault: vault,
+                        vaultPubKeyECDSA: vault.pubKeyECDSA,
                         transaction: currentTransaction,
                         retrySignal: retrySignal,
                         keysignPayload: payload,

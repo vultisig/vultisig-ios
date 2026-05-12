@@ -20,8 +20,6 @@ struct SwapDetailsScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     var body: some View {
         @Bindable var vm = detailsViewModel
         Screen {
@@ -76,10 +74,9 @@ struct SwapDetailsScreen: View {
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
             #endif
+            // `load(...)` seeds `detailsViewModel.fromCoin/toCoin`; no manual
+            // re-assignment afterwards or `onChange` would re-fire the quote fetch.
             detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
-            if let fromCoin {
-                detailsViewModel.fromCoin = fromCoin
-            }
             setData()
         }
         .task {
@@ -90,7 +87,7 @@ struct SwapDetailsScreen: View {
             UIApplication.shared.isIdleTimerDisabled = false
             #endif
         }
-        .onReceive(timer) { _ in
+        .swapRefreshTick {
             detailsViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onChange(of: detailsViewModel.fromCoin) { _, _ in
@@ -224,7 +221,11 @@ struct SwapDetailsScreen: View {
             PrimaryButton(title: "continue") {
                 guard let transaction = detailsViewModel.makeTransaction() else { return }
                 let retrySignal = SwapRetrySignal()
-                router.navigate(to: SwapRoute.verify(transaction: transaction, retrySignal: retrySignal, vault: vault))
+                router.navigate(to: SwapRoute.verify(
+                    transaction: transaction,
+                    retrySignal: retrySignal,
+                    vaultPubKeyECDSA: vault.pubKeyECDSA
+                ))
             }
             .disabled(isDisabled)
             .opacity(isFormValid ? 1 : 0.5)

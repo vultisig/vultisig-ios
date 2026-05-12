@@ -69,6 +69,7 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         return try await factory.createSecurityScanner(transaction: transaction, vault: vault)
     }
 
+    @MainActor
     func createSecurityScannerTransaction(transaction: SwapTransaction) async throws -> SecurityScannerTransaction {
         return try await factory.createSecurityScanner(transaction: transaction)
     }

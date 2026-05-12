@@ -192,6 +192,7 @@
 "close" = "Zatvori";
 "coinAddressCopied" = "Adresa kopirana";
 "coinPool" = "%@ Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Lanac %@ nije omogućen za ovaj uvezeni vault";
 "collectedRewards" = "Prikupljene nagrade";
 "compoundedCoin" = "%@ Složeno";
 "congratsExclamation" = "Čestitamo!";
@@ -637,6 +638,14 @@
 "proposalID" = "Proposal ID";
 "provider" = "Davatelj usluga";
 "providerLabel" = "Pružatelj (opcionalno)";
+"psbtChangeMarker" = "Povrat";
+"psbtInputs" = "Ulazi";
+"psbtNetworkFee" = "Mrežna naknada";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Izlazi";
+"psbtSignedByThisDevice" = "Potpisano s ovog uređaja";
+"psbtTransactionDetails" = "Detalji transakcije (PSBT)";
 "pushNotifications" = "Push obavijesti";
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
 "rawPayload" = "Sirovi podaci";

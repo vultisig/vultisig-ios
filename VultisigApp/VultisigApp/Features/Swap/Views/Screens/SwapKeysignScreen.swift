@@ -44,7 +44,7 @@ struct SwapKeysignScreen: View {
 
             let chain = transaction.fromCoin.chain
             router.navigate(to: SwapRoute.done(
-                vault: input.vault,
+                vaultPubKeyECDSA: input.vault.pubKeyECDSA,
                 hash: hash,
                 approveHash: viewModel.approveHash,
                 chain: chain,
@@ -54,9 +54,12 @@ struct SwapKeysignScreen: View {
         }
         .onChange(of: retrySignal.pendingRetryReason) { _, reason in
             guard reason != nil else { return }
-            // Stack: details -> verify -> pair -> keysign. Pop pair + keysign.
-            let popCount = min(2, router.navPath.count)
-            router.navPath.removeLast(popCount)
+            // Pop back to the verify screen — robust to deep-links that add routes before .root.
+            router.navigateBack { destination in
+                guard let route = destination as? SwapRoute else { return false }
+                if case .verify = route { return true }
+                return false
+            }
         }
         .onDisappear {
             viewModel.stopMediator()
