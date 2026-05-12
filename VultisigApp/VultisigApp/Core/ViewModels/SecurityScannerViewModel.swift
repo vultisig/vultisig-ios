@@ -48,7 +48,6 @@ class SecurityScannerViewModel: ObservableObject {
         await scan(transactionType: .send(transaction, vault))
     }
 
-    @MainActor
     func scan(transaction: SwapTransaction) async {
         guard isScanningAvailable(for: transaction.fromCoin.chain) else { return }
         await scan(transactionType: .swap(transaction))

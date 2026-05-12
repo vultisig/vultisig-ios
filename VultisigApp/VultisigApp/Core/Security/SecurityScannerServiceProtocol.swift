@@ -27,7 +27,6 @@ protocol SecurityScannerServiceProtocol {
     /// Create SecurityScannerTransaction from a swap transaction
     /// - Parameter transaction: The swap transaction to convert
     /// - Returns: SecurityScannerTransaction ready for scanning
-    @MainActor
     func createSecurityScannerTransaction(transaction: SwapTransaction) async throws -> SecurityScannerTransaction
 
     /// Get list of disabled provider names
@@ -63,6 +62,5 @@ protocol SecurityScannerTransactionFactoryProtocol {
     /// Create SecurityScannerTransaction from a swap transaction
     /// - Parameter transaction: The swap transaction to convert
     /// - Returns: SecurityScannerTransaction ready for scanning
-    @MainActor
     func createSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction
 }

@@ -16,7 +16,6 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-@MainActor
 enum SwapCryptoLogic {
     // MARK: - Errors
 

@@ -32,7 +32,6 @@ struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProto
         }
     }
 
-    @MainActor
     func createSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
         let chain = transaction.fromCoin.chain
         switch chain.chainType {
@@ -192,7 +191,6 @@ private extension SecurityScannerTransactionFactory {
 // MARK: - Swap Transactions
 
 private extension SecurityScannerTransactionFactory {
-    @MainActor
     func createEVMSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
         switch transaction.quote {
         case .oneinch(let quote, _), .lifi(let quote, _, _):
