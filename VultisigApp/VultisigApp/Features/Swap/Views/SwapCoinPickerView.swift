@@ -222,6 +222,7 @@ struct SwapCoinPickerView: View {
         return coinSelectionViewModel.chains
             .filter(\.isSwapAvailable)
             .filter { vault.chains.contains($0) }
+            .filter { vault.availableChains.contains($0) }
     }
 
     private func reloadCoins() {

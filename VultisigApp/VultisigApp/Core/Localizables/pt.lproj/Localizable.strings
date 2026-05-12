@@ -192,6 +192,7 @@
 "close" = "Fechar";
 "coinAddressCopied" = "Endereço %@ copiado";
 "coinPool" = "Pool de %@";
+"coinServiceChainNotEnabledForKeyImport" = "A chain %@ não está habilitada para este vault importado";
 "collectedRewards" = "Recompensas coletadas";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Parabéns!";
@@ -637,6 +638,14 @@
 "proposalID" = "Proposal ID";
 "provider" = "Provedor";
 "providerLabel" = "Provedor (opcional)";
+"psbtChangeMarker" = "Troco";
+"psbtInputs" = "Entradas";
+"psbtNetworkFee" = "Taxa de rede";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Saídas";
+"psbtSignedByThisDevice" = "Assinado por este dispositivo";
+"psbtTransactionDetails" = "Detalhes da transação (PSBT)";
 "pushNotifications" = "Notificações push";
 "pushNotificationsDescription" = "Receba notificações quando sua assinatura for necessária ou um dispositivo solicitar acesso.";
 "rawPayload" = "Dados brutos";

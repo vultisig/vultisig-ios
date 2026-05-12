@@ -130,6 +130,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         vault: vault,
                         fromAddress: coin.address
                     )
+                } else if let signBitcoin = input.keysignPayload?.signBitcoin {
+                    Separator()
+                    SignBitcoinDisplayView(signBitcoin: signBitcoin)
                 }
             }
         }

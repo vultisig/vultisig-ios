@@ -34,6 +34,15 @@ class UTXOChainsHelper {
 
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        // Structured PSBT path: bypass WalletCore's planner and compute
+        // BIP-143 sighashes directly from the dApp-supplied SignBitcoin
+        // fields. Mirrors the SDK port; preserves exact input ordering so
+        // `compileSignedTransaction` can match signatures back to inputs.
+        if let signBitcoin = keysignPayload.signBitcoin {
+            return try BitcoinPsbtSigner.preSigningHashes(signBitcoin)
+                .map { $0.hexString }
+                .sorted()
+        }
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
@@ -214,6 +223,16 @@ class UTXOChainsHelper {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+        // Structured PSBT path: assemble the signed segwit tx from the
+        // SignBitcoin fields + MPC signatures directly (skips WalletCore's
+        // tx planner which can't represent dApp-supplied input/output sets).
+        if let signBitcoin = keysignPayload.signBitcoin {
+            return try BitcoinPsbtSigner.compileSignedTransaction(
+                signBitcoin: signBitcoin,
+                signatures: signatures,
+                pubKeyHex: keysignPayload.coin.hexPublicKey
+            )
+        }
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         return try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
     }
