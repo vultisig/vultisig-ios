@@ -25,7 +25,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     MARKETING_VERSION: "1.36"
-    CURRENT_PROJECT_VERSION: "51"
+    CURRENT_PROJECT_VERSION: "55"
 
 configs:
   Debug: debug
@@ -54,9 +54,10 @@ packages:
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
     # Temporary: pinned to the head of vultisig/commondata#83
-    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + slimmed `QbtcClaimContext`).
+    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + slimmed `QbtcClaimContext`,
+    # merged with main for Cardano tokens + DAppMetadata).
     # Flip to a `revision: <merge-sha>` once that PR merges.
-    revision: b378b1d1634cfd913b72ad21a15545d289a96df8
+    revision: 7f883666d87adaea8f8a4a7cd146fb754853af84
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

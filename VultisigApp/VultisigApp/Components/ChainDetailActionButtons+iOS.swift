@@ -18,6 +18,8 @@ struct PlatformWebView: UIViewRepresentable {
         webView.backgroundColor = UIColor(Theme.colors.bgPrimary)
         webView.scrollView.backgroundColor = UIColor(Theme.colors.bgPrimary)
         webView.navigationDelegate = context.coordinator
+        // WKWebView.load takes a request by API; not a typed HTTP call.
+        // swiftlint:disable:next no_raw_urlrequest
         let request = URLRequest(url: url)
         webView.load(request)
         return webView

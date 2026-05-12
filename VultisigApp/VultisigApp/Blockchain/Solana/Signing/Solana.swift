@@ -72,6 +72,9 @@ enum SolanaHelper {
                     $0.amount = UInt64(keysignPayload.toAmount)
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
                     $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
                 }
 
                 let input = SolanaSigningInput.with {
@@ -119,6 +122,9 @@ enum SolanaHelper {
                     $0.amount = UInt64(keysignPayload.toAmount)
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
                     $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
                 }
 
                 let input = SolanaSigningInput.with {

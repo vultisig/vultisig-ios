@@ -141,7 +141,7 @@ struct SendCryptoDoneView: View {
     }
 
     func explorerLink() -> String {
-        return Endpoint.getExplorerURL(chain: chain, txid: hash)
+        return ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash)
     }
 }
 

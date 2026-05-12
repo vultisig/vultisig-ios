@@ -128,6 +128,7 @@ class CoinSelectionViewModel: ObservableObject {
             return filteredChains
                 .filter(\.isSwapAvailable)
                 .filter { vault.chains.contains($0) }
+                .filter { vault.availableChains.contains($0) }
         case .send:
             return filteredChains
                 .filter { vault.chains.contains($0) }

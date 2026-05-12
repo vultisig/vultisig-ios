@@ -159,6 +159,31 @@ public class CryptoPriceService: ObservableObject {
         return target?.id
     }
 }
+
+extension CryptoPriceService {
+    /// Pure computation for the MAYAChain pool-derived USD price of a non-CACAO Maya asset.
+    /// Internal access so unit tests can validate the math without exercising the live mayanode endpoint.
+    func calculateMayaPoolPrice(pool: MAYAChainPoolResponse, cacaoPriceUSD: Double, coins: [CoinMeta], assetName: String) -> Double {
+        guard let balanceCacao = Double(pool.balanceCacao),
+              let balanceAsset = Double(pool.balanceAsset),
+              balanceAsset > 0 else {
+            return 0.0
+        }
+
+        let ticker = assetName.components(separatedBy: ".").last ?? ""
+        let assetDecimals = coins.first(where: {
+            $0.chain == .mayaChain && $0.ticker.uppercased() == ticker
+        })?.decimals ?? 4
+
+        let cacaoDecimals: Double = 10
+        let cacaoNormalized = balanceCacao / pow(10, cacaoDecimals)
+        let assetNormalized = balanceAsset / pow(10, Double(assetDecimals))
+        let priceInCacao = cacaoNormalized / assetNormalized
+
+        return priceInCacao * cacaoPriceUSD
+    }
+}
+
 private extension CryptoPriceService {
 
     @MainActor func refresh(vault: Vault) {
@@ -379,26 +404,6 @@ private extension CryptoPriceService {
             logger.warning("Failed to fetch MAYAChain pool price for \(assetName): \(error.localizedDescription)")
             return nil
         }
-    }
-
-    func calculateMayaPoolPrice(pool: MAYAChainPoolResponse, cacaoPriceUSD: Double, coins: [CoinMeta], assetName: String) -> Double {
-        guard let balanceCacao = Double(pool.balanceCacao),
-              let balanceAsset = Double(pool.balanceAsset),
-              balanceAsset > 0 else {
-            return 0.0
-        }
-
-        let ticker = assetName.components(separatedBy: ".").last ?? ""
-        let assetDecimals = coins.first(where: {
-            $0.chain == .mayaChain && $0.ticker.uppercased() == ticker
-        })?.decimals ?? 4
-
-        let cacaoDecimals: Double = 10
-        let cacaoNormalized = balanceCacao / pow(10, cacaoDecimals)
-        let assetNormalized = balanceAsset / pow(10, Double(assetDecimals))
-        let priceInCacao = cacaoNormalized / assetNormalized
-
-        return priceInCacao * cacaoPriceUSD
     }
 
     private func coinGeckoPlatform(chain: Chain) -> String {

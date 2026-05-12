@@ -200,30 +200,20 @@ class KeysignViewModel: ObservableObject {
         return nil
     }
 
+    /// dApp identity (name / url / icon) attached to the keysign request, if
+    /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
+    /// metadata is treated as absent.
+    var dappMetadata: DAppMetadata? {
+        keysignPayload?.dappMetadata
+    }
+
     func getTransactionExplorerURL(txid: String) -> String {
         guard let keysignPayload else { return .empty }
-        return Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
+        return ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
     }
 
     func getSwapProgressURL(txid: String) -> String? {
-        switch keysignPayload?.swapPayload {
-        case .thorchain:
-            return Endpoint.getSwapProgressURL(txid: txid)
-        case .thorchainChainnet:
-            return Endpoint.getStagenetSwapProgressURL(txid: txid)
-        case .thorchainStagenet:
-            return Endpoint.getStagenetSwapProgressURL(txid: txid)
-        case .mayachain:
-            return Endpoint.getMayaSwapTracker(txid: txid)
-        case .generic(let payload):
-            if payload.provider == .lifi {
-                return Endpoint.getLifiSwapTracker(txid: txid)
-            } else {
-                return Endpoint.getExplorerURL(chain: payload.fromCoin.chain, txid: txid)
-            }
-        case .none:
-            return nil
-        }
+        ExplorerLinkBuilder.progressLink(swapPayload: keysignPayload?.swapPayload, txHash: txid)
     }
 
     func startKeysign() async {
@@ -529,7 +519,7 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
 
         case .Cardano:
-            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {
@@ -678,7 +668,10 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .cardano:
                     do {
-                        self.txid = try await CardanoService.shared.broadcastTransaction(signedTransaction: tx.rawTransaction)
+                        self.txid = try await CardanoService.shared.broadcastTransaction(
+                            signedTransaction: tx.rawTransaction,
+                            precomputedTxId: tx.transactionHash
+                        )
                     } catch {
                         await self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
@@ -844,26 +837,42 @@ class KeysignViewModel: ObservableObject {
     }
 
     /// Best-effort check that the signed tx is already accepted on the chain
-    /// (mempool or block). Returns true only on positive evidence — any
-    /// transient lookup failure or `notFound` falls through so the caller
-    /// surfaces the original broadcast error.
+    /// (mempool or block). Returns true only on positive evidence (`.confirmed`
+    /// or `.pending`); `.failed` is conclusive and fails fast. `.notFound` and
+    /// transient lookup errors are retried with backoff because a peer-broadcast
+    /// tx often takes a few seconds to propagate to our RPC node / indexer
+    /// (Cosmos LCD index lag is the worst offender), and a single early miss
+    /// would otherwise show the user a "failed" screen for a tx that's already
+    /// landing.
     private func isAlreadyOnChain(transactionType: SignedTransactionType) async -> Bool {
         guard let chain = keysignPayload?.coin.chain else { return false }
         let hash = transactionType.transactionHash
         guard !hash.isEmpty else { return false }
 
-        do {
-            let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
-            switch result.status {
-            case .confirmed, .pending:
-                return true
-            case .notFound, .failed:
-                return false
+        let maxAttempts = 3
+        let backoff: Duration = .seconds(2)
+
+        for attempt in 1...maxAttempts {
+            do {
+                let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
+                switch result.status {
+                case .confirmed, .pending:
+                    return true
+                case .failed:
+                    return false
+                case .notFound:
+                    break
+                }
+            } catch {
+                logger.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }
-        } catch {
-            logger.warning("hash-verify lookup failed for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
-            return false
+
+            if attempt < maxAttempts {
+                try? await Task.sleep(for: backoff)
+            }
         }
+
+        return false
     }
 
     func handleHelperError(err: Error) {

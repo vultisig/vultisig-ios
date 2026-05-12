@@ -10,12 +10,14 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-bond-view-model")
 
+@MainActor
 final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var canUnbond: Bool = false
     @Published private(set) var canAddBond: Bool = false
+    @Published private(set) var refreshError: String?
 
     private var totalBondedDecimal: Decimal {
         activeBondedNodes.map(\.amount).reduce(.zero, +)
@@ -47,8 +49,8 @@ final class DefiChainBondViewModel: ObservableObject {
         self.vault = vault
     }
 
-    @MainActor
     func refresh() async {
+        refreshError = nil
         guard let interactor = interactor else {
             self.canUnbond = false
             self.canAddBond = false
@@ -73,6 +75,7 @@ final class DefiChainBondViewModel: ObservableObject {
         } catch {
             // Preserve last-known UI state on transient failures so cached positions stay visible
             logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
+            self.refreshError = "defiRefreshFailed".localized
         }
     }
 }

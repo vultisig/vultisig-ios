@@ -20,6 +20,8 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
+    @State private var refreshErrorToast: String?
+    @State private var isRefreshing = false
 
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -32,6 +34,12 @@ struct DefiChainMainScreen: View {
 
     private var nativeCoin: Coin? {
         vault.nativeCoin(for: chain)
+    }
+
+    /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
+    /// today — Stake and LP refreshes silently keep persisted rows on failure (see ViewModels).
+    private var refreshError: String? {
+        bondViewModel.refreshError
     }
 
     var body: some View {
@@ -50,15 +58,25 @@ struct DefiChainMainScreen: View {
             viewModel.onLoad()
             Task { await refresh() }
         }
-        .refreshable { await refresh() }
+        .refreshable {
+            // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
+            // When the user lets go, the spinner dismisses and the task is cancelled —
+            // which propagates to every in-flight network call inside `refresh()` and
+            // surfaces as `CancellationError`. Detach so cancellation stops here.
+            await Task { @MainActor in await refresh() }.value
+        }
         .onChange(of: vault) { _, vault in
             update(vault: vault)
         }
         .onChange(of: vault.defiPositions) { _, _ in
             Task { await refresh() }
         }
-        .onChange(of: viewModel.selectedPosition) { _, _ in
-            Task { await refresh() }
+        // Segment switching does NOT refresh — `refresh()` already loads all three position
+        // types in parallel on initial load and pull-to-refresh, so the data the new segment
+        // needs is already cached. Re-running `refresh()` here would fire 4 extra API calls
+        // every time the user swipes between segments.
+        .onChange(of: refreshError) { _, newValue in
+            refreshErrorToast = newValue
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
             DefiChainSelectPositionsScreen(
@@ -66,8 +84,15 @@ struct DefiChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true) {}
+        .crossPlatformToolbar(ignoresTopEdge: true) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(onRefresh: { Task { await refresh() } })
+            }
+            #endif
+        }
         .withLoading(isLoading: $isLoading)
+        .withBanner(text: $refreshErrorToast, style: .error)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),
@@ -279,15 +304,22 @@ private extension DefiChainMainScreen {
 
 private extension DefiChainMainScreen {
     func refresh() async {
-        Task { await viewModel.refresh() }
-        switch viewModel.selectedPosition {
-        case .bond:
-            await bondViewModel.refresh()
-        case .stake:
-            await stakeViewModel.refresh()
-        case .liquidityPool:
-            await lpsViewModel.refresh()
-        }
+        guard !isRefreshing else { return }
+
+        isRefreshing = true
+        // `defer` runs even on Task cancellation (e.g. view disappears
+        // mid-refresh). Without it, the flag stays `true` forever and the
+        // guard above silently drops every subsequent refresh call.
+        defer { isRefreshing = false }
+
+        // Refresh all three position categories in parallel so the aggregate balance shown
+        // in `DefiChainBalanceView` reflects every position type — not just the currently
+        // selected segment. The native-coin balance refresh runs independently.
+        async let mainRefresh: Void = viewModel.refresh()
+        async let bondRefresh: Void = bondViewModel.refresh()
+        async let stakeRefresh: Void = stakeViewModel.refresh()
+        async let lpsRefresh: Void = lpsViewModel.refresh()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
     }
 
     func update(vault: Vault) {

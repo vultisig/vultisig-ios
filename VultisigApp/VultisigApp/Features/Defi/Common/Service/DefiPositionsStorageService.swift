@@ -8,115 +8,163 @@
 import Foundation
 import SwiftData
 
+extension Notification.Name {
+    /// Posted on the main actor after `DefiPositionsStorageService.upsert(...)` saves changes to
+    /// SwiftData. SwiftUI views observing balance derived from `Vault` relationships should
+    /// recompute on receipt — `@ObservedObject` does not propagate in-place mutations of nested
+    /// `@Model` arrays back to the parent vault.
+    static let defiPositionsDidChange = Notification.Name("com.vultisig.app.defiPositionsDidChange")
+}
+
 struct DefiPositionsStorageService {
-    /// Upserts LP positions - updates existing ones or inserts new ones based on their unique ID
+
+    // MARK: - LP positions
+
+    /// Upserts the given DTOs. No delete-stale: rows persist until the user disables the
+    /// position (see `removeLP(coin2:from:)`) or the row's amount is updated by a later upsert.
+    /// Lookup is keyed by `coin2` so a placeholder row inserted by `addZero(lpCoin2:...)` (with
+    /// a synthesized poolName) merges with the API response that carries the canonical poolName
+    /// (e.g. `ETH.USDC-0x...`).
+    @discardableResult
     @MainActor
-    func upsert(_ positions: [LPPosition]) throws {
-        let positionIDs = positions.map { $0.id }
-        let fetchDescriptor = FetchDescriptor<LPPosition>(
-            predicate: #Predicate<LPPosition> { position in
-                positionIDs.contains(position.id)
-            }
+    func upsert(lp positions: [LPPositionData], for vault: Vault) throws -> [LPPosition] {
+        let existingByCoin2 = Dictionary(
+            vault.lpPositions.map { ($0.coin2, $0) },
+            uniquingKeysWith: { _, latest in latest }
         )
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
-
-        for position in positions {
-            if let existing = existingPositionsByID[position.id] {
-                // Update existing position
-                existing.coin1Amount = position.coin1Amount
-                existing.coin2Amount = position.coin2Amount
-                existing.apr = position.apr
-                existing.lastUpdated = position.lastUpdated
-            } else {
-                // Insert new position
-                Storage.shared.modelContext.insert(position)
+        let materialized = positions.map { dto -> LPPosition in
+            if let existing = existingByCoin2[dto.coin2] {
+                existing.apply(dto)
+                return existing
             }
+            let model = LPPosition(dto, vault: vault)
+            Storage.shared.modelContext.insert(model)
+            return model
         }
 
-        try Storage.shared.save()
+        try saveAndNotify()
+        return materialized
     }
 
-    /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
-    /// Also removes stale positions that are no longer present in the new positions array
+    // MARK: - Bond positions
+
+    /// Upserts the given bond positions and removes any persisted row not in the input.
+    ///
+    /// Empty input deletes everything for the vault — callers MUST distinguish a genuine "user
+    /// has no bonds" from a refresh failure before passing `[]`. Bond uses a single-shot API so
+    /// delete-stale is safe; stake/LP can't (per-row enable/disable).
     @MainActor
     func upsert(_ positions: [BondPosition], for vault: Vault) throws {
-        let vaultPubKey = vault.pubKeyECDSA
+        let newIDs = Set(positions.map(\.id))
 
-        // Fetch all existing bond positions for this vault
-        let allVaultPositionsDescriptor = FetchDescriptor<BondPosition>(
-            predicate: #Predicate<BondPosition> { position in
-                position.id.contains(vaultPubKey)
-            }
+        for stale in vault.bondPositions where !newIDs.contains(stale.id) {
+            Storage.shared.modelContext.delete(stale)
+        }
+
+        let existingByID = Dictionary(
+            vault.bondPositions.map { ($0.id, $0) },
+            uniquingKeysWith: { _, latest in latest }
         )
-        let allExistingPositions = try Storage.shared.modelContext.fetch(allVaultPositionsDescriptor)
 
-        // Callers MUST distinguish failure from a genuine empty result before passing []:
-        // an empty array here will delete all persisted positions for the vault.
-        if positions.isEmpty {
-            for existingPosition in allExistingPositions {
-                Storage.shared.modelContext.delete(existingPosition)
-            }
-            try Storage.shared.save()
-            return
-        }
-
-        // Create lookup for existing positions
-        let existingPositionsByID = Dictionary(allExistingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
-        let newPositionIDs = Set(positions.map { $0.id })
-
-        // Delete positions that are no longer present
-        for existingPosition in allExistingPositions where !newPositionIDs.contains(existingPosition.id) {
-            Storage.shared.modelContext.delete(existingPosition)
-        }
-
-        // Update or insert new positions
         for position in positions {
-            if let existing = existingPositionsByID[position.id] {
-                // Update existing position
+            if let existing = existingByID[position.id] {
                 existing.amount = position.amount
                 existing.apy = position.apy
                 existing.nextReward = position.nextReward
                 existing.nextChurn = position.nextChurn
             } else {
-                // Insert new position
                 Storage.shared.modelContext.insert(position)
             }
         }
 
-        try Storage.shared.save()
+        try saveAndNotify()
     }
 
-    /// Upserts stake positions - updates existing ones or inserts new ones based on their unique ID
+    // MARK: - Stake positions
+
+    /// Upserts the given DTOs. No delete-stale (see `upsert(lp:for:)`); rows are removed only via
+    /// `removeStake(coin:from:)` when the user disables a position.
+    @discardableResult
     @MainActor
-    func upsert(_ positions: [StakePosition]) throws {
-        let positionIDs = positions.map { $0.id }
-        let fetchDescriptor = FetchDescriptor<StakePosition>(
-            predicate: #Predicate<StakePosition> { position in
-                positionIDs.contains(position.id)
-            }
+    func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {
+        let existingByCoin = Dictionary(
+            vault.stakePositions.map { ($0.coin, $0) },
+            uniquingKeysWith: { _, latest in latest }
         )
 
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(existingPositions.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
-
-        for position in positions {
-            if let existing = existingPositionsByID[position.id] {
-                // Update existing position
-                existing.amount = position.amount
-                existing.apr = position.apr
-                existing.estimatedReward = position.estimatedReward
-                existing.nextPayout = position.nextPayout
-                existing.rewards = position.rewards
-                existing.rewardCoin = position.rewardCoin
-                existing.unstakeMetadata = position.unstakeMetadata
-            } else {
-                // Insert new position
-                Storage.shared.modelContext.insert(position)
+        let materialized = positions.map { dto -> StakePosition in
+            if let existing = existingByCoin[dto.coin] {
+                existing.apply(dto)
+                return existing
             }
+            let model = StakePosition(dto, vault: vault)
+            Storage.shared.modelContext.insert(model)
+            return model
         }
 
+        try saveAndNotify()
+        return materialized
+    }
+
+    // MARK: - Enable / disable position
+
+    /// Inserts a zero-amount stake row when the user enables a stake position, so the row is
+    /// visible immediately (with its CTAs) before the first refresh completes. Idempotent.
+    @MainActor
+    func addZero(stakeCoin coin: CoinMeta, to vault: Vault) throws {
+        guard !vault.stakePositions.contains(where: { $0.coin == coin }) else { return }
+        let model = StakePosition(
+            coin: coin,
+            type: StakePositionType.defaultType(for: coin),
+            amount: 0,
+            vault: vault
+        )
+        Storage.shared.modelContext.insert(model)
+        try saveAndNotify()
+    }
+
+    /// Removes the persisted stake row when the user disables a stake position.
+    @MainActor
+    func removeStake(coin: CoinMeta, from vault: Vault) throws {
+        for stale in vault.stakePositions where stale.coin == coin {
+            Storage.shared.modelContext.delete(stale)
+        }
+        try saveAndNotify()
+    }
+
+    /// Inserts a zero-amount LP row paired against the chain's native coin. Idempotent.
+    @MainActor
+    func addZero(lpCoin2 coin2: CoinMeta, nativeCoin: CoinMeta, to vault: Vault) throws {
+        guard !vault.lpPositions.contains(where: { $0.coin2 == coin2 }) else { return }
+        let model = LPPosition(
+            coin1: nativeCoin,
+            coin1Amount: 0,
+            coin2: coin2,
+            coin2Amount: 0,
+            poolName: "\(coin2.chain.swapAsset).\(coin2.ticker)",
+            poolUnits: "0",
+            apr: 0,
+            vault: vault
+        )
+        Storage.shared.modelContext.insert(model)
+        try saveAndNotify()
+    }
+
+    /// Removes the persisted LP row when the user disables an LP position.
+    @MainActor
+    func removeLP(coin2: CoinMeta, from vault: Vault) throws {
+        for stale in vault.lpPositions where stale.coin2 == coin2 {
+            Storage.shared.modelContext.delete(stale)
+        }
+        try saveAndNotify()
+    }
+}
+
+private extension DefiPositionsStorageService {
+    @MainActor
+    func saveAndNotify() throws {
         try Storage.shared.save()
+        NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
 }

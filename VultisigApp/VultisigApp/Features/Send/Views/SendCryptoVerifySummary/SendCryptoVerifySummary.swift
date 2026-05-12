@@ -29,6 +29,13 @@ struct SendCryptoVerifySummary {
     /// True when `tokenDisplay` is the "Unlimited" sentinel for an approval —
     /// the render should highlight it with a warning icon and warning color.
     let tokenDisplayIsUnlimited: Bool
+    /// Active vault — required so TonConnect signing can resolve enabled
+    /// jettons against the user's coin list. `nil` for non-TonConnect paths.
+    let vault: Vault?
+    /// dApp identity attached to the keysign request (set by remote-pair flows).
+    /// When non-nil, the verify view renders a `DAppRequestBanner` above the
+    /// hero so signers can sanity-check who originated the transaction.
+    let dappMetadata: DAppMetadata?
 
     init(
         fromName: String,
@@ -51,7 +58,9 @@ struct SendCryptoVerifySummary {
         keysignPayload: KeysignPayload? = nil,
         hero: HeroContent? = nil,
         tokenDisplay: String? = nil,
-        tokenDisplayIsUnlimited: Bool = false
+        tokenDisplayIsUnlimited: Bool = false,
+        vault: Vault? = nil,
+        dappMetadata: DAppMetadata? = nil
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
@@ -73,5 +82,7 @@ struct SendCryptoVerifySummary {
         self.hero = hero
         self.tokenDisplay = tokenDisplay
         self.tokenDisplayIsUnlimited = tokenDisplayIsUnlimited
+        self.vault = vault
+        self.dappMetadata = dappMetadata
     }
 }

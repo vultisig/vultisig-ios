@@ -129,10 +129,14 @@
 "broadcastRetryStaleNonce" = "Transaction nonce outdated — details refreshed. Please try again.";
 "broadcastRetryStaleQuote" = "Quote expired — details refreshed. Please try again.";
 "buy" = "Buy";
+"buyVultBannerButtonTitle" = "Buy $VULT";
+"buyVultBannerSubtitle" = "And save on swap fees";
+"buyVultBannerTitle" = "Buy $VULT";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
 "cancel" = "Cancel";
 "canLoseFundsPrompt" = "I am aware that I can lose funds";
+"cardanoOutputBelowMinAda" = "Not enough ADA to cover the network fee and Cardano's minimum-UTXO requirement (~1.4 ADA per output). Send more ADA into this vault first.";
 "chain" = "Chain";
 "chainNotAdded" = "Chain Not Added";
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
@@ -192,6 +196,7 @@
 "close" = "Close";
 "coinAddressCopied" = "%@ address copied";
 "coinPool" = "%@ Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Chain %@ is not enabled for this imported vault";
 "collectedRewards" = "Collected rewards";
 "compoundedCoin" = "Compounded %@";
 "congratsExclamation" = "Congrats!";
@@ -218,8 +223,10 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Custom Token";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"dappRequestFrom" = "Request from";
 "date" = "Date";
 "defiPortfolio" = "DeFi Portfolio";
+"defiRefreshFailed" = "Couldn't refresh positions. Pull to retry.";
 "delete" = "Delete";
 "deleteFolder" = "Delete Folder";
 "deleteVault" = "Delete your vault permanently";
@@ -308,6 +315,7 @@
 "estimatedReward" = "Estimated reward";
 "estNetworkFee" = "Est. network fee";
 "evmChains" = "EVM Chains";
+"excessGasRefund" = "Excess Gas Refund";
 "expirationDate" = "Expiration date";
 "expiresOn" = "Expires on";
 "extendExpiration(inYears)" = "Extend Expiration (in years)";
@@ -358,6 +366,7 @@
 "foregroundNotificationGeneric" = "Transaction pending approval";
 "foregroundNotificationSend" = "Send %@";
 "foregroundNotificationSwap" = "Swap %@ → %@";
+"forwardTonAmount" = "Forward TON Amount";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
@@ -413,6 +422,7 @@
 "invalidVaultData" = "Invalid vault data";
 "Italian" = "Italian";
 "iUnderstand" = "I understand";
+"jettonTransfer" = "Jetton Transfer";
 "joiningKeygen" = "Joining key generation / share process, please wait...";
 "joinKeygen" = "Join Keygen";
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
@@ -522,6 +532,7 @@
 "nextAward" = "Next Award";
 "nextChurn" = "Next Churn";
 "nextPayout" = "Next payout";
+"nftTransfer" = "NFT Transfer";
 "no" = "No";
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\n\nEach extra chain increases the time to generate your vault and possibility of a timeout.";
@@ -637,6 +648,14 @@
 "proposalID" = "Proposal ID";
 "provider" = "Provider";
 "providerLabel" = "Provider (optional)";
+"psbtChangeMarker" = "Change";
+"psbtInputs" = "Inputs";
+"psbtNetworkFee" = "Network Fee";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Outputs";
+"psbtSignedByThisDevice" = "Signed by this device";
+"psbtTransactionDetails" = "Transaction Details (PSBT)";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "qbtcClaimBannerSubtitle" = "Wrap your eligible BTC at a 1:1 ratio into quantum-secure QBTC.";
@@ -701,6 +720,7 @@
 "quantumSecurityIntroCta" = "Get started";
 "quantumSecurityIntroDescription" = "Classical keys can be broken by quantum computers. Enabling QBTC requires generating a new key pair.";
 "quantumSecurityIntroTitle" = "New quantum security";
+"rawPayload" = "Raw Payload";
 "ready" = "Ready";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)";
@@ -947,9 +967,6 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
-"tonConnectMessages" = "Messages";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";

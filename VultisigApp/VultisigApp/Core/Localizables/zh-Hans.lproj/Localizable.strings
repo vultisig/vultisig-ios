@@ -121,10 +121,14 @@
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
 "buy" = "购买";
+"buyVultBannerButtonTitle" = "购买 $VULT";
+"buyVultBannerSubtitle" = "并节省兑换手续费";
+"buyVultBannerTitle" = "购买 $VULT";
 "cacaoPool" = "Cacao 池";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";
 "cancel" = "取消";
 "canLoseFundsPrompt" = "我知道我可能会失去资金";
+"cardanoOutputBelowMinAda" = "ADA 不足以支付网络费用和 Cardano 的最低 UTXO 要求（每个输出约 1.4 ADA）。请先向此保险库转入更多 ADA。";
 "chain" = "链";
 "chainNotAdded" = "链未添加";
 "chainNotAddedMessage" = "区块链 %@ 未添加到此保险库。请从保险库设置中手动添加。";
@@ -190,6 +194,7 @@
 "close" = "关闭";
 "coinAddressCopied" = "%@ 地址已复制";
 "coinPool" = "%@ 池";
+"coinServiceChainNotEnabledForKeyImport" = "此导入的保险库未启用 %@ 链";
 "collectedRewards" = "已收集的奖励";
 "compoundedCoin" = "已复利 %@";
 "congratsExclamation" = "恭喜！";
@@ -216,8 +221,10 @@
 "customMemo" = "自定义备注";
 "customToken" = "自定义代币";
 "customTokenErrorSubtitle" = "可能的原因：错误的合约、不支持的链或代币已从注册表中删除";
+"dappRequestFrom" = "请求来自";
 "date" = "日期";
 "defiPortfolio" = "DeFi 投资组合";
+"defiRefreshFailed" = "无法刷新仓位。下拉重试。";
 "delete" = "删除";
 "deleteFolder" = "删除文件夹";
 "deleteVault" = "永久删除您的保险库";
@@ -302,6 +309,7 @@
 "estimatedReward" = "预计奖励";
 "estNetworkFee" = "预计网络费用";
 "evmChains" = "EVM 链";
+"excessGasRefund" = "多余 Gas 退款";
 "expirationDate" = "到期日期";
 "expiresOn" = "到期于";
 "extendExpiration(inYears)" = "延长到期时间（年）";
@@ -352,6 +360,7 @@
 "foregroundNotificationGeneric" = "交易待审批";
 "foregroundNotificationSend" = "发送 %@";
 "foregroundNotificationSwap" = "兑换 %@ → %@";
+"forwardTonAmount" = "转发 TON 数量";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
 "foundActiveChainsSubtitleHighlight" = "%d分钟";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
@@ -407,6 +416,7 @@
 "invalidVaultData" = "无效的保险库数据";
 "Italian" = "意大利语";
 "iUnderstand" = "我了解";
+"jettonTransfer" = "Jetton 转账";
 "joiningKeygen" = "正在加入密钥生成/份额过程，请稍候...";
 "joinKeygen" = "加入密钥生成";
 "joinKeygenConnectionDisclaimer" = "连接有问题？\n请改用个人热点连接。\n或尝试不同的网络";
@@ -515,6 +525,7 @@
 "nextAward" = "下次奖励";
 "nextChurn" = "下次淘汰";
 "nextPayout" = "下次支付";
+"nftTransfer" = "NFT 转账";
 "no" = "否";
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
@@ -630,6 +641,14 @@
 "proposalID" = "提案 ID";
 "provider" = "提供商";
 "providerLabel" = "提供商（可选）";
+"psbtChangeMarker" = "找零";
+"psbtInputs" = "输入";
+"psbtNetworkFee" = "网络费用";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "输出";
+"psbtSignedByThisDevice" = "由此设备签名";
+"psbtTransactionDetails" = "交易详情 (PSBT)";
 "pushNotifications" = "推送通知";
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
 "qbtcClaimBannerSubtitle" = "以 1:1 比例将符合条件的 BTC 包装为量子安全的 QBTC。";
@@ -694,6 +713,7 @@
 "quantumSecurityIntroCta" = "开始";
 "quantumSecurityIntroDescription" = "经典密钥可能被量子计算机破解。启用 QBTC 需要生成新的密钥对。";
 "quantumSecurityIntroTitle" = "全新量子安全";
+"rawPayload" = "原始数据";
 "ready" = "就绪";
 "Rebond" = "重新绑定";
 "rebondAmount" = "重新绑定金额（可选 - 留空以转移所有已绑定的 RUNE）";
@@ -937,9 +957,6 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
-"tonConnectMessages" = "消息";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";

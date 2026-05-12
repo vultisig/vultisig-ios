@@ -41,7 +41,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         return supportsBatch && tssBatchEnabled
     }
 
-
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""

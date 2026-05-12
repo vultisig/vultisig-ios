@@ -5,6 +5,8 @@
 //  Created on 2025/01/03.
 //
 
+import Foundation
+
 struct AccountRootData: Decodable {
     let data: ResponseData
 
@@ -53,7 +55,21 @@ struct AccountRootData: Decodable {
             }
 
             struct APR: Decodable {
+                /// Bigint scalar from the Rujira GraphQL schema. Decimal values (rates, prices) are
+                /// scaled to 12 decimal places — divide by 10^12 to get the fractional rate (e.g.
+                /// `11623890337` → `0.011624` → `1.16%`).
                 let value: String
+                /// `AVAILABLE` | `NOT_APPLICABLE` | `SOON`. Treat anything but `AVAILABLE` as no APR.
+                let status: String?
+
+                /// Fractional rate (e.g. `0.0116` for 1.16% APR), or `nil` when the pool isn't
+                /// `AVAILABLE` or the value can't be parsed.
+                var fractionalRate: Double? {
+                    if let status, status != "AVAILABLE" { return nil }
+                    guard let raw = Decimal(string: value) else { return nil }
+                    let scaled = raw / pow(10, 12)
+                    return NSDecimalNumber(decimal: scaled).doubleValue
+                }
             }
 
             struct Bonded: Decodable {

@@ -6,7 +6,21 @@
 //
 
 import Foundation
+import OSLog
 import SwiftData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "coin-service")
+
+enum CoinServiceError: LocalizedError, Equatable {
+    case chainNotEnabledForKeyImport(Chain)
+
+    var errorDescription: String? {
+        switch self {
+        case .chainNotEnabledForKeyImport(let chain):
+            return String(format: "coinServiceChainNotEnabledForKeyImport".localized, chain.name)
+        }
+    }
+}
 
 @MainActor
 struct CoinService {
@@ -139,6 +153,8 @@ struct CoinService {
     }
 
     static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
+        try assertChainAllowed(asset: asset, vault: vault)
+
         let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
         let isDerived = pubKey != nil
         let newCoin = try CoinFactory.create(
@@ -184,6 +200,20 @@ struct CoinService {
         }
 
         return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+    }
+
+    /// Rejects writes to chains the user did not enable at import time.
+    /// Without this, features like the swap-quote-driven VULT tier check
+    /// would silently inject ETH (and discover ERC20s) into a key-import
+    /// vault that derived TSS shares only for THORChain.
+    ///
+    /// Legacy JSON backups predate `chainPublicKeys` persistence; skip the
+    /// guard when the list is empty to avoid soft-bricking restored vaults.
+    static func assertChainAllowed(asset: CoinMeta, vault: Vault) throws {
+        guard vault.libType == .KeyImport else { return }
+        guard !vault.chainPublicKeys.isEmpty else { return }
+        guard !vault.chainPublicKeys.contains(where: { $0.chain == asset.chain }) else { return }
+        throw CoinServiceError.chainNotEnabledForKeyImport(asset.chain)
     }
 
     static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
@@ -285,11 +315,11 @@ struct CoinService {
 
                     _ =  try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
-                    print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
+                    logger.warning("Error adding discovered token \(token.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         } catch {
-            print("Error fetching service: \(error.localizedDescription)")
+            logger.warning("Error fetching discovered tokens for \(nativeToken.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -373,7 +403,10 @@ struct CoinService {
 
         // Check if URL is reachable and not returning 404
         do {
-            // Try HEAD first to avoid downloading the full image
+            // Try HEAD first to avoid downloading the full image. This is an
+            // asset-liveness probe, not an API call — `HTTPClient`/`TargetType`
+            // is for typed JSON.
+            // swiftlint:disable:next no_raw_urlrequest
             var request = URLRequest(url: url)
             request.httpMethod = "HEAD"
             request.timeoutInterval = 5.0 // 5 second timeout
@@ -386,6 +419,7 @@ struct CoinService {
 
             // If HEAD is not supported (405), try GET with range request
             if httpResponse.statusCode == 405 {
+                // swiftlint:disable:next no_raw_urlrequest
                 var getRequest = URLRequest(url: url)
                 getRequest.httpMethod = "GET"
                 getRequest.setValue("bytes=0-1023", forHTTPHeaderField: "Range") // Only request first 1KB

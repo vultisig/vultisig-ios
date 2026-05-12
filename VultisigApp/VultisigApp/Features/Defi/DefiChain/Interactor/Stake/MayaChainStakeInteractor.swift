@@ -10,20 +10,20 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-stake-interactor")
 
+private struct CacaoSnapshot {
+    let meta: CoinMeta
+    let address: String
+    let decimals: Int
+}
+
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
-    func fetchStakePositions(vault: Vault) async -> [StakePosition] {
-        // Get CACAO coin (native token for MayaChain)
-        guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
-            return []
-        }
+    func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
+        guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
 
-        // Check if user has CACAO staking enabled in vault DeFi positions
-        let vaultStakePositions = vault.defiPositions.first { $0.chain == .mayaChain }?.staking ?? []
-
-        // Only fetch staking details if CACAO is in the enabled positions
-        guard vaultStakePositions.contains(where: { $0.ticker == cacaoCoin.ticker }) else {
+        let enabled = await vaultStakePositions(in: vault)
+        guard enabled.contains(where: { $0.ticker == cacao.meta.ticker }) else {
             return []
         }
 
@@ -36,87 +36,46 @@ struct MayaChainStakeInteractor: StakeInteractor {
         }
 
         do {
-            // Fetch CACAO pool position
-            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
-
-            // Use value for display amount (includes earnings)
-            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
-            // Use units for unstake amount (what can actually be withdrawn)
-            let availableToUnstake = position.availableUnits / pow(10, cacaoCoin.decimals)
-
-            // Fetch APR/APY
+            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacao.address)
+            let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
+            let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
 
-            // Check for withdrawal date
             let unstakeMetadata = calculateUnstakeMetadata(
                 currentHeight: health.lastMayaNode.height,
                 lastDepositHeight: position.lastDepositHeight,
                 maturityBlocks: mimir.cacaoPoolDepositMaturityBlocks
             )
 
-            // Create stake position
-            let stakePosition = StakePosition(
-                coin: cacaoCoin.toCoinMeta(),
-                type: .stake,
-                amount: stakedAmount,
-                availableToUnstake: availableToUnstake,
-                apr: aprData?.apr ?? 0,
-                estimatedReward: nil,  // CACAO pool doesn't show estimated rewards separately
-                nextPayout: nil,  // CACAO pool rewards are continuously accrued
-                rewards: nil,
-                rewardCoin: nil,  // Rewards in CACAO
-                unstakeMetadata: unstakeMetadata,
-                vault: vault
-            )
-
-            let positions = [stakePosition]
-            await savePositions(positions: positions)
-            return positions
+            return [
+                StakePositionData(
+                    coin: cacao.meta,
+                    type: .stake,
+                    amount: stakedAmount,
+                    availableToUnstake: availableToUnstake,
+                    apr: aprData?.apr ?? 0,
+                    unstakeMetadata: unstakeMetadata
+                )
+            ]
         } catch {
-            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription)")
-
-            // Reuse previously persisted metadata so APR / rewards / nextPayout don't disappear on transient failures
-            let previous = await previousPosition(for: cacaoCoin, vault: vault)
-            let fallbackPosition = StakePosition(
-                coin: cacaoCoin.toCoinMeta(),
-                type: .stake,
-                amount: cacaoCoin.stakedBalanceDecimal,
-                apr: previous?.apr,
-                estimatedReward: previous?.estimatedReward,
-                nextPayout: previous?.nextPayout,
-                rewards: previous?.rewards,
-                rewardCoin: previous?.rewardCoin,
-                vault: vault
-            )
-
-            return [fallbackPosition]
+            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .private)")
+            return []
         }
     }
 }
 
 private extension MayaChainStakeInteractor {
     @MainActor
-    func previousPosition(for coin: Coin, vault: Vault) -> PreviousStakeMetadata? {
-        let id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
-        guard let existing = vault.stakePositions.first(where: { $0.id == id }) else {
+    func cacaoSnapshot(in vault: Vault) -> CacaoSnapshot? {
+        guard let coin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
             return nil
         }
-        return PreviousStakeMetadata(
-            apr: existing.apr,
-            estimatedReward: existing.estimatedReward,
-            nextPayout: existing.nextPayout,
-            rewards: existing.rewards,
-            rewardCoin: existing.rewardCoin
-        )
+        return CacaoSnapshot(meta: coin.toCoinMeta(), address: coin.address, decimals: coin.decimals)
     }
 
     @MainActor
-    func savePositions(positions: [StakePosition]) {
-        do {
-            try DefiPositionsStorageService().upsert(positions)
-        } catch {
-            logger.error("An error occurred while saving staked positions: \(error)")
-        }
+    func vaultStakePositions(in vault: Vault) -> [CoinMeta] {
+        vault.defiPositions.first { $0.chain == .mayaChain }?.staking ?? []
     }
 
     func calculateUnstakeMetadata(
@@ -125,11 +84,7 @@ private extension MayaChainStakeInteractor {
         maturityBlocks: Int64
     ) -> UnstakeMetadata? {
         let differenceBlocks = currentHeight - lastDepositHeight
-
-        // If maturity has been reached, no metadata needed
-        guard differenceBlocks < maturityBlocks else {
-            return nil
-        }
+        guard differenceBlocks < maturityBlocks else { return nil }
 
         let blocksPerDay: Double = 14400
         let blocksRemaining = maturityBlocks - differenceBlocks

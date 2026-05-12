@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-lps-interactor")
 
 struct MayaChainLPsInteractor: LPsInteractor {
     private let mayaAPIService = MayaChainAPIService()
@@ -14,35 +17,47 @@ struct MayaChainLPsInteractor: LPsInteractor {
         SettingsAPRPeriod.current.rawValue
     }
 
-    func fetchLPPositions(vault: Vault) async -> [LPPosition] {
-        guard let mayaCoin = vault.nativeCoin(for: .mayaChain) else { return [] }
-        let vaultLPPositions = vault.defiPositions.first { $0.chain == .mayaChain }?.lps ?? []
+    func fetchLPPositions(vault: Vault) async -> [LPPositionData] {
+        guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
+        let enabled = await readVaultLPPositions(in: vault)
+        guard !enabled.isEmpty else { return [] }
 
         do {
             let apiPositions = try await mayaAPIService.getLPPositions(
-                address: mayaCoin.address,
-                userLPs: vaultLPPositions,
+                address: cacao.address,
+                userLPs: enabled,
                 period: aprPeriod
             )
-
-            // Convert THORChainLPPosition to LPPosition
-            let positions = try convertToLPPositions(apiPositions, vault: vault)
-            await savePositions(positions: positions)
-            return positions
-
+            return convert(apiPositions, cacaoDecimals: cacao.decimals)
         } catch {
-            print("Error fetching LP positions: \(error)")
+            logger.error("Failed to fetch Maya LP positions: \(error.localizedDescription, privacy: .private)")
             return []
         }
     }
 }
 
+private struct CacaoLPSnapshot {
+    let address: String
+    let decimals: Int
+}
+
 private extension MayaChainLPsInteractor {
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition], vault: Vault) throws -> [LPPosition] {
-        var result: [LPPosition] = []
+    @MainActor
+    func cacaoSnapshot(in vault: Vault) -> CacaoLPSnapshot? {
+        guard let coin = vault.nativeCoin(for: .mayaChain) else { return nil }
+        return CacaoLPSnapshot(address: coin.address, decimals: coin.decimals)
+    }
+
+    @MainActor
+    func readVaultLPPositions(in vault: Vault) -> [CoinMeta] {
+        vault.defiPositions.first { $0.chain == .mayaChain }?.lps ?? []
+    }
+
+    func convert(_ apiPositions: [THORChainLPPosition], cacaoDecimals: Int) -> [LPPositionData] {
+        var result: [LPPositionData] = []
+        let cacaoCoin = TokensStore.cacao
 
         for apiPosition in apiPositions {
-            // Parse the pool asset (e.g., "BTC.BTC", "ETH.ETH")
             let components = apiPosition.asset.split(separator: ".")
             guard components.count == 2 else { continue }
 
@@ -52,45 +67,29 @@ private extension MayaChainLPsInteractor {
                 assetTicker = String(assetTicker.split(separator: "-")[0])
             }
 
-            // Find Cacao coin (always coin1)
-            let cacaoCoin = TokensStore.cacao
-
-            // Find the asset coin (coin2)
             guard let assetCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == assetTicker &&
                 $0.chain.swapAsset.uppercased() == assetChainName
             }) else {
-                print("Could not find asset coin for: \(assetTicker) on \(assetChainName)")
+                logger.warning("Could not find asset coin for: \(assetTicker, privacy: .public) on \(assetChainName, privacy: .public)")
                 continue
             }
 
-            // Convert amounts from base units to decimal
-            let runeAmount = apiPosition.currentRuneAmount / pow(10, cacaoCoin.decimals)
-            let assetAmount = apiPosition.currentAssetAmount / pow(10, cacaoCoin.decimals)
+            let cacaoAmount = apiPosition.currentRuneAmount / pow(10, cacaoDecimals)
+            let assetAmount = apiPosition.currentAssetAmount / pow(10, cacaoDecimals)
 
-            let lpPosition = LPPosition(
-                coin1: cacaoCoin,
-                coin1Amount: runeAmount,
-                coin2: assetCoin,
-                coin2Amount: assetAmount,
-                poolName: apiPosition.asset,
-                poolUnits: apiPosition.poolStats.units,
-                apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
-                vault: vault
+            result.append(
+                LPPositionData(
+                    coin1: cacaoCoin,
+                    coin1Amount: cacaoAmount,
+                    coin2: assetCoin,
+                    coin2Amount: assetAmount,
+                    poolName: apiPosition.asset,
+                    poolUnits: apiPosition.poolStats.units,
+                    apr: apiPosition.apr
+                )
             )
-
-            result.append(lpPosition)
         }
-
         return result
-    }
-
-    @MainActor
-    func savePositions(positions: [LPPosition]) {
-        do {
-            try DefiPositionsStorageService().upsert(positions)
-        } catch {
-            print("An error occured while saving LPs positions: \(error)")
-        }
     }
 }

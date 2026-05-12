@@ -121,10 +121,14 @@
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleQuote" = "Angebot abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "buy" = "Kaufen";
+"buyVultBannerButtonTitle" = "$VULT kaufen";
+"buyVultBannerSubtitle" = "Und spare bei Swap-Gebühren";
+"buyVultBannerTitle" = "$VULT kaufen";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";
 "cancel" = "Abbrechen";
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
+"cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
 "chain" = "Blockchain";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";
 "chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
@@ -190,6 +194,7 @@
 "close" = "Schließen";
 "coinAddressCopied" = "Münzadresse kopiert";
 "coinPool" = "%@-Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Chain %@ ist für diesen importierten Vault nicht aktiviert";
 "collectedRewards" = "Gesammelte Belohnungen";
 "compoundedCoin" = "%@ aufgezinst";
 "congratsExclamation" = "Glückwunsch!";
@@ -216,8 +221,10 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Benutzerdefinierten Token";
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
+"dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
 "defiPortfolio" = "DeFi Portfolio";
+"defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";
 "delete" = "Löschen";
 "deleteFolder" = "Ordner löschen";
 "deleteVault" = "Lösche deinen Tresor dauerhaft";
@@ -302,6 +309,7 @@
 "estimatedReward" = "Geschätzte Belohnung";
 "estNetworkFee" = "Geschätzte Netzwerkgebühr";
 "evmChains" = "EVM -Ketten";
+"excessGasRefund" = "Erstattung überschüssiger Gas";
 "expirationDate" = "Ablaufdatum";
 "expiresOn" = "Läuft ab";
 "extendExpiration(inYears)" = "Ausweitung des Ablaufs (in Jahren)";
@@ -352,6 +360,7 @@
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
 "foregroundNotificationSend" = "Senden %@";
 "foregroundNotificationSwap" = "Tausch %@ → %@";
+"forwardTonAmount" = "Weitergeleiteter TON-Betrag";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
@@ -407,6 +416,7 @@
 "invalidVaultData" = "Ungültige Tresordaten";
 "Italian" = "Italienisch";
 "iUnderstand" = "Ich verstehe";
+"jettonTransfer" = "Jetton-Transfer";
 "joiningKeygen" = "Beitritt zum Keygen";
 "joinKeygen" = "Keygen beitreten";
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
@@ -515,6 +525,7 @@
 "nextAward" = "Nächste Belohnung";
 "nextChurn" = "Nächstes Ausscheiden";
 "nextPayout" = "Nächste Auszahlung";
+"nftTransfer" = "NFT-Transfer";
 "no" = "Nein";
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
 "noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung deines Vaults und die Wahrscheinlichkeit eines Timeouts.";
@@ -629,6 +640,14 @@
 "proposalID" = "Proposal ID";
 "provider" = "Anbieter";
 "providerLabel" = "Anbieter (optional)";
+"psbtChangeMarker" = "Wechselgeld";
+"psbtInputs" = "Eingänge";
+"psbtNetworkFee" = "Netzwerkgebühr";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Ausgänge";
+"psbtSignedByThisDevice" = "Auf diesem Gerät signiert";
+"psbtTransactionDetails" = "Transaktionsdetails (PSBT)";
 "pushNotifications" = "Push-Benachrichtigungen";
 "pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
 "qbtcClaimBannerSubtitle" = "Verpacke dein berechtigtes BTC im Verhältnis 1:1 in quantensicheres QBTC.";
@@ -693,6 +712,7 @@
 "quantumSecurityIntroCta" = "Loslegen";
 "quantumSecurityIntroDescription" = "Klassische Schlüssel können von Quantencomputern geknackt werden. Um QBTC zu aktivieren, muss ein neues Schlüsselpaar erzeugt werden.";
 "quantumSecurityIntroTitle" = "Neue Quantensicherheit";
+"rawPayload" = "Rohdaten";
 "ready" = "Bereit";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond-Betrag (Optional - leer lassen, um alle gebundenen RUNE zu übertragen)";
@@ -937,9 +957,6 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
-"tonConnectMessages" = "Nachrichten";
-"tonConnectPayloadBadge" = "Payload";
-"tonConnectStateInitBadge" = "State Init";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
