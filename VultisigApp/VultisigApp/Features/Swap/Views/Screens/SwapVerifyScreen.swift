@@ -1,42 +1,41 @@
 //
-//  SwapVerifyView.swift
+//  SwapVerifyScreen.swift
 //  VultisigApp
-//
-//  Created by Artur Guseinov on 08.04.2024.
 //
 
 import SwiftUI
 
-struct SwapVerifyView: View {
-    @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
-
+struct SwapVerifyScreen: View {
     @ObservedObject var tx: SwapTransaction
-    @ObservedObject var swapViewModel: SwapCryptoViewModel
-
-    @StateObject var referredViewModel = ReferredViewModel()
-
     let vault: Vault
+
+    @StateObject var verifyViewModel = SwapVerifyViewModel()
+    @StateObject var referredViewModel = ReferredViewModel()
 
     @State var fastPasswordPresented = false
     @State private var signButtonDisabled = false
     @State private var retryBannerText: String?
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @Environment(\.router) var router
 
     var body: some View {
-        ZStack {
-            Background()
-            view
+        Screen {
+            VStack(spacing: 16) {
+                fields
+                signButton
+                    .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
+            }
+        }
+        .screenTitle("swapOverview".localized)
+        .screenToolbar {
+            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
+                refreshCounter
+            }
         }
         .withBanner(text: $retryBannerText, style: .error)
-        .onReceive(timer) { _ in
-            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-        }
-        .onDisappear {
-            swapViewModel.isLoading = false
-            // Clear password if navigating back (not forward to keysign)
-            if swapViewModel.keysignPayload == nil {
-                tx.fastVaultPassword = .empty
+        .swapRefreshTick {
+            Task {
+                await verifyViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
         }
         .onLoad {
@@ -49,6 +48,12 @@ struct SwapVerifyView: View {
         .onAppear {
             consumePendingRetry()
         }
+        .onDisappear {
+            verifyViewModel.isLoading = false
+            if tx.fastVaultPassword.isNotEmpty {
+                tx.fastVaultPassword = .empty
+            }
+        }
         .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
                 verifyViewModel.showSecurityScannerSheet = false
@@ -59,17 +64,14 @@ struct SwapVerifyView: View {
         }
     }
 
-    var view: some View {
-        container
-    }
-
-    var content: some View {
-        VStack(spacing: 16) {
-            fields
-            signButton
-                .padding(.horizontal, 16)
-                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || swapViewModel.isLoadingFees || signButtonDisabled)
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                summary
+                checkboxes
+            }
         }
+        .scrollIndicators(.hidden)
     }
 
     var summary: some View {
@@ -89,32 +91,32 @@ struct SwapVerifyView: View {
                     )
                 }
 
-                if swapViewModel.showGas(tx: tx) {
+                if SwapCryptoLogic.showGas(tx: tx) {
                     separator
                     getNetworkFeeCell(
-                        cryptoAmount: swapViewModel.swapGasString(tx: tx),
-                        fiatAmount: swapViewModel.approveFeeString(tx: tx)
+                        cryptoAmount: SwapCryptoLogic.swapGasString(tx: tx),
+                        fiatAmount: SwapCryptoLogic.approveFeeString(tx: tx)
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if swapViewModel.showFees(tx: tx) {
+                if SwapCryptoLogic.showFees(tx: tx) {
                     separator
                     getValueCell(
                         for: "swapFee",
-                        with: swapViewModel.swapFeeString(tx: tx),
+                        with: SwapCryptoLogic.swapFeeString(tx: tx),
                         bracketValue: nil
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if swapViewModel.showTotalFees(tx: tx) {
+                if SwapCryptoLogic.showTotalFees(tx: tx) {
                     separator
                     getValueCell(
                         for: "maxTotalFee",
-                        with: swapViewModel.totalFeeString(tx: tx)
+                        with: SwapCryptoLogic.totalFeeString(tx: tx)
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 separator
@@ -155,7 +157,7 @@ struct SwapVerifyView: View {
             getSwapAssetCell(
                 for: tx.fromAmountDecimal.formatForDisplay(),
                 with: tx.fromCoin.ticker,
-                fiatValue: swapViewModel.fromFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
+                fiatValue: SwapCryptoLogic.fromFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
                 on: tx.fromCoin.chain,
                 coin: tx.fromCoin,
                 isTo: false
@@ -166,7 +168,7 @@ struct SwapVerifyView: View {
             getSwapAssetCell(
                 for: tx.toAmountDecimal.formatForDisplay(),
                 with: tx.toCoin.ticker,
-                fiatValue: swapViewModel.toFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
+                fiatValue: SwapCryptoLogic.toFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
                 on: tx.toCoin.chain,
                 coin: tx.toCoin,
                 isTo: true
@@ -211,7 +213,6 @@ struct SwapVerifyView: View {
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
             } longPressAction: {
-                // Clear password for paired sign (long press)
                 tx.fastVaultPassword = .empty
                 onSignPress()
             }
@@ -231,14 +232,16 @@ struct SwapVerifyView: View {
     }
 
     private func consumePendingRetry() {
-        guard let reason = swapViewModel.pendingRetryReason else { return }
+        guard let reason = tx.pendingRetryReason else { return }
         retryBannerText = reason.userFacingMessage
-        swapViewModel.pendingRetryReason = nil
-        swapViewModel.refreshData(
-            tx: tx,
-            vault: vault,
-            referredCode: referredViewModel.savedReferredCode
-        )
+        tx.pendingRetryReason = nil
+        Task {
+            await verifyViewModel.refreshData(
+                tx: tx,
+                vault: vault,
+                referredCode: referredViewModel.savedReferredCode
+            )
+        }
     }
 
     private func onSignPress() {
@@ -251,8 +254,15 @@ struct SwapVerifyView: View {
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
-            if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
-                swapViewModel.moveToNextView()
+            if let payload = await verifyViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
+                await MainActor.run {
+                    router.navigate(to: SwapRoute.pair(
+                        vaultPubKeyECDSA: vault.pubKeyECDSA,
+                        tx: tx,
+                        keysignPayload: payload,
+                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                    ))
+                }
             }
             await MainActor.run { signButtonDisabled = false }
         }
@@ -268,7 +278,7 @@ struct SwapVerifyView: View {
     }
 
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
+        SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
     }
 
     func getValueCell(
@@ -300,7 +310,6 @@ struct SwapVerifyView: View {
                 }
                 .foregroundColor(Theme.colors.textTertiary)
             }
-
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -397,64 +406,3 @@ struct SwapVerifyView: View {
         )
     }
 }
-
-#Preview {
-    SwapVerifyView(
-        tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel(),
-        vault: Vault.example
-    )
-    .environmentObject(SettingsViewModel())
-}
-
-#if os(iOS)
-import SwiftUI
-
-extension SwapVerifyView {
-    var container: some View {
-        content
-            .toolbar {
-                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
-                    refreshCounter
-                }
-            }
-    }
-
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Spacer()
-                summary
-                checkboxes
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-}
-#endif
-
-#if os(macOS)
-import SwiftUI
-
-extension SwapVerifyView {
-    var container: some View {
-        content
-            .padding(.horizontal, 25)
-            .padding(.vertical, 12)
-    }
-
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Spacer()
-                summary
-                checkboxes
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-        }
-        .padding(.horizontal, -24)
-    }
-}
-#endif

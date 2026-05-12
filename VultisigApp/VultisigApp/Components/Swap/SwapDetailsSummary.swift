@@ -10,24 +10,24 @@ import SwiftUI
 struct SwapDetailsSummary: View {
 
     @ObservedObject var tx: SwapTransaction
-    @ObservedObject var swapViewModel: SwapCryptoViewModel
+    @ObservedObject var detailsViewModel: SwapDetailsViewModel
 
     @State private var showFees: Bool = true
 
     private var hasExpandableFees: Bool {
-        swapViewModel.showGas(tx: tx) ||
-        !swapViewModel.baseAffiliateFee(tx: tx).isEmpty ||
+        SwapCryptoLogic.showGas(tx: tx) ||
+        !SwapCryptoLogic.baseAffiliateFee(tx: tx).isEmpty ||
         !outboundFeeString.isEmpty ||
-        !swapViewModel.vultDiscount(tx: tx).isEmpty ||
-        !swapViewModel.referralDiscount(tx: tx).isEmpty ||
-        !swapViewModel.priceImpactString(tx: tx).isEmpty
+        !SwapCryptoLogic.vultDiscount(tx: tx).isEmpty ||
+        !SwapCryptoLogic.referralDiscount(tx: tx).isEmpty ||
+        !SwapCryptoLogic.priceImpactString(tx: tx).isEmpty
     }
 
     /// Hide the entire Provider + fees block while a quote error is on screen
     /// (the tooltip already surfaces the error). Keep it visible during loading
     /// so placeholders still appear, and whenever a valid quote is available.
     private var isBlockVisible: Bool {
-        swapViewModel.error == nil || swapViewModel.isLoadingQuotes
+        detailsViewModel.error == nil || detailsViewModel.isLoadingQuotes
     }
 
     var body: some View {
@@ -44,7 +44,7 @@ struct SwapDetailsSummary: View {
                     )
                 }
 
-                if swapViewModel.showTotalFees(tx: tx) {
+                if SwapCryptoLogic.showTotalFees(tx: tx) {
                     if hasExpandableFees {
                         ExpandableView(isExpanded: $showFees) {
                             totalFeesLabel()
@@ -71,7 +71,7 @@ struct SwapDetailsSummary: View {
         HStack {
             getSummaryCell(
                 leadingText: "totalFee",
-                trailingText: "\(swapViewModel.totalFeeString(tx: tx))"
+                trailingText: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
             )
 
             if showChevron {
@@ -90,11 +90,11 @@ struct SwapDetailsSummary: View {
 
     var expandableFees: some View {
         VStack(spacing: 16) {
-            if swapViewModel.showGas(tx: tx) {
+            if SwapCryptoLogic.showGas(tx: tx) {
                 swapGas
             }
 
-            if !swapViewModel.baseAffiliateFee(tx: tx).isEmpty {
+            if !SwapCryptoLogic.baseAffiliateFee(tx: tx).isEmpty {
                 affiliateFee
             }
 
@@ -102,25 +102,25 @@ struct SwapDetailsSummary: View {
                 outboundFee
             }
 
-            if !swapViewModel.vultDiscount(tx: tx).isEmpty {
+            if !SwapCryptoLogic.vultDiscount(tx: tx).isEmpty {
                 vultDiscount
             }
 
-            if !swapViewModel.referralDiscount(tx: tx).isEmpty {
+            if !SwapCryptoLogic.referralDiscount(tx: tx).isEmpty {
                 referralDiscount
             }
 
-            if !swapViewModel.priceImpactString(tx: tx).isEmpty {
+            if !SwapCryptoLogic.priceImpactString(tx: tx).isEmpty {
                 priceImpact
             }
         }
     }
 
     var swapGas: some View {
-        let gasString = swapViewModel.swapGasString(tx: tx)
+        let gasString = SwapCryptoLogic.swapGasString(tx: tx)
         // Only show approval fee suffix when approval is required and fee is non-zero (using numeric check)
-        let showApproveFee = tx.isApproveRequired && !swapViewModel.isApproveFeeZero(tx: tx)
-        let approveFeeString = swapViewModel.approveFeeString(tx: tx)
+        let showApproveFee = tx.isApproveRequired && !SwapCryptoLogic.isApproveFeeZero(tx: tx)
+        let approveFeeString = SwapCryptoLogic.approveFeeString(tx: tx)
         let trailingText = showApproveFee ? "\(gasString) (\(approveFeeString))" : gasString
         return getSummaryCell(
             leadingText: "networkFee",
@@ -130,12 +130,12 @@ struct SwapDetailsSummary: View {
 
     var affiliateFee: some View {
         HStack {
-            Text(swapViewModel.swapFeeLabel(tx: tx))
+            Text(SwapCryptoLogic.swapFeeLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
 
             Spacer()
 
-            Text(swapViewModel.baseAffiliateFee(tx: tx))
+            Text(SwapCryptoLogic.baseAffiliateFee(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.caption12)
@@ -145,13 +145,13 @@ struct SwapDetailsSummary: View {
         HStack {
             vultTierIcon
 
-            Text(swapViewModel.vultDiscountLabel(tx: tx))
+            Text(SwapCryptoLogic.vultDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
 
             Spacer()
 
-            Text(swapViewModel.vultDiscount(tx: tx))
+            Text(SwapCryptoLogic.vultDiscount(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
@@ -184,13 +184,13 @@ struct SwapDetailsSummary: View {
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.primaryAccent4)
 
-            Text(swapViewModel.referralDiscountLabel(tx: tx))
+            Text(SwapCryptoLogic.referralDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
 
             Spacer()
 
-            Text(swapViewModel.referralDiscount(tx: tx))
+            Text(SwapCryptoLogic.referralDiscount(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
@@ -203,8 +203,8 @@ struct SwapDetailsSummary: View {
 
             Spacer()
 
-            Text(swapViewModel.priceImpactString(tx: tx))
-                .foregroundColor(swapViewModel.priceImpactColor(tx: tx))
+            Text(SwapCryptoLogic.priceImpactString(tx: tx))
+                .foregroundColor(SwapCryptoLogic.priceImpactColor(tx: tx))
         }
         .font(Theme.fonts.caption12)
     }
@@ -218,7 +218,7 @@ struct SwapDetailsSummary: View {
 
             Text(trailingText)
                 .foregroundColor(Theme.colors.textSecondary)
-                .redacted(reason: swapViewModel.isLoading ? .placeholder : [])
+                .redacted(reason: detailsViewModel.isLoading ? .placeholder : [])
         }
         .font(Theme.fonts.caption12)
     }
@@ -271,6 +271,6 @@ struct SwapDetailsSummary: View {
 #Preview {
     ZStack {
         Background()
-        SwapDetailsSummary(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel())
+        SwapDetailsSummary(tx: SwapTransaction(), detailsViewModel: SwapDetailsViewModel())
     }
 }

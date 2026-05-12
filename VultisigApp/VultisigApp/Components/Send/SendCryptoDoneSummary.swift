@@ -14,8 +14,6 @@ struct SendCryptoDoneSummary: View {
     let hash: String
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
-
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
@@ -114,27 +112,27 @@ struct SendCryptoDoneSummary: View {
                 )
             )
 
-            if swapSummaryViewModel.showFees(tx: tx) {
+            if SwapCryptoLogic.showFees(tx: tx) {
                 Separator()
                 getGeneralCell(
                     title: "swapFee",
-                    description: swapSummaryViewModel.swapFeeString(tx: tx)
+                    description: SwapCryptoLogic.swapFeeString(tx: tx)
                 )
             }
 
-            if swapSummaryViewModel.showGas(tx: tx) {
+            if SwapCryptoLogic.showGas(tx: tx) {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
+                    description: "\(SwapCryptoLogic.swapGasString(tx: tx))(~\(SwapCryptoLogic.approveFeeString(tx: tx)))"
                 )
             }
 
-            if swapSummaryViewModel.showTotalFees(tx: tx) {
+            if SwapCryptoLogic.showTotalFees(tx: tx) {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
+                    description: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
                 )
             }
         }
@@ -188,7 +186,6 @@ struct SendCryptoDoneSummary: View {
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
             sendSummaryViewModel: SendSummaryViewModel(),
-            swapSummaryViewModel: SwapCryptoViewModel()
         )
     }
     .environmentObject(SettingsViewModel())

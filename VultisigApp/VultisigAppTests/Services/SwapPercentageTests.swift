@@ -16,7 +16,7 @@ private extension String {
 /// user selects a 25/50/75/100% amount for a swap. This file validates the
 /// *intended* rule (`max(4, coin.decimals)`, capped at 9 for EVM chains).
 ///
-/// Note: `SwapCryptoDetailsView.handlePercentageSelection` currently hardcodes
+/// Note: `SwapDetailsScreen.handlePercentageSelection` currently hardcodes
 /// `decimalsToUse: Int = 4` for every coin, so BTC/ETH amounts are truncated
 /// to 4 decimals in the UI today. Aligning the UI with this rule is tracked
 /// in the Swap flow rewrite (docs/refactors/10-swap-rewrite.md). Until then
