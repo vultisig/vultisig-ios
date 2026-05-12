@@ -193,6 +193,7 @@
 "close" = "Chiudi";
 "coinAddressCopied" = "Indirizzo %@ copiato";
 "coinPool" = "Pool %@";
+"coinServiceChainNotEnabledForKeyImport" = "La chain %@ non è abilitata per questo vault importato";
 "collectedRewards" = "Premi raccolti";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Congratulazioni!";

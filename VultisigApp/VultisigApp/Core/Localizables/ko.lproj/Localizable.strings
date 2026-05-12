@@ -195,6 +195,7 @@
 "close" = "닫기";
 "coinAddressCopied" = "%@ 주소 복사됨";
 "coinPool" = "%@ 풀";
+"coinServiceChainNotEnabledForKeyImport" = "이 가져온 볼트에서 %@ 체인이 활성화되어 있지 않습니다";
 "collectedRewards" = "수집된 보상";
 "compoundedCoin" = "복리 %@";
 "congratsExclamation" = "축하합니다!";

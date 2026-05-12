@@ -193,6 +193,7 @@
 "close" = "Cerrar";
 "coinAddressCopied" = "Dirección de moneda copiada";
 "coinPool" = "Pool de %@";
+"coinServiceChainNotEnabledForKeyImport" = "La cadena %@ no está habilitada para esta bóveda importada";
 "collectedRewards" = "Recompensas recolectadas";
 "compoundedCoin" = "%@ Compuesto";
 "congratsExclamation" = "¡Felicidades!";

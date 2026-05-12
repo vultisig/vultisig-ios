@@ -195,6 +195,7 @@
 "close" = "Close";
 "coinAddressCopied" = "%@ address copied";
 "coinPool" = "%@ Pool";
+"coinServiceChainNotEnabledForKeyImport" = "Chain %@ is not enabled for this imported vault";
 "collectedRewards" = "Collected rewards";
 "compoundedCoin" = "Compounded %@";
 "congratsExclamation" = "Congrats!";
