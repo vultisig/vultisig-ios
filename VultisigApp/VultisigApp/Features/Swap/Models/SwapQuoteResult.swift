@@ -3,8 +3,8 @@
 //  VultisigApp
 //
 //  Bundles the outputs of a quote fetch — the SwapQuote itself plus the
-//  discount basis-points that today are written back into SwapDraftStore
-//  as side effects. Callers fold the bps values into their draft store.
+//  discount basis-points the caller needs to display alongside it. The
+//  details ViewModel folds the bps values into its own published state.
 //
 
 import Foundation

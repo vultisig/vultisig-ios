@@ -124,7 +124,7 @@ struct SendCryptoDoneSummary: View {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(tx.swapGasString)(~\(tx.approveFeeString))"
+                    description: "\(tx.swapGasString)(\(tx.approveFeeString))"
                 )
             }
 

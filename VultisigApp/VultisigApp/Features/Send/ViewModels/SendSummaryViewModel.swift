@@ -31,7 +31,11 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func swapFeeString(_ tx: SwapTransaction) -> String {
-        let networkFee = tx.feeCoin.fiat(value: tx.gas)
+        // `tx.gas` is gas price (wei/gas for EVM) — converting it directly to
+        // fiat understates the network fee by ~6 orders of magnitude. `tx.fee`
+        // is the precomputed total payable network fee in the chain's smallest
+        // unit, which is what we actually owe.
+        let networkFee = tx.feeCoin.fiat(value: tx.fee)
 
         if let swapFeeBigInt = tx.quote.evmSwapFeeBigInt {
             let feeDecimal = tx.feeCoin.decimal(for: swapFeeBigInt)

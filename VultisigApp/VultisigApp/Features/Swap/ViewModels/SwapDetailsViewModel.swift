@@ -342,10 +342,15 @@ private extension SwapDetailsViewModel {
     func fetchQuotes(vault: Vault, referredCode: String) {
         updateQuoteTask?.cancel()
 
-        guard !fromAmount.isEmpty else {
+        // Empty or non-positive amount: drop any leftover quote/fee/discount
+        // state from a prior valid input so `validateForm` doesn't pass on
+        // a stale combination of new amount + old downstream values.
+        if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
             quote = nil
             gas = .zero
             thorchainFee = .zero
+            vultDiscountBps = 0
+            referralDiscountBps = 0
             error = nil
             isLoadingQuotes = false
             isLoadingFees = false
@@ -363,19 +368,18 @@ private extension SwapDetailsViewModel {
                 self?.isLoadingFees = false
             }
 
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { [weak self] in
-                    await self?.updateQuotes(vault: vault, referredCode: referredCode)
-                }
-                group.addTask { [weak self] in
-                    await self?.updateFees(vault: vault)
-                }
-            }
+            // Sequential, not parallel: `updateFees` reads `self.quote`, so
+            // running them concurrently raced — fees could see the `quote = nil`
+            // that `updateQuotes` writes before its fetch returns.
+            await self?.updateQuotes(vault: vault, referredCode: referredCode)
+            await self?.updateFees(vault: vault)
         }
     }
 
     func updateQuotes(vault: Vault, referredCode: String) async {
         quote = nil
+        vultDiscountBps = 0
+        referralDiscountBps = 0
         error = nil
 
         guard !fromAmount.isEmpty else { return }

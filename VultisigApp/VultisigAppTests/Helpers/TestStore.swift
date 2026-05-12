@@ -39,7 +39,10 @@ enum TestStore {
     }
 
     /// Restores the `Storage.shared.modelContext` saved by `installInMemoryContainer()`.
-    static func restore(_ token: TestContextToken) {
+    /// `nil`-tolerant so a `tearDown` after a thrown `setUp` doesn't trap on the
+    /// IUO token and mask the real failure.
+    static func restore(_ token: TestContextToken?) {
+        guard let token else { return }
         Storage.shared.modelContext = token.previousContext
     }
 
