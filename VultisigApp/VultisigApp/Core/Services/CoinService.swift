@@ -11,6 +11,17 @@ import SwiftData
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "coin-service")
 
+enum CoinServiceError: LocalizedError, Equatable {
+    case chainNotEnabledForKeyImport(Chain)
+
+    var errorDescription: String? {
+        switch self {
+        case .chainNotEnabledForKeyImport(let chain):
+            return String(format: "coinServiceChainNotEnabledForKeyImport".localized, chain.name)
+        }
+    }
+}
+
 @MainActor
 struct CoinService {
 
@@ -142,6 +153,8 @@ struct CoinService {
     }
 
     static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
+        try assertChainAllowed(asset: asset, vault: vault)
+
         let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
         let isDerived = pubKey != nil
         let newCoin = try CoinFactory.create(
@@ -187,6 +200,20 @@ struct CoinService {
         }
 
         return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+    }
+
+    /// Rejects writes to chains the user did not enable at import time.
+    /// Without this, features like the swap-quote-driven VULT tier check
+    /// would silently inject ETH (and discover ERC20s) into a key-import
+    /// vault that derived TSS shares only for THORChain.
+    ///
+    /// Legacy JSON backups predate `chainPublicKeys` persistence; skip the
+    /// guard when the list is empty to avoid soft-bricking restored vaults.
+    static func assertChainAllowed(asset: CoinMeta, vault: Vault) throws {
+        guard vault.libType == .KeyImport else { return }
+        guard !vault.chainPublicKeys.isEmpty else { return }
+        guard !vault.chainPublicKeys.contains(where: { $0.chain == asset.chain }) else { return }
+        throw CoinServiceError.chainNotEnabledForKeyImport(asset.chain)
     }
 
     static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
