@@ -82,6 +82,31 @@ struct OneInchService {
         return Array(response.data.tokens.values)
     }
 
+    /// Fetch the ERC-20 balance map for an address. Returns a dictionary keyed
+    /// on lowercased contract address; values are decimal strings of base-unit
+    /// balances. Used by the EVM coin-finder to skip the per-token RPC call
+    /// for tokens the address doesn't actually hold.
+    func fetchBalances(chain: Int, address: String) async throws -> [String: String] {
+        let response = try await httpClient.request(
+            OneInchAPI.balances(chain: chain, address: address),
+            responseType: [String: String].self
+        )
+        return response.data
+    }
+
+    /// Bulk metadata lookup for a set of contract addresses. The response is
+    /// keyed on contract address (lowercased). Used by the EVM coin-finder
+    /// after `fetchBalances` to resolve symbol/decimals/logo for the address's
+    /// actual holdings.
+    func fetchCustomTokens(chain: Int, addresses: [String]) async throws -> [String: OneInchToken] {
+        guard !addresses.isEmpty else { return [:] }
+        let response = try await httpClient.request(
+            OneInchAPI.customTokens(chain: chain, addresses: addresses),
+            responseType: [String: OneInchToken].self
+        )
+        return response.data
+    }
+
     func bps(for discount: Int) -> Double {
         let formattedDiscount = Double(discount) / 100.0
         return max(0, Self.referredFee - formattedDiscount)

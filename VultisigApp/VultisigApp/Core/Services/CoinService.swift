@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import OSLog
 import SwiftData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "coin-service")
 
 enum CoinServiceError: LocalizedError, Equatable {
     case chainNotEnabledForKeyImport(Chain)
@@ -312,11 +315,11 @@ struct CoinService {
 
                     _ =  try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
-                    print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
+                    logger.warning("Error adding discovered token \(token.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         } catch {
-            print("Error fetching service: \(error.localizedDescription)")
+            logger.warning("Error fetching discovered tokens for \(nativeToken.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
