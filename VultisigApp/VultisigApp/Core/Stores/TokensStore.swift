@@ -2091,7 +2091,11 @@ class TokensStore {
         logo: "xruji", // Use same logo as RUJI
         decimals: 8,
         priceProviderId: "rujira",
-        contractAddress: "x/staking-ruji",
+        // The on-chain denom for sRUJI is `x/staking-x/ruji` — PR #3837 renamed
+        // this locally to `x/staking-ruji` (mirroring the sTCY rename) but the
+        // chain never actually moved sRUJI, so the renamed contract didn't
+        // match any balance. Restored to the real denom (see issue #4318).
+        contractAddress: "x/staking-x/ruji",
         isNativeToken: false
     )
 
