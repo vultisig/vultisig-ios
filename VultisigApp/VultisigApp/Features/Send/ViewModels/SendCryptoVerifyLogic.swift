@@ -37,12 +37,15 @@ struct SendCryptoVerifyLogic {
         BigInt(EVMHelper.defaultETHTransferGasUnit) :
         BigInt(EVMHelper.defaultERC20TransferGasUnit)
 
+        // Send-pilot decision 3: thread tx.feeMode through instead of
+        // hardcoding .default. The user's custom fee mode chosen in the
+        // Details screen is otherwise dropped on Verify refresh.
         let feeInfo = try await service.calculateFees(
             chain: tx.coin.chain,
             limit: gasLimit,
             isSwap: false,
             fromAddress: tx.fromAddress,
-            feeMode: .default
+            feeMode: tx.feeMode
         )
 
         let fee = feeInfo.amount

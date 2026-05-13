@@ -160,6 +160,36 @@ final class BlockChainService {
         }
     }
 
+    /// Primitive-typed entry point for the new SendInteractor. Wraps the
+    /// private full-signature `fetchSpecific(for:action:…)` so the interactor
+    /// doesn't need a `SendTransaction` reference (Phase A4 / Phase B).
+    func fetchSendBlockChainSpecific(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        sendMaxAmount: Bool,
+        isDeposit: Bool,
+        transactionType: VSTransactionType,
+        gasLimit: BigInt?,
+        feeMode: FeeMode,
+        fromAddress: String
+    ) async throws -> BlockChainSpecific {
+        try await fetchSpecific(
+            for: coin,
+            action: .transfer,
+            sendMaxAmount: sendMaxAmount,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            memo: memo,
+            feeMode: feeMode,
+            amount: amount
+        )
+    }
+
     func fetchSwapBlockChainSpecific(
         fromCoin: Coin,
         // swiftlint:disable:next unused_parameter
