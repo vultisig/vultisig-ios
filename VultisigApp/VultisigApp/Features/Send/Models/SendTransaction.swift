@@ -113,12 +113,16 @@ extension SendTransaction {
     /// already pinned a custom gas, the pinned value sticks. That's the fix
     /// for the bug where Verify refresh dropped custom gas (decision 3).
     func with(
+        toAddress: String? = nil,
+        amount: String? = nil,
         gas: BigInt? = nil,
         fee: BigInt? = nil,
         feeMode: FeeMode? = nil,
         estimatedGasLimit: BigInt? = nil,
         memo: String? = nil,
         sendMaxAmount: Bool? = nil,
+        isFastVault: Bool? = nil,
+        isStakingOperation: Bool? = nil,
         memoFunctionDictionary: [String: String]? = nil,
         wasmContractPayload: WasmExecuteContractPayload? = nil
     ) -> SendTransaction {
@@ -126,9 +130,9 @@ extension SendTransaction {
             coin: coin,
             vault: vault,
             fromAddress: fromAddress,
-            toAddress: toAddress,
+            toAddress: toAddress ?? self.toAddress,
             toAddressLabel: toAddressLabel,
-            amount: amount,
+            amount: amount ?? self.amount,
             amountInFiat: amountInFiat,
             memo: memo ?? self.memo,
             gas: gas ?? self.gas,
@@ -138,8 +142,8 @@ extension SendTransaction {
             customGasLimit: customGasLimit,
             customByteFee: customByteFee,
             sendMaxAmount: sendMaxAmount ?? self.sendMaxAmount,
-            isFastVault: isFastVault,
-            isStakingOperation: isStakingOperation,
+            isFastVault: isFastVault ?? self.isFastVault,
+            isStakingOperation: isStakingOperation ?? self.isStakingOperation,
             transactionType: transactionType,
             memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
             wasmContractPayload: wasmContractPayload ?? self.wasmContractPayload,

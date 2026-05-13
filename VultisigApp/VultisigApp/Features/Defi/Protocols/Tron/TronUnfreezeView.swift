@@ -20,7 +20,6 @@ struct TronUnfreezeView: View {
     @State var error: Error?
     @State var selectedResourceType: TronResourceType = .bandwidth
 
-    @StateObject private var sendTransaction = LegacySendTransaction()
     @State private var sendInteractor: SendInteractor = DefaultSendInteractor.live
 
     init(vault: Vault, model: TronViewModel) {
@@ -255,24 +254,19 @@ struct TronUnfreezeView: View {
             error = nil
         }
 
-        // Configure LegacySendTransaction for the unfreeze operation
-        // The memo encodes the unfreeze operation type for TronHelper
+        // The memo encodes the unfreeze operation type for TronHelper.
         let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
-
-        await MainActor.run {
-            sendTransaction.coin = trxCoin
-            sendTransaction.fromAddress = trxCoin.address
-            sendTransaction.toAddress = trxCoin.address  // Unfreeze returns to self
-            sendTransaction.amount = amountDecimal.description
-            sendTransaction.memo = memo
-            sendTransaction.isStakingOperation = true
-        }
-
-        sendTransaction.isFastVault = await sendInteractor.loadFastVault(vault: vault)
+        let isFast = await sendInteractor.loadFastVault(vault: vault)
 
         await MainActor.run {
             isLoading = false
-            let immutableTx = SendTransaction.fromLegacy(sendTransaction, vault: vault)
+            let immutableTx = SendTransaction.empty(coin: trxCoin, vault: vault).with(
+                toAddress: trxCoin.address,  // Unfreeze returns to self
+                amount: amountDecimal.description,
+                memo: memo,
+                isFastVault: isFast,
+                isStakingOperation: true
+            )
             router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: vault))
         }
     }
