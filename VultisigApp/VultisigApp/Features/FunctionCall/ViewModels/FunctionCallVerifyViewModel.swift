@@ -30,7 +30,8 @@ class FunctionCallVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
 
-    func createKeysignPayload(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func createKeysignPayload(tx: SendTransaction) async throws -> KeysignPayload {
+        let vault = tx.vault
         await MainActor.run { isLoading = true }
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
@@ -47,7 +48,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
             // replace with a dedicated deposit payload across iOS/Android/Windows.
             var approvePayload: ERC20ApprovePayload?
             var swapPayload: SwapPayload?
-            let isLPAdd = tx.memoFunctionDictionary.get("pool") != nil
+            let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
             let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
             let isRouterDeposit = isLPAdd || isSecuredAssetMint
             if isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty {
