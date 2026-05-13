@@ -10,7 +10,7 @@ import SwiftUI
 struct CoinDetailScreen: View {
     let coin: Coin
     let vault: Vault
-    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var sendTx: LegacySendTransaction
     @Binding var isPresented: Bool
     var onCoinAction: (VaultAction) -> Void
 
@@ -25,7 +25,7 @@ struct CoinDetailScreen: View {
     init(
         coin: Coin,
         vault: Vault,
-        sendTx: SendTransaction,
+        sendTx: LegacySendTransaction,
         isPresented: Binding<Bool>,
         onCoinAction: @escaping (VaultAction) -> Void
     ) {

@@ -19,8 +19,8 @@ protocol TransactionBuilder {
 }
 
 extension TransactionBuilder {
-    func buildTransaction() -> SendTransaction {
-        let sendTx = SendTransaction()
+    func buildTransaction() -> LegacySendTransaction {
+        let sendTx = LegacySendTransaction()
         sendTx.fromAddress = coin.address
         sendTx.coin = coin
         sendTx.amount = amount

@@ -31,7 +31,7 @@ extension ReshareView {
         PrimaryButton(title: "joinReshare", type: .secondary) {
             router.navigate(to: KeygenRoute.macScanner(
                 type: .NewVault,
-                sendTx: SendTransaction(),
+                sendTx: LegacySendTransaction(),
                 selectedVault: nil
             ))
         }

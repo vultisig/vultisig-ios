@@ -12,7 +12,7 @@ struct SendPairScreen: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
-    let tx: SendTransaction
+    let tx: LegacySendTransaction
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
 

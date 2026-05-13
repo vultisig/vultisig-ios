@@ -6,7 +6,7 @@ import VultisigCommonData
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
-class SendTransaction: ObservableObject, Hashable {
+class LegacySendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var toAddressLabel: String? = nil
@@ -141,7 +141,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.reset(coin: coin)
     }
 
-    static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
+    static func == (lhs: LegacySendTransaction, rhs: LegacySendTransaction) -> Bool {
         lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
         lhs.amount == rhs.amount &&

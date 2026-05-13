@@ -9,7 +9,7 @@ import SwiftUI
 
 struct EditReferralDetailsView: View {
     @StateObject var viewModel: EditReferralViewModel
-    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var sendTx: LegacySendTransaction
     var onNext: () -> Void
 
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -18,7 +18,7 @@ struct EditReferralDetailsView: View {
 
     init(
         viewModel: EditReferralViewModel,
-        sendTx: SendTransaction,
+        sendTx: LegacySendTransaction,
         onNext: @escaping () -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: viewModel)
@@ -224,7 +224,7 @@ struct EditReferralDetailsView: View {
             thornameDetails: .example,
             currentBlockHeight: 0
         ),
-        sendTx: SendTransaction(),
+        sendTx: LegacySendTransaction(),
         onNext: {}
     )
 }

@@ -47,7 +47,7 @@ struct CreateVaultView: View {
             guard shouldNavigate else { return }
             router.navigate(to: KeygenRoute.macScanner(
                 type: .NewVault,
-                sendTx: SendTransaction(),
+                sendTx: LegacySendTransaction(),
                 selectedVault: selectedVault
             ))
             navigateToScanQR = false
@@ -211,7 +211,7 @@ extension CreateVaultView {
                 GeneralCodeScannerView(
                     showSheet: $showSheet,
                     selectedChain: .constant(nil),
-                    sendTX: SendTransaction(),
+                    sendTX: LegacySendTransaction(),
                     onJoinKeygen: {
                         shouldJoinKeygen = true
                     }

@@ -17,10 +17,10 @@ struct CoinPickerView: View {
     @Environment(\.dismiss) var dismiss
 
     let coins: [Coin]
-    let tx: SendTransaction?
+    let tx: LegacySendTransaction?
     let onSelect: ((Coin) -> Void)?
 
-    init(coins: [Coin], tx: SendTransaction? = nil, onSelect: ((Coin) -> Void)? = nil) {
+    init(coins: [Coin], tx: LegacySendTransaction? = nil, onSelect: ((Coin) -> Void)? = nil) {
         self.coins = coins
         self.tx = tx
         self.onSelect = onSelect

@@ -4,7 +4,7 @@ import SwiftUI
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @ObservedObject var vault: Vault
 
@@ -18,7 +18,7 @@ struct FunctionCallDetailsScreen: View {
 
     init(
         vault: Vault,
-        tx: SendTransaction,
+        tx: LegacySendTransaction,
         defaultCoin: Coin?
     ) {
         self.vault = vault

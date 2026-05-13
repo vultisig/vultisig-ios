@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     let vault: Vault
 
     @Query private var vaults: [Vault]
@@ -188,7 +188,7 @@ struct SendVerifyScreen: View {
 
 #Preview {
     SendVerifyScreen(
-        tx: SendTransaction(),
+        tx: LegacySendTransaction(),
         vault: Vault.example
     )
     .environmentObject(SettingsViewModel())

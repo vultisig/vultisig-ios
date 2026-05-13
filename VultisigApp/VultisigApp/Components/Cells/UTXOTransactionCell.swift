@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UTXOTransactionCell: View {
     let transaction: UTXOTransactionMempool
-    let tx: SendTransaction
+    let tx: LegacySendTransaction
     @ObservedObject var utxoTransactionsService: UTXOTransactionsService
 
     let selfText = NSLocalizedString("self", comment: "")

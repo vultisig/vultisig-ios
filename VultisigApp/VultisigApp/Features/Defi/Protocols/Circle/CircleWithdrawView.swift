@@ -24,7 +24,7 @@ struct CircleWithdrawView: View {
     @State var fastPasswordPresented = false
     @State var fastVaultPassword: String = ""
 
-    @StateObject var sendTransaction = SendTransaction()
+    @StateObject var sendTransaction = LegacySendTransaction()
 
     init(vault: Vault, model: CircleViewModel) {
         self.vault = vault

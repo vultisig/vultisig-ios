@@ -30,7 +30,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
 
-    func createKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func createKeysignPayload(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
         await MainActor.run { isLoading = true }
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
@@ -119,7 +119,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
         }
     }
 
-    func scan(transaction: SendTransaction, vault: Vault) async {
+    func scan(transaction: LegacySendTransaction, vault: Vault) async {
         await securityScanViewModel.scan(transaction: transaction, vault: vault)
     }
 

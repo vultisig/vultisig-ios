@@ -43,7 +43,7 @@ class SecurityScannerViewModel: ObservableObject {
         self.service = service
     }
 
-    func scan(transaction: SendTransaction, vault: Vault) async {
+    func scan(transaction: LegacySendTransaction, vault: Vault) async {
         guard isScanningAvailable(for: transaction.coin.chain) else { return }
         await scan(transactionType: .send(transaction, vault))
     }
@@ -92,6 +92,6 @@ class SecurityScannerViewModel: ObservableObject {
 
     private enum SecurityScannerTransactionType {
         case swap(SwapTransaction)
-        case send(SendTransaction, Vault)
+        case send(LegacySendTransaction, Vault)
     }
 }

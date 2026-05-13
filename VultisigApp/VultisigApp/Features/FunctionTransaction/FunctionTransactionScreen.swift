@@ -13,7 +13,7 @@ struct FunctionTransactionScreen: View {
     let transactionType: FunctionTransactionType
 
     @StateObject private var functionCallViewModel = FunctionCallViewModel()
-    @State private var sendTx: SendTransaction?
+    @State private var sendTx: LegacySendTransaction?
     @State var isLoading: Bool = false
 
     @Environment(\.dismiss) var dismiss

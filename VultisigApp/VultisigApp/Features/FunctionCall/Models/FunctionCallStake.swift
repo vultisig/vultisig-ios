@@ -31,12 +31,12 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
     }
 
     private var cancellables = Set<AnyCancellable>()
-    private var tx: SendTransaction?
+    private var tx: LegacySendTransaction?
 
     required init() {
     }
 
-    convenience init(tx: SendTransaction) {
+    convenience init(tx: LegacySendTransaction) {
         self.init()
         self.tx = tx
         self.amount = tx.coin.balanceDecimal

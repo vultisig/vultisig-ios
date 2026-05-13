@@ -22,7 +22,7 @@ struct SendCryptoVerifyLogic {
         let gas: BigInt
     }
 
-    func calculateFee(tx: SendTransaction) async throws -> FeeResult {
+    func calculateFee(tx: LegacySendTransaction) async throws -> FeeResult {
         if tx.coin.chain.chainType == .EVM {
             return try await calculateEVMFee(tx: tx)
         } else {
@@ -30,7 +30,7 @@ struct SendCryptoVerifyLogic {
         }
     }
 
-    private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
+    private func calculateEVMFee(tx: LegacySendTransaction) async throws -> FeeResult {
         let service = try EthereumFeeService(chain: tx.coin.chain)
 
         let gasLimit = tx.coin.isNativeToken ?
@@ -67,7 +67,7 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: gas)
     }
 
-    private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
+    private func calculateNonEVMFee(tx: LegacySendTransaction) async throws -> FeeResult {
         let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
         let fee: BigInt
@@ -86,7 +86,7 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: fee)
     }
 
-    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+    func calculateUTXOPlanFee(tx: LegacySendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = AppViewModel.shared.selectedVault else {
             throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
@@ -160,7 +160,7 @@ struct SendCryptoVerifyLogic {
         let errorMessage: String?
     }
 
-    func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
+    func validateBalanceWithFee(tx: LegacySendTransaction) -> BalanceValidationResult {
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
@@ -210,7 +210,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - UTXO Validation
 
-    func validateUtxosIfNeeded(tx: SendTransaction) async throws {
+    func validateUtxosIfNeeded(tx: LegacySendTransaction) async throws {
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
@@ -223,7 +223,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - Keysign Payload
 
-    func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func buildKeysignPayload(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 

@@ -11,7 +11,7 @@ struct SendKeysignScreen: View {
     @Environment(\.router) var router
 
     let input: KeysignInput
-    let tx: SendTransaction
+    let tx: LegacySendTransaction
     @StateObject var viewModel = SendKeysignViewModel()
 
     var body: some View {

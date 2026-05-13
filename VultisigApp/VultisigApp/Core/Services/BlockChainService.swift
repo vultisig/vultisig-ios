@@ -151,7 +151,7 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
-    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
+    func fetchSpecific(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
             return try await fetchSpecificForEVM(tx: tx)
@@ -162,7 +162,7 @@ final class BlockChainService {
 
     /// Primitive-typed entry point for the new SendInteractor. Wraps the
     /// private full-signature `fetchSpecific(for:action:…)` so the interactor
-    /// doesn't need a `SendTransaction` reference (Phase A4 / Phase B).
+    /// doesn't need a `LegacySendTransaction` reference (Phase A4 / Phase B).
     func fetchSendBlockChainSpecific(
         coin: Coin,
         toAddress: String,
@@ -288,7 +288,7 @@ private extension BlockChainService {
             return 60
         }
     }
-    func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+    func fetchSpecificForNonEVM(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
@@ -323,7 +323,7 @@ private extension BlockChainService {
         return blockSpecific
     }
 
-    func fetchSpecificForEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+    func fetchSpecificForEVM(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
@@ -712,7 +712,7 @@ private extension BlockChainService {
         }
     }
 
-    func estimateERC20GasLimit(tx: SendTransaction) async -> BigInt {
+    func estimateERC20GasLimit(tx: LegacySendTransaction) async -> BigInt {
         do {
             let service = try EvmService.getService(forChain: tx.coin.chain)
             let gas = try await service.estimateGasForERC20Transfer(
@@ -728,7 +728,7 @@ private extension BlockChainService {
         }
     }
 
-    func estimateGasLimit(tx: SendTransaction) async throws -> BigInt {
+    func estimateGasLimit(tx: LegacySendTransaction) async throws -> BigInt {
         let service = try EvmService.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForEthTransaction(
             senderAddress: tx.coin.address,

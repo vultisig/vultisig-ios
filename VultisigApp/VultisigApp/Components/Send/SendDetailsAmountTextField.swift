@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAmountTextField: View {
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @FocusState.Binding var focusedField: Field?
@@ -168,5 +168,5 @@ struct SendDetailsAmountTextField: View {
 
 #Preview {
     @FocusState var focusedField: Field?
-    return SendDetailsAmountTextField(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel(), focusedField: $focusedField)
+    return SendDetailsAmountTextField(tx: LegacySendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel(), focusedField: $focusedField)
 }

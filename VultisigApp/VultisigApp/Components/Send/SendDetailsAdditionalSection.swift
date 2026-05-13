@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAdditionalSection: View {
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
 
@@ -76,7 +76,7 @@ struct SendDetailsAdditionalSection: View {
 
 #Preview {
     SendDetailsAdditionalSection(
-        tx: SendTransaction(),
+        tx: LegacySendTransaction(),
         viewModel: SendDetailsViewModel(),
         sendCryptoViewModel: SendCryptoViewModel()
     )

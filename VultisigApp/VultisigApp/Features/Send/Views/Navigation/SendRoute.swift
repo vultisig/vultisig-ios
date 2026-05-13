@@ -6,11 +6,11 @@
 //
 
 enum SendRoute: Hashable {
-    case details(coin: Coin?, hasPreselectedCoin: Bool, tx: SendTransaction, vault: Vault)
-    case verify(tx: SendTransaction, vault: Vault)
-    case pairing(vault: Vault, tx: SendTransaction, keysignPayload: KeysignPayload, fastVaultPassword: String?)
-    case keysign(input: KeysignInput, tx: SendTransaction)
-    case done(vault: Vault, hash: String, chain: Chain, tx: SendTransaction, keysignPayload: KeysignPayload?)
-    case coinPicker(coins: [Coin], tx: SendTransaction)
+    case details(coin: Coin?, hasPreselectedCoin: Bool, tx: LegacySendTransaction, vault: Vault)
+    case verify(tx: LegacySendTransaction, vault: Vault)
+    case pairing(vault: Vault, tx: LegacySendTransaction, keysignPayload: KeysignPayload, fastVaultPassword: String?)
+    case keysign(input: KeysignInput, tx: LegacySendTransaction)
+    case done(vault: Vault, hash: String, chain: Chain, tx: LegacySendTransaction, keysignPayload: KeysignPayload?)
+    case coinPicker(coins: [Coin], tx: LegacySendTransaction)
     case transactionDetails(input: SendCryptoContent)
 }

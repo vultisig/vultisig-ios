@@ -31,7 +31,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
 
-    func loadGasInfoForSending(tx: SendTransaction) async {
+    func loadGasInfoForSending(tx: LegacySendTransaction) async {
         tx.isCalculatingFee = true
         isLoading = true
         errorMessage = ""
@@ -78,7 +78,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
     }
 
-    func validateBalanceWithFee(tx: SendTransaction) {
+    func validateBalanceWithFee(tx: LegacySendTransaction) {
         let result = logic.validateBalanceWithFee(tx: tx)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
@@ -96,7 +96,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         !isValidForm || isLoading || hasBalanceError
     }
 
-    func validateForm(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func validateForm(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
         isLoading = true
         defer { isLoading = false }
 
@@ -113,7 +113,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
     }
 
-    func scan(transaction: SendTransaction, vault: Vault) async {
+    func scan(transaction: LegacySendTransaction, vault: Vault) async {
         await securityScanViewModel.scan(transaction: transaction, vault: vault)
     }
 

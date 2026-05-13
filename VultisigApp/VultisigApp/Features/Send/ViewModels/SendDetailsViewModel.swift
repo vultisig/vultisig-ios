@@ -52,7 +52,7 @@ class SendDetailsViewModel: ObservableObject {
 
     /// Detects the chain from the scanned address and switches if found in vault
     /// Returns the detected coin if found, or nil if no match
-    func detectAndSwitchChain(from address: String, vault: Vault, currentChain: Chain, tx: SendTransaction) -> Coin? {
+    func detectAndSwitchChain(from address: String, vault: Vault, currentChain: Chain, tx: LegacySendTransaction) -> Coin? {
         // Use AddressService to detect the chain
         guard let detectedChain = AddressService.detectChain(from: address, vault: vault, currentChain: currentChain) else {
             return nil

@@ -24,7 +24,7 @@ final class CircleDepositViewModel: ObservableObject, Form {
     private(set) lazy var form: [FormField] = [amountField]
     var formCancellable: AnyCancellable?
 
-    let tx = SendTransaction()
+    let tx = LegacySendTransaction()
     let sendCryptoViewModel = SendCryptoViewModel()
 
     var availableAmount: Decimal {

@@ -13,7 +13,7 @@ struct SendRouteBuilder {
     func buildDetailsScreen(
         coin: Coin?,
         hasPreselectedCoin: Bool,
-        tx: SendTransaction,
+        tx: LegacySendTransaction,
         vault: Vault
     ) -> some View {
         SendDetailsScreen(
@@ -25,14 +25,14 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
+    func buildVerifyScreen(tx: LegacySendTransaction, vault: Vault) -> some View {
         SendVerifyScreen(tx: tx, vault: vault)
     }
 
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
-        tx: SendTransaction,
+        tx: LegacySendTransaction,
         keysignPayload: KeysignPayload,
         fastVaultPassword: String?
     ) -> some View {
@@ -45,7 +45,7 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction) -> some View {
+    func buildKeysignScreen(input: KeysignInput, tx: LegacySendTransaction) -> some View {
         SendKeysignScreen(input: input, tx: tx)
     }
 
@@ -54,14 +54,14 @@ struct SendRouteBuilder {
         vault: Vault,
         hash: String,
         chain: Chain,
-        tx: SendTransaction,
+        tx: LegacySendTransaction,
         keysignPayload: KeysignPayload?
     ) -> some View {
         SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx, keysignPayload: keysignPayload)
     }
 
     @ViewBuilder
-    func buildCoinPickerScreen(coins: [Coin], tx: SendTransaction) -> some View {
+    func buildCoinPickerScreen(coins: [Coin], tx: LegacySendTransaction) -> some View {
         CoinPickerView(coins: coins, tx: tx)
     }
 

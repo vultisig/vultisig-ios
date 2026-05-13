@@ -50,7 +50,7 @@ class SendSummaryViewModel: ObservableObject {
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
-    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+    func feesInReadable(tx: LegacySendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else {
             return .empty
         }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SendDetailsAssetTab: View {
     let isExpanded: Bool
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
 
@@ -186,7 +186,7 @@ struct SendDetailsAssetTab: View {
 #Preview {
     SendDetailsAssetTab(
         isExpanded: true,
-        tx: SendTransaction(),
+        tx: LegacySendTransaction(),
         viewModel: SendDetailsViewModel(),
         sendCryptoViewModel: SendCryptoViewModel()
     )

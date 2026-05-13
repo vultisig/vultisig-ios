@@ -22,7 +22,7 @@ protocol SecurityScannerServiceProtocol {
     /// Create SecurityScannerTransaction from a regular transaction
     /// - Parameter transaction: The transaction to convert
     /// - Returns: SecurityScannerTransaction ready for scanning
-    func createSecurityScannerTransaction(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction
+    func createSecurityScannerTransaction(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction
 
     /// Create SecurityScannerTransaction from a swap transaction
     /// - Parameter transaction: The swap transaction to convert
@@ -57,7 +57,7 @@ protocol SecurityScannerTransactionFactoryProtocol {
     ///   - transaction: The transaction to convert
     ///   - vault: The vault containing transaction details
     /// - Returns: SecurityScannerTransaction ready for scanning
-    func createSecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction
+    func createSecurityScanner(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction
 
     /// Create SecurityScannerTransaction from a swap transaction
     /// - Parameter transaction: The swap transaction to convert

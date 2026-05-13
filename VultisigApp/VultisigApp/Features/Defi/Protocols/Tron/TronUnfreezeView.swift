@@ -20,7 +20,7 @@ struct TronUnfreezeView: View {
     @State var error: Error?
     @State var selectedResourceType: TronResourceType = .bandwidth
 
-    @StateObject var sendTransaction = SendTransaction()
+    @StateObject var sendTransaction = LegacySendTransaction()
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
 
     init(vault: Vault, model: TronViewModel) {
@@ -255,7 +255,7 @@ struct TronUnfreezeView: View {
             error = nil
         }
 
-        // Configure SendTransaction for the unfreeze operation
+        // Configure LegacySendTransaction for the unfreeze operation
         // The memo encodes the unfreeze operation type for TronHelper
         let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
 

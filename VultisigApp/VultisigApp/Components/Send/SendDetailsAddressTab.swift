@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SendDetailsAddressTab: View {
     let isExpanded: Bool
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @FocusState.Binding var focusedField: Field?

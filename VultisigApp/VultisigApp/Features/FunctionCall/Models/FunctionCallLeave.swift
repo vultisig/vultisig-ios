@@ -29,13 +29,13 @@ class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
     }
 
     private var cancellables = Set<AnyCancellable>()
-    private var tx: SendTransaction?
+    private var tx: LegacySendTransaction?
     private var vault: Vault?
 
     required init() {
     }
 
-    init(tx: SendTransaction, vault: Vault) {
+    init(tx: LegacySendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }

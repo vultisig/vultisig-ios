@@ -59,7 +59,7 @@ struct ReshareView: View {
             GeneralCodeScannerView(
                 showSheet: $showJoinReshare,
                 selectedChain: .constant(nil),
-                sendTX: SendTransaction(),
+                sendTX: LegacySendTransaction(),
                 onJoinKeygen: {
                     shouldJoinKeygen = true
                 }

@@ -18,7 +18,7 @@ enum Field: Int, Hashable {
 
 struct SendDetailsScreen: View {
     @State var coin: Coin?
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
@@ -474,7 +474,7 @@ private func setMainData() async {
 #Preview {
     SendDetailsScreen(
         coin: Coin.example,
-        tx: SendTransaction(),
+        tx: LegacySendTransaction(),
         sendDetailsViewModel: SendDetailsViewModel(),
         vault: Vault.example
     )

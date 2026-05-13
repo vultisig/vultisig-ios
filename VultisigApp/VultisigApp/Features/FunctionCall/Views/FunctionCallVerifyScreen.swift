@@ -12,7 +12,7 @@ struct FunctionCallVerifyScreen: View {
     @Environment(\.router) var router
     @StateObject var depositViewModel = FunctionCallViewModel()
     @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: LegacySendTransaction
     let vault: Vault
 
     @State var fastPasswordPresented = false
@@ -166,7 +166,7 @@ struct FunctionCallVerifyScreen: View {
 
 #Preview {
     FunctionCallVerifyScreen(
-        tx: SendTransaction(),
+        tx: LegacySendTransaction(),
         vault: Vault.example
     )
 }

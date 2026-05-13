@@ -17,7 +17,7 @@ struct SendCryptoDoneView: View {
 
     var progressLink: String? = nil
 
-    let sendTransaction: SendTransaction?
+    let sendTransaction: LegacySendTransaction?
     let swapTransaction: SwapTransaction?
     let keysignPayload: KeysignPayload?
 
@@ -38,7 +38,7 @@ struct SendCryptoDoneView: View {
         approveHash: String?,
         chain: Chain,
         progressLink: String? = nil,
-        sendTransaction: SendTransaction?,
+        sendTransaction: LegacySendTransaction?,
         swapTransaction: SwapTransaction?,
         isSend: Bool,
         keysignPayload: KeysignPayload? = nil
@@ -62,7 +62,7 @@ struct SendCryptoDoneView: View {
         .overlay(PopupCapsule(text: alertTitle, showPopup: $showAlert))
     }
 
-    func sendView(tx: SendTransaction) -> some View {
+    func sendView(tx: LegacySendTransaction) -> some View {
         sendContent(tx: tx)
     }
 
@@ -77,7 +77,7 @@ struct SendCryptoDoneView: View {
         )
     }
 
-    func sendContent(tx: SendTransaction) -> some View {
+    func sendContent(tx: LegacySendTransaction) -> some View {
         SendCryptoDoneContentView(
             input: SendCryptoContent(
                 coin: tx.coin,
@@ -148,7 +148,7 @@ struct SendCryptoDoneView: View {
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
-        sendTransaction: SendTransaction(),
+        sendTransaction: LegacySendTransaction(),
         swapTransaction: nil,
         isSend: true
     )

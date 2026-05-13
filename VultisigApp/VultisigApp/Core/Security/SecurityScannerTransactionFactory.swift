@@ -16,7 +16,7 @@ enum SecurityScannerTransactionFactoryError: Error {
 }
 
 struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProtocol {
-    func createSecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
+    func createSecurityScanner(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         let chain = transaction.coin.chain
         switch chain.chainType {
         case .EVM:
@@ -46,7 +46,7 @@ struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProto
 // MARK: - Send Transactions
 
 private extension SecurityScannerTransactionFactory {
-    func createEVMSecurityScanner(transaction: SendTransaction) throws -> SecurityScannerTransaction {
+    func createEVMSecurityScanner(transaction: LegacySendTransaction) throws -> SecurityScannerTransaction {
         let transferType: SecurityTransactionType
         let amount: BigInt
         let data: String
@@ -75,7 +75,7 @@ private extension SecurityScannerTransactionFactory {
         )
     }
 
-    func createSOLSecurityScanner(transaction: SendTransaction) async throws -> SecurityScannerTransaction {
+    func createSOLSecurityScanner(transaction: LegacySendTransaction) async throws -> SecurityScannerTransaction {
         guard Base58.decodeNoCheck(string: transaction.fromAddress) != nil else {
             throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromAddress)
         }
@@ -131,7 +131,7 @@ private extension SecurityScannerTransactionFactory {
         )
     }
 
-    func createSUISecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
+    func createSUISecurityScanner(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         var specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         guard case let .Sui(referenceGasPrice, specificCoins, gasBudget) = specific else {
             throw HelperError.runtimeError("Error Blockchain Specific is not SUI")
@@ -164,7 +164,7 @@ private extension SecurityScannerTransactionFactory {
         )
     }
 
-    func createBTCSecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
+    func createBTCSecurityScanner(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         let specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         let keySignPayload = try await KeysignPayloadFactory().buildTransfer(
             coin: transaction.coin,

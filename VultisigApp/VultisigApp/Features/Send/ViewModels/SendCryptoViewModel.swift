@@ -60,11 +60,11 @@ class SendCryptoViewModel: ObservableObject {
         isValidatingForm
     }
 
-    func loadFastVault(tx: SendTransaction, vault: Vault) async {
+    func loadFastVault(tx: LegacySendTransaction, vault: Vault) async {
         tx.isFastVault = await logic.loadFastVault(vault: vault)
     }
 
-    func isValidAddressFormat(tx: SendTransaction) -> Bool {
+    func isValidAddressFormat(tx: LegacySendTransaction) -> Bool {
         guard !tx.toAddress.isEmpty else { return false }
         let isValid = AddressService.validateAddress(address: tx.toAddress, chain: tx.coin.chain)
         if isValid {
@@ -74,7 +74,7 @@ class SendCryptoViewModel: ObservableObject {
         return isValid
     }
 
-    func debouncedResolveAddress(tx: SendTransaction) {
+    func debouncedResolveAddress(tx: LegacySendTransaction) {
         addressResolutionTask?.cancel()
         addressResolved = nil
         addressResolutionTask = Task {
@@ -89,7 +89,7 @@ class SendCryptoViewModel: ObservableObject {
         addressResolved = nil
     }
 
-    func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
+    func setMaxValues(tx: LegacySendTransaction, percentage: Double = 100) {
         errorMessage = ""
         isLoading = true
 
@@ -99,11 +99,11 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
 
-    func convertFiatToCoin(newValue: String, tx: SendTransaction) {
+    func convertFiatToCoin(newValue: String, tx: LegacySendTransaction) {
         logic.convertFiatToCoin(newValue: newValue, tx: tx)
     }
 
-    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
+    func convertToFiat(newValue: String, tx: LegacySendTransaction, setMaxValue: Bool = false) {
         logic.convertToFiat(newValue: newValue, tx: tx, setMaxValue: setMaxValue)
     }
 
@@ -121,7 +121,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
 
-    func validateForm(tx: SendTransaction) async -> Bool {
+    func validateForm(tx: LegacySendTransaction) async -> Bool {
         resetStates()
 
         let result = await logic.validateForm(tx: tx, hasPendingTransaction: hasPendingTransaction)
@@ -137,7 +137,7 @@ class SendCryptoViewModel: ObservableObject {
         return isValidForm
     }
 
-    func validateToAddress(tx: SendTransaction) async -> Bool {
+    func validateToAddress(tx: LegacySendTransaction) async -> Bool {
         resetStates()
 
         let result = await logic.validateToAddress(tx: tx)
@@ -160,7 +160,7 @@ class SendCryptoViewModel: ObservableObject {
         logger.info("mediator server stopped.")
     }
 
-    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+    func feesInReadable(tx: LegacySendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.fee)
         return RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
@@ -208,7 +208,7 @@ struct LegacySendCryptoInteractor {
         return await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
-    func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
+    func validateForm(tx: LegacySendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
 
         // Check for pending Cosmos transactions that could cause nonce conflicts
@@ -250,7 +250,7 @@ struct LegacySendCryptoInteractor {
         return result
     }
 
-    func validateToAddress(tx: SendTransaction) async -> ValidationResult {
+    func validateToAddress(tx: LegacySendTransaction) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
 
         guard !tx.toAddress.isEmpty else {
@@ -287,7 +287,7 @@ struct LegacySendCryptoInteractor {
         return result
     }
 
-    func convertFiatToCoin(newValue: String, tx: SendTransaction) {
+    func convertFiatToCoin(newValue: String, tx: LegacySendTransaction) {
         let newValueDecimal = newValue.toDecimal()
         if newValueDecimal > 0 {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
@@ -299,7 +299,7 @@ struct LegacySendCryptoInteractor {
         }
     }
 
-    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
+    func convertToFiat(newValue: String, tx: LegacySendTransaction, setMaxValue: Bool = false) {
         let newValueDecimal = newValue.toDecimal()
         if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
@@ -311,7 +311,7 @@ struct LegacySendCryptoInteractor {
         }
     }
     @MainActor
-    func setMaxValues(tx: SendTransaction, percentage: Double = 100) async {
+    func setMaxValues(tx: LegacySendTransaction, percentage: Double = 100) async {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         let coinMeta = tx.coin.toCoinMeta()
@@ -508,7 +508,7 @@ struct LegacySendCryptoInteractor {
         }
     }
 
-    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
+    private func setPercentageAmount(tx: LegacySendTransaction, for percentage: Double) {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = max.toDecimal() * multiplier

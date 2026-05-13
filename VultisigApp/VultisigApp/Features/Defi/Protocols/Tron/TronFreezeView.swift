@@ -13,7 +13,7 @@ struct TronFreezeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-    @StateObject var tx = SendTransaction()
+    @StateObject var tx = LegacySendTransaction()
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @State var amount: String = ""
     @State var percentage: Double = 0.0
@@ -222,7 +222,7 @@ struct TronFreezeView: View {
 
         await MainActor.run { isLoading = true }
 
-        // Configure SendTransaction for the freeze operation
+        // Configure LegacySendTransaction for the freeze operation
         // The memo encodes the freeze operation type for TronHelper
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
 

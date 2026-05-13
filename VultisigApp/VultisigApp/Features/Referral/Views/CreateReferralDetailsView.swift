@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CreateReferralDetailsView: View {
-    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var sendTx: LegacySendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
     var onNext: () -> Void
 
@@ -218,7 +218,7 @@ struct CreateReferralDetailsView: View {
 
 #Preview {
     CreateReferralDetailsView(
-        sendTx: SendTransaction(),
+        sendTx: LegacySendTransaction(),
         referralViewModel: ReferralViewModel(),
         onNext: {}
     )

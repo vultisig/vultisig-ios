@@ -11,7 +11,7 @@ struct SendDoneScreen: View {
     let vault: Vault
     let hash: String
     let chain: Chain
-    let tx: SendTransaction
+    let tx: LegacySendTransaction
     let keysignPayload: KeysignPayload?
 
     var body: some View {

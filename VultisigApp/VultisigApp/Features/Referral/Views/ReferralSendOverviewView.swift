@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var sendTx: LegacySendTransaction
 
     var body: some View {
         VStack(spacing: 16) {
@@ -136,7 +136,7 @@ struct ReferralSendOverviewView: View {
 
 #Preview {
     ReferralSendOverviewView(
-        sendTx: SendTransaction(),
+        sendTx: LegacySendTransaction(),
     )
     .environmentObject(HomeViewModel())
 }

@@ -65,7 +65,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     // Domain models
-    var tx: SendTransaction
+    var tx: LegacySendTransaction
     private var vault: Vault
 
     var addressFields: [String: String] {
@@ -79,7 +79,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         }
     }
 
-    required init(tx: SendTransaction, vault: Vault) {
+    required init(tx: LegacySendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
 

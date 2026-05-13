@@ -31,7 +31,7 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func loadGasInfoForSending(tx: SendTransaction) async {
+    func loadGasInfoForSending(tx: LegacySendTransaction) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas
@@ -40,11 +40,11 @@ class FunctionCallViewModel: ObservableObject {
         }
     }
 
-    func loadFastVault(tx: SendTransaction, vault: Vault) async {
+    func loadFastVault(tx: LegacySendTransaction, vault: Vault) async {
         tx.isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
-    func validateAddress(tx: SendTransaction, address: String) {
+    func validateAddress(tx: LegacySendTransaction, address: String) {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
@@ -53,7 +53,7 @@ class FunctionCallViewModel: ObservableObject {
         logger.info("mediator server stopped.")
     }
 
-    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+    func feesInReadable(tx: LegacySendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.gas)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
@@ -80,13 +80,13 @@ class FunctionCallViewModel: ObservableObject {
         return dict
     }
 
-    func setRujiToken(to tx: SendTransaction, vault: Vault) {
+    func setRujiToken(to tx: LegacySendTransaction, vault: Vault) {
         let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
         guard let rujiToken else { return }
         tx.coin = rujiToken
     }
 
-    func setTcyToken(to tx: SendTransaction, vault: Vault) {
+    func setTcyToken(to tx: LegacySendTransaction, vault: Vault) {
         let tcyToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
         guard let tcyToken else { return }
         tx.coin = tcyToken
