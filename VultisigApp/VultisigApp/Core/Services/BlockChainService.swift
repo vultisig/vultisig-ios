@@ -151,31 +151,25 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
+    /// Legacy entry point — converts to the immutable struct and dispatches
+    /// to the unified `fetchSpecific(tx: SendTransaction)`. The conversion
+    /// pulls vault via `tx.txVault` (the legacy `tx.vault ?? AppViewModel.shared.selectedVault`
+    /// fallback). Throws if neither is available. Remove once every caller
+    /// has migrated.
     func fetchSpecific(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
+        let converted = try SendTransaction.fromLegacy(tx)
+        return try await fetchSpecific(tx: converted)
+    }
+
+    /// Unified entry point taking the new immutable `SendTransaction` struct.
+    /// Dispatches to the cached chain-specific impls.
+    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
             return try await fetchSpecificForEVM(tx: tx)
         default:
             return try await fetchSpecificForNonEVM(tx: tx)
         }
-    }
-
-    /// Overload accepting the new immutable `SendTransaction` struct. Used by
-    /// migrated consumers (SecurityScanner, payload builder, etc.). Forwards
-    /// to `fetchSendBlockChainSpecific(...)`.
-    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
-        try await fetchSendBlockChainSpecific(
-            coin: tx.coin,
-            toAddress: tx.toAddress,
-            amount: tx.amountInRaw,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            sendMaxAmount: tx.sendMaxAmount,
-            isDeposit: tx.isDeposit,
-            transactionType: tx.transactionType,
-            gasLimit: tx.gasLimit,
-            feeMode: tx.feeMode,
-            fromAddress: tx.fromAddress
-        )
     }
 
     /// Primitive-typed entry point for the new SendInteractor. Wraps the
@@ -306,7 +300,7 @@ private extension BlockChainService {
             return 60
         }
     }
-    func fetchSpecificForNonEVM(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
+    func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
@@ -341,7 +335,7 @@ private extension BlockChainService {
         return blockSpecific
     }
 
-    func fetchSpecificForEVM(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
+    func fetchSpecificForEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
@@ -730,7 +724,7 @@ private extension BlockChainService {
         }
     }
 
-    func estimateERC20GasLimit(tx: LegacySendTransaction) async -> BigInt {
+    func estimateERC20GasLimit(tx: SendTransaction) async -> BigInt {
         do {
             let service = try EvmService.getService(forChain: tx.coin.chain)
             let gas = try await service.estimateGasForERC20Transfer(
@@ -746,7 +740,7 @@ private extension BlockChainService {
         }
     }
 
-    func estimateGasLimit(tx: LegacySendTransaction) async throws -> BigInt {
+    func estimateGasLimit(tx: SendTransaction) async throws -> BigInt {
         let service = try EvmService.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForEthTransaction(
             senderAddress: tx.coin.address,
