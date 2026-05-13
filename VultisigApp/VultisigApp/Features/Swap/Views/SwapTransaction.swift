@@ -8,7 +8,7 @@
 import BigInt
 import Foundation
 
-class SwapTransaction: ObservableObject {
+class SwapTransaction: ObservableObject, Hashable {
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
     @Published var gas: BigInt = .zero
@@ -17,11 +17,21 @@ class SwapTransaction: ObservableObject {
     @Published var quote: SwapQuote?
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
+    @Published var pendingRetryReason: BroadcastRetryReason?
 
     @Published var fromCoin: Coin = .example
     @Published var toCoin: Coin = .example
     @Published var fromCoins: [Coin] = []
     @Published var toCoins: [Coin] = []
+
+    // Reference-identity equality + hash for `SwapRoute`'s derived `Hashable`.
+    static func == (lhs: SwapTransaction, rhs: SwapTransaction) -> Bool {
+        lhs === rhs
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
 
     func load(fromCoin: Coin, toCoin: Coin, fromCoins: [Coin], toCoins: [Coin]) {
         self.fromCoin = fromCoin
