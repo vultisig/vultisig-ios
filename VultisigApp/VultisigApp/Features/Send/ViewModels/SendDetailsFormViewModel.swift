@@ -20,6 +20,11 @@ import OSLog
 import SwiftUI
 import VultisigCommonData
 
+// `SendDetailsFocusedTab` is declared in `SendDetailsViewModel.swift` (the
+// soon-to-be-deleted UI-state-only class). Both files share the enum during
+// the migration; the deletion in the next phase will move the enum into
+// this file when the legacy class is removed.
+
 @MainActor
 @Observable
 final class SendDetailsFormViewModel {
@@ -28,6 +33,16 @@ final class SendDetailsFormViewModel {
 
     // MARK: - Identity (immutable once set)
     let vault: Vault
+    let hasPreselectedCoin: Bool
+
+    // MARK: - UI state (merged from the deleted UI-only SendDetailsViewModel)
+    var selectedChain: Chain? = nil
+    private(set) var selectedTab: SendDetailsFocusedTab?
+    var assetSetupDone: Bool = false
+    var addressSetupDone: Bool = false
+    var amountSetupDone: Bool = false
+    var showCoinPickerSheet: Bool = false
+    var showChainPickerSheet: Bool = false
 
     // MARK: - Form fields
     var coin: Coin
@@ -73,11 +88,57 @@ final class SendDetailsFormViewModel {
 
     // MARK: - Init
 
-    init(coin: Coin, vault: Vault, interactor: SendInteractor = DefaultSendInteractor.live) {
+    init(
+        coin: Coin,
+        vault: Vault,
+        hasPreselectedCoin: Bool = false,
+        interactor: SendInteractor = DefaultSendInteractor.live
+    ) {
         self.coin = coin
         self.vault = vault
+        self.hasPreselectedCoin = hasPreselectedCoin
         self.fromAddress = coin.address
         self.interactor = interactor
+    }
+
+    // MARK: - UI flow (moved from the old UI-only SendDetailsViewModel)
+
+    /// Initial tab selection. If a coin was pre-selected (e.g., entered the
+    /// flow from a specific coin's detail screen), skip the asset tab and
+    /// jump straight to the address step.
+    func onLoad() {
+        if hasPreselectedCoin {
+            assetSetupDone = true
+            selectedTab = .address
+        } else {
+            selectedTab = .asset
+        }
+    }
+
+    func onSelect(tab: SendDetailsFocusedTab) {
+        switch tab {
+        case .asset, .address:
+            selectedTab = tab
+        case .amount:
+            guard addressSetupDone else { return }
+            selectedTab = tab
+        }
+    }
+
+    /// Detects the chain from a scanned/pasted address and switches the form
+    /// to the detected chain's native coin (if the vault has it). Used by the
+    /// QR scanner sheet on Details.
+    func detectAndSwitchChain(from address: String, currentChain: Chain) -> Coin? {
+        guard let detectedChain = AddressService.detectChain(from: address, vault: vault, currentChain: currentChain) else {
+            return nil
+        }
+        guard let detectedCoin = vault.coins.first(where: { $0.chain == detectedChain && $0.isNativeToken }) else {
+            return nil
+        }
+        selectedChain = detectedChain
+        coin = detectedCoin
+        fromAddress = detectedCoin.address
+        return detectedCoin
     }
 
     // MARK: - Derived state
