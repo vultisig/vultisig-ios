@@ -16,7 +16,7 @@ struct DefiChainMainScreen: View {
     @StateObject var bondViewModel: DefiChainBondViewModel
     @StateObject var lpsViewModel: DefiChainLPsViewModel
     @StateObject var stakeViewModel: DefiChainStakeViewModel
-    @StateObject var sendTx = LegacySendTransaction()
+    @StateObject private var sendTx = LegacySendTransaction()
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?

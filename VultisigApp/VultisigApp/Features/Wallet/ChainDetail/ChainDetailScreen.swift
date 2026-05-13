@@ -23,7 +23,7 @@ struct ChainDetailScreen: View {
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
 
-    @StateObject var sendTx = LegacySendTransaction()
+    @StateObject private var sendTx = LegacySendTransaction()
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 

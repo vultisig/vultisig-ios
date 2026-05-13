@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct SendVerifyScreen: View {
-    @StateObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+    @StateObject private var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     let retrySignal: SendRetrySignal
     let vault: Vault
 
@@ -105,7 +105,7 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
-                feeCrypto: sendCryptoVerifyViewModel.isCalculatingFee ? "Loading..." : tx.gasInReadable,
+                feeCrypto: sendCryptoVerifyViewModel.isCalculatingFee ? "loading".localized : tx.gasInReadable,
                 feeFiat: sendCryptoVerifyViewModel.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx),
                 isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,
                 coinImage: tx.coin.logo,
