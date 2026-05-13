@@ -67,11 +67,6 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildCoinPickerScreen(coins: [Coin], tx: LegacySendTransaction) -> some View {
-        CoinPickerView(coins: coins, tx: tx)
-    }
-
-    @ViewBuilder
     func buildTransactionDetailsScreen(input: SendCryptoContent) -> some View {
         SendCryptoSecondaryDoneView(input: input)
     }
