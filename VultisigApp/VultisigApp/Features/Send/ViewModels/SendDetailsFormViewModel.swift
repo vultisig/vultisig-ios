@@ -1,0 +1,475 @@
+//
+//  SendDetailsFormViewModel.swift
+//  VultisigApp
+//
+//  Form-state-on-VM rewrite of the Send Details screen. Owns every form
+//  field directly (replacing the legacy `LegacySendTransaction`'s
+//  `@Published` fields) and produces an immutable `SendTransaction` only
+//  on Continue via `makeTransaction()`. Async work goes through
+//  `SendInteractor` so tests can inject a mock.
+//
+//  Temporary name during the form-VM rewrite split: this class will be
+//  renamed to `SendDetailsViewModel` in the follow-up PR that deletes
+//  the existing UI-state-only `SendDetailsViewModel` and rewires
+//  `SendDetailsScreen` + the `SendDetails*` components to bind to it.
+//
+
+import BigInt
+import Foundation
+import OSLog
+import SwiftUI
+import VultisigCommonData
+
+@MainActor
+@Observable
+final class SendDetailsFormViewModel {
+    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
+    @ObservationIgnored private let interactor: SendInteractor
+
+    // MARK: - Identity (immutable once set)
+    let vault: Vault
+
+    // MARK: - Form fields
+    var coin: Coin
+    var fromAddress: String
+    var toAddress: String = ""
+    var toAddressLabel: String? = nil
+    var amount: String = ""
+    var amountInFiat: String = ""
+    var memo: String = ""
+    var feeMode: FeeMode = .default
+    var sendMaxAmount: Bool = false
+    var isFastVault: Bool = false
+    var isStakingOperation: Bool = false
+    var transactionType: VSTransactionType = .unspecified
+    var memoFunctionDictionary: [String: String] = [:]
+    var wasmContractPayload: WasmExecuteContractPayload? = nil
+
+    // MARK: - Fee / gas (derived from interactor calls)
+    var gas: BigInt = .zero
+    var fee: BigInt = .zero
+    var estimatedGasLimit: BigInt? = nil
+    var customGasLimit: BigInt? = nil
+    var customByteFee: BigInt? = nil
+
+    // MARK: - VM state (replaces `LegacySendTransaction.isCalculatingFee` etc.)
+    var isLoading: Bool = false
+    var isValidatingForm: Bool = false
+    var isCalculatingFee: Bool = false
+    var isAddressResolved: Bool? = nil
+    var errorTitle: String = ""
+    var errorMessage: String? = nil
+    var showAlert: Bool = false
+    var showAddressAlert: Bool = false
+    var showAmountAlert: Bool = false
+
+    // MARK: - Pending transaction state (Cosmos chains)
+    var hasPendingTransaction: Bool = false
+    var pendingTransactionCountdown: Int = 0
+    var isCheckingPendingTransactions: Bool = false
+
+    // MARK: - Cancellation
+    @ObservationIgnored private var addressResolutionTask: Task<Void, Never>?
+
+    // MARK: - Init
+
+    init(coin: Coin, vault: Vault, interactor: SendInteractor = DefaultSendInteractor.live) {
+        self.coin = coin
+        self.vault = vault
+        self.fromAddress = coin.address
+        self.interactor = interactor
+    }
+
+    // MARK: - Derived state
+
+    /// Continue button is disabled while either async path is running.
+    var continueButtonDisabled: Bool {
+        isLoading || isValidatingForm
+    }
+
+    /// The native coin used to pay gas — `self.coin` for native sends, the
+    /// EVM-native sibling otherwise. Mirrors `SendTransaction.feeCoin`.
+    var feeCoin: Coin {
+        SendTransaction.resolveFeeCoin(coin: coin, vault: vault)
+    }
+
+    var gasLimit: BigInt {
+        customGasLimit ?? estimatedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+    }
+
+    var byteFee: BigInt {
+        customByteFee ?? gas
+    }
+
+    var amountInRaw: BigInt {
+        SendCryptoLogic.amountInRaw(coin: coin, amount: amount)
+    }
+
+    var amountDecimal: Decimal {
+        SendCryptoLogic.amountDecimal(coin: coin, amount: amount)
+    }
+
+    var isDeposit: Bool {
+        SendCryptoLogic.isDeposit(coin: coin, memoFunctionDictionary: memoFunctionDictionary)
+    }
+
+    var gasInReadable: String {
+        SendCryptoLogic.gasInReadable(coin: coin, gasNativeCoin: feeCoin, gas: gas, fee: fee)
+    }
+
+    // MARK: - Pending transaction state
+
+    /// Mirrors the legacy `initializePendingTransactionState(for:)` — flagged on
+    /// for Cosmos chains so the UI can show a countdown, off otherwise.
+    func initializePendingTransactionState(for chain: Chain) {
+        if chain.supportsPendingTransactions {
+            isCheckingPendingTransactions = true
+        } else {
+            isCheckingPendingTransactions = false
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+        }
+    }
+
+    // MARK: - Fast vault
+
+    /// Decision 2 win: vault is non-optional, so no singleton lookup.
+    /// Decision: use `hasPrefix("server-")` for local-party check (Phase D
+    /// lesson) — the interactor's `loadFastVault(vault:)` already does this.
+    func loadFastVault() async {
+        isFastVault = await interactor.loadFastVault(vault: vault)
+    }
+
+    // MARK: - Address resolution
+
+    /// Debounced (1s) ENS/TNS resolution. Cancels in-flight requests on new
+    /// input. Phase D lesson: address resolution and fee fetch are serialized
+    /// — `validateToAddress` must complete before any `loadGasInfo` call.
+    func debouncedResolveAddress() {
+        addressResolutionTask?.cancel()
+        isAddressResolved = nil
+        addressResolutionTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard let self, !Task.isCancelled else { return }
+            isAddressResolved = await validateToAddress()
+        }
+    }
+
+    func cancelAddressResolution() {
+        addressResolutionTask?.cancel()
+        isAddressResolved = nil
+    }
+
+    // Returns true if the address is valid for the current coin's chain.
+    // `async` reserves the seam for an ENS/TNS resolver injection in a
+    // follow-up — `validateToAddress` semantically belongs in the async
+    // validation pipeline next to `validateForm`.
+    // swiftlint:disable:next async_without_await
+    func validateToAddress() async -> Bool {
+        guard !toAddress.isEmpty else { return false }
+        return AddressService.validateAddress(address: toAddress, chain: coin.chain)
+    }
+
+    func isValidAddressFormat() -> Bool {
+        guard !toAddress.isEmpty else { return false }
+        let isValid = AddressService.validateAddress(address: toAddress, chain: coin.chain)
+        if isValid {
+            showAddressAlert = false
+            errorMessage = nil
+        }
+        return isValid
+    }
+
+    // MARK: - Fiat / crypto conversion
+
+    /// Convert a fiat-typed value to the equivalent coin amount. Mirrors
+    /// `LegacySendCryptoInteractor.convertFiatToCoin`. Phase D lesson: empty
+    /// input clears `amount` instead of leaving a stale value.
+    func convertFiatToCoin(newValue: String) {
+        let newValueDecimal = newValue.toDecimal()
+        guard newValueDecimal > 0, coin.price > 0 else {
+            amount = ""
+            return
+        }
+        let newValueCoin = newValueDecimal / Decimal(coin.price)
+        let truncated = newValueCoin.truncated(toPlaces: coin.decimals)
+        amount = truncated.formatToDecimal(digits: coin.decimals)
+        sendMaxAmount = false
+        amountInFiat = newValue
+    }
+
+    /// Convert a coin-typed value to its fiat equivalent. `setMaxValue` mirrors
+    /// the legacy flag — when true, this update is from the max-amount path
+    /// and shouldn't reset the sendMaxAmount flag.
+    func convertToFiat(newValue: String, setMaxValue: Bool = false) {
+        let newValueDecimal = newValue.toDecimal()
+        guard newValueDecimal > 0 else {
+            amountInFiat = ""
+            sendMaxAmount = setMaxValue ? sendMaxAmount : false
+            return
+        }
+        let newValueFiat = newValueDecimal * Decimal(coin.price)
+        let truncated = newValueFiat.truncated(toPlaces: 2)
+        amountInFiat = truncated.formatToDecimal(digits: coin.decimals)
+        sendMaxAmount = setMaxValue
+        amount = newValue
+    }
+
+    // MARK: - Max amount
+
+    /// Per-chain max-amount calculation. Async because each chain fetches its
+    /// own gas/fee shape via the interactor; the pure math then sits in
+    /// `SendCryptoLogic.computeMaxAmount`.
+    func setMaxAmount(percentage: Double = 100) async {
+        errorMessage = ""
+        isLoading = true
+        defer { isLoading = false }
+
+        let maxFee: BigInt
+        do {
+            let chainSpecific = try await interactor.fetchChainSpecific(
+                coin: coin,
+                toAddress: toAddress.isEmpty ? coin.address : toAddress,
+                amount: BigInt.zero,
+                memo: memo.isEmpty ? nil : memo,
+                sendMaxAmount: percentage == 100,
+                isDeposit: isDeposit,
+                transactionType: transactionType,
+                gasLimit: gasLimit,
+                feeMode: feeMode,
+                fromAddress: fromAddress
+            )
+
+            switch coin.chainType {
+            case .UTXO, .Cardano:
+                maxFee = chainSpecific.fee
+            case .EVM:
+                let fees = try await interactor.calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
+                maxFee = coin.isNativeToken ? fees.fee : .zero
+            case .Solana:
+                maxFee = coin.isNativeToken ? BigInt(SolanaHelper.defaultFeeInLamports) : .zero
+            default:
+                maxFee = chainSpecific.gas
+            }
+        } catch {
+            logger.error("setMaxAmount failed: \(error.localizedDescription, privacy: .public)")
+            errorMessage = error.localizedDescription
+            return
+        }
+
+        sendMaxAmount = percentage == 100
+        let maxAmount = SendCryptoLogic.computeMaxAmount(coin: coin, fee: maxFee)
+        amount = percentage == 100
+            ? maxAmount
+            : SendCryptoLogic.applyPercentage(maxAmount: maxAmount, percentage: percentage, coinDecimals: coin.decimals)
+        convertToFiat(newValue: amount, setMaxValue: sendMaxAmount)
+    }
+
+    // MARK: - Fee / gas refresh
+
+    /// Re-fetches chain-specific + EVM fee, **threading `feeMode` end-to-end**
+    /// (this is the regression-test target for the feeMode bug fix). Preserves
+    /// `customGasLimit` / `customByteFee` so user-pinned values survive refresh.
+    func loadGasInfo() async {
+        // Phase D lesson — zero-amount state reset.
+        if amount.isEmpty || amount.toDecimal().isZero {
+            gas = .zero
+            fee = .zero
+            estimatedGasLimit = nil
+            isCalculatingFee = false
+            return
+        }
+
+        isCalculatingFee = true
+        defer { isCalculatingFee = false }
+
+        do {
+            let chainSpecific = try await interactor.fetchChainSpecific(
+                coin: coin,
+                toAddress: toAddress,
+                amount: amountInRaw,
+                memo: memo.isEmpty ? nil : memo,
+                sendMaxAmount: sendMaxAmount,
+                isDeposit: isDeposit,
+                transactionType: transactionType,
+                gasLimit: gasLimit,
+                feeMode: feeMode,
+                fromAddress: fromAddress
+            )
+
+            switch coin.chainType {
+            case .EVM:
+                let evm = try await interactor.calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
+                fee = evm.fee
+                gas = evm.gas
+            case .UTXO, .Cardano:
+                fee = chainSpecific.fee
+                gas = chainSpecific.gas
+            default:
+                fee = chainSpecific.gas
+                gas = chainSpecific.gas
+            }
+        } catch {
+            logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Form validation
+
+    // Async form validation. Mirrors the legacy `validateForm` but reads
+    // VM state directly. Returns true iff every check passes. `async`
+    // reserved for future address-resolver awaits (ENS/TNS).
+    // swiftlint:disable:next async_without_await
+    func validateForm() async -> Bool {
+        resetStates()
+        isValidatingForm = true
+        defer {
+            isValidatingForm = false
+            isLoading = false
+        }
+
+        // Cosmos pending-tx blocker.
+        if hasPendingTransaction && coin.chain.supportsPendingTransactions {
+            errorTitle = "error"
+            errorMessage = "pendingTransactionError"
+            showAlert = true
+            return false
+        }
+
+        // TRON staking short-circuit (legacy parity).
+        let isTronStaking = coin.chain == .tron && isStakingOperation
+
+        // Zero amount.
+        if amount.isEmpty || amountDecimal.isZero {
+            errorTitle = "error"
+            errorMessage = "positiveAmountError"
+            showAmountAlert = true
+            return false
+        }
+
+        // Address format.
+        guard isValidAddressFormat() else {
+            errorTitle = "error"
+            errorMessage = "invalidAddressError"
+            showAddressAlert = true
+            return false
+        }
+
+        // Balance check.
+        if !isTronStaking {
+            let exceeded = SendCryptoLogic.isAmountExceeded(
+                coin: coin,
+                amount: amount,
+                sendMaxAmount: sendMaxAmount,
+                fee: fee,
+                gas: gas,
+                isStakingOperation: isStakingOperation
+            )
+            if exceeded {
+                errorTitle = "error"
+                errorMessage = "walletBalanceExceededError"
+                showAmountAlert = true
+                return false
+            }
+            // ERC20 gas balance check.
+            if !coin.isNativeToken, let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
+                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                if fee > nativeBalance {
+                    errorTitle = "error"
+                    errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker)
+                    showAlert = true
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    // MARK: - Hand-off
+
+    /// Construct the immutable `SendTransaction` for hand-off to Verify. Only
+    /// called from the Continue button after `validateForm()` returns true.
+    /// Throws if validation fails so the caller doesn't navigate on bad state.
+    enum MakeTransactionError: LocalizedError {
+        case invalidForm
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidForm: return "Cannot construct transaction: form has validation errors."
+            }
+        }
+    }
+
+    func makeTransaction() throws -> SendTransaction {
+        guard amount.isValidDecimal(), !toAddress.isEmpty, !amountDecimal.isZero else {
+            throw MakeTransactionError.invalidForm
+        }
+        return SendTransaction(
+            coin: coin,
+            vault: vault,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            toAddressLabel: toAddressLabel,
+            amount: amount,
+            amountInFiat: amountInFiat,
+            memo: memo,
+            gas: gas,
+            fee: fee,
+            feeMode: feeMode,
+            estimatedGasLimit: estimatedGasLimit,
+            customGasLimit: customGasLimit,
+            customByteFee: customByteFee,
+            sendMaxAmount: sendMaxAmount,
+            isFastVault: isFastVault,
+            isStakingOperation: isStakingOperation,
+            transactionType: transactionType,
+            memoFunctionDictionary: memoFunctionDictionary,
+            wasmContractPayload: wasmContractPayload,
+            feeCoin: feeCoin
+        )
+    }
+
+    // MARK: - Reset
+
+    /// Clear validation state ahead of an async check (matches legacy parity).
+    private func resetStates() {
+        errorTitle = ""
+        errorMessage = nil
+        isLoading = true
+        showAddressAlert = false
+        showAmountAlert = false
+        showAlert = false
+    }
+
+    /// Reset the form for a fresh send (e.g., after Done → back to Details).
+    /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
+    /// screen. Phase D lesson: clear *every* derived field, not just amount.
+    func reset(to newCoin: Coin) {
+        coin = newCoin
+        fromAddress = newCoin.address
+        toAddress = ""
+        toAddressLabel = nil
+        amount = ""
+        amountInFiat = ""
+        memo = ""
+        feeMode = .default
+        sendMaxAmount = false
+        isStakingOperation = false
+        transactionType = .unspecified
+        memoFunctionDictionary = [:]
+        wasmContractPayload = nil
+        gas = .zero
+        fee = .zero
+        estimatedGasLimit = nil
+        customGasLimit = nil
+        customByteFee = nil
+        isCalculatingFee = false
+        errorTitle = ""
+        errorMessage = nil
+        showAlert = false
+        showAddressAlert = false
+        showAmountAlert = false
+    }
+}
