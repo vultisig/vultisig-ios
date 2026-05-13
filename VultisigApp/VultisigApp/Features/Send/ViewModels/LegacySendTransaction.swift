@@ -6,6 +6,49 @@ import VultisigCommonData
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
+
+/// Mutable form-state holder. Originally the form-state class for the entire
+/// Send + FunctionCall + Referral + Defi flow ecosystem.
+///
+/// After the form-VM rewrite (PRs #4347–#4350), the **Send Details flow** has
+/// been migrated to `SendDetailsViewModel` (`@Observable`) + the immutable
+/// `SendTransaction` struct. The post-Continue chain (Verify / Pair / Keysign
+/// / Done) runs on the immutable struct end-to-end via `SendInteractor` +
+/// `SendRetrySignal`.
+///
+/// This class **continues** to back the form layer of:
+/// - **FunctionCall** flow (LP add, stake, mint, etc.) — see
+///   `Features/FunctionCall/Models/FunctionCall*` and
+///   `Features/FunctionCall/ViewModels/FunctionCallViewModel.swift`.
+/// - **Referral** flow (`Features/Referral/ViewModels/ReferralViewModel.swift`).
+/// - **TRON freeze / unfreeze** (`Features/Defi/Protocols/Tron/`).
+/// - **Circle deposit / withdraw** (`Features/Defi/Protocols/Circle/`).
+///
+/// Each of those flows uses this class as a `@StateObject` / `@ObservedObject`
+/// form-state container the same way `SendDetailsViewModel` does now for Send.
+/// Their continued use is **intentional**: the legacy class is a fine
+/// pattern for these self-contained mutable forms, and a full migration to
+/// per-flow `@Observable` form VMs is out of scope for the Send-pilot series.
+///
+/// **At the navigation boundary** (when those flows construct a `KeysignPayload`
+/// or navigate to `SendRoute.verify` / `SendRoute.pairing` / `SendRoute.keysign`),
+/// callers convert this mutable form-state into the immutable `SendTransaction`
+/// struct via `SendTransaction.fromLegacy(_:vault:)`. The conversion is the
+/// architectural seam — everything downstream of the boundary is on the new
+/// immutable shape.
+///
+/// **Future deletion of this class** would require:
+/// - Per-flow form-VM rewrites for FunctionCall (11 form models + verify VM),
+///   Referral (2 view-models), Tron (2 views), Circle (2 view-models). Each
+///   is roughly the size of the SendDetailsScreen migration that #4350 did.
+/// - Refactor of the 19 `TransactionBuilder` subclasses (in
+///   `Features/FunctionTransaction/TransactionBuilder/`) to return a value-type
+///   `SendTransaction` instead of mutating this class.
+///
+/// That work is tracked in the form-VM rewrite plan but **deferred** beyond
+/// the Send-pilot series. The architecture today is internally consistent:
+/// Send uses the new VM/struct; everything else uses this class until further
+/// notice.
 class LegacySendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
