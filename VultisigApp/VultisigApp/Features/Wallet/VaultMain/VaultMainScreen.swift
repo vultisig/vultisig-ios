@@ -47,7 +47,8 @@ struct VaultMainScreen: View {
                 ScrollViewReader { proxy in
                     VaultMainScreenScrollView(
                         showsIndicators: false,
-                        contentInset: contentInset,
+                        topInset: contentInset,
+                        bottomInset: 0,
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
