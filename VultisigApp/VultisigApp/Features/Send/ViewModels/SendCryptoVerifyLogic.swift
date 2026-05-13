@@ -22,7 +22,7 @@ struct SendCryptoVerifyLogic {
         let gas: BigInt
     }
 
-    func calculateFee(tx: LegacySendTransaction) async throws -> FeeResult {
+    func calculateFee(tx: SendTransaction) async throws -> FeeResult {
         if tx.coin.chain.chainType == .EVM {
             return try await calculateEVMFee(tx: tx)
         } else {
@@ -30,7 +30,7 @@ struct SendCryptoVerifyLogic {
         }
     }
 
-    private func calculateEVMFee(tx: LegacySendTransaction) async throws -> FeeResult {
+    private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let service = try EthereumFeeService(chain: tx.coin.chain)
 
         let gasLimit = tx.coin.isNativeToken ?
@@ -67,7 +67,7 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: gas)
     }
 
-    private func calculateNonEVMFee(tx: LegacySendTransaction) async throws -> FeeResult {
+    private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
         let fee: BigInt
@@ -86,10 +86,11 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: fee)
     }
 
-    func calculateUTXOPlanFee(tx: LegacySendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
-        guard let vault = AppViewModel.shared.selectedVault else {
-            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
-        }
+    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+        // Send-pilot decision 2 win: vault is non-optional on the new struct,
+        // so the legacy `AppViewModel.shared.selectedVault` singleton fallback
+        // disappears here.
+        let vault = tx.vault
 
         // Normalize decimal separator (replace comma with period for consistent parsing)
         let normalizedAmount = tx.amount.replacingOccurrences(of: ",", with: ".")
@@ -160,7 +161,7 @@ struct SendCryptoVerifyLogic {
         let errorMessage: String?
     }
 
-    func validateBalanceWithFee(tx: LegacySendTransaction) -> BalanceValidationResult {
+    func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
@@ -187,20 +188,13 @@ struct SendCryptoVerifyLogic {
                 return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
             }
 
-            // Validate gas balance for non-native tokens
-            if let vault = tx.vault ?? AppViewModel.shared.selectedVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
-                    let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
-                    if tx.fee > nativeBalance {
-                        // Using a generic error message since checking gas specifically might require a new error string key
-                        // or we can reuse existing logic if available.
-                        // The user complained about "walletBalanceExceededError" being shown wrongly,
-                        // so returning it for actual insufficient gas is acceptable or we can use "notEnoughGas" if it exists.
-                        // But keeping it consistent with the function signature.
-                        let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain)
-                        let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken?.ticker ?? "Native Token", tx.coin.ticker)
-                        return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
-                    }
+            // Validate gas balance for non-native tokens. Decision 2 win:
+            // vault is now non-optional, so the singleton fallback is gone.
+            if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
+                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                if tx.fee > nativeBalance {
+                    let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
+                    return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
                 }
             }
         }
@@ -210,7 +204,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - UTXO Validation
 
-    func validateUtxosIfNeeded(tx: LegacySendTransaction) async throws {
+    func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
@@ -223,7 +217,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - Keysign Payload
 
-    func buildKeysignPayload(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 

@@ -47,7 +47,18 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
         }
         do {
-            let feeResult = try await logic.calculateFee(tx: tx)
+            // Migration shim: SendCryptoVerifyLogic now takes the immutable
+            // struct; convert at the boundary. Will be removed once
+            // SendCryptoVerifyViewModel itself holds SendTransaction.
+            guard let vault = tx.txVault else {
+                errorMessage = "No vault available for fee calculation"
+                showAlert = true
+                tx.isCalculatingFee = false
+                isLoading = false
+                return
+            }
+            let converted = SendTransaction.fromLegacy(tx, vault: vault)
+            let feeResult = try await logic.calculateFee(tx: converted)
 
             tx.fee = feeResult.fee
             tx.gas = feeResult.gas
@@ -79,7 +90,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     func validateBalanceWithFee(tx: LegacySendTransaction) {
-        let result = logic.validateBalanceWithFee(tx: tx)
+        guard let vault = tx.txVault else {
+            errorMessage = "No vault available for balance validation"
+            showAlert = true
+            isAmountCorrect = false
+            hasBalanceError = true
+            return
+        }
+        let converted = SendTransaction.fromLegacy(tx, vault: vault)
+        let result = logic.validateBalanceWithFee(tx: converted)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
             showAlert = true
@@ -105,8 +124,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 throw HelperError.runtimeError("mustAgreeTermsError")
             }
 
-            try await logic.validateUtxosIfNeeded(tx: tx)
-            let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
+            let converted = SendTransaction.fromLegacy(tx, vault: vault)
+            try await logic.validateUtxosIfNeeded(tx: converted)
+            let keysignPayload = try await logic.buildKeysignPayload(tx: converted, vault: vault)
             return keysignPayload
         } catch {
             throw error
