@@ -26,7 +26,6 @@ struct ChainDetailScreen: View {
     /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
     /// user lands back here with QBTC already added to the vault.
     @State private var pendingQbtcAddAfterKeygen: Bool = false
-    @AppStorage private var qbtcBannerDismissed: Bool
 
     @StateObject var sendTx = SendTransaction()
 
@@ -48,8 +47,11 @@ struct ChainDetailScreen: View {
         vault.coins.contains { $0.chain == .qbtc }
     }
 
+    // The banner self-hides once the vault has a QBTC chain — no user-visible
+    // dismiss control matches the Figma. If we ever want manual dismissal,
+    // gate this on an `@AppStorage` flag and add the X back to the banner.
     private var showsQbtcBanner: Bool {
-        nativeCoin.chain == .bitcoin && !qbtcBannerDismissed && !hasQbtcChain
+        nativeCoin.chain == .bitcoin && !hasQbtcChain
     }
 
     init(
@@ -63,10 +65,6 @@ struct ChainDetailScreen: View {
         self._refreshTrigger = refreshTrigger
         self.onAddressCopy = onAddressCopy
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
-        self._qbtcBannerDismissed = AppStorage(
-            wrappedValue: false,
-            "qbtcClaimBannerDismissed_\(vault.pubKeyECDSA)"
-        )
     }
 
     var body: some View {
@@ -179,10 +177,7 @@ struct ChainDetailScreen: View {
             )
 
             if showsQbtcBanner {
-                ClaimQbtcPromoBanner(
-                    onTap: onClaimBannerTapped,
-                    onClose: { qbtcBannerDismissed = true }
-                )
+                ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
             }
 
             if viewModel.isTron {

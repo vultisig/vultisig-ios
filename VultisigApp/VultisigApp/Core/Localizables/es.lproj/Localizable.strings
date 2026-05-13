@@ -650,7 +650,8 @@
 "psbtTransactionDetails" = "Detalles de la transacción (PSBT)";
 "pushNotifications" = "Notificaciones push";
 "pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
-"qbtcClaimBannerSubtitle" = "Envuelve tu BTC elegible en QBTC con seguridad cuántica en proporción 1:1.";
+"qbtcClaimBannerCta" = "Reclamar ahora";
+"qbtcClaimBannerSubtitle" = "El mismo Bitcoin. Cuántico-seguro.";
 "qbtcClaimBannerTitle" = "Reclama tu QBTC";
 "qbtcClaimBroadcastingDetail" = "La transacción se está enviando a la cadena QBTC.";
 "qbtcClaimBroadcastingTitle" = "Transmitiendo…";

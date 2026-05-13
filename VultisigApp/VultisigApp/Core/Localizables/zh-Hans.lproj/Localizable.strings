@@ -651,7 +651,8 @@
 "psbtTransactionDetails" = "交易详情 (PSBT)";
 "pushNotifications" = "推送通知";
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
-"qbtcClaimBannerSubtitle" = "以 1:1 比例将符合条件的 BTC 包装为量子安全的 QBTC。";
+"qbtcClaimBannerCta" = "立即领取";
+"qbtcClaimBannerSubtitle" = "同样的比特币，量子安全。";
 "qbtcClaimBannerTitle" = "领取你的 QBTC";
 "qbtcClaimBroadcastingDetail" = "正在向 QBTC 链提交交易。";
 "qbtcClaimBroadcastingTitle" = "正在广播…";

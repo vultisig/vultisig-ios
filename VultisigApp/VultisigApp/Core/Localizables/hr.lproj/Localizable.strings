@@ -650,7 +650,8 @@
 "psbtTransactionDetails" = "Detalji transakcije (PSBT)";
 "pushNotifications" = "Push obavijesti";
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
-"qbtcClaimBannerSubtitle" = "Zamotaj prihvatljive BTC u kvantno sigurni QBTC u omjeru 1:1.";
+"qbtcClaimBannerCta" = "Polaži sada";
+"qbtcClaimBannerSubtitle" = "Isti Bitcoin. Kvantno siguran.";
 "qbtcClaimBannerTitle" = "Polaži svoj QBTC";
 "qbtcClaimBroadcastingDetail" = "Transakcija se šalje na QBTC lanac.";
 "qbtcClaimBroadcastingTitle" = "Slanje…";

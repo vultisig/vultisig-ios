@@ -658,7 +658,8 @@
 "psbtTransactionDetails" = "Transaction Details (PSBT)";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
-"qbtcClaimBannerSubtitle" = "Wrap your eligible BTC at a 1:1 ratio into quantum-secure QBTC.";
+"qbtcClaimBannerCta" = "Claim Now";
+"qbtcClaimBannerSubtitle" = "Same Bitcoin. Quantum-safe.";
 "qbtcClaimBannerTitle" = "Claim your QBTC";
 "qbtcClaimBroadcastingDetail" = "The transaction is being submitted to the QBTC chain.";
 "qbtcClaimBroadcastingTitle" = "Broadcasting…";
