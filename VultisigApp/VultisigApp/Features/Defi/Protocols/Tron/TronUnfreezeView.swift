@@ -20,8 +20,8 @@ struct TronUnfreezeView: View {
     @State var error: Error?
     @State var selectedResourceType: TronResourceType = .bandwidth
 
-    @StateObject var sendTransaction = LegacySendTransaction()
-    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject private var sendTransaction = LegacySendTransaction()
+    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
 
     init(vault: Vault, model: TronViewModel) {
         self.vault = vault

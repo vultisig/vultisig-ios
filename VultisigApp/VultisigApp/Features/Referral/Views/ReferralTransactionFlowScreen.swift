@@ -11,7 +11,7 @@ struct ReferralTransactionFlowScreen: View {
     @StateObject var referralViewModel: ReferralViewModel
     @ObservedObject var vaultSelectionViewModel: VaultSelectedViewModel
 
-    @StateObject var sendTx = LegacySendTransaction()
+    @StateObject private var sendTx = LegacySendTransaction()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @StateObject var functionCallVerifyViewModel = FunctionCallVerifyViewModel()

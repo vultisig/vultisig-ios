@@ -13,8 +13,8 @@ struct TronFreezeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-    @StateObject var tx = LegacySendTransaction()
-    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject private var tx = LegacySendTransaction()
+    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var trxCoin: Coin?

@@ -23,7 +23,7 @@ struct HomeScreen: View {
 
     @State var showScanner: Bool = false
     @State var showBackupNow = false
-    @StateObject var sendTx = LegacySendTransaction()
+    @StateObject private var sendTx = LegacySendTransaction()
     @State var selectedChain: Chain? = nil
 
     @State var walletShowPortfolioHeader: Bool = false
