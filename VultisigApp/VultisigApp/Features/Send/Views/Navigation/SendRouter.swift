@@ -20,17 +20,18 @@ struct SendRouter {
                 tx: tx,
                 vault: vault
             )
-        case .verify(let tx, let vault):
-            viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
-        case .pairing(let vault, let tx, let keysignPayload, let fastVaultPassword):
+        case .verify(let tx, let retrySignal, let vault):
+            viewBuilder.buildVerifyScreen(tx: tx, retrySignal: retrySignal, vault: vault)
+        case .pairing(let vault, let tx, let retrySignal, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
                 tx: tx,
+                retrySignal: retrySignal,
                 keysignPayload: keysignPayload,
                 fastVaultPassword: fastVaultPassword
             )
-        case .keysign(let input, let tx):
-            viewBuilder.buildKeysignScreen(input: input, tx: tx)
+        case .keysign(let input, let tx, let retrySignal):
+            viewBuilder.buildKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
         case .done(let vault, let hash, let chain, let tx, let keysignPayload):
             viewBuilder.buildDoneScreen(
                 vault: vault,

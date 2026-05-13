@@ -272,7 +272,8 @@ struct TronUnfreezeView: View {
 
         await MainActor.run {
             isLoading = false
-            router.navigate(to: SendRoute.verify(tx: sendTransaction, vault: vault))
+            let immutableTx = SendTransaction.fromLegacy(sendTransaction, vault: vault)
+            router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: vault))
         }
     }
 }

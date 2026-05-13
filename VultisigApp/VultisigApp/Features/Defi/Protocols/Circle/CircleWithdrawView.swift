@@ -294,10 +294,12 @@ struct CircleWithdrawView: View {
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
 
+                let immutableTx = SendTransaction.fromLegacy(sendTransaction, vault: vault)
                 router.navigate(
                     to: SendRoute.pairing(
                         vault: vault,
-                        tx: sendTransaction,
+                        tx: immutableTx,
+                        retrySignal: SendRetrySignal(),
                         keysignPayload: payload,
                         fastVaultPassword: fastVaultPassword.nilIfEmpty
                     )

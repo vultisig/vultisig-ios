@@ -312,7 +312,16 @@ struct SendDetailsScreen: View {
 
             if await sendCryptoViewModel.validateForm(tx: tx) {
                 await MainActor.run {
-                    router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
+                    // Convert the legacy form state into the immutable struct at
+                    // the navigation boundary; everything downstream of Continue
+                    // is on the new shape. Form-VM rewrite (Phase B step 5) will
+                    // eliminate the legacy class entirely.
+                    let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
+                    router.navigate(to: SendRoute.verify(
+                        tx: immutableTx,
+                        retrySignal: SendRetrySignal(),
+                        vault: vault
+                    ))
                 }
             }
         }

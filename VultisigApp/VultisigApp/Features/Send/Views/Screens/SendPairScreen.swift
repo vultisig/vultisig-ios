@@ -12,7 +12,8 @@ struct SendPairScreen: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
-    let tx: LegacySendTransaction
+    let tx: SendTransaction
+    let retrySignal: SendRetrySignal
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
 
@@ -27,7 +28,7 @@ struct SendPairScreen: View {
                 previewType: .Send,
                 contentPadding: 0
             ) { input in
-                router.navigate(to: SendRoute.keysign(input: input, tx: tx))
+                router.navigate(to: SendRoute.keysign(input: input, tx: tx, retrySignal: retrySignal))
             }
         }
         .screenTitle("pair".localized)

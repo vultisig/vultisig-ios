@@ -11,7 +11,8 @@ struct SendKeysignScreen: View {
     @Environment(\.router) var router
 
     let input: KeysignInput
-    let tx: LegacySendTransaction
+    let tx: SendTransaction
+    let retrySignal: SendRetrySignal
     @StateObject var viewModel = SendKeysignViewModel()
 
     var body: some View {
@@ -40,20 +41,17 @@ struct SendKeysignScreen: View {
                   let chain = input.keysignPayload?.coin.chain
             else { return }
 
-            // Migration shim: SendRoute.done now carries the immutable struct.
-            // Convert legacy → new at the route construction boundary.
-            let immutableTx = SendTransaction.fromLegacy(tx, vault: input.vault)
             router.navigate(to: SendRoute.done(
                 vault: input.vault,
                 hash: hash,
                 chain: chain,
-                tx: immutableTx,
+                tx: tx,
                 keysignPayload: input.keysignPayload
             ))
         }
         .onChange(of: viewModel.pendingRetryReason) { _, reason in
             guard let reason else { return }
-            tx.pendingRetryReason = reason
+            retrySignal.pendingRetryReason = reason
             viewModel.pendingRetryReason = nil
             // Stack: details -> verify -> pairing -> keysign. Pop pairing + keysign.
             let popCount = min(2, router.navPath.count)

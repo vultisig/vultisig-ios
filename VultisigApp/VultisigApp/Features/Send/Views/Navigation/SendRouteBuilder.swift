@@ -25,28 +25,30 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(tx: LegacySendTransaction, vault: Vault) -> some View {
-        SendVerifyScreen(tx: tx, vault: vault)
+    func buildVerifyScreen(tx: SendTransaction, retrySignal: SendRetrySignal, vault: Vault) -> some View {
+        SendVerifyScreen(transaction: tx, retrySignal: retrySignal, vault: vault)
     }
 
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
-        tx: LegacySendTransaction,
+        tx: SendTransaction,
+        retrySignal: SendRetrySignal,
         keysignPayload: KeysignPayload,
         fastVaultPassword: String?
     ) -> some View {
         SendPairScreen(
             vault: vault,
             tx: tx,
+            retrySignal: retrySignal,
             keysignPayload: keysignPayload,
             fastVaultPassword: fastVaultPassword
         )
     }
 
     @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: LegacySendTransaction) -> some View {
-        SendKeysignScreen(input: input, tx: tx)
+    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
+        SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
     }
 
     @ViewBuilder

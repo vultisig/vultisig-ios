@@ -2,7 +2,10 @@
 //  SendCryptoVerifyViewModel.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-19.
+//  Holds the immutable `SendTransaction` handed off from Details. The
+//  transaction itself is `@Published var` so the load/refresh paths can
+//  swap in an updated copy (via `with(...)`) with re-fetched gas/fee while
+//  identity fields (coin, vault, toAddress, amount) stay pinned.
 //
 
 import SwiftUI
@@ -12,6 +15,14 @@ import WalletCore
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()
+
+    /// The hand-off transaction. Updated via `with(...)` on refresh.
+    @Published var transaction: SendTransaction
+
+    /// Pulled off the legacy class — now owned by the VM since the immutable
+    /// struct can't carry transient UI state.
+    @Published var isCalculatingFee: Bool = false
+    @Published var fastVaultPassword: String = ""
 
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
@@ -23,82 +34,95 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
 
-    // Logic delegation
     private let logic = SendCryptoVerifyLogic()
+
+    init(transaction: SendTransaction) {
+        self.transaction = transaction
+    }
 
     func onLoad() {
         securityScanViewModel.$state
             .assign(to: &$securityScannerState)
     }
 
-    func loadGasInfoForSending(tx: LegacySendTransaction) async {
-        tx.isCalculatingFee = true
+    func loadGasInfoForSending() async {
+        isCalculatingFee = true
         isLoading = true
         errorMessage = ""
         hasBalanceError = false
+
         // Ensure balance is loaded before validation (protects against stale/empty balances)
-        await BalanceService.shared.updateBalance(for: tx.coin)
+        await BalanceService.shared.updateBalance(for: transaction.coin)
 
         // For non-native tokens, also update native token balance (needed for gas validation)
-        if !tx.coin.isNativeToken {
-            if let vault = tx.vault ?? AppViewModel.shared.selectedVault,
-               let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
+        if !transaction.coin.isNativeToken {
+            if let nativeToken = transaction.vault.coins.nativeCoin(chain: transaction.coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
             }
         }
+
         do {
-            // Migration shim: SendCryptoVerifyLogic now takes the immutable
-            // struct; convert at the boundary. Will be removed once
-            // SendCryptoVerifyViewModel itself holds SendTransaction.
-            guard let vault = tx.txVault else {
-                errorMessage = "No vault available for fee calculation"
-                showAlert = true
-                tx.isCalculatingFee = false
-                isLoading = false
-                return
-            }
-            let converted = SendTransaction.fromLegacy(tx, vault: vault)
-            let feeResult = try await logic.calculateFee(tx: converted)
+            let feeResult = try await logic.calculateFee(tx: transaction)
 
-            tx.fee = feeResult.fee
-            tx.gas = feeResult.gas
-
+            var newAmount = transaction.amount
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
-            if tx.sendMaxAmount && tx.coin.isNativeToken {
-                let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
-                let newAmount = balance - tx.fee
-
-                if newAmount > 0 {
-                    let decimals = tx.coin.decimals
-                    let amountDecimal = Decimal(string: String(newAmount)) ?? 0
+            if transaction.sendMaxAmount && transaction.coin.isNativeToken {
+                let balance = transaction.coin.rawBalance.toBigInt(decimals: transaction.coin.decimals)
+                let candidate = balance - feeResult.fee
+                if candidate > 0 {
+                    let decimals = transaction.coin.decimals
+                    let amountDecimal = Decimal(string: String(candidate)) ?? 0
                     let formattedAmount = amountDecimal / pow(10, decimals)
-                    tx.amount = "\(formattedAmount)"
+                    newAmount = "\(formattedAmount)"
                 }
             }
 
-            tx.isCalculatingFee = false
+            transaction = transaction.with(
+                gas: feeResult.gas,
+                fee: feeResult.fee
+            )
+            if newAmount != transaction.amount {
+                // Amount changed by max-send adjustment; rebuild with updated amount.
+                transaction = SendTransaction(
+                    coin: transaction.coin,
+                    vault: transaction.vault,
+                    fromAddress: transaction.fromAddress,
+                    toAddress: transaction.toAddress,
+                    toAddressLabel: transaction.toAddressLabel,
+                    amount: newAmount,
+                    amountInFiat: transaction.amountInFiat,
+                    memo: transaction.memo,
+                    gas: transaction.gas,
+                    fee: transaction.fee,
+                    feeMode: transaction.feeMode,
+                    estimatedGasLimit: transaction.estimatedGasLimit,
+                    customGasLimit: transaction.customGasLimit,
+                    customByteFee: transaction.customByteFee,
+                    sendMaxAmount: transaction.sendMaxAmount,
+                    isFastVault: transaction.isFastVault,
+                    isStakingOperation: transaction.isStakingOperation,
+                    transactionType: transaction.transactionType,
+                    memoFunctionDictionary: transaction.memoFunctionDictionary,
+                    wasmContractPayload: transaction.wasmContractPayload,
+                    feeCoin: transaction.feeCoin
+                )
+            }
+
+            isCalculatingFee = false
             isLoading = false
 
-            validateBalanceWithFee(tx: tx)
+            validateBalanceWithFee()
         } catch {
             print("DEBUG: Error calculating fee: \(error)")
             errorMessage = error.localizedDescription
             showAlert = true
-            tx.isCalculatingFee = false
+            isCalculatingFee = false
             isLoading = false
         }
     }
 
-    func validateBalanceWithFee(tx: LegacySendTransaction) {
-        guard let vault = tx.txVault else {
-            errorMessage = "No vault available for balance validation"
-            showAlert = true
-            isAmountCorrect = false
-            hasBalanceError = true
-            return
-        }
-        let converted = SendTransaction.fromLegacy(tx, vault: vault)
-        let result = logic.validateBalanceWithFee(tx: converted)
+    func validateBalanceWithFee() {
+        let result = logic.validateBalanceWithFee(tx: transaction)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
             showAlert = true
@@ -115,30 +139,21 @@ class SendCryptoVerifyViewModel: ObservableObject {
         !isValidForm || isLoading || hasBalanceError
     }
 
-    func validateForm(tx: LegacySendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func validateForm() async throws -> KeysignPayload {
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            if !isValidForm {
-                throw HelperError.runtimeError("mustAgreeTermsError")
-            }
-
-            let converted = SendTransaction.fromLegacy(tx, vault: vault)
-            try await logic.validateUtxosIfNeeded(tx: converted)
-            let keysignPayload = try await logic.buildKeysignPayload(tx: converted, vault: vault)
-            return keysignPayload
-        } catch {
-            throw error
+        if !isValidForm {
+            throw HelperError.runtimeError("mustAgreeTermsError")
         }
+
+        try await logic.validateUtxosIfNeeded(tx: transaction)
+        let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
+        return keysignPayload
     }
 
-    func scan(transaction: LegacySendTransaction, vault: Vault) async {
-        // Migration shim: convert legacy → immutable struct at the boundary.
-        // Drop this conversion (and the wrapping `transaction:vault:` signature)
-        // once SendCryptoVerifyViewModel itself holds the new struct.
-        let converted = SendTransaction.fromLegacy(transaction, vault: vault)
-        await securityScanViewModel.scan(transaction: converted)
+    func scan() async {
+        await securityScanViewModel.scan(transaction: transaction)
     }
 
     func validateSecurityScanner() -> Bool {

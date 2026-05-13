@@ -43,8 +43,8 @@ struct FunctionCallRouteBuilder {
     }
 
     @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: LegacySendTransaction) -> some View {
-        SendKeysignScreen(input: input, tx: tx)
+    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
+        SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
     }
 
     @ViewBuilder

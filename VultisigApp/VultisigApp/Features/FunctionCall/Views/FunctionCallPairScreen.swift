@@ -27,7 +27,9 @@ struct FunctionCallPairScreen: View {
                 previewType: .Send,
                 contentPadding: 0
             ) { input in
-                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: tx))
+                // Convert legacy → new at the route construction boundary.
+                let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
+                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: immutableTx, retrySignal: SendRetrySignal()))
             }
         }
         .screenTitle("pair".localized)

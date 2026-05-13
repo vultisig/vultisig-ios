@@ -45,7 +45,8 @@ struct CircleDepositView: View {
         let success = await viewModel.onContinue()
         guard success else { return }
         await MainActor.run {
-            router.navigate(to: SendRoute.verify(tx: viewModel.tx, vault: viewModel.vault))
+            let immutableTx = SendTransaction.fromLegacy(viewModel.tx, vault: viewModel.vault)
+            router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: viewModel.vault))
         }
     }
 }

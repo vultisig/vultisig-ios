@@ -9,8 +9,8 @@ import SwiftData
 import SwiftUI
 
 struct SendVerifyScreen: View {
-    @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
-    @ObservedObject var tx: LegacySendTransaction
+    @StateObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+    let retrySignal: SendRetrySignal
     let vault: Vault
 
     @Query private var vaults: [Vault]
@@ -23,6 +23,14 @@ struct SendVerifyScreen: View {
 
     @State private var error: HelperError?
     @State private var retryBannerText: String?
+
+    init(transaction: SendTransaction, retrySignal: SendRetrySignal, vault: Vault) {
+        _sendCryptoVerifyViewModel = StateObject(wrappedValue: SendCryptoVerifyViewModel(transaction: transaction))
+        self.retrySignal = retrySignal
+        self.vault = vault
+    }
+
+    private var tx: SendTransaction { sendCryptoVerifyViewModel.transaction }
 
     var body: some View {
         Screen {
@@ -50,8 +58,8 @@ struct SendVerifyScreen: View {
         .onLoad {
             sendCryptoVerifyViewModel.onLoad()
             Task {
-                await sendCryptoVerifyViewModel.loadGasInfoForSending(tx: tx)
-                await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
+                await sendCryptoVerifyViewModel.loadGasInfoForSending()
+                await sendCryptoVerifyViewModel.scan()
             }
         }
         .onNavigationStackChange { isVisible in
@@ -62,18 +70,18 @@ struct SendVerifyScreen: View {
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if tx.fastVaultPassword.isNotEmpty {
-                tx.fastVaultPassword = .empty
+            if sendCryptoVerifyViewModel.fastVaultPassword.isNotEmpty {
+                sendCryptoVerifyViewModel.fastVaultPassword = ""
             }
         }
     }
 
     private func consumePendingRetry() {
-        guard let reason = tx.pendingRetryReason else { return }
+        guard let reason = retrySignal.pendingRetryReason else { return }
         retryBannerText = reason.userFacingMessage
-        tx.pendingRetryReason = nil
+        retrySignal.pendingRetryReason = nil
         Task {
-            await sendCryptoVerifyViewModel.loadGasInfoForSending(tx: tx)
+            await sendCryptoVerifyViewModel.loadGasInfoForSending()
         }
     }
 
@@ -97,9 +105,9 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
-                feeCrypto: tx.isCalculatingFee ? "Loading..." : tx.gasInReadable,
-                feeFiat: tx.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
-                isCalculatingFee: tx.isCalculatingFee,
+                feeCrypto: sendCryptoVerifyViewModel.isCalculatingFee ? "Loading..." : tx.gasInReadable,
+                feeFiat: sendCryptoVerifyViewModel.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx),
+                isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
@@ -135,16 +143,14 @@ struct SendVerifyScreen: View {
     func signAndMoveToNextView() {
         Task {
             do {
-                let result = try await sendCryptoVerifyViewModel.validateForm(
-                    tx: tx,
-                    vault: vault
-                )
+                let result = try await sendCryptoVerifyViewModel.validateForm()
                 await MainActor.run {
                     router.navigate(to: SendRoute.pairing(
                         vault: vault,
-                        tx: tx,
+                        tx: sendCryptoVerifyViewModel.transaction,
+                        retrySignal: retrySignal,
                         keysignPayload: result,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                        fastVaultPassword: sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty
                     ))
                 }
             } catch {
@@ -166,12 +172,12 @@ struct SendVerifyScreen: View {
                     fastPasswordPresented = true
                 } longPressAction: {
                     // Clear password for paired sign (long press)
-                    tx.fastVaultPassword = .empty
+                    sendCryptoVerifyViewModel.fastVaultPassword = ""
                     onSignPress()
                 }
                 .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                     FastVaultEnterPasswordView(
-                        password: $tx.fastVaultPassword,
+                        password: $sendCryptoVerifyViewModel.fastVaultPassword,
                         vault: vault,
                         onSubmit: { onSignPress() }
                     )
@@ -184,12 +190,4 @@ struct SendVerifyScreen: View {
         }
         .disabled(sendCryptoVerifyViewModel.signButtonDisabled)
     }
-}
-
-#Preview {
-    SendVerifyScreen(
-        tx: LegacySendTransaction(),
-        vault: Vault.example
-    )
-    .environmentObject(SettingsViewModel())
 }
