@@ -45,50 +45,22 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     var isAmountExceeded: Bool {
-        // TRON staking operations: skip validation entirely
-        // The balance is already validated in TronFreezeView/TronUnfreezeView
-        let isTronStaking = coin.chain == .tron && isStakingOperation
-
-        if isTronStaking {
-            return false
-        }
-
-        if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton)) || !coin.isNativeToken {
-            let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
-            return comparison
-        }
-
-        // For UTXO and Cardano chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
-        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
-        let totalTransactionCost = amountInRaw + feeToUse
-        let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
-
-        return comparison
+        SendCryptoLogic.isAmountExceeded(
+            coin: coin,
+            amount: amount,
+            sendMaxAmount: sendMaxAmount,
+            fee: fee,
+            gas: gas,
+            isStakingOperation: isStakingOperation
+        )
     }
 
     var isDeposit: Bool {
-        !memoFunctionDictionary.allItems().isEmpty && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
+        SendCryptoLogic.isDeposit(coin: coin, memoFunctionDictionary: memoFunctionDictionary.allItems())
     }
 
     var canBeReaped: Bool {
-
-        let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
-        if !tickers.contains(coin.ticker) {
-            return false
-        }
-
-        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        let totalTransactionCost = amountInRaw + gas
-        let remainingBalance = totalBalance - totalTransactionCost
-
-        switch coin.chainType {
-        case .Polkadot:
-            return remainingBalance < PolkadotHelper.defaultExistentialDeposit
-        case .Ripple:
-            return remainingBalance < RippleHelper.defaultExistentialDeposit
-        default:
-            return false
-        }
+        SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: gas)
     }
 
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
@@ -141,48 +113,26 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     var amountInRaw: BigInt {
-        let decimals = coin.decimals
-        let amountInDecimals = amountDecimal * pow(10, decimals)
-        return amountInDecimals.description.toBigInt(decimals: decimals)
+        SendCryptoLogic.amountInRaw(coin: coin, amount: amount)
     }
 
     var amountDecimal: Decimal {
-        let decimalValue = amount.toDecimal()
-        let truncatedDecimal = decimalValue.truncated(toPlaces: coin.decimals)
-        return truncatedDecimal
+        SendCryptoLogic.amountDecimal(coin: coin, amount: amount)
     }
 
     var gasDecimal: Decimal {
-        return Decimal(gas)
+        SendCryptoLogic.gasDecimal(gas: gas)
     }
 
     var gasInReadable: String {
-        // Get native coin for proper fee display (fees are always in native token)
-        var nativeCoin = coin
-        var decimals = coin.decimals
-
-        if !coin.isNativeToken {
-            if let vault = txVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
-                    nativeCoin = nativeToken
-                    decimals = nativeToken.decimals
-                }
-            }
-        }
-
-        if coin.chain.chainType == .EVM {
-            // convert to Gwei , show as Gwei for EVM chain only
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
-                return .empty
-            }
-            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
-        }
-
-        // For UTXO and Cardano chains, use total fee amount (like Android) instead of sats/byte rate
-        let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
-        let feeDecimal = Decimal(feeToDisplay)
-
-        return "\((feeDecimal / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(nativeCoin.ticker)"
+        let resolvedNative: Coin = {
+            guard !coin.isNativeToken,
+                  let vault = txVault,
+                  let nativeToken = vault.coins.nativeCoin(chain: coin.chain)
+            else { return coin }
+            return nativeToken
+        }()
+        return SendCryptoLogic.gasInReadable(coin: coin, gasNativeCoin: resolvedNative, gas: gas, fee: fee)
     }
 
     init() { }

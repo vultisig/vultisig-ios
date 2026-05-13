@@ -23,8 +23,8 @@ class SendCryptoViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var hash: String? = nil
 
-    // Logic delegation
-    private let logic = SendCryptoLogic()
+    // Logic delegation (legacy interactor — replaced by SendInteractor in Phase A4)
+    private let logic = LegacySendCryptoInteractor()
 
     // Address resolution
     @Published private(set) var addressResolved: Bool?
@@ -178,9 +178,9 @@ class SendCryptoViewModel: ObservableObject {
     }
 }
 
-// MARK: - SendCryptoLogic (Business Logic Struct)
+// MARK: - LegacySendCryptoInteractor (Business Logic Struct — replaced by SendInteractor in Phase A4)
 
-struct SendCryptoLogic {
+struct LegacySendCryptoInteractor {
 
     private let logger = Logger(subsystem: "send-crypto-logic", category: "transaction")
     private let blockchainService = BlockChainService.shared
