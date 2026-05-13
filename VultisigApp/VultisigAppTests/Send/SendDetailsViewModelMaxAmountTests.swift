@@ -1,8 +1,8 @@
 //
-//  SendDetailsFormViewModelMaxAmountTests.swift
+//  SendDetailsViewModelMaxAmountTests.swift
 //  VultisigAppTests
 //
-//  Per-chain integration tests for `SendDetailsFormViewModel.setMaxAmount`.
+//  Per-chain integration tests for `SendDetailsViewModel.setMaxAmount`.
 //  Each test drives the VM with a stubbed interactor return shape that
 //  matches what the real `DefaultSendInteractor.fetchChainSpecific` would
 //  produce for that chain, then verifies the VM dispatches to the right
@@ -20,7 +20,7 @@ import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
-final class SendDetailsFormViewModelMaxAmountTests: XCTestCase {
+final class SendDetailsViewModelMaxAmountTests: XCTestCase {
 
     // MARK: - EVM native
 

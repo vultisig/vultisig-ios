@@ -21,7 +21,7 @@ struct TronUnfreezeView: View {
     @State var selectedResourceType: TronResourceType = .bandwidth
 
     @StateObject private var sendTransaction = LegacySendTransaction()
-    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
+    @State private var sendInteractor: SendInteractor = DefaultSendInteractor.live
 
     init(vault: Vault, model: TronViewModel) {
         self.vault = vault
@@ -268,7 +268,7 @@ struct TronUnfreezeView: View {
             sendTransaction.isStakingOperation = true
         }
 
-        await sendCryptoViewModel.loadFastVault(tx: sendTransaction, vault: vault)
+        sendTransaction.isFastVault = await sendInteractor.loadFastVault(vault: vault)
 
         await MainActor.run {
             isLoading = false

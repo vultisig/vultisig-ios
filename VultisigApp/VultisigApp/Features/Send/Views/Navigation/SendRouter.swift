@@ -10,6 +10,7 @@ import SwiftUI
 struct SendRouter {
     private let viewBuilder = SendRouteBuilder()
 
+    @MainActor
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {

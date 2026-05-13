@@ -1,8 +1,8 @@
 //
-//  SendDetailsFormViewModelValidationTests.swift
+//  SendDetailsViewModelValidationTests.swift
 //  VultisigAppTests
 //
-//  Coverage for `SendDetailsFormViewModel.validateForm()`. Pins every
+//  Coverage for `SendDetailsViewModel.validateForm()`. Pins every
 //  rejection path (empty/invalid address, zero amount, balance/gas errors,
 //  TRON staking short-circuit, Cosmos pending-tx blocker), plus the happy
 //  path and the isLoading gating during async work.
@@ -14,7 +14,7 @@ import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
-final class SendDetailsFormViewModelValidationTests: XCTestCase {
+final class SendDetailsViewModelValidationTests: XCTestCase {
 
     // MARK: - Zero amount
 

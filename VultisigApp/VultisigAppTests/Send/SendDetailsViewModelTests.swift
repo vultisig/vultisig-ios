@@ -1,5 +1,5 @@
 //
-//  SendDetailsFormViewModelTests.swift
+//  SendDetailsViewModelTests.swift
 //  VultisigAppTests
 //
 //  Form-state lifecycle tests for the new @Observable form VM. Covers init,
@@ -13,7 +13,7 @@ import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
-final class SendDetailsFormViewModelTests: XCTestCase {
+final class SendDetailsViewModelTests: XCTestCase {
 
     // MARK: - Init
 
