@@ -65,7 +65,7 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         return settingsService.isEnabled
     }
 
-    func createSecurityScannerTransaction(transaction: LegacySendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
+    func createSecurityScannerTransaction(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         return try await factory.createSecurityScanner(transaction: transaction, vault: vault)
     }
 

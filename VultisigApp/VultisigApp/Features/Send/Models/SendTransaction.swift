@@ -148,6 +148,65 @@ extension SendTransaction {
     }
 }
 
+// MARK: - Legacy converter (migration-period only)
+
+extension SendTransaction {
+    enum LegacyConversionError: Error, LocalizedError {
+        case missingVault
+
+        var errorDescription: String? {
+            switch self {
+            case .missingVault:
+                return "Cannot convert LegacySendTransaction: vault unavailable. Either set tx.vault before converting, or pass a vault explicitly via fromLegacy(_:vault:)."
+            }
+        }
+    }
+
+    /// Converts a `LegacySendTransaction` (the old `@Published` ObservableObject)
+    /// into the new immutable struct. Resolves the vault via the legacy
+    /// `txVault` fallback (`tx.vault ?? AppViewModel.shared.selectedVault`).
+    /// Throws if neither is available — non-optional vault is decision 2 of
+    /// the Send pilot.
+    ///
+    /// **Migration-period only.** Delete this extension along with
+    /// `LegacySendTransaction` once every call site has migrated.
+    static func fromLegacy(_ tx: LegacySendTransaction) throws -> SendTransaction {
+        guard let vault = tx.txVault else {
+            throw LegacyConversionError.missingVault
+        }
+        return fromLegacy(tx, vault: vault)
+    }
+
+    /// Same as `fromLegacy(_:)` but with the vault supplied explicitly — use
+    /// this from contexts where the vault is already in hand (e.g., screens
+    /// that received it as a route param).
+    static func fromLegacy(_ tx: LegacySendTransaction, vault: Vault) -> SendTransaction {
+        SendTransaction(
+            coin: tx.coin,
+            vault: vault,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            toAddressLabel: tx.toAddressLabel,
+            amount: tx.amount,
+            amountInFiat: tx.amountInFiat,
+            memo: tx.memo,
+            gas: tx.gas,
+            fee: tx.fee,
+            feeMode: tx.feeMode,
+            estimatedGasLimit: tx.estematedGasLimit,
+            customGasLimit: tx.customGasLimit,
+            customByteFee: tx.customByteFee,
+            sendMaxAmount: tx.sendMaxAmount,
+            isFastVault: tx.isFastVault,
+            isStakingOperation: tx.isStakingOperation,
+            transactionType: tx.transactionType,
+            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
+            wasmContractPayload: tx.wasmContractPayload,
+            feeCoin: resolveFeeCoin(coin: tx.coin, vault: vault)
+        )
+    }
+}
+
 // MARK: - Convenience computed (delegates to SendCryptoLogic)
 
 extension SendTransaction {

@@ -120,7 +120,9 @@ class FunctionCallVerifyViewModel: ObservableObject {
     }
 
     func scan(transaction: LegacySendTransaction, vault: Vault) async {
-        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+        // Migration shim: convert legacy → immutable struct at the boundary.
+        let converted = SendTransaction.fromLegacy(transaction, vault: vault)
+        await securityScanViewModel.scan(transaction: converted)
     }
 
     func validateSecurityScanner() -> Bool {

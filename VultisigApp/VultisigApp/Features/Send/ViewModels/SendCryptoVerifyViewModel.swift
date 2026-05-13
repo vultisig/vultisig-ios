@@ -114,7 +114,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     func scan(transaction: LegacySendTransaction, vault: Vault) async {
-        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+        // Migration shim: convert legacy → immutable struct at the boundary.
+        // Drop this conversion (and the wrapping `transaction:vault:` signature)
+        // once SendCryptoVerifyViewModel itself holds the new struct.
+        let converted = SendTransaction.fromLegacy(transaction, vault: vault)
+        await securityScanViewModel.scan(transaction: converted)
     }
 
     func validateSecurityScanner() -> Bool {

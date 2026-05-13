@@ -160,6 +160,24 @@ final class BlockChainService {
         }
     }
 
+    /// Overload accepting the new immutable `SendTransaction` struct. Used by
+    /// migrated consumers (SecurityScanner, payload builder, etc.). Forwards
+    /// to `fetchSendBlockChainSpecific(...)`.
+    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
+        try await fetchSendBlockChainSpecific(
+            coin: tx.coin,
+            toAddress: tx.toAddress,
+            amount: tx.amountInRaw,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: tx.gasLimit,
+            feeMode: tx.feeMode,
+            fromAddress: tx.fromAddress
+        )
+    }
+
     /// Primitive-typed entry point for the new SendInteractor. Wraps the
     /// private full-signature `fetchSpecific(for:action:…)` so the interactor
     /// doesn't need a `LegacySendTransaction` reference (Phase A4 / Phase B).
