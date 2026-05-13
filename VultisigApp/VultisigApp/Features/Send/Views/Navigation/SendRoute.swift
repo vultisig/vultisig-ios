@@ -10,7 +10,7 @@ enum SendRoute: Hashable {
     case verify(tx: LegacySendTransaction, vault: Vault)
     case pairing(vault: Vault, tx: LegacySendTransaction, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(input: KeysignInput, tx: LegacySendTransaction)
-    case done(vault: Vault, hash: String, chain: Chain, tx: LegacySendTransaction, keysignPayload: KeysignPayload?)
+    case done(vault: Vault, hash: String, chain: Chain, tx: SendTransaction?, keysignPayload: KeysignPayload?)
     case coinPicker(coins: [Coin], tx: LegacySendTransaction)
     case transactionDetails(input: SendCryptoContent)
 }

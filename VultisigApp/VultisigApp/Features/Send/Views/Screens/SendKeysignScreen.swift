@@ -40,11 +40,14 @@ struct SendKeysignScreen: View {
                   let chain = input.keysignPayload?.coin.chain
             else { return }
 
+            // Migration shim: SendRoute.done now carries the immutable struct.
+            // Convert legacy → new at the route construction boundary.
+            let immutableTx = SendTransaction.fromLegacy(tx, vault: input.vault)
             router.navigate(to: SendRoute.done(
                 vault: input.vault,
                 hash: hash,
                 chain: chain,
-                tx: tx,
+                tx: immutableTx,
                 keysignPayload: input.keysignPayload
             ))
         }

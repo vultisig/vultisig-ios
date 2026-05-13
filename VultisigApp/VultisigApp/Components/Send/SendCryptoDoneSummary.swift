@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendCryptoDoneSummary: View {
-    let sendTransaction: LegacySendTransaction?
+    let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
     let vault: Vault
     let hash: String
@@ -28,7 +28,7 @@ struct SendCryptoDoneSummary: View {
         .padding(.bottom, 24)
     }
 
-    private func getSendCard(_ tx: LegacySendTransaction) -> some View {
+    private func getSendCard(_ tx: SendTransaction) -> some View {
         VStack(spacing: 18) {
 
             if !tx.fromAddress.isEmpty {
@@ -166,12 +166,12 @@ struct SendCryptoDoneSummary: View {
         .bold(isBold)
     }
 
-    private func getSendAmount(for tx: LegacySendTransaction) -> String {
+    private func getSendAmount(for tx: SendTransaction) -> String {
         let amountDecimal = tx.amount.toDecimal()
         return amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
 
-    private func getSendFiatAmount(for tx: LegacySendTransaction) -> String {
+    private func getSendFiatAmount(for tx: SendTransaction) -> String {
         tx.amountInFiat.formatToFiat()
     }
 }
