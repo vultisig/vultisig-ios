@@ -90,6 +90,27 @@ enum SendCryptoLogic {
             && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
     }
 
+    // MARK: - Max amount
+
+    /// Compute the max sendable amount given a resolved fee. Caller fetches the
+    /// per-chain fee (UTXO byte-fee × planned bytes, EVM gasPrice × gasLimit,
+    /// chain-specific gas, etc.) and feeds the BigInt in here. Pure math; the
+    /// async fetches live in the interactor.
+    static func computeMaxAmount(coin: Coin, fee: BigInt) -> String {
+        let maxValue = coin.getMaxValue(fee)
+        let digits = coin.decimals > 8 ? 8 : coin.decimals
+        return maxValue.formatToDecimal(digits: digits)
+    }
+
+    /// Apply a percentage (0–100) to a max amount string. Used by the
+    /// "25% / 50% / 75%" preset buttons in the Details screen.
+    static func applyPercentage(maxAmount: String, percentage: Double, coinDecimals: Int) -> String {
+        let multiplier = Decimal(percentage) / 100
+        let target = maxAmount.toDecimal() * multiplier
+        let digits = coinDecimals > 8 ? 8 : coinDecimals
+        return target.formatToDecimal(digits: digits)
+    }
+
     // MARK: - Display: fees
 
     /// Human-readable gas/fee row. EVM shows Gwei. UTXO + Cardano show the
