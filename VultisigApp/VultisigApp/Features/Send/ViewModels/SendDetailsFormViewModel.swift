@@ -16,6 +16,7 @@
 
 import BigInt
 import Foundation
+import Mediator
 import OSLog
 import SwiftUI
 import VultisigCommonData
@@ -77,6 +78,18 @@ final class SendDetailsFormViewModel {
     var showAlert: Bool = false
     var showAddressAlert: Bool = false
     var showAmountAlert: Bool = false
+
+    // MARK: - Address-resolution + form-validity flags
+
+    /// Whether the most recent `validateToAddress()` succeeded. Mirrors
+    /// `isNamespaceResolved` on the legacy `SendCryptoViewModel` — used by
+    /// the screen to gate tab-transitions after ENS/TNS resolution.
+    var isNamespaceResolved: Bool = false
+
+    /// Whether the form passed validation. The legacy class kept this as a
+    /// separate flag from `validateForm()`'s return value so SwiftUI bindings
+    /// could observe it.
+    var isValidForm: Bool = true
 
     // MARK: - Pending transaction state (Cosmos chains)
     var hasPendingTransaction: Bool = false
@@ -146,6 +159,13 @@ final class SendDetailsFormViewModel {
     /// Continue button is disabled while either async path is running.
     var continueButtonDisabled: Bool {
         isLoading || isValidatingForm
+    }
+
+    /// Mirrors `SendCryptoViewModel.showLoader` — the legacy screen shows the
+    /// loader overlay only while form validation is running, not for the
+    /// shorter async checks (fee fetch, etc).
+    var showLoader: Bool {
+        isValidatingForm
     }
 
     /// The native coin used to pay gas — `self.coin` for native sends, the
@@ -374,6 +394,32 @@ final class SendDetailsFormViewModel {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Amount validation (sync, format-only)
+
+    /// Synchronous decimal-format check. Used by the amount-tab onChange to
+    /// give immediate feedback while the user types, separate from the
+    /// async `validateForm()` that runs on Continue.
+    func validateAmount(_ candidate: String) {
+        errorTitle = ""
+        errorMessage = nil
+        isValidForm = candidate.isValidDecimal()
+        if !isValidForm {
+            errorTitle = "error"
+            errorMessage = "decimalAmountError".localized
+            showAlert = true
+        }
+    }
+
+    // MARK: - Mediator lifecycle
+
+    /// Stops the keysign Mediator service when leaving the Send flow.
+    /// Mirrors `SendCryptoViewModel.stopMediator` — kept here so the screen
+    /// can call it from `.onDisappear`.
+    func stopMediator() {
+        Mediator.shared.stop()
+        logger.info("mediator server stopped.")
     }
 
     // MARK: - Form validation

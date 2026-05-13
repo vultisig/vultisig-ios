@@ -217,6 +217,45 @@ final class SendDetailsFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.isFastVault)
     }
 
+    // MARK: - Amount sync validation (Phase 2b)
+
+    func testValidateAmountAcceptsValidDecimal() {
+        let vm = SendFormFixture.make()
+        vm.validateAmount("0.5")
+        XCTAssertTrue(vm.isValidForm)
+        XCTAssertNil(vm.errorMessage)
+        XCTAssertFalse(vm.showAlert)
+    }
+
+    func testValidateAmountRejectsNonDecimal() {
+        let vm = SendFormFixture.make()
+        vm.validateAmount("not-a-number")
+        XCTAssertFalse(vm.isValidForm)
+        XCTAssertEqual(vm.errorTitle, "error")
+        XCTAssertEqual(vm.errorMessage, "decimalAmountError".localized)
+        XCTAssertTrue(vm.showAlert)
+    }
+
+    func testValidateAmountClearsPriorError() {
+        let vm = SendFormFixture.make()
+        vm.validateAmount("garbage")
+        vm.validateAmount("1.0")
+        XCTAssertTrue(vm.isValidForm)
+        XCTAssertEqual(vm.errorTitle, "")
+        XCTAssertNil(vm.errorMessage)
+    }
+
+    // MARK: - showLoader
+
+    func testShowLoaderMirrorsIsValidatingForm() {
+        let vm = SendFormFixture.make()
+        XCTAssertFalse(vm.showLoader)
+        vm.isValidatingForm = true
+        XCTAssertTrue(vm.showLoader)
+        vm.isValidatingForm = false
+        XCTAssertFalse(vm.showLoader)
+    }
+
     // MARK: - continueButtonDisabled gating
 
     func testContinueButtonDisabledWhenLoading() {
