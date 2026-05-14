@@ -154,7 +154,8 @@ struct FunctionTransactionScreen: View {
 
             sendTx = tx
             isLoading = false
-            router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+            let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
+            router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
         }
     }
 

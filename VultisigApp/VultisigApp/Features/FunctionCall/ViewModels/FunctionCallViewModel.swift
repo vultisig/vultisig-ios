@@ -53,27 +53,20 @@ class FunctionCallViewModel: ObservableObject {
         logger.info("mediator server stopped.")
     }
 
-    func feesInReadable(tx: LegacySendTransaction, vault: Vault) -> String {
+    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.gas)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 
-    func memoDictionary(for txDict: ThreadSafeDictionary<String, String>) -> [String: String] {
-        guard !txDict.allKeysInOrder().isEmpty else {
+    func memoDictionary(for txDict: [String: String]) -> [String: String] {
+        guard !txDict.isEmpty else {
             return [String: String]()
         }
 
-        let validKeys = txDict.allKeysInOrder().filter { key in
-            guard let value = txDict.get(key) else { return false }
-            return !value.isEmpty && value != "0" && value != "0.0"
-        }
-
         var dict = [String: String]()
-        validKeys.forEach { key in
-            guard let value = txDict.get(key) else {
-                return
-            }
+        for (key, value) in txDict {
+            guard !value.isEmpty, value != "0", value != "0.0" else { continue }
             dict[key.toFormattedTitleCase()] = value
         }
 

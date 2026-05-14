@@ -80,7 +80,8 @@ struct ReferralTransactionFlowScreen: View {
 
     func moveToNext() {
         guard let vault else { return }
-        router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+        let immutableTx = SendTransaction.fromLegacy(sendTx, vault: vault)
+        router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
     }
 }
 

@@ -235,7 +235,8 @@ struct FunctionCallDetailsScreen: View {
                         tx.toAddress = toAddress
                     }
 
-                    router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+                    let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
+                    router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
 
                 } else {
                     showInvalidFormAlert = true

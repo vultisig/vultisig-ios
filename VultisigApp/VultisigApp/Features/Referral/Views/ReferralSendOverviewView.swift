@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @ObservedObject var sendTx: LegacySendTransaction
+    let transaction: SendTransaction
 
     var body: some View {
         VStack(spacing: 16) {
@@ -44,7 +44,7 @@ struct ReferralSendOverviewView: View {
                 .frame(width: 24, height: 24)
                 .cornerRadius(32)
 
-            Text("\(sendTx.amount)")
+            Text("\(transaction.amount)")
                 .foregroundColor(Theme.colors.textPrimary)
 
             Text("RUNE")
@@ -65,7 +65,7 @@ struct ReferralSendOverviewView: View {
 
             getCell(
                 title: "from",
-                description: sendTx.vault?.name ?? "",
+                description: transaction.vault.name,
                 bracketValue: getVaultAddress()
             )
 
@@ -81,14 +81,14 @@ struct ReferralSendOverviewView: View {
 
             getCell(
                 title: "gas",
-                description: "\(sendTx.gasInReadable)"
+                description: "\(transaction.gasInReadable)"
             )
 
             separator
 
             getCell(
                 title: "memo",
-                description: sendTx.memo,
+                description: transaction.memo,
                 isForMemo: true
             )
         }
@@ -126,7 +126,7 @@ struct ReferralSendOverviewView: View {
     }
 
     private func getVaultAddress() -> String? {
-        guard let nativeCoin = sendTx.vault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+        guard let nativeCoin = transaction.vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
             return nil
         }
 
@@ -136,7 +136,7 @@ struct ReferralSendOverviewView: View {
 
 #Preview {
     ReferralSendOverviewView(
-        sendTx: LegacySendTransaction(),
+        transaction: .empty(coin: .example, vault: .example)
     )
     .environmentObject(HomeViewModel())
 }

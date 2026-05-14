@@ -12,7 +12,7 @@ struct FunctionCallPairScreen: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
-    let tx: LegacySendTransaction
+    let tx: SendTransaction
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
 
@@ -27,9 +27,7 @@ struct FunctionCallPairScreen: View {
                 previewType: .Send,
                 contentPadding: 0
             ) { input in
-                // Convert legacy → new at the route construction boundary.
-                let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
-                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: immutableTx, retrySignal: SendRetrySignal()))
+                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: tx, retrySignal: SendRetrySignal()))
             }
         }
         .screenTitle("pair".localized)
