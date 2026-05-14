@@ -14,7 +14,7 @@ struct TronFreezeView: View {
     @Environment(\.router) var router
 
     @StateObject private var tx = LegacySendTransaction()
-    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
+    @State private var sendInteractor: SendInteractor = DefaultSendInteractor.live
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var trxCoin: Coin?
@@ -187,7 +187,7 @@ struct TronFreezeView: View {
             tx.reset(coin: coin)
         }
 
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        tx.isFastVault = await sendInteractor.loadFastVault(vault: vault)
     }
 
     func updatePercentage(from amountStr: String) async {
@@ -235,7 +235,7 @@ struct TronFreezeView: View {
             tx.isStakingOperation = true
         }
 
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        tx.isFastVault = await sendInteractor.loadFastVault(vault: vault)
 
         await MainActor.run {
             isLoading = false

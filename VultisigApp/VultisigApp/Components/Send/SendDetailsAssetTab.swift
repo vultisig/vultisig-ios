@@ -9,9 +9,7 @@ import SwiftUI
 
 struct SendDetailsAssetTab: View {
     let isExpanded: Bool
-    @ObservedObject var tx: LegacySendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
 
     @EnvironmentObject var appViewModel: AppViewModel
 
@@ -20,7 +18,7 @@ struct SendDetailsAssetTab: View {
             .onAppear {
                 setData()
             }
-            .onChange(of: tx.coin, { _, _ in
+            .onChange(of: viewModel.coin, { _, _ in
                 setData()
             })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
@@ -32,14 +30,13 @@ struct SendDetailsAssetTab: View {
             .onChange(of: viewModel.selectedChain) { _, newValue in
                 guard let vault = appViewModel.selectedVault else { return }
 
-                // ALWAYS select the NATIVE token for the chain, NEVER a regular token
                 let nativeCoin = vault.coins.first(where: {
                     $0.chain == newValue && $0.isNativeToken == true
                 })
 
                 if let nativeCoin {
-                    tx.fromAddress = nativeCoin.address
-                    tx.coin = nativeCoin
+                    viewModel.fromAddress = nativeCoin.address
+                    viewModel.coin = nativeCoin
                 }
             }
             .clipped()
@@ -108,7 +105,7 @@ struct SendDetailsAssetTab: View {
     }
 
     var selectedChainCell: some View {
-        SwapFromToChain(chain: tx.coin.chain)
+        SwapFromToChain(chain: viewModel.coin.chain)
     }
 
     var selectedCoinCell: some View {
@@ -123,7 +120,7 @@ struct SendDetailsAssetTab: View {
         Button {
             viewModel.showCoinPickerSheet.toggle()
         } label: {
-            SwapFromToCoin(coin: tx.coin)
+            SwapFromToCoin(coin: viewModel.coin)
         }
     }
 
@@ -132,12 +129,12 @@ struct SendDetailsAssetTab: View {
             Group {
                 Text(NSLocalizedString("balance", comment: "")) +
                 Text(": ") +
-                Text(tx.coin.balanceString)
+                Text(viewModel.coin.balanceString)
             }
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textPrimary)
 
-            Text(tx.coin.balanceInFiat)
+            Text(viewModel.coin.balanceInFiat)
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textTertiary)
         }
@@ -147,13 +144,13 @@ struct SendDetailsAssetTab: View {
     var doneSelectedAsset: some View {
         HStack(spacing: 4) {
             AsyncImageView(
-                logo: tx.coin.logo,
+                logo: viewModel.coin.logo,
                 size: CGSize(width: 16, height: 16),
-                ticker: tx.coin.ticker,
-                tokenChainLogo: tx.coin.tokenChainLogo
+                ticker: viewModel.coin.ticker,
+                tokenChainLogo: viewModel.coin.tokenChainLogo
             )
 
-            Text("\(tx.coin.ticker)")
+            Text("\(viewModel.coin.ticker)")
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textTertiary)
         }
@@ -164,7 +161,7 @@ struct SendDetailsAssetTab: View {
     }
 
     private func setData() {
-        viewModel.selectedChain = tx.coin.chain
+        viewModel.selectedChain = viewModel.coin.chain
     }
 
     private func handleAssetSelection(_ oldValue: Bool, _ newValue: Bool) {
@@ -172,23 +169,9 @@ struct SendDetailsAssetTab: View {
             return
         }
 
-        // Only auto-advance to address if we're currently on the asset tab
-        // (i.e., user just finished selecting an asset).
-        // Don't force to address if user is switching to a different tab
-        // (e.g., tapping Edit on asset while on address tab).
         if viewModel.selectedTab == .asset {
             viewModel.onSelect(tab: .address)
         }
         viewModel.assetSetupDone = true
     }
-}
-
-#Preview {
-    SendDetailsAssetTab(
-        isExpanded: true,
-        tx: LegacySendTransaction(),
-        viewModel: SendDetailsViewModel(),
-        sendCryptoViewModel: SendCryptoViewModel()
-    )
-    .environmentObject(AppViewModel())
 }

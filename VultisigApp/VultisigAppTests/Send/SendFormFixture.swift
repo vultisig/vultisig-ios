@@ -2,7 +2,7 @@
 //  SendFormFixture.swift
 //  VultisigAppTests
 //
-//  Test fixture helpers for `SendDetailsFormViewModel`. Construct a valid VM
+//  Test fixture helpers for `SendDetailsViewModel`. Construct a valid VM
 //  state with sensible defaults; tests override the bits they care about.
 //
 
@@ -11,16 +11,16 @@ import Foundation
 @testable import VultisigApp
 
 enum SendFormFixture {
-    /// Build a `SendDetailsFormViewModel` with the given coin/vault pair and
+    /// Build a `SendDetailsViewModel` with the given coin/vault pair and
     /// a mock interactor. Apply per-test overrides via the closure.
     @MainActor
     static func make(
         coin: Coin = makeBTC(),
         vault: Vault = makeVault(),
         interactor: SendInteractor? = nil,
-        overrides: (SendDetailsFormViewModel) -> Void = { _ in }
-    ) -> SendDetailsFormViewModel {
-        let vm = SendDetailsFormViewModel(
+        overrides: (SendDetailsViewModel) -> Void = { _ in }
+    ) -> SendDetailsViewModel {
+        let vm = SendDetailsViewModel(
             coin: coin,
             vault: vault,
             interactor: interactor ?? MockSendInteractor()

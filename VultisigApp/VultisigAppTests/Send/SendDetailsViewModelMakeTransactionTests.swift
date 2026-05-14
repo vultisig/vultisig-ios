@@ -1,8 +1,8 @@
 //
-//  SendDetailsFormViewModelMakeTransactionTests.swift
+//  SendDetailsViewModelMakeTransactionTests.swift
 //  VultisigAppTests
 //
-//  Coverage for `SendDetailsFormViewModel.makeTransaction()` — the Continue
+//  Coverage for `SendDetailsViewModel.makeTransaction()` — the Continue
 //  hand-off. Pins every form field's propagation into the immutable
 //  `SendTransaction`, plus the three pilot decisions (plain dict, required
 //  vault, custom-gas preservation).
@@ -14,7 +14,7 @@ import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
-final class SendDetailsFormViewModelMakeTransactionTests: XCTestCase {
+final class SendDetailsViewModelMakeTransactionTests: XCTestCase {
 
     // MARK: - Happy path: every field propagates
 
@@ -172,7 +172,7 @@ final class SendDetailsFormViewModelMakeTransactionTests: XCTestCase {
         let vm = SendFormFixture.make()
         vm.amount = "1.0"
         XCTAssertThrowsError(try vm.makeTransaction()) { error in
-            XCTAssertTrue(error is SendDetailsFormViewModel.MakeTransactionError)
+            XCTAssertTrue(error is SendDetailsViewModel.MakeTransactionError)
         }
     }
 

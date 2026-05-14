@@ -9,9 +9,7 @@ import SwiftUI
 
 struct SendDetailsAddressTab: View {
     let isExpanded: Bool
-    @ObservedObject var tx: LegacySendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
     @FocusState.Binding var focusedField: Field?
 
     var body: some View {
@@ -59,7 +57,7 @@ struct SendDetailsAddressTab: View {
     }
 
     var selectedAddress: some View {
-        Text("\(tx.toAddress)")
+        Text("\(viewModel.toAddress)")
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
             .lineLimit(1)
@@ -71,18 +69,16 @@ struct SendDetailsAddressTab: View {
     }
 
     var fields: some View {
-        SendDetailsAddressFields(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
+        SendDetailsAddressFields(viewModel: viewModel, focusedField: $focusedField)
     }
 
     private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
         guard oldValue != newValue, !newValue else {
             return
         }
-        if !tx.toAddress.isEmpty {
-            guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+        if !viewModel.toAddress.isEmpty {
+            guard await viewModel.validateToAddress() else {
                 viewModel.addressSetupDone = false
-                // Only force back to address if the user is trying to advance
-                // to amount. Don't block switching to asset tab.
                 if viewModel.selectedTab == .amount {
                     viewModel.onSelect(tab: .address)
                 }

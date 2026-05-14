@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SendRouteBuilder {
 
+    @MainActor
     @ViewBuilder
     func buildDetailsScreen(
         coin: Coin?,
@@ -18,8 +19,11 @@ struct SendRouteBuilder {
     ) -> some View {
         SendDetailsScreen(
             coin: coin,
-            tx: tx,
-            sendDetailsViewModel: SendDetailsViewModel(hasPreselectedCoin: hasPreselectedCoin),
+            viewModel: SendDetailsViewModel(
+                coin: coin ?? tx.coin,
+                vault: vault,
+                hasPreselectedCoin: hasPreselectedCoin
+            ),
             vault: vault
         )
     }

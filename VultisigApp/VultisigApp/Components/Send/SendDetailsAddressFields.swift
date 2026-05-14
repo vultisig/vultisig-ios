@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAddressFields: View {
-    @ObservedObject var tx: LegacySendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
     @FocusState.Binding var focusedField: Field?
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -39,7 +37,7 @@ struct SendDetailsAddressFields: View {
                     .foregroundColor(Theme.colors.textPrimary)
             }
 
-            Text(tx.fromAddress)
+            Text(viewModel.fromAddress)
                 .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -58,11 +56,11 @@ struct SendDetailsAddressFields: View {
 
     var toField: some View {
         AddressTextField(
-            address: $tx.toAddress,
+            address: $viewModel.toAddress,
             label: "sendTo".localized,
-            coin: tx.coin,
+            coin: viewModel.coin,
             error: Binding(
-                get: { sendCryptoViewModel.showAddressAlert ? sendCryptoViewModel.errorMessage : nil },
+                get: { viewModel.showAddressAlert ? viewModel.errorMessage : nil },
                 set: { _ in }
             )
         ) {
@@ -72,36 +70,30 @@ struct SendDetailsAddressFields: View {
 
     func handle(addressResult: AddressResult?) {
         guard let addressResult else { return }
-        tx.toAddress = addressResult.address
+        viewModel.toAddress = addressResult.address
 
         if let amount = addressResult.amount, amount.isNotEmpty {
-            tx.amount = amount
-            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
+            viewModel.amount = amount
+            viewModel.convertToFiat(newValue: amount)
         }
 
         if let memo = addressResult.memo, memo.isNotEmpty {
-            tx.memo = memo
+            viewModel.memo = memo
         }
 
         // Attempt to detect and switch chain if address belongs to different chain
-        if !tx.toAddress.isEmpty, let vault = appViewModel.selectedVault {
+        if !viewModel.toAddress.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(
-                from: tx.toAddress,
-                vault: vault,
-                currentChain: tx.coin.chain,
-                tx: tx
+                from: viewModel.toAddress,
+                currentChain: viewModel.coin.chain
             )
 
             if detectedCoin != nil {
-                // Clear previous error
-                sendCryptoViewModel.showAddressAlert = false
-                sendCryptoViewModel.errorMessage = ""
-
-                // Mark address as done and move to amount
+                viewModel.showAddressAlert = false
+                viewModel.errorMessage = nil
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
             }
         }
-
     }
 }

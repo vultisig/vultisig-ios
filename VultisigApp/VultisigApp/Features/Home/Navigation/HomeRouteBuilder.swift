@@ -14,6 +14,7 @@ struct HomeRouteBuilder {
         HomeScreen(showingVaultSelector: showingVaultSelector)
     }
 
+    @MainActor
     @ViewBuilder
     func buildActionRoute(action: VaultAction, sendTx: LegacySendTransaction, vault: Vault) -> some View {
         switch action {

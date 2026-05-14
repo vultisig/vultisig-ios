@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAdditionalSection: View {
-    @ObservedObject var tx: LegacySendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
 
     @State var isMemoExpanded = false
 
@@ -21,7 +19,7 @@ struct SendDetailsAdditionalSection: View {
             addMemoField
         }
         .onAppear {
-            if !tx.memo.isEmpty {
+            if !viewModel.memo.isEmpty {
                 isMemoExpanded = true
             }
         }
@@ -56,7 +54,7 @@ struct SendDetailsAdditionalSection: View {
                 addMemoTitle
             }
 
-            MemoTextField(memo: $tx.memo)
+            MemoTextField(memo: $viewModel.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
         }
@@ -72,13 +70,4 @@ struct SendDetailsAdditionalSection: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
     }
-}
-
-#Preview {
-    SendDetailsAdditionalSection(
-        tx: LegacySendTransaction(),
-        viewModel: SendDetailsViewModel(),
-        sendCryptoViewModel: SendCryptoViewModel()
-    )
-    .environmentObject(AppViewModel())
 }

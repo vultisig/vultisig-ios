@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeRouter {
     private let viewBuilder = HomeRouteBuilder()
 
+    @MainActor
     @ViewBuilder
     func build(_ route: HomeRoute) -> some View {
         switch route {
