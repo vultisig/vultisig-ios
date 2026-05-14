@@ -26,6 +26,26 @@ class CardanoService {
         return response.data.first?.balance ?? "0"
     }
 
+    /// Fetch the balance for a Cardano coin: ADA when `contractAddress` is
+    /// empty, otherwise the matching native-token quantity in token base units.
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
+        guard !coin.contractAddress.isEmpty else {
+            return try await getBalance(address: address)
+        }
+
+        let parsed = try CardanoAssetId.parse(coin.contractAddress)
+        let response = try await httpClient.request(
+            CardanoAPI.addressAssets(addresses: [address]),
+            responseType: [CardanoAssetEntry].self
+        )
+
+        let match = response.data.first { asset in
+            asset.policyId.lowercased() == parsed.policyId
+                && (asset.assetName ?? "").lowercased() == parsed.assetName
+        }
+        return match?.quantity ?? "0"
+    }
+
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
         let response = try await httpClient.request(
             CardanoAPI.addressUtxos(addresses: [coin.address]),
@@ -43,6 +63,22 @@ class CardanoService {
                 index: index
             )
         }
+    }
+
+    func getExtendedUTXOs(coin: Coin) async throws -> [CardanoExtendedUtxo] {
+        let response = try await httpClient.request(
+            CardanoAPI.addressUtxosExtended(addresses: [coin.address]),
+            responseType: [CardanoExtendedUtxoEntry].self
+        )
+
+        return response.data
+            .compactMap(CardanoExtendedUtxo.init)
+            // Deterministic ordering so both MPC peers produce identical body bytes
+            // when the WalletCore planner picks UTXOs.
+            .sorted { lhs, rhs in
+                if lhs.hash != rhs.hash { return lhs.hash < rhs.hash }
+                return lhs.index < rhs.index
+            }
     }
 
     func estimateTransactionFee() -> Int {
@@ -135,10 +171,13 @@ class CardanoService {
         }
     }
 
-    /// Broadcast a signed Cardano transaction using Vultisig API Proxy (Ogmios JSON-RPC)
-    /// - Parameter signedTransaction: The signed transaction in CBOR hex format
-    /// - Returns: The transaction hash
-    func broadcastTransaction(signedTransaction: String) async throws -> String {
+    /// Broadcast a signed Cardano transaction via Vultisig's Ogmios JSON-RPC proxy.
+    /// - Parameters:
+    ///   - signedTransaction: signed CBOR in hex.
+    ///   - precomputedTxId: txId derived from the pre-image body during signing.
+    ///     Used as the canonical hash and as the fallback on Ogmios "already in
+    ///     mempool" (code 3117), where another peer beat us to the punch.
+    func broadcastTransaction(signedTransaction: String, precomputedTxId: String) async throws -> String {
         // The endpoint returns 200 on success and 400 with a JSON-RPC error
         // envelope on Ogmios-level errors (e.g. code 3117 "already in mempool").
         // The TargetType accepts both codes; decode the envelope here, but if
@@ -159,13 +198,8 @@ class CardanoService {
 
         if let error = body.error {
             if error.code == 3117 {
-                // "The transaction contains unknown UTxO references as inputs."
-                // Usually means another TSS device already broadcast it. Hash locally.
-                if let txData = Data(hexString: signedTransaction) {
-                    let txId = CardanoHelper.calculateCardanoTransactionHash(from: txData)
-                    logger.info("Transaction already in mempool (3117). Returning local hash: \(txId)")
-                    return txId
-                }
+                logger.info("Transaction already in mempool (3117). Returning precomputed hash: \(precomputedTxId)")
+                return precomputedTxId
             }
 
             throw NSError(

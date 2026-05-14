@@ -9,6 +9,9 @@ enum CardanoAPI: TargetType {
     case tip
     case addressInfo(addresses: [String])
     case addressUtxos(addresses: [String])
+    case addressUtxosExtended(addresses: [String])
+    case addressAssets(addresses: [String])
+    case assetInfo(assets: [(policyId: String, assetNameHex: String)])
     case submitTransaction(cbor: String)
 
     private static let koiosBaseURL = URL(string: "https://api.koios.rest")!
@@ -16,7 +19,7 @@ enum CardanoAPI: TargetType {
 
     var baseURL: URL {
         switch self {
-        case .tip, .addressInfo, .addressUtxos:
+        case .tip, .addressInfo, .addressUtxos, .addressUtxosExtended, .addressAssets, .assetInfo:
             return Self.koiosBaseURL
         case .submitTransaction:
             return Self.vultisigProxyBaseURL
@@ -29,8 +32,12 @@ enum CardanoAPI: TargetType {
             return "/api/v1/tip"
         case .addressInfo:
             return "/api/v1/address_info"
-        case .addressUtxos:
+        case .addressUtxos, .addressUtxosExtended:
             return "/api/v1/address_utxos"
+        case .addressAssets:
+            return "/api/v1/address_assets"
+        case .assetInfo:
+            return "/api/v1/asset_info"
         case .submitTransaction:
             return "/ada/"
         }
@@ -40,7 +47,7 @@ enum CardanoAPI: TargetType {
         switch self {
         case .tip:
             return .get
-        case .addressInfo, .addressUtxos, .submitTransaction:
+        case .addressInfo, .addressUtxos, .addressUtxosExtended, .addressAssets, .assetInfo, .submitTransaction:
             return .post
         }
     }
@@ -51,6 +58,15 @@ enum CardanoAPI: TargetType {
             return .requestPlain
         case .addressInfo(let addresses), .addressUtxos(let addresses):
             return .requestCodable(CardanoAddressesRequest(addresses: addresses), .jsonEncoding)
+        case .addressUtxosExtended(let addresses):
+            return .requestCodable(CardanoExtendedAddressesRequest(addresses: addresses, extended: true), .jsonEncoding)
+        case .addressAssets(let addresses):
+            return .requestCodable(CardanoAddressesRequest(addresses: addresses), .jsonEncoding)
+        case .assetInfo(let assets):
+            return .requestCodable(
+                CardanoAssetInfoRequest(assetList: assets.map { [$0.policyId, $0.assetNameHex] }),
+                .jsonEncoding
+            )
         case .submitTransaction(let cbor):
             return .requestCodable(
                 CardanoSubmitTransactionRequest(
@@ -85,6 +101,24 @@ struct CardanoAddressesRequest: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case addresses = "_addresses"
+    }
+}
+
+struct CardanoExtendedAddressesRequest: Encodable {
+    let addresses: [String]
+    let extended: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case addresses = "_addresses"
+        case extended = "_extended"
+    }
+}
+
+struct CardanoAssetInfoRequest: Encodable {
+    let assetList: [[String]]
+
+    enum CodingKeys: String, CodingKey {
+        case assetList = "_asset_list"
     }
 }
 
@@ -126,6 +160,61 @@ struct CardanoUtxoEntry: Decodable {
         case txHash = "tx_hash"
         case txIndex = "tx_index"
         case value
+    }
+}
+
+struct CardanoExtendedUtxoEntry: Decodable {
+    let txHash: String
+    let txIndex: Int
+    let value: String
+    let assetList: [CardanoAssetEntry]?
+
+    enum CodingKeys: String, CodingKey {
+        case txHash = "tx_hash"
+        case txIndex = "tx_index"
+        case value
+        case assetList = "asset_list"
+    }
+}
+
+struct CardanoAssetEntry: Decodable {
+    let policyId: String
+    let assetName: String?
+    let fingerprint: String?
+    let decimals: Int?
+    let quantity: String
+
+    enum CodingKeys: String, CodingKey {
+        case policyId = "policy_id"
+        case assetName = "asset_name"
+        case fingerprint
+        case decimals
+        case quantity
+    }
+}
+
+struct CardanoAssetInfoEntry: Decodable {
+    let policyId: String
+    let assetName: String?
+    let assetNameAscii: String?
+    let fingerprint: String?
+    let decimals: Int?
+    let tokenRegistryMetadata: TokenRegistryMetadata?
+
+    enum CodingKeys: String, CodingKey {
+        case policyId = "policy_id"
+        case assetName = "asset_name"
+        case assetNameAscii = "asset_name_ascii"
+        case fingerprint
+        case decimals
+        case tokenRegistryMetadata = "token_registry_metadata"
+    }
+
+    struct TokenRegistryMetadata: Decodable {
+        let ticker: String?
+        let url: String?
+        let logo: String?
+        let decimals: Int?
     }
 }
 

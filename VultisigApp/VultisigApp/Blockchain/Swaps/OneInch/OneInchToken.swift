@@ -13,9 +13,18 @@ struct OneInchToken: Codable, Hashable {
     let name: String
     let decimals: Int
     let logoURI: String?
+    /// Source-of-truth list from 1inch's `/token/v1.2/{chain}/custom` response.
+    /// The EVM coin-finder requires `providers.contains("CoinGecko")` as a
+    /// legitimacy signal — matches the SDK's `findEvmCoins` filter (see
+    /// vultisig-sdk/packages/core/chain/coin/find/resolvers/evm/index.ts:69).
+    let providers: [String]?
 
     var logoUrl: URL? {
         return logoURI.flatMap { URL(string: $0) }
+    }
+
+    var isCoinGeckoVerified: Bool {
+        providers?.contains("CoinGecko") ?? false
     }
 }
 
