@@ -455,6 +455,27 @@ final class SendDetailsViewModel {
         }
     }
 
+    // MARK: - Error-state setters (single-call replacements for the trio of
+    // `errorTitle = "error"; errorMessage = X; show*Alert = true` lines).
+
+    private func setGeneralError(title: String = "error", message: String) {
+        errorTitle = title
+        errorMessage = message
+        showAlert = true
+    }
+
+    private func setAddressError(title: String = "error", message: String) {
+        errorTitle = title
+        errorMessage = message
+        showAddressAlert = true
+    }
+
+    private func setAmountError(title: String = "error", message: String) {
+        errorTitle = title
+        errorMessage = message
+        showAmountAlert = true
+    }
+
     // MARK: - Amount validation (sync, format-only)
 
     /// Synchronous decimal-format check. Used by the amount-tab onChange to
@@ -465,9 +486,7 @@ final class SendDetailsViewModel {
         errorMessage = nil
         isValidForm = candidate.isValidDecimal()
         if !isValidForm {
-            errorTitle = "error"
-            errorMessage = "decimalAmountError".localized
-            showAlert = true
+            setGeneralError(message: "decimalAmountError".localized)
         }
     }
 
@@ -483,9 +502,77 @@ final class SendDetailsViewModel {
 
     // MARK: - Form validation
 
-    // Async form validation. Mirrors the legacy `validateForm` but reads
-    // VM state directly. Returns true iff every check passes. `async`
-    // reserved for future address-resolver awaits (ENS/TNS).
+    // MARK: - Per-rule validators (composable, individually testable)
+
+    /// Cosmos-style chains that surface pending transactions block until the
+    /// previous one confirms. Other chains short-circuit through.
+    func validatePendingTransaction() -> Bool {
+        guard hasPendingTransaction && coin.chain.supportsPendingTransactions else {
+            return true
+        }
+        setGeneralError(message: "pendingTransactionError")
+        return false
+    }
+
+    /// Rejects empty/zero amounts before any balance math runs.
+    func validateAmountNonZero() -> Bool {
+        guard !amount.isEmpty, !amountDecimal.isZero else {
+            setAmountError(message: "positiveAmountError")
+            return false
+        }
+        return true
+    }
+
+    /// Rejects malformed addresses for the current coin's chain.
+    func validateAddressFormat() -> Bool {
+        guard isValidAddressFormat() else {
+            setAddressError(message: "invalidAddressError")
+            return false
+        }
+        return true
+    }
+
+    /// Rejects amount + fee > balance for the source coin. TRON staking is
+    /// short-circuited because the validation already ran in
+    /// `Tron{Freeze,Unfreeze}View` and the on-screen balance reflects it.
+    /// For ERC20 sources, defers to `validateERC20GasBalance` for the gas
+    /// half of the check.
+    func validateBalance() -> Bool {
+        let isTronStaking = coin.chain == .tron && isStakingOperation
+        guard !isTronStaking else { return true }
+
+        let exceeded = SendCryptoLogic.isAmountExceeded(
+            coin: coin,
+            amount: amount,
+            sendMaxAmount: sendMaxAmount,
+            fee: fee,
+            gas: gas,
+            isStakingOperation: isStakingOperation
+        )
+        if exceeded {
+            setAmountError(message: "walletBalanceExceededError")
+            return false
+        }
+        return validateERC20GasBalance()
+    }
+
+    /// For ERC20-style non-native sends, gas is paid in the chain's native
+    /// sibling. Reject if the vault doesn't hold enough of it.
+    func validateERC20GasBalance() -> Bool {
+        guard !coin.isNativeToken,
+              let nativeToken = vault.coins.nativeCoin(chain: coin.chain) else {
+            return true
+        }
+        let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        guard fee > nativeBalance else { return true }
+
+        setGeneralError(message: String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker))
+        return false
+    }
+
+    // Composed form-validation pipeline — every rule runs in order, stopping
+    // at the first failure. `async` reserved for the future ENS/TNS
+    // resolver injection.
     // swiftlint:disable:next async_without_await
     func validateForm() async -> Bool {
         resetStates()
@@ -495,62 +582,10 @@ final class SendDetailsViewModel {
             isLoading = false
         }
 
-        // Cosmos pending-tx blocker.
-        if hasPendingTransaction && coin.chain.supportsPendingTransactions {
-            errorTitle = "error"
-            errorMessage = "pendingTransactionError"
-            showAlert = true
-            return false
-        }
-
-        // TRON staking short-circuit (legacy parity).
-        let isTronStaking = coin.chain == .tron && isStakingOperation
-
-        // Zero amount.
-        if amount.isEmpty || amountDecimal.isZero {
-            errorTitle = "error"
-            errorMessage = "positiveAmountError"
-            showAmountAlert = true
-            return false
-        }
-
-        // Address format.
-        guard isValidAddressFormat() else {
-            errorTitle = "error"
-            errorMessage = "invalidAddressError"
-            showAddressAlert = true
-            return false
-        }
-
-        // Balance check.
-        if !isTronStaking {
-            let exceeded = SendCryptoLogic.isAmountExceeded(
-                coin: coin,
-                amount: amount,
-                sendMaxAmount: sendMaxAmount,
-                fee: fee,
-                gas: gas,
-                isStakingOperation: isStakingOperation
-            )
-            if exceeded {
-                errorTitle = "error"
-                errorMessage = "walletBalanceExceededError"
-                showAmountAlert = true
-                return false
-            }
-            // ERC20 gas balance check.
-            if !coin.isNativeToken, let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
-                if fee > nativeBalance {
-                    errorTitle = "error"
-                    errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker)
-                    showAlert = true
-                    return false
-                }
-            }
-        }
-
-        return true
+        return validatePendingTransaction()
+            && validateAmountNonZero()
+            && validateAddressFormat()
+            && validateBalance()
     }
 
     // MARK: - Hand-off
