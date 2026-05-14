@@ -158,7 +158,128 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertEqual(refreshed.byteFee, BigInt(80)) // custom wins
     }
 
+    // MARK: - with(...) per-field passthrough
+
+    func testWithUpdatesToAddress() throws {
+        let tx = try seed()
+        let updated = tx.with(toAddress: "0x1")
+        XCTAssertEqual(updated.toAddress, "0x1")
+        // All other fields preserved.
+        XCTAssertEqual(updated.amount, tx.amount)
+        XCTAssertEqual(updated.fee, tx.fee)
+    }
+
+    func testWithUpdatesAmount() throws {
+        let tx = try seed()
+        let updated = tx.with(amount: "9.99")
+        XCTAssertEqual(updated.amount, "9.99")
+        XCTAssertEqual(updated.toAddress, tx.toAddress)
+    }
+
+    func testWithUpdatesFeeMode() throws {
+        let tx = try seed(feeMode: .default)
+        let updated = tx.with(feeMode: .fast)
+        XCTAssertEqual(updated.feeMode, .fast)
+    }
+
+    func testWithUpdatesMemoAndPropagatesEmpty() throws {
+        let tx = try seed(memo: "old")
+        let updated = tx.with(memo: "new")
+        XCTAssertEqual(updated.memo, "new")
+
+        let cleared = tx.with(memo: "")
+        XCTAssertEqual(cleared.memo, "", "Empty string is a valid memo override, not a no-op")
+    }
+
+    func testWithUpdatesSendMaxAmount() throws {
+        let tx = try seed(sendMaxAmount: false)
+        let updated = tx.with(sendMaxAmount: true)
+        XCTAssertTrue(updated.sendMaxAmount)
+    }
+
+    func testWithUpdatesIsFastVault() throws {
+        let tx = try seed(isFastVault: false)
+        let updated = tx.with(isFastVault: true)
+        XCTAssertTrue(updated.isFastVault)
+    }
+
+    func testWithUpdatesIsStakingOperation() throws {
+        let tx = try seed(isStakingOperation: false)
+        let updated = tx.with(isStakingOperation: true)
+        XCTAssertTrue(updated.isStakingOperation)
+    }
+
+    func testWithUpdatesEstimatedGasLimit() throws {
+        let tx = try seed()
+        let updated = tx.with(estimatedGasLimit: BigInt(21_000))
+        XCTAssertEqual(updated.estimatedGasLimit, BigInt(21_000))
+    }
+
+    func testWithUpdatesMemoFunctionDictionary() throws {
+        let tx = try seed()
+        let updated = tx.with(memoFunctionDictionary: ["pool": "BTC.BTC"])
+        XCTAssertEqual(updated.memoFunctionDictionary["pool"], "BTC.BTC")
+    }
+
+    func testWithNilOverridePreservesExistingValue() throws {
+        // Calling with(amount: nil) — i.e. not passing amount at all —
+        // must leave amount unchanged. Critical for refresh paths where
+        // only gas/fee are being updated.
+        let tx = try seed(amount: "1.5")
+        let updated = tx.with(gas: BigInt(10))
+        XCTAssertEqual(updated.amount, "1.5", "Unspecified fields preserve existing values")
+        XCTAssertEqual(updated.gas, BigInt(10))
+    }
+
+    func testWithPreservesIdentityFieldsAcrossEveryUpdate() throws {
+        // coin, vault, fromAddress, toAddressLabel, amountInFiat,
+        // transactionType, customGasLimit, customByteFee, wasmContractPayload,
+        // feeCoin are never overrideable via with(...). Pin that.
+        let tx = try seed()
+        let updated = tx.with(
+            toAddress: "x", amount: "y", gas: BigInt(1), fee: BigInt(2),
+            feeMode: .fast, estimatedGasLimit: BigInt(3), memo: "z",
+            sendMaxAmount: true, isFastVault: true, isStakingOperation: true,
+            memoFunctionDictionary: ["k": "v"], wasmContractPayload: nil
+        )
+        XCTAssertEqual(updated.coin, tx.coin)
+        XCTAssertEqual(updated.vault, tx.vault)
+        XCTAssertEqual(updated.fromAddress, tx.fromAddress)
+        XCTAssertEqual(updated.toAddressLabel, tx.toAddressLabel)
+        XCTAssertEqual(updated.amountInFiat, tx.amountInFiat)
+        XCTAssertEqual(updated.transactionType, tx.transactionType)
+        XCTAssertEqual(updated.customGasLimit, tx.customGasLimit)
+        XCTAssertEqual(updated.customByteFee, tx.customByteFee)
+        XCTAssertEqual(updated.feeCoin, tx.feeCoin)
+    }
+
     // MARK: - Helpers
+
+    /// Seed a `SendTransaction` with overridable per-field defaults.
+    private func seed(
+        amount: String = "0.5",
+        memo: String = "",
+        feeMode: FeeMode = .default,
+        sendMaxAmount: Bool = false,
+        isFastVault: Bool = false,
+        isStakingOperation: Bool = false
+    ) throws -> SendTransaction {
+        let vault = try TestStore.makeVault()
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        return SendTransaction(
+            coin: eth, vault: vault, fromAddress: eth.address,
+            toAddress: "0xabc", toAddressLabel: nil,
+            amount: amount, amountInFiat: "", memo: memo,
+            gas: BigInt(20_000_000_000), fee: BigInt(420_000_000_000_000),
+            feeMode: feeMode,
+            estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
+            sendMaxAmount: sendMaxAmount,
+            isFastVault: isFastVault, isStakingOperation: isStakingOperation,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:], wasmContractPayload: nil,
+            feeCoin: eth
+        )
+    }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {
         let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)

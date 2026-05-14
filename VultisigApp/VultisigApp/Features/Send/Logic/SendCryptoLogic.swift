@@ -90,6 +90,31 @@ enum SendCryptoLogic {
             && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
     }
 
+    // MARK: - Fiat ↔ coin conversion (pure math)
+
+    /// Convert a fiat-typed value into the equivalent coin amount string.
+    /// Returns nil if either the input parses to ≤0 or the coin has no
+    /// price (in which case the caller clears the field). The string is
+    /// pre-truncated to the coin's decimals so SwiftUI bindings round-trip
+    /// cleanly.
+    static func fiatToCoinAmount(fiat: String, coin: Coin) -> String? {
+        let fiatDecimal = fiat.toDecimal()
+        guard fiatDecimal > 0, coin.price > 0 else { return nil }
+        let coinDecimal = fiatDecimal / Decimal(coin.price)
+        return coinDecimal.truncated(toPlaces: coin.decimals).formatToDecimal(digits: coin.decimals)
+    }
+
+    /// Convert a coin-typed value into its fiat equivalent string (2-decimal
+    /// rounded but expressed using the coin's decimals format so binding
+    /// values stay consistent). Returns nil for empty / zero / negative
+    /// inputs.
+    static func coinAmountToFiat(amount: String, coin: Coin) -> String? {
+        let coinDecimal = amount.toDecimal()
+        guard coinDecimal > 0 else { return nil }
+        let fiatDecimal = coinDecimal * Decimal(coin.price)
+        return fiatDecimal.truncated(toPlaces: 2).formatToDecimal(digits: coin.decimals)
+    }
+
     // MARK: - Max amount
 
     /// Compute the max sendable amount given a resolved fee. Caller fetches the
