@@ -343,18 +343,14 @@ final class SendDetailsViewModel {
 
     // MARK: - Fiat / crypto conversion
 
-    /// Convert a fiat-typed value to the equivalent coin amount. Mirrors
-    /// `LegacySendCryptoInteractor.convertFiatToCoin`. Phase D lesson: empty
-    /// input clears `amount` instead of leaving a stale value.
+    /// Convert a fiat-typed value to the equivalent coin amount. Empty input
+    /// clears `amount` instead of leaving a stale value (Phase D lesson).
     func convertFiatToCoin(newValue: String) {
-        let newValueDecimal = newValue.toDecimal()
-        guard newValueDecimal > 0, coin.price > 0 else {
+        guard let coinAmount = SendCryptoLogic.fiatToCoinAmount(fiat: newValue, coin: coin) else {
             amount = ""
             return
         }
-        let newValueCoin = newValueDecimal / Decimal(coin.price)
-        let truncated = newValueCoin.truncated(toPlaces: coin.decimals)
-        amount = truncated.formatToDecimal(digits: coin.decimals)
+        amount = coinAmount
         sendMaxAmount = false
         amountInFiat = newValue
     }
@@ -363,15 +359,12 @@ final class SendDetailsViewModel {
     /// the legacy flag — when true, this update is from the max-amount path
     /// and shouldn't reset the sendMaxAmount flag.
     func convertToFiat(newValue: String, setMaxValue: Bool = false) {
-        let newValueDecimal = newValue.toDecimal()
-        guard newValueDecimal > 0 else {
+        guard let fiatAmount = SendCryptoLogic.coinAmountToFiat(amount: newValue, coin: coin) else {
             amountInFiat = ""
             sendMaxAmount = setMaxValue ? sendMaxAmount : false
             return
         }
-        let newValueFiat = newValueDecimal * Decimal(coin.price)
-        let truncated = newValueFiat.truncated(toPlaces: 2)
-        amountInFiat = truncated.formatToDecimal(digits: coin.decimals)
+        amountInFiat = fiatAmount
         sendMaxAmount = setMaxValue
         amount = newValue
     }
