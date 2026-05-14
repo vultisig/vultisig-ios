@@ -135,13 +135,11 @@ final class QBTCClaimSnapshotTests: XCTestCase {
         snapshot(view)
     }
 
-    // MARK: - Loading / Blocked / Result
-
-    func testQBTCClaimLoading() {
-        let view = QBTCClaimLoadingView()
-            .background(Theme.colors.bgPrimary)
-        snapshot(view)
-    }
+    // MARK: - Blocked / Result
+    //
+    // Loading no longer has a dedicated screen — the gate-check phase is
+    // rendered via the shared `withLoading` modifier on top of the
+    // selection skeleton. See `QBTCClaimScreen` + `QBTCClaimViewModel`.
 
     func testQBTCClaimBlocked_killSwitch() {
         let view = QBTCClaimBlockedView(reason: .killSwitchClosed)

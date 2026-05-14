@@ -52,17 +52,28 @@ struct QBTCClaimSelectionView: View {
     }
 
     private var heroCard: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .trailing) {
             // Decorative coin image — mirrors Figma `Frame1000005808` on
             // the right of the card. Bound to the existing QBTC chain
             // asset; gracefully no-ops if the asset hasn't shipped yet.
-            Image("qbtc")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 120, height: 120)
-                .opacity(0.85)
-                .offset(x: 20, y: -10)
-                .clipped()
+            ZStack {
+                Image("qbtc")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 71, height: 71)
+                    .opacity(0.85)
+                    .offset(x: 20, y: -10)
+                    .clipped()
+
+                Circle()
+                    .stroke(Color(red: 0.86, green: 0.61, blue: 0.1), lineWidth: 2.3)
+                    .frame(width: 118, height: 118)
+
+                Circle()
+                    .stroke(Color(red: 0.86, green: 0.61, blue: 0.1), lineWidth: 0.6)
+                    .shadow(color: Color(red: 0.86, green: 0.61, blue: 0.1).opacity(0.27), radius: 13.33278, x: 0, y: 0)
+                    .frame(width: 145, height: 145)
+            }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("qbtcClaimHeroTitle".localized)

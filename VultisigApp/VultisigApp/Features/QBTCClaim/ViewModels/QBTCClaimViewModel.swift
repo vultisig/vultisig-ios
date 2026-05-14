@@ -15,12 +15,16 @@ import OSLog
 import SwiftUI
 
 /// Top-level state for the claim screen. Drives which sub-view renders.
+/// The initial gate-checks phase is surfaced via `isLoading` + the shared
+/// `withLoading` modifier rather than a dedicated `.loading` case — the
+/// screen renders the selection skeleton underneath while the spinner
+/// overlays.
 enum QBTCClaimScreenState: Equatable {
-    /// Initial gate checks running (kill-switch + FastVault + UTXO load).
-    case loading
     /// User cannot claim. Surface the reason in a banner; CTA disabled.
     case blocked(reason: QBTCClaimBlockedReason)
-    /// Selectable UTXOs available — user picks then confirms.
+    /// Selectable UTXOs available — user picks then confirms. Also the
+    /// initial value while the gate-check fetch runs (utxos is empty,
+    /// the `withLoading` overlay covers the empty skeleton).
     case selecting
     /// SecureVault flow only — the QR is on screen and we're polling
     /// `ParticipantDiscovery` for the peer device to join the relay
@@ -59,7 +63,11 @@ extension ClaimableUtxo {
 
 @MainActor
 final class QBTCClaimViewModel: ObservableObject {
-    @Published private(set) var state: QBTCClaimScreenState = .loading
+    @Published private(set) var state: QBTCClaimScreenState = .selecting
+    /// Drives the `withLoading` overlay on the screen while the gate
+    /// checks + UTXO fetch run. Starts `true` so the spinner is visible
+    /// immediately; the `load()` task flips it off on every exit path.
+    @Published var isLoading: Bool = true
     @Published private(set) var utxos: [ClaimableUtxo] = []
     /// User's selection. Surviving across failed runs is the contract:
     /// the screen does NOT clear this on `.failed`.
@@ -165,10 +173,13 @@ final class QBTCClaimViewModel: ObservableObject {
     // MARK: - Lifecycle
 
     /// Runs the gate checks + UTXO fetch in parallel. Idempotent — safe
-    /// to call multiple times (e.g., on screen re-appear).
+    /// to call multiple times (e.g., on screen re-appear). `isLoading`
+    /// drives the shared `withLoading` overlay during the fetch; `state`
+    /// settles on `.blocked / .selecting` once the gate decision is made.
     func load() async {
-        state = .loading
+        isLoading = true
         lastClaimError = nil
+        defer { isLoading = false }
 
         guard let btcCoin else {
             state = .blocked(reason: .missingCoin(chainName: "Bitcoin"))
@@ -506,11 +517,14 @@ final class QBTCClaimViewModel: ObservableObject {
 
     #if DEBUG
     /// Seeds the view model into a deterministic `.selecting` state for
-    /// snapshot tests. Never called from production code paths.
+    /// snapshot tests. Never called from production code paths. Sets
+    /// `isLoading = false` so the `withLoading` overlay doesn't cover
+    /// the captured frame.
     func snapshotSeed(utxos: [ClaimableUtxo], selected: Set<QBTCClaimUtxoId>) {
         self.utxos = utxos
         self.selectedIds = selected
         self.state = utxos.isEmpty ? .blocked(reason: .noUtxos) : .selecting
+        self.isLoading = false
     }
     #endif
 }

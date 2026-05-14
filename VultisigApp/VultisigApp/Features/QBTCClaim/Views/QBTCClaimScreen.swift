@@ -24,10 +24,12 @@ struct QBTCClaimScreen: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .screenTitle("qbtcClaimTitle".localized)
+        .withLoading(text: "qbtcClaimLoading".localized, isLoading: $viewModel.isLoading)
         .task {
-            if case .loading = viewModel.state {
-                await viewModel.load()
-            }
+            // First entry: kick the gate-check pipeline. `load()` is
+            // idempotent — calling it on subsequent re-appears is a
+            // no-op against in-flight state and re-runs cleanly otherwise.
+            await viewModel.load()
         }
         .crossPlatformSheet(isPresented: $viewModel.isPasswordSheetPresented) {
             FastVaultEnterPasswordView(
@@ -50,8 +52,6 @@ struct QBTCClaimScreen: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
-        case .loading:
-            QBTCClaimLoadingView()
         case .blocked(let reason):
             QBTCClaimBlockedView(reason: reason)
         case .selecting:
