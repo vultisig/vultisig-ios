@@ -174,6 +174,19 @@ struct SendCryptoVerifyLogic {
                 return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
             }
 
+            // Cardano native-token sends must fund both the recipient output
+            // and the change output at the protocol min-UTXO floor (~1.4 ADA
+            // each, Alonzo era), in addition to the fee. Surface a dedicated
+            // error when the vault's ADA balance can't cover that.
+            if tx.coin.chain == .cardano,
+               let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
+                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
+                if nativeBalance < tx.fee + minAdaReserve {
+                    return BalanceValidationResult(isValid: false, errorMessage: "cardanoOutputBelowMinAda")
+                }
+            }
+
             // Validate gas balance for non-native tokens. Decision 2 win:
             // vault is now non-optional, so the singleton fallback is gone.
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {

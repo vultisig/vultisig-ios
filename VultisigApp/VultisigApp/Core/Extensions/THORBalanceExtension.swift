@@ -21,19 +21,10 @@ extension [CosmosBalance] {
         for balance in self {
             if coin.isNativeToken && balance.denom.lowercased() == denom {
                 return balance.amount
-            } else if !coin.isNativeToken && balance.denom.lowercased() == apiDenom(for: coin) {
+            } else if !coin.isNativeToken && balance.denom.lowercased() == coin.contractAddress.lowercased() {
                 return balance.amount
             }
         }
         return .zero
-    }
-
-    private func apiDenom(for coin: CoinMeta) -> String {
-        switch coin {
-        case TokensStore.sruji:
-            return "x/staking-x/ruji"
-        default:
-            return coin.contractAddress.lowercased()
-        }
     }
 }

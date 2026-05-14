@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import OSLog
 import SwiftData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "coin-service")
 
 enum CoinServiceError: LocalizedError, Equatable {
     case chainNotEnabledForKeyImport(Chain)
@@ -240,13 +243,21 @@ struct CoinService {
         return tokens
     }
 
-    /// Migrate coins and hidden tokens that reference old contract addresses from PR #3837.
-    /// Old addresses (e.g. "x/staking-x/tcy") are updated to new ones (e.g. "x/staking-tcy").
-    /// If both old and new coins exist, the old duplicate is removed.
+    /// Migrate coins and hidden tokens that reference stale contract addresses.
+    /// Each entry is `(stale, correct)`: any coin/hidden-token holding the
+    /// `stale` value is rewritten to `correct`; if both already coexist the
+    /// stale duplicate is deleted.
+    ///   - sTCY: the on-chain denom moved `x/staking-x/tcy → x/staking-tcy`
+    ///           in PR #3837. Migrate forward.
+    ///   - sRUJI: PR #3837 also renamed sRUJI's contract locally, but the
+    ///            chain never moved — the denom is still `x/staking-x/ruji`.
+    ///            Issue #4318 fixes this by reverting `TokensStore.sruji`'s
+    ///            contract; migrate any vault that picked up the stale value
+    ///            back to the on-chain denom.
     static func migrateOldContractAddresses(vault: Vault) {
         let migrations: [(oldAddress: String, newAddress: String)] = [
             ("x/staking-x/tcy", "x/staking-tcy"),
-            ("x/staking-x/ruji", "x/staking-ruji")
+            ("x/staking-ruji", TokensStore.sruji.contractAddress)
         ]
 
         for migration in migrations {
@@ -312,11 +323,11 @@ struct CoinService {
 
                     _ =  try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
-                    print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
+                    logger.warning("Error adding discovered token \(token.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         } catch {
-            print("Error fetching service: \(error.localizedDescription)")
+            logger.warning("Error fetching discovered tokens for \(nativeToken.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 

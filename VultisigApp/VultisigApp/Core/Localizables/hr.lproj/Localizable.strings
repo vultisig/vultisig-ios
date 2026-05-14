@@ -128,6 +128,7 @@
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
 "cancel" = "Otkaži";
 "canLoseFundsPrompt" = "Svjestan sam da mogu izgubiti sredstva";
+"cardanoOutputBelowMinAda" = "Nema dovoljno ADA za pokrivanje mrežne naknade i Cardanovog minimalnog UTXO zahtjeva (~1,4 ADA po izlazu). Najprije pošalji više ADA u ovaj vault.";
 "chain" = "Lanac";
 "chainNotAdded" = "Lanac Nije Dodan";
 "chainNotAddedMessage" = "Blockchain %@ nije dodan u ovaj trezor. Molimo dodajte ga ručno iz postavki trezora.";

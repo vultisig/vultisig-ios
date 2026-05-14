@@ -45,6 +45,15 @@ class CardanoHelper {
      */
     static let defaultMinUTXOValue: BigInt = 1_400_000 // 1.4 ADA in lovelaces (real-world tested)
 
+    /// Lovelace floor we attach to the recipient output of a CNT send. Cardano
+    /// (Babbage era) requires every output to carry a minimum ADA value that
+    /// scales with the bundle's CBOR size; a single-CNT output is typically
+    /// ~0.85 ADA, but we use 1.5 ADA to leave headroom and avoid the network
+    /// 3125 "insufficiently funded outputs" rejection. Computing the exact
+    /// minimum dynamically is a future enhancement — see the `min-ada-dynamic`
+    /// note in the wiki spec.
+    static let minLovelaceOnTokenOutput: UInt64 = 1_500_000
+
     /// Validate Cardano transaction meets UTXO requirements for both send amount and remaining balance
     /// 
     /// Cardano UTXO Validation Rules:
@@ -138,36 +147,31 @@ class CardanoHelper {
         return (false, nil)
     }
 
-    /// Calculate dynamic transaction fee using WalletCore's transaction planning
-    /// Similar to how UTXO chains calculate fees dynamically
-    static func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
-        // Reuse existing getPreSignedInputData and deserialize it
-        let input = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
-
-        // Check for transaction plan errors
-        if plan.error != .ok {
-            throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
-        }
-
-        return plan
-    }
-
-    /// Calculate dynamic fee for Cardano transaction using WalletCore planning
-    /// This replaces the fixed fee approach with actual transaction size calculation
+    /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`
+    /// (default `180_000` lovelace, matches SDK `cardanoDefaultFee`). The
+    /// real fee baked into the body comes from `AnySigner.plan(...)` at sign
+    /// time — this is the user-facing estimate.
     static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
-        let plan = try getCardanoTransactionPlan(keysignPayload: keysignPayload)
-        return BigInt(plan.fee)
+        guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
+        }
+        return byteFee
     }
 
     // MARK: - Helper Functions
 
-    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> CardanoSigningInput {
+    /// Build a WalletCore `CardanoSigningInput`. For CNT sends, per-UTxO
+    /// token data is read off the wire from `keysignPayload.utxos[i].cardanoTokens`
+    /// (populated by the initiator in `KeysignPayloadFactory.selectCardanoUTXOs`).
+    /// Both MPC peers consume identical input bytes — no per-device Koios fetch.
+    static func getPreSignedInputData(
+        keysignPayload: KeysignPayload
+    ) throws -> CardanoSigningInput {
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
         }
 
-        guard case .Cardano(_, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
+        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
 
@@ -175,33 +179,53 @@ class CardanoHelper {
             throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
         }
 
-        // Prevent from accidentally sending all balance
+        let tokenBundle: CardanoTokenBundle? = try makeTokenBundle(for: keysignPayload)
+
+        // `useMaxAmount` is an ADA-only flag — it tells the signer to drain
+        // every input lovelace (minus fee) into the recipient output. For
+        // CNT sends the user's "Send Max" toggle means "send all the token",
+        // and the lovelace floor is fixed at min-UTxO; never set this for
+        // token sends.
         var safeGuardMaxAmount = false
-        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
+        if tokenBundle == nil,
+           let rawBalance = Int64(keysignPayload.coin.rawBalance),
            sendMaxAmount,
            rawBalance > 0,
            rawBalance == Int64(keysignPayload.toAmount) {
             safeGuardMaxAmount = true
         }
 
-        // For Cardano, we don't use UTXOs from Blockchair since it doesn't support Cardano
-        // Instead, we create a simplified input structure
+        // `transferMessage.amount` is the lovelace value of the recipient
+        // output. For an ADA-only send it's the user-typed amount. For a CNT
+        // send the user-typed amount is denominated in the token's base units
+        // (e.g. 665000 = 0.665 USDM), NOT lovelace — passing it here would
+        // produce an output below Cardano's min-UTxO floor and the network
+        // rejects it with code 3125. Use a conservative floor instead.
+        let recipientLovelace: UInt64 = tokenBundle == nil
+            ? UInt64(keysignPayload.toAmount)
+            : Self.minLovelaceOnTokenOutput
+
+        // `forceFee` must be set before `AnySigner.plan(...)` — WalletCore's Cardano
+        // `doPlan()` reads it only during planning, so a size-derived fee here would
+        // diverge from the SDK/Windows body and break MPC sighash parity.
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.changeAddress = keysignPayload.coin.address
-                $0.amount = UInt64(keysignPayload.toAmount)
+                $0.amount = recipientLovelace
                 $0.useMaxAmount = safeGuardMaxAmount
+                $0.forceFee = UInt64(byteFee)
+                if let tokenBundle {
+                    $0.tokenAmount = tokenBundle
+                }
             }
             $0.ttl = ttl
-
-            // TODO: Implement memo support when WalletCore adds Cardano metadata support
-            // Investigation shows WalletCore Signer.cpp already reserves space for auxiliary_data (line 305)
-            // but protobuf definitions (Cardano.proto) don't expose metadata/memo fields yet
-            // Would need: CardanoAuxiliaryData, CardanoTransactionMetadata, CardanoTransactionMetadataValue types
         }
 
-        // Add UTXOs to the input
+        // Add UTXOs to the input. Per-UTXO token data is carried on the wire
+        // (`UtxoInfo.cardanoTokens`), populated by the initiator before keysign.
+        // Without this, WalletCore's planner can't reconcile a TokenBundle
+        // output against the inputs and trips `errorLowBalance`.
         for inputUtxo in keysignPayload.utxos {
             let utxo = CardanoTxInput.with {
                 $0.outPoint = CardanoOutPoint.with {
@@ -210,6 +234,15 @@ class CardanoHelper {
                 }
                 $0.amount = UInt64(inputUtxo.amount)
                 $0.address = keysignPayload.coin.address
+                if !inputUtxo.cardanoTokens.isEmpty {
+                    $0.tokenAmount = inputUtxo.cardanoTokens.map { asset in
+                        CardanoTokenAmount.with {
+                            $0.policyID = asset.policyId
+                            $0.assetNameHex = asset.assetNameHex
+                            $0.amount = unsignedBigEndianBytes(asset.amount)
+                        }
+                    }
+                }
             }
             input.utxos.append(utxo)
         }
@@ -217,6 +250,42 @@ class CardanoHelper {
         return input
     }
 
+    /// Encode an unsigned integer as minimal big-endian bytes (matches
+    /// SDK `amountToBytes`). Returns `[0x00]` for zero.
+    private static func unsignedBigEndianBytes(_ amount: BigInt) -> Data {
+        let unsigned = BigUInt(amount.description) ?? .zero
+        return unsigned.isZero ? Data([0x00]) : unsigned.serialize()
+    }
+
+    /// Build a WalletCore TokenBundle when the active coin is a Cardano native
+    /// token (`coin.contractAddress` non-empty). The bundle carries one token
+    /// matching the asset id; the amount is encoded as minimal big-endian
+    /// unsigned bytes — matches `vultisig-sdk/.../signingInputs/resolvers/cardano.ts`.
+    static func makeTokenBundle(for keysignPayload: KeysignPayload) throws -> CardanoTokenBundle? {
+        let contractAddress = keysignPayload.coin.contractAddress
+        guard !contractAddress.isEmpty else { return nil }
+
+        let parsed = try CardanoAssetId.parse(contractAddress)
+        let amount = BigUInt(keysignPayload.toAmount.description) ?? .zero
+        // BigUInt.serialize() strips leading zero bytes — empty for zero.
+        // SDK encodes zero as a single 0x00 byte (Buffer.from("00", "hex")).
+        let amountBytes = amount.isZero ? Data([0x00]) : amount.serialize()
+
+        var bundle = CardanoTokenBundle()
+        bundle.token = [
+            CardanoTokenAmount.with {
+                $0.policyID = parsed.policyId
+                $0.assetNameHex = parsed.assetName
+                $0.amount = amountBytes
+            }
+        ]
+        return bundle
+    }
+
+    /// Pre-image hash for MPC keysign. Per-UTXO token data is read off the
+    /// wire from `keysignPayload.utxos[i].cardanoTokens` — the initiator
+    /// fetched it from Koios when building the payload, so both peers
+    /// produce identical body bytes by construction.
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
@@ -226,28 +295,23 @@ class CardanoHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getCardanoPreSignInputData(keysignPayload: KeysignPayload) throws -> Data {
         var input = try getPreSignedInputData(keysignPayload: keysignPayload)
         let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
-        // Check for transaction plan errors
         if plan.error != .ok {
-            throw HelperError.runtimeError("Transaction plan error: \(plan.error)")
+            throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
         }
-
         input.plan = plan
         input.transferMessage.forceFee = plan.fee
         return try input.serializedData()
     }
+
     static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
 
-        // Use the helper function to create extended key
-        let extendedKeyData = try CoinFactory.createCardanoExtendedKey(spendingKeyHex: vaultHexPubKey, chainCodeHex: vaultHexChainCode)
-
-        // For signature verification, use the raw 32-byte EdDSA key (matching TSS output)
+        // Build the verification key (raw 32-byte EdDSA spending key) — matches TSS output.
         guard let spendingKeyData = Data(hexString: vaultHexPubKey),
               let verificationKey = PublicKey(data: spendingKeyData, type: .ed25519) else {
             throw HelperError.runtimeError("failed to create EdDSA public key for verification")
@@ -256,212 +320,32 @@ class CardanoHelper {
         let inputData = try getCardanoPreSignInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
 
-        let allSignatures = DataVector()
-        let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignature(preHash: preSigningOutput.dataHash)
-
-        // Verify signature using 32-byte key (matches TSS output)
         guard verificationKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
             throw HelperError.runtimeError("Cardano signature verification failed")
         }
 
-        allSignatures.add(data: signature)
-        publicKeys.add(data: extendedKeyData) // Still use 128-byte for WalletCore transaction compilation
+        // WalletCore's compileWithSignatures crashes on Cardano under certain
+        // builds (AddressV2::isValid). Build the signed CBOR envelope by hand
+        // from the pre-image body bytes — see CardanoSignedTxBuilder. The body
+        // is embedded verbatim; the signature covers Blake2b of those bytes.
+        let signedTx = try CardanoSignedTxBuilder.build(
+            txBody: preSigningOutput.data,
+            publicKey: spendingKeyData,
+            signature: signature
+        )
 
-        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .cardano,
-                                                                             txInputData: inputData,
-                                                                             signatures: allSignatures,
-                                                                             publicKeys: publicKeys)
-        let output = try CardanoSigningOutput(serializedBytes: compileWithSignature)
-
-        // Calculate transaction hash manually since WalletCore output.txID is empty for Cardano
-        let transactionHash = calculateCardanoTransactionHash(from: output.encoded)
-
-        let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
-                                           transactionHash: transactionHash)
-        return result
-    }
-
-    /// Calculate Cardano Transaction ID manually following official specification
-    /// Cardano TX ID = Blake2b-256 hash of the transaction BODY only (not complete transaction)
-    /// Transaction CBOR structure: [body, witness_set, valid_script?, metadata?]
-    static func calculateCardanoTransactionHash(from transactionData: Data) -> String {
-
-        do {
-            // Parse CBOR to extract transaction body (first element)
-            let transactionBodyData = try extractCardanoTransactionBody(from: transactionData)
-
-            // Cardano Transaction ID = Blake2b-256 hash (32 bytes) of the BODY only
-            let txidHash = Hash.blake2b(data: transactionBodyData, size: 32)
-            let finalHash = txidHash.hexString
-
-            return finalHash
-        } catch {
-            print("❌ Error parsing Cardano CBOR: \(error)")
-
-            // Fallback: try using the complete transaction (this might be wrong but better than crashing)
-            let txidHash = Hash.blake2b(data: transactionData, size: 32)
-            let fallbackHash = txidHash.hexString
-
-            print("⚠️ Fallback TX ID from COMPLETE transaction: \(fallbackHash)")
-            return fallbackHash
-        }
-    }
-
-    /// Extract transaction body from Cardano CBOR structure
-    /// Cardano transaction CBOR format: [body, witness_set, valid_script?, metadata?]
-    /// We need only the first element (body) for TX ID calculation
-    private static func extractCardanoTransactionBody(from transactionData: Data) throws -> Data {
-        // Convert Data to bytes for CBOR parsing
-        let bytes = [UInt8](transactionData)
-
-        // Parse CBOR manually to extract the first element (transaction body)
-        // Cardano transaction is a CBOR array: [body, witnesses, ...]
-
-        var index = 0
-
-        // Parse CBOR array header
-        guard index < bytes.count else {
-            throw HelperError.runtimeError("Invalid CBOR: empty data")
-        }
-
-        let firstByte = bytes[index]
-        index += 1
-
-        // Check if it's a CBOR array (major type 4)
-        let majorType = (firstByte >> 5) & 0x07
-        guard majorType == 4 else {
-            throw HelperError.runtimeError("Invalid CBOR: expected array, got major type \(majorType)")
-        }
-
-        // Get array length
-        let arrayInfo = firstByte & 0x1F
-        var arrayLength: Int
-
-        if arrayInfo < 24 {
-            arrayLength = Int(arrayInfo)
-        } else if arrayInfo == 24 {
-            guard index < bytes.count else {
-                throw HelperError.runtimeError("Invalid CBOR: array length truncated")
-            }
-            arrayLength = Int(bytes[index])
-            index += 1
-        } else {
-            throw HelperError.runtimeError("Unsupported CBOR array length encoding")
-        }
-
-        guard arrayLength >= 2 else {
-            throw HelperError.runtimeError("Invalid Cardano transaction: array too short")
-        }
-
-        // Find the start and end of the first element (transaction body)
-        let bodyStartIndex = index
-        let bodyEndIndex = try findEndOfCBORItem(bytes: bytes, startIndex: bodyStartIndex)
-
-        // Extract the body bytes
-        let bodyBytes = Array(bytes[bodyStartIndex..<bodyEndIndex])
-        return Data(bodyBytes)
-    }
-
-    /// Helper function to find the end of a CBOR item
-    private static func findEndOfCBORItem(bytes: [UInt8], startIndex: Int) throws -> Int {
-        var index = startIndex
-
-        guard index < bytes.count else {
-            throw HelperError.runtimeError("CBOR parsing: index out of bounds")
-        }
-
-        let firstByte = bytes[index]
-        index += 1
-
-        let majorType = (firstByte >> 5) & 0x07
-        let additionalInfo = firstByte & 0x1F
-
-        // Handle different CBOR types
-        switch majorType {
-        case 0, 1: // Unsigned integer, Negative integer
-            if additionalInfo < 24 {
-                return index
-            } else if additionalInfo == 24 {
-                return index + 1
-            } else if additionalInfo == 25 {
-                return index + 2
-            } else if additionalInfo == 26 {
-                return index + 4
-            } else if additionalInfo == 27 {
-                return index + 8
-            }
-
-        case 2, 3: // Byte string, Text string
-            let length = try readCBORLength(bytes: bytes, index: &index, additionalInfo: additionalInfo)
-            return index + length
-
-        case 4: // Array
-            let arrayLength = try readCBORLength(bytes: bytes, index: &index, additionalInfo: additionalInfo)
-            for _ in 0..<arrayLength {
-                index = try findEndOfCBORItem(bytes: bytes, startIndex: index)
-            }
-            return index
-
-        case 5: // Map
-            let mapLength = try readCBORLength(bytes: bytes, index: &index, additionalInfo: additionalInfo)
-            for _ in 0..<(mapLength * 2) { // key-value pairs
-                index = try findEndOfCBORItem(bytes: bytes, startIndex: index)
-            }
-            return index
-
-        case 7: // Float, Simple value
-            if additionalInfo < 20 {
-                return index
-            } else if additionalInfo == 20 || additionalInfo == 21 {
-                return index
-            } else if additionalInfo == 22 {
-                return index + 1
-            } else if additionalInfo == 25 {
-                return index + 2
-            } else if additionalInfo == 26 {
-                return index + 4
-            } else if additionalInfo == 27 {
-                return index + 8
-            }
-
-        default:
-            throw HelperError.runtimeError("Unsupported CBOR major type: \(majorType)")
-        }
-
-        throw HelperError.runtimeError("CBOR parsing failed")
-    }
-
-    /// Helper function to read CBOR length values
-    private static func readCBORLength(bytes: [UInt8], index: inout Int, additionalInfo: UInt8) throws -> Int {
-        if additionalInfo < 24 {
-            return Int(additionalInfo)
-        } else if additionalInfo == 24 {
-            guard index < bytes.count else {
-                throw HelperError.runtimeError("CBOR length truncated")
-            }
-            let length = Int(bytes[index])
-            index += 1
-            return length
-        } else if additionalInfo == 25 {
-            guard index + 1 < bytes.count else {
-                throw HelperError.runtimeError("CBOR length truncated")
-            }
-            let length = Int(bytes[index]) << 8 | Int(bytes[index + 1])
-            index += 2
-            return length
-        } else if additionalInfo == 26 {
-            guard index + 3 < bytes.count else {
-                throw HelperError.runtimeError("CBOR length truncated")
-            }
-            let length = Int(bytes[index]) << 24 | Int(bytes[index + 1]) << 16 | Int(bytes[index + 2]) << 8 | Int(bytes[index + 3])
-            index += 4
-            return length
-        } else {
-            throw HelperError.runtimeError("Unsupported CBOR length encoding")
-        }
+        // Cardano txId IS Blake2b-256 of the body, which is exactly the
+        // dataHash we already fed to MPC.
+        return SignedTransactionResult(
+            rawTransaction: signedTx.hexString,
+            transactionHash: preSigningOutput.dataHash.hexString
+        )
     }
 }
 

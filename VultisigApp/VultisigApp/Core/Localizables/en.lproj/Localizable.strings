@@ -136,6 +136,7 @@
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
 "cancel" = "Cancel";
 "canLoseFundsPrompt" = "I am aware that I can lose funds";
+"cardanoOutputBelowMinAda" = "Not enough ADA to cover the network fee and Cardano's minimum-UTXO requirement (~1.4 ADA per output). Send more ADA into this vault first.";
 "chain" = "Chain";
 "chainNotAdded" = "Chain Not Added";
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
