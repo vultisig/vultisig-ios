@@ -140,14 +140,37 @@ final class SwapCryptoLogicTests: XCTestCase {
 
     // MARK: - isDeposit
 
-    func testIsDepositTrueForMayaChain() {
+    func testIsDepositTrueForNativeCacao() {
         let cacao = makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
         XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: cacao))
     }
 
-    func testIsDepositFalseForThorChain() {
+    func testIsDepositTrueForNativeRune() {
+        // Native RUNE → MsgDeposit on THORChain itself. Was returning
+        // false before, which broke RUNE-source swaps (no inbound vault).
         let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
-        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: rune))
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: rune))
+    }
+
+    func testIsDepositTrueForNativeRuneOnStagenet() {
+        let rune = makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: rune))
+    }
+
+    func testIsDepositFalseForNonNativeMayaToken() {
+        // Maya non-native (token) source would settle via MsgSend, not deposit.
+        let mayaToken = makeCoin(.mayaChain, ticker: "MAYA", decimals: 6, isNative: false)
+        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: mayaToken))
+    }
+
+    func testIsDepositFalseForBitcoin() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: btc))
+    }
+
+    func testIsDepositFalseForEthereum() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: eth))
     }
 
     // MARK: - isAffiliate

@@ -42,27 +42,37 @@ func buildLimitSwapKeysignPayload(
     vault: Vault
 ) async throws -> KeysignPayload {
 
-    guard let chainSymbol = thorchainInboundChainSymbol(for: sourceCoin.chain) else {
-        throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
-    }
-
-    // Fetch THORChain inbound vault address. Filter halted / paused chains.
-    let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
-    guard let inbound = inbounds.first(where: { entry in
-        entry.chain.uppercased() == chainSymbol.uppercased()
-        && !entry.halted
-        && !entry.global_trading_paused
-        && !entry.chain_trading_paused
-    }) else {
-        throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
-    }
-
-    // ERC20 source → router contract; native source → inbound vault.
+    // Native RUNE / CACAO settle via `MsgDeposit` on the swap chain itself —
+    // no Asgard inbound vault, no destination address. The Cosmos signer
+    // ignores `toAddress` on `MsgDeposit` (chain-specific `isDeposit=true`
+    // controls the message type), but the payload struct still requires
+    // a value. Use the signer's own address as a placeholder, matching the
+    // SDK convention in `getSwapDestinationAddress` for native sources.
     let toAddress: String
-    if !sourceCoin.isNativeToken, let router = inbound.router, !router.isEmpty {
-        toAddress = router
+    if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin) {
+        toAddress = sourceCoin.address
     } else {
-        toAddress = inbound.address
+        guard let chainSymbol = thorchainInboundChainSymbol(for: sourceCoin.chain) else {
+            throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
+        }
+
+        // Fetch THORChain inbound vault address. Filter halted / paused chains.
+        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
+        guard let inbound = inbounds.first(where: { entry in
+            entry.chain.uppercased() == chainSymbol.uppercased()
+            && !entry.halted
+            && !entry.global_trading_paused
+            && !entry.chain_trading_paused
+        }) else {
+            throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
+        }
+
+        // ERC20 source → router contract; native source → inbound vault.
+        if !sourceCoin.isNativeToken, let router = inbound.router, !router.isEmpty {
+            toAddress = router
+        } else {
+            toAddress = inbound.address
+        }
     }
 
     let chainSpecific = try await BlockChainService.shared.fetchSwapBlockChainSpecific(
@@ -87,6 +97,13 @@ func buildLimitSwapKeysignPayload(
 
 /// Maps an iOS `Chain` to the THORChain inbound-address `chain` field.
 /// Returns `nil` for chains not currently routable through THORChain.
+///
+/// THORChain and Maya native sources are intentionally excluded — those
+/// settle via `MsgDeposit` on the swap chain itself (`SwapCryptoLogic.isDeposit`
+/// flags them, the assembler branches before this lookup). If a future
+/// caller forgets the deposit branch and reaches here for a native source,
+/// the resulting `sourceChainNotRoutable` is a louder failure than building
+/// a malformed payload with a bogus inbound address.
 private func thorchainInboundChainSymbol(for chain: Chain) -> String? {
     switch chain {
     case .bitcoin: return "BTC"
@@ -97,8 +114,6 @@ private func thorchainInboundChainSymbol(for chain: Chain) -> String? {
     case .avalanche: return "AVAX"
     case .bscChain: return "BSC"
     case .gaiaChain: return "GAIA"
-    case .thorChain, .thorChainChainnet, .thorChainStagenet:
-        return "THOR"
     default: return nil
     }
 }
