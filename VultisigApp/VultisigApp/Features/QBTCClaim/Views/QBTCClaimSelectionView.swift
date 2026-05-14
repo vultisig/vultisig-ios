@@ -62,8 +62,6 @@ struct QBTCClaimSelectionView: View {
                     .scaledToFit()
                     .frame(width: 71, height: 71)
                     .opacity(0.85)
-                    .offset(x: 20, y: -10)
-                    .clipped()
 
                 Circle()
                     .stroke(Color(red: 0.86, green: 0.61, blue: 0.1), lineWidth: 2.3)
@@ -74,6 +72,7 @@ struct QBTCClaimSelectionView: View {
                     .shadow(color: Color(red: 0.86, green: 0.61, blue: 0.1).opacity(0.27), radius: 13.33278, x: 0, y: 0)
                     .frame(width: 145, height: 145)
             }
+            .offset(x: 10, y: 30)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("qbtcClaimHeroTitle".localized)
