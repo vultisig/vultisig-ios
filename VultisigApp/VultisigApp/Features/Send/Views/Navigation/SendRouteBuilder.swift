@@ -14,7 +14,7 @@ struct SendRouteBuilder {
     func buildDetailsScreen(
         coin: Coin?,
         hasPreselectedCoin: Bool,
-        tx: LegacySendTransaction,
+        tx: FunctionCallForm,
         vault: Vault
     ) -> some View {
         SendDetailsScreen(

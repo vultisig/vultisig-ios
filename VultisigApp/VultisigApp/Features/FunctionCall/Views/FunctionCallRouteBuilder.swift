@@ -12,7 +12,7 @@ struct FunctionCallRouteBuilder {
     @ViewBuilder
     func buildDetailsScreen(
         defaultCoin: Coin?,
-        sendTx: LegacySendTransaction,
+        sendTx: FunctionCallForm,
         vault: Vault
     ) -> some View {
         FunctionCallDetailsScreen(
@@ -23,14 +23,14 @@ struct FunctionCallRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(tx: LegacySendTransaction, vault: Vault) -> some View {
-        FunctionCallVerifyScreen(tx: tx, vault: vault)
+    func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
+        FunctionCallVerifyScreen(transaction: tx, vault: vault)
     }
 
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
-        tx: LegacySendTransaction,
+        tx: SendTransaction,
         keysignPayload: KeysignPayload,
         fastVaultPassword: String?
     ) -> some View {

@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 //  Single-purpose flow signal between Keysign (writer) and Verify (reader).
-//  Replaces the legacy `LegacySendTransaction.pendingRetryReason` side-channel
+//  Replaces the legacy `FunctionCallForm.pendingRetryReason` side-channel
 //  — that field stops surviving the form-state rewrite (Phase B step 5), so
 //  the retry intent gets its own tiny @Observable holder that threads through
 //  the `verify → pair → keysign` route value sequence.

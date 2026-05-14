@@ -4,7 +4,7 @@
 //
 //  Pure helpers for the send flow. Every function takes only the primitives
 //  it actually reads — no shared draft/store type. The form ViewModel
-//  (mutable) and `LegacySendTransaction` (immutable hand-off, lands in Phase B)
+//  (mutable) and `FunctionCallForm` (immutable hand-off, lands in Phase B)
 //  feed their own fields in via convenience computed properties.
 //
 //  Mirrors the shape of `SwapCryptoLogic`.

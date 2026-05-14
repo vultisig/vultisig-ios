@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 //  Form-state-on-VM rewrite of the Send Details screen. Owns every form
-//  field directly (replacing the legacy `LegacySendTransaction`'s
+//  field directly (replacing the legacy `FunctionCallForm`'s
 //  `@Published` fields) and produces an immutable `SendTransaction` only
 //  on Continue via `makeTransaction()`. Async work goes through
 //  `SendInteractor` so tests can inject a mock.
@@ -69,7 +69,7 @@ final class SendDetailsViewModel {
     var customGasLimit: BigInt? = nil
     var customByteFee: BigInt? = nil
 
-    // MARK: - VM state (replaces `LegacySendTransaction.isCalculatingFee` etc.)
+    // MARK: - VM state (replaces `FunctionCallForm.isCalculatingFee` etc.)
     var isLoading: Bool = false
     var isValidatingForm: Bool = false
     var isCalculatingFee: Bool = false

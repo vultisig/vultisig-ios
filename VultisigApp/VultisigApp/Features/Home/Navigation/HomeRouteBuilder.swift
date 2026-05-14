@@ -16,7 +16,7 @@ struct HomeRouteBuilder {
 
     @MainActor
     @ViewBuilder
-    func buildActionRoute(action: VaultAction, sendTx: LegacySendTransaction, vault: Vault) -> some View {
+    func buildActionRoute(action: VaultAction, sendTx: FunctionCallForm, vault: Vault) -> some View {
         switch action {
         case .send(let coin, let hasPreselectedCoin):
             SendRouteBuilder().buildDetailsScreen(

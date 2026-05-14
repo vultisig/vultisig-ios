@@ -11,7 +11,7 @@ struct ReferralTransactionFlowScreen: View {
     @StateObject var referralViewModel: ReferralViewModel
     @ObservedObject var vaultSelectionViewModel: VaultSelectedViewModel
 
-    @StateObject private var sendTx = LegacySendTransaction()
+    @StateObject private var sendTx = FunctionCallForm()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @StateObject var functionCallVerifyViewModel = FunctionCallVerifyViewModel()
@@ -80,7 +80,8 @@ struct ReferralTransactionFlowScreen: View {
 
     func moveToNext() {
         guard let vault else { return }
-        router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+        let immutableTx = SendTransaction.fromForm(sendTx, vault: vault)
+        router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
     }
 }
 

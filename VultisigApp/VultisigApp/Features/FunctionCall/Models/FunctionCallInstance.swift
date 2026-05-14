@@ -260,7 +260,7 @@ enum FunctionCallInstance {
         }
     }
 
-    static func getDefault(for coin: Coin, tx: LegacySendTransaction, vault: Vault) -> FunctionCallInstance {
+    static func getDefault(for coin: Coin, tx: FunctionCallForm, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {

@@ -12,7 +12,7 @@ import AVFoundation
 
 struct MacScannerView: View {
     let type: DeeplinkFlowType
-    let sendTx: LegacySendTransaction
+    let sendTx: FunctionCallForm
     let selectedVault: Vault?
 
     @Query var vaults: [Vault]
@@ -363,7 +363,7 @@ struct MacScannerView: View {
 }
 
 #Preview {
-    MacScannerView(type: .NewVault, sendTx: LegacySendTransaction(), selectedVault: nil)
+    MacScannerView(type: .NewVault, sendTx: FunctionCallForm(), selectedVault: nil)
         .environmentObject(AppViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(VaultDetailViewModel())

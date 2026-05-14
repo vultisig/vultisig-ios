@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ReferralTransactionDetailsView: View {
     let hash: String
-    let sendTx: LegacySendTransaction
+    let sendTx: FunctionCallForm
     @ObservedObject var referralViewModel: ReferralViewModel
 
     @Environment(\.openURL) var openURL
@@ -178,6 +178,6 @@ struct ReferralTransactionDetailsView: View {
 }
 
 #Preview {
-    ReferralTransactionDetailsView(hash: "", sendTx: LegacySendTransaction(), referralViewModel: ReferralViewModel())
+    ReferralTransactionDetailsView(hash: "", sendTx: FunctionCallForm(), referralViewModel: ReferralViewModel())
         .environmentObject(AppViewModel())
 }

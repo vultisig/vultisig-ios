@@ -79,7 +79,7 @@ class EditReferralViewModel: ObservableObject {
         }
     }
 
-    func verifyReferralEntries(tx: LegacySendTransaction) async -> Bool {
+    func verifyReferralEntries(tx: FunctionCallForm) async -> Bool {
         guard enoughGas(tx: tx) else {
             await showError(message: "insufficientBalance")
             return false
@@ -98,7 +98,7 @@ private extension EditReferralViewModel {
         }
     }
 
-    func enoughGas(tx: LegacySendTransaction) -> Bool {
+    func enoughGas(tx: FunctionCallForm) -> Bool {
         let decimals = tx.coin.decimals
         let gas = Decimal(tx.gas) / pow(10, decimals)
         let amount = totalFeeAmount + gas
@@ -108,7 +108,7 @@ private extension EditReferralViewModel {
     }
 
     @MainActor
-    func createTransaction(tx: LegacySendTransaction, preferredAsset: THORChainAsset?) {
+    func createTransaction(tx: FunctionCallForm, preferredAsset: THORChainAsset?) {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
             preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)

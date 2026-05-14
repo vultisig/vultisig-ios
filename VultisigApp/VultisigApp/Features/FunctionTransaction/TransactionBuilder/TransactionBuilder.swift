@@ -23,8 +23,8 @@ extension TransactionBuilder {
     // continue mutating fields downstream (e.g. `tx.gas`, `tx.fastVaultPassword`).
     // Once the FunctionCall flow migrates to a per-flow form VM this method
     // goes away in favor of `buildSendTransaction(vault:)`.
-    func buildTransaction() -> LegacySendTransaction {
-        let sendTx = LegacySendTransaction()
+    func buildTransaction() -> FunctionCallForm {
+        let sendTx = FunctionCallForm()
         sendTx.fromAddress = coin.address
         sendTx.coin = coin
         sendTx.amount = amount

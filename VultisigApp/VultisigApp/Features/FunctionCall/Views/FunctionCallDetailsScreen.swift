@@ -4,7 +4,7 @@ import SwiftUI
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router
-    @ObservedObject var tx: LegacySendTransaction
+    @ObservedObject var tx: FunctionCallForm
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @ObservedObject var vault: Vault
 
@@ -18,7 +18,7 @@ struct FunctionCallDetailsScreen: View {
 
     init(
         vault: Vault,
-        tx: LegacySendTransaction,
+        tx: FunctionCallForm,
         defaultCoin: Coin?
     ) {
         self.vault = vault
@@ -235,7 +235,8 @@ struct FunctionCallDetailsScreen: View {
                         tx.toAddress = toAddress
                     }
 
-                    router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+                    let immutableTx = SendTransaction.fromForm(tx, vault: vault)
+                    router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
 
                 } else {
                     showInvalidFormAlert = true
