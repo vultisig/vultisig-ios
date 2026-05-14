@@ -31,10 +31,14 @@ struct SwapDetailsScreen: View {
         Screen {
             VStack(spacing: 0) {
                 if settingsViewModel.limitSwapEnabled {
-                    swapModeTabs
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-                        .fixedSize()
+                    HStack {
+                        swapModeTabs
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                            .fixedSize()
+                        Spacer()
+                    }
+                    .padding(.bottom, 16)
                 }
 
                 switch selectedSwapMode {
@@ -392,13 +396,15 @@ extension SwapDetailsScreen {
         )
     }
 
-    /// Mirrors the old `SwapCryptoView` predicate: a limit swap requires
-    /// both legs to live on chains THORChain can route. The picker filter
-    /// in the limit body re-applies a live `vm.supportedChains` lookup;
-    /// this static check is enough to gate the tab.
+    /// Limit-mode availability is a vault-level question, not a pair-level
+    /// one: the user may currently be looking at a non-routable pair but
+    /// still have THORChain-routable chains enabled on the vault that they
+    /// can pick once they switch tabs. Disable Limit only when the vault
+    /// has zero routable chains at all — there's nothing to limit-swap.
+    /// The picker filter inside `LimitSwapEntryView` re-applies the
+    /// per-side routable filter (via `vm.supportedChains`) once Limit is
+    /// open.
     private var canCurrentPairUseLimitSwap: Bool {
-        let fromChain = detailsViewModel.fromCoin.chain
-        let toChain = detailsViewModel.toCoin.chain
-        return isThorchainRoutable(chain: fromChain) && isThorchainRoutable(chain: toChain)
+        vault.chains.contains(where: { isThorchainRoutable(chain: $0) })
     }
 }
