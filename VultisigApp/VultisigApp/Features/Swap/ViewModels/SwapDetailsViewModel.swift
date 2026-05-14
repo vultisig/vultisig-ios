@@ -100,6 +100,10 @@ final class SwapDetailsViewModel {
         let oldFrom = fromCoin
         fromCoin = toCoin
         toCoin = oldFrom
+        // After the swap the destination list is stale relative to the new
+        // source — re-resolve so `toCoins` matches the new `fromCoin` and
+        // `toCoin` lands on a valid pair before the quote fetch runs.
+        updateCoinLists()
         fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
@@ -110,6 +114,9 @@ final class SwapDetailsViewModel {
     func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
         fromCoin = coin
         fromChain = coin.chain
+        // `toCoins` reflected the previous source's valid destinations —
+        // recompute so `fetchQuotes` runs against the current valid pair.
+        updateCoinLists()
         fetchQuotes(vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
     }
@@ -160,6 +167,9 @@ final class SwapDetailsViewModel {
             let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
         else { return }
         fromCoin = coin
+        // Source changed via chain switch — keep `toCoins` / `toCoin` consistent
+        // so the destination picker doesn't show stale options.
+        updateCoinLists()
     }
 
     func handleToChainUpdate(vault: Vault) {
