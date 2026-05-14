@@ -7,49 +7,27 @@ import UniformTypeIdentifiers
 import WalletCore
 import BigInt
 
-/// Mutable form-state holder. Originally the form-state class for the entire
-/// Send + FunctionCall + Referral + Defi flow ecosystem.
+/// Mutable form-state holder for the FunctionCall + Referral form layer.
 ///
-/// After the form-VM rewrite (PRs #4347–#4350), the **Send Details flow** has
-/// been migrated to `SendDetailsViewModel` (`@Observable`) + the immutable
-/// `SendTransaction` struct. The post-Continue chain (Verify / Pair / Keysign
-/// / Done) runs on the immutable struct end-to-end via `SendInteractor` +
-/// `SendRetrySignal`.
+/// **Role**: backs the user-facing form for FunctionCall (LP add, stake,
+/// mint, cosmos merge/IBC/switch, secured-asset mint/withdraw, etc.) and
+/// for the Referral flow. SwiftUI binds form fields directly to this class
+/// via `@ObservedObject` / `@StateObject`. The 11 `FunctionCall*` sub-models
+/// share state through it (token selection, amount, memo dict).
 ///
-/// This class **continues** to back the form layer of:
-/// - **FunctionCall** flow (LP add, stake, mint, etc.) — see
-///   `Features/FunctionCall/Models/FunctionCall*` and
-///   `Features/FunctionCall/ViewModels/FunctionCallViewModel.swift`.
-/// - **Referral** flow (`Features/Referral/ViewModels/ReferralViewModel.swift`).
-/// - **TRON freeze / unfreeze** (`Features/Defi/Protocols/Tron/`).
-/// - **Circle deposit / withdraw** (`Features/Defi/Protocols/Circle/`).
+/// **Boundary**: at the navigation point (when the flow constructs a
+/// `KeysignPayload` or navigates to `FunctionCallRoute.verify` /
+/// `SendRoute.verify`), callers convert this mutable form-state into the
+/// immutable `SendTransaction` struct via
+/// `SendTransaction.fromFunctionCallForm(_:vault:)`. Everything downstream
+/// of the boundary runs on the new immutable shape.
 ///
-/// Each of those flows uses this class as a `@StateObject` / `@ObservedObject`
-/// form-state container the same way `SendDetailsViewModel` does now for Send.
-/// Their continued use is **intentional**: the legacy class is a fine
-/// pattern for these self-contained mutable forms, and a full migration to
-/// per-flow `@Observable` form VMs is out of scope for the Send-pilot series.
-///
-/// **At the navigation boundary** (when those flows construct a `KeysignPayload`
-/// or navigate to `SendRoute.verify` / `SendRoute.pairing` / `SendRoute.keysign`),
-/// callers convert this mutable form-state into the immutable `SendTransaction`
-/// struct via `SendTransaction.fromLegacy(_:vault:)`. The conversion is the
-/// architectural seam — everything downstream of the boundary is on the new
-/// immutable shape.
-///
-/// **Future deletion of this class** would require:
-/// - Per-flow form-VM rewrites for FunctionCall (11 form models + verify VM),
-///   Referral (2 view-models), Tron (2 views), Circle (2 view-models). Each
-///   is roughly the size of the SendDetailsScreen migration that #4350 did.
-/// - Refactor of the 19 `TransactionBuilder` subclasses (in
-///   `Features/FunctionTransaction/TransactionBuilder/`) to return a value-type
-///   `SendTransaction` instead of mutating this class.
-///
-/// That work is tracked in the form-VM rewrite plan but **deferred** beyond
-/// the Send-pilot series. The architecture today is internally consistent:
-/// Send uses the new VM/struct; everything else uses this class until further
-/// notice.
-class LegacySendTransaction: ObservableObject, Hashable {
+/// **Why it exists**: the FunctionCall form's complexity (per-coin token
+/// dropdowns that mutate the shared coin, cross-sub-model state sharing)
+/// genuinely benefits from a single mutable reference type. The simpler
+/// Send / TRON / Circle flows construct `SendTransaction` directly at
+/// hand-off and don't need this class.
+class FunctionCallForm: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var toAddressLabel: String? = nil
@@ -184,7 +162,7 @@ class LegacySendTransaction: ObservableObject, Hashable {
         self.reset(coin: coin)
     }
 
-    static func == (lhs: LegacySendTransaction, rhs: LegacySendTransaction) -> Bool {
+    static func == (lhs: FunctionCallForm, rhs: FunctionCallForm) -> Bool {
         lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
         lhs.amount == rhs.amount &&

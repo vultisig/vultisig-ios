@@ -31,7 +31,7 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func loadGasInfoForSending(tx: LegacySendTransaction) async {
+    func loadGasInfoForSending(tx: FunctionCallForm) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas
@@ -40,11 +40,11 @@ class FunctionCallViewModel: ObservableObject {
         }
     }
 
-    func loadFastVault(tx: LegacySendTransaction, vault: Vault) async {
+    func loadFastVault(tx: FunctionCallForm, vault: Vault) async {
         tx.isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
-    func validateAddress(tx: LegacySendTransaction, address: String) {
+    func validateAddress(tx: FunctionCallForm, address: String) {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
@@ -73,13 +73,13 @@ class FunctionCallViewModel: ObservableObject {
         return dict
     }
 
-    func setRujiToken(to tx: LegacySendTransaction, vault: Vault) {
+    func setRujiToken(to tx: FunctionCallForm, vault: Vault) {
         let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
         guard let rujiToken else { return }
         tx.coin = rujiToken
     }
 
-    func setTcyToken(to tx: LegacySendTransaction, vault: Vault) {
+    func setTcyToken(to tx: FunctionCallForm, vault: Vault) {
         let tcyToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
         guard let tcyToken else { return }
         tx.coin = tcyToken

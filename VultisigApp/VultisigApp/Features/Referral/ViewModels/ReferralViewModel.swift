@@ -137,7 +137,7 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
 
-    func verifyReferralEntries(tx: LegacySendTransaction) async -> Bool {
+    func verifyReferralEntries(tx: FunctionCallForm) async -> Bool {
         await verifyReferralCode()
 
         guard isReferralCodeVerified else {
@@ -180,7 +180,7 @@ class ReferralViewModel: ObservableObject {
         return fiatAmount.formatToFiat(includeCurrencySymbol: true)
     }
 
-    func getNativeCoin(tx: LegacySendTransaction) {
+    func getNativeCoin(tx: FunctionCallForm) {
         nativeCoin = tx.vault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
 
         if let nativeCoin {
@@ -188,7 +188,7 @@ class ReferralViewModel: ObservableObject {
         }
     }
 
-    func loadGasInfoForSending(tx: LegacySendTransaction) async {
+    func loadGasInfoForSending(tx: FunctionCallForm) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas
@@ -213,7 +213,7 @@ class ReferralViewModel: ObservableObject {
         isFeesLoading = false
     }
 
-    private func setupTransaction(tx: LegacySendTransaction) {
+    private func setupTransaction(tx: FunctionCallForm) {
         tx.amount = totalFee.formatDecimalToLocale()
 
         guard let currentVault else {
@@ -318,7 +318,7 @@ class ReferralViewModel: ObservableObject {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 
-    private func enoughGas(tx: LegacySendTransaction) -> Bool {
+    private func enoughGas(tx: FunctionCallForm) -> Bool {
         let decimals = tx.coin.decimals
         let gas = Decimal(tx.gas) / pow(10, decimals)
         let amount = totalFee + gas
@@ -380,7 +380,7 @@ class ReferralViewModel: ObservableObject {
         return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
 
-    func setup(tx: LegacySendTransaction, defaultVault: Vault?) {
+    func setup(tx: FunctionCallForm, defaultVault: Vault?) {
         self.currentVault = currentVault ?? defaultVault
         let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
         let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat

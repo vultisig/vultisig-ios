@@ -85,7 +85,7 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildMacScannerScreen(
         type: DeeplinkFlowType,
-        sendTx: LegacySendTransaction,
+        sendTx: FunctionCallForm,
         selectedVault: Vault?
     ) -> some View {
         #if os(macOS)
@@ -118,7 +118,7 @@ struct KeygenRouteBuilder {
     func buildGeneralQRImportScreen(
         type: DeeplinkFlowType,
         selectedVault: Vault?,
-        sendTx: LegacySendTransaction?
+        sendTx: FunctionCallForm?
     ) -> some View {
         GeneralQRImportMacView(
             type: type,

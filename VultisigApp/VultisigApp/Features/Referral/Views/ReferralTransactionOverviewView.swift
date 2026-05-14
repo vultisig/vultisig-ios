@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct ReferralTransactionOverviewView: View {
     let hash: String
-    let sendTx: LegacySendTransaction
+    let sendTx: FunctionCallForm
     let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
 
@@ -50,7 +50,7 @@ struct ReferralTransactionOverviewView: View {
 #Preview {
     ReferralTransactionOverviewView(
         hash: "",
-        sendTx: LegacySendTransaction(),
+        sendTx: FunctionCallForm(),
         isEdit: false,
         referralViewModel: ReferralViewModel()
     )

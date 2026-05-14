@@ -13,7 +13,7 @@ struct FunctionTransactionScreen: View {
     let transactionType: FunctionTransactionType
 
     @StateObject private var functionCallViewModel = FunctionCallViewModel()
-    @State private var sendTx: LegacySendTransaction?
+    @State private var sendTx: FunctionCallForm?
     @State var isLoading: Bool = false
 
     @Environment(\.dismiss) var dismiss
@@ -154,7 +154,7 @@ struct FunctionTransactionScreen: View {
 
             sendTx = tx
             isLoading = false
-            let immutableTx = SendTransaction.fromLegacy(tx, vault: vault)
+            let immutableTx = SendTransaction.fromForm(tx, vault: vault)
             router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
         }
     }

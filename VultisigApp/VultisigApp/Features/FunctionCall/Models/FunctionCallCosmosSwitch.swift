@@ -37,7 +37,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
 
-    private var tx: LegacySendTransaction
+    private var tx: FunctionCallForm
     private var vault: Vault
 
     var addressFields: [String: String] {
@@ -57,7 +57,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    required init(tx: LegacySendTransaction, vault: Vault) {
+    required init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
         self.amount = tx.coin.balanceDecimal

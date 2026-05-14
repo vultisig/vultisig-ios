@@ -151,13 +151,13 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
-    /// Legacy entry point — converts to the immutable struct and dispatches
-    /// to the unified `fetchSpecific(tx: SendTransaction)`. The conversion
-    /// pulls vault via `tx.txVault` (the legacy `tx.vault ?? AppViewModel.shared.selectedVault`
-    /// fallback). Throws if neither is available. Remove once every caller
-    /// has migrated.
-    func fetchSpecific(tx: LegacySendTransaction) async throws -> BlockChainSpecific {
-        let converted = try SendTransaction.fromLegacy(tx)
+    /// Entry point used by the FunctionCall flow (`FunctionCallForm` is its
+    /// mutable form-state class). Converts to the immutable struct and
+    /// dispatches to the unified `fetchSpecific(tx: SendTransaction)`. The
+    /// conversion resolves vault via `tx.txVault` (`tx.vault ??
+    /// AppViewModel.shared.selectedVault`); throws if neither is available.
+    func fetchSpecific(tx: FunctionCallForm) async throws -> BlockChainSpecific {
+        let converted = try SendTransaction.fromForm(tx)
         return try await fetchSpecific(tx: converted)
     }
 
@@ -174,7 +174,7 @@ final class BlockChainService {
 
     /// Primitive-typed entry point for the new SendInteractor. Wraps the
     /// private full-signature `fetchSpecific(for:action:…)` so the interactor
-    /// doesn't need a `LegacySendTransaction` reference (Phase A4 / Phase B).
+    /// doesn't need a `FunctionCallForm` reference (Phase A4 / Phase B).
     func fetchSendBlockChainSpecific(
         coin: Coin,
         toAddress: String,

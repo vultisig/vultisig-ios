@@ -7,7 +7,7 @@
 //  passes; consumers (Verify / Pair / Keysign / Done) read it but never
 //  mutate it. Form-time mutation lives on the details VM.
 //
-//  Replaces the legacy `class LegacySendTransaction: ObservableObject` —
+//  Replaces the legacy `class FunctionCallForm: ObservableObject` —
 //  see [[projects/vultisig/transaction-model-refactor/send-pilot-plan]] for
 //  the three kickoff decisions baked in:
 //    1. `memoFunctionDictionary` is a plain `[String: String]` (the immutable
@@ -152,39 +152,36 @@ extension SendTransaction {
     }
 }
 
-// MARK: - Legacy converter (migration-period only)
+// MARK: - FunctionCallForm boundary converter
 
 extension SendTransaction {
-    enum LegacyConversionError: Error, LocalizedError {
+    enum FormConversionError: Error, LocalizedError {
         case missingVault
 
         var errorDescription: String? {
             switch self {
             case .missingVault:
-                return "Cannot convert LegacySendTransaction: vault unavailable. Either set tx.vault before converting, or pass a vault explicitly via fromLegacy(_:vault:)."
+                return "Cannot convert FunctionCallForm: vault unavailable. Either set tx.vault before converting, or pass a vault explicitly via fromForm(_:vault:)."
             }
         }
     }
 
-    /// Converts a `LegacySendTransaction` (the old `@Published` ObservableObject)
-    /// into the new immutable struct. Resolves the vault via the legacy
-    /// `txVault` fallback (`tx.vault ?? AppViewModel.shared.selectedVault`).
-    /// Throws if neither is available — non-optional vault is decision 2 of
-    /// the Send pilot.
-    ///
-    /// **Migration-period only.** Delete this extension along with
-    /// `LegacySendTransaction` once every call site has migrated.
-    static func fromLegacy(_ tx: LegacySendTransaction) throws -> SendTransaction {
+    /// Converts a `FunctionCallForm` (the FunctionCall/Referral mutable
+    /// form-state class) into the immutable `SendTransaction` struct at the
+    /// navigation boundary. Resolves the vault via `tx.vault ??
+    /// AppViewModel.shared.selectedVault`. Throws if neither is available —
+    /// non-optional vault is decision 2 of the Send pilot.
+    static func fromForm(_ tx: FunctionCallForm) throws -> SendTransaction {
         guard let vault = tx.txVault else {
-            throw LegacyConversionError.missingVault
+            throw FormConversionError.missingVault
         }
-        return fromLegacy(tx, vault: vault)
+        return fromForm(tx, vault: vault)
     }
 
-    /// Same as `fromLegacy(_:)` but with the vault supplied explicitly — use
+    /// Same as `fromForm(_:)` but with the vault supplied explicitly — use
     /// this from contexts where the vault is already in hand (e.g., screens
     /// that received it as a route param).
-    static func fromLegacy(_ tx: LegacySendTransaction, vault: Vault) -> SendTransaction {
+    static func fromForm(_ tx: FunctionCallForm, vault: Vault) -> SendTransaction {
         SendTransaction(
             coin: tx.coin,
             vault: vault,

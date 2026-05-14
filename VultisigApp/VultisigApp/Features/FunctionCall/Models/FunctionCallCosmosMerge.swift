@@ -38,14 +38,14 @@ class FunctionCallCosmosMerge: ObservableObject {
 
     @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "")
 
-    @ObservedObject var tx: LegacySendTransaction
+    @ObservedObject var tx: FunctionCallForm
 
     private var vault: Vault
 
     private var cancellables = Set<AnyCancellable>()
 
     required init(
-        tx: LegacySendTransaction, vault: Vault
+        tx: FunctionCallForm, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault

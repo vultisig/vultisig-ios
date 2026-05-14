@@ -43,7 +43,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // Domain models
-    var tx: LegacySendTransaction
+    var tx: FunctionCallForm
     private var vault: Vault
     var isThorchainEnabled: Bool {
         vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
@@ -61,7 +61,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
 
     // MARK: Init
-    required init(tx: LegacySendTransaction, vault: Vault) {
+    required init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }
