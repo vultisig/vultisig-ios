@@ -46,34 +46,7 @@ struct SwapRouter {
                 )
             }
 
-        case .limitPair(let vaultPubKeyECDSA, let keysignPayload, let pendingRecord):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildLimitPairScreen(vault: vault, keysignPayload: keysignPayload, pendingRecord: pendingRecord)
-            }
-        case .limitKeysign(let input, let pendingRecord):
-            buildLimitKeysignScreen(input: input, pendingRecord: pendingRecord)
-        case .limitDone(let vaultPubKeyECDSA, let hash, let chain, let pendingRecord):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildLimitDoneScreen(vault: vault, hash: hash, chain: chain, pendingRecord: pendingRecord)
-            }
         }
-    }
-
-    // MARK: - Limit-swap screen builders
-
-    @ViewBuilder
-    func buildLimitPairScreen(vault: Vault, keysignPayload: KeysignPayload, pendingRecord: LimitOrderRecord) -> some View {
-        LimitSwapPairScreen(vault: vault, keysignPayload: keysignPayload, pendingRecord: pendingRecord)
-    }
-
-    @ViewBuilder
-    func buildLimitKeysignScreen(input: KeysignInput, pendingRecord: LimitOrderRecord) -> some View {
-        LimitSwapKeysignScreen(input: input, pendingRecord: pendingRecord)
-    }
-
-    @ViewBuilder
-    func buildLimitDoneScreen(vault: Vault, hash: String, chain: Chain, pendingRecord: LimitOrderRecord) -> some View {
-        LimitSwapDoneScreen(vault: vault, hash: hash, chain: chain, pendingRecord: pendingRecord)
     }
 
     @ViewBuilder

@@ -81,6 +81,17 @@ struct LimitOrderRecord: Hashable, Sendable {
     let expiryBlocks: Int
     let createdAt: Date
     let status: LimitOrderStatus
+    /// THORChain limit-swap memo (`=<:...`). Carried through the shared
+    /// Swap pipeline so the verify screen can rebuild the `KeysignPayload`
+    /// without re-running the memo builder. Empty string for legacy
+    /// records (`LimitOrder` table doesn't persist this — it's already
+    /// implied by `sourceAsset/targetAsset/destAddress/targetPrice`).
+    let memo: String
+    /// Expiry duration the user originally picked (12 / 24 / 72 hours).
+    /// `expiryBlocks` is the THORChain-block expression used in the memo;
+    /// `expiryHours` is the human-readable display value the verify and
+    /// done screens render alongside the target price.
+    let expiryHours: Int
 
     init(
         inboundTxHash: String,
@@ -92,7 +103,9 @@ struct LimitOrderRecord: Hashable, Sendable {
         targetPrice: Decimal,
         expiryBlocks: Int,
         createdAt: Date = Date(),
-        status: LimitOrderStatus = .pending
+        status: LimitOrderStatus = .pending,
+        memo: String = "",
+        expiryHours: Int = 0
     ) {
         self.inboundTxHash = inboundTxHash
         self.sourceAsset = sourceAsset
@@ -104,5 +117,7 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.expiryBlocks = expiryBlocks
         self.createdAt = createdAt
         self.status = status
+        self.memo = memo
+        self.expiryHours = expiryHours
     }
 }

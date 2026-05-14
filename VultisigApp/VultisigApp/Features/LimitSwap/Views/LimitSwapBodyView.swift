@@ -52,8 +52,6 @@ struct LimitSwapBodyView: View {
                         LimitWarningRow(warning: warning)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
             }
 
             PrimaryButton(
@@ -61,7 +59,6 @@ struct LimitSwapBodyView: View {
                 action: onPlaceOrder
             )
             .disabled(!isPlaceable)
-            .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
         .onChange(of: sourceAmountText) { _, newText in

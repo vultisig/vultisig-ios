@@ -15,16 +15,7 @@ enum SwapRoute: Hashable {
     case keysign(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal)
     case done(vaultPubKeyECDSA: String, hash: String, approveHash: String?, chain: Chain, transaction: SwapTransaction, progressLink: String?)
 
-    // MARK: - Limit-swap pipeline
-    //
-    // Post-place-order pipeline for the limit-swap flow. Carries
-    // `LimitOrderRecord` instead of `SwapTransaction` because limit orders
-    // have no market quote — they are memo-only deposits to THORChain.
-    // Reuses the existing `KeysignDiscoveryView` / `KeysignView`
-    // underneath the limit-specific Pair / Keysign screens. The details
-    // screen itself is the standard `SwapDetailsScreen` with a
-    // Market/Limit toggle that swaps the body in place — no route for it.
-    case limitPair(vaultPubKeyECDSA: String, keysignPayload: KeysignPayload, pendingRecord: LimitOrderRecord)
-    case limitKeysign(input: KeysignInput, pendingRecord: LimitOrderRecord)
-    case limitDone(vaultPubKeyECDSA: String, hash: String, chain: Chain, pendingRecord: LimitOrderRecord)
+    // Limit-swap pipeline reuses these same routes — `SwapTransaction`
+    // carries a `limitContext: LimitOrderRecord?` that flips each shared
+    // screen into its limit-mode UI when non-nil.
 }

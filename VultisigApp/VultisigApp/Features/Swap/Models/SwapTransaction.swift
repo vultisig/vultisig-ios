@@ -21,7 +21,10 @@ struct SwapTransaction: Hashable {
     let fromCoin: Coin
     let toCoin: Coin
     let fromAmount: Decimal
-    let quote: SwapQuote
+    /// `nil` when the transaction is a limit order — limit flows have no
+    /// market quote. All quote-derived computed properties already accept
+    /// `SwapQuote?` so the nil-safety cascades cleanly via SwapCryptoLogic.
+    let quote: SwapQuote?
     let gas: BigInt
     let thorchainFee: BigInt
     let vultDiscountBps: Int
@@ -33,6 +36,13 @@ struct SwapTransaction: Hashable {
     /// because the sibling-lookup needs access to the full source-chain coin list,
     /// which Verify/Done don't otherwise carry.
     let feeCoin: Coin
+
+    /// Non-nil iff this transaction represents a placed THORChain limit
+    /// order. Lets the shared Verify / Pair / Keysign / Done screens flip
+    /// to limit-specific UI (`isLimit`) without forking the screen types.
+    let limitContext: LimitOrderRecord?
+
+    var isLimit: Bool { limitContext != nil }
 }
 
 extension SwapTransaction {
@@ -55,7 +65,8 @@ extension SwapTransaction {
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
             isFastVault: isFastVault,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            limitContext: limitContext
         )
     }
 }
@@ -224,7 +235,8 @@ extension SwapTransaction {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             isFastVault: false,
-            feeCoin: .example
+            feeCoin: .example,
+            limitContext: nil
         )
     }()
 }

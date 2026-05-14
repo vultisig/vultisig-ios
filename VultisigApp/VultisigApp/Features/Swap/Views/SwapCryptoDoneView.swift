@@ -95,7 +95,7 @@ struct SwapCryptoDoneView: View {
                 feeFiat: "",
                 chain: transaction.fromCoin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
-                provider: transaction.quote.displayName
+                provider: transaction.quote?.displayName ?? ""
             )
         }
         .onDisappear {

@@ -483,6 +483,8 @@
 "limitSwap.confirmation.subtitle" = "You're placing a limit order";
 "limitSwap.confirmation.targetPrice" = "Target price";
 "limitSwap.confirmation.title" = "Place Limit Order";
+"limitSwap.done.bannerDetail" = "Track them in Transaction History under the Limit Orders tab.";
+"limitSwap.done.bannerTitle" = "Limit Orders";
 "limitSwap.executeWhen" = "Execute when";
 "limitSwap.executeWhen.headerIsWorth" = "is worth";
 "limitSwap.executeWhen.headerWhenOne" = "When 1";
@@ -497,6 +499,8 @@
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
 "limitSwap.sell" = "Sell";
+"limitSwap.verify.targetPrice" = "Target Price: 1 %@ = %@ %@";
+"limitSwap.verify.title" = "You're placing a limit order";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
 "limitSwapToggle" = "Limit Swap";

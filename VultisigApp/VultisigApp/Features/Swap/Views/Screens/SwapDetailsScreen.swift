@@ -29,17 +29,12 @@ struct SwapDetailsScreen: View {
     var body: some View {
         @Bindable var vm = detailsViewModel
         Screen {
-            VStack(spacing: 0) {
-                if settingsViewModel.limitSwapEnabled {
-                    HStack {
-                        swapModeTabs
-                            .padding(.horizontal, 16)
-                            .padding(.top, 8)
-                            .fixedSize()
-                        Spacer()
-                    }
-                    .padding(.bottom, 16)
-                }
+            VStack(alignment: .leading, spacing: 16) {
+                swapModeTabs
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .fixedSize()
+                    .showIf(settingsViewModel.limitSwapEnabled)
 
                 switch selectedSwapMode {
                 case .market:

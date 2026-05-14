@@ -11,10 +11,11 @@ import SwiftUI
 /// from the host's selected coins for convenience but subsequent picker
 /// changes stay local — they do not mutate the Market path's state.
 ///
-/// On "Place Order" / confirmation success, this view assembles the
-/// limit-swap `KeysignPayload` and navigates to `SwapRoute.limitPair(...)`,
-/// joining the limit-side pair → keysign → done pipeline managed by
-/// `SwapRouter`.
+/// "Place Order" assembles the limit memo, runs the byte-cap pre-flight,
+/// and routes into the **shared** `SwapRoute.verify(...)` screen with a
+/// `SwapTransaction` carrying `limitContext`. From there the standard
+/// Swap pipeline (Verify → Pair → Keysign → Done) handles the rest —
+/// each screen surfaces limit-specific UI when `transaction.isLimit`.
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
@@ -37,9 +38,6 @@ struct LimitSwapEntryView: View {
 
     @State private var showFromCoinPicker: Bool = false
     @State private var showToCoinPicker: Bool = false
-
-    @State private var confirmationVM: LimitSwapConfirmationViewModel?
-    @State private var isConfirmationSheetPresented: Bool = false
 
     /// `SwapCoinPickerView` declares an `@EnvironmentObject` for this VM and
     /// will crash at runtime if the picker sheet renders without it. The
@@ -85,11 +83,6 @@ struct LimitSwapEntryView: View {
             onPlaceOrder: handlePlaceOrder
         )
         .task {
-            // Initial setup: kick the supported-chains fetch in parallel
-            // (filters the picker so the user can't pick a chain THORChain
-            // doesn't route), then seed the market price. `.task` is the
-            // right modifier for async work tied to view lifetime — SwiftUI
-            // cancels the work if the view leaves the hierarchy.
             async let supportedChains: () = vm.refreshSupportedChains()
             async let marketPrice: () = vm.refreshMarketPrice()
             _ = await (supportedChains, marketPrice)
@@ -129,15 +122,6 @@ struct LimitSwapEntryView: View {
                 chainFilter: chainIsThorchainRoutable
             )
             .environmentObject(coinSelectionViewModel)
-        }
-        .sheet(isPresented: $isConfirmationSheetPresented) {
-            if let confirmationVM {
-                LimitSwapConfirmationSheet(
-                    vm: confirmationVM,
-                    onDismiss: { isConfirmationSheetPresented = false },
-                    onSignAttempt: handleSignAttempt
-                )
-            }
         }
     }
 
@@ -229,12 +213,50 @@ struct LimitSwapEntryView: View {
         let memo = buildLimitSwapMemo(inputs)
         let chainKind = vm.draft.fromAsset.chain.chainType
 
-        confirmationVM = LimitSwapConfirmationViewModel(
-            draft: vm.draft,
+        // Byte-cap pre-flight: bail early if the assembled memo doesn't
+        // fit the source chain's per-tx memo limit. We bail silently here
+        // and let the form remain editable; richer error UI lands later.
+        do {
+            try assertMemoByteLength(memo, sourceChainKind: chainKind)
+        } catch {
+            return
+        }
+
+        let draft = vm.draft
+        let record = LimitOrderRecord(
+            inboundTxHash: "",  // Filled in by the Done screen after broadcast.
+            sourceAsset: fromMemo,
+            sourceAmount: draft.sourceAmount.description,
+            sourceDecimals: draft.fromAsset.decimals,
+            targetAsset: toMemo,
+            destAddress: destAddress,
+            targetPrice: draft.targetPrice,
+            expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
+            createdAt: Date(),
+            status: .pending,
             memo: memo,
-            sourceChainKind: chainKind
+            expiryHours: draft.expiryHours
         )
-        isConfirmationSheetPresented = true
+
+        let transaction = SwapTransaction(
+            fromCoin: limitFromCoin,
+            toCoin: limitToCoin,
+            fromAmount: limitFromCoin.decimal(for: draft.sourceAmount),
+            quote: nil,
+            gas: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            isFastVault: vault.isFastVault,
+            feeCoin: limitFromCoin,
+            limitContext: record
+        )
+
+        router.navigate(to: SwapRoute.verify(
+            transaction: transaction,
+            retrySignal: SwapRetrySignal(),
+            vaultPubKeyECDSA: vault.pubKeyECDSA
+        ))
     }
 
     private func handleSwapAssets() {
@@ -243,59 +265,5 @@ struct LimitSwapEntryView: View {
         limitToCoin = oldFrom
         // onChange handlers will sync the new coins into the VM via
         // selectFromAsset/selectToAsset.
-    }
-
-    private func handleSignAttempt() async {
-        guard let confirmationVM else { return }
-
-        let fromCoin = limitFromCoin
-        let toCoin = limitToCoin
-        let vaultRef = vault
-        let memo = confirmationVM.memo
-        let sourceAmount = vm.draft.sourceAmount
-        let draft = vm.draft
-        // Capture the destination address up front so it can't drift mid-task
-        // (e.g. if the user navigates and the VM gets a different toAsset).
-        // Same lookup the inputs build used; mirroring it into the persisted
-        // record ensures TX History shows the correct recipient.
-        let capturedDestAddress = vm.destinationAddress() ?? ""
-
-        await confirmationVM.attemptSign {
-            // Assemble the KeysignPayload for the source chain (fetches
-            // THORChain inbound + chain-specific + builds via the existing
-            // KeysignPayloadFactory). On any failure, surface to the
-            // confirmation VM's error state via throw — attemptSign swallows
-            // non-byte-cap errors silently for now (richer error UI can land
-            // in a follow-up).
-            let payload = try await buildLimitSwapKeysignPayload(
-                sourceCoin: fromCoin,
-                targetCoin: toCoin,
-                sourceAmount: sourceAmount,
-                memo: memo,
-                vault: vaultRef
-            )
-
-            let record = LimitOrderRecord(
-                inboundTxHash: "",  // Filled in by the parent after broadcast.
-                sourceAsset: draft.fromAsset.memoSymbol ?? "",
-                sourceAmount: sourceAmount.description,
-                sourceDecimals: draft.fromAsset.decimals,
-                targetAsset: draft.toAsset.memoSymbol ?? "",
-                destAddress: capturedDestAddress,
-                targetPrice: draft.targetPrice,
-                expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
-                createdAt: Date(),
-                status: .pending
-            )
-
-            await MainActor.run {
-                isConfirmationSheetPresented = false
-                router.navigate(to: SwapRoute.limitPair(
-                    vaultPubKeyECDSA: vaultRef.pubKeyECDSA,
-                    keysignPayload: payload,
-                    pendingRecord: record
-                ))
-            }
-        }
     }
 }

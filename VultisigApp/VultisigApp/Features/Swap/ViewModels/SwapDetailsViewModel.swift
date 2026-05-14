@@ -210,7 +210,8 @@ final class SwapDetailsViewModel {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
             isFastVault: isFastVault,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            limitContext: nil
         )
     }
 }

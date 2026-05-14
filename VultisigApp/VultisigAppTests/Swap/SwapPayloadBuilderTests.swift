@@ -203,7 +203,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             isFastVault: false,
-            feeCoin: rune
+            feeCoin: rune,
+            limitContext: nil
         )
     }
 
@@ -220,7 +221,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             isFastVault: false,
-            feeCoin: cacao
+            feeCoin: cacao,
+            limitContext: nil
         )
     }
 
@@ -237,7 +239,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             isFastVault: false,
-            feeCoin: eth
+            feeCoin: eth,
+            limitContext: nil
         )
     }
 

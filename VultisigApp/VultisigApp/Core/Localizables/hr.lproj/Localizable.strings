@@ -477,6 +477,8 @@
 "limitSwap.confirmation.subtitle" = "You're placing a limit order";
 "limitSwap.confirmation.targetPrice" = "Target price";
 "limitSwap.confirmation.title" = "Place Limit Order";
+"limitSwap.done.bannerDetail" = "Prati ih u povijesti transakcija pod karticom Limit nalozi.";
+"limitSwap.done.bannerTitle" = "Limit nalozi";
 "limitSwap.executeWhen" = "Execute when";
 "limitSwap.executeWhen.headerIsWorth" = "is worth";
 "limitSwap.executeWhen.headerWhenOne" = "When 1";
@@ -491,6 +493,8 @@
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
 "limitSwap.sell" = "Sell";
+"limitSwap.verify.targetPrice" = "Ciljana cijena: 1 %@ = %@ %@";
+"limitSwap.verify.title" = "Postavljaš limit nalog";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
 "limitSwapToggle" = "Limit Swap";
