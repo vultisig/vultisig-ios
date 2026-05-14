@@ -34,10 +34,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
 
-    private let logic = SendCryptoVerifyLogic()
+    private let interactor: SendInteractor
+    private let logic: SendCryptoVerifyLogic
 
-    init(transaction: SendTransaction) {
+    init(transaction: SendTransaction, interactor: SendInteractor = DefaultSendInteractor.live) {
         self.transaction = transaction
+        self.interactor = interactor
+        self.logic = SendCryptoVerifyLogic(interactor: interactor)
     }
 
     func onLoad() {
@@ -52,12 +55,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
         hasBalanceError = false
 
         // Ensure balance is loaded before validation (protects against stale/empty balances)
-        await BalanceService.shared.updateBalance(for: transaction.coin)
+        await interactor.updateBalance(for: transaction.coin)
 
         // For non-native tokens, also update native token balance (needed for gas validation)
         if !transaction.coin.isNativeToken {
             if let nativeToken = transaction.vault.coins.nativeCoin(chain: transaction.coin.chain) {
-                await BalanceService.shared.updateBalance(for: nativeToken)
+                await interactor.updateBalance(for: nativeToken)
             }
         }
 

@@ -68,3 +68,23 @@ struct SendInteractorFeeResult: Equatable {
     let fee: BigInt
     let gas: BigInt
 }
+
+extension SendInteractor {
+    /// Convenience overload that reads the 10 primitives off an immutable
+    /// `SendTransaction`. Lets Verify-stage callers (which already hold the
+    /// struct) skip the field-by-field unpacking.
+    func fetchChainSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
+        try await fetchChainSpecific(
+            coin: tx.coin,
+            toAddress: tx.toAddress,
+            amount: tx.amountInRaw,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: tx.gasLimit,
+            feeMode: tx.feeMode,
+            fromAddress: tx.fromAddress
+        )
+    }
+}
