@@ -143,10 +143,8 @@ struct FunctionCallVerifyScreen: View {
     func signAndMoveToNextView() {
         Task {
             do {
-                let result = try await depositVerifyViewModel.createKeysignPayload(
-                    tx: tx,
-                    vault: vault
-                )
+                let converted = SendTransaction.fromLegacy(tx, vault: vault)
+                let result = try await depositVerifyViewModel.createKeysignPayload(tx: converted)
                 await MainActor.run {
                     router.navigate(to: FunctionCallRoute.pair(
                         vault: vault,
