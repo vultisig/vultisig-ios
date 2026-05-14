@@ -8,7 +8,7 @@ import Foundation
 
 // swiftlint:disable async_without_await
 
-final class MockFastVaultService: FastVaultServiceProtocol, @unchecked Sendable {
+final class MockFastVaultService: FastVaultServiceProtocol {
     var stubbedExist: Bool = false
     private(set) var existCallCount = 0
     private(set) var lastQueriedPubKey: String?
