@@ -128,6 +128,7 @@
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
 "cancel" = "Annulla";
 "canLoseFundsPrompt" = "Sono consapevole che posso perdere fondi";
+"cardanoOutputBelowMinAda" = "ADA insufficienti per coprire la commissione di rete e il requisito minimo UTXO di Cardano (~1,4 ADA per output). Invia prima più ADA a questo vault.";
 "chain" = "Catena";
 "chainNotAdded" = "Catena Non Aggiunta";
 "chainNotAddedMessage" = "La blockchain %@ non è aggiunta a questo caveau. Per favore, aggiungila manualmente dalle impostazioni del caveau.";
@@ -192,6 +193,7 @@
 "close" = "Chiudi";
 "coinAddressCopied" = "Indirizzo %@ copiato";
 "coinPool" = "Pool %@";
+"coinServiceChainNotEnabledForKeyImport" = "La chain %@ non è abilitata per questo vault importato";
 "collectedRewards" = "Premi raccolti";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Congratulazioni!";
@@ -663,6 +665,14 @@
 "proposalID" = "ID Proposta";
 "provider" = "Fornitore";
 "providerLabel" = "Fornitore (opzionale)";
+"psbtChangeMarker" = "Resto";
+"psbtInputs" = "Ingressi";
+"psbtNetworkFee" = "Commissione di rete";
+"psbtOpReturn" = "OP_RETURN";
+"psbtOpReturnFormat" = "OP_RETURN: %@";
+"psbtOutputs" = "Uscite";
+"psbtSignedByThisDevice" = "Firmato da questo dispositivo";
+"psbtTransactionDetails" = "Dettagli transazione (PSBT)";
 "pushNotifications" = "Notifiche push";
 "pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
 "rawPayload" = "Dati grezzi";

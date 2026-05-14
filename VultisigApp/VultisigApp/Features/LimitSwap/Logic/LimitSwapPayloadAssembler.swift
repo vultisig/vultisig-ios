@@ -17,20 +17,19 @@ enum LimitSwapAssemblyError: Error, Equatable {
 /// `BlockChainService` (chain-specific fee/nonce/etc. fetch), and
 /// `KeysignPayloadFactory` (UTXO selection + final payload construction).
 ///
-/// Mirrors how `SwapCryptoLogic.buildSwapKeysignPayload(tx:vault:)` does the
-/// same for market swaps with two differences:
+/// Mirrors how the market-swap path assembles its keysign payload, with
+/// two differences:
 /// 1. `memo` is the limit-swap memo built client-side (`=<:...`) rather than
 ///    the API-provided market memo (`=>:...`).
 /// 2. `swapPayload` is `nil` — the limit-ness lives entirely in the memo for
 ///    Phase 1; revisit if a chain helper turns out to require swap-payload
 ///    context for proper signing.
 ///
-/// **Implementation detail:** `BlockChainService` exposes only a transaction-
-/// shaped overload (`fetchSpecific(tx: SwapTransaction)`); the granular
-/// `fetchSpecific(for:action:...)` lives in a `private extension`. So we
-/// populate a transient `SwapTransaction` with the limit data and use the
-/// public overload — `estimateSwapGasLimit` handles `tx.quote == nil`
-/// gracefully (returns `nil` for non-EVM and EVM-without-quote).
+/// **Implementation detail:** `BlockChainService.fetchSwapBlockChainSpecific`
+/// is the granular swap-shaped fetch on main (post-refactor PR #4332).
+/// Passing `quote: nil` matches the limit-order shape (no market quote
+/// exists) and `estimateSwapGasLimit` short-circuits to `nil` for that
+/// case, so the downstream call never touches `fromAmount`.
 ///
 /// **Phase 1 scope:** native source coins only. ERC20 sources require an
 /// approval-keysign-first flow that's deferred to Phase 2.
@@ -66,16 +65,12 @@ func buildLimitSwapKeysignPayload(
         toAddress = inbound.address
     }
 
-    // Build a transient SwapTransaction so we can use the public
-    // BlockChainService.fetchSpecific(tx:) overload. Quote is nil — no market
-    // quote exists for limit orders. The downstream gasLimit estimator
-    // handles nil-quote gracefully.
-    let transientTx = SwapTransaction()
-    transientTx.fromCoin = sourceCoin
-    transientTx.toCoin = targetCoin
-    transientTx.quote = nil
-
-    let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transientTx)
+    let chainSpecific = try await BlockChainService.shared.fetchSwapBlockChainSpecific(
+        fromCoin: sourceCoin,
+        toCoin: targetCoin,
+        fromAmount: sourceCoin.decimal(for: sourceAmount),
+        quote: nil
+    )
 
     let factory = KeysignPayloadFactory()
     return try await factory.buildTransfer(

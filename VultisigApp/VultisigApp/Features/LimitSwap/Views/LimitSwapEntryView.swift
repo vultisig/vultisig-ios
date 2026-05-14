@@ -8,30 +8,20 @@ import SwiftUI
 
 /// Wrapper that owns the `LimitSwapFormViewModel` lifecycle plus Limit's
 /// **independent** coin selection state. The initial from/to coins seed
-/// from `SwapTransaction` for convenience but subsequent changes via the
-/// asset picker stay local — they do not mutate the Market path's
-/// SwapTransaction.
-/// Carries everything the parent (`SwapCryptoView`) needs to drive the
-/// existing keysign state machine for a placed limit order.
-struct LimitSwapSignContext {
-    let payload: KeysignPayload
-    let fromCoin: Coin
-    let toCoin: Coin
-    let sourceAmountText: String
-    let pendingRecord: LimitOrderRecord
-}
-
+/// from the host's selected coins for convenience but subsequent picker
+/// changes stay local — they do not mutate the Market path's state.
+///
+/// On "Place Order" / confirmation success, this view assembles the
+/// limit-swap `KeysignPayload` and navigates to `SwapRoute.limitPair(...)`,
+/// joining the limit-side pair → keysign → done pipeline managed by
+/// `SwapRouter`.
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
     let initialToCoin: Coin
     let vault: Vault
 
-    /// Invoked once the confirmation sheet's pre-flight passes and the
-    /// limit `KeysignPayload` is assembled. The parent populates
-    /// `swapViewModel` + `tx` and advances the existing keysign state
-    /// machine (currentIndex = 3, pair view).
-    let onLimitPayloadReady: (LimitSwapSignContext) -> Void
+    @Environment(\.router) private var router
 
     /// Constructed eagerly in `init` from `initialFromCoin` / `initialToCoin`
     /// so the VM is non-optional throughout the view's lifetime.
@@ -59,13 +49,11 @@ struct LimitSwapEntryView: View {
     init(
         initialFromCoin: Coin,
         initialToCoin: Coin,
-        vault: Vault,
-        onLimitPayloadReady: @escaping (LimitSwapSignContext) -> Void
+        vault: Vault
     ) {
         self.initialFromCoin = initialFromCoin
         self.initialToCoin = initialToCoin
         self.vault = vault
-        self.onLimitPayloadReady = onLimitPayloadReady
         self._limitFromCoin = State(initialValue: initialFromCoin)
         self._limitToCoin = State(initialValue: initialToCoin)
 
@@ -300,24 +288,14 @@ struct LimitSwapEntryView: View {
                 status: .pending
             )
 
-            let context = LimitSwapSignContext(
-                payload: payload,
-                fromCoin: fromCoin,
-                toCoin: toCoin,
-                sourceAmountText: formatNaturalAmount(sourceAmount, decimals: draft.fromAsset.decimals),
-                pendingRecord: record
-            )
-
             await MainActor.run {
                 isConfirmationSheetPresented = false
-                onLimitPayloadReady(context)
+                router.navigate(to: SwapRoute.limitPair(
+                    vaultPubKeyECDSA: vaultRef.pubKeyECDSA,
+                    keysignPayload: payload,
+                    pendingRecord: record
+                ))
             }
         }
-    }
-
-    private func formatNaturalAmount(_ raw: BigInt, decimals: Int) -> String {
-        let rawDecimal = Decimal(string: raw.description) ?? 0
-        let natural = rawDecimal / pow(10, decimals)
-        return NSDecimalNumber(decimal: natural).stringValue
     }
 }

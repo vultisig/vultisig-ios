@@ -33,7 +33,7 @@ enum THORChainTokenMetadataFactory {
             } else if asset == "x/ruji" {
                 symbol = "RUJI"
                 ticker = "ruji"
-            } else if asset == "x/staking-ruji" {
+            } else if asset == TokensStore.sruji.contractAddress {
                 symbol = "sRUJI"
                 ticker = "sruji"
             } else if asset == "x/staking-tcy" {

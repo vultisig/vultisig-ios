@@ -1,55 +1,70 @@
 //
-//  SwapVerifyView.swift
+//  SwapVerifyScreen.swift
 //  VultisigApp
-//
-//  Created by Artur Guseinov on 08.04.2024.
 //
 
 import SwiftUI
 
-struct SwapVerifyView: View {
-    @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
-
-    @ObservedObject var tx: SwapTransaction
-    @ObservedObject var swapViewModel: SwapCryptoViewModel
-
-    @StateObject var referredViewModel = ReferredViewModel()
-
+struct SwapVerifyScreen: View {
+    let transaction: SwapTransaction
+    let retrySignal: SwapRetrySignal
     let vault: Vault
 
+    @State var verifyViewModel: SwapVerifyViewModel
+    @StateObject var referredViewModel = ReferredViewModel()
+
     @State var fastPasswordPresented = false
+    @State var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
     @State private var retryBannerText: String?
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @Environment(\.router) var router
+
+    init(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) {
+        self.transaction = transaction
+        self.retrySignal = retrySignal
+        self.vault = vault
+        self._verifyViewModel = State(initialValue: SwapVerifyViewModel(transaction: transaction))
+    }
+
+    private var currentTransaction: SwapTransaction { verifyViewModel.transaction }
 
     var body: some View {
-        ZStack {
-            Background()
-            view
+        @Bindable var vm = verifyViewModel
+        Screen {
+            VStack(spacing: 16) {
+                fields
+                signButton
+                    .disabled(!verifyViewModel.isValidForm(shouldApprove: currentTransaction.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
+            }
+        }
+        .screenTitle("swapOverview".localized)
+        .screenToolbar {
+            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
+                refreshCounter
+            }
         }
         .withBanner(text: $retryBannerText, style: .error)
-        .onReceive(timer) { _ in
-            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-        }
-        .onDisappear {
-            swapViewModel.isLoading = false
-            // Clear password if navigating back (not forward to keysign)
-            if swapViewModel.keysignPayload == nil {
-                tx.fastVaultPassword = .empty
+        .swapRefreshTick {
+            Task {
+                await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
         }
         .onLoad {
             referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
-                await verifyViewModel.scan(transaction: tx)
+                await verifyViewModel.scan()
             }
         }
         .onAppear {
             consumePendingRetry()
         }
-        .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
+        .onDisappear {
+            verifyViewModel.isLoading = false
+            fastVaultPassword = .empty
+        }
+        .bottomSheet(isPresented: $vm.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
                 verifyViewModel.showSecurityScannerSheet = false
                 signAndMoveToNextView()
@@ -59,17 +74,14 @@ struct SwapVerifyView: View {
         }
     }
 
-    var view: some View {
-        container
-    }
-
-    var content: some View {
-        VStack(spacing: 16) {
-            fields
-            signButton
-                .padding(.horizontal, 16)
-                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || swapViewModel.isLoadingFees || signButtonDisabled)
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                summary
+                checkboxes
+            }
         }
+        .scrollIndicators(.hidden)
     }
 
     var summary: some View {
@@ -80,7 +92,7 @@ struct SwapVerifyView: View {
                 summaryTitle
                 summaryFromTo
 
-                if let providerName = tx.quote?.displayName {
+                if let providerName = currentTransaction.quote.displayName {
                     separator
                     getValueCell(
                         for: "provider",
@@ -89,32 +101,32 @@ struct SwapVerifyView: View {
                     )
                 }
 
-                if swapViewModel.showGas(tx: tx) {
+                if currentTransaction.showGas {
                     separator
                     getNetworkFeeCell(
-                        cryptoAmount: swapViewModel.swapGasString(tx: tx),
-                        fiatAmount: swapViewModel.approveFeeString(tx: tx)
+                        cryptoAmount: currentTransaction.swapGasString,
+                        fiatAmount: currentTransaction.approveFeeString
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if swapViewModel.showFees(tx: tx) {
+                if currentTransaction.showFees {
                     separator
                     getValueCell(
                         for: "swapFee",
-                        with: swapViewModel.swapFeeString(tx: tx),
+                        with: currentTransaction.swapFeeString,
                         bracketValue: nil
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if swapViewModel.showTotalFees(tx: tx) {
+                if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
                         for: "maxTotalFee",
-                        with: swapViewModel.totalFeeString(tx: tx)
+                        with: currentTransaction.totalFeeString
                     )
-                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
+                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 separator
@@ -153,22 +165,22 @@ struct SwapVerifyView: View {
     var summaryFromTo: some View {
         VStack(spacing: 0) {
             getSwapAssetCell(
-                for: tx.fromAmountDecimal.formatForDisplay(),
-                with: tx.fromCoin.ticker,
-                fiatValue: swapViewModel.fromFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
-                on: tx.fromCoin.chain,
-                coin: tx.fromCoin,
+                for: currentTransaction.fromAmount.formatForDisplay(),
+                with: currentTransaction.fromCoin.ticker,
+                fiatValue: currentTransaction.fromFiatAmount.formatToFiat(includeCurrencySymbol: true),
+                on: currentTransaction.fromCoin.chain,
+                coin: currentTransaction.fromCoin,
                 isTo: false
             )
 
             summaryFromToIcons
 
             getSwapAssetCell(
-                for: tx.toAmountDecimal.formatForDisplay(),
-                with: tx.toCoin.ticker,
-                fiatValue: swapViewModel.toFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
-                on: tx.toCoin.chain,
-                coin: tx.toCoin,
+                for: currentTransaction.toAmountDecimal.formatForDisplay(),
+                with: currentTransaction.toCoin.ticker,
+                fiatValue: currentTransaction.toFiatAmount.formatToFiat(includeCurrencySymbol: true),
+                on: currentTransaction.toCoin.chain,
+                coin: currentTransaction.toCoin,
                 isTo: true
             )
         }
@@ -192,18 +204,19 @@ struct SwapVerifyView: View {
     }
 
     var checkboxes: some View {
-        VStack(spacing: 16) {
-            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "swapVerifyCheckbox1Description")
-            Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "swapVerifyCheckbox2Description")
+        @Bindable var vm = verifyViewModel
+        return VStack(spacing: 16) {
+            Checkbox(isChecked: $vm.isAmountCorrect, text: "swapVerifyCheckbox1Description")
+            Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
             if showApproveCheckmark {
-                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "swapVerifyCheckbox3Description")
+                Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
             }
         }
     }
 
     @ViewBuilder
     var signButton: some View {
-        if tx.isFastVault {
+        if currentTransaction.isFastVault {
             Text(NSLocalizedString("holdForPairedSign", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
@@ -211,14 +224,13 @@ struct SwapVerifyView: View {
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
             } longPressAction: {
-                // Clear password for paired sign (long press)
-                tx.fastVaultPassword = .empty
+                fastVaultPassword = .empty
                 onSignPress()
             }
             .disabled(signButtonDisabled)
             .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                 FastVaultEnterPasswordView(
-                    password: $tx.fastVaultPassword,
+                    password: $fastVaultPassword,
                     vault: vault,
                     onSubmit: { onSignPress() }
                 )
@@ -231,14 +243,15 @@ struct SwapVerifyView: View {
     }
 
     private func consumePendingRetry() {
-        guard let reason = swapViewModel.pendingRetryReason else { return }
+        guard let reason = retrySignal.pendingRetryReason else { return }
         retryBannerText = reason.userFacingMessage
-        swapViewModel.pendingRetryReason = nil
-        swapViewModel.refreshData(
-            tx: tx,
-            vault: vault,
-            referredCode: referredViewModel.savedReferredCode
-        )
+        retrySignal.pendingRetryReason = nil
+        Task {
+            await verifyViewModel.refreshData(
+                vault: vault,
+                referredCode: referredViewModel.savedReferredCode
+            )
+        }
     }
 
     private func onSignPress() {
@@ -251,15 +264,23 @@ struct SwapVerifyView: View {
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
-            if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
-                swapViewModel.moveToNextView()
+            if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
+                await MainActor.run {
+                    router.navigate(to: SwapRoute.pair(
+                        vaultPubKeyECDSA: vault.pubKeyECDSA,
+                        transaction: currentTransaction,
+                        retrySignal: retrySignal,
+                        keysignPayload: payload,
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
+                    ))
+                }
             }
             await MainActor.run { signButtonDisabled = false }
         }
     }
 
     var showApproveCheckmark: Bool {
-        return tx.isApproveRequired
+        currentTransaction.isApproveRequired
     }
 
     var separator: some View {
@@ -268,7 +289,7 @@ struct SwapVerifyView: View {
     }
 
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
+        SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
     }
 
     func getValueCell(
@@ -300,7 +321,6 @@ struct SwapVerifyView: View {
                 }
                 .foregroundColor(Theme.colors.textTertiary)
             }
-
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -397,64 +417,3 @@ struct SwapVerifyView: View {
         )
     }
 }
-
-#Preview {
-    SwapVerifyView(
-        tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel(),
-        vault: Vault.example
-    )
-    .environmentObject(SettingsViewModel())
-}
-
-#if os(iOS)
-import SwiftUI
-
-extension SwapVerifyView {
-    var container: some View {
-        content
-            .toolbar {
-                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
-                    refreshCounter
-                }
-            }
-    }
-
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Spacer()
-                summary
-                checkboxes
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-}
-#endif
-
-#if os(macOS)
-import SwiftUI
-
-extension SwapVerifyView {
-    var container: some View {
-        content
-            .padding(.horizontal, 25)
-            .padding(.vertical, 12)
-    }
-
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Spacer()
-                summary
-                checkboxes
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-        }
-        .padding(.horizontal, -24)
-    }
-}
-#endif

@@ -10,15 +10,15 @@ import XCTest
 @MainActor
 final class LimitSwapInteractorTests: XCTestCase {
 
-    private var storeToken: DefiTestContextToken!
+    private var storeToken: TestContextToken!
     private var vault: Vault!
     private var quoteService: MockLimitSwapQuoteService!
     private var interactor: DefaultLimitSwapInteractor!
 
     override func setUp() async throws {
         try await super.setUp()
-        storeToken = try DefiTestStore.installInMemoryContainer()
-        vault = DefiTestStore.makeVault()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
         quoteService = MockLimitSwapQuoteService()
         interactor = DefaultLimitSwapInteractor(
             quoteService: quoteService,
@@ -30,7 +30,7 @@ final class LimitSwapInteractorTests: XCTestCase {
         interactor = nil
         quoteService = nil
         vault = nil
-        DefiTestStore.restore(storeToken)
+        TestStore.restore(storeToken)
         storeToken = nil
         try await super.tearDown()
     }

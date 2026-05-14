@@ -10,6 +10,7 @@ import SwiftUI
 final class VultisigRouter: ObservableObject {
     @Published var navigationRouter: NavigationRouter
     let sendRouter: SendRouter
+    let swapRouter: SwapRouter
     let keygenRouter: KeygenRouter
     let vaultRouter: VaultRouter
     let onboardingRouter: OnboardingRouter
@@ -24,6 +25,7 @@ final class VultisigRouter: ObservableObject {
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
         self.sendRouter = SendRouter()
+        self.swapRouter = SwapRouter()
         self.keygenRouter = KeygenRouter()
         self.vaultRouter = VaultRouter()
         self.onboardingRouter = OnboardingRouter()

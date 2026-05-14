@@ -347,89 +347,16 @@ struct EvmServiceStruct {
         }
     }
 
-    // MARK: - Static Helper for Standard Token Fetching
+    // MARK: - Static Helper for Token Discovery Fallback
+    //
+    // Used by EVM chains that 1inch doesn't index. `EvmCoinFinder` handles
+    // the 1inch-supported chains (ethereum/base/arbitrum/polygon/optimism/
+    // bsc/avalanche); anything else falls through to this `balanceOf` walk
+    // over the chain's TokensStore entries.
 
-    static func getTokensStandard(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
-        // Try alchemy_getTokenBalances first (for chains that support it)
-        do {
-            let tokenBalances: [[String: Any]] = try await rpcService.sendRPCRequest(
-                method: "alchemy_getTokenBalances",
-                params: [address]
-            ) { result in
-                guard
-                    let response = result as? [String: Any],
-                    let tokenBalances = response["tokenBalances"] as? [[String: Any]]
-                else {
-                    return []
-                }
-
-                return tokenBalances
-            }
-
-            // Process tokens from Alchemy
-            var tokenMetadata: [CoinMeta] = []
-
-            for tokenBalance in tokenBalances {
-                guard let contractAddress = tokenBalance["contractAddress"] as? String else {
-                    continue
-                }
-
-                // Fetch metadata for each token
-                let meta: CoinMeta? = try await rpcService.sendRPCRequest(
-                    method: "alchemy_getTokenMetadata",
-                    params: [contractAddress]
-                ) { result in
-                    guard
-                        let response = result as? [String: Any],
-                        let symbol = response["symbol"] as? String,
-                        !symbol.isEmpty
-                    else {
-                        return nil
-                    }
-
-                    let decimals: Int
-                    if let decimalsInt = response["decimals"] as? Int {
-                        decimals = decimalsInt
-                    } else if let decimalsInt64 = response["decimals"] as? Int64 {
-                        decimals = Int(decimalsInt64)
-                    } else {
-                        return nil
-                    }
-
-                    let tokenFromTokenStore = TokensStore.TokenSelectionAssets.first(where: { token in
-                        token.chain == nativeToken.chain &&
-                        token.ticker == symbol &&
-                        token.contractAddress.lowercased() == contractAddress.lowercased()
-                    })
-
-                    let logo = tokenFromTokenStore?.logo ?? response["logo"] as? String ?? ""
-
-                    return CoinMeta(
-                        chain: nativeToken.chain,
-                        ticker: symbol,
-                        logo: logo,
-                        decimals: decimals,
-                        priceProviderId: tokenFromTokenStore?.priceProviderId ?? "",
-                        contractAddress: contractAddress,
-                        isNativeToken: false
-                    )
-                }
-
-                if let coinMeta = meta {
-                    tokenMetadata.append(coinMeta)
-                }
-            }
-
-            return tokenMetadata
-
-        } catch {
-            // Fallback: Check known tokens from TokensStore using standard RPC methods
-            return await getTokensFallback(nativeToken: nativeToken, address: address, rpcService: rpcService)
-        }
-    }
-
-    // Fallback method: Check balance of known tokens from TokensStore
-    private static func getTokensFallback(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
+    /// Check balance of known tokens from TokensStore via `eth_call balanceOf`.
+    /// Returns only the entries with non-zero balance.
+    static func getTokensFallback(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
         // Get all known tokens for this chain from TokensStore
         let knownTokens = TokensStore.TokenSelectionAssets.filter { token in
             token.chain == nativeToken.chain && !token.isNativeToken && !token.contractAddress.isEmpty

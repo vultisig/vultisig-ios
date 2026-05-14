@@ -16,8 +16,7 @@ struct SwapFromToField: View {
     @Binding var selectedChain: Chain?
     @Binding var showNetworkSelectSheet: Bool
     @Binding var showCoinSelectSheet: Bool
-    @ObservedObject var tx: SwapTransaction
-    @ObservedObject var swapViewModel: SwapCryptoViewModel
+    @Bindable var detailsViewModel: SwapDetailsViewModel
     let handlePercentageSelection: ((Int) -> Void)?
 
     @StateObject var referredViewModel = ReferredViewModel()
@@ -117,13 +116,13 @@ struct SwapFromToField: View {
         Group {
             SwapCryptoAmountTextField(amount: $amount) { _ in
                 if title=="from" {
-                    swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                    swapViewModel.showAllPercentageButtons = true
+                    detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+                    detailsViewModel.showAllPercentageButtons = true
                 }
             }
             .disabled(title=="to")
         }
-        .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
+        .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
     }
 
     var fiatBalance: some View {
@@ -132,7 +131,7 @@ struct SwapFromToField: View {
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
-            .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
+            .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
     }
 
     private func isFiatVisible() -> Bool {
@@ -150,8 +149,7 @@ struct SwapFromToField: View {
         selectedChain: .constant(Chain.example),
         showNetworkSelectSheet: .constant(false),
         showCoinSelectSheet: .constant(false),
-        tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel(),
+        detailsViewModel: SwapDetailsViewModel(),
         handlePercentageSelection: { _ in }
     )
 }

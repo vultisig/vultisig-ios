@@ -69,7 +69,8 @@ enum LimitOrderStatus: String, Codable, Equatable {
 
 /// Sendable value-type record used as input to `LimitOrderStorageService.persist`.
 /// Materialized into a `LimitOrder` (`@Model`) on `@MainActor`.
-struct LimitOrderRecord: Equatable, Sendable {
+/// `Hashable` so it can ride along through `SwapRoute` cases without indirection.
+struct LimitOrderRecord: Hashable, Sendable {
     let inboundTxHash: String
     let sourceAsset: String
     let sourceAmount: String

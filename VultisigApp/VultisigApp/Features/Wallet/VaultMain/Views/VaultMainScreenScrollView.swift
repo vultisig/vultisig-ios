@@ -11,7 +11,8 @@ import SwiftUI
 struct VaultMainScreenScrollView<Content: View>: View {
     var axes: Axis.Set = .vertical
     var showsIndicators = true
-    var contentInset: CGFloat
+    var topInset: CGFloat
+    var bottomInset: CGFloat
     @Binding var scrollOffset: CGFloat
     @ViewBuilder var content: () -> Content
 
@@ -26,13 +27,15 @@ struct VaultMainScreenScrollView<Content: View>: View {
     init(
         axes: Axis.Set = .vertical,
         showsIndicators: Bool = true,
-        contentInset: CGFloat = 0,
+        topInset: CGFloat = 0,
+        bottomInset: CGFloat = 0,
         scrollOffset: Binding<CGFloat>,
         content: @escaping () -> Content
     ) {
         self.axes = axes
         self.showsIndicators = showsIndicators
-        self.contentInset = contentInset
+        self.topInset = topInset
+        self.bottomInset = bottomInset
         self._scrollOffset = scrollOffset
         self.content = content
     }
@@ -40,7 +43,7 @@ struct VaultMainScreenScrollView<Content: View>: View {
     var body: some View {
         ScrollView(axes, showsIndicators: showsIndicators) {
             contentContainer {
-                insetView
+                insetView(length: topInset)
                 content()
                     .background(
                         GeometryReader { proxy in
@@ -50,7 +53,7 @@ struct VaultMainScreenScrollView<Content: View>: View {
                                 }
                         }
                     )
-                insetView
+                insetView(length: bottomInset)
             }
         }
         .coordinateSpace(name: coordinateSpaceName)
@@ -70,11 +73,13 @@ private extension VaultMainScreenScrollView {
             HStack(spacing: 0) { content() }
         }
     }
-    var insetView: some View {
+
+    @ViewBuilder
+    func insetView(length: CGFloat) -> some View {
         if axes == .vertical {
-            Color.clear.frame(height: contentInset)
+            Color.clear.frame(height: length)
         } else {
-            Color.clear.frame(width: contentInset)
+            Color.clear.frame(width: length)
         }
     }
 
