@@ -211,20 +211,16 @@ struct ChainDetailScreen: View {
                 onAction: onAction
             )
 
-            if showsQbtcBanner {
-                ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
-            }
+            ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
+                .showIf(showsQbtcBanner)
 
-            if viewModel.isTron {
-                TronResourcesCardView(
-                    availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
-                    totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
-                    availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
-                    totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
-                    isLoading: viewModel.tronLoader?.isLoading ?? false
-                )
-            }
-
+            TronResourcesCardView(
+                availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
+                totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
+                availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
+                totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
+                isLoading: viewModel.tronLoader?.isLoading ?? false
+            ).showIf(viewModel.isTron)
         }
     }
 
@@ -322,7 +318,8 @@ private extension ChainDetailScreen {
             btcCoin = vault.nativeCoin(for: .bitcoin)
         }
         guard let btcCoin else { return }
-        Task { await qbtcEligibility.check(btcCoin: btcCoin) }
+        let vaultPubKey = vault.pubKeyECDSA
+        Task { await qbtcEligibility.check(btcCoin: btcCoin, vaultPubKeyECDSA: vaultPubKey) }
     }
 
     func updateBalances() async {

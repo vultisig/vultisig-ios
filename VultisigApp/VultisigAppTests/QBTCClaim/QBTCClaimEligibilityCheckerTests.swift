@@ -48,10 +48,27 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
 
     private func makeChecker(
         blockchair: MockBlockchairService = MockBlockchairService(),
-        chain: MockQBTCChainService = MockQBTCChainService()
+        chain: MockQBTCChainService = MockQBTCChainService(),
+        cacheStore: UserDefaults? = nil
     ) -> QBTCClaimEligibilityChecker {
-        QBTCClaimEligibilityChecker(blockchairService: blockchair, chainService: chain)
+        QBTCClaimEligibilityChecker(
+            blockchairService: blockchair,
+            chainService: chain,
+            cacheStore: cacheStore ?? makeIsolatedCacheStore()
+        )
     }
+
+    /// Returns a fresh in-memory UserDefaults suite so tests don't read or
+    /// pollute each other's cache. The suite is removed in setup of each
+    /// test via `removePersistentDomain` to make repeated runs deterministic.
+    private func makeIsolatedCacheStore() -> UserDefaults {
+        let suiteName = "qbtc-eligibility-tests-\(UUID().uuidString)"
+        let store = UserDefaults(suiteName: suiteName) ?? .standard
+        store.removePersistentDomain(forName: suiteName)
+        return store
+    }
+
+    private static let testVaultPubKey = "test-vault-pubkey-ecdsa"
 
     // MARK: - 1. Idle
 
@@ -73,7 +90,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        let task = Task { await checker.check(btcCoin: makeBtcCoin()) }
+        let task = Task { await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey) }
 
         // Give the task a chance to enter the pipeline + flip to .loading.
         try? await Task.sleep(nanoseconds: 20_000_000)
@@ -93,7 +110,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [Self.utxoA, Self.utxoB, Self.utxoC] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .eligible(count: 3, totalSats: 110_000_000))
         XCTAssertTrue(checker.hasClaimableUtxos)
@@ -110,7 +127,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
         XCTAssertFalse(checker.hasClaimableUtxos)
@@ -125,7 +142,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         chain.filterHandler = { _ in [] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
         XCTAssertEqual(chain.filterCallCount, 1)
@@ -140,7 +157,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [Self.utxoA] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
         // filterClaimable must not run when the kill-switch is closed —
@@ -157,7 +174,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [Self.utxoA] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
     }
@@ -170,7 +187,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in throw FixtureError.boom }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
     }
@@ -183,7 +200,7 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [Self.utxoA] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin(address: Self.unsupportedAddress))
+        await checker.check(btcCoin: makeBtcCoin(address: Self.unsupportedAddress), vaultPubKeyECDSA: Self.testVaultPubKey)
 
         XCTAssertEqual(checker.state, .ineligible)
         // No network calls — the guard short-circuits before the pipeline.
@@ -204,9 +221,9 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        let first = Task { await checker.check(btcCoin: makeBtcCoin()) }
+        let first = Task { await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey) }
         try? await Task.sleep(nanoseconds: 20_000_000)
-        let second = Task { await checker.check(btcCoin: makeBtcCoin()) }
+        let second = Task { await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey) }
 
         // Both awaits are pending; release the gate and let both finish.
         await gate.open()
@@ -228,12 +245,12 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in nextUtxos }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 75_000_000))
 
         // Simulate the UTXO being spent / claimed between checks.
         nextUtxos = []
-        await checker.check(btcCoin: makeBtcCoin())
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .ineligible)
         XCTAssertEqual(blockchair.fetchCallCount, 2)
     }
@@ -246,12 +263,146 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         blockchair.fetchHandler = { _, _ in [Self.utxoA] }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
-        await checker.check(btcCoin: makeBtcCoin(address: Self.validP2wpkhAddress))
+        await checker.check(btcCoin: makeBtcCoin(address: Self.validP2wpkhAddress), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 75_000_000))
 
-        await checker.check(btcCoin: makeBtcCoin(address: Self.secondValidAddress))
+        await checker.check(btcCoin: makeBtcCoin(address: Self.secondValidAddress), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 75_000_000))
         XCTAssertEqual(blockchair.fetchCallCount, 2)
+    }
+
+    // MARK: - 13. Cache: previously-eligible seeds state immediately
+
+    /// First checker writes the cache; second checker (same vault + address,
+    /// same in-memory UserDefaults suite) hydrates `state == .eligible`
+    /// synchronously in `check()`, before the network round-trip lands.
+    func testCachedEligibleSeedsStateImmediately() async {
+        let store = makeIsolatedCacheStore()
+
+        let firstBlockchair = MockBlockchairService()
+        let firstChain = MockQBTCChainService()
+        firstBlockchair.fetchHandler = { _, _ in [Self.utxoA, Self.utxoB] }
+        let firstChecker = makeChecker(blockchair: firstBlockchair, chain: firstChain, cacheStore: store)
+        await firstChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+        XCTAssertEqual(firstChecker.state, .eligible(count: 2, totalSats: 100_000_000))
+
+        // Second checker — same cache store, second instance. It should
+        // surface the cached eligible state *before* the network refresh
+        // resolves, eliminating the idle/loading flicker.
+        let secondBlockchair = MockBlockchairService()
+        let secondChain = MockQBTCChainService()
+        let gate = AsyncGate()
+        secondBlockchair.fetchHandler = { _, _ in
+            await gate.wait()
+            return [Self.utxoA, Self.utxoB]
+        }
+        let secondChecker = makeChecker(blockchair: secondBlockchair, chain: secondChain, cacheStore: store)
+
+        let task = Task { await secondChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey) }
+
+        // Yield once so check()'s synchronous prologue runs.
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertEqual(secondChecker.state, .eligible(count: 2, totalSats: 100_000_000))
+        XCTAssertTrue(secondChecker.hasClaimableUtxos)
+
+        await gate.open()
+        await task.value
+    }
+
+    // MARK: - 14. Cache: definitive ineligible clears the entry
+
+    /// After an .eligible run, a subsequent .ineligible outcome (e.g.
+    /// user spent UTXOs externally) clears the cache. A third checker
+    /// starts at .loading rather than .eligible.
+    func testIneligibleOutcomeClearsCache() async {
+        let store = makeIsolatedCacheStore()
+
+        let firstChecker = makeChecker(
+            blockchair: { let m = MockBlockchairService(); m.fetchHandler = { _, _ in [Self.utxoA] }; return m }(),
+            chain: MockQBTCChainService(),
+            cacheStore: store
+        )
+        await firstChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+        XCTAssertEqual(firstChecker.state, .eligible(count: 1, totalSats: 75_000_000))
+
+        let secondChecker = makeChecker(
+            blockchair: { let m = MockBlockchairService(); m.fetchHandler = { _, _ in [] }; return m }(),
+            chain: MockQBTCChainService(),
+            cacheStore: store
+        )
+        await secondChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+        XCTAssertEqual(secondChecker.state, .ineligible)
+
+        // Third checker — cache should be cleared, so it starts in
+        // .loading (no synchronous seed) until its own pipeline lands.
+        let gate = AsyncGate()
+        let thirdBlockchair = MockBlockchairService()
+        thirdBlockchair.fetchHandler = { _, _ in
+            await gate.wait()
+            return []
+        }
+        let thirdChecker = makeChecker(blockchair: thirdBlockchair, chain: MockQBTCChainService(), cacheStore: store)
+
+        let task = Task { await thirdChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey) }
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertEqual(thirdChecker.state, .loading)
+
+        await gate.open()
+        await task.value
+    }
+
+    // MARK: - 15. Cache: transient network error preserves cached state
+
+    /// A network failure during the refresh leaves the cached .eligible
+    /// state untouched. Banner doesn't flicker out because of a hiccup.
+    func testNetworkErrorPreservesCachedEligible() async {
+        let store = makeIsolatedCacheStore()
+
+        let firstBlockchair = MockBlockchairService()
+        firstBlockchair.fetchHandler = { _, _ in [Self.utxoA] }
+        let firstChecker = makeChecker(blockchair: firstBlockchair, chain: MockQBTCChainService(), cacheStore: store)
+        await firstChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+        XCTAssertEqual(firstChecker.state, .eligible(count: 1, totalSats: 75_000_000))
+
+        let secondBlockchair = MockBlockchairService()
+        secondBlockchair.fetchHandler = { _, _ in throw FixtureError.boom }
+        let secondChecker = makeChecker(blockchair: secondBlockchair, chain: MockQBTCChainService(), cacheStore: store)
+        await secondChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+
+        // Pipeline threw — but the cache hydration kept state at
+        // .eligible. Banner stays visible.
+        XCTAssertEqual(secondChecker.state, .eligible(count: 1, totalSats: 75_000_000))
+    }
+
+    // MARK: - 16. Cache: different vaults are isolated
+
+    /// Cache key is scoped by vaultPubKeyECDSA. A second vault on the
+    /// same machine doesn't see the first vault's cached state.
+    func testCacheIsolatedByVault() async {
+        let store = makeIsolatedCacheStore()
+
+        let blockchair = MockBlockchairService()
+        blockchair.fetchHandler = { _, _ in [Self.utxoA] }
+        let firstChecker = makeChecker(blockchair: blockchair, chain: MockQBTCChainService(), cacheStore: store)
+        await firstChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: "vault-a")
+        XCTAssertEqual(firstChecker.state, .eligible(count: 1, totalSats: 75_000_000))
+
+        // Second vault — same store, different key. State starts at
+        // .loading until its own pipeline resolves.
+        let gate = AsyncGate()
+        let secondBlockchair = MockBlockchairService()
+        secondBlockchair.fetchHandler = { _, _ in
+            await gate.wait()
+            return [Self.utxoA]
+        }
+        let secondChecker = makeChecker(blockchair: secondBlockchair, chain: MockQBTCChainService(), cacheStore: store)
+
+        let task = Task { await secondChecker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: "vault-b") }
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertEqual(secondChecker.state, .loading)
+
+        await gate.open()
+        await task.value
     }
 }
 
