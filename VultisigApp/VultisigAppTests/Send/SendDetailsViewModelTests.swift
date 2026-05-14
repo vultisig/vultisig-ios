@@ -274,4 +274,66 @@ final class SendDetailsViewModelTests: XCTestCase {
         let vm = SendFormFixture.make()
         XCTAssertFalse(vm.continueButtonDisabled)
     }
+
+    // MARK: - Pending transaction state machine
+
+    func testRefreshPendingTransactionStateClearsFlagsForNonCosmosChain() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeBTC())
+        vm.hasPendingTransaction = true
+        vm.pendingTransactionCountdown = 42
+        vm.isCheckingPendingTransactions = true
+
+        vm.refreshPendingTransactionState()
+
+        XCTAssertFalse(vm.hasPendingTransaction, "Non-Cosmos chains must clear hasPendingTransaction")
+        XCTAssertEqual(vm.pendingTransactionCountdown, 0)
+        XCTAssertFalse(vm.isCheckingPendingTransactions)
+    }
+
+    func testRefreshPendingTransactionStateClearsCountdownForChainWithoutPendingTxs() {
+        // gaiaChain supports pending transactions, but the manager has none
+        // registered for this address -> hasPending should end false.
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.pendingTransactionCountdown = 99
+        vm.hasPendingTransaction = true
+
+        vm.refreshPendingTransactionState()
+
+        XCTAssertFalse(vm.hasPendingTransaction, "No pending tx in manager -> flag cleared")
+        XCTAssertEqual(vm.pendingTransactionCountdown, 0)
+        XCTAssertFalse(vm.isCheckingPendingTransactions)
+    }
+
+    func testUpdateCountdownTickNoOpsForNonCosmosChain() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeBTC())
+        vm.pendingTransactionCountdown = 7
+        vm.hasPendingTransaction = true
+
+        vm.updateCountdownTick()
+
+        // Guard at the top of updateCountdownTick short-circuits, so existing
+        // state is preserved untouched.
+        XCTAssertEqual(vm.pendingTransactionCountdown, 7)
+        XCTAssertTrue(vm.hasPendingTransaction)
+    }
+
+    func testUpdateCountdownTickClearsStateWhenNoPendingTxInManager() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.pendingTransactionCountdown = 55
+        vm.hasPendingTransaction = true
+
+        vm.updateCountdownTick()
+
+        // The mock pending-tx manager has no entries -> clear state.
+        XCTAssertFalse(vm.hasPendingTransaction)
+        XCTAssertEqual(vm.pendingTransactionCountdown, 0)
+    }
+
+    func testTearDownPendingTransactionStateIsIdempotent() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.tearDownPendingTransactionState()
+        vm.tearDownPendingTransactionState()
+        // Reaching here without crashing is the assertion.
+        XCTAssertTrue(true)
+    }
 }
