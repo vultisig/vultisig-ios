@@ -16,8 +16,7 @@ struct SwapFromToField: View {
     @Binding var selectedChain: Chain?
     @Binding var showNetworkSelectSheet: Bool
     @Binding var showCoinSelectSheet: Bool
-    @ObservedObject var tx: SwapTransaction
-    @ObservedObject var detailsViewModel: SwapDetailsViewModel
+    @Bindable var detailsViewModel: SwapDetailsViewModel
     let handlePercentageSelection: ((Int) -> Void)?
 
     @StateObject var referredViewModel = ReferredViewModel()
@@ -117,7 +116,7 @@ struct SwapFromToField: View {
         Group {
             SwapCryptoAmountTextField(amount: $amount) { _ in
                 if title=="from" {
-                    detailsViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                    detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
                     detailsViewModel.showAllPercentageButtons = true
                 }
             }
@@ -150,7 +149,6 @@ struct SwapFromToField: View {
         selectedChain: .constant(Chain.example),
         showNetworkSelectSheet: .constant(false),
         showCoinSelectSheet: .constant(false),
-        tx: SwapTransaction(),
         detailsViewModel: SwapDetailsViewModel(),
         handlePercentageSelection: { _ in }
     )

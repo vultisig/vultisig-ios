@@ -2,100 +2,365 @@
 //  SwapDetailsViewModel.swift
 //  VultisigApp
 //
+//  Form state owner for the swap-details screen. Holds every input + every
+//  fetched derivative the user can affect (amount, coins, quote, fees,
+//  discounts). When the user taps "Continue" and validation passes,
+//  `makeTransaction()` materialises an immutable `SwapTransaction` that the
+//  rest of the flow consumes.
+//
 
-import SwiftUI
+import BigInt
 import OSLog
+import SwiftUI
 
 @MainActor
-final class SwapDetailsViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
-    private var updateQuoteTask: Task<Void, Never>?
+@Observable
+final class SwapDetailsViewModel {
+    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
+    @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
-    @Published var error: Error?
-    @Published var isLoading = false
-    @Published var isLoadingQuotes = false
-    @Published var isLoadingFees = false
-    @Published var isLoadingTransaction = false
-    @Published var dataLoaded = false
-    @Published var timer: Int = 59
+    // MARK: - Form fields (mutable while the user is editing)
 
-    @Published var fromChain: Chain?
-    @Published var toChain: Chain?
-    @Published var showFromChainSelector = false
-    @Published var showToChainSelector = false
-    @Published var showFromCoinSelector = false
-    @Published var showToCoinSelector = false
-    @Published var showAllPercentageButtons = true
+    var fromAmount: String = .empty
+    var fromCoin: Coin = .example
+    var toCoin: Coin = .example
+    var fromCoins: [Coin] = []
+    var toCoins: [Coin] = []
 
-    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
+    var quote: SwapQuote?
+    var thorchainFee: BigInt = .zero
+    var gas: BigInt = .zero
+    var vultDiscountBps: Int = 0
+    var referralDiscountBps: Int = 0
+    var isFastVault: Bool = false
+
+    // MARK: - UI state (details-screen-only)
+
+    var error: Error?
+    var isLoading = false
+    var isLoadingQuotes = false
+    var isLoadingFees = false
+    var isLoadingTransaction = false
+    var dataLoaded = false
+    var timer: Int = 59
+
+    var fromChain: Chain?
+    var toChain: Chain?
+    var showFromChainSelector = false
+    var showToChainSelector = false
+    var showFromCoinSelector = false
+    var showToCoinSelector = false
+    var showAllPercentageButtons = true
+
+    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+        self.interactor = interactor
+    }
+
+    // MARK: - Loading
+
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault) {
         guard !dataLoaded else { return }
-        SwapCryptoLogic.load(initialFromCoin: initialFromCoin, initialToCoin: initialToCoin, vault: vault, tx: tx)
+        let allCoins = vault.coins
+        guard !allCoins.isEmpty else { return }
+
+        let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: allCoins)
+        let resolvedFromCoin = initialFromCoin ?? defaultFromCoin
+
+        let (resolvedToCoins, defaultToCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: resolvedFromCoin,
+            allCoins: allCoins,
+            selectedToCoin: initialToCoin ?? .example
+        )
+
+        fromCoin = resolvedFromCoin
+        toCoin = defaultToCoin
+        fromCoins = resolvedFromCoins
+        toCoins = resolvedToCoins
         dataLoaded = true
     }
 
-    func loadFastVault(tx: SwapTransaction, vault: Vault) async {
-        tx.isFastVault = await SwapCryptoLogic.loadFastVault(vault: vault)
+    func loadFastVault(vault: Vault) async {
+        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
-    func updateCoinLists(tx: SwapTransaction) {
-        SwapCryptoLogic.updateCoinLists(tx: tx)
+    func updateCoinLists() {
+        let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: fromCoin,
+            allCoins: fromCoins,
+            selectedToCoin: toCoin
+        )
+        toCoin = resolvedToCoin
+        toCoins = resolvedToCoins
     }
 
-    func switchCoins(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        let fromCoin = tx.fromCoin
-        let toCoin = tx.toCoin
-        tx.fromCoin = toCoin
-        tx.toCoin = fromCoin
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+    // MARK: - User actions
+
+    func switchCoins(vault: Vault, referredCode: String) {
+        let oldFrom = fromCoin
+        fromCoin = toCoin
+        toCoin = oldFrom
+        // After the swap the destination list is stale relative to the new
+        // source — re-resolve so `toCoins` matches the new `fromCoin` and
+        // `toCoin` lands on a valid pair before the quote fetch runs.
+        updateCoinLists()
+        fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
-    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+    func updateFromAmount(vault: Vault, referredCode: String) {
+        fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
-        tx.fromCoin = coin
+    func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
+        fromCoin = coin
         fromChain = coin.chain
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        // `toCoins` reflected the previous source's valid destinations —
+        // recompute so `fetchQuotes` runs against the current valid pair.
+        updateCoinLists()
+        fetchQuotes(vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
     }
 
-    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
-        tx.toCoin = coin
+    func updateToCoin(coin: Coin, vault: Vault, referredCode: String) {
+        toCoin = coin
         toChain = coin.chain
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        fetchQuotes(vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
     }
 
     func updateBalance(for coin: Coin) {
         Task {
-            await BalanceService.shared.updateBalance(for: coin)
+            await interactor.updateBalance(for: coin)
         }
     }
 
-    func updateTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
+    func updateTimer(vault: Vault, referredCode: String) {
         timer -= 1
         if timer < 1 {
-            restartTimer(tx: tx, vault: vault, referredCode: referredCode)
+            restartTimer(vault: vault, referredCode: referredCode)
         }
     }
 
-    func restartTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        refreshData(tx: tx, vault: vault, referredCode: referredCode)
+    func restartTimer(vault: Vault, referredCode: String) {
+        refreshData(vault: vault, referredCode: referredCode)
         timer = 59
     }
 
-    func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+    func refreshData(vault: Vault, referredCode: String) {
+        fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
-    func fetchQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) {
+    // MARK: - Picker helpers
+
+    func pickerFromCoinsForChain() -> [Coin] {
+        SwapCryptoLogic.pickerFromCoins(fromCoins: fromCoins, selected: fromCoin, fromChain: fromChain)
+    }
+
+    func pickerToCoinsForChain() -> [Coin] {
+        SwapCryptoLogic.pickerToCoins(toCoins: toCoins, selected: toCoin, toChain: toChain)
+    }
+
+    func handleFromChainUpdate(vault: Vault) {
+        guard
+            let fromChain,
+            fromChain != fromCoin.chain,
+            let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
+        else { return }
+        fromCoin = coin
+        // Source changed via chain switch — keep `toCoins` / `toCoin` consistent
+        // so the destination picker doesn't show stale options.
+        updateCoinLists()
+    }
+
+    func handleToChainUpdate(vault: Vault) {
+        guard
+            let toChain,
+            toChain != toCoin.chain,
+            let coin = SwapCryptoLogic.getDefaultCoin(for: toChain, vault: vault)
+        else { return }
+        toCoin = coin
+    }
+
+    // MARK: - Validation + transaction hand-off
+
+    func validateForm() -> Bool {
+        SwapCryptoLogic.validateForm(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            quote: quote,
+            fee: fee,
+            toAmount: toAmountDecimal,
+            isSufficientBalance: balanceError == nil,
+            isLoading: isLoading
+        )
+    }
+
+    /// Materialise an immutable `SwapTransaction` from the current form state.
+    /// Returns nil if the form isn't valid.
+    func makeTransaction() -> SwapTransaction? {
+        guard validateForm(), let quote else { return nil }
+        return SwapTransaction(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount.toDecimal(),
+            quote: quote,
+            gas: gas,
+            thorchainFee: thorchainFee,
+            vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps,
+            isFastVault: isFastVault,
+            feeCoin: feeCoin
+        )
+    }
+}
+
+// MARK: - Convenience computed helpers
+//
+// Sugar over the primitive-taking SwapCryptoLogic free functions. View code
+// reads `vm.swapFeeString` instead of spelling out the args.
+
+extension SwapDetailsViewModel {
+    var feeCoin: Coin {
+        SwapCryptoLogic.feeCoin(fromCoin: fromCoin, fromCoins: fromCoins)
+    }
+
+    var fee: BigInt {
+        SwapCryptoLogic.fee(quote: quote, thorchainFee: thorchainFee)
+    }
+
+    var fromAmountDecimal: Decimal {
+        SwapCryptoLogic.fromAmountDecimal(fromAmount: fromAmount)
+    }
+
+    var amountInCoinDecimal: BigInt {
+        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmount, fromCoin: fromCoin)
+    }
+
+    var toAmountDecimal: Decimal {
+        SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
+    }
+
+    var router: String? {
+        SwapCryptoLogic.router(quote: quote)
+    }
+
+    var isApproveRequired: Bool {
+        SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+    }
+
+    var isDeposit: Bool {
+        SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+    }
+
+    var balanceError: SwapCryptoLogic.Errors? {
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee)
+    }
+
+    var fromFiatAmount: String {
+        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmount)
+    }
+
+    var toFiatAmount: String {
+        SwapCryptoLogic.toFiatAmount(toCoin: toCoin, quote: quote)
+    }
+
+    var showGas: Bool {
+        SwapCryptoLogic.showGas(gas: gas)
+    }
+
+    var showFees: Bool {
+        SwapCryptoLogic.showFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var showTotalFees: Bool {
+        SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var swapFeeString: String {
+        SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapGasString: String {
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+    }
+
+    var approveFeeString: String {
+        SwapCryptoLogic.approveFeeString(feeCoin: feeCoin, fee: fee)
+    }
+
+    var isApproveFeeZero: Bool {
+        SwapCryptoLogic.isApproveFeeZero(fee: fee)
+    }
+
+    var totalFeeString: String {
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+    }
+
+    var durationString: String {
+        SwapCryptoLogic.durationString(quote: quote)
+    }
+
+    var baseAffiliateFee: String {
+        SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    var swapFeeLabel: String {
+        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmount)
+    }
+
+    var outboundFeeString: String {
+        SwapCryptoLogic.outboundFeeString(quote: quote, toCoin: toCoin)
+    }
+
+    var vultDiscountLabel: String {
+        SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: vultDiscountBps)
+    }
+
+    var referralDiscountLabel: String {
+        SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: referralDiscountBps)
+    }
+
+    var vultDiscount: String {
+        SwapCryptoLogic.vultDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps
+        )
+    }
+
+    var referralDiscount: String {
+        SwapCryptoLogic.referralDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(quote: quote)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(quote: quote)
+    }
+}
+
+// MARK: - Quote fetching
+
+private extension SwapDetailsViewModel {
+
+    func fetchQuotes(vault: Vault, referredCode: String) {
         updateQuoteTask?.cancel()
 
-        guard !tx.fromAmount.isEmpty else {
-            tx.quote = nil
-            tx.gas = .zero
-            tx.thorchainFee = .zero
+        // Empty or non-positive amount: drop any leftover quote/fee/discount
+        // state from a prior valid input so `validateForm` doesn't pass on
+        // a stale combination of new amount + old downstream values.
+        if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
+            quote = nil
+            gas = .zero
+            thorchainFee = .zero
+            vultDiscountBps = 0
+            referralDiscountBps = 0
             error = nil
             isLoadingQuotes = false
             isLoadingFees = false
@@ -113,56 +378,42 @@ final class SwapDetailsViewModel: ObservableObject {
                 self?.isLoadingFees = false
             }
 
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { [weak self] in
-                    await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
-                }
-                group.addTask { [weak self] in
-                    await self?.updateFees(tx: tx, vault: vault)
-                }
-            }
+            // Sequential, not parallel: `updateFees` reads `self.quote`, so
+            // running them concurrently raced — fees could see the `quote = nil`
+            // that `updateQuotes` writes before its fetch returns.
+            //
+            // Skip `updateFees` if `updateQuotes` already failed: with `quote`
+            // still nil, `updateFees` would throw and overwrite the real error
+            // (`swapAmountTooSmall`, `sameAsset`, etc.) with `insufficientGas`.
+            await self?.updateQuotes(vault: vault, referredCode: referredCode)
+            guard let self, self.error == nil, self.quote != nil else { return }
+            await self.updateFees(vault: vault)
         }
     }
 
-    func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
-        SwapCryptoLogic.pickerFromCoins(tx: tx, fromChain: fromChain)
-    }
-
-    func pickerToCoins(tx: SwapTransaction) -> [Coin] {
-        SwapCryptoLogic.pickerToCoins(tx: tx, toChain: toChain)
-    }
-
-    func handleFromChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard
-            let fromChain,
-            fromChain != tx.fromCoin.chain,
-            let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
-        else { return }
-        tx.fromCoin = coin
-    }
-
-    func handleToChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard
-            let toChain,
-            toChain != tx.toCoin.chain,
-            let coin = SwapCryptoLogic.getDefaultCoin(for: toChain, vault: vault)
-        else { return }
-        tx.toCoin = coin
-    }
-}
-
-private extension SwapDetailsViewModel {
-    func updateQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) async {
-        tx.quote = nil
+    func updateQuotes(vault: Vault, referredCode: String) async {
+        quote = nil
+        vultDiscountBps = 0
+        referralDiscountBps = 0
         error = nil
 
-        guard !tx.fromAmount.isEmpty else { return }
+        guard !fromAmount.isEmpty else { return }
 
         do {
-            let quote = try await SwapCryptoLogic.fetchQuote(tx: tx, vault: vault, referredCode: referredCode)
-            tx.quote = quote
+            let result = try await interactor.fetchQuote(
+                amount: fromAmount.toDecimal(),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vault: vault,
+                referredCode: referredCode
+            )
+            if let result {
+                quote = result.quote
+                vultDiscountBps = result.vultDiscountBps
+                referralDiscountBps = result.referralDiscountBps
+            }
 
-            if let balanceError = SwapCryptoLogic.balanceError(tx: tx) {
+            if let balanceError {
                 throw balanceError
             }
         } catch {
@@ -171,16 +422,27 @@ private extension SwapDetailsViewModel {
         }
     }
 
-    func updateFees(tx: SwapTransaction, vault: Vault) async {
-        tx.gas = .zero
-        tx.thorchainFee = .zero
+    func updateFees(vault: Vault) async {
+        gas = .zero
+        thorchainFee = .zero
 
-        guard !tx.fromAmount.isEmpty, !tx.fromAmountDecimal.isZero else { return }
+        let amountDecimal = fromAmount.toDecimal()
+        guard !fromAmount.isEmpty, !amountDecimal.isZero else { return }
 
         do {
-            let chainSpecific = try await SwapCryptoLogic.fetchChainSpecific(tx: tx)
-            tx.gas = chainSpecific.gas
-            tx.thorchainFee = try await SwapCryptoLogic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            let chainSpecific = try await interactor.fetchChainSpecific(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: amountDecimal,
+                quote: quote
+            )
+            gas = chainSpecific.gas
+            thorchainFee = try await interactor.computeThorchainFee(
+                chainSpecific: chainSpecific,
+                fromCoin: fromCoin,
+                fromAmount: amountDecimal,
+                vault: vault
+            )
         } catch {
             logger.warning("Update fees error: \(error.localizedDescription)")
 

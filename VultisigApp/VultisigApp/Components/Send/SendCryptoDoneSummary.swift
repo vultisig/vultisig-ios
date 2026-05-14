@@ -112,27 +112,27 @@ struct SendCryptoDoneSummary: View {
                 )
             )
 
-            if SwapCryptoLogic.showFees(tx: tx) {
+            if tx.showFees {
                 Separator()
                 getGeneralCell(
                     title: "swapFee",
-                    description: SwapCryptoLogic.swapFeeString(tx: tx)
+                    description: tx.swapFeeString
                 )
             }
 
-            if SwapCryptoLogic.showGas(tx: tx) {
+            if tx.showGas {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(SwapCryptoLogic.swapGasString(tx: tx))(~\(SwapCryptoLogic.approveFeeString(tx: tx)))"
+                    description: "\(tx.swapGasString)(\(tx.approveFeeString))"
                 )
             }
 
-            if SwapCryptoLogic.showTotalFees(tx: tx) {
+            if tx.showTotalFees {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(SwapCryptoLogic.totalFeeString(tx: tx))"
+                    description: "\(tx.totalFeeString)"
                 )
             }
         }
@@ -181,7 +181,7 @@ struct SendCryptoDoneSummary: View {
         Background()
         SendCryptoDoneSummary(
             sendTransaction: nil,
-            swapTransaction: SwapTransaction(),
+            swapTransaction: nil,
             vault: Vault.example,
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",

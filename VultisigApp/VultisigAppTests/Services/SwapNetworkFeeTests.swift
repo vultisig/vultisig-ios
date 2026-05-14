@@ -11,14 +11,13 @@ private extension String {
     }
 }
 
-/// Pins the format produced by `SwapCryptoLogic.swapGasString(tx:)` for
-/// quote-driven EVM swaps (LI.FI / OneInch / KyberSwap). The bug being
-/// guarded against: when a quote was attached, the function divided
-/// `tx.fee` (already wei) by 1e9 and labelled the result `Gwei`, so the
-/// verify screen displayed numbers like `121,094 Gwei` — visually
-/// indistinguishable from a gas-limit. Expected behaviour is to format
-/// the wei value as a native amount (`0.000861 ETH`) the same way the
-/// non-EVM branch does.
+/// Pins the format produced by `SwapCryptoLogic.swapGasString(quote:feeCoin:gas:fee:)`
+/// for quote-driven EVM swaps (LI.FI / OneInch / KyberSwap). The bug being
+/// guarded against: when a quote was attached, the function divided the fee
+/// (already wei) by 1e9 and labelled the result `Gwei`, so the verify screen
+/// displayed numbers like `121,094 Gwei` — visually indistinguishable from a
+/// gas-limit. Expected behaviour is to format the wei value as a native
+/// amount (`0.000861 ETH`) the same way the non-EVM branch does.
 final class SwapNetworkFeeTests: XCTestCase {
 
     private func makeEthCoin() -> Coin {
@@ -61,80 +60,72 @@ final class SwapNetworkFeeTests: XCTestCase {
         )
     }
 
-    func testSwapGasStringForLiFiEvmQuoteFormatsAsNativeEth() {
-        let tx = SwapTransaction()
-        let eth = makeEthCoin()
-        tx.fromCoin = eth
-        // 0.00086087 ETH expressed in wei (gasPrice × gasLimit pre-aggregated by LiFi).
-        tx.quote = .lifi(makeEvmQuote(), fee: BigInt("860870000000000"), integratorFee: nil)
+    private let fee = BigInt("860870000000000") // 0.00086087 ETH in wei
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+    func testSwapGasStringForLiFiEvmQuoteFormatsAsNativeEth() {
+        let eth = makeEthCoin()
+        let quote: SwapQuote = .lifi(makeEvmQuote(), fee: fee, integratorFee: nil)
+
+        let result = SwapCryptoLogic.swapGasString(quote: quote, feeCoin: eth, gas: .zero, fee: fee)
 
         XCTAssertEqual(result, "0.00086087 ETH".localeDecimal)
         XCTAssertFalse(result.contains("Gwei"), "EVM swap quote network fee must not be labelled Gwei")
     }
 
     func testSwapGasStringForOneInchEvmQuoteFormatsAsNativeEth() {
-        let tx = SwapTransaction()
         let eth = makeEthCoin()
-        tx.fromCoin = eth
-        tx.quote = .oneinch(makeEvmQuote(), fee: BigInt("860870000000000"))
+        let quote: SwapQuote = .oneinch(makeEvmQuote(), fee: fee)
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+        let result = SwapCryptoLogic.swapGasString(quote: quote, feeCoin: eth, gas: .zero, fee: fee)
 
         XCTAssertEqual(result, "0.00086087 ETH".localeDecimal)
     }
 
     func testSwapGasStringForKyberSwapEvmQuoteFormatsAsNativeEth() {
-        let tx = SwapTransaction()
         let eth = makeEthCoin()
-        tx.fromCoin = eth
-        tx.quote = .kyberswap(makeEvmQuote(), fee: BigInt("860870000000000"))
+        let quote: SwapQuote = .kyberswap(makeEvmQuote(), fee: fee)
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+        let result = SwapCryptoLogic.swapGasString(quote: quote, feeCoin: eth, gas: .zero, fee: fee)
 
         XCTAssertEqual(result, "0.00086087 ETH".localeDecimal)
     }
 
     func testSwapGasStringFromNonNativeCoinWithoutNativeInListReturnsEmpty() {
-        // Regression: when `tx.fromCoin` is a non-native ERC20 and `tx.fromCoins`
-        // doesn't contain the chain's native asset, `feeCoin(tx:)` falls back to
-        // `tx.fromCoin`. Without the guard we'd format a wei-denominated fee with
-        // USDC's 6 decimals + "USDC" ticker, producing an absurd number labelled
-        // with the wrong asset. The display should suppress the row instead.
-        let tx = SwapTransaction()
-        tx.fromCoin = makeUsdcCoin()
-        tx.fromCoins = [makeUsdcCoin()] // no native ETH in list
-        tx.quote = .lifi(makeEvmQuote(), fee: BigInt("860870000000000"), integratorFee: nil)
+        // Regression: when the source is a non-native ERC20 and the fromCoins
+        // list doesn't contain the chain's native asset, `feeCoin(fromCoin:fromCoins:)`
+        // falls back to the source coin. Without the `isNativeToken` guard we'd
+        // format a wei-denominated fee with USDC's 6 decimals + "USDC" ticker,
+        // producing an absurd number labelled with the wrong asset. The display
+        // should suppress the row instead.
+        let usdc = makeUsdcCoin()
+        let resolvedFeeCoin = SwapCryptoLogic.feeCoin(fromCoin: usdc, fromCoins: [usdc])
+        let quote: SwapQuote = .lifi(makeEvmQuote(), fee: fee, integratorFee: nil)
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+        let result = SwapCryptoLogic.swapGasString(quote: quote, feeCoin: resolvedFeeCoin, gas: .zero, fee: fee)
 
         XCTAssertEqual(result, "", "Should return empty when no native asset is available to denominate the fee")
     }
 
     func testSwapGasStringFromNonNativeCoinWithNativeInListUsesNativeForDisplay() {
-        // When `tx.fromCoin` is USDC but the user's wallet has ETH on the same
-        // chain, `feeCoin(tx:)` resolves to ETH and the fee renders correctly.
-        let tx = SwapTransaction()
-        tx.fromCoin = makeUsdcCoin()
-        tx.fromCoins = [makeUsdcCoin(), makeEthCoin()]
-        tx.quote = .lifi(makeEvmQuote(), fee: BigInt("860870000000000"), integratorFee: nil)
+        // When the source is USDC but the user's wallet has ETH on the same
+        // chain, `feeCoin(fromCoin:fromCoins:)` resolves to ETH and the fee
+        // renders correctly.
+        let usdc = makeUsdcCoin()
+        let resolvedFeeCoin = SwapCryptoLogic.feeCoin(fromCoin: usdc, fromCoins: [usdc, makeEthCoin()])
+        let quote: SwapQuote = .lifi(makeEvmQuote(), fee: fee, integratorFee: nil)
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+        let result = SwapCryptoLogic.swapGasString(quote: quote, feeCoin: resolvedFeeCoin, gas: .zero, fee: fee)
 
         XCTAssertEqual(result, "0.00086087 ETH".localeDecimal)
     }
 
     func testSwapGasStringWithoutQuoteStillRendersGweiOnEvm() {
-        // Without a quote `tx.gas` represents a gas price in wei and the
+        // Without a quote `gas` represents a gas price in wei and the
         // legacy "Gwei" label is correct in the user-editing flow.
-        let tx = SwapTransaction()
         let eth = makeEthCoin()
-        tx.fromCoin = eth
-        tx.quote = nil
-        tx.gas = BigInt("25000000000") // 25 gwei
+        let gas = BigInt("25000000000") // 25 gwei
 
-        let result = SwapCryptoLogic.swapGasString(tx: tx)
+        let result = SwapCryptoLogic.swapGasString(quote: nil, feeCoin: eth, gas: gas, fee: .zero)
 
         XCTAssertTrue(result.contains("Gwei"), "Without a quote the EVM gas-price label should remain Gwei")
         XCTAssertTrue(result.hasPrefix("25"), "25 gwei should render as 25 Gwei, got \(result)")

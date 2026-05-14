@@ -9,14 +9,14 @@ import XCTest
 
 @MainActor
 final class DefiChainStakeViewModelTests: XCTestCase {
-    private var storeToken: DefiTestContextToken!
+    private var storeToken: TestContextToken!
     private var vault: Vault!
     private var interactor: MockStakeInteractor!
 
     override func setUp() async throws {
         try await super.setUp()
-        storeToken = try DefiTestStore.installInMemoryContainer()
-        vault = DefiTestStore.makeVault()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
         interactor = MockStakeInteractor()
 
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
@@ -26,7 +26,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
     override func tearDown() async throws {
         interactor = nil
         vault = nil
-        DefiTestStore.restore(storeToken)
+        TestStore.restore(storeToken)
         storeToken = nil
         try await super.tearDown()
     }

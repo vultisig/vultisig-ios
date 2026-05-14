@@ -10,7 +10,8 @@ struct SwapPairScreen: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
-    @ObservedObject var tx: SwapTransaction
+    let transaction: SwapTransaction
+    let retrySignal: SwapRetrySignal
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
 
@@ -23,10 +24,10 @@ struct SwapPairScreen: View {
                 fastVaultPassword: fastVaultPassword,
                 shareSheetViewModel: shareSheetViewModel,
                 previewType: .Swap,
-                swapTransaction: tx,
+                swapTransaction: transaction,
                 contentPadding: 0
             ) { input in
-                router.navigate(to: SwapRoute.keysign(input: input, tx: tx))
+                router.navigate(to: SwapRoute.keysign(input: input, transaction: transaction, retrySignal: retrySignal))
             }
         }
         .screenTitle("pair".localized)

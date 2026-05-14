@@ -10,8 +10,7 @@ struct SwapDetailsScreen: View {
     let toCoin: Coin?
     let vault: Vault
 
-    @StateObject var tx = SwapTransaction()
-    @StateObject var detailsViewModel = SwapDetailsViewModel()
+    @State var detailsViewModel = SwapDetailsViewModel()
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
 
@@ -22,6 +21,7 @@ struct SwapDetailsScreen: View {
     @Environment(\.router) var router
 
     var body: some View {
+        @Bindable var vm = detailsViewModel
         Screen {
             VStack {
                 fields
@@ -34,39 +34,39 @@ struct SwapDetailsScreen: View {
                 refreshCounter
             }
         }
-        .crossPlatformSheet(isPresented: $detailsViewModel.showFromChainSelector) {
+        .crossPlatformSheet(isPresented: $vm.showFromChainSelector) {
             SwapChainPickerView(
                 filterType: .swap,
                 vault: vault,
-                showSheet: $detailsViewModel.showFromChainSelector,
-                selectedChain: $detailsViewModel.fromChain
+                showSheet: $vm.showFromChainSelector,
+                selectedChain: $vm.fromChain
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .crossPlatformSheet(isPresented: $detailsViewModel.showToChainSelector) {
+        .crossPlatformSheet(isPresented: $vm.showToChainSelector) {
             SwapChainPickerView(
                 filterType: .swap,
                 vault: vault,
-                showSheet: $detailsViewModel.showToChainSelector,
-                selectedChain: $detailsViewModel.toChain
+                showSheet: $vm.showToChainSelector,
+                selectedChain: $vm.toChain
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .crossPlatformSheet(isPresented: $detailsViewModel.showFromCoinSelector) {
+        .crossPlatformSheet(isPresented: $vm.showFromCoinSelector) {
             SwapCoinPickerView(
                 vault: vault,
-                showSheet: $detailsViewModel.showFromCoinSelector,
-                selectedCoin: $tx.fromCoin,
-                selectedChain: detailsViewModel.fromChain
+                showSheet: $vm.showFromCoinSelector,
+                selectedCoin: $vm.fromCoin,
+                selectedChain: vm.fromChain
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .crossPlatformSheet(isPresented: $detailsViewModel.showToCoinSelector) {
+        .crossPlatformSheet(isPresented: $vm.showToCoinSelector) {
             SwapCoinPickerView(
                 vault: vault,
-                showSheet: $detailsViewModel.showToCoinSelector,
-                selectedCoin: $tx.toCoin,
-                selectedChain: detailsViewModel.toChain
+                showSheet: $vm.showToCoinSelector,
+                selectedCoin: $vm.toCoin,
+                selectedChain: vm.toChain
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -74,18 +74,13 @@ struct SwapDetailsScreen: View {
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
             #endif
-            detailsViewModel.load(
-                initialFromCoin: fromCoin,
-                initialToCoin: toCoin,
-                vault: vault,
-                tx: tx
-            )
-            // `load(...)` already sets `tx.fromCoin` to `initialFromCoin ?? defaultFromCoin`.
-            // Re-assigning here would re-fire `onChange(of: tx.fromCoin)` → redundant racing quote fetch.
+            // `load(...)` seeds `detailsViewModel.fromCoin/toCoin`; no manual
+            // re-assignment afterwards or `onChange` would re-fire the quote fetch.
+            detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
             setData()
         }
         .task {
-            await detailsViewModel.loadFastVault(tx: tx, vault: vault)
+            await detailsViewModel.loadFastVault(vault: vault)
         }
         .onDisappear {
             #if os(iOS)
@@ -93,24 +88,24 @@ struct SwapDetailsScreen: View {
             #endif
         }
         .swapRefreshTick {
-            detailsViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
-        .onChange(of: tx.fromCoin) { _, _ in
-            detailsViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        .onChange(of: detailsViewModel.fromCoin) { _, _ in
+            detailsViewModel.updateFromCoin(coin: detailsViewModel.fromCoin, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
-        .onChange(of: tx.toCoin) { _, _ in
-            detailsViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        .onChange(of: detailsViewModel.toCoin) { _, _ in
+            detailsViewModel.updateToCoin(coin: detailsViewModel.toCoin, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onChange(of: detailsViewModel.fromChain) { _, _ in
-            detailsViewModel.handleFromChainUpdate(tx: tx, vault: vault)
+            detailsViewModel.handleFromChainUpdate(vault: vault)
         }
         .onChange(of: detailsViewModel.toChain) { _, _ in
-            detailsViewModel.handleToChainUpdate(tx: tx, vault: vault)
+            detailsViewModel.handleToChainUpdate(vault: vault)
         }
         .onChange(of: detailsViewModel.error?.localizedDescription) { _, newError in
             showErrorTooltip = newError != nil
         }
-        .onChange(of: tx.fromAmount) { _, _ in
+        .onChange(of: detailsViewModel.fromAmount) { _, _ in
             detailsViewModel.error = nil
         }
         .ignoresSafeArea(.keyboard)
@@ -145,32 +140,32 @@ struct SwapDetailsScreen: View {
     }
 
     var swapFromField: some View {
-        SwapFromToField(
+        @Bindable var vm = detailsViewModel
+        return SwapFromToField(
             title: "from",
             vault: vault,
-            coin: tx.fromCoin,
-            fiatAmount: SwapCryptoLogic.fromFiatAmount(tx: tx),
-            amount: $tx.fromAmount,
-            selectedChain: $detailsViewModel.fromChain,
-            showNetworkSelectSheet: $detailsViewModel.showFromChainSelector,
-            showCoinSelectSheet: $detailsViewModel.showFromCoinSelector,
-            tx: tx,
+            coin: detailsViewModel.fromCoin,
+            fiatAmount: detailsViewModel.fromFiatAmount,
+            amount: $vm.fromAmount,
+            selectedChain: $vm.fromChain,
+            showNetworkSelectSheet: $vm.showFromChainSelector,
+            showCoinSelectSheet: $vm.showFromCoinSelector,
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: handlePercentageSelection
         )
     }
 
     var swapToField: some View {
-        SwapFromToField(
+        @Bindable var vm = detailsViewModel
+        return SwapFromToField(
             title: "to",
             vault: vault,
-            coin: tx.toCoin,
-            fiatAmount: SwapCryptoLogic.toFiatAmount(tx: tx),
-            amount: .constant(tx.toAmountDecimal.formatForDisplay()),
-            selectedChain: $detailsViewModel.toChain,
-            showNetworkSelectSheet: $detailsViewModel.showToChainSelector,
-            showCoinSelectSheet: $detailsViewModel.showToCoinSelector,
-            tx: tx,
+            coin: detailsViewModel.toCoin,
+            fiatAmount: detailsViewModel.toFiatAmount,
+            amount: .constant(detailsViewModel.toAmountDecimal.formatForDisplay()),
+            selectedChain: $vm.toChain,
+            showNetworkSelectSheet: $vm.showToChainSelector,
+            showCoinSelectSheet: $vm.showToCoinSelector,
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: nil
         )
@@ -209,24 +204,31 @@ struct SwapDetailsScreen: View {
     }
 
     var summary: some View {
-        SwapDetailsSummary(tx: tx, detailsViewModel: detailsViewModel)
+        SwapDetailsSummary(detailsViewModel: detailsViewModel)
             .redacted(reason: detailsViewModel.isLoadingQuotes ? .placeholder : [])
     }
 
     @ViewBuilder
     var continueButton: some View {
-        let isDisabled = !SwapCryptoLogic.validateForm(tx: tx, isLoading: detailsViewModel.isLoading) || detailsViewModel.isLoading
+        let isFormValid = detailsViewModel.validateForm()
+        let isDisabled = !isFormValid || detailsViewModel.isLoading
 
         if detailsViewModel.isLoadingTransaction {
             ButtonLoader()
                 .disabled(true)
-                .opacity(SwapCryptoLogic.validateForm(tx: tx, isLoading: detailsViewModel.isLoading) ? 1 : 0.5)
+                .opacity(isFormValid ? 1 : 0.5)
         } else {
             PrimaryButton(title: "continue") {
-                router.navigate(to: SwapRoute.verify(tx: tx, vaultPubKeyECDSA: vault.pubKeyECDSA))
+                guard let transaction = detailsViewModel.makeTransaction() else { return }
+                let retrySignal = SwapRetrySignal()
+                router.navigate(to: SwapRoute.verify(
+                    transaction: transaction,
+                    retrySignal: retrySignal,
+                    vaultPubKeyECDSA: vault.pubKeyECDSA
+                ))
             }
             .disabled(isDisabled)
-            .opacity(SwapCryptoLogic.validateForm(tx: tx, isLoading: detailsViewModel.isLoading) ? 1 : 0.5)
+            .opacity(isFormValid ? 1 : 0.5)
         }
     }
 
@@ -251,7 +253,7 @@ struct SwapDetailsScreen: View {
         }
         #if os(iOS)
         .refreshable {
-            detailsViewModel.refreshData(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.refreshData(vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .toolbar {
             if !detailsViewModel.showFromChainSelector
@@ -277,9 +279,10 @@ struct SwapDetailsScreen: View {
     }
 
     var percentageButtons: some View {
-        SwapPercentageButtons(
-            show100: !tx.fromCoin.isNativeToken,
-            showAllPercentageButtons: $detailsViewModel.showAllPercentageButtons
+        @Bindable var vm = detailsViewModel
+        return SwapPercentageButtons(
+            show100: !detailsViewModel.fromCoin.isNativeToken,
+            showAllPercentageButtons: $vm.showAllPercentageButtons
         ) { percentage in
             handlePercentageSelection(percentage)
         }
@@ -291,14 +294,14 @@ struct SwapDetailsScreen: View {
 
     private func setData() {
         referredViewModel.setData()
-        detailsViewModel.fromChain = tx.fromCoin.chain
-        detailsViewModel.toChain = tx.toCoin.chain
+        detailsViewModel.fromChain = detailsViewModel.fromCoin.chain
+        detailsViewModel.toChain = detailsViewModel.toCoin.chain
     }
 
     private func handleSwapTap() {
         detailsViewModel.error = nil
         buttonRotated.toggle()
-        detailsViewModel.switchCoins(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        detailsViewModel.switchCoins(vault: vault, referredCode: referredViewModel.savedReferredCode)
         let fromChain = detailsViewModel.fromChain
         detailsViewModel.fromChain = detailsViewModel.toChain
         detailsViewModel.toChain = fromChain
@@ -312,28 +315,30 @@ extension SwapDetailsScreen {
 
         switch percentage {
         case 25:
-            let amount = (tx.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
-            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            let amount = (detailsViewModel.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
+            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 50:
-            let amount = (tx.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
-            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            let amount = (detailsViewModel.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
+            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 75:
-            let amount = (tx.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
-            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            let amount = (detailsViewModel.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
+            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 100:
-            if tx.fromCoin.isNativeToken {
-                let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
-                let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
+            let fromCoin = detailsViewModel.fromCoin
+            if fromCoin.isNativeToken {
+                let fee = detailsViewModel.fee
+                let amountLessFee = fromCoin.rawBalance.toBigInt() - fee
+                let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: fromCoin.decimals) / pow(10, fromCoin.decimals)
                 let amount = amountLessFeeDecimal.truncated(toPlaces: decimalsToUse)
-                tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
+                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             } else {
-                let amount = tx.fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
-                tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
+                let amount = fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
+                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             }
-            detailsViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
         default:
             break
         }

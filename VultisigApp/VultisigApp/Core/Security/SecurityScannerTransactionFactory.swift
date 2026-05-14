@@ -211,7 +211,7 @@ private extension SecurityScannerTransactionFactory {
                 data: quote.tx.data,
                 isApprovalRequired: transaction.isApproveRequired
             )
-        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet, .none:
+        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
         }
     }

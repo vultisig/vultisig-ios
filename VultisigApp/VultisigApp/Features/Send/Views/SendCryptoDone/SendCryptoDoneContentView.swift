@@ -139,7 +139,7 @@ struct SendCryptoDoneContentView: View {
         approveHash: "",
         chain: .thorChain,
         sendTransaction: nil,
-        swapTransaction: SwapTransaction(),
+        swapTransaction: nil,
         isSend: true
     )
     .environmentObject(AppViewModel())
