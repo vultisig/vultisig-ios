@@ -213,6 +213,85 @@ final class SendDetailsViewModel {
         }
     }
 
+    @ObservationIgnored private var countdownTask: Task<Void, Never>?
+
+    /// Synchronously inspect the pending-transaction manager and update VM
+    /// state. Starts polling + the 1s countdown loop when a pending tx is
+    /// found; stops everything when none. Call this from `.onAppear` and on
+    /// every `viewModel.coin` change.
+    func refreshPendingTransactionState() {
+        guard coin.chain.supportsPendingTransactions else {
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+            isCheckingPendingTransactions = false
+            stopCountdownTask()
+            return
+        }
+
+        isCheckingPendingTransactions = true
+        let manager = PendingTransactionManager.shared
+        let hasPending = manager.hasPendingTransactions(for: coin.address, chain: coin.chain)
+
+        if hasPending {
+            hasPendingTransaction = true
+            isCheckingPendingTransactions = false
+            startCountdownTask()
+            manager.startPollingForChain(coin.chain)
+        } else {
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+            isCheckingPendingTransactions = false
+            stopCountdownTask()
+            manager.stopPollingForChain(coin.chain)
+        }
+    }
+
+    /// User-driven refresh — pulls the pending-tx manager and re-evaluates.
+    func forceCheckPendingTransactions() async {
+        await PendingTransactionManager.shared.forceCheckPendingTransactions()
+        refreshPendingTransactionState()
+    }
+
+    /// Called when the user navigates away from the form. Stops polling for
+    /// the *current* coin's chain and tears down the countdown.
+    func tearDownPendingTransactionState() {
+        PendingTransactionManager.shared.stopAllPolling()
+        stopCountdownTask()
+    }
+
+    /// Recomputes `pendingTransactionCountdown` from the oldest pending tx.
+    /// Exposed so the countdown Task can call it on every 1s tick; tests can
+    /// also call it directly to assert the count math without a real timer.
+    func updateCountdownTick() {
+        guard coin.chain.supportsPendingTransactions else { return }
+
+        let manager = PendingTransactionManager.shared
+        if let oldest = manager.getOldestPendingTransaction(for: coin.address, chain: coin.chain) {
+            pendingTransactionCountdown = Int(Date().timeIntervalSince(oldest.timestamp))
+            hasPendingTransaction = true
+        } else {
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+            stopCountdownTask()
+        }
+    }
+
+    private func startCountdownTask() {
+        stopCountdownTask()
+        countdownTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { return }
+                await MainActor.run { self?.updateCountdownTick() }
+            }
+        }
+    }
+
+    private func stopCountdownTask() {
+        countdownTask?.cancel()
+        countdownTask = nil
+    }
+
     // MARK: - Fast vault
 
     /// Decision 2 win: vault is non-optional, so no singleton lookup.

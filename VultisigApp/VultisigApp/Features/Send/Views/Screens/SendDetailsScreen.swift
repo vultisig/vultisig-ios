@@ -29,7 +29,6 @@ struct SendDetailsScreen: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @State var countdownTimer: Timer?
     @Environment(\.router) var router
 
     init(coin: Coin?, viewModel: SendDetailsViewModel, vault: Vault) {
@@ -44,28 +43,20 @@ struct SendDetailsScreen: View {
             .overlay(viewModel.showLoader ? Loader() : nil)
             .onAppear {
                 viewModel.initializePendingTransactionState(for: viewModel.coin.chain)
-                checkPendingTransactions()
+                viewModel.refreshPendingTransactionState()
             }
             .onLoad {
                 viewModel.onLoad()
                 Task {
                     await setMainData()
-                    checkPendingTransactions()
-                    PendingTransactionManager.shared.startPollingForChain(viewModel.coin.chain)
+                    viewModel.refreshPendingTransactionState()
                 }
                 setData()
             }
             .onChange(of: viewModel.coin) { oldValue, newValue in
                 viewModel.initializePendingTransactionState(for: newValue.chain)
-
-                Task {
-                    PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
-                    checkPendingTransactions()
-
-                    if newValue.chain.supportsPendingTransactions {
-                        PendingTransactionManager.shared.startPollingForChain(newValue.chain)
-                    }
-                }
+                PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
+                viewModel.refreshPendingTransactionState()
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()
@@ -93,8 +84,7 @@ struct SendDetailsScreen: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
-                countdownTimer?.invalidate()
-                PendingTransactionManager.shared.stopAllPolling()
+                viewModel.tearDownPendingTransactionState()
             }
             .crossPlatformSheet(isPresented: $settingsPresented) {
                 SendGasSettingsView(
@@ -308,10 +298,8 @@ struct SendDetailsScreen: View {
 
     private func onRefresh() async {
         async let bal: Void = BalanceService.shared.updateBalance(for: viewModel.coin)
-        async let pendingCheck: Void = PendingTransactionManager.shared.forceCheckPendingTransactions()
+        async let pendingCheck: Void = viewModel.forceCheckPendingTransactions()
         _ = await (bal, pendingCheck)
-        if Task.isCancelled { return }
-        checkPendingTransactions()
     }
 }
 
@@ -367,64 +355,6 @@ extension SendDetailsScreen {
         await viewModel.loadFastVault()
     }
 
-    @MainActor
-    private func checkPendingTransactions() {
-        guard viewModel.coin.chain.supportsPendingTransactions else {
-            viewModel.hasPendingTransaction = false
-            viewModel.pendingTransactionCountdown = 0
-            viewModel.isCheckingPendingTransactions = false
-            stopCountdownTimer()
-            return
-        }
-
-        viewModel.isCheckingPendingTransactions = true
-        let pendingTxManager = PendingTransactionManager.shared
-        let hasPending = pendingTxManager.hasPendingTransactions(for: viewModel.coin.address, chain: viewModel.coin.chain)
-
-        if hasPending {
-            viewModel.hasPendingTransaction = true
-            viewModel.isCheckingPendingTransactions = false
-            startCountdownTimer()
-
-            if viewModel.coin.chain.supportsPendingTransactions {
-                PendingTransactionManager.shared.startPollingForChain(viewModel.coin.chain)
-            }
-        } else {
-            viewModel.hasPendingTransaction = false
-            viewModel.pendingTransactionCountdown = 0
-            viewModel.isCheckingPendingTransactions = false
-            stopCountdownTimer()
-
-            PendingTransactionManager.shared.stopPollingForChain(viewModel.coin.chain)
-        }
-    }
-
-    private func startCountdownTimer() {
-        stopCountdownTimer()
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            updateCountdown()
-        }
-    }
-
-    private func stopCountdownTimer() {
-        countdownTimer?.invalidate()
-        countdownTimer = nil
-    }
-
-    private func updateCountdown() {
-        guard viewModel.coin.chain.supportsPendingTransactions else { return }
-
-        let pendingTxManager = PendingTransactionManager.shared
-        if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: viewModel.coin.address, chain: viewModel.coin.chain) {
-            let elapsedSeconds = Int(Date().timeIntervalSince(oldestPending.timestamp))
-            viewModel.pendingTransactionCountdown = elapsedSeconds
-            viewModel.hasPendingTransaction = true
-        } else {
-            viewModel.hasPendingTransaction = false
-            viewModel.pendingTransactionCountdown = 0
-            stopCountdownTimer()
-        }
-    }
 }
 
 #if os(iOS)
