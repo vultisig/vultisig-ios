@@ -28,10 +28,6 @@ struct ClaimQbtcPromoBanner: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Theme.colors.bgSurface2)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
-        )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
     }
@@ -40,39 +36,50 @@ struct ClaimQbtcPromoBanner: View {
         // Soft blue radial glow behind the text block — replaces the
         // three concentric ellipses from the Figma with one gradient
         // that produces the same diffused brand color.
-        RadialGradient(
-            colors: [
-                Theme.colors.primaryAccent4.opacity(0.18),
-                Theme.colors.bgSurface2.opacity(0)
+        EllipticalGradient(
+            stops: [
+                Gradient.Stop(color: Color(red: 0.02, green: 0.22, blue: 0.78), location: 0.00),
+                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
             ],
-            center: .center,
-            startRadius: 8,
-            endRadius: 200
+            center: UnitPoint(x: 0.5, y: 0.5)
         )
+        .offset(y: 30)
+        .blur(radius: 35)
+        .opacity(0.7)
     }
 
     private var decorativeCoins: some View {
-        // Each coin is exported pre-rotated from Figma so the shadow
-        // direction stays consistent with the design — applying
-        // `.rotationEffect` would also rotate the baked-in shadow and
-        // break the 3D illusion. Sizes/offsets mirror the Figma's
-        // scatter on the 343pt-wide banner.
-        ZStack {
-            Image("btc-coin-3d-l").resizable().scaledToFit()
-                .frame(width: 80, height: 90)
-                .offset(x: -135, y: -10)
-            Image("btc-coin-3d-tl").resizable().scaledToFit()
-                .frame(width: 38, height: 42)
-                .offset(x: -160, y: -55)
-            Image("btc-coin-3d-bl").resizable().scaledToFit()
-                .frame(width: 44, height: 49)
-                .offset(x: -150, y: 60)
-            Image("btc-coin-3d-tr").resizable().scaledToFit()
-                .frame(width: 86, height: 97)
-                .offset(x: 130, y: -45)
-            Image("btc-coin-3d-br").resizable().scaledToFit()
-                .frame(width: 43, height: 48)
-                .offset(x: 130, y: 55)
+
+        HStack {
+            ZStack(alignment: .leading) {
+                Image("qbtc-3d")
+                    .resizable()
+                    .frame(width: 40, height: 45)
+                    .rotationEffect(Angle(degrees: -26.5))
+                    .offset(x: 7, y: -55)
+                Image("qbtc-3d")
+                    .resizable()
+                    .frame(width: 90, height: 100)
+                    .rotationEffect(Angle(degrees: 13))
+                    .offset(x: -30, y: 11)
+                Image("qbtc-3d")
+                    .resizable()
+                    .frame(width: 50, height: 55)
+                    .rotationEffect(Angle(degrees: 8.5))
+                    .offset(x: 10, y: 72)
+            }
+            Spacer()
+            ZStack(alignment: .trailing) {
+                Image("qbtc-3d")
+                    .resizable()
+                    .frame(width: 87, height: 98)
+                    .offset(x: 17, y: -50)
+                Image("qbtc-3d")
+                    .resizable()
+                    .frame(width: 50, height: 55)
+                    .rotationEffect(Angle(degrees: -6.84))
+                    .offset(x: -10, y: 45)
+            }
         }
     }
 
@@ -88,7 +95,7 @@ struct ClaimQbtcPromoBanner: View {
             }
             .multilineTextAlignment(.center)
 
-            PrimaryButton(title: "qbtcClaimBannerCta".localized, size: .mini) {
+            PrimaryButton(title: "qbtcClaimBannerCta".localized, size: .small) {
                 onClaim()
             }
             .fixedSize()
