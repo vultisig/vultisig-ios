@@ -299,9 +299,10 @@ final class SendDetailsViewModel {
 
     // MARK: - Max amount
 
-    /// Per-chain max-amount calculation. Async because each chain fetches its
-    /// own gas/fee shape via the interactor; the pure math then sits in
-    /// `SendCryptoLogic.computeMaxAmount`.
+    /// Per-chain max-amount calculation. Delegates the on-chain fetch to
+    /// `interactor.fetchGasAndFee`; max-amount math sits in `SendCryptoLogic`.
+    /// Non-native sources see their gas paid in the chain's native sibling,
+    /// so the deductible fee here is `.zero` for ERC20 / SPL / etc.
     func setMaxAmount(percentage: Double = 100) async {
         errorMessage = ""
         isLoading = true
@@ -309,10 +310,10 @@ final class SendDetailsViewModel {
 
         let maxFee: BigInt
         do {
-            let chainSpecific = try await interactor.fetchChainSpecific(
+            let result = try await interactor.fetchGasAndFee(
                 coin: coin,
                 toAddress: toAddress.isEmpty ? coin.address : toAddress,
-                amount: BigInt.zero,
+                amount: .zero,
                 memo: memo.isEmpty ? nil : memo,
                 sendMaxAmount: percentage == 100,
                 isDeposit: isDeposit,
@@ -321,18 +322,7 @@ final class SendDetailsViewModel {
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )
-
-            switch coin.chainType {
-            case .UTXO, .Cardano:
-                maxFee = chainSpecific.fee
-            case .EVM:
-                let fees = try await interactor.calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
-                maxFee = coin.isNativeToken ? fees.fee : .zero
-            case .Solana:
-                maxFee = coin.isNativeToken ? BigInt(SolanaHelper.defaultFeeInLamports) : .zero
-            default:
-                maxFee = chainSpecific.gas
-            }
+            maxFee = coin.isNativeToken ? result.fee : .zero
         } catch {
             logger.error("setMaxAmount failed: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
@@ -349,8 +339,8 @@ final class SendDetailsViewModel {
 
     // MARK: - Fee / gas refresh
 
-    /// Re-fetches chain-specific + EVM fee, **threading `feeMode` end-to-end**
-    /// (this is the regression-test target for the feeMode bug fix). Preserves
+    /// Re-fetches gas + fee for the current form state, **threading `feeMode`
+    /// end-to-end** (regression target for the feeMode bug fix). Preserves
     /// `customGasLimit` / `customByteFee` so user-pinned values survive refresh.
     func loadGasInfo() async {
         // Phase D lesson — zero-amount state reset.
@@ -366,7 +356,7 @@ final class SendDetailsViewModel {
         defer { isCalculatingFee = false }
 
         do {
-            let chainSpecific = try await interactor.fetchChainSpecific(
+            let result = try await interactor.fetchGasAndFee(
                 coin: coin,
                 toAddress: toAddress,
                 amount: amountInRaw,
@@ -378,19 +368,8 @@ final class SendDetailsViewModel {
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )
-
-            switch coin.chainType {
-            case .EVM:
-                let evm = try await interactor.calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
-                fee = evm.fee
-                gas = evm.gas
-            case .UTXO, .Cardano:
-                fee = chainSpecific.fee
-                gas = chainSpecific.gas
-            default:
-                fee = chainSpecific.gas
-                gas = chainSpecific.gas
-            }
+            gas = result.gas
+            fee = result.fee
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
