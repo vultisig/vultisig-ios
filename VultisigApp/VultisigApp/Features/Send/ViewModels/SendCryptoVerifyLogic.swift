@@ -11,9 +11,20 @@ import WalletCore
 
 struct SendCryptoVerifyLogic {
 
-    // MARK: - Services
-    private let utxo = BlockchairService.shared
-    private let blockChainService = BlockChainService.shared
+    // MARK: - Dependencies
+
+    let interactor: SendInteractor
+
+    init(interactor: SendInteractor = DefaultSendInteractor.live) {
+        self.interactor = interactor
+    }
+
+    // The UTXO + Cardano draft-plan paths still talk to `BlockchairService`
+    // and `KeysignPayloadFactory` directly. Refactoring those onto a
+    // protocol is a separate step — for now the interactor injection
+    // covers the EVM + Cosmos + Solana + TON + other non-UTXO chains,
+    // which is what the new tests exercise.
+    private var utxo: BlockchairService { .shared }
 
     // MARK: - Fee Calculation
 
@@ -31,44 +42,19 @@ struct SendCryptoVerifyLogic {
     }
 
     private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
-        let service = try EthereumFeeService(chain: tx.coin.chain)
-
-        let gasLimit = tx.coin.isNativeToken ?
-        BigInt(EVMHelper.defaultETHTransferGasUnit) :
-        BigInt(EVMHelper.defaultERC20TransferGasUnit)
-
         // Send-pilot decision 3: thread tx.feeMode through instead of
         // hardcoding .default. The user's custom fee mode chosen in the
         // Details screen is otherwise dropped on Verify refresh.
-        let feeInfo = try await service.calculateFees(
-            chain: tx.coin.chain,
-            limit: gasLimit,
-            isSwap: false,
+        let result = try await interactor.calculateEVMFee(
+            coin: tx.coin,
             fromAddress: tx.fromAddress,
             feeMode: tx.feeMode
         )
-
-        let fee = feeInfo.amount
-        let gas: BigInt
-
-        switch feeInfo {
-        case .GasFee(let price, _, _, _):
-            gas = price
-        case .Eip1559(_, let maxFeePerGas, _, _, _):
-            gas = maxFeePerGas
-        case .BasicFee(let amount, _, let limit):
-            if limit > 0 {
-                gas = amount / limit
-            } else {
-                gas = amount
-            }
-        }
-
-        return FeeResult(fee: fee, gas: gas)
+        return FeeResult(fee: result.fee, gas: result.gas)
     }
 
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
-        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+        let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
         let fee: BigInt
 
@@ -219,14 +205,15 @@ struct SendCryptoVerifyLogic {
 
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+            let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-            return try await KeysignPayloadFactory().buildTransfer(
+            return try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
-                memo: tx.memo,
+                memo: tx.memo.isEmpty ? nil : tx.memo,
                 chainSpecific: chainSpecific,
+                wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault
             )
 
