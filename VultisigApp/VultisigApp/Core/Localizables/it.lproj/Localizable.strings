@@ -658,7 +658,10 @@
 "qbtcClaimCancelled" = "Riscatto annullato";
 "qbtcClaimCtaAll" = "Reclama tutto";
 "qbtcClaimCtaPartial" = "Reclama %1$d di %2$d";
+"qbtcClaimDescription" = "QBTC è una versione resistente alla computazione quantistica di BTC. I tuoi UTXO di BTC esistenti possono essere reclamati come QBTC in rapporto 1:1. Seleziona quali UTXO reclamare di seguito.";
+"qbtcClaimDescriptionEmphasis" = "resistente alla computazione quantistica";
 "qbtcClaimDeselectAll" = "Deseleziona tutto";
+"qbtcClaimEligibleHeader" = "UTXO ammissibili";
 "qbtcClaimEmptyPassword" = "Inserisci la password del tuo Fast Vault per continuare.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Chiave pubblica Bitcoin non valida sulla moneta BTC del vault.";
 "qbtcClaimErrorInvalidMldsaPublicKey" = "Chiave pubblica MLDSA non valida sulla moneta QBTC del vault.";
@@ -671,6 +674,7 @@
 "qbtcClaimGeneratingProofTitle" = "Generazione prova…";
 "qbtcClaimHeaderSubtitle" = "%1$d selezionati · %2$d totali";
 "qbtcClaimHeaderTitle" = "BTC reclamabili";
+"qbtcClaimHeroTitle" = "QBTC reclamabili";
 "qbtcClaimJoinAwaitingStartDetail" = "In attesa che l'iniziatore inizi a firmare.";
 "qbtcClaimJoinAwaitingStartTitle" = "In attesa di iniziare";
 "qbtcClaimJoinDoneDetail" = "L'altro dispositivo trasmetterà la transazione.";
@@ -696,6 +700,7 @@
 "qbtcClaimSigningMldsaTitle" = "Firma della transazione QBTC…";
 "qbtcClaimSuccessDetail" = "Il tuo riscatto è stato trasmesso con successo.";
 "qbtcClaimSuccessTitle" = "Riscatto inviato";
+"qbtcClaimTabTitle" = "Reclama";
 "qbtcClaimTitle" = "QBTC Claim";
 "qbtcClaimTxHashLabel" = "Hash transazione";
 "qbtcClaimUnavailableDetail" = "Il riscatto è attualmente disabilitato dalla chain. Riprova più tardi.";

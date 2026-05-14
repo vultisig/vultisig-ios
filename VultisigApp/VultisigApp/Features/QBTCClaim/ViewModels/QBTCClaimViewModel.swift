@@ -501,4 +501,16 @@ final class QBTCClaimViewModel: ObservableObject {
             state = .selecting
         }
     }
+
+    // MARK: - Snapshot test seeding
+
+    #if DEBUG
+    /// Seeds the view model into a deterministic `.selecting` state for
+    /// snapshot tests. Never called from production code paths.
+    func snapshotSeed(utxos: [ClaimableUtxo], selected: Set<QBTCClaimUtxoId>) {
+        self.utxos = utxos
+        self.selectedIds = selected
+        self.state = utxos.isEmpty ? .blocked(reason: .noUtxos) : .selecting
+    }
+    #endif
 }

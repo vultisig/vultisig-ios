@@ -658,7 +658,10 @@
 "qbtcClaimCancelled" = "Zahtjev otkazan";
 "qbtcClaimCtaAll" = "Polaži sve";
 "qbtcClaimCtaPartial" = "Polaži %1$d od %2$d";
+"qbtcClaimDescription" = "QBTC je kvantno-otporna verzija BTC-a. Vaši postojeći BTC UTXO-i mogu se polagati kao QBTC u omjeru 1:1. Odaberite UTXO-e za polaganje ispod.";
+"qbtcClaimDescriptionEmphasis" = "kvantno-otporna";
 "qbtcClaimDeselectAll" = "Poništi odabir";
+"qbtcClaimEligibleHeader" = "Prihvatljivi UTXO-i";
 "qbtcClaimEmptyPassword" = "Unesi svoju Fast Vault lozinku za nastavak.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Nevažeći Bitcoin javni ključ na BTC coinu vaulta.";
 "qbtcClaimErrorInvalidMldsaPublicKey" = "Nevažeći MLDSA javni ključ na QBTC coinu vaulta.";
@@ -671,6 +674,7 @@
 "qbtcClaimGeneratingProofTitle" = "Generiranje dokaza…";
 "qbtcClaimHeaderSubtitle" = "%1$d odabrano · ukupno %2$d";
 "qbtcClaimHeaderTitle" = "BTC za polaganje";
+"qbtcClaimHeroTitle" = "QBTC za polaganje";
 "qbtcClaimJoinAwaitingStartDetail" = "Čekanje da pokretač započne potpisivanje.";
 "qbtcClaimJoinAwaitingStartTitle" = "Čekanje za početak";
 "qbtcClaimJoinDoneDetail" = "Drugi uređaj će emitirati transakciju.";
@@ -696,6 +700,7 @@
 "qbtcClaimSigningMldsaTitle" = "Potpisivanje QBTC transakcije…";
 "qbtcClaimSuccessDetail" = "Tvoj zahtjev je uspješno poslan.";
 "qbtcClaimSuccessTitle" = "Zahtjev poslan";
+"qbtcClaimTabTitle" = "Polaganje";
 "qbtcClaimTitle" = "QBTC Claim";
 "qbtcClaimTxHashLabel" = "Hash transakcije";
 "qbtcClaimUnavailableDetail" = "Zahtijevanje je trenutno onemogućeno na lancu. Pokušaj ponovno kasnije.";

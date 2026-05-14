@@ -18,24 +18,31 @@ import SwiftUI
 
 struct QuantumSecurityIntroScreen: View {
     let vault: Vault
+    /// When true, swap the animation for a still placeholder so snapshot
+    /// tests render deterministically.
+    let staticForSnapshot: Bool
 
     @Environment(\.router) private var router
     @State private var animationVM: RiveViewModel?
+
+    init(vault: Vault, staticForSnapshot: Bool = false) {
+        self.vault = vault
+        self.staticForSnapshot = staticForSnapshot
+    }
 
     var body: some View {
         Screen {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 32) {
                         header
                         animation
                         featureList
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 16)
+                    .padding(.bottom, 24)
                 }
-
-                Spacer(minLength: 16)
 
                 PrimaryButton(title: "quantumSecurityIntroCta".localized) {
                     onGetStarted()
@@ -43,12 +50,11 @@ struct QuantumSecurityIntroScreen: View {
             }
         }
         .onAppear {
-            if animationVM == nil {
-                // Placeholder until the dedicated `quantum_key_pair` Rive
-                // file lands — reuse `vault_setup_device1` which already
-                // ships with the bundle.
-                animationVM = RiveViewModel(fileName: "vault_setup_device1", autoPlay: true)
-            }
+            guard !staticForSnapshot, animationVM == nil else { return }
+            // Placeholder until the dedicated `quantum_key_pair` Rive
+            // file lands — reuse `vault_setup_device1` which already
+            // ships with the bundle.
+            animationVM = RiveViewModel(fileName: "vault_setup_device1", autoPlay: true)
         }
     }
 
@@ -60,7 +66,7 @@ struct QuantumSecurityIntroScreen: View {
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
             Text("quantumSecurityIntroDescription".localized)
-                .font(Theme.fonts.caption12)
+                .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -73,9 +79,9 @@ struct QuantumSecurityIntroScreen: View {
                     Theme.colors.borderLight,
                     style: StrokeStyle(lineWidth: 1, dash: [4, 4])
                 )
-            if let animationVM {
+            if let animationVM, !staticForSnapshot {
                 animationVM.view()
-                    .frame(width: 120, height: 120)
+                    .frame(width: 140, height: 140)
             }
         }
         .frame(maxWidth: .infinity)

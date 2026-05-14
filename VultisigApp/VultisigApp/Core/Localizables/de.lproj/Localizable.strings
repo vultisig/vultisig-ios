@@ -658,7 +658,10 @@
 "qbtcClaimCancelled" = "Anspruch abgebrochen";
 "qbtcClaimCtaAll" = "Alles beanspruchen";
 "qbtcClaimCtaPartial" = "%1$d von %2$d beanspruchen";
+"qbtcClaimDescription" = "QBTC ist eine quantensichere Version von BTC. Ihre vorhandenen BTC-UTXOs können im Verhältnis 1:1 als QBTC beansprucht werden. Wählen Sie unten die zu beanspruchenden UTXOs aus.";
+"qbtcClaimDescriptionEmphasis" = "quantensicher";
 "qbtcClaimDeselectAll" = "Auswahl aufheben";
+"qbtcClaimEligibleHeader" = "Berechtigte UTXOs";
 "qbtcClaimEmptyPassword" = "Bitte gib dein Fast Vault-Passwort ein, um fortzufahren.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Ungültiger Bitcoin-Public-Key auf der BTC-Coin des Vaults.";
 "qbtcClaimErrorInvalidMldsaPublicKey" = "Ungültiger MLDSA-Public-Key auf der QBTC-Coin des Vaults.";
@@ -671,6 +674,7 @@
 "qbtcClaimGeneratingProofTitle" = "Proof wird erstellt…";
 "qbtcClaimHeaderSubtitle" = "%1$d ausgewählt · %2$d insgesamt";
 "qbtcClaimHeaderTitle" = "Beanspruchbares BTC";
+"qbtcClaimHeroTitle" = "Beanspruchbares QBTC";
 "qbtcClaimJoinAwaitingStartDetail" = "Warten auf den Initiator, um die Signatur zu starten.";
 "qbtcClaimJoinAwaitingStartTitle" = "Warten auf Start";
 "qbtcClaimJoinDoneDetail" = "Das andere Gerät überträgt die Transaktion.";
@@ -696,6 +700,7 @@
 "qbtcClaimSigningMldsaTitle" = "QBTC-Transaktion wird signiert…";
 "qbtcClaimSuccessDetail" = "Dein Anspruch wurde erfolgreich übertragen.";
 "qbtcClaimSuccessTitle" = "Anspruch eingereicht";
+"qbtcClaimTabTitle" = "Beanspruchen";
 "qbtcClaimTitle" = "QBTC Claim";
 "qbtcClaimTxHashLabel" = "Transaktions-Hash";
 "qbtcClaimUnavailableDetail" = "Beansprüchen ist derzeit von der Chain deaktiviert. Bitte versuche es später erneut.";

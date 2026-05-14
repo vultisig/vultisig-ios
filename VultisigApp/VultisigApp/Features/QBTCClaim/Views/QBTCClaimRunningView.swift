@@ -5,18 +5,31 @@
 //  Phase-aware progress UI. Driven directly by the orchestrator's
 //  `phase` published state. The proof step warns the user about a
 //  potentially long wait (~5 min) — service-side broadcast happens
-//  in the same round-trip.
+//  in the same round-trip. Visually reuses `KeysignAnimationView`
+//  (same Rive file as the standard keysign flow) so the QBTC claim
+//  feels identical to a regular send.
 //
 
 import SwiftUI
 
 struct QBTCClaimRunningView: View {
     let phase: QBTCClaimPhase
+    /// QBTC coin logo string passed through to the keysign animation so
+    /// the `toToken` slot renders the right asset.
+    let coinLogo: String?
+
+    @State private var connected: Bool = true
+
+    init(phase: QBTCClaimPhase, coinLogo: String? = "qbtc") {
+        self.phase = phase
+        self.coinLogo = coinLogo
+    }
 
     var body: some View {
         VStack(spacing: 24) {
-            ProgressView()
-                .controlSize(.large)
+            KeysignAnimationView(connected: $connected, coinLogo: coinLogo)
+                .frame(maxWidth: .infinity)
+                .frame(height: 280)
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -25,8 +38,9 @@ struct QBTCClaimRunningView: View {
                 .font(Theme.fonts.bodySRegular)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+            Spacer()
         }
-        .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 

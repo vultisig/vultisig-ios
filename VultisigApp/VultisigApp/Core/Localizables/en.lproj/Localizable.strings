@@ -666,7 +666,10 @@
 "qbtcClaimCancelled" = "Claim cancelled";
 "qbtcClaimCtaAll" = "Claim All";
 "qbtcClaimCtaPartial" = "Claim %1$d of %2$d";
+"qbtcClaimDescription" = "QBTC is a quantum-resistant version of BTC. Your existing BTC UTXOs are eligible to be claimed as QBTC at a 1:1 ratio. Select which UTXOs to claim below.";
+"qbtcClaimDescriptionEmphasis" = "quantum-resistant";
 "qbtcClaimDeselectAll" = "Deselect all";
+"qbtcClaimEligibleHeader" = "Eligible UTXOs";
 "qbtcClaimEmptyPassword" = "Please enter your Fast Vault password to continue.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Invalid Bitcoin public key on the vault's BTC coin.";
 "qbtcClaimErrorInvalidMldsaPublicKey" = "Invalid MLDSA public key on the vault's QBTC coin.";
@@ -679,6 +682,7 @@
 "qbtcClaimGeneratingProofTitle" = "Generating proof…";
 "qbtcClaimHeaderSubtitle" = "%1$d selected · %2$d total";
 "qbtcClaimHeaderTitle" = "Claimable BTC";
+"qbtcClaimHeroTitle" = "Claimable QBTC";
 "qbtcClaimJoinAwaitingStartDetail" = "Waiting for the initiator to begin signing.";
 "qbtcClaimJoinAwaitingStartTitle" = "Waiting to start";
 "qbtcClaimJoinDoneDetail" = "The other device will broadcast the transaction.";
@@ -704,6 +708,7 @@
 "qbtcClaimSigningMldsaTitle" = "Signing QBTC transaction…";
 "qbtcClaimSuccessDetail" = "Your claim was broadcast successfully.";
 "qbtcClaimSuccessTitle" = "Claim submitted";
+"qbtcClaimTabTitle" = "Claim";
 "qbtcClaimTitle" = "QBTC Claim";
 "qbtcClaimTxHashLabel" = "Transaction hash";
 "qbtcClaimUnavailableDetail" = "Claiming is currently disabled by the chain. Please try again later.";

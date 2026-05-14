@@ -17,17 +17,17 @@ struct QuantumSecurityFeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Theme.colors.alertInfo)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Theme.colors.primaryAccent4)
                 .frame(width: 20, height: 20)
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
-                    .font(Theme.fonts.bodySMedium)
+                    .font(Theme.fonts.subtitle)
                     .foregroundStyle(Theme.colors.textPrimary)
                 Text(subtitle)
-                    .font(Theme.fonts.caption12)
+                    .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }

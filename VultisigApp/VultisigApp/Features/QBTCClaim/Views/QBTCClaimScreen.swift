@@ -62,7 +62,10 @@ struct QBTCClaimScreen: View {
         case .awaitingPeer:
             QBTCClaimAwaitingPeerView(viewModel: viewModel)
         case .claiming:
-            QBTCClaimRunningView(phase: viewModel.orchestrator.phase)
+            QBTCClaimRunningView(
+                phase: viewModel.orchestrator.phase,
+                coinLogo: viewModel.qbtcCoin?.logo ?? "qbtc"
+            )
         case .done(let result):
             QBTCClaimResultView(
                 result: result,

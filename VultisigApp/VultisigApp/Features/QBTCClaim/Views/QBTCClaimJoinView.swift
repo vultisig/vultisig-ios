@@ -6,12 +6,22 @@
 //  `QBTCClaimJoinDriver.phase` and renders progress + verification +
 //  result UI. Replaces the standard `keysignView` rendering on the
 //  joiner side when the scanned QR carried a `qbtcClaimContext`.
+//  Uses `KeysignAnimationView` during signing phases so the peer-side
+//  visual matches a normal join keysign run.
 //
 
 import SwiftUI
 
 struct QBTCClaimJoinView: View {
     @ObservedObject var driver: QBTCClaimJoinDriver
+    var coinLogo: String?
+
+    @State private var connected: Bool = true
+
+    init(driver: QBTCClaimJoinDriver, coinLogo: String? = "qbtc") {
+        self.driver = driver
+        self.coinLogo = coinLogo
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -32,14 +42,15 @@ struct QBTCClaimJoinView: View {
                 errorBlock(message)
             }
         }
-        .padding(24)
+        .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func progressBlock(title: String, detail: String) -> some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .controlSize(.large)
+        VStack(spacing: 24) {
+            KeysignAnimationView(connected: $connected, coinLogo: coinLogo)
+                .frame(maxWidth: .infinity)
+                .frame(height: 280)
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -48,6 +59,7 @@ struct QBTCClaimJoinView: View {
                 .font(Theme.fonts.bodySRegular)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
+            Spacer()
         }
     }
 
