@@ -381,8 +381,13 @@ private extension SwapDetailsViewModel {
             // Sequential, not parallel: `updateFees` reads `self.quote`, so
             // running them concurrently raced — fees could see the `quote = nil`
             // that `updateQuotes` writes before its fetch returns.
+            //
+            // Skip `updateFees` if `updateQuotes` already failed: with `quote`
+            // still nil, `updateFees` would throw and overwrite the real error
+            // (`swapAmountTooSmall`, `sameAsset`, etc.) with `insufficientGas`.
             await self?.updateQuotes(vault: vault, referredCode: referredCode)
-            await self?.updateFees(vault: vault)
+            guard let self, self.error == nil, self.quote != nil else { return }
+            await self.updateFees(vault: vault)
         }
     }
 
