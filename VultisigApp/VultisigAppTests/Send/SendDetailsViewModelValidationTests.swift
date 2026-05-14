@@ -163,4 +163,116 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(vm.isValidatingForm,
                        "isValidatingForm must reset to false after the async call completes.")
     }
+
+    // MARK: - Per-rule validators (composable, tested in isolation)
+
+    func testValidatePendingTransactionPassesForNonCosmosChain() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeBTC())
+        vm.hasPendingTransaction = true
+        XCTAssertTrue(vm.validatePendingTransaction(),
+                      "BTC doesn't surface pending tx — must short-circuit through")
+    }
+
+    func testValidatePendingTransactionFailsForCosmosWithPending() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.hasPendingTransaction = true
+        XCTAssertFalse(vm.validatePendingTransaction())
+        XCTAssertEqual(vm.errorMessage, "pendingTransactionError")
+        XCTAssertTrue(vm.showAlert)
+    }
+
+    func testValidatePendingTransactionPassesForCosmosWithoutPending() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.hasPendingTransaction = false
+        XCTAssertTrue(vm.validatePendingTransaction())
+    }
+
+    func testValidateAmountNonZeroRejectsEmpty() {
+        let vm = SendFormFixture.make()
+        vm.amount = ""
+        XCTAssertFalse(vm.validateAmountNonZero())
+        XCTAssertEqual(vm.errorMessage, "positiveAmountError")
+        XCTAssertTrue(vm.showAmountAlert)
+    }
+
+    func testValidateAmountNonZeroRejectsZeroString() {
+        let vm = SendFormFixture.make()
+        vm.amount = "0"
+        XCTAssertFalse(vm.validateAmountNonZero())
+        XCTAssertEqual(vm.errorMessage, "positiveAmountError")
+    }
+
+    func testValidateAmountNonZeroAcceptsValidAmount() {
+        let vm = SendFormFixture.make()
+        vm.amount = "0.5"
+        XCTAssertTrue(vm.validateAmountNonZero())
+        XCTAssertFalse(vm.showAmountAlert)
+    }
+
+    func testValidateAddressFormatRejectsEmpty() {
+        let vm = SendFormFixture.make()
+        vm.toAddress = ""
+        XCTAssertFalse(vm.validateAddressFormat())
+        XCTAssertEqual(vm.errorMessage, "invalidAddressError")
+        XCTAssertTrue(vm.showAddressAlert)
+    }
+
+    func testValidateAddressFormatRejectsMalformedForChain() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = "not-a-valid-eth-address"
+        XCTAssertFalse(vm.validateAddressFormat())
+        XCTAssertEqual(vm.errorMessage, "invalidAddressError")
+    }
+
+    func testValidateBalanceShortCircuitsForTronStaking() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeTRX(rawBalance: "0"))
+        vm.amount = "999999"  // way over zero balance
+        vm.isStakingOperation = true
+        XCTAssertTrue(vm.validateBalance(),
+                      "TRON staking ops short-circuit balance validation")
+    }
+
+    func testValidateBalanceFailsWhenAmountExceeds() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(rawBalance: "100000000000000000")) // 0.1 ETH
+        vm.amount = "1"  // 1 ETH (10x balance)
+        XCTAssertFalse(vm.validateBalance())
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertTrue(vm.showAmountAlert)
+    }
+
+    func testValidateERC20GasBalancePassesForNativeCoin() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        XCTAssertTrue(vm.validateERC20GasBalance(),
+                      "Native sends pay gas in their own coin — this validator is a no-op")
+    }
+
+    func testValidateERC20GasBalanceFailsWhenNativeBalanceInsufficient() {
+        let eth = SendFormFixture.makeETH(rawBalance: "0")  // 0 ETH for gas
+        let usdc = SendFormFixture.makeUSDC(rawBalance: "1000000000")
+        let vault = SendFormFixture.makeVault(coins: [eth, usdc])
+        let vm = SendFormFixture.make(coin: usdc, vault: vault)
+        vm.fee = BigInt(stringLiteral: "100000000000000000")  // 0.1 ETH worth of fee
+
+        XCTAssertFalse(vm.validateERC20GasBalance())
+        XCTAssertTrue(vm.errorMessage?.contains("ETH") ?? false,
+                      "Error message must name the native ticker")
+        XCTAssertTrue(vm.showAlert)
+    }
+
+    func testValidateFormStopsAtFirstFailure() async {
+        // Cosmos chain + pending tx + empty amount + bad address: only the
+        // first failure (pending) should fire its setter.
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.hasPendingTransaction = true
+        vm.amount = ""
+        vm.toAddress = ""
+
+        let result = await vm.validateForm()
+
+        XCTAssertFalse(result)
+        XCTAssertEqual(vm.errorMessage, "pendingTransactionError",
+                       "First-failure short-circuit: pending check fires before amount/address checks")
+        XCTAssertFalse(vm.showAmountAlert, "Subsequent validators must not run")
+        XCTAssertFalse(vm.showAddressAlert)
+    }
 }
