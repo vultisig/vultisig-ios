@@ -87,4 +87,50 @@ extension SendInteractor {
             fromAddress: tx.fromAddress
         )
     }
+
+    /// Unified gas + fee fetch used by the Send Details form (both refresh
+    /// and max-amount paths). EVM goes through `calculateEVMFee` to honor the
+    /// dynamic fee mode; UTXO + Cardano read `fee` off the chain-specific
+    /// (the byte-fee × planned size); other chains use `gas` as a flat fee.
+    ///
+    /// Callers that need the "fee that's actually deducted from THIS coin's
+    /// balance" (e.g. computing max-amount) post-process the result: gas is
+    /// paid in the native sibling for ERC20 / SPL etc., so non-native sources
+    /// see `.zero` for the deductible fee even though the real gas/fee here
+    /// is non-zero. That distinction stays at the call site — this method
+    /// always returns the true on-chain values.
+    func fetchGasAndFee(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        sendMaxAmount: Bool,
+        isDeposit: Bool,
+        transactionType: VSTransactionType,
+        gasLimit: BigInt?,
+        feeMode: FeeMode,
+        fromAddress: String
+    ) async throws -> SendInteractorFeeResult {
+        let chainSpecific = try await fetchChainSpecific(
+            coin: coin,
+            toAddress: toAddress,
+            amount: amount,
+            memo: memo,
+            sendMaxAmount: sendMaxAmount,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            feeMode: feeMode,
+            fromAddress: fromAddress
+        )
+
+        switch coin.chainType {
+        case .EVM:
+            return try await calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
+        case .UTXO, .Cardano:
+            return SendInteractorFeeResult(fee: chainSpecific.fee, gas: chainSpecific.gas)
+        default:
+            return SendInteractorFeeResult(fee: chainSpecific.gas, gas: chainSpecific.gas)
+        }
+    }
 }
