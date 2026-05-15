@@ -18,16 +18,12 @@ import SwiftUI
 
 struct QuantumSecurityIntroScreen: View {
     let vault: Vault
-    /// When true, swap the animation for a still placeholder so snapshot
-    /// tests render deterministically.
-    let staticForSnapshot: Bool
 
     @Environment(\.router) private var router
     @State private var animationVM: RiveViewModel?
 
-    init(vault: Vault, staticForSnapshot: Bool = false) {
+    init(vault: Vault) {
         self.vault = vault
-        self.staticForSnapshot = staticForSnapshot
     }
 
     var body: some View {
@@ -50,11 +46,9 @@ struct QuantumSecurityIntroScreen: View {
             }
         }
         .onAppear {
-            guard !staticForSnapshot, animationVM == nil else { return }
-            // Placeholder until the dedicated `quantum_key_pair` Rive
-            // file lands — reuse `vault_setup_device1` which already
-            // ships with the bundle.
-            animationVM = RiveViewModel(fileName: "vault_setup_device1", autoPlay: true)
+            guard animationVM == nil else { return }
+            animationVM = RiveViewModel(fileName: "quantum_key_pair", autoPlay: true)
+            animationVM?.fit = .fitHeight
         }
     }
 
@@ -73,19 +67,8 @@ struct QuantumSecurityIntroScreen: View {
     }
 
     private var animation: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    Theme.colors.borderLight,
-                    style: StrokeStyle(lineWidth: 1, dash: [4, 4])
-                )
-            if let animationVM, !staticForSnapshot {
-                animationVM.view()
-                    .frame(width: 140, height: 140)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 240)
+        animationVM?.view()
+            .frame(height: 240)
     }
 
     private var featureList: some View {
@@ -143,5 +126,5 @@ struct QuantumSecurityIntroScreen: View {
 }
 
 #Preview {
-    QuantumSecurityIntroScreen(vault: .example, staticForSnapshot: false)
+    QuantumSecurityIntroScreen(vault: .example)
 }
