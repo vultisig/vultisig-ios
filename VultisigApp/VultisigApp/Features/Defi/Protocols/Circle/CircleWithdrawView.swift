@@ -195,12 +195,9 @@ struct CircleWithdrawView: View {
     }
 
     func loadFastVaultStatus() async {
-        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        await MainActor.run {
-            isFastVault = isExist && !isLocalBackup
-        }
+        // Cached value populated by `FastVaultEligibilityRefresher` on app
+        // foreground + vault switch. Sync read; no network call.
+        isFastVault = vault.fastVaultEligibility
     }
 
     func updatePercentage(from amountStr: String) async {

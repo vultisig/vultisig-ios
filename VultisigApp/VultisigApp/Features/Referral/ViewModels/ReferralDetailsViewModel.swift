@@ -80,7 +80,9 @@ final class ReferralDetailsViewModel {
 
     // MARK: - Send-transaction props (replaces tx.gas / tx.isFastVault)
     var gas: BigInt = .zero
-    var isFastVault: Bool = false
+    /// FastVault eligibility — sourced from the `Vault` cache populated by
+    /// `FastVaultEligibilityRefresher` (app foreground + vault switch).
+    var isFastVault: Bool { vault.fastVaultEligibility }
 
     // MARK: - Alert
     var showReferralAlert: Bool = false
@@ -248,12 +250,6 @@ final class ReferralDetailsViewModel {
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription)")
         }
-    }
-
-    // MARK: - Network — fast vault
-
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     // MARK: - Network — referral data

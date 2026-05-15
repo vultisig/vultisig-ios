@@ -28,14 +28,6 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
-    // swiftlint:disable:next async_without_await
-    func loadFastVault(vault: Vault) async -> Bool {
-        // Cached value populated by `FastVaultEligibilityRefresher` on app
-        // foreground + vault switch. Sync read; no network call on the hot path.
-        // The `async` is required by `SendInteractor` protocol conformance.
-        vault.fastVaultEligibility
-    }
-
     func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
         try await blockchain.fetchSendBlockChainSpecific(
             coin: request.coin,

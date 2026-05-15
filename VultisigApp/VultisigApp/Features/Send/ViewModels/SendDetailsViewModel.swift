@@ -58,7 +58,10 @@ final class SendDetailsViewModel {
     var memo: String = ""
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
-    var isFastVault: Bool = false
+    /// FastVault eligibility — sourced from the `Vault` cache populated by
+    /// `FastVaultEligibilityRefresher` (app foreground + vault switch). No
+    /// per-screen network call needed.
+    var isFastVault: Bool { vault.fastVaultEligibility }
     var isStakingOperation: Bool = false
     var transactionType: VSTransactionType = .unspecified
     var memoFunctionDictionary: [String: String] = [:]
@@ -129,7 +132,8 @@ final class SendDetailsViewModel {
         memo = seed.memo
         feeMode = seed.feeMode
         sendMaxAmount = seed.sendMaxAmount
-        isFastVault = seed.isFastVault
+        // `isFastVault` is computed from `vault.fastVaultEligibility` — no
+        // hydration needed; the cache is the source of truth.
         isStakingOperation = seed.isStakingOperation
         transactionType = seed.transactionType
         memoFunctionDictionary = seed.memoFunctionDictionary
@@ -320,15 +324,6 @@ final class SendDetailsViewModel {
     private func stopCountdownTask() {
         countdownTask?.cancel()
         countdownTask = nil
-    }
-
-    // MARK: - Fast vault
-
-    /// Decision 2 win: vault is non-optional, so no singleton lookup.
-    /// Decision: use `hasPrefix("server-")` for local-party check (Phase D
-    /// lesson) — the interactor's `loadFastVault(vault:)` already does this.
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     // MARK: - Address resolution

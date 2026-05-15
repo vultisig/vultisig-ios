@@ -160,8 +160,6 @@ private final class StubSendInteractor: SendInteractor {
     var lastFeeMode: FeeMode?
     var lastGasLimit: BigInt?
 
-    func loadFastVault(vault: Vault) async -> Bool { false }
-
     func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
         lastGasLimit = request.gasLimit
         lastFeeMode = request.feeMode

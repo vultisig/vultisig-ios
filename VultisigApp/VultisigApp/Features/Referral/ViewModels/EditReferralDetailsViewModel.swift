@@ -48,7 +48,9 @@ final class EditReferralDetailsViewModel {
 
     // MARK: - Send-transaction props
     var gas: BigInt = .zero
-    var isFastVault: Bool = false
+    /// FastVault eligibility — sourced from the `Vault` cache populated by
+    /// `FastVaultEligibilityRefresher` (app foreground + vault switch).
+    var isFastVault: Bool { vault.fastVaultEligibility }
 
     // MARK: - Init
 
@@ -136,12 +138,6 @@ final class EditReferralDetailsViewModel {
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription)")
         }
-    }
-
-    // MARK: - Network — fast vault
-
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     // MARK: - Verify + boundary

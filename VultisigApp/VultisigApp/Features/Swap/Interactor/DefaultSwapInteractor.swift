@@ -24,14 +24,6 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
     }
 
-    // swiftlint:disable:next async_without_await
-    func loadFastVault(vault: Vault) async -> Bool {
-        // Cached value populated by `FastVaultEligibilityRefresher` on app
-        // foreground + vault switch. Sync read; no network call on the hot path.
-        // The `async` is required by `SwapInteractor` protocol conformance.
-        vault.fastVaultEligibility
-    }
-
     func fetchQuote(
         amount: Decimal,
         fromCoin: Coin,

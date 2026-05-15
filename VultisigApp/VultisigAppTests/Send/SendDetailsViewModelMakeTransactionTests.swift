@@ -30,7 +30,7 @@ final class SendDetailsViewModelMakeTransactionTests: XCTestCase {
         vm.feeMode = .fast
         vm.estimatedGasLimit = BigInt(21_000)
         vm.sendMaxAmount = false
-        vm.isFastVault = true
+        vm.vault.fastVaultEligibility = true  // computed `vm.isFastVault` reads this
         vm.isStakingOperation = false
         vm.transactionType = .unspecified
 

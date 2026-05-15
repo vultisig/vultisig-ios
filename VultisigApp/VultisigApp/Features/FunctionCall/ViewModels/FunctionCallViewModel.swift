@@ -40,15 +40,6 @@ class FunctionCallViewModel: ObservableObject {
         }
     }
 
-    // swiftlint:disable:next async_without_await
-    func loadFastVault(tx: FunctionCallForm, vault: Vault) async {
-        // Cached value populated by `FastVaultEligibilityRefresher` on app
-        // foreground + vault switch. Sync read; no network call on the hot path.
-        // The `async` is preserved for callsite-API stability across the
-        // FunctionCall flow (callers `await` this in a Task).
-        tx.isFastVault = vault.fastVaultEligibility
-    }
-
     func validateAddress(tx: FunctionCallForm, address: String) {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }

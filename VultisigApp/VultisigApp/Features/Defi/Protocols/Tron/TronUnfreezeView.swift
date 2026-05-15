@@ -256,7 +256,7 @@ struct TronUnfreezeView: View {
 
         // The memo encodes the unfreeze operation type for TronHelper.
         let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
-        let isFast = await sendInteractor.loadFastVault(vault: vault)
+        let isFast = vault.fastVaultEligibility
 
         await MainActor.run {
             isLoading = false

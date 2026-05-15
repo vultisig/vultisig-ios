@@ -80,8 +80,11 @@ final class SwapDetailsViewModel {
         dataLoaded = true
     }
 
-    func loadFastVault(vault: Vault) async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
+    /// Snapshots the FastVault eligibility from the vault's cache (populated by
+    /// `FastVaultEligibilityRefresher`). Captured at form time so a later cache
+    /// refresh doesn't flip the routing decision mid-flow.
+    func captureFastVaultEligibility(from vault: Vault) {
+        isFastVault = vault.fastVaultEligibility
     }
 
     func updateCoinLists() {

@@ -329,25 +329,20 @@ final class SendDetailsViewModelTests: XCTestCase {
     }
 
     // MARK: - Fast vault
+    // `isFastVault` is now a computed property reading `vault.fastVaultEligibility`.
+    // The cache is populated by `FastVaultEligibilityRefresher` (see its tests).
 
-    func testLoadFastVaultEligibleSetsFlag() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = true
-        let vm = SendFormFixture.make(interactor: interactor)
-
-        await vm.loadFastVault()
-
+    func testIsFastVaultReflectsVaultCacheTrue() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = true
+        let vm = SendFormFixture.make(vault: vault)
         XCTAssertTrue(vm.isFastVault)
-        XCTAssertEqual(interactor.loadFastVaultCalls.count, 1)
     }
 
-    func testLoadFastVaultIneligibleLeavesFlagFalse() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = false
-        let vm = SendFormFixture.make(interactor: interactor)
-
-        await vm.loadFastVault()
-
+    func testIsFastVaultReflectsVaultCacheFalse() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = false
+        let vm = SendFormFixture.make(vault: vault)
         XCTAssertFalse(vm.isFastVault)
     }
 

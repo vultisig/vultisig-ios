@@ -68,7 +68,7 @@ final class CircleDepositViewModel: ObservableObject, Form {
         isLoading = true
         defer { isLoading = false }
 
-        let isFast = await sendInteractor.loadFastVault(vault: vault)
+        let isFast = vault.fastVaultEligibility
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: toAddress,
             amount: amountField.value,
