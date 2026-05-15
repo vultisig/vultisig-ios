@@ -84,11 +84,25 @@ private extension VultiTabBar {
         items.firstIndex(where: { $0.id == selectedItem.id }) ?? 0
     }
 
+    // 40pt bar bottom-padding + 64pt bar pill + 16pt visual breathing room.
+    var legacyTabBarReservedHeight: CGFloat { 120 }
+
     var legacyTabBar: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedItem) {
                 ForEach(items) { item in
+                    // The custom bar below is rendered as a ZStack overlay
+                    // (not via TabView's toolbar), so SwiftUI never reserves
+                    // safe-area space for it and scrollable page content runs
+                    // behind it. Publishing the phantom bottom inset
+                    // *per-page* (rather than on the TabView) is the reliable
+                    // placement — `safeAreaInset` doesn't propagate cleanly
+                    // through TabView's layout, especially on macOS's grouped
+                    // style. See vultisig-ios#4341.
                     content(item)
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            Color.clear.frame(height: legacyTabBarReservedHeight)
+                        }
                         .tag(item)
                         #if os(iOS)
                         .tabItem { tabBarItem(for: item) }

@@ -51,7 +51,8 @@ struct VaultMainScreen: View {
                 ScrollViewReader { proxy in
                     VaultMainScreenScrollView(
                         showsIndicators: false,
-                        contentInset: contentInset,
+                        topInset: contentInset,
+                        bottomInset: 0,
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
@@ -243,7 +244,11 @@ struct VaultMainScreen: View {
         viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
 
-        viewModel.groupChains(vault: vault)
+        // `updateBalance` handles the sort end-to-end with fresh data and is
+        // debounced. The previous synchronous `groupChains` here re-sorted on
+        // stale cached balances and produced a visible stale-then-fresh
+        // reorder (#4337). The list keeps its prior order until the async
+        // refresh lands — preferable to two transitions per refresh.
         viewModel.updateBalance(vault: vault)
     }
 

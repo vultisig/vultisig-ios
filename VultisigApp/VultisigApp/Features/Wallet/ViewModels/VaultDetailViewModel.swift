@@ -28,9 +28,24 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     func updateBalance(vault: Vault) {
+        // Seed `chains` synchronously on first call so the list isn't blank
+        // through the debounce + fetch window. Subsequent refreshes leave the
+        // existing order in place until the async sort below replaces it —
+        // avoids the visible "stale-then-fresh" double reorder (#4337).
+        if chains.isEmpty {
+            chains = logic.sortedChains(vault: vault)
+        }
+
         updateBalanceTask?.cancel()
         updateBalanceTask = Task { [weak self] in
-            guard let self else { return }
+            // Leading debounce — `refresh()` fires from ~6 entry points
+            // (onLoad, vault switch, shouldRefresh, vault.coins count change,
+            // throttledOnAppear, pull-to-refresh). Post-swap they can stack
+            // 2–3 deep within a second; without this sleep each call kicks
+            // off a full price + per-coin balance refresh and the resulting
+            // reorders are visible as flicker (#4337).
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, let self else { return }
             let updated = await self.logic.updateBalance(vault: vault)
             if !Task.isCancelled {
                 await MainActor.run {

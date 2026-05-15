@@ -14,8 +14,6 @@ struct SendCryptoDoneSummary: View {
     let hash: String
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
-
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
@@ -114,27 +112,27 @@ struct SendCryptoDoneSummary: View {
                 )
             )
 
-            if swapSummaryViewModel.showFees(tx: tx) {
+            if tx.showFees {
                 Separator()
                 getGeneralCell(
                     title: "swapFee",
-                    description: swapSummaryViewModel.swapFeeString(tx: tx)
+                    description: tx.swapFeeString
                 )
             }
 
-            if swapSummaryViewModel.showGas(tx: tx) {
+            if tx.showGas {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
+                    description: "\(tx.swapGasString)(\(tx.approveFeeString))"
                 )
             }
 
-            if swapSummaryViewModel.showTotalFees(tx: tx) {
+            if tx.showTotalFees {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
+                    description: "\(tx.totalFeeString)"
                 )
             }
         }
@@ -183,12 +181,11 @@ struct SendCryptoDoneSummary: View {
         Background()
         SendCryptoDoneSummary(
             sendTransaction: nil,
-            swapTransaction: SwapTransaction(),
+            swapTransaction: nil,
             vault: Vault.example,
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
             approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
             sendSummaryViewModel: SendSummaryViewModel(),
-            swapSummaryViewModel: SwapCryptoViewModel()
         )
     }
     .environmentObject(SettingsViewModel())

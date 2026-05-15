@@ -25,8 +25,6 @@ struct SendCryptoDoneView: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
-
     @State private var showAlert = false
     @State private var alertTitle = "hashCopied"
 
@@ -112,7 +110,6 @@ struct SendCryptoDoneView: View {
             hash: hash,
             approveHash: approveHash,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
         )
     }
 
@@ -128,13 +125,12 @@ struct SendCryptoDoneView: View {
 
     private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
         SwapCryptoDoneView(
-            tx: tx,
+            transaction: tx,
             vault: vault,
             hash: hash,
             approveHash: approveHash,
             progressLink: progressLink,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel,
             showAlert: $showAlert,
             alertTitle: $alertTitle
         )
