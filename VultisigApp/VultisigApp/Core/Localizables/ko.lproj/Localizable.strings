@@ -192,6 +192,10 @@
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
 "claim" = "수령";
+"claimBroadcasted" = "수령 브로드캐스트됨";
+"claimFailed" = "수령 실패";
+"claimPending" = "수령 처리 중...";
+"claimSuccessful" = "수령 성공";
 "clearFilters" = "필터 초기화";
 "close" = "닫기";
 "coinAddressCopied" = "%@ 주소 복사됨";

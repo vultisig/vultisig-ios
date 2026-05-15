@@ -17,7 +17,7 @@
 //
 //  Flow:
 //    1. `awaitRound1Start` — register as participant, poll
-//       `/start/{baseSessionID}-0` until kickoff.
+//       `/start/{sessionID}` until kickoff.
 //    2. `runRound1` — DKLS keysign signing the locally-computed
 //       `messageHashHex`. peer = isInitiateDevice: false.
 //
@@ -48,16 +48,26 @@ final class QBTCClaimJoinDriver: ObservableObject {
     enum Phase: Equatable {
         case awaitingRound1Start
         case signingRound1
-        case completed
+        /// Set once DKLS completes. `result` carries the initiator's
+        /// broadcast tx hash + claim total if the relay push arrived
+        /// within the poll window, or nil on timeout.
+        case completed(result: QBTCClaimRunResult?)
         case failed(String)
     }
 
     @Published private(set) var phase: Phase = .awaitingRound1Start
 
-    private let vault: Vault
+    /// Cap on how long the peer waits for the initiator's tx-hash push
+    /// after DKLS completes. The proof service typically returns in a
+    /// few seconds; the upper bound covers slow-network worst case.
+    static let resultPollTimeoutSeconds: TimeInterval = 60
+
+    /// Exposed so the peer-side view can build the shared
+    /// `QBTCClaimDoneScreen` once the run completes.
+    let vault: Vault
     private let context: QBTCClaimContext
-    private let baseSession: KeysignSessionInfo
-    private let sessionService: KeysignSessionService
+    private let session: KeysignSessionInfo
+    private let sessionService: KeysignSessionServicing
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-join")
 
     /// Cap on how long to wait for kickoff. Generous because the
@@ -67,12 +77,12 @@ final class QBTCClaimJoinDriver: ObservableObject {
     init(
         vault: Vault,
         context: QBTCClaimContext,
-        baseSession: KeysignSessionInfo,
-        sessionService: KeysignSessionService = KeysignSessionService()
+        session: KeysignSessionInfo,
+        sessionService: KeysignSessionServicing = KeysignSessionService()
     ) {
         self.vault = vault
         self.context = context
-        self.baseSession = baseSession
+        self.session = session
         self.sessionService = sessionService
     }
 
@@ -110,22 +120,44 @@ final class QBTCClaimJoinDriver: ObservableObject {
 
         // BTC ECDSA round — wait for kickoff, run DKLS as a non-initiator.
         phase = .awaitingRound1Start
-        let round1Session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 0)
-        try await sessionService.registerAsParticipant(session: round1Session)
+        try await sessionService.registerAsParticipant(session: session)
         let round1Participants = try await sessionService.awaitKeysignStart(
-            session: round1Session,
+            session: session,
             timeout: Self.kickoffTimeoutSeconds
         )
 
         phase = .signingRound1
         try await runRound1(
-            session: round1Session,
+            session: session,
             participants: round1Participants,
             btcCoin: btcCoin,
             messageHashHex: messageHashHex
         )
 
-        phase = .completed
+        // Poll for the initiator's tx-hash push so the peer's done
+        // screen can render the same status header + explorer link.
+        // Best-effort: a timeout still completes; the done screen
+        // gracefully falls back to a hashless variant.
+        let result = await pollForResult()
+        phase = .completed(result: result)
+    }
+
+    private func pollForResult() async -> QBTCClaimRunResult? {
+        do {
+            let data = try await sessionService.pollSetupMessage(
+                session: session,
+                messageID: QBTCClaimResultMessage.messageID,
+                timeout: Self.resultPollTimeoutSeconds
+            )
+            let message = try JSONDecoder().decode(QBTCClaimResultMessage.self, from: data)
+            return QBTCClaimRunResult(
+                txHashHex: message.txHash,
+                totalSatsClaimed: message.totalSats
+            )
+        } catch {
+            logger.warning("Tx-hash push not received within \(Self.resultPollTimeoutSeconds, privacy: .public)s: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     // MARK: - Round runner (peer side)

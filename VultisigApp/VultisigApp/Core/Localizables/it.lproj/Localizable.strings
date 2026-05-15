@@ -190,6 +190,10 @@
 "circleWithdrawTitle" = "Preleva USDC";
 "circleYield" = "Rendimento";
 "claim" = "Riscatta";
+"claimBroadcasted" = "Riscatto trasmesso";
+"claimFailed" = "Riscatto non riuscito";
+"claimPending" = "Riscatto in attesa...";
+"claimSuccessful" = "Riscatto riuscito";
 "clearFilters" = "Cancella filtri";
 "close" = "Chiudi";
 "coinAddressCopied" = "Indirizzo %@ copiato";

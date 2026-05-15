@@ -2,12 +2,11 @@
 //  QBTCClaimJoinView.swift
 //  VultisigApp
 //
-//  Peer-side view for the multi-round QBTC claim. Observes
-//  `QBTCClaimJoinDriver.phase` and renders progress + verification +
-//  result UI. Replaces the standard `keysignView` rendering on the
-//  joiner side when the scanned QR carried a `qbtcClaimContext`.
-//  Uses `KeysignAnimationView` during signing phases so the peer-side
-//  visual matches a normal join keysign run.
+//  Peer-side view for the QBTC claim. Observes `QBTCClaimJoinDriver.phase`:
+//  during signing it renders the same `SendCryptoKeysignView` primitive
+//  the initiator uses (full-screen animation, no status text); on
+//  completion it shows the same `QBTCClaimDoneScreen` the initiator
+//  ends up on, populated from the relay-pushed tx hash + total sats.
 //
 
 import SwiftUI
@@ -16,80 +15,43 @@ struct QBTCClaimJoinView: View {
     @ObservedObject var driver: QBTCClaimJoinDriver
     var coinLogo: String?
 
-    @State private var connected: Bool = true
-
     init(driver: QBTCClaimJoinDriver, coinLogo: String? = "qbtc") {
         self.driver = driver
         self.coinLogo = coinLogo
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            switch driver.phase {
-            case .awaitingRound1Start:
-                progressBlock(
-                    title: "qbtcClaimJoinAwaitingStartTitle".localized,
-                    detail: "qbtcClaimJoinAwaitingStartDetail".localized
-                )
-            case .signingRound1:
-                progressBlock(
-                    title: "qbtcClaimSigningBtcTitle".localized,
-                    detail: "qbtcClaimSigningBtcDetail".localized
-                )
-            case .completed:
-                resultBlock
-            case .failed(let message):
-                errorBlock(message)
-            }
-        }
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func progressBlock(title: String, detail: String) -> some View {
-        VStack(spacing: 24) {
-            KeysignAnimationView(connected: $connected, coinLogo: coinLogo)
-                .frame(maxWidth: .infinity)
-                .frame(height: 280)
-            Text(title)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text(detail)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-            Spacer()
+        switch driver.phase {
+        case .awaitingRound1Start, .signingRound1:
+            SendCryptoKeysignView(coinLogo: coinLogo)
+        case .completed(let result):
+            doneScreen(result: result)
+        case .failed(let message):
+            SendCryptoKeysignView(
+                title: message,
+                showError: true,
+                coinLogo: coinLogo
+            )
         }
     }
 
-    private var resultBlock: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(Theme.colors.alertSuccess)
-            Text("qbtcClaimJoinDoneTitle".localized)
-                .font(Theme.fonts.title3)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Text("qbtcClaimJoinDoneDetail".localized)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-        }
-    }
-
-    private func errorBlock(_ message: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(Theme.colors.alertError)
-            Text("qbtcClaimJoinFailedTitle".localized)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Text(message)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
+    @ViewBuilder
+    private func doneScreen(result: QBTCClaimRunResult?) -> some View {
+        // The peer has the vault from the driver; BTC + QBTC coins are
+        // derived from it. If the tx-hash push didn't arrive in time
+        // (`result == nil`), surface the same animation the standard
+        // peer keysign flow shows on completion.
+        if let result,
+           let btcCoin = driver.vault.nativeCoin(for: .bitcoin),
+           let qbtcCoin = driver.vault.nativeCoin(for: .qbtc) {
+            QBTCClaimDoneScreen(
+                result: result,
+                vault: driver.vault,
+                btcCoin: btcCoin,
+                qbtcCoin: qbtcCoin
+            )
+        } else {
+            SendCryptoKeysignView(coinLogo: coinLogo)
         }
     }
 }

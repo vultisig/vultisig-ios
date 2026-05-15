@@ -190,6 +190,10 @@
 "circleWithdrawTitle" = "USDC abheben";
 "circleYield" = "Rendite";
 "claim" = "Beanspruchen";
+"claimBroadcasted" = "Anspruch übertragen";
+"claimFailed" = "Anspruch fehlgeschlagen";
+"claimPending" = "Anspruch ausstehend...";
+"claimSuccessful" = "Anspruch erfolgreich";
 "clearFilters" = "Filter löschen";
 "close" = "Schließen";
 "coinAddressCopied" = "Münzadresse kopiert";

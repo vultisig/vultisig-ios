@@ -2,42 +2,31 @@
 //  QBTCClaimViewModel.swift
 //  VultisigApp
 //
-//  Drives the QBTC claim screen: kill-switch + FastVault gating, UTXO
-//  loading, selection state, password collection, and orchestrator
-//  invocation. Selection lives on the ViewModel (NOT on the orchestrator)
-//  so it survives a failed run — the user can correct and retry without
-//  re-picking UTXOs.
+//  Drives the QBTC claim selection screen: kill-switch + FastVault
+//  gating, UTXO loading, selection state, and password collection.
+//  After the user confirms, the screen reads `pendingPairContext`
+//  (SecureVault) or `pendingKeysignContext` (FastVault) and pushes the
+//  corresponding `QBTCClaimRoute` — pair / keysign / done are all
+//  router-managed screens. Selection lives on the ViewModel so it
+//  survives a failed run and the user can retry from this screen.
 //
 
-import Combine
 import Foundation
 import OSLog
 import SwiftUI
 
-/// Top-level state for the claim screen. Drives which sub-view renders.
-/// The initial gate-checks phase is surfaced via `isLoading` + the shared
-/// `withLoading` modifier rather than a dedicated `.loading` case — the
-/// screen renders the selection skeleton underneath while the spinner
-/// overlays.
-enum QBTCClaimScreenState: Equatable {
+/// Top-level state for the selection screen. Drives which sub-view
+/// renders. The initial gate-checks phase is surfaced via `isLoading` +
+/// the shared `withLoading` modifier rather than a dedicated `.loading`
+/// case.
+enum QBTCClaimScreenState: Hashable {
     /// User cannot claim. Surface the reason in a banner; CTA disabled.
     case blocked(reason: QBTCClaimBlockedReason)
-    /// Selectable UTXOs available — user picks then confirms. Also the
-    /// initial value while the gate-check fetch runs (utxos is empty,
-    /// the `withLoading` overlay covers the empty skeleton).
+    /// Selectable UTXOs available — user picks then confirms.
     case selecting
-    /// SecureVault flow only — the QR is on screen and we're polling
-    /// `ParticipantDiscovery` for the peer device to join the relay
-    /// session. Transitions to `.claiming` once the peer is found.
-    case awaitingPeer
-    /// Orchestrator is running. The orchestrator's `phase` drives the
-    /// inner content; selection is preserved on the ViewModel.
-    case claiming
-    /// Final state on success.
-    case done(QBTCClaimRunResult)
 }
 
-enum QBTCClaimBlockedReason: Equatable {
+enum QBTCClaimBlockedReason: Hashable {
     /// Chain returned `ClaimWithProofDisabled > 0`. Or query failed —
     /// fail-closed.
     case killSwitchClosed
@@ -61,6 +50,25 @@ extension ClaimableUtxo {
     var id: QBTCClaimUtxoId { QBTCClaimUtxoId(txid: txid, vout: vout) }
 }
 
+/// Inputs the SecureVault pair screen needs after the VM has
+/// provisioned the relay session and built the QR payload.
+struct QBTCClaimPairContext: Equatable {
+    let keysignPayload: KeysignPayload
+    let session: KeysignSessionInfo
+    let btcCoin: Coin
+    let qbtcCoin: Coin
+    let selectedUtxos: [ClaimableUtxo]
+}
+
+/// Inputs the FastVault keysign screen needs after the user has
+/// supplied their password.
+struct QBTCClaimKeysignContext: Equatable {
+    let btcCoin: Coin
+    let qbtcCoin: Coin
+    let selectedUtxos: [ClaimableUtxo]
+    let fastVaultPassword: String
+}
+
 @MainActor
 final class QBTCClaimViewModel: ObservableObject {
     @Published private(set) var state: QBTCClaimScreenState = .selecting
@@ -69,53 +77,42 @@ final class QBTCClaimViewModel: ObservableObject {
     /// immediately; the `load()` task flips it off on every exit path.
     @Published var isLoading: Bool = true
     @Published private(set) var utxos: [ClaimableUtxo] = []
-    /// User's selection. Surviving across failed runs is the contract:
-    /// the screen does NOT clear this on `.failed`.
+    /// User's selection. Surviving across failed runs is the contract.
     @Published var selectedIds: Set<QBTCClaimUtxoId> = []
     /// User-visible error message banner shown on the selection screen
-    /// (the most recent failure from a claim run). Cleared on retry.
+    /// (most recent failure from a previous run, or pairing-setup
+    /// failure). Cleared on retry.
     @Published var lastClaimError: String?
     /// Bound to the FastVault password modal.
     @Published var fastVaultPassword: String = ""
     @Published var isPasswordSheetPresented: Bool = false
 
-    /// SecureVault pairing — the QR string the peer device scans.
-    @Published private(set) var pairingQrCodeData: String?
-    /// SecureVault pairing — rendered QR image.
-    @Published private(set) var pairingQrImage: Image?
-    /// SecureVault pairing — peers observed on the round-1 relay session.
-    @Published private(set) var observedPeers: [String] = []
+    /// Set when the user confirms a SecureVault claim and the VM has
+    /// successfully provisioned a relay session. The screen observes
+    /// this and pushes `QBTCClaimRoute.pair`. Cleared by the screen
+    /// after navigation so the same value doesn't re-fire.
+    @Published var pendingPairContext: QBTCClaimPairContext?
+    /// Set when the user submits their FastVault password. The screen
+    /// pushes `QBTCClaimRoute.keysign` (with `session: nil`).
+    @Published var pendingKeysignContext: QBTCClaimKeysignContext?
 
     let vault: Vault
-    @Published private(set) var orchestrator: QBTCClaimOrchestrator
 
     private let chainService: QBTCChainService
     private let blockchairService: BlockchairService
     private let sessionService: KeysignSessionService
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-vm")
-    private var cancellables: Set<AnyCancellable> = []
-
-    /// SecureVault-only — set after `startSecureVaultPair()` provisions
-    /// the base session. Per-round sessions derive `-0` / `-1` suffixes.
-    private var secureVaultBaseSession: KeysignSessionInfo?
-    /// Holds onto the discovery instance so its `$peersFound` stream
-    /// keeps publishing while the QR is on screen.
-    private var participantDiscovery: ParticipantDiscovery?
 
     init(
         vault: Vault,
-        orchestrator: QBTCClaimOrchestrator? = nil,
         chainService: QBTCChainService = QBTCChainService(),
         blockchairService: BlockchairService = .shared,
         sessionService: KeysignSessionService = KeysignSessionService()
     ) {
         self.vault = vault
-        self.orchestrator = orchestrator ?? QBTCClaimOrchestrator.makeFastVault()
         self.chainService = chainService
         self.blockchairService = blockchairService
         self.sessionService = sessionService
-
-        bindOrchestratorPhase()
     }
 
     // MARK: - Computed
@@ -173,12 +170,14 @@ final class QBTCClaimViewModel: ObservableObject {
     // MARK: - Lifecycle
 
     /// Runs the gate checks + UTXO fetch in parallel. Idempotent — safe
-    /// to call multiple times (e.g., on screen re-appear). `isLoading`
-    /// drives the shared `withLoading` overlay during the fetch; `state`
-    /// settles on `.blocked / .selecting` once the gate decision is made.
+    /// to call multiple times. `isLoading` drives the shared
+    /// `withLoading` overlay during the fetch; `state` settles on
+    /// `.blocked / .selecting` once the gate decision is made.
     func load() async {
-        isLoading = true
-        lastClaimError = nil
+        await MainActor.run {
+            isLoading = true
+            lastClaimError = nil
+        }
         defer { isLoading = false }
 
         guard let btcCoin else {
@@ -241,18 +240,22 @@ final class QBTCClaimViewModel: ObservableObject {
     }
 
     /// Triggered when the user taps the Confirm button. Branches by
-    /// vault type — FastVault uses Vultiserver (password sheet), and
-    /// SecureVault pairs with a peer device via QR.
+    /// vault type — FastVault collects the password first; SecureVault
+    /// provisions a relay session and signals the screen to push the
+    /// pair route.
     func confirmTapped() {
         guard canConfirm else { return }
         lastClaimError = nil
         if vault.isFastVault {
             isPasswordSheetPresented = true
         } else {
-            Task { await startSecureVaultPair() }
+            Task { await prepareSecureVaultPair() }
         }
     }
 
+    /// FastVault — called after the password sheet's Submit. Validates
+    /// the password is non-empty and emits a keysign context for the
+    /// screen to route on.
     func startClaim() {
         let password = fastVaultPassword
         isPasswordSheetPresented = false
@@ -265,131 +268,52 @@ final class QBTCClaimViewModel: ObservableObject {
         let selected = utxos.filter { selectedIds.contains($0.id) }
         guard !selected.isEmpty else { return }
 
-        state = .claiming
-
-        let input = QBTCClaimRunInput(
-            vault: vault,
+        pendingKeysignContext = QBTCClaimKeysignContext(
             btcCoin: btcCoin,
             qbtcCoin: qbtcCoin,
-            utxos: selected,
+            selectedUtxos: selected,
             fastVaultPassword: password
         )
-        Task { [orchestrator] in
-            await orchestrator.run(input)
-        }
     }
 
-    /// Called when the user dismisses an error banner and wants to
-    /// reselect. Clears the password and returns the orchestrator to
-    /// idle so a subsequent `startClaim` runs cleanly.
+    /// Called when the user dismisses an error banner. Clears local
+    /// error state.
     func resetForRetry() {
         fastVaultPassword = ""
         lastClaimError = nil
-        stopSecureVaultPair()
-        orchestrator.reset()
-        state = .selecting
     }
 
-    // MARK: - SecureVault pairing
+    // MARK: - SecureVault pair preparation
 
-    /// Provisions the base relay session, builds the QR payload (BTC
-    /// coin + qbtcClaimContext), starts `ParticipantDiscovery` on the
-    /// round-1 session, and transitions to `.awaitingPeer`. When the
-    /// peer joins, `secureVaultPeerJoined` fires the orchestrator.
-    private func startSecureVaultPair() async {
+    /// Provisions a fresh relay session, builds the keysign payload,
+    /// registers as the initiating participant, and emits a pair
+    /// context. On failure, surfaces the error in the selection
+    /// banner so the user can retry.
+    private func prepareSecureVaultPair() async {
         guard let btcCoin, let qbtcCoin else { return }
         let selected = utxos.filter { selectedIds.contains($0.id) }
         guard !selected.isEmpty else { return }
 
         do {
-            let baseSession = try sessionService.newSession(vault: vault)
+            let session = try sessionService.newSession(vault: vault)
             let context = QBTCClaimContext(claimerAddress: qbtcCoin.address)
             let payload = makeSecureVaultKeysignPayload(
                 btcCoin: btcCoin,
                 context: context
             )
-            let qrString = try await encodeKeysignQr(
-                baseSession: baseSession,
-                payload: payload
+            try await sessionService.registerAsParticipant(session: session)
+
+            pendingPairContext = QBTCClaimPairContext(
+                keysignPayload: payload,
+                session: session,
+                btcCoin: btcCoin,
+                qbtcCoin: qbtcCoin,
+                selectedUtxos: selected
             )
-
-            // Round-1 session — peer registers here, initiator polls
-            // for it via ParticipantDiscovery.
-            let round1Session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 0)
-            try await sessionService.registerAsParticipant(session: round1Session)
-
-            self.secureVaultBaseSession = baseSession
-            self.pairingQrCodeData = qrString
-            self.pairingQrImage = Utils.generateQRCodeImage(from: qrString)
-            self.state = .awaitingPeer
-
-            // Begin participant discovery on the round-1 session.
-            let discovery = ParticipantDiscovery()
-            self.participantDiscovery = discovery
-            discovery.getParticipants(
-                serverAddr: round1Session.serverAddr,
-                sessionID: round1Session.sessionId,
-                localParty: round1Session.localPartyId
-            )
-            discovery.$peersFound
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] peers in
-                    self?.observedPeers = peers
-                    if !peers.isEmpty {
-                        self?.secureVaultPeerJoined()
-                    }
-                }
-                .store(in: &cancellables)
         } catch {
-            logger.error("SecureVault pairing failed: \(error.localizedDescription)")
+            logger.error("SecureVault pairing setup failed: \(error.localizedDescription)")
             lastClaimError = error.localizedDescription
-            state = .selecting
         }
-    }
-
-    private func secureVaultPeerJoined() {
-        guard state == .awaitingPeer,
-              let baseSession = secureVaultBaseSession,
-              let btcCoin,
-              let qbtcCoin else {
-            return
-        }
-        guard let firstPeer = observedPeers.first else { return }
-
-        // Stop discovery — the orchestrator owns the session from here.
-        participantDiscovery?.stop()
-        participantDiscovery = nil
-
-        let participants = [baseSession.localPartyId, firstPeer]
-        let secureOrchestrator = QBTCClaimOrchestrator.makeSecureVault(
-            baseSession: baseSession,
-            participants: participants
-        )
-        self.orchestrator = secureOrchestrator
-        bindOrchestratorPhase()
-
-        let selected = utxos.filter { selectedIds.contains($0.id) }
-        let input = QBTCClaimRunInput(
-            vault: vault,
-            btcCoin: btcCoin,
-            qbtcCoin: qbtcCoin,
-            utxos: selected,
-            fastVaultPassword: ""
-        )
-        state = .claiming
-        Task { [secureOrchestrator] in
-            await secureOrchestrator.run(input)
-        }
-    }
-
-    private func stopSecureVaultPair() {
-        participantDiscovery?.stop()
-        participantDiscovery = nil
-        secureVaultBaseSession = nil
-        pairingQrCodeData = nil
-        pairingQrImage = nil
-        observedPeers = []
     }
 
     private func makeSecureVaultKeysignPayload(
@@ -419,62 +343,7 @@ final class QBTCClaimViewModel: ObservableObject {
         )
     }
 
-    /// Builds the QR-payload string. If the serialized `KeysignMessage`
-    /// exceeds the 2 KB inline threshold (a full 50-UTXO claim does),
-    /// the payload is uploaded to the relay and the message carries
-    /// only the payload hash. Mirrors `KeysignDiscoveryViewModel`.
-    private func encodeKeysignQr(
-        baseSession: KeysignSessionInfo,
-        payload: KeysignPayload
-    ) async throws -> String {
-        let message = KeysignMessage(
-            sessionID: baseSession.sessionId,
-            serviceName: baseSession.serviceName,
-            payload: payload,
-            customMessagePayload: nil,
-            encryptionKeyHex: baseSession.encryptionKeyHex,
-            useVultisigRelay: true,
-            payloadID: "",
-            customPayloadID: ""
-        )
-        let serialized = try ProtoSerializer.serialize(message)
-        let payloadService = PayloadService(serverURL: baseSession.serverAddr)
-
-        let jsonData: String
-        if payloadService.shouldUploadToRelay(payload: serialized) {
-            let payloadSerialized = try ProtoSerializer.serialize(payload)
-            let hash = try await payloadService.uploadPayload(payload: payloadSerialized)
-            let messageWithoutPayload = KeysignMessage(
-                sessionID: baseSession.sessionId,
-                serviceName: baseSession.serviceName,
-                payload: nil,
-                customMessagePayload: nil,
-                encryptionKeyHex: baseSession.encryptionKeyHex,
-                useVultisigRelay: true,
-                payloadID: hash,
-                customPayloadID: ""
-            )
-            jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
-        } else {
-            jsonData = serialized
-        }
-        return "https://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
-    }
-
     // MARK: - Private
-
-    private func bindOrchestratorPhase() {
-        cancellables.removeAll()
-        // Mirror the orchestrator's phase into our screen state so the
-        // view re-renders as the run progresses. Done state replaces
-        // .claiming; failed surfaces a banner and returns to .selecting.
-        orchestrator.$phase
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] phase in
-                self?.applyOrchestratorPhase(phase)
-            }
-            .store(in: &cancellables)
-    }
 
     private func fetchUtxos(btcCoin: Coin) async throws -> [ClaimableUtxo] {
         let blockchairUtxos = try await blockchairService.fetchQBTCClaimableUtxos(
@@ -491,35 +360,12 @@ final class QBTCClaimViewModel: ObservableObject {
         return filtered
     }
 
-    private func applyOrchestratorPhase(_ phase: QBTCClaimPhase) {
-        switch phase {
-        case .idle:
-            // Orchestrator idle — nothing to mirror. The view model
-            // owns its own `state` for the gate / selection / done UI.
-            break
-        case .signingBTC, .generatingProofAndBroadcasting:
-            // The screen renders the orchestrator's phase directly via
-            // `claimingView(phase:)` — we just need to stay in `.claiming`.
-            if state != .claiming {
-                state = .claiming
-            }
-        case .done(let result):
-            stopSecureVaultPair()
-            state = .done(result)
-        case .failed(let message):
-            stopSecureVaultPair()
-            lastClaimError = message
-            state = .selecting
-        }
-    }
-
     // MARK: - Snapshot test seeding
 
     #if DEBUG
     /// Seeds the view model into a deterministic `.selecting` state for
-    /// snapshot tests. Never called from production code paths. Sets
-    /// `isLoading = false` so the `withLoading` overlay doesn't cover
-    /// the captured frame.
+    /// snapshot tests. Sets `isLoading = false` so the `withLoading`
+    /// overlay doesn't cover the captured frame.
     func snapshotSeed(utxos: [ClaimableUtxo], selected: Set<QBTCClaimUtxoId>) {
         self.utxos = utxos
         self.selectedIds = selected

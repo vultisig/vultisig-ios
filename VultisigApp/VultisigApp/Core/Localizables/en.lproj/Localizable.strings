@@ -192,6 +192,10 @@
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
 "claim" = "Claim";
+"claimBroadcasted" = "Claim broadcasted";
+"claimFailed" = "Claim failed";
+"claimPending" = "Claim pending...";
+"claimSuccessful" = "Claim successful";
 "clearFilters" = "Clear filters";
 "close" = "Close";
 "coinAddressCopied" = "%@ address copied";

@@ -190,6 +190,10 @@
 "circleWithdrawTitle" = "Povuci USDC";
 "circleYield" = "Prinos";
 "claim" = "Preuzmi";
+"claimBroadcasted" = "Preuzimanje poslano";
+"claimFailed" = "Preuzimanje nije uspjelo";
+"claimPending" = "Preuzimanje u tijeku...";
+"claimSuccessful" = "Preuzimanje uspješno";
 "clearFilters" = "Očisti filtere";
 "close" = "Zatvori";
 "coinAddressCopied" = "Adresa kopirana";

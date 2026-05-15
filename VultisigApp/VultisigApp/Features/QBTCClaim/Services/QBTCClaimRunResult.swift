@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct QBTCClaimRunResult: Equatable {
+struct QBTCClaimRunResult: Hashable {
     /// Uppercase hex of the on-chain transaction hash. Comes from the
     /// proof service's `tx_hash` field after service-side broadcast
     /// (qbtc proof-service PR #158).

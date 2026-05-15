@@ -114,24 +114,37 @@ extension QBTCClaimOrchestrator {
         )
     }
 
-    /// Production wiring for the SecureVault path. The base session and
+    /// Production wiring for the SecureVault path. The session and
     /// participants come from the QR handshake — the peer device has
     /// already scanned and joined the relay. The orchestrator runs one
-    /// DKLS BTC ECDSA round on `{baseSession.sessionId}-0` and then
-    /// POSTs `/prove` with `broadcast: true`.
+    /// DKLS BTC ECDSA round on `session.sessionId` and then POSTs
+    /// `/prove` with `broadcast: true`. After the proof returns the
+    /// orchestrator pushes the broadcast tx hash to the peer via the
+    /// relay's setup-message slot so the co-signer's done screen
+    /// renders the same status header + explorer link.
     @MainActor
     static func makeSecureVault(
-        baseSession: KeysignSessionInfo,
+        session: KeysignSessionInfo,
         participants: [String]
     ) -> QBTCClaimOrchestrator {
         let proofService = QBTCProofService()
         let driver = QBTCClaimSecureVaultRoundDriver(
-            baseSession: baseSession,
+            session: session,
             participants: participants
         )
+        let sessionService = KeysignSessionService()
         return QBTCClaimOrchestrator(
             generateProof: { try await proofService.generateProof($0) },
-            runBtcRound: { try await driver.runBtcRound(input: $0) }
+            runBtcRound: { try await driver.runBtcRound(input: $0) },
+            pushTxHash: { txHash, totalSats in
+                let payload = QBTCClaimResultMessage(txHash: txHash, totalSats: totalSats)
+                let body = try JSONEncoder().encode(payload)
+                try await sessionService.pushSetupMessage(
+                    session: session,
+                    messageID: QBTCClaimResultMessage.messageID,
+                    body: body
+                )
+            }
         )
     }
 

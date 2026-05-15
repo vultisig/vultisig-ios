@@ -27,6 +27,7 @@ struct KeysignDiscoveryView: View {
     @State var previewType: QRShareSheetType = .Send
     var swapTransaction: SwapTransaction = SwapTransaction()
     var contentPadding: CGFloat?
+    var presetSession: KeysignSessionInfo? = nil
     var onKeysignInput: (KeysignInput) -> Void
 
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -240,6 +241,7 @@ struct KeysignDiscoveryView: View {
             customMessagePayload: customMessagePayload,
             participantDiscovery: participantDiscovery,
             fastVaultPassword: fastVaultPassword,
+            presetSession: presetSession,
             onFastKeysign: { startKeysign() }
         )
 

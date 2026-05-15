@@ -20,6 +20,7 @@ final class VultisigRouter: ObservableObject {
     let circleRouter: CircleRouter
     let tronRouter: TronRouter
     let transactionHistoryRouter: TransactionHistoryRouter
+    let qbtcClaimRouter: QBTCClaimRouter
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -34,5 +35,6 @@ final class VultisigRouter: ObservableObject {
         self.circleRouter = CircleRouter()
         self.tronRouter = TronRouter()
         self.transactionHistoryRouter = TransactionHistoryRouter()
+        self.qbtcClaimRouter = QBTCClaimRouter()
     }
 }

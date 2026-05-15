@@ -30,7 +30,9 @@ struct JoinKeysignView: View {
     }
 
     var isInAnimationState: Bool {
-        viewModel.status == .WaitingForKeysignToStart || viewModel.status == .KeysignStarted
+        viewModel.status == .WaitingForKeysignToStart
+            || viewModel.status == .KeysignStarted
+            || viewModel.status == .QBTCClaim
     }
 
     var states: some View {

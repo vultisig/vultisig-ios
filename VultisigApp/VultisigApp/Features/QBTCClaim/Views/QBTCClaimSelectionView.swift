@@ -48,7 +48,23 @@ struct QBTCClaimSelectionView: View {
                 viewModel.confirmTapped()
             }
             .disabled(!viewModel.canConfirm)
+            .padding(.bottom, legacyTabBarBottomInset)
         }
+    }
+
+    /// On macOS / iPadOS / iOS < 26 the parent screen's `VultiTabBar`
+    /// overlays the bottom edge (it `.ignoresSafeArea(.all)`), so the
+    /// CTA needs an explicit clearance. iOS 26+ iPhone uses the system
+    /// glass `TabView` which already insets content.
+    private var legacyTabBarBottomInset: CGFloat {
+        #if os(macOS)
+        return 80
+        #else
+        if #available(iOS 26.0, *), !isIPadOS {
+            return 0
+        }
+        return 80
+        #endif
     }
 
     private var heroCard: some View {

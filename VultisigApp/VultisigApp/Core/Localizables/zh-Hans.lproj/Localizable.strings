@@ -190,6 +190,10 @@
 "circleWithdrawTitle" = "提现 USDC";
 "circleYield" = "收益";
 "claim" = "领取";
+"claimBroadcasted" = "领取已广播";
+"claimFailed" = "领取失败";
+"claimPending" = "领取处理中...";
+"claimSuccessful" = "领取成功";
 "clearFilters" = "清除筛选";
 "close" = "关闭";
 "coinAddressCopied" = "%@ 地址已复制";

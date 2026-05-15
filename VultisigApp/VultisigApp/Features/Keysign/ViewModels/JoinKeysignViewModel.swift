@@ -322,7 +322,7 @@ class JoinKeysignViewModel: ObservableObject {
                 let driver = QBTCClaimJoinDriver(
                     vault: self.vault,
                     context: context,
-                    baseSession: session
+                    session: session
                 )
                 self.qbtcClaimDriver = driver
                 self.status = .QBTCClaim

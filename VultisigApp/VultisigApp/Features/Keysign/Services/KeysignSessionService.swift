@@ -22,7 +22,7 @@ import OSLog
 /// Bootstrap state for one MPC session — handed back from `newSession`
 /// and threaded through the rest of the calls. Value type; safe to
 /// pass across actor boundaries.
-struct KeysignSessionInfo: Equatable {
+struct KeysignSessionInfo: Hashable {
     let sessionId: String
     let encryptionKeyHex: String
     let serviceName: String
@@ -65,8 +65,19 @@ enum KeysignSessionServiceError: LocalizedError {
     }
 }
 
+/// Protocol surface used by the QBTC claim drivers so tests can inject
+/// a mock and assert the session/participants pass-through without
+/// hitting the relay.
 @MainActor
-final class KeysignSessionService {
+protocol KeysignSessionServicing: AnyObject {
+    func registerAsParticipant(session: KeysignSessionInfo) async throws
+    func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws
+    func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String]
+    func pollSetupMessage(session: KeysignSessionInfo, messageID: String, timeout: TimeInterval) async throws -> Data
+}
+
+@MainActor
+final class KeysignSessionService: KeysignSessionServicing {
     private let mediator: Mediator
     private let fastVaultService: FastVaultService
     private let httpClient: HTTPClientProtocol
@@ -106,23 +117,6 @@ final class KeysignSessionService {
             serviceName: resolvedServiceName,
             localPartyId: localPartyId,
             serverAddr: Endpoint.vultisigRelay
-        )
-    }
-
-    /// Derives a per-round session from a base session id (used by the
-    /// multi-round QBTC claim flow). Encryption key and local party id
-    /// are reused across rounds; the relay sessionId gets a `-{round}`
-    /// suffix so each TSS protocol runs in its own clean namespace.
-    func deriveRoundSession(
-        from base: KeysignSessionInfo,
-        roundIndex: Int
-    ) -> KeysignSessionInfo {
-        KeysignSessionInfo(
-            sessionId: "\(base.sessionId)-\(roundIndex)",
-            encryptionKeyHex: base.encryptionKeyHex,
-            serviceName: base.serviceName,
-            localPartyId: base.localPartyId,
-            serverAddr: base.serverAddr
         )
     }
 

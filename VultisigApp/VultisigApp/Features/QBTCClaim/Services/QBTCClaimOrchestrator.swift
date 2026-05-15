@@ -44,18 +44,25 @@ final class QBTCClaimOrchestrator: ObservableObject {
     // wires real services; tests inject mocks.
     typealias GenerateProof = (ClaimProofRequest) async throws -> ClaimProofResponse
     typealias RunBtcRound = (QBTCClaimBtcRoundInput) async throws -> QBTCClaimBtcRoundResult
+    /// Fire-and-forget hook to push the broadcast tx hash + claim total
+    /// to the peer device after the proof service returns. Used by the
+    /// SecureVault path; FastVault leaves this `nil` (no peer to notify).
+    typealias PushTxHash = (_ txHash: String, _ totalSats: UInt64) async throws -> Void
 
     private let generateProof: GenerateProof
     private let runBtcRound: RunBtcRound
+    private let pushTxHash: PushTxHash?
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim")
 
     init(
         generateProof: @escaping GenerateProof,
-        runBtcRound: @escaping RunBtcRound
+        runBtcRound: @escaping RunBtcRound,
+        pushTxHash: PushTxHash? = nil
     ) {
         self.generateProof = generateProof
         self.runBtcRound = runBtcRound
+        self.pushTxHash = pushTxHash
     }
 
     /// Resets to `.idle`. Call when the user dismisses an error and
@@ -151,9 +158,26 @@ final class QBTCClaimOrchestrator: ObservableObject {
         }
 
         let totalSats = input.utxos.reduce(UInt64(0)) { $0 + $1.amount }
+        let uppercasedTxHash = txHash.uppercased()
+
+        // Best-effort propagation to the peer device — the co-signer's
+        // join driver polls the relay for this hash after DKLS so its
+        // done screen renders the same status header + explorer link
+        // as the initiator. Detached so the user's .done navigation
+        // isn't gated on the relay round-trip.
+        if let pushTxHash {
+            Task { [logger] in
+                do {
+                    try await pushTxHash(uppercasedTxHash, totalSats)
+                } catch {
+                    logger.error("Failed to push tx hash to peer: \(error.localizedDescription)")
+                }
+            }
+        }
+
         phase = .done(
             QBTCClaimRunResult(
-                txHashHex: txHash.uppercased(),
+                txHashHex: uppercasedTxHash,
                 totalSatsClaimed: totalSats
             )
         )

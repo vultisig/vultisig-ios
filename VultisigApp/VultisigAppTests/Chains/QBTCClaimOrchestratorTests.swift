@@ -302,12 +302,45 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
 
     private func makeOrchestrator(
         generateProof: @escaping QBTCClaimOrchestrator.GenerateProof,
-        runBtcRound: @escaping QBTCClaimOrchestrator.RunBtcRound
+        runBtcRound: @escaping QBTCClaimOrchestrator.RunBtcRound,
+        pushTxHash: QBTCClaimOrchestrator.PushTxHash? = nil
     ) -> QBTCClaimOrchestrator {
         QBTCClaimOrchestrator(
             generateProof: generateProof,
-            runBtcRound: runBtcRound
+            runBtcRound: runBtcRound,
+            pushTxHash: pushTxHash
         )
+    }
+
+    // MARK: - Tx-hash propagation
+
+    func testPushTxHashIsCalledWithBroadcastResult() async throws {
+        let captured = Captured<(String, UInt64)>()
+
+        let orchestrator = makeOrchestrator(
+            generateProof: { _ in Self.makeProofResponse() },
+            runBtcRound: { _ in
+                QBTCClaimBtcRoundResult(
+                    rHex: String(repeating: "01", count: 24),
+                    sHex: String(repeating: "02", count: 32)
+                )
+            },
+            pushTxHash: { txHash, totalSats in
+                await captured.set((txHash, totalSats))
+            }
+        )
+
+        await orchestrator.run(Self.makeRunInput())
+
+        // The push is detached so the orchestrator's run() may return
+        // before it runs — give the Task a beat to fire.
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        guard let value = await captured.get() else {
+            return XCTFail("pushTxHash was never invoked")
+        }
+        XCTAssertEqual(value.0, Self.mockServiceTxHash.uppercased())
+        XCTAssertEqual(value.1, 100_000)
     }
 }
 

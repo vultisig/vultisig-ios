@@ -190,6 +190,10 @@
 "circleWithdrawTitle" = "Sacar USDC";
 "circleYield" = "Rendimento";
 "claim" = "Reivindicar";
+"claimBroadcasted" = "Reivindicação difundida";
+"claimFailed" = "Reivindicação falhou";
+"claimPending" = "Reivindicação pendente...";
+"claimSuccessful" = "Reivindicação bem-sucedida";
 "clearFilters" = "Limpar filtros";
 "close" = "Fechar";
 "coinAddressCopied" = "Endereço %@ copiado";

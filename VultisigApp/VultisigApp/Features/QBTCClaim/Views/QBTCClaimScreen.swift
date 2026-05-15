@@ -2,17 +2,18 @@
 //  QBTCClaimScreen.swift
 //  VultisigApp
 //
-//  Top-level screen for the QBTC claim flow. Owns the gate state,
-//  selection state, and orchestrator. Sub-views are dispatched by
-//  `viewModel.state`. Phase-specific UI for the .claiming state is
-//  driven by `viewModel.orchestrator.phase`.
+//  Selection screen for the QBTC claim flow. Owns the gate state +
+//  selection state. Pair / keysign / done are separate router-managed
+//  screens reached via `QBTCClaimRoute`; this screen pushes them by
+//  observing the view model's `pendingPairContext` /
+//  `pendingKeysignContext` signals.
 //
 
 import SwiftUI
 
 struct QBTCClaimScreen: View {
+    @Environment(\.router) var router
     @StateObject private var viewModel: QBTCClaimViewModel
-    @Environment(\.openURL) private var openURL
 
     init(vault: Vault) {
         _viewModel = StateObject(wrappedValue: QBTCClaimViewModel(vault: vault))
@@ -38,15 +39,34 @@ struct QBTCClaimScreen: View {
                 onSubmit: { viewModel.startClaim() }
             )
         }
-    }
-
-    /// `nil` when the URL string fails to parse — `ExplorerLinkBuilder`
-    /// now returns the canonical `https://qbtc-explorer.vercel.app/qbtc/tx/<txid>`
-    /// for QBTC, so the result view's "View on explorer" CTA is wired up.
-    private func explorerURL(for txHash: String) -> URL? {
-        let raw = ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash)
-        guard !raw.isEmpty else { return nil }
-        return URL(string: raw)
+        .onChange(of: viewModel.pendingPairContext) { _, context in
+            guard let context else { return }
+            viewModel.pendingPairContext = nil
+            router.navigate(
+                to: QBTCClaimRoute.pair(
+                    vault: viewModel.vault,
+                    keysignPayload: context.keysignPayload,
+                    session: context.session,
+                    qbtcCoin: context.qbtcCoin,
+                    selectedUtxos: context.selectedUtxos
+                )
+            )
+        }
+        .onChange(of: viewModel.pendingKeysignContext) { _, context in
+            guard let context else { return }
+            viewModel.pendingKeysignContext = nil
+            router.navigate(
+                to: QBTCClaimRoute.keysign(
+                    vault: viewModel.vault,
+                    btcCoin: context.btcCoin,
+                    qbtcCoin: context.qbtcCoin,
+                    selectedUtxos: context.selectedUtxos,
+                    fastVaultPassword: context.fastVaultPassword,
+                    session: nil,
+                    participants: []
+                )
+            )
+        }
     }
 
     @ViewBuilder
@@ -58,20 +78,6 @@ struct QBTCClaimScreen: View {
             QBTCClaimSelectionView(
                 viewModel: viewModel,
                 errorMessage: viewModel.lastClaimError
-            )
-        case .awaitingPeer:
-            QBTCClaimAwaitingPeerView(viewModel: viewModel)
-        case .claiming:
-            QBTCClaimRunningView(
-                phase: viewModel.orchestrator.phase,
-                coinLogo: viewModel.qbtcCoin?.logo ?? "qbtc"
-            )
-        case .done(let result):
-            QBTCClaimResultView(
-                result: result,
-                qbtcCoin: viewModel.qbtcCoin,
-                explorerURL: explorerURL(for: result.txHashHex),
-                onOpenExplorer: { url in openURL(url) }
             )
         }
     }

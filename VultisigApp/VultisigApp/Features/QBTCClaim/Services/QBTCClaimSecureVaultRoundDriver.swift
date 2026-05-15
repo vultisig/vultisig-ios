@@ -5,13 +5,11 @@
 //  Production wiring for the SecureVault path of QBTC claim. The peer
 //  device has already scanned the QR (which encoded the keysign payload
 //  + qbtcClaimContext) and joined the relay session. This driver is
-//  constructed AFTER that handshake — the screen passes the base session
+//  constructed AFTER that handshake — the screen passes the session
 //  + participants in via init.
 //
 //  Post-qbtc#158: only one MPC round (BTC ECDSA via DKLS); the proof
-//  service signs and broadcasts the cosmos tx. The driver lives on
-//  because SecureVault still uses the base-session-derive-per-round
-//  pattern for relay namespacing, even though only round 0 is used.
+//  service signs and broadcasts the cosmos tx.
 //
 
 import Foundation
@@ -20,17 +18,17 @@ import Tss
 
 @MainActor
 final class QBTCClaimSecureVaultRoundDriver {
-    private let baseSession: KeysignSessionInfo
+    private let session: KeysignSessionInfo
     private let participants: [String]
-    private let sessionService: KeysignSessionService
+    private let sessionService: KeysignSessionServicing
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-securevault-driver")
 
     init(
-        baseSession: KeysignSessionInfo,
+        session: KeysignSessionInfo,
         participants: [String],
-        sessionService: KeysignSessionService = KeysignSessionService()
+        sessionService: KeysignSessionServicing = KeysignSessionService()
     ) {
-        self.baseSession = baseSession
+        self.session = session
         self.participants = participants
         self.sessionService = sessionService
     }
@@ -38,9 +36,9 @@ final class QBTCClaimSecureVaultRoundDriver {
     // MARK: - BTC ECDSA round (DKLS)
 
     func runBtcRound(input: QBTCClaimBtcRoundInput) async throws -> QBTCClaimBtcRoundResult {
-        let session = sessionService.deriveRoundSession(from: baseSession, roundIndex: 0)
-        try await sessionService.kickoffCommittee(session: session, participants: participants)
-
+        // `KeysignDiscoveryView.startKeysign` already POSTed
+        // `/start/{sessionId}` for us — this driver only needs to run
+        // DKLS against the already-kicked-off session.
         let derivePath = input.btcCoin.coinType.derivationPath()
         let dkls = DKLSKeysign(
             keysignCommittee: participants,
