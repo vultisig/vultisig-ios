@@ -127,6 +127,14 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertEqual(refreshed.gasLimit, BigInt(50_000))        // custom wins over estimated
     }
 
+    func testERC20DefaultGasLimitUsesTokenTransferLimit() throws {
+        let vault = try TestStore.makeVault()
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let tx = SendTransaction.empty(coin: usdc, vault: vault)
+
+        XCTAssertEqual(tx.gasLimit, BigInt(EVMHelper.defaultERC20TransferGasUnit))
+    }
+
     func testWithDoesNotClearCustomByteFeeOnRefresh() throws {
         let vault = try TestStore.makeVault()
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
@@ -156,6 +164,51 @@ final class SendTransactionTests: XCTestCase {
         let refreshed = pinned.with(gas: BigInt(60), fee: BigInt(6_000))
         XCTAssertEqual(refreshed.customByteFee, BigInt(80))
         XCTAssertEqual(refreshed.byteFee, BigInt(80)) // custom wins
+    }
+
+    func testCopyCanUpdateAmountWithoutManualRebuild() throws {
+        let tx = try seed(amount: "1.0")
+
+        let updated = tx.copy(amount: "0.9", gas: BigInt(30), fee: BigInt(900))
+
+        XCTAssertEqual(updated.amount, "0.9")
+        XCTAssertEqual(updated.gas, BigInt(30))
+        XCTAssertEqual(updated.fee, BigInt(900))
+        XCTAssertEqual(updated.customGasLimit, tx.customGasLimit)
+        XCTAssertEqual(updated.feeCoin, tx.feeCoin)
+    }
+
+    func testCopyCanClearOptionalFields() throws {
+        let tx = try seed()
+            .copy(
+                toAddressLabel: .set("vitalik.eth"),
+                estimatedGasLimit: .set(BigInt(21_000)),
+                customGasLimit: .set(BigInt(50_000))
+            )
+
+        let cleared = tx.copy(
+            toAddressLabel: .set(nil),
+            estimatedGasLimit: .set(nil),
+            customGasLimit: .set(nil)
+        )
+
+        XCTAssertNil(cleared.toAddressLabel)
+        XCTAssertNil(cleared.estimatedGasLimit)
+        XCTAssertNil(cleared.customGasLimit)
+    }
+
+    func testHashUsesSnapshotsInsteadOfMutableCoinReference() throws {
+        let tx = try seed()
+        var firstHasher = Hasher()
+        tx.hash(into: &firstHasher)
+
+        tx.coin.rawBalance = "999999999999999999"
+
+        var secondHasher = Hasher()
+        tx.hash(into: &secondHasher)
+
+        XCTAssertEqual(tx.coinSnapshot.rawBalance, "0")
+        XCTAssertEqual(firstHasher.finalize(), secondHasher.finalize())
     }
 
     // MARK: - with(...) per-field passthrough

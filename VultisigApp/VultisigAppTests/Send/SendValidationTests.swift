@@ -171,13 +171,13 @@ final class SendValidationTests: XCTestCase {
 
     func testFiatToCoinAmountReturnsNilForEmptyInput() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         XCTAssertNil(SendCryptoLogic.fiatToCoinAmount(fiat: "", coin: eth))
     }
 
     func testFiatToCoinAmountReturnsNilForZeroInput() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         XCTAssertNil(SendCryptoLogic.fiatToCoinAmount(fiat: "0", coin: eth))
     }
 
@@ -189,7 +189,7 @@ final class SendValidationTests: XCTestCase {
 
     func testFiatToCoinAmountDividesByCoinPrice() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         // $100 / $2000/ETH = 0.05 ETH
         let result = SendCryptoLogic.fiatToCoinAmount(fiat: "100", coin: eth)
         XCTAssertNotNil(result)
@@ -200,19 +200,19 @@ final class SendValidationTests: XCTestCase {
 
     func testCoinAmountToFiatReturnsNilForEmptyInput() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         XCTAssertNil(SendCryptoLogic.coinAmountToFiat(amount: "", coin: eth))
     }
 
     func testCoinAmountToFiatReturnsNilForZeroInput() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         XCTAssertNil(SendCryptoLogic.coinAmountToFiat(amount: "0", coin: eth))
     }
 
     func testCoinAmountToFiatMultipliesByCoinPrice() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 2_000
+        setPrice(2_000, for: eth)
         // 0.5 ETH * $2000 = $1000
         let result = SendCryptoLogic.coinAmountToFiat(amount: "0.5", coin: eth)
         XCTAssertNotNil(result)
@@ -221,7 +221,7 @@ final class SendValidationTests: XCTestCase {
 
     func testCoinAmountToFiatTruncatesToTwoDecimals() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        eth.priceRate = 1_234.5678
+        setPrice(1_234.5678, for: eth)
         // 0.0001 * 1234.5678 ≈ 0.12346 → 0.12 after truncated(toPlaces: 2)
         let result = SendCryptoLogic.coinAmountToFiat(amount: "0.0001", coin: eth)
         XCTAssertNotNil(result)
@@ -231,9 +231,17 @@ final class SendValidationTests: XCTestCase {
     // MARK: - Helpers
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {
-        let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
+        var asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
+        asset.priceProviderId = "send-validation-\(ticker)-\(UUID().uuidString)"
         let coin = Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
         coin.rawBalance = rawBalance
         return coin
+    }
+
+    private func setPrice(_ value: Double, for coin: Coin) {
+        let cryptoId = RateProvider.cryptoId(for: coin.toCoinMeta()).id
+        try? RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: value)
+        ])
     }
 }

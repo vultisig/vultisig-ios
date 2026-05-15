@@ -48,6 +48,132 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.feeCoin, vm.coin)
     }
 
+    // MARK: - Route hydration
+
+    func testHydrateFromSeedPreservesPrefilledSendData() {
+        let eth = SendFormFixture.makeETH()
+        let vault = SendFormFixture.makeVault(coins: [eth])
+        let form = FunctionCallForm()
+        form.coin = eth
+        form.fromAddress = eth.address
+        form.toAddress = "0x1111111111111111111111111111111111111111"
+        form.toAddressLabel = "vitalik.eth"
+        form.lastResolvedAddress = form.toAddress
+        form.amount = "0.25"
+        form.amountInFiat = "500"
+        form.memo = "hello"
+        form.feeMode = .fast
+        form.gas = BigInt(30_000_000_000)
+        form.fee = BigInt(1_500_000_000_000_000)
+        form.customGasLimit = BigInt(50_000)
+
+        let seed = SendDetailsSeed.fromForm(form, vault: vault, hasPreselectedCoin: true)
+        let vm = SendFormFixture.make(coin: eth, vault: vault)
+        vm.hydrate(from: seed)
+
+        XCTAssertEqual(vm.toAddress, form.toAddress)
+        XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
+        XCTAssertEqual(vm.lastResolvedAddress, form.toAddress)
+        XCTAssertEqual(vm.amount, "0.25")
+        XCTAssertEqual(vm.amountInFiat, "500")
+        XCTAssertEqual(vm.memo, "hello")
+        XCTAssertEqual(vm.feeMode, .fast)
+        XCTAssertEqual(vm.gas, BigInt(30_000_000_000))
+        XCTAssertEqual(vm.fee, BigInt(1_500_000_000_000_000))
+        XCTAssertEqual(vm.customGasLimit, BigInt(50_000))
+    }
+
+    func testDetailsSeedFromFormPreservesPrefilledSendData() {
+        let eth = SendFormFixture.makeETH()
+        let vault = SendFormFixture.makeVault(coins: [eth])
+        let form = FunctionCallForm()
+        form.coin = eth
+        form.fromAddress = eth.address
+        form.toAddress = "0x1111111111111111111111111111111111111111"
+        form.toAddressLabel = "vitalik.eth"
+        form.lastResolvedAddress = form.toAddress
+        form.amount = "0.25"
+        form.memo = "hello"
+        form.feeMode = .fast
+        form.customGasLimit = BigInt(50_000)
+
+        let seed = SendDetailsSeed.fromForm(form, vault: vault, hasPreselectedCoin: true)
+        let vm = SendFormFixture.make(coin: eth, vault: vault)
+        vm.hydrate(from: seed)
+
+        XCTAssertEqual(seed.coin, eth)
+        XCTAssertEqual(seed.vault, vault)
+        XCTAssertTrue(seed.hasPreselectedCoin)
+        XCTAssertEqual(vm.toAddress, form.toAddress)
+        XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
+        XCTAssertEqual(vm.lastResolvedAddress, form.toAddress)
+        XCTAssertEqual(vm.amount, "0.25")
+        XCTAssertEqual(vm.memo, "hello")
+        XCTAssertEqual(vm.feeMode, .fast)
+        XCTAssertEqual(vm.customGasLimit, BigInt(50_000))
+    }
+
+    // MARK: - Address resolution
+
+    func testValidateToAddressResolvesNamespaceAndStoresLabel() async {
+        let resolved = "0x1111111111111111111111111111111111111111"
+        let vm = SendFormFixture.make(
+            coin: SendFormFixture.makeETH(),
+            addressResolver: { input, chain in
+                XCTAssertEqual(input, "vitalik.eth")
+                XCTAssertEqual(chain, .ethereum)
+                return resolved
+            }
+        )
+        vm.toAddress = "vitalik.eth"
+
+        let isValid = await vm.validateToAddress()
+
+        XCTAssertTrue(isValid)
+        XCTAssertTrue(vm.isNamespaceResolved)
+        XCTAssertEqual(vm.toAddress, resolved)
+        XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
+        XCTAssertEqual(vm.lastResolvedAddress, resolved)
+    }
+
+    func testValidateFormAllowsResolvedNamespaceAddress() async {
+        let resolved = "0x1111111111111111111111111111111111111111"
+        let eth = SendFormFixture.makeETH(rawBalance: "1000000000000000000")
+        let vm = SendFormFixture.make(
+            coin: eth,
+            addressResolver: { _, _ in resolved }
+        )
+        vm.toAddress = "vitalik.eth"
+        vm.amount = "0.1"
+        vm.gas = BigInt(21_000)
+        vm.fee = BigInt(21_000)
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertTrue(isValid)
+        XCTAssertEqual(vm.toAddress, resolved)
+        XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
+    }
+
+    func testValidateToAddressClearsStaleNamespaceLabelForPlainAddress() async {
+        let resolved = "0x2222222222222222222222222222222222222222"
+        let vm = SendFormFixture.make(
+            coin: SendFormFixture.makeETH(),
+            addressResolver: { input, _ in input }
+        )
+        vm.toAddress = resolved
+        vm.toAddressLabel = "old.eth"
+        vm.lastResolvedAddress = "0x1111111111111111111111111111111111111111"
+
+        let isValid = await vm.validateToAddress()
+
+        XCTAssertTrue(isValid)
+        XCTAssertTrue(vm.isNamespaceResolved)
+        XCTAssertEqual(vm.toAddress, resolved)
+        XCTAssertNil(vm.toAddressLabel)
+        XCTAssertNil(vm.lastResolvedAddress)
+    }
+
     // MARK: - Zero-amount state reset (Phase D lesson)
 
     func testEmptyAmountClearsDerivedStateOnLoadGasInfo() async {
@@ -124,6 +250,14 @@ final class SendDetailsViewModelTests: XCTestCase {
 
         XCTAssertEqual(vm.customGasLimit, BigInt(50_000),
                        "User-pinned custom gas limit must survive a Verify refresh.")
+        XCTAssertEqual(interactor.calculateEVMFeeCalls.last?.gasLimit, BigInt(50_000),
+                       "Fee calculation must use the user-pinned gas limit, not the default transfer limit.")
+    }
+
+    func testERC20DefaultGasLimitUsesTokenTransferLimit() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeUSDC())
+
+        XCTAssertEqual(vm.gasLimit, BigInt(EVMHelper.defaultERC20TransferGasUnit))
     }
 
     func testCustomByteFeePinnedThroughLoadGasInfo() async {

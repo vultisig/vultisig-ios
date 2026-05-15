@@ -22,10 +22,145 @@ import BigInt
 import Foundation
 import VultisigCommonData
 
+struct SendDetailsSeed: Hashable {
+    let coin: Coin
+    let vault: Vault
+    let hasPreselectedCoin: Bool
+
+    let fromAddress: String
+    let toAddress: String
+    let toAddressLabel: String?
+    let lastResolvedAddress: String?
+    let amount: String
+    let amountInFiat: String
+    let memo: String
+    let gas: BigInt
+    let fee: BigInt
+    let feeMode: FeeMode
+    let estimatedGasLimit: BigInt?
+    let customGasLimit: BigInt?
+    let customByteFee: BigInt?
+    let sendMaxAmount: Bool
+    let isFastVault: Bool
+    let isStakingOperation: Bool
+    let transactionType: VSTransactionType
+    let memoFunctionDictionary: [String: String]
+    let wasmContractPayload: WasmExecuteContractPayload?
+
+    static func empty(coin: Coin, vault: Vault, hasPreselectedCoin: Bool) -> SendDetailsSeed {
+        SendDetailsSeed(
+            coin: coin,
+            vault: vault,
+            hasPreselectedCoin: hasPreselectedCoin,
+            fromAddress: coin.address,
+            toAddress: "",
+            toAddressLabel: nil,
+            lastResolvedAddress: nil,
+            amount: "",
+            amountInFiat: "",
+            memo: "",
+            gas: .zero,
+            fee: .zero,
+            feeMode: .default,
+            estimatedGasLimit: nil,
+            customGasLimit: nil,
+            customByteFee: nil,
+            sendMaxAmount: false,
+            isFastVault: false,
+            isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:],
+            wasmContractPayload: nil
+        )
+    }
+
+    static func fromForm(
+        _ tx: FunctionCallForm,
+        coin: Coin? = nil,
+        vault: Vault,
+        hasPreselectedCoin: Bool
+    ) -> SendDetailsSeed {
+        let resolvedCoin = coin ?? tx.coin
+        return SendDetailsSeed(
+            coin: resolvedCoin,
+            vault: vault,
+            hasPreselectedCoin: hasPreselectedCoin,
+            fromAddress: tx.fromAddress.isEmpty ? resolvedCoin.address : tx.fromAddress,
+            toAddress: tx.toAddress,
+            toAddressLabel: tx.toAddressLabel,
+            lastResolvedAddress: tx.lastResolvedAddress,
+            amount: tx.amount,
+            amountInFiat: tx.amountInFiat,
+            memo: tx.memo,
+            gas: tx.gas,
+            fee: tx.fee,
+            feeMode: tx.feeMode,
+            estimatedGasLimit: tx.estematedGasLimit,
+            customGasLimit: tx.customGasLimit,
+            customByteFee: tx.customByteFee,
+            sendMaxAmount: tx.sendMaxAmount,
+            isFastVault: tx.isFastVault,
+            isStakingOperation: tx.isStakingOperation,
+            transactionType: tx.transactionType,
+            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
+            wasmContractPayload: tx.wasmContractPayload
+        )
+    }
+}
+
+struct SendCoinSnapshot: Hashable {
+    let chain: Chain
+    let ticker: String
+    let decimals: Int
+    let priceProviderId: String
+    let contractAddress: String
+    let isNativeToken: Bool
+    let address: String
+    let rawBalance: String
+
+    init(coin: Coin) {
+        chain = coin.chain
+        ticker = coin.ticker
+        decimals = coin.decimals
+        priceProviderId = coin.priceProviderId
+        contractAddress = coin.contractAddress
+        isNativeToken = coin.isNativeToken
+        address = coin.address
+        rawBalance = coin.rawBalance
+    }
+}
+
+struct SendVaultSnapshot: Hashable {
+    let pubKeyECDSA: String
+    let pubKeyEdDSA: String
+    let localPartyID: String
+    let hexChainCode: String
+
+    init(vault: Vault) {
+        pubKeyECDSA = vault.pubKeyECDSA
+        pubKeyEdDSA = vault.pubKeyEdDSA
+        localPartyID = vault.localPartyID
+        hexChainCode = vault.hexChainCode
+    }
+}
+
+enum SendTransactionUpdate<Value> {
+    case set(Value)
+
+    var value: Value {
+        switch self {
+        case .set(let value):
+            return value
+        }
+    }
+}
+
 struct SendTransaction: Hashable {
     // Identity
     let coin: Coin
     let vault: Vault
+    let coinSnapshot: SendCoinSnapshot
+    let vaultSnapshot: SendVaultSnapshot
 
     // Form fields
     let fromAddress: String
@@ -59,6 +194,108 @@ struct SendTransaction: Hashable {
     /// Precomputed at construction so Verify/Done don't need the vault's
     /// full coin list at read time.
     let feeCoin: Coin
+    let feeCoinSnapshot: SendCoinSnapshot
+}
+
+extension SendTransaction {
+    static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
+        lhs.coinSnapshot == rhs.coinSnapshot &&
+            lhs.vaultSnapshot == rhs.vaultSnapshot &&
+            lhs.fromAddress == rhs.fromAddress &&
+            lhs.toAddress == rhs.toAddress &&
+            lhs.toAddressLabel == rhs.toAddressLabel &&
+            lhs.amount == rhs.amount &&
+            lhs.amountInFiat == rhs.amountInFiat &&
+            lhs.memo == rhs.memo &&
+            lhs.gas == rhs.gas &&
+            lhs.fee == rhs.fee &&
+            lhs.feeMode == rhs.feeMode &&
+            lhs.estimatedGasLimit == rhs.estimatedGasLimit &&
+            lhs.customGasLimit == rhs.customGasLimit &&
+            lhs.customByteFee == rhs.customByteFee &&
+            lhs.sendMaxAmount == rhs.sendMaxAmount &&
+            lhs.isFastVault == rhs.isFastVault &&
+            lhs.isStakingOperation == rhs.isStakingOperation &&
+            lhs.transactionType == rhs.transactionType &&
+            lhs.memoFunctionDictionary == rhs.memoFunctionDictionary &&
+            lhs.wasmContractPayload == rhs.wasmContractPayload &&
+            lhs.feeCoinSnapshot == rhs.feeCoinSnapshot
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(coinSnapshot)
+        hasher.combine(vaultSnapshot)
+        hasher.combine(fromAddress)
+        hasher.combine(toAddress)
+        hasher.combine(toAddressLabel)
+        hasher.combine(amount)
+        hasher.combine(amountInFiat)
+        hasher.combine(memo)
+        hasher.combine(gas)
+        hasher.combine(fee)
+        hasher.combine(feeMode)
+        hasher.combine(estimatedGasLimit)
+        hasher.combine(customGasLimit)
+        hasher.combine(customByteFee)
+        hasher.combine(sendMaxAmount)
+        hasher.combine(isFastVault)
+        hasher.combine(isStakingOperation)
+        hasher.combine(transactionType)
+        hasher.combine(memoFunctionDictionary)
+        hasher.combine(wasmContractPayload)
+        hasher.combine(feeCoinSnapshot)
+    }
+}
+
+extension SendTransaction {
+    init(
+        coin: Coin,
+        vault: Vault,
+        fromAddress: String,
+        toAddress: String,
+        toAddressLabel: String?,
+        amount: String,
+        amountInFiat: String,
+        memo: String,
+        gas: BigInt,
+        fee: BigInt,
+        feeMode: FeeMode,
+        estimatedGasLimit: BigInt?,
+        customGasLimit: BigInt?,
+        customByteFee: BigInt?,
+        sendMaxAmount: Bool,
+        isFastVault: Bool,
+        isStakingOperation: Bool,
+        transactionType: VSTransactionType,
+        memoFunctionDictionary: [String: String],
+        wasmContractPayload: WasmExecuteContractPayload?,
+        feeCoin: Coin
+    ) {
+        self.coin = coin
+        self.vault = vault
+        self.coinSnapshot = SendCoinSnapshot(coin: coin)
+        self.vaultSnapshot = SendVaultSnapshot(vault: vault)
+        self.fromAddress = fromAddress
+        self.toAddress = toAddress
+        self.toAddressLabel = toAddressLabel
+        self.amount = amount
+        self.amountInFiat = amountInFiat
+        self.memo = memo
+        self.gas = gas
+        self.fee = fee
+        self.feeMode = feeMode
+        self.estimatedGasLimit = estimatedGasLimit
+        self.customGasLimit = customGasLimit
+        self.customByteFee = customByteFee
+        self.sendMaxAmount = sendMaxAmount
+        self.isFastVault = isFastVault
+        self.isStakingOperation = isStakingOperation
+        self.transactionType = transactionType
+        self.memoFunctionDictionary = memoFunctionDictionary
+        self.wasmContractPayload = wasmContractPayload
+        self.feeCoin = feeCoin
+        self.feeCoinSnapshot = SendCoinSnapshot(coin: feeCoin)
+    }
 }
 
 // MARK: - Construction helpers
@@ -105,6 +342,76 @@ extension SendTransaction {
 // MARK: - Builder
 
 extension SendTransaction {
+    func copy(
+        coin: Coin? = nil,
+        vault: Vault? = nil,
+        fromAddress: String? = nil,
+        toAddress: String? = nil,
+        toAddressLabel: SendTransactionUpdate<String?>? = nil,
+        amount: String? = nil,
+        amountInFiat: String? = nil,
+        memo: String? = nil,
+        gas: BigInt? = nil,
+        fee: BigInt? = nil,
+        feeMode: FeeMode? = nil,
+        estimatedGasLimit: SendTransactionUpdate<BigInt?>? = nil,
+        customGasLimit: SendTransactionUpdate<BigInt?>? = nil,
+        customByteFee: SendTransactionUpdate<BigInt?>? = nil,
+        sendMaxAmount: Bool? = nil,
+        isFastVault: Bool? = nil,
+        isStakingOperation: Bool? = nil,
+        transactionType: VSTransactionType? = nil,
+        memoFunctionDictionary: [String: String]? = nil,
+        wasmContractPayload: SendTransactionUpdate<WasmExecuteContractPayload?>? = nil,
+        feeCoin: Coin? = nil
+    ) -> SendTransaction {
+        let resolvedVault = vault ?? self.vault
+        let resolvedCoin = coin ?? self.coin
+        let resolvedToAddressLabel: String? = {
+            guard let toAddressLabel else { return self.toAddressLabel }
+            return toAddressLabel.value
+        }()
+        let resolvedEstimatedGasLimit: BigInt? = {
+            guard let estimatedGasLimit else { return self.estimatedGasLimit }
+            return estimatedGasLimit.value
+        }()
+        let resolvedCustomGasLimit: BigInt? = {
+            guard let customGasLimit else { return self.customGasLimit }
+            return customGasLimit.value
+        }()
+        let resolvedCustomByteFee: BigInt? = {
+            guard let customByteFee else { return self.customByteFee }
+            return customByteFee.value
+        }()
+        let resolvedWasmContractPayload: WasmExecuteContractPayload? = {
+            guard let wasmContractPayload else { return self.wasmContractPayload }
+            return wasmContractPayload.value
+        }()
+        return SendTransaction(
+            coin: resolvedCoin,
+            vault: resolvedVault,
+            fromAddress: fromAddress ?? self.fromAddress,
+            toAddress: toAddress ?? self.toAddress,
+            toAddressLabel: resolvedToAddressLabel,
+            amount: amount ?? self.amount,
+            amountInFiat: amountInFiat ?? self.amountInFiat,
+            memo: memo ?? self.memo,
+            gas: gas ?? self.gas,
+            fee: fee ?? self.fee,
+            feeMode: feeMode ?? self.feeMode,
+            estimatedGasLimit: resolvedEstimatedGasLimit,
+            customGasLimit: resolvedCustomGasLimit,
+            customByteFee: resolvedCustomByteFee,
+            sendMaxAmount: sendMaxAmount ?? self.sendMaxAmount,
+            isFastVault: isFastVault ?? self.isFastVault,
+            isStakingOperation: isStakingOperation ?? self.isStakingOperation,
+            transactionType: transactionType ?? self.transactionType,
+            memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
+            wasmContractPayload: resolvedWasmContractPayload,
+            feeCoin: feeCoin ?? self.feeCoin
+        )
+    }
+
     /// Builder for refresh paths in Verify — re-fetched chain-specific / fees
     /// produce a new SendTransaction with the same identity fields.
     ///
@@ -126,28 +433,19 @@ extension SendTransaction {
         memoFunctionDictionary: [String: String]? = nil,
         wasmContractPayload: WasmExecuteContractPayload? = nil
     ) -> SendTransaction {
-        SendTransaction(
-            coin: coin,
-            vault: vault,
-            fromAddress: fromAddress,
-            toAddress: toAddress ?? self.toAddress,
-            toAddressLabel: toAddressLabel,
-            amount: amount ?? self.amount,
-            amountInFiat: amountInFiat,
-            memo: memo ?? self.memo,
-            gas: gas ?? self.gas,
-            fee: fee ?? self.fee,
-            feeMode: feeMode ?? self.feeMode,
-            estimatedGasLimit: estimatedGasLimit ?? self.estimatedGasLimit,
-            customGasLimit: customGasLimit,
-            customByteFee: customByteFee,
-            sendMaxAmount: sendMaxAmount ?? self.sendMaxAmount,
-            isFastVault: isFastVault ?? self.isFastVault,
-            isStakingOperation: isStakingOperation ?? self.isStakingOperation,
-            transactionType: transactionType,
-            memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
-            wasmContractPayload: wasmContractPayload ?? self.wasmContractPayload,
-            feeCoin: feeCoin
+        copy(
+            toAddress: toAddress,
+            amount: amount,
+            memo: memo,
+            gas: gas,
+            fee: fee,
+            feeMode: feeMode,
+            estimatedGasLimit: estimatedGasLimit.map { .set($0) },
+            sendMaxAmount: sendMaxAmount,
+            isFastVault: isFastVault,
+            isStakingOperation: isStakingOperation,
+            memoFunctionDictionary: memoFunctionDictionary,
+            wasmContractPayload: wasmContractPayload.map { .set($0) }
         )
     }
 }
@@ -212,7 +510,11 @@ extension SendTransaction {
 
 extension SendTransaction {
     var gasLimit: BigInt {
-        customGasLimit ?? estimatedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+        customGasLimit ?? estimatedGasLimit ?? BigInt(defaultGasLimit)
+    }
+
+    private var defaultGasLimit: Int64 {
+        coin.isNativeToken ? EVMHelper.defaultETHTransferGasUnit : EVMHelper.defaultERC20TransferGasUnit
     }
 
     var byteFee: BigInt {

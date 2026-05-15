@@ -18,12 +18,14 @@ enum SendFormFixture {
         coin: Coin = makeBTC(),
         vault: Vault = makeVault(),
         interactor: SendInteractor? = nil,
+        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
         overrides: (SendDetailsViewModel) -> Void = { _ in }
     ) -> SendDetailsViewModel {
         let vm = SendDetailsViewModel(
             coin: coin,
             vault: vault,
-            interactor: interactor ?? MockSendInteractor()
+            interactor: interactor ?? MockSendInteractor(),
+            addressResolver: addressResolver
         )
         overrides(vm)
         return vm

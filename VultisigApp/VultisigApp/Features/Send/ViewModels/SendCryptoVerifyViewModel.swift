@@ -85,30 +85,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 fee: feeResult.fee
             )
             if newAmount != transaction.amount {
-                // Amount changed by max-send adjustment; rebuild with updated amount.
-                transaction = SendTransaction(
-                    coin: transaction.coin,
-                    vault: transaction.vault,
-                    fromAddress: transaction.fromAddress,
-                    toAddress: transaction.toAddress,
-                    toAddressLabel: transaction.toAddressLabel,
-                    amount: newAmount,
-                    amountInFiat: transaction.amountInFiat,
-                    memo: transaction.memo,
-                    gas: transaction.gas,
-                    fee: transaction.fee,
-                    feeMode: transaction.feeMode,
-                    estimatedGasLimit: transaction.estimatedGasLimit,
-                    customGasLimit: transaction.customGasLimit,
-                    customByteFee: transaction.customByteFee,
-                    sendMaxAmount: transaction.sendMaxAmount,
-                    isFastVault: transaction.isFastVault,
-                    isStakingOperation: transaction.isStakingOperation,
-                    transactionType: transaction.transactionType,
-                    memoFunctionDictionary: transaction.memoFunctionDictionary,
-                    wasmContractPayload: transaction.wasmContractPayload,
-                    feeCoin: transaction.feeCoin
-                )
+                transaction = transaction.copy(amount: newAmount)
             }
 
             isCalculatingFee = false

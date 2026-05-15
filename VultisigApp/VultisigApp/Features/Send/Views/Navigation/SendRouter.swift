@@ -14,13 +14,8 @@ struct SendRouter {
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {
-        case .details(let coin, let hasPreselectedCoin, let tx, let vault):
-            viewBuilder.buildDetailsScreen(
-                coin: coin,
-                hasPreselectedCoin: hasPreselectedCoin,
-                tx: tx,
-                vault: vault
-            )
+        case .details(let seed):
+            viewBuilder.buildDetailsScreen(seed: seed)
         case .verify(let tx, let retrySignal, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, retrySignal: retrySignal, vault: vault)
         case .pairing(let vault, let tx, let retrySignal, let keysignPayload, let fastVaultPassword):

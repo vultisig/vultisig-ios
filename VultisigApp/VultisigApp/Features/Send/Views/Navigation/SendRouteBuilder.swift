@@ -12,19 +12,12 @@ struct SendRouteBuilder {
     @MainActor
     @ViewBuilder
     func buildDetailsScreen(
-        coin: Coin?,
-        hasPreselectedCoin: Bool,
-        tx: FunctionCallForm,
-        vault: Vault
+        seed: SendDetailsSeed
     ) -> some View {
         SendDetailsScreen(
-            coin: coin,
-            viewModel: SendDetailsViewModel(
-                coin: coin ?? tx.coin,
-                vault: vault,
-                hasPreselectedCoin: hasPreselectedCoin
-            ),
-            vault: vault
+            coin: seed.hasPreselectedCoin ? seed.coin : nil,
+            viewModel: makeDetailsViewModel(seed: seed),
+            vault: seed.vault
         )
     }
 
@@ -84,6 +77,17 @@ struct SendRouteBuilder {
             URLQueryItem(name: "coinType", value: coinType)
         ]
         return components.url!
+    }
+
+    @MainActor
+    private func makeDetailsViewModel(seed: SendDetailsSeed) -> SendDetailsViewModel {
+        let viewModel = SendDetailsViewModel(
+            coin: seed.coin,
+            vault: seed.vault,
+            hasPreselectedCoin: seed.hasPreselectedCoin
+        )
+        viewModel.hydrate(from: seed)
+        return viewModel
     }
 
 }

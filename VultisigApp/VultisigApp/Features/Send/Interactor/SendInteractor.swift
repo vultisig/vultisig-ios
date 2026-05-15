@@ -17,15 +17,19 @@ import BigInt
 import Foundation
 import VultisigCommonData
 
-protocol SendInteractor {
-    /// Fast Vault eligibility for a given vault — exists on the server AND
-    /// wasn't a local-only backup.
-    func loadFastVault(vault: Vault) async -> Bool
+struct SendChainSpecificRequest: Equatable {
+    let coin: Coin
+    let toAddress: String
+    let amount: BigInt
+    let memo: String?
+    let sendMaxAmount: Bool
+    let isDeposit: Bool
+    let transactionType: VSTransactionType
+    let gasLimit: BigInt?
+    let feeMode: FeeMode
+    let fromAddress: String
 
-    /// Chain-specific fee / nonce / blockhash data needed to assemble the
-    /// keysign payload. `feeMode` controls EVM priority and UTXO byte-fee
-    /// tier — never hardcode `.default` at the call site.
-    func fetchChainSpecific(
+    init(
         coin: Coin,
         toAddress: String,
         amount: BigInt,
@@ -36,16 +40,74 @@ protocol SendInteractor {
         gasLimit: BigInt?,
         feeMode: FeeMode,
         fromAddress: String
-    ) async throws -> BlockChainSpecific
+    ) {
+        self.coin = coin
+        self.toAddress = toAddress
+        self.amount = amount
+        self.memo = memo
+        self.sendMaxAmount = sendMaxAmount
+        self.isDeposit = isDeposit
+        self.transactionType = transactionType
+        self.gasLimit = gasLimit
+        self.feeMode = feeMode
+        self.fromAddress = fromAddress
+    }
+
+    init(tx: SendTransaction) {
+        self.init(
+            coin: tx.coin,
+            toAddress: tx.toAddress,
+            amount: tx.amountInRaw,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: tx.gasLimit,
+            feeMode: tx.feeMode,
+            fromAddress: tx.fromAddress
+        )
+    }
+}
+
+struct SendFeeEstimateRequest: Equatable {
+    let chainSpecific: SendChainSpecificRequest
+
+    var coin: Coin { chainSpecific.coin }
+    var fromAddress: String { chainSpecific.fromAddress }
+    var gasLimit: BigInt? { chainSpecific.gasLimit }
+    var feeMode: FeeMode { chainSpecific.feeMode }
+
+    init(chainSpecific: SendChainSpecificRequest) {
+        self.chainSpecific = chainSpecific
+    }
+
+    init(tx: SendTransaction) {
+        self.init(chainSpecific: SendChainSpecificRequest(tx: tx))
+    }
+}
+
+protocol SendInteractor {
+    /// Fast Vault eligibility for a given vault — exists on the server AND
+    /// wasn't a local-only backup.
+    func loadFastVault(vault: Vault) async -> Bool
+
+    /// Chain-specific fee / nonce / blockhash data needed to assemble the
+    /// keysign payload. `feeMode` controls EVM priority and UTXO byte-fee
+    /// tier — never hardcode `.default` at the call site.
+    func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific
 
     /// Compute the user-visible EVM network fee (Eip1559 / legacy gas) in the
     /// chain's native units. Caller resolves `feeMode` — passing it explicitly
     /// is the fix for the bug where Verify refresh ignored `tx.feeMode`.
-    func calculateEVMFee(
-        coin: Coin,
-        fromAddress: String,
-        feeMode: FeeMode
-    ) async throws -> SendInteractorFeeResult
+    func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult
+
+    /// UTXO/Cardano draft planning for fee display. Kept below the interactor
+    /// so Verify logic does not reach into BlockchairService caches or payload
+    /// factories directly.
+    func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt
+
+    /// Validate UTXO availability before payload construction.
+    func validateUtxosIfNeeded(coin: Coin) async throws
 
     /// Build the final keysign payload to hand off to signing. UTXO + Cardano
     /// chains plan a draft transfer internally; other chains read directly
@@ -74,18 +136,7 @@ extension SendInteractor {
     /// `SendTransaction`. Lets Verify-stage callers (which already hold the
     /// struct) skip the field-by-field unpacking.
     func fetchChainSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
-        try await fetchChainSpecific(
-            coin: tx.coin,
-            toAddress: tx.toAddress,
-            amount: tx.amountInRaw,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            sendMaxAmount: tx.sendMaxAmount,
-            isDeposit: tx.isDeposit,
-            transactionType: tx.transactionType,
-            gasLimit: tx.gasLimit,
-            feeMode: tx.feeMode,
-            fromAddress: tx.fromAddress
-        )
+        try await fetchChainSpecific(SendChainSpecificRequest(tx: tx))
     }
 
     /// Unified gas + fee fetch used by the Send Details form (both refresh
@@ -100,6 +151,21 @@ extension SendInteractor {
     /// is non-zero. That distinction stays at the call site — this method
     /// always returns the true on-chain values.
     func fetchGasAndFee(
+        _ request: SendFeeEstimateRequest
+    ) async throws -> SendInteractorFeeResult {
+        let chainSpecific = try await fetchChainSpecific(request.chainSpecific)
+
+        switch request.coin.chainType {
+        case .EVM:
+            return try await calculateEVMFee(request)
+        case .UTXO, .Cardano:
+            return SendInteractorFeeResult(fee: chainSpecific.fee, gas: chainSpecific.gas)
+        default:
+            return SendInteractorFeeResult(fee: chainSpecific.gas, gas: chainSpecific.gas)
+        }
+    }
+
+    func fetchGasAndFee(
         coin: Coin,
         toAddress: String,
         amount: BigInt,
@@ -111,7 +177,7 @@ extension SendInteractor {
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> SendInteractorFeeResult {
-        let chainSpecific = try await fetchChainSpecific(
+        try await fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
             coin: coin,
             toAddress: toAddress,
             amount: amount,
@@ -122,15 +188,6 @@ extension SendInteractor {
             gasLimit: gasLimit,
             feeMode: feeMode,
             fromAddress: fromAddress
-        )
-
-        switch coin.chainType {
-        case .EVM:
-            return try await calculateEVMFee(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
-        case .UTXO, .Cardano:
-            return SendInteractorFeeResult(fee: chainSpecific.fee, gas: chainSpecific.gas)
-        default:
-            return SendInteractorFeeResult(fee: chainSpecific.gas, gas: chainSpecific.gas)
-        }
+        )))
     }
 }

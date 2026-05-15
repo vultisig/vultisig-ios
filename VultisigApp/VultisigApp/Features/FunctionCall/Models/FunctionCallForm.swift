@@ -58,7 +58,10 @@ class FunctionCallForm: ObservableObject, Hashable {
     var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
 
     var gasLimit: BigInt {
-        return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+        let defaultGasLimit = coin.isNativeToken
+            ? EVMHelper.defaultETHTransferGasUnit
+            : EVMHelper.defaultERC20TransferGasUnit
+        return customGasLimit ?? estematedGasLimit ?? BigInt(defaultGasLimit)
     }
 
     var byteFee: BigInt {

@@ -32,6 +32,7 @@ enum SendDetailsFocusedTab: String {
 final class SendDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
     @ObservationIgnored private let interactor: SendInteractor
+    @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
 
     // MARK: - Identity (immutable once set)
     let vault: Vault
@@ -51,6 +52,7 @@ final class SendDetailsViewModel {
     var fromAddress: String
     var toAddress: String = ""
     var toAddressLabel: String? = nil
+    var lastResolvedAddress: String? = nil
     var amount: String = ""
     var amountInFiat: String = ""
     var memo: String = ""
@@ -106,13 +108,37 @@ final class SendDetailsViewModel {
         coin: Coin,
         vault: Vault,
         hasPreselectedCoin: Bool = false,
-        interactor: SendInteractor = DefaultSendInteractor.live
+        interactor: SendInteractor = DefaultSendInteractor.live,
+        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput
     ) {
         self.coin = coin
         self.vault = vault
         self.hasPreselectedCoin = hasPreselectedCoin
         self.fromAddress = coin.address
         self.interactor = interactor
+        self.addressResolver = addressResolver
+    }
+
+    func hydrate(from seed: SendDetailsSeed) {
+        fromAddress = seed.fromAddress
+        toAddress = seed.toAddress
+        toAddressLabel = seed.toAddressLabel
+        lastResolvedAddress = seed.lastResolvedAddress
+        amount = seed.amount
+        amountInFiat = seed.amountInFiat
+        memo = seed.memo
+        feeMode = seed.feeMode
+        sendMaxAmount = seed.sendMaxAmount
+        isFastVault = seed.isFastVault
+        isStakingOperation = seed.isStakingOperation
+        transactionType = seed.transactionType
+        memoFunctionDictionary = seed.memoFunctionDictionary
+        wasmContractPayload = seed.wasmContractPayload
+        gas = seed.gas
+        fee = seed.fee
+        estimatedGasLimit = seed.estimatedGasLimit
+        customGasLimit = seed.customGasLimit
+        customByteFee = seed.customByteFee
     }
 
     // MARK: - UI flow (moved from the old UI-only SendDetailsViewModel)
@@ -176,7 +202,11 @@ final class SendDetailsViewModel {
     }
 
     var gasLimit: BigInt {
-        customGasLimit ?? estimatedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+        customGasLimit ?? estimatedGasLimit ?? BigInt(defaultGasLimit)
+    }
+
+    private var defaultGasLimit: Int64 {
+        coin.isNativeToken ? EVMHelper.defaultETHTransferGasUnit : EVMHelper.defaultERC20TransferGasUnit
     }
 
     var byteFee: BigInt {
@@ -321,14 +351,25 @@ final class SendDetailsViewModel {
         isAddressResolved = nil
     }
 
-    // Returns true if the address is valid for the current coin's chain.
-    // `async` reserves the seam for an ENS/TNS resolver injection in a
-    // follow-up — `validateToAddress` semantically belongs in the async
-    // validation pipeline next to `validateForm`.
-    // swiftlint:disable:next async_without_await
     func validateToAddress() async -> Bool {
         guard !toAddress.isEmpty else { return false }
-        return AddressService.validateAddress(address: toAddress, chain: coin.chain)
+        do {
+            let originalInput = toAddress
+            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
+            if originalInput != resolvedAddress {
+                toAddress = resolvedAddress
+                toAddressLabel = originalInput
+                lastResolvedAddress = resolvedAddress
+            } else if originalInput != lastResolvedAddress {
+                toAddressLabel = nil
+                lastResolvedAddress = nil
+            }
+            isNamespaceResolved = true
+            return true
+        } catch {
+            isNamespaceResolved = false
+            return false
+        }
     }
 
     func isValidAddressFormat() -> Bool {
@@ -382,7 +423,7 @@ final class SendDetailsViewModel {
 
         let maxFee: BigInt
         do {
-            let result = try await interactor.fetchGasAndFee(
+            let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
                 coin: coin,
                 toAddress: toAddress.isEmpty ? coin.address : toAddress,
                 amount: .zero,
@@ -393,7 +434,7 @@ final class SendDetailsViewModel {
                 gasLimit: gasLimit,
                 feeMode: feeMode,
                 fromAddress: fromAddress
-            )
+            )))
             maxFee = coin.isNativeToken ? result.fee : .zero
         } catch {
             logger.error("setMaxAmount failed: \(error.localizedDescription, privacy: .public)")
@@ -428,7 +469,7 @@ final class SendDetailsViewModel {
         defer { isCalculatingFee = false }
 
         do {
-            let result = try await interactor.fetchGasAndFee(
+            let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
                 coin: coin,
                 toAddress: toAddress,
                 amount: amountInRaw,
@@ -439,7 +480,7 @@ final class SendDetailsViewModel {
                 gasLimit: gasLimit,
                 feeMode: feeMode,
                 fromAddress: fromAddress
-            )
+            )))
             gas = result.gas
             fee = result.fee
         } catch {
@@ -525,6 +566,14 @@ final class SendDetailsViewModel {
         return true
     }
 
+    func validateAddressResolved() async -> Bool {
+        guard await validateToAddress() else {
+            setAddressError(message: "invalidAddressError")
+            return false
+        }
+        return true
+    }
+
     /// Rejects amount + fee > balance for the source coin. TRON staking is
     /// short-circuited because the validation already ran in
     /// `Tron{Freeze,Unfreeze}View` and the on-screen balance reflects it.
@@ -564,9 +613,7 @@ final class SendDetailsViewModel {
     }
 
     // Composed form-validation pipeline — every rule runs in order, stopping
-    // at the first failure. `async` reserved for the future ENS/TNS
-    // resolver injection.
-    // swiftlint:disable:next async_without_await
+    // at the first failure.
     func validateForm() async -> Bool {
         resetStates()
         isValidatingForm = true
@@ -575,10 +622,10 @@ final class SendDetailsViewModel {
             isLoading = false
         }
 
-        return validatePendingTransaction()
-            && validateAmountNonZero()
-            && validateAddressFormat()
-            && validateBalance()
+        guard validatePendingTransaction() else { return false }
+        guard validateAmountNonZero() else { return false }
+        guard await validateAddressResolved() else { return false }
+        return validateBalance()
     }
 
     // MARK: - Hand-off
@@ -645,6 +692,7 @@ final class SendDetailsViewModel {
         fromAddress = newCoin.address
         toAddress = ""
         toAddressLabel = nil
+        lastResolvedAddress = nil
         amount = ""
         amountInFiat = ""
         memo = ""

@@ -19,13 +19,6 @@ struct SendCryptoVerifyLogic {
         self.interactor = interactor
     }
 
-    // The UTXO + Cardano draft-plan paths still talk to `BlockchairService`
-    // and `KeysignPayloadFactory` directly. Refactoring those onto a
-    // protocol is a separate step — for now the interactor injection
-    // covers the EVM + Cosmos + Solana + TON + other non-UTXO chains,
-    // which is what the new tests exercise.
-    private var utxo: BlockchairService { .shared }
-
     // MARK: - Fee Calculation
 
     struct FeeResult {
@@ -45,11 +38,7 @@ struct SendCryptoVerifyLogic {
         // Send-pilot decision 3: thread tx.feeMode through instead of
         // hardcoding .default. The user's custom fee mode chosen in the
         // Details screen is otherwise dropped on Verify refresh.
-        let result = try await interactor.calculateEVMFee(
-            coin: tx.coin,
-            fromAddress: tx.fromAddress,
-            feeMode: tx.feeMode
-        )
+        let result = try await interactor.calculateEVMFee(SendFeeEstimateRequest(tx: tx))
         return FeeResult(fee: result.fee, gas: result.gas)
     }
 
@@ -60,7 +49,7 @@ struct SendCryptoVerifyLogic {
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
-            fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: chainSpecific)
+            fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
 
         case .Cosmos, .THORChain:
             fee = chainSpecific.fee
@@ -70,74 +59,6 @@ struct SendCryptoVerifyLogic {
         }
 
         return FeeResult(fee: fee, gas: fee)
-    }
-
-    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
-        // Send-pilot decision 2 win: vault is non-optional on the new struct,
-        // so the legacy `AppViewModel.shared.selectedVault` singleton fallback
-        // disappears here.
-        let vault = tx.vault
-
-        // Normalize decimal separator (replace comma with period for consistent parsing)
-        let normalizedAmount = tx.amount.replacingOccurrences(of: ",", with: ".")
-
-        // Convert to Decimal and multiply by 10^decimals to get the raw amount
-        let amountDecimal = normalizedAmount.toDecimal()
-        let multiplier = pow(Decimal(10), tx.coin.decimals)
-        let rawAmount = amountDecimal * multiplier
-
-        // Convert to BigInt safely using string representation to avoid overflow
-        // Convert to BigInt safely using NSDecimalNumber to handle rounding and string conversion
-        let rawAmountNumber = NSDecimalNumber(decimal: rawAmount)
-        let behavior = NSDecimalNumberHandler(roundingMode: .down, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedRawAmount = rawAmountNumber.rounding(accordingToBehavior: behavior)
-        let rawAmountString = roundedRawAmount.stringValue
-
-        guard let actualAmount = BigInt(rawAmountString) else {
-            throw HelperError.runtimeError("Invalid amount for fee calculation")
-        }
-
-        if actualAmount == 0 {
-            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
-        }
-
-        // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
-        if tx.coin.chain.chainType == .UTXO {
-            await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-            _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
-        }
-        // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
-
-        let keysignFactory = KeysignPayloadFactory()
-        let keysignPayload = try await keysignFactory.buildTransfer(
-            coin: tx.coin,
-            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
-            amount: actualAmount,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            chainSpecific: chainSpecific,
-            swapPayload: nil,
-            vault: vault
-        )
-
-        let planFee: BigInt
-
-        switch tx.coin.chain {
-        case .cardano:
-            planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
-
-        default: // UTXO chains
-            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
-                throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
-            }
-            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            planFee = BigInt(plan.fee)
-        }
-
-        if planFee > 0 {
-            return planFee
-        }
-
-        return BigInt.zero
     }
 
     // MARK: - Balance Validation
@@ -204,14 +125,7 @@ struct SendCryptoVerifyLogic {
     // MARK: - UTXO Validation
 
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
-        if tx.coin.chain.chainType == ChainType.UTXO {
-            do {
-                _ = try await utxo.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
-            } catch {
-                print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
-                throw HelperError.runtimeError("Failed to fetch UTXO data. Please check your internet connection and try again.")
-            }
-        }
+        try await interactor.validateUtxosIfNeeded(coin: tx.coin)
     }
 
     // MARK: - Keysign Payload

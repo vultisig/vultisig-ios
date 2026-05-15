@@ -27,22 +27,27 @@ final class MockSendInteractor: SendInteractor {
     // MARK: - Call records
 
     struct FetchChainSpecificCall: Equatable {
-        let coin: Coin
-        let toAddress: String
-        let amount: BigInt
-        let memo: String?
-        let sendMaxAmount: Bool
-        let isDeposit: Bool
-        let transactionType: VSTransactionType
-        let gasLimit: BigInt?
-        let feeMode: FeeMode
-        let fromAddress: String
+        let request: SendChainSpecificRequest
+
+        var coin: Coin { request.coin }
+        var toAddress: String { request.toAddress }
+        var amount: BigInt { request.amount }
+        var memo: String? { request.memo }
+        var sendMaxAmount: Bool { request.sendMaxAmount }
+        var isDeposit: Bool { request.isDeposit }
+        var transactionType: VSTransactionType { request.transactionType }
+        var gasLimit: BigInt? { request.gasLimit }
+        var feeMode: FeeMode { request.feeMode }
+        var fromAddress: String { request.fromAddress }
     }
 
     struct CalculateEVMFeeCall: Equatable {
-        let coin: Coin
-        let fromAddress: String
-        let feeMode: FeeMode
+        let request: SendFeeEstimateRequest
+
+        var coin: Coin { request.coin }
+        var fromAddress: String { request.fromAddress }
+        var gasLimit: BigInt? { request.gasLimit }
+        var feeMode: FeeMode { request.feeMode }
     }
 
     struct BuildKeysignPayloadCall {
@@ -60,6 +65,8 @@ final class MockSendInteractor: SendInteractor {
     private(set) var calculateEVMFeeCalls: [CalculateEVMFeeCall] = []
     private(set) var buildKeysignPayloadCalls: [BuildKeysignPayloadCall] = []
     private(set) var updateBalanceCalls: [Coin] = []
+    private(set) var calculatePlanFeeCalls: [(tx: SendTransaction, chainSpecific: BlockChainSpecific)] = []
+    private(set) var validateUtxosIfNeededCalls: [Coin] = []
 
     // MARK: - Stubs
 
@@ -71,6 +78,10 @@ final class MockSendInteractor: SendInteractor {
     var calculateEVMFeeStub: ((CalculateEVMFeeCall) throws -> SendInteractorFeeResult) = { _ in
         SendInteractorFeeResult(fee: .zero, gas: .zero)
     }
+    var calculatePlanFeeStub: ((SendTransaction, BlockChainSpecific) throws -> BigInt) = { _, chainSpecific in
+        chainSpecific.fee
+    }
+    var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
     var buildKeysignPayloadStub: ((BuildKeysignPayloadCall) throws -> KeysignPayload)?
 
     // MARK: - Conformance
@@ -80,42 +91,26 @@ final class MockSendInteractor: SendInteractor {
         return loadFastVaultResult
     }
 
-    func fetchChainSpecific(
-        coin: Coin,
-        toAddress: String,
-        amount: BigInt,
-        memo: String?,
-        sendMaxAmount: Bool,
-        isDeposit: Bool,
-        transactionType: VSTransactionType,
-        gasLimit: BigInt?,
-        feeMode: FeeMode,
-        fromAddress: String
-    ) async throws -> BlockChainSpecific {
-        let call = FetchChainSpecificCall(
-            coin: coin,
-            toAddress: toAddress,
-            amount: amount,
-            memo: memo,
-            sendMaxAmount: sendMaxAmount,
-            isDeposit: isDeposit,
-            transactionType: transactionType,
-            gasLimit: gasLimit,
-            feeMode: feeMode,
-            fromAddress: fromAddress
-        )
+    func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
+        let call = FetchChainSpecificCall(request: request)
         fetchChainSpecificCalls.append(call)
         return try fetchChainSpecificStub(call)
     }
 
-    func calculateEVMFee(
-        coin: Coin,
-        fromAddress: String,
-        feeMode: FeeMode
-    ) async throws -> SendInteractorFeeResult {
-        let call = CalculateEVMFeeCall(coin: coin, fromAddress: fromAddress, feeMode: feeMode)
+    func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult {
+        let call = CalculateEVMFeeCall(request: request)
         calculateEVMFeeCalls.append(call)
         return try calculateEVMFeeStub(call)
+    }
+
+    func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+        calculatePlanFeeCalls.append((tx: tx, chainSpecific: chainSpecific))
+        return try calculatePlanFeeStub(tx, chainSpecific)
+    }
+
+    func validateUtxosIfNeeded(coin: Coin) async throws {
+        validateUtxosIfNeededCalls.append(coin)
+        try validateUtxosIfNeededStub(coin)
     }
 
     func buildKeysignPayload(

@@ -17,7 +17,7 @@ final class SendInteractorTests: XCTestCase {
 
     func testFetchChainSpecificForwardsFeeMode() async throws {
         let stub = StubSendInteractor()
-        _ = try? await stub.fetchChainSpecific(
+        _ = try? await stub.fetchChainSpecific(SendChainSpecificRequest(
             coin: .example,
             toAddress: "to",
             amount: BigInt(1),
@@ -28,14 +28,42 @@ final class SendInteractorTests: XCTestCase {
             gasLimit: nil,
             feeMode: .fast,
             fromAddress: "from"
-        )
+        ))
         XCTAssertEqual(stub.lastFeeMode, .fast)
     }
 
     func testCalculateEVMFeeForwardsFeeMode() async throws {
         let stub = StubSendInteractor()
-        _ = try? await stub.calculateEVMFee(coin: .example, fromAddress: "addr", feeMode: .safeLow)
+        _ = try? await stub.calculateEVMFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
+            coin: .example,
+            toAddress: "to",
+            amount: BigInt(1),
+            memo: nil,
+            sendMaxAmount: false,
+            isDeposit: false,
+            transactionType: .unspecified,
+            gasLimit: nil,
+            feeMode: .safeLow,
+            fromAddress: "addr",
+        )))
         XCTAssertEqual(stub.lastFeeMode, .safeLow)
+    }
+
+    func testCalculateEVMFeeForwardsGasLimit() async throws {
+        let stub = StubSendInteractor()
+        _ = try? await stub.calculateEVMFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
+            coin: .example,
+            toAddress: "to",
+            amount: BigInt(1),
+            memo: nil,
+            sendMaxAmount: false,
+            isDeposit: false,
+            transactionType: .unspecified,
+            gasLimit: BigInt(75_000),
+            feeMode: .default,
+            fromAddress: "addr",
+        )))
+        XCTAssertEqual(stub.lastGasLimit, BigInt(75_000))
     }
 
     func testFeeResultEqualityComparesBothFields() {
@@ -65,6 +93,7 @@ final class SendInteractorTests: XCTestCase {
 
         XCTAssertEqual(mock.calculateEVMFeeCalls.count, 1, "EVM path must dispatch to calculateEVMFee")
         XCTAssertEqual(mock.calculateEVMFeeCalls.first?.feeMode, .fast, "feeMode threaded")
+        XCTAssertNil(mock.calculateEVMFeeCalls.first?.gasLimit)
         XCTAssertEqual(result.fee, BigInt(stringLiteral: "630000000000000"))
         XCTAssertEqual(result.gas, BigInt(stringLiteral: "30000000000"))
     }
@@ -129,33 +158,27 @@ final class SendInteractorTests: XCTestCase {
 /// bug fix at the protocol level without hitting real services.
 private final class StubSendInteractor: SendInteractor {
     var lastFeeMode: FeeMode?
+    var lastGasLimit: BigInt?
 
     func loadFastVault(vault: Vault) async -> Bool { false }
 
-    func fetchChainSpecific(
-        coin: Coin,
-        toAddress: String,
-        amount: BigInt,
-        memo: String?,
-        sendMaxAmount: Bool,
-        isDeposit: Bool,
-        transactionType: VSTransactionType,
-        gasLimit: BigInt?,
-        feeMode: FeeMode,
-        fromAddress: String
-    ) async throws -> BlockChainSpecific {
-        lastFeeMode = feeMode
+    func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
+        lastGasLimit = request.gasLimit
+        lastFeeMode = request.feeMode
         throw NSError(domain: "stub", code: 0)
     }
 
-    func calculateEVMFee(
-        coin: Coin,
-        fromAddress: String,
-        feeMode: FeeMode
-    ) async throws -> SendInteractorFeeResult {
-        lastFeeMode = feeMode
+    func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult {
+        lastGasLimit = request.gasLimit
+        lastFeeMode = request.feeMode
         throw NSError(domain: "stub", code: 0)
     }
+
+    func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+        throw NSError(domain: "stub", code: 0)
+    }
+
+    func validateUtxosIfNeeded(coin: Coin) async throws {}
 
     func buildKeysignPayload(
         coin: Coin,

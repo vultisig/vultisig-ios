@@ -6,7 +6,7 @@
 //
 
 enum SendRoute: Hashable {
-    case details(coin: Coin?, hasPreselectedCoin: Bool, tx: FunctionCallForm, vault: Vault)
+    case details(seed: SendDetailsSeed)
     case verify(tx: SendTransaction, retrySignal: SendRetrySignal, vault: Vault)
     case pairing(vault: Vault, tx: SendTransaction, retrySignal: SendRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal)

@@ -8,11 +8,8 @@
 //  `validateForm`, `scan`).
 //
 //  Async-method coverage uses `MockSendInteractor` injected via the VM's
-//  initializer. The UTXO + Cardano draft-plan paths inside
-//  `SendCryptoVerifyLogic.calculateUTXOPlanFee` still talk to
-//  `BlockchairService.shared` + `KeysignPayloadFactory` directly, so this
-//  suite exercises only the non-UTXO chains (EVM, Cosmos, Solana, etc.) on
-//  the async paths — the UTXO branch is the remaining test gap.
+//  initializer, including UTXO/Cardano planning now that those side effects
+//  live behind the interactor boundary.
 //
 
 import BigInt
@@ -228,6 +225,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(interactor.calculateEVMFeeCalls.count, 1)
         XCTAssertEqual(interactor.calculateEVMFeeCalls.first?.feeMode, .fast,
                        "tx.feeMode must be threaded to interactor.calculateEVMFee — regression pin for #4347")
+        XCTAssertEqual(interactor.calculateEVMFeeCalls.first?.gasLimit, tx.gasLimit,
+                       "Verify refresh must price the same gas limit that payload construction will sign.")
         XCTAssertEqual(vm.transaction.gas, BigInt(stringLiteral: "30000000000"))
         XCTAssertEqual(vm.transaction.fee, BigInt(stringLiteral: "630000000000000"))
         XCTAssertFalse(vm.isCalculatingFee)
@@ -257,6 +256,39 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         // separate fee field beyond the gas).
         XCTAssertEqual(vm.transaction.fee, BigInt(7_500))
         XCTAssertEqual(vm.transaction.gas, BigInt(7_500))
+    }
+
+    func testLoadGasInfoForwardsCustomGasLimitToEVMFeeCalculation() async throws {
+        let interactor = MockSendInteractor()
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(stringLiteral: "1500000000000000"),
+                                    gas: BigInt(stringLiteral: "30000000000"))
+        }
+        let tx = try makeTransaction(customGasLimit: BigInt(50_000))
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(interactor.calculateEVMFeeCalls.first?.gasLimit, BigInt(50_000))
+        XCTAssertEqual(vm.transaction.customGasLimit, BigInt(50_000))
+    }
+
+    func testLoadGasInfoUsesInteractorPlanFeeForUTXO() async throws {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            .UTXO(byteFee: BigInt(50), sendMaxAmount: false)
+        }
+        interactor.calculatePlanFeeStub = { _, _ in BigInt(1_234) }
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8,
+                           isNative: true, rawBalance: "100000000")
+        let tx = try makeTransaction(coin: btc, amount: "0.1")
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(interactor.calculatePlanFeeCalls.count, 1)
+        XCTAssertEqual(vm.transaction.fee, BigInt(1_234))
+        XCTAssertEqual(vm.transaction.gas, BigInt(1_234))
     }
 
     func testLoadGasInfoSetsErrorOnInteractorThrow() async throws {
@@ -435,6 +467,21 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(interactor.fetchChainSpecificCalls.first?.memo, nil)
     }
 
+    func testValidateFormDelegatesUTXOValidationToInteractor() async throws {
+        let interactor = MockSendInteractor()
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8,
+                           isNative: true, rawBalance: "100000000")
+        let tx = try makeTransaction(coin: btc, amount: "0.1")
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        _ = try await vm.validateForm()
+
+        XCTAssertEqual(interactor.validateUtxosIfNeededCalls.count, 1)
+        XCTAssertEqual(interactor.validateUtxosIfNeededCalls.first?.ticker, "BTC")
+    }
+
     // MARK: - Helpers
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {
@@ -448,7 +495,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         coin: Coin? = nil,
         amount: String = "0.1",
         fee: BigInt = BigInt(stringLiteral: "1000000000000000"),
-        feeMode: FeeMode = .default
+        feeMode: FeeMode = .default,
+        customGasLimit: BigInt? = nil
     ) throws -> SendTransaction {
         let vault = try TestStore.makeVault()
         let coinToUse = coin ?? makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
@@ -466,7 +514,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             fee: fee,
             feeMode: feeMode,
             estimatedGasLimit: nil,
-            customGasLimit: nil,
+            customGasLimit: customGasLimit,
             customByteFee: nil,
             sendMaxAmount: false,
             isFastVault: false,

@@ -40,7 +40,7 @@ final class SendRetrySignalTests: XCTestCase {
 
     func testPendingReasonRoundTripsAcrossSetAndClear() {
         let signal = SendRetrySignal()
-        signal.pendingRetryReason = .otherError("test reason")
+        signal.pendingRetryReason = .other("test reason")
         XCTAssertNotNil(signal.pendingRetryReason)
 
         signal.pendingRetryReason = nil
