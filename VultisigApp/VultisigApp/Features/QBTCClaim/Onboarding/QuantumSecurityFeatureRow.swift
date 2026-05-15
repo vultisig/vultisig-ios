@@ -10,16 +10,13 @@
 import SwiftUI
 
 struct QuantumSecurityFeatureRow: View {
-    let systemImage: String
+    let icon: String
     let title: String
     let subtitle: String
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Theme.colors.primaryAccent4)
-                .frame(width: 20, height: 20)
+            Icon(named: icon, color: Theme.colors.alertInfo, size: 16)
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 8) {

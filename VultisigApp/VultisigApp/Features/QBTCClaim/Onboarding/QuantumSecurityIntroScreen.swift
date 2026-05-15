@@ -91,17 +91,17 @@ struct QuantumSecurityIntroScreen: View {
     private var featureList: some View {
         VStack(alignment: .leading, spacing: 16) {
             QuantumSecurityFeatureRow(
-                systemImage: "key.fill",
+                icon: "rec-keyframe",
                 title: "quantumSecurityFeatureGenerateTitle".localized,
                 subtitle: "quantumSecurityFeatureGenerateSubtitle".localized
             )
             QuantumSecurityFeatureRow(
-                systemImage: "link",
+                icon: "keyboard-cable",
                 title: "quantumSecurityFeatureLinkTitle".localized,
                 subtitle: "quantumSecurityFeatureLinkSubtitle".localized
             )
             QuantumSecurityFeatureRow(
-                systemImage: "checkmark.shield.fill",
+                icon: "ice-hockey",
                 title: "quantumSecurityFeatureClaimTitle".localized,
                 subtitle: "quantumSecurityFeatureClaimSubtitle".localized
             )
