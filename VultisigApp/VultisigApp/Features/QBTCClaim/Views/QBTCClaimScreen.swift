@@ -40,9 +40,9 @@ struct QBTCClaimScreen: View {
         }
     }
 
-    /// `nil` when the QBTC chain has no public explorer wired up (today
-    /// `ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, ...)` returns "").
-    /// The result view hides its "View on explorer" CTA when this is `nil`.
+    /// `nil` when the URL string fails to parse — `ExplorerLinkBuilder`
+    /// now returns the canonical `https://qbtc-explorer.vercel.app/qbtc/tx/<txid>`
+    /// for QBTC, so the result view's "View on explorer" CTA is wired up.
     private func explorerURL(for txHash: String) -> URL? {
         let raw = ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash)
         guard !raw.isEmpty else { return nil }
