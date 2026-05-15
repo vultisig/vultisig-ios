@@ -4,7 +4,7 @@ import SwiftUI
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router
-    @ObservedObject var tx: FunctionCallForm
+    @StateObject private var tx = FunctionCallForm()
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @ObservedObject var vault: Vault
 
@@ -18,12 +18,12 @@ struct FunctionCallDetailsScreen: View {
 
     init(
         vault: Vault,
-        tx: FunctionCallForm,
         defaultCoin: Coin?
     ) {
         self.vault = vault
-        self.defaultCoin = defaultCoin ?? tx.coin
-        self.tx = tx
+        self.defaultCoin = defaultCoin
+            ?? vault.coins.first(where: { $0.isNativeToken })
+            ?? Coin.example
     }
 
     private static func validateNodeAddress(_ address: String) -> Bool {
@@ -249,6 +249,7 @@ struct FunctionCallDetailsScreen: View {
 private extension FunctionCallDetailsScreen {
     func setData() {
         setupForm()
+        tx.vault = vault
         tx.coin = defaultCoin
     }
 
