@@ -101,7 +101,7 @@ enum SendCryptoLogic {
         let fiatDecimal = fiat.toDecimal()
         guard fiatDecimal > 0, coin.price > 0 else { return nil }
         let coinDecimal = fiatDecimal / Decimal(coin.price)
-        return coinDecimal.truncated(toPlaces: coin.decimals).formatToDecimal(digits: coin.decimals)
+        return formatAmountInput(coinDecimal.truncated(toPlaces: coin.decimals), digits: coin.decimals)
     }
 
     /// Convert a coin-typed value into its fiat equivalent string (2-decimal
@@ -112,7 +112,7 @@ enum SendCryptoLogic {
         let coinDecimal = amount.toDecimal()
         guard coinDecimal > 0 else { return nil }
         let fiatDecimal = coinDecimal * Decimal(coin.price)
-        return fiatDecimal.truncated(toPlaces: 2).formatToDecimal(digits: coin.decimals)
+        return formatAmountInput(fiatDecimal.truncated(toPlaces: 2), digits: coin.decimals)
     }
 
     // MARK: - Max amount
@@ -124,7 +124,7 @@ enum SendCryptoLogic {
     static func computeMaxAmount(coin: Coin, fee: BigInt) -> String {
         let maxValue = coin.getMaxValue(fee)
         let digits = coin.decimals > 8 ? 8 : coin.decimals
-        return maxValue.formatToDecimal(digits: digits)
+        return formatAmountInput(maxValue, digits: digits)
     }
 
     /// Apply a percentage (0–100) to a max amount string. Used by the
@@ -133,7 +133,18 @@ enum SendCryptoLogic {
         let multiplier = Decimal(percentage) / 100
         let target = maxAmount.toDecimal() * multiplier
         let digits = coinDecimals > 8 ? 8 : coinDecimals
-        return target.formatToDecimal(digits: digits)
+        return formatAmountInput(target, digits: digits)
+    }
+
+    private static func formatAmountInput(_ value: Decimal, digits: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = digits
+        formatter.minimumFractionDigits = 0
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.usesGroupingSeparator = false
+        formatter.roundingMode = .down
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? ""
     }
 
     // MARK: - Display: fees

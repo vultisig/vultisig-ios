@@ -47,6 +47,16 @@ final class SendMaxAmountTests: XCTestCase {
         XCTAssertEqual(amount.toDecimal(), Decimal(string: "200"))
     }
 
+    func testComputeMaxAmountDoesNotUseGroupingSeparators() {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "1000000000") // 1000 USDC
+
+        let amount = SendCryptoLogic.computeMaxAmount(coin: usdc, fee: .zero)
+
+        XCTAssertEqual(amount, "1000")
+        XCTAssertFalse(amount.contains(Locale.current.groupingSeparator ?? ","))
+    }
+
     func testComputeMaxAmountCardanoSubtractsLovelaceFee() {
         let ada = makeCoin(.cardano, ticker: "ADA", decimals: 6, isNative: true,
                            rawBalance: "10000000") // 10 ADA
@@ -77,6 +87,13 @@ final class SendMaxAmountTests: XCTestCase {
             SendCryptoLogic.applyPercentage(maxAmount: "1.0", percentage: 0, coinDecimals: 8).toDecimal(),
             .zero
         )
+    }
+
+    func testApplyPercentageDoesNotUseGroupingSeparators() {
+        let amount = SendCryptoLogic.applyPercentage(maxAmount: "1000", percentage: 50, coinDecimals: 6)
+
+        XCTAssertEqual(amount, "500")
+        XCTAssertFalse(amount.contains(Locale.current.groupingSeparator ?? ","))
     }
 
     // MARK: - Helpers
