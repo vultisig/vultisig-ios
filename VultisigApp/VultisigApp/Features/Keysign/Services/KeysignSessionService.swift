@@ -343,6 +343,10 @@ final class KeysignSessionService: KeysignSessionServicing {
             sessionID: session.sessionId,
             localParty: session.localPartyId
         )
+        // Polling started above must always be torn down on this
+        // method's exit path — including timeout, cancellation, or any
+        // future throw — so it can't bleed into later rounds/retries.
+        defer { discovery.stop() }
 
         let started = Date()
         while discovery.peersFound.isEmpty {
