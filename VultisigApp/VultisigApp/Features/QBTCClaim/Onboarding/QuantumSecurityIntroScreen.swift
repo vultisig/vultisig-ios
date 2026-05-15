@@ -141,3 +141,7 @@ struct QuantumSecurityIntroScreen: View {
         }
     }
 }
+
+#Preview {
+    QuantumSecurityIntroScreen(vault: .example, staticForSnapshot: false)
+}
