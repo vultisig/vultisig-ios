@@ -29,6 +29,12 @@ final class Vault: ObservableObject, Codable {
     var defiChains: [Chain] = []
     var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
 
+    // FastVault eligibility cache — populated by FastVaultEligibilityRefresher on
+    // app foreground + vault switch. Reads are sync; refresh happens at planned
+    // trigger points rather than per-screen-mount. Not encoded (local-only state).
+    var fastVaultEligibility: Bool = false
+    var fastVaultEligibilityCheckedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?

@@ -179,9 +179,9 @@ struct SettingsCustomMessageView: View {
     }
 
     func onLoad() {
-        Task { @MainActor in
-            isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
-        }
+        // Cached value populated by `FastVaultEligibilityRefresher` on app
+        // foreground + vault switch. No network call here.
+        isFastVault = vault.fastVaultEligibility
     }
 
     func onSignPress() {

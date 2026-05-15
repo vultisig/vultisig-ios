@@ -24,10 +24,12 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
     }
 
+    // swiftlint:disable:next async_without_await
     func loadFastVault(vault: Vault) async -> Bool {
-        let exists = await fastVault.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().hasPrefix("server-")
-        return exists && !isLocalBackup
+        // Cached value populated by `FastVaultEligibilityRefresher` on app
+        // foreground + vault switch. Sync read; no network call on the hot path.
+        // The `async` is required by `SwapInteractor` protocol conformance.
+        vault.fastVaultEligibility
     }
 
     func fetchQuote(

@@ -159,6 +159,7 @@ extension VultisigApp {
                 switch scenePhase {
                 case .active:
                     continueLogin()
+                    appViewModel.refreshFastVaultEligibilityIfNeeded()
                 case .background:
                     resetLogin()
                 default:
