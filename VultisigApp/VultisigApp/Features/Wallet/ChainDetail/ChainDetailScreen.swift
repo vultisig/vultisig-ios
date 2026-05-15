@@ -66,6 +66,30 @@ struct ChainDetailScreen: View {
         nativeCoin.chain == .qbtc && qbtcEligibility.hasClaimableUtxos
     }
 
+    /// Bottom clearance for the Claim button. macOS / iPadOS / iOS<26
+    /// use the legacy `VultiTabBar` overlay — its top edge sits at
+    /// roughly `40pt` (tab bar padding) + `64pt` (height) ≈ 104pt above
+    /// the screen edge, so the CTA needs to clear that plus a little
+    /// breathing room. iPhone iOS 26+ uses the system glass `TabView`
+    /// which already insets content.
+    private var claimButtonBottomInset: CGFloat {
+        #if os(macOS)
+        return 120
+        #else
+        if #available(iOS 26.0, *), !isIPadOS {
+            return 16
+        }
+        return 120
+        #endif
+    }
+
+    /// Bottom padding the scroll content reserves so its last row isn't
+    /// hidden under the Claim button overlay. Matches the button's
+    /// bottom inset + the button height (~64pt) + small breathing room.
+    private var claimButtonReservedHeight: CGFloat {
+        claimButtonBottomInset + 80
+    }
+
     init(
         nativeCoin: Coin,
         vault: Vault,
@@ -110,7 +134,7 @@ struct ChainDetailScreen: View {
                         .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
                 }
-                .padding(.bottom, showsQbtcClaimButton ? 96 : 0)
+                .padding(.bottom, showsQbtcClaimButton ? claimButtonReservedHeight : 0)
                 .padding(.horizontal, 16)
                 .padding(.bottom, isMacOS ? 120 : 0)
             }
@@ -127,7 +151,7 @@ struct ChainDetailScreen: View {
                     navigateToAction(action: .qbtcClaim(vault: vault))
                 }
                 .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                .padding(.bottom, claimButtonBottomInset)
             }
         }
         .background(MainBackgroundWithNotification())
