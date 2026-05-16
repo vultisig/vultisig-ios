@@ -10,11 +10,11 @@ struct SwapVerifyScreen: View {
     let retrySignal: SwapRetrySignal
     let vault: Vault
 
-    @State var verifyViewModel: SwapVerifyViewModel
-    @StateObject var referredViewModel = ReferredViewModel()
+    @State private var verifyViewModel: SwapVerifyViewModel
+    @StateObject private var referredViewModel = ReferredViewModel()
 
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = .empty
+    @State private var fastPasswordPresented = false
+    @State private var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
     @State private var retryBannerText: String?
 

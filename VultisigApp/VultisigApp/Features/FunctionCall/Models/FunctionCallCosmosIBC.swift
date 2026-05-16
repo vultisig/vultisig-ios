@@ -43,7 +43,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
 
     @Published var selectedChainObject: Chain? = nil
 
-    private var tx: SendTransaction
+    private var tx: FunctionCallForm
     private var vault: Vault
 
     var addressFields: [String: String] {
@@ -60,7 +60,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    required init(tx: SendTransaction, vault: Vault) {
+    required init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
         self.amount = tx.coin.balanceDecimal

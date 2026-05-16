@@ -6,7 +6,28 @@ import VultisigCommonData
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
-class SendTransaction: ObservableObject, Hashable {
+
+/// Mutable form-state holder for the FunctionCall + Referral form layer.
+///
+/// **Role**: backs the user-facing form for FunctionCall (LP add, stake,
+/// mint, cosmos merge/IBC/switch, secured-asset mint/withdraw, etc.) and
+/// for the Referral flow. SwiftUI binds form fields directly to this class
+/// via `@ObservedObject` / `@StateObject`. The 11 `FunctionCall*` sub-models
+/// share state through it (token selection, amount, memo dict).
+///
+/// **Boundary**: at the navigation point (when the flow constructs a
+/// `KeysignPayload` or navigates to `FunctionCallRoute.verify` /
+/// `SendRoute.verify`), callers convert this mutable form-state into the
+/// immutable `SendTransaction` struct via
+/// `SendTransaction.fromFunctionCallForm(_:vault:)`. Everything downstream
+/// of the boundary runs on the new immutable shape.
+///
+/// **Why it exists**: the FunctionCall form's complexity (per-coin token
+/// dropdowns that mutate the shared coin, cross-sub-model state sharing)
+/// genuinely benefits from a single mutable reference type. The simpler
+/// Send / TRON / Circle flows construct `SendTransaction` directly at
+/// hand-off and don't need this class.
+class FunctionCallForm: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var toAddressLabel: String? = nil
@@ -37,7 +58,10 @@ class SendTransaction: ObservableObject, Hashable {
     var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
 
     var gasLimit: BigInt {
-        return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+        let defaultGasLimit = coin.isNativeToken
+            ? EVMHelper.defaultETHTransferGasUnit
+            : EVMHelper.defaultERC20TransferGasUnit
+        return customGasLimit ?? estematedGasLimit ?? BigInt(defaultGasLimit)
     }
 
     var byteFee: BigInt {
@@ -45,50 +69,22 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     var isAmountExceeded: Bool {
-        // TRON staking operations: skip validation entirely
-        // The balance is already validated in TronFreezeView/TronUnfreezeView
-        let isTronStaking = coin.chain == .tron && isStakingOperation
-
-        if isTronStaking {
-            return false
-        }
-
-        if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton)) || !coin.isNativeToken {
-            let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
-            return comparison
-        }
-
-        // For UTXO and Cardano chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
-        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
-        let totalTransactionCost = amountInRaw + feeToUse
-        let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
-
-        return comparison
+        SendCryptoLogic.isAmountExceeded(
+            coin: coin,
+            amount: amount,
+            sendMaxAmount: sendMaxAmount,
+            fee: fee,
+            gas: gas,
+            isStakingOperation: isStakingOperation
+        )
     }
 
     var isDeposit: Bool {
-        !memoFunctionDictionary.allItems().isEmpty && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
+        SendCryptoLogic.isDeposit(coin: coin, memoFunctionDictionary: memoFunctionDictionary.allItems())
     }
 
     var canBeReaped: Bool {
-
-        let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
-        if !tickers.contains(coin.ticker) {
-            return false
-        }
-
-        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        let totalTransactionCost = amountInRaw + gas
-        let remainingBalance = totalBalance - totalTransactionCost
-
-        switch coin.chainType {
-        case .Polkadot:
-            return remainingBalance < PolkadotHelper.defaultExistentialDeposit
-        case .Ripple:
-            return remainingBalance < RippleHelper.defaultExistentialDeposit
-        default:
-            return false
-        }
+        SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: gas)
     }
 
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
@@ -141,48 +137,26 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     var amountInRaw: BigInt {
-        let decimals = coin.decimals
-        let amountInDecimals = amountDecimal * pow(10, decimals)
-        return amountInDecimals.description.toBigInt(decimals: decimals)
+        SendCryptoLogic.amountInRaw(coin: coin, amount: amount)
     }
 
     var amountDecimal: Decimal {
-        let decimalValue = amount.toDecimal()
-        let truncatedDecimal = decimalValue.truncated(toPlaces: coin.decimals)
-        return truncatedDecimal
+        SendCryptoLogic.amountDecimal(coin: coin, amount: amount)
     }
 
     var gasDecimal: Decimal {
-        return Decimal(gas)
+        SendCryptoLogic.gasDecimal(gas: gas)
     }
 
     var gasInReadable: String {
-        // Get native coin for proper fee display (fees are always in native token)
-        var nativeCoin = coin
-        var decimals = coin.decimals
-
-        if !coin.isNativeToken {
-            if let vault = txVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
-                    nativeCoin = nativeToken
-                    decimals = nativeToken.decimals
-                }
-            }
-        }
-
-        if coin.chain.chainType == .EVM {
-            // convert to Gwei , show as Gwei for EVM chain only
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
-                return .empty
-            }
-            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
-        }
-
-        // For UTXO and Cardano chains, use total fee amount (like Android) instead of sats/byte rate
-        let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
-        let feeDecimal = Decimal(feeToDisplay)
-
-        return "\((feeDecimal / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(nativeCoin.ticker)"
+        let resolvedNative: Coin = {
+            guard !coin.isNativeToken,
+                  let vault = txVault,
+                  let nativeToken = vault.coins.nativeCoin(chain: coin.chain)
+            else { return coin }
+            return nativeToken
+        }()
+        return SendCryptoLogic.gasInReadable(coin: coin, gasNativeCoin: resolvedNative, gas: gas, fee: fee)
     }
 
     init() { }
@@ -191,7 +165,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.reset(coin: coin)
     }
 
-    static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
+    static func == (lhs: FunctionCallForm, rhs: FunctionCallForm) -> Bool {
         lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
         lhs.amount == rhs.amount &&

@@ -14,15 +14,18 @@ struct HomeRouteBuilder {
         HomeScreen(showingVaultSelector: showingVaultSelector)
     }
 
+    @MainActor
     @ViewBuilder
-    func buildActionRoute(action: VaultAction, sendTx: SendTransaction, vault: Vault) -> some View {
+    func buildActionRoute(action: VaultAction, sendTx: FunctionCallForm, vault: Vault) -> some View {
         switch action {
         case .send(let coin, let hasPreselectedCoin):
             SendRouteBuilder().buildDetailsScreen(
-                coin: coin,
-                hasPreselectedCoin: hasPreselectedCoin,
-                tx: sendTx,
-                vault: vault
+                seed: SendDetailsSeed.fromForm(
+                    sendTx,
+                    coin: coin,
+                    vault: vault,
+                    hasPreselectedCoin: hasPreselectedCoin
+                )
             )
         case .swap(let fromCoin):
             SwapRouter().buildDetailsScreen(fromCoin: fromCoin, toCoin: nil, vault: vault)

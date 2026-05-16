@@ -8,7 +8,7 @@ import Foundation
 
 // swiftlint:disable async_without_await unused_parameter
 
-final class MockQuoteService: QuoteServiceProtocol, @unchecked Sendable {
+final class MockQuoteService: QuoteServiceProtocol {
     var stubbedResult: Result<SwapQuote, Error>
     private(set) var fetchQuoteCallCount = 0
 

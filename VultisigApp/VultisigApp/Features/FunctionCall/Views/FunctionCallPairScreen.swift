@@ -27,7 +27,7 @@ struct FunctionCallPairScreen: View {
                 previewType: .Send,
                 contentPadding: 0
             ) { input in
-                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: tx))
+                router.navigate(to: FunctionCallRoute.keysign(input: input, tx: tx, retrySignal: SendRetrySignal()))
             }
         }
         .screenTitle("pair".localized)

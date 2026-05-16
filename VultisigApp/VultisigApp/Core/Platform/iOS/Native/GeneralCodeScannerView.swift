@@ -15,7 +15,7 @@ struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
 
-    let sendTX: SendTransaction
+    let sendTX: FunctionCallForm
     var onJoinKeygen: (() -> Void)?
     var onKeysignTransaction: (() -> Void)?
     var onSendCrypto: (() -> Void)?
@@ -63,7 +63,7 @@ struct GeneralCodeScannerView: View {
     GeneralCodeScannerView(
         showSheet: .constant(true),
         selectedChain: .constant(nil),
-        sendTX: SendTransaction(),
+        sendTX: FunctionCallForm(),
         onJoinKeygen: { print("Join Keygen") },
         onKeysignTransaction: { print("Keysign Transaction") },
         onSendCrypto: { print("Send Crypto") }
