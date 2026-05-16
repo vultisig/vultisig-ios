@@ -30,6 +30,8 @@ struct ChainDetailScreen: View {
     /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
     /// user lands back here with QBTC already added to the vault.
     @State private var pendingQbtcAddAfterKeygen: Bool = false
+    @State private var addressCopyTask: Task<Void, Never>?
+    @State private var coinDetailTask: Task<Void, Never>?
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
@@ -161,7 +163,8 @@ struct ChainDetailScreen: View {
                 onShare: { showReceiveSheet = false },
                 onCopy: { coin in
                     showReceiveSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    addressCopyTask?.cancel()
+                    addressCopyTask = delayedTask(after: .milliseconds(350)) {
                         onAddressCopy?(coin)
                     }
                 }
@@ -196,13 +199,15 @@ struct ChainDetailScreen: View {
             if newValue != nil {
                 #if os(macOS)
                 // Add a small delay on macOS to prevent state conflicts
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                coinDetailTask?.cancel()
+                coinDetailTask = delayedTask(after: .milliseconds(50)) {
                     showCoinDetail = true
                 }
                 #else
                 showCoinDetail = true
                 #endif
             } else {
+                coinDetailTask?.cancel()
                 showCoinDetail = false
             }
         }
@@ -216,6 +221,10 @@ struct ChainDetailScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .qbtcQuantumKeygenCompleted)) { note in
             handleQuantumKeygenCompleted(note: note)
+        }
+        .onDisappear {
+            addressCopyTask?.cancel()
+            coinDetailTask?.cancel()
         }
     }
 
@@ -303,6 +312,20 @@ struct ChainDetailScreen: View {
             }
             .buttonStyle(.plain)
             .transition(.opacity)
+        }
+    }
+}
+
+private extension ChainDetailScreen {
+    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
+        Task { @MainActor in
+            do {
+                try await Task.sleep(for: delay)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            action()
         }
     }
 }

@@ -32,6 +32,15 @@ struct HomeScreen: View {
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
+    @State private var processDeeplinkTask: Task<Void, Never>?
+    @State private var selectVaultTask: Task<Void, Never>?
+    @State private var joinKeysignTask: Task<Void, Never>?
+    @State private var joinKeygenTask: Task<Void, Never>?
+    @State private var initialDeeplinkTask: Task<Void, Never>?
+    @State private var retrySendDeeplinkTask: Task<Void, Never>?
+    @State private var sendRouteTask: Task<Void, Never>?
+    @State private var addressOnlyRouteTask: Task<Void, Never>?
+    @State private var scannerCloseTask: Task<Void, Never>?
 
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -72,7 +81,8 @@ struct HomeScreen: View {
 
             if showScanner {
                 showScanner = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                processDeeplinkTask?.cancel()
+                processDeeplinkTask = delayedTask(after: .milliseconds(300)) {
                     presetValuesForDeeplink()
                 }
             } else {
@@ -116,6 +126,9 @@ struct HomeScreen: View {
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
             Text(phoneCheckUpdateViewModel.latestVersionString)
+        }
+        .onDisappear {
+            cancelDelayedTasks()
         }
     }
 
@@ -176,7 +189,7 @@ struct HomeScreen: View {
     private func applyModifiers<V: View>(to view: V, selectedVault: Vault, geo: GeometryProxy)
     -> some View {
         let withBasicModifiers =
-        view
+            view
             .onAppear {
                 capturedGeometryHeight = geo.size.height
             }
@@ -302,8 +315,8 @@ struct HomeScreen: View {
                     showVaultSelector.toggle()
                     if deeplinkViewModel.pendingSendDeeplink {
                         let isAddressOnly =
-                        deeplinkViewModel.address != nil && deeplinkViewModel.assetChain == nil
-                        && deeplinkViewModel.assetTicker == nil
+                            deeplinkViewModel.address != nil && deeplinkViewModel.assetChain == nil
+                            && deeplinkViewModel.assetTicker == nil
 
                         if isAddressOnly, let address = deeplinkViewModel.address {
                             processAddressOnlyDeeplink(address: address, vault: vault)
@@ -311,7 +324,8 @@ struct HomeScreen: View {
                             handleSendDeeplinkAfterVaultSelection(vault: vault)
                         }
                     } else {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        selectVaultTask?.cancel()
+                        selectVaultTask = delayedTask(after: .milliseconds(300)) {
                             appViewModel.set(selectedVault: vault, restartNavigation: false)
                         }
                     }
@@ -359,7 +373,8 @@ extension HomeScreen {
 
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        joinKeysignTask?.cancel()
+        joinKeysignTask = delayedTask(after: .milliseconds(100)) {
             navigateToJoinKeysign()
         }
     }
@@ -371,7 +386,8 @@ extension HomeScreen {
     fileprivate func moveToCreateVaultView() {
         guard let selectedVault = appViewModel.selectedVault else { return }
         showVaultSelector = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        joinKeygenTask?.cancel()
+        joinKeygenTask = delayedTask(after: .milliseconds(100)) {
             navigateToJoinKeygen(selectedVault: selectedVault)
         }
     }
@@ -384,14 +400,14 @@ extension HomeScreen {
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
         fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [
             \.coins,
-             \.hiddenTokens,
-             \.referralCode,
-             \.referredCode,
-             \.defiPositions,
-             \.bondPositions,
-             \.stakePositions,
-             \.lpPositions,
-             \.closedBanners
+            \.hiddenTokens,
+            \.referralCode,
+            \.referredCode,
+            \.defiPositions,
+            \.bondPositions,
+            \.stakePositions,
+            \.lpPositions,
+            \.closedBanners
         ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
@@ -410,7 +426,8 @@ extension HomeScreen {
         } else if !vaults.isEmpty {
             presetValuesForDeeplink()
         } else if deeplinkViewModel.type != nil {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            initialDeeplinkTask?.cancel()
+            initialDeeplinkTask = delayedTask(after: .milliseconds(800)) {
                 if !vaults.isEmpty && deeplinkViewModel.type != nil {
                     presetValuesForDeeplink()
                 } else if deeplinkViewModel.type != nil {
@@ -456,7 +473,8 @@ extension HomeScreen {
         }
 
         guard !vaults.isEmpty else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            retrySendDeeplinkTask?.cancel()
+            retrySendDeeplinkTask = delayedTask(after: .seconds(1)) {
                 if !vaults.isEmpty {
                     handleSendDeeplink()
                 }
@@ -511,7 +529,8 @@ extension HomeScreen {
 
         let coinToUse: Coin? = coin ?? vault.coins.first
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        sendRouteTask?.cancel()
+        sendRouteTask = delayedTask(after: .milliseconds(300)) {
             vaultRoute = .mainAction(.send(
                 coin: coinToUse,
                 hasPreselectedCoin: coinToUse != nil,
@@ -589,7 +608,8 @@ extension HomeScreen {
 
         deeplinkViewModel.address = address
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        addressOnlyRouteTask?.cancel()
+        addressOnlyRouteTask = delayedTask(after: .milliseconds(300)) {
             self.vaultRoute = .mainAction(
                 .send(
                     coin: coinToUse,
@@ -602,7 +622,8 @@ extension HomeScreen {
     private func closeScannerIfNeeded(completion: @escaping () -> Void) {
         if showScanner {
             showScanner = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            scannerCloseTask?.cancel()
+            scannerCloseTask = delayedTask(after: .milliseconds(300)) {
                 completion()
             }
         } else {
@@ -637,6 +658,32 @@ extension HomeScreen {
 
     fileprivate func navigateToImportBackup() {
         router.navigate(to: OnboardingRoute.importVaultShare)
+    }
+}
+
+private extension HomeScreen {
+    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
+        Task { @MainActor in
+            do {
+                try await Task.sleep(for: delay)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            action()
+        }
+    }
+
+    func cancelDelayedTasks() {
+        processDeeplinkTask?.cancel()
+        selectVaultTask?.cancel()
+        joinKeysignTask?.cancel()
+        joinKeygenTask?.cancel()
+        initialDeeplinkTask?.cancel()
+        retrySendDeeplinkTask?.cancel()
+        sendRouteTask?.cancel()
+        addressOnlyRouteTask?.cancel()
+        scannerCloseTask?.cancel()
     }
 }
 

@@ -27,6 +27,8 @@ struct DefiMainScreen: View {
     @State var focusSearch: Bool = false
     @State var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
+    @State private var searchScrollTask: Task<Void, Never>?
+    @State private var clearSearchTask: Task<Void, Never>?
 
     private let scrollReferenceId = "DefiMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
@@ -60,11 +62,14 @@ struct DefiMainScreen: View {
             .onChange(of: showSearchHeader) { _, showSearchHeader in
                 if showSearchHeader {
                     focusSearch = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                    searchScrollTask?.cancel()
+                    searchScrollTask = delayedTask(after: .milliseconds(700)) {
                         withAnimation {
                             scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
                         }
                     }
+                } else {
+                    searchScrollTask?.cancel()
                 }
             }
             .crossPlatformSheet(isPresented: $showChainSelection) {
@@ -84,6 +89,10 @@ struct DefiMainScreen: View {
         .throttledOnAppear(interval: 15.0, action: refresh)
         .onChange(of: vault) { _, _ in
             refresh()
+        }
+        .onDisappear {
+            searchScrollTask?.cancel()
+            clearSearchTask?.cancel()
         }
     }
 
@@ -171,7 +180,8 @@ struct DefiMainScreen: View {
     func onCustomizeChains() {
         showChainSelection = true
         // Clear search after sheet gets presented
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        clearSearchTask?.cancel()
+        clearSearchTask = delayedTask(after: .seconds(1)) {
             clearSearch()
         }
     }
@@ -180,6 +190,20 @@ struct DefiMainScreen: View {
         let showBalanceInHeader: Bool = offset < contentInset
         guard showBalanceInHeader != self.showBalanceInHeader else { return }
         self.showBalanceInHeader = showBalanceInHeader
+    }
+}
+
+private extension DefiMainScreen {
+    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
+        Task { @MainActor in
+            do {
+                try await Task.sleep(for: delay)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            action()
+        }
     }
 }
 
