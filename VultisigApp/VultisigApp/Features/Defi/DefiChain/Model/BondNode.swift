@@ -22,14 +22,12 @@ enum BondNodeState: String, CaseIterable, Codable {
     case disabled
     case unknown
 
-    /// Whether the node can be unbonded
+    /// Whether the node can be unbonded. Mirrors the rule used by Maya's API
+    /// helper (`MayaChainAPIService+Bonds.swift`): any non-`Active` state is
+    /// fair game. `Unknown` is allowed by default so a stale/missing status
+    /// doesn't strand the user — the chain rejects bad txs at submit anyway.
     var canUnbond: Bool {
-        switch self {
-        case .standby, .disabled, .whitelisted:
-            return true
-        case .ready, .active, .unknown:
-            return false
-        }
+        self != .active
     }
 
     /// Whether a user can bond to this node
