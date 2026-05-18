@@ -278,7 +278,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 $0.forEach { peer in
                     self.autoSelectPeer(peer)
                 }
-                self.startFastVaultKeygenIfNeeded(state: state)
+                self.startKeygenIfNeeded(state: state)
             }
     }
 
@@ -309,7 +309,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         return status == .WaitingForDevices && selections.count < 2
     }
 
-    func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
+    func startKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
