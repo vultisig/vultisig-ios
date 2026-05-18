@@ -10,12 +10,12 @@ struct SwapDetailsScreen: View {
     let toCoin: Coin?
     let vault: Vault
 
-    @State var detailsViewModel = SwapDetailsViewModel()
-    @StateObject var referredViewModel = ReferredViewModel()
-    @StateObject var keyboardObserver = KeyboardObserver()
+    @State private var detailsViewModel = SwapDetailsViewModel()
+    @StateObject private var referredViewModel = ReferredViewModel()
+    @StateObject private var keyboardObserver = KeyboardObserver()
 
-    @State var buttonRotated = false
-    @State var showErrorTooltip = false
+    @State private var buttonRotated = false
+    @State private var showErrorTooltip = false
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
@@ -268,7 +268,7 @@ struct SwapDetailsScreen: View {
                     Button {
                         hideKeyboard()
                     } label: {
-                        Text(NSLocalizedString("done", comment: "Done"))
+                        Text("done".localized)
                     }
                 }
             }

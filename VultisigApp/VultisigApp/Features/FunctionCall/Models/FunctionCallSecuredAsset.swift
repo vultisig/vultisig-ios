@@ -30,7 +30,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // Domain models - needed for FunctionCallInstance compatibility
-    var tx: SendTransaction
+    var tx: FunctionCallForm
     private var vault: Vault
 
     var addressFields: [String: String] {
@@ -44,7 +44,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         }
     }
 
-    required init(tx: SendTransaction, vault: Vault) {
+    required init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }

@@ -12,10 +12,11 @@ struct FunctionCallVerifyScreen: View {
     @Environment(\.router) var router
     @StateObject var depositViewModel = FunctionCallViewModel()
     @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
-    @ObservedObject var tx: SendTransaction
+    let transaction: SendTransaction
     let vault: Vault
 
     @State var fastPasswordPresented = false
+    @State var fastVaultPassword: String = ""
     @State var isForReferral = false
     @State private var error: HelperError?
 
@@ -23,7 +24,7 @@ struct FunctionCallVerifyScreen: View {
         Screen {
             VStack(spacing: 0) {
                 if isForReferral {
-                    ReferralSendOverviewView(sendTx: tx)
+                    ReferralSendOverviewView(transaction: transaction)
                 } else {
                     summary
                 }
@@ -38,8 +39,8 @@ struct FunctionCallVerifyScreen: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if tx.isFastVault {
-                tx.fastVaultPassword =  .empty
+            if transaction.isFastVault {
+                fastVaultPassword = .empty
             }
         }
         .alert(item: $error) { error in
@@ -52,7 +53,7 @@ struct FunctionCallVerifyScreen: View {
         .onLoad {
             depositVerifyViewModel.onLoad()
             Task {
-                await depositVerifyViewModel.scan(transaction: tx, vault: vault)
+                await depositVerifyViewModel.scan(transaction: transaction)
             }
         }
         .bottomSheet(isPresented: $depositVerifyViewModel.showSecurityScannerSheet) {
@@ -69,17 +70,17 @@ struct FunctionCallVerifyScreen: View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
                 fromName: vault.name,
-                fromAddress: tx.fromAddress,
-                toAddress: tx.toAddress,
-                network: tx.coin.chain.name,
-                networkImage: tx.coin.chain.logo,
+                fromAddress: transaction.fromAddress,
+                toAddress: transaction.toAddress,
+                network: transaction.coin.chain.name,
+                networkImage: transaction.coin.chain.logo,
                 memo: "",
-                memoFunctionDictionary: depositViewModel.memoDictionary(for: tx.memoFunctionDictionary),
-                feeCrypto: tx.gasInReadable,
-                feeFiat: depositViewModel.feesInReadable(tx: tx, vault: vault),
-                coinImage: tx.coin.logo,
+                memoFunctionDictionary: depositViewModel.memoDictionary(for: transaction.memoFunctionDictionary),
+                feeCrypto: transaction.gasInReadable,
+                feeFiat: depositViewModel.feesInReadable(tx: transaction, vault: vault),
+                coinImage: transaction.coin.logo,
                 amount: getAmount(),
-                coinTicker: tx.coin.ticker
+                coinTicker: transaction.coin.ticker
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
         )
@@ -87,7 +88,7 @@ struct FunctionCallVerifyScreen: View {
 
     var pairedSignButton: some View {
         VStack {
-            if tx.isFastVault {
+            if transaction.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
@@ -97,12 +98,12 @@ struct FunctionCallVerifyScreen: View {
                         fastPasswordPresented = true
                     } longPressAction: {
                         // Clear password for paired sign (long press)
-                        tx.fastVaultPassword = .empty
+                        fastVaultPassword = .empty
                         onSignPress()
                     }
                     .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                         FastVaultEnterPasswordView(
-                            password: $tx.fastVaultPassword,
+                            password: $fastVaultPassword,
                             vault: vault,
                             onSubmit: { onSignPress() }
                         )
@@ -117,20 +118,15 @@ struct FunctionCallVerifyScreen: View {
 
     private func getAmount() -> String {
         // Check if this is a THORChain LP operation
-        if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
+        if let pool = transaction.memoFunctionDictionary["pool"], !pool.isEmpty {
             // For LP operations, show context about which pool
             let cleanPoolName = ThorchainService.cleanPoolName(pool)
-            if tx.coin.chain == .thorChain {
-                // Adding RUNE to a specific pool
-                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
-            } else {
-                // Adding L1 asset to its pool
-                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
-            }
+            // Adding source asset to its pool (THORChain RUNE or any L1 asset).
+            return transaction.amountDecimal.formatForDisplay() + " " + transaction.coin.ticker + " → " + cleanPoolName + " LP"
         }
 
         // Default display for non-LP operations
-        return tx.amountDecimal.formatForDisplay()
+        return transaction.amountDecimal.formatForDisplay()
     }
 
     private func onSignPress() {
@@ -143,16 +139,13 @@ struct FunctionCallVerifyScreen: View {
     func signAndMoveToNextView() {
         Task {
             do {
-                let result = try await depositVerifyViewModel.createKeysignPayload(
-                    tx: tx,
-                    vault: vault
-                )
+                let result = try await depositVerifyViewModel.createKeysignPayload(tx: transaction)
                 await MainActor.run {
                     router.navigate(to: FunctionCallRoute.pair(
                         vault: vault,
-                        tx: tx,
+                        tx: transaction,
                         keysignPayload: result,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
                     ))
                 }
             } catch {
@@ -166,7 +159,7 @@ struct FunctionCallVerifyScreen: View {
 
 #Preview {
     FunctionCallVerifyScreen(
-        tx: SendTransaction(),
+        transaction: .empty(coin: .example, vault: .example),
         vault: Vault.example
     )
 }

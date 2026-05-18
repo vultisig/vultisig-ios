@@ -229,6 +229,7 @@
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
 "dappRequestFrom" = "Request from";
 "date" = "Date";
+"decimalAmountError" = "The amount must be decimal.";
 "defiPortfolio" = "DeFi Portfolio";
 "defiRefreshFailed" = "Couldn't refresh positions. Pull to retry.";
 "delete" = "Delete";

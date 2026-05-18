@@ -12,6 +12,7 @@ struct SendKeysignScreen: View {
 
     let input: KeysignInput
     let tx: SendTransaction
+    let retrySignal: SendRetrySignal
     @StateObject var viewModel = SendKeysignViewModel()
 
     var body: some View {
@@ -50,7 +51,7 @@ struct SendKeysignScreen: View {
         }
         .onChange(of: viewModel.pendingRetryReason) { _, reason in
             guard let reason else { return }
-            tx.pendingRetryReason = reason
+            retrySignal.pendingRetryReason = reason
             viewModel.pendingRetryReason = nil
             // Stack: details -> verify -> pairing -> keysign. Pop pairing + keysign.
             let popCount = min(2, router.navPath.count)

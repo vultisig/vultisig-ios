@@ -8,7 +8,7 @@ import Foundation
 
 // swiftlint:disable async_without_await
 
-final class MockBalanceService: BalanceServiceProtocol, @unchecked Sendable {
+final class MockBalanceService: BalanceServiceProtocol {
     private(set) var updateBalanceCallCount = 0
     private(set) var lastUpdatedCoin: Coin?
 

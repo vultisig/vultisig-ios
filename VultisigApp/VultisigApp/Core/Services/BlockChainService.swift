@@ -153,6 +153,18 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
+    /// Entry point used by the FunctionCall flow (`FunctionCallForm` is its
+    /// mutable form-state class). Converts to the immutable struct and
+    /// dispatches to the unified `fetchSpecific(tx: SendTransaction)`. The
+    /// conversion resolves vault via `tx.txVault` (`tx.vault ??
+    /// AppViewModel.shared.selectedVault`); throws if neither is available.
+    func fetchSpecific(tx: FunctionCallForm) async throws -> BlockChainSpecific {
+        let converted = try SendTransaction.fromForm(tx)
+        return try await fetchSpecific(tx: converted)
+    }
+
+    /// Unified entry point taking the new immutable `SendTransaction` struct.
+    /// Dispatches to the cached chain-specific impls.
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
@@ -160,6 +172,36 @@ final class BlockChainService {
         default:
             return try await fetchSpecificForNonEVM(tx: tx)
         }
+    }
+
+    /// Primitive-typed entry point for the new SendInteractor. Wraps the
+    /// private full-signature `fetchSpecific(for:action:…)` so the interactor
+    /// doesn't need a `FunctionCallForm` reference (Phase A4 / Phase B).
+    func fetchSendBlockChainSpecific(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        sendMaxAmount: Bool,
+        isDeposit: Bool,
+        transactionType: VSTransactionType,
+        gasLimit: BigInt?,
+        feeMode: FeeMode,
+        fromAddress: String
+    ) async throws -> BlockChainSpecific {
+        try await fetchSpecific(
+            for: coin,
+            action: .transfer,
+            sendMaxAmount: sendMaxAmount,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            memo: memo,
+            feeMode: feeMode,
+            amount: amount
+        )
     }
 
     func fetchSwapBlockChainSpecific(

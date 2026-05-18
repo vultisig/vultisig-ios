@@ -227,6 +227,7 @@
 "customTokenErrorSubtitle" = "No pudimos encontrar el token. Por favor, verifica la dirección del contrato e inténtalo de nuevo.";
 "dappRequestFrom" = "Solicitud de";
 "date" = "Fecha";
+"decimalAmountError" = "El monto debe ser decimal.";
 "defiPortfolio" = "Portafolio DeFi";
 "defiRefreshFailed" = "No se pudieron actualizar las posiciones. Desliza para reintentar.";
 "delete" = "Eliminar";

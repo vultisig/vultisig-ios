@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SendDetailsTabEditTools: View {
     let forTab: SendDetailsFocusedTab
-    @ObservedObject var viewModel: SendDetailsViewModel
+    let viewModel: SendDetailsViewModel
 
     var body: some View {
         HStack(spacing: 12) {
@@ -36,8 +36,4 @@ struct SendDetailsTabEditTools: View {
         Image(systemName: "pencil")
             .foregroundColor(Theme.colors.textPrimary)
     }
-}
-
-#Preview {
-    SendDetailsTabEditTools(forTab: .asset, viewModel: SendDetailsViewModel())
 }

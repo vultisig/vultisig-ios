@@ -31,7 +31,7 @@ struct ChainDetailScreen: View {
     /// user lands back here with QBTC already added to the vault.
     @State private var pendingQbtcAddAfterKeygen: Bool = false
 
-    @StateObject var sendTx = SendTransaction()
+    @StateObject private var sendTx = FunctionCallForm()
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 

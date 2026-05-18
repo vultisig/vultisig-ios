@@ -24,8 +24,7 @@ final class CircleDepositViewModel: ObservableObject, Form {
     private(set) lazy var form: [FormField] = [amountField]
     var formCancellable: AnyCancellable?
 
-    let tx = SendTransaction()
-    let sendCryptoViewModel = SendCryptoViewModel()
+    let sendInteractor: SendInteractor = DefaultSendInteractor.live
 
     var availableAmount: Decimal {
         usdcCoin?.balanceDecimal ?? 0
@@ -47,12 +46,8 @@ final class CircleDepositViewModel: ObservableObject, Form {
         guard let usdcCoin else { return }
         await BalanceService.shared.updateBalance(for: usdcCoin)
 
-        tx.reset(coin: usdcCoin)
-
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: usdcCoin.balanceDecimal))
-
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
 
     func fetchUsdcCoin() {
@@ -64,21 +59,20 @@ final class CircleDepositViewModel: ObservableObject, Form {
         usdcCoin = coin
     }
 
-    func onContinue() async -> Bool {
+    func makeTransaction() async -> SendTransaction? {
         guard let coin = usdcCoin,
               let toAddress = vault.circleWalletAddress else {
-            return false
+            return nil
         }
 
         isLoading = true
         defer { isLoading = false }
 
-        tx.coin = coin
-        tx.fromAddress = coin.address
-        tx.toAddress = toAddress
-        tx.amount = amountField.value
-
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-        return true
+        let isFast = await sendInteractor.loadFastVault(vault: vault)
+        return SendTransaction.empty(coin: coin, vault: vault).with(
+            toAddress: toAddress,
+            amount: amountField.value,
+            isFastVault: isFast
+        )
     }
 }

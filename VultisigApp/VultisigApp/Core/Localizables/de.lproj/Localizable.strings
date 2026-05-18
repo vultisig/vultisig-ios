@@ -227,6 +227,7 @@
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
 "dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
+"decimalAmountError" = "Der Betrag muss eine Dezimalzahl sein.";
 "defiPortfolio" = "DeFi Portfolio";
 "defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";
 "delete" = "Löschen";

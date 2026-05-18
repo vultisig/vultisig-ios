@@ -17,12 +17,10 @@ struct CoinPickerView: View {
     @Environment(\.dismiss) var dismiss
 
     let coins: [Coin]
-    let tx: SendTransaction?
     let onSelect: ((Coin) -> Void)?
 
-    init(coins: [Coin], tx: SendTransaction? = nil, onSelect: ((Coin) -> Void)? = nil) {
+    init(coins: [Coin], onSelect: ((Coin) -> Void)? = nil) {
         self.coins = coins
-        self.tx = tx
         self.onSelect = onSelect
     }
 
@@ -84,11 +82,7 @@ struct CoinPickerView: View {
 
     func row(for coin: Coin) -> some View {
         Button {
-            if let tx = tx {
-                tx.reset(coin: coin)
-            } else {
-                onSelect?(coin)
-            }
+            onSelect?(coin)
             dismiss()
         } label: {
             CoinPickerCell(coin: coin)
