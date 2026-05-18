@@ -152,6 +152,8 @@ final class MockSendInteractor: SendInteractor {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            qbtcClaimContext: nil,
             skipBroadcast: false,
             signData: nil
         )
