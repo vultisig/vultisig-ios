@@ -81,9 +81,10 @@ struct SwapCoinSelectionLogic {
     func fetchCoins(chain: Chain) async throws -> [CoinMeta] {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
+        let localTokens = vault.coins.filter { $0.chain == chain }.map { $0.toCoinMeta() }
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
-        let tokens = ([nativeToken] + externalTokens).compactMap { $0 }
+        let tokens = ([nativeToken] + externalTokens + localTokens).compactMap { $0 }
         let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
         return sort(tokens: uniqueTokens)
     }
