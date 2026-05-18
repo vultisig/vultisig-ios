@@ -32,15 +32,26 @@ struct HomeScreen: View {
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
-    @State private var processDeeplinkTask: Task<Void, Never>?
-    @State private var selectVaultTask: Task<Void, Never>?
-    @State private var joinKeysignTask: Task<Void, Never>?
-    @State private var joinKeygenTask: Task<Void, Never>?
-    @State private var initialDeeplinkTask: Task<Void, Never>?
-    @State private var retrySendDeeplinkTask: Task<Void, Never>?
-    @State private var sendRouteTask: Task<Void, Never>?
-    @State private var addressOnlyRouteTask: Task<Void, Never>?
-    @State private var scannerCloseTask: Task<Void, Never>?
+    /// Cancellable delayed-UI-mutation tasks keyed by trigger. The dictionary
+    /// preserves per-call-site replace semantics (firing the same trigger
+    /// twice cancels the prior in-flight task before scheduling the new one)
+    /// while `cancelDelayedTasks()` on `.onDisappear` clears every pending
+    /// task in one shot. See [[fix-macos-cancellable-ui-delays]].
+    @State private var delayedTasks: [DelayedTaskID: Task<Void, Never>] = [:]
+
+    /// Identifiers for the deferred UI mutations on this screen. One case
+    /// per trigger; names mirror the prior `<name>Task` `@State` vars.
+    private enum DelayedTaskID: Hashable {
+        case processDeeplink
+        case selectVault
+        case joinKeysign
+        case joinKeygen
+        case initialDeeplink
+        case retrySendDeeplink
+        case sendRoute
+        case addressOnlyRoute
+        case scannerClose
+    }
 
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -81,8 +92,7 @@ struct HomeScreen: View {
 
             if showScanner {
                 showScanner = false
-                processDeeplinkTask?.cancel()
-                processDeeplinkTask = delayedTask(after: .milliseconds(300)) {
+                scheduleDelayedTask(.processDeeplink, after: .milliseconds(300)) {
                     presetValuesForDeeplink()
                 }
             } else {
@@ -324,8 +334,7 @@ struct HomeScreen: View {
                             handleSendDeeplinkAfterVaultSelection(vault: vault)
                         }
                     } else {
-                        selectVaultTask?.cancel()
-                        selectVaultTask = delayedTask(after: .milliseconds(300)) {
+                        scheduleDelayedTask(.selectVault, after: .milliseconds(300)) {
                             appViewModel.set(selectedVault: vault, restartNavigation: false)
                         }
                     }
@@ -373,8 +382,7 @@ extension HomeScreen {
 
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
-        joinKeysignTask?.cancel()
-        joinKeysignTask = delayedTask(after: .milliseconds(100)) {
+        scheduleDelayedTask(.joinKeysign, after: .milliseconds(100)) {
             navigateToJoinKeysign()
         }
     }
@@ -386,8 +394,7 @@ extension HomeScreen {
     fileprivate func moveToCreateVaultView() {
         guard let selectedVault = appViewModel.selectedVault else { return }
         showVaultSelector = false
-        joinKeygenTask?.cancel()
-        joinKeygenTask = delayedTask(after: .milliseconds(100)) {
+        scheduleDelayedTask(.joinKeygen, after: .milliseconds(100)) {
             navigateToJoinKeygen(selectedVault: selectedVault)
         }
     }
@@ -426,8 +433,7 @@ extension HomeScreen {
         } else if !vaults.isEmpty {
             presetValuesForDeeplink()
         } else if deeplinkViewModel.type != nil {
-            initialDeeplinkTask?.cancel()
-            initialDeeplinkTask = delayedTask(after: .milliseconds(800)) {
+            scheduleDelayedTask(.initialDeeplink, after: .milliseconds(800)) {
                 if !vaults.isEmpty && deeplinkViewModel.type != nil {
                     presetValuesForDeeplink()
                 } else if deeplinkViewModel.type != nil {
@@ -473,8 +479,7 @@ extension HomeScreen {
         }
 
         guard !vaults.isEmpty else {
-            retrySendDeeplinkTask?.cancel()
-            retrySendDeeplinkTask = delayedTask(after: .seconds(1)) {
+            scheduleDelayedTask(.retrySendDeeplink, after: .seconds(1)) {
                 if !vaults.isEmpty {
                     handleSendDeeplink()
                 }
@@ -529,8 +534,7 @@ extension HomeScreen {
 
         let coinToUse: Coin? = coin ?? vault.coins.first
 
-        sendRouteTask?.cancel()
-        sendRouteTask = delayedTask(after: .milliseconds(300)) {
+        scheduleDelayedTask(.sendRoute, after: .milliseconds(300)) {
             vaultRoute = .mainAction(.send(
                 coin: coinToUse,
                 hasPreselectedCoin: coinToUse != nil,
@@ -608,8 +612,7 @@ extension HomeScreen {
 
         deeplinkViewModel.address = address
 
-        addressOnlyRouteTask?.cancel()
-        addressOnlyRouteTask = delayedTask(after: .milliseconds(300)) {
+        scheduleDelayedTask(.addressOnlyRoute, after: .milliseconds(300)) {
             self.vaultRoute = .mainAction(
                 .send(
                     coin: coinToUse,
@@ -622,8 +625,7 @@ extension HomeScreen {
     private func closeScannerIfNeeded(completion: @escaping () -> Void) {
         if showScanner {
             showScanner = false
-            scannerCloseTask?.cancel()
-            scannerCloseTask = delayedTask(after: .milliseconds(300)) {
+            scheduleDelayedTask(.scannerClose, after: .milliseconds(300)) {
                 completion()
             }
         } else {
@@ -662,28 +664,21 @@ extension HomeScreen {
 }
 
 private extension HomeScreen {
-    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
-        Task { @MainActor in
-            do {
-                try await Task.sleep(for: delay)
-            } catch {
-                return
-            }
-            guard !Task.isCancelled else { return }
-            action()
-        }
+    /// Cancels any in-flight task with the same `id` before scheduling the
+    /// new one — preserves the prior named-state contract that firing the
+    /// same trigger twice doesn't leave two delayed actions racing.
+    private func scheduleDelayedTask(
+        _ id: DelayedTaskID,
+        after delay: Duration,
+        action: @MainActor @escaping () -> Void
+    ) {
+        delayedTasks[id]?.cancel()
+        delayedTasks[id] = delayedTask(after: delay, action: action)
     }
 
     func cancelDelayedTasks() {
-        processDeeplinkTask?.cancel()
-        selectVaultTask?.cancel()
-        joinKeysignTask?.cancel()
-        joinKeygenTask?.cancel()
-        initialDeeplinkTask?.cancel()
-        retrySendDeeplinkTask?.cancel()
-        sendRouteTask?.cancel()
-        addressOnlyRouteTask?.cancel()
-        scannerCloseTask?.cancel()
+        delayedTasks.values.forEach { $0.cancel() }
+        delayedTasks.removeAll()
     }
 }
 

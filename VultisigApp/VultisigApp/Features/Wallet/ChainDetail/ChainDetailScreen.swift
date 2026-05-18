@@ -317,20 +317,6 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
-    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
-        Task { @MainActor in
-            do {
-                try await Task.sleep(for: delay)
-            } catch {
-                return
-            }
-            guard !Task.isCancelled else { return }
-            action()
-        }
-    }
-}
-
-private extension ChainDetailScreen {
     func onRefreshButton() {
         refresh()
     }

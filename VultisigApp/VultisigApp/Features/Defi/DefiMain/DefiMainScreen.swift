@@ -193,20 +193,6 @@ struct DefiMainScreen: View {
     }
 }
 
-private extension DefiMainScreen {
-    func delayedTask(after delay: Duration, action: @MainActor @escaping () -> Void) -> Task<Void, Never> {
-        Task { @MainActor in
-            do {
-                try await Task.sleep(for: delay)
-            } catch {
-                return
-            }
-            guard !Task.isCancelled else { return }
-            action()
-        }
-    }
-}
-
 #Preview {
     DefiMainScreen(
         vault: .example,
