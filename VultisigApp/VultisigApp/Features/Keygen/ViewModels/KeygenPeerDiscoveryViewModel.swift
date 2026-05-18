@@ -322,6 +322,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         return isValid
     }
 
+    /// Decides whether peer-discovery has reached the auto-kickoff threshold.
+    /// Fixed-device flows (2/2 and 3/3) skip the manual Continue button once
+    /// every peer is connected; 4+ device flows require an explicit tap so the
+    /// initiating device can choose which peers to commit. Reshare never
+    /// auto-starts. Mirrors the Windows `AutoStartKeygen` component
+    /// (`core/ui/mpc/keygen/peers/AutoStartKeygen.tsx`). See vultisig-ios#4374.
+    func shouldAutoStartKeygen(totalDeviceCount: Int) -> Bool {
+        guard tssType != .Reshare else { return false }
+        guard totalDeviceCount <= 3 else { return false }
+        guard status == .WaitingForDevices else { return false }
+        return selections.count >= totalDeviceCount
+    }
+
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
