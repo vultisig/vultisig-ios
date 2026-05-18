@@ -500,6 +500,7 @@
 "Merge" = "병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
+"messageToSign" = "서명할 메시지";
 "messageVote" = "%@ 메시지 투표";
 "migrate" = "마이그레이션";
 "migratePasswordDescription" = "비밀번호를 입력하여 서버 공유를 잠금 해제하고 업그레이드를 시작하세요";
@@ -826,6 +827,7 @@
 "signer" = "서명자";
 "signFasterThanEverBefore" = "그 어느 때보다 빠르게 서명하세요";
 "signingErrorTryAgain" = "서명 오류";
+"signingMethod" = "서명 방식";
 "signingTransaction" = "트랜잭션 서명 중";
 "signTransaction" = "트랜잭션 서명";
 "skip" = "건너뛰기";

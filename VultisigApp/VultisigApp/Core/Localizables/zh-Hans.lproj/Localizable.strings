@@ -494,6 +494,7 @@
 "memoLabel" = "备注";
 "Merge" = "合并";
 "messageDeposit" = "%@ 消息存款";
+"messageToSign" = "要签名的消息";
 "messageVote" = "%@ 消息投票";
 "migrate" = "迁移";
 "migratePasswordDescription" = "输入您的密码以解锁服务器份额并开始升级";
@@ -817,6 +818,7 @@
 "signer" = "签名者";
 "signFasterThanEverBefore" = "比以往任何时候都更快地签名";
 "signingErrorTryAgain" = "签名错误";
+"signingMethod" = "签名方式";
 "signingTransaction" = "正在签署交易";
 "signTransaction" = "签署交易";
 "skip" = "跳过";

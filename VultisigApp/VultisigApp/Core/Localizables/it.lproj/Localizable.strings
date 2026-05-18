@@ -494,6 +494,7 @@
 "memoLabel" = "Memo";
 "Merge" = "Unisci";
 "messageDeposit" = "%@ deposito messaggio";
+"messageToSign" = "Messaggio da firmare";
 "messageVote" = "%@ voto messaggio";
 "migrate" = "Migrare";
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
@@ -817,6 +818,7 @@
 "signer" = "Firmatario";
 "signFasterThanEverBefore" = "Firma più velocemente che mai";
 "signingErrorTryAgain" = "Errore di Firma";
+"signingMethod" = "Metodo di firma";
 "signingTransaction" = "Firma della transazione";
 "signTransaction" = "Firma la transazione";
 "skip" = "Salta";
