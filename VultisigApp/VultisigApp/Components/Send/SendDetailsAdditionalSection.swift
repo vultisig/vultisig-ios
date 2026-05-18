@@ -14,17 +14,12 @@ struct SendDetailsAdditionalSection: View {
 
     @EnvironmentObject var appViewModel: AppViewModel
 
-    /// Temporary mitigation for #4326 — Cardano memos silently drop on-chain
-    /// because WalletCore doesn't expose CIP-20 auxiliary data yet. Hide the
-    /// memo input entirely until proper metadata support lands; tracked in
-    /// #4377. Re-enable by removing this guard when #4326 closes.
-    private var supportsMemo: Bool {
-        viewModel.coin.chain != .cardano
-    }
-
     var body: some View {
         VStack(spacing: 14) {
-            if supportsMemo {
+            // Memo input is gated by `Chain.supportsMemo` so per-chain
+            // capability lives in the model, not scattered across UI.
+            // Cardano currently returns false (see #4326 / #4377).
+            if viewModel.coin.chain.supportsMemo {
                 addMemoField
             }
         }

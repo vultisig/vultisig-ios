@@ -57,11 +57,11 @@ struct SendDetailsScreen: View {
                 viewModel.initializePendingTransactionState(for: newValue.chain)
                 PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
                 viewModel.refreshPendingTransactionState()
-                // Temporary mitigation for #4326: Cardano memos silently drop
-                // on-chain. The memo input is hidden for Cardano in
-                // `SendDetailsAdditionalSection`; clear any previously-typed
-                // value so it doesn't ride along invisibly. Tracked in #4377.
-                if newValue.chain == .cardano {
+                // Per-chain capability lives on `Chain.supportsMemo`. Clear
+                // any previously-typed memo when switching into a chain that
+                // doesn't support memos so it doesn't ride along invisibly.
+                // (See #4326 / #4377 for the Cardano case.)
+                if !newValue.chain.supportsMemo {
                     viewModel.memo = ""
                 }
             }
