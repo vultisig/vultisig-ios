@@ -884,11 +884,12 @@ class KeysignViewModel: ObservableObject {
         default:
             errMessage = "Failed to get signed transaction,error:\(err.localizedDescription)"
         }
-        // since it failed to get transaction or failed to broadcast , go to failed page
-        DispatchQueue.main.async {
-            self.status = .KeysignFailed
-            self.keysignError = errMessage
-        }
+        // Class is @MainActor — assign directly. A previous `DispatchQueue.main.async`
+        // wrapper raced with `tssKeysign`'s post-broadcast `status = .KeysignFinished`
+        // guard: the dispatched block ran on the next runloop tick, after the guard
+        // had already overwritten the status. See vultisig-ios#4327.
+        self.status = .KeysignFailed
+        self.keysignError = errMessage
     }
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
