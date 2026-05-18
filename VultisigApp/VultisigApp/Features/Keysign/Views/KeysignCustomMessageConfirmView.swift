@@ -65,6 +65,9 @@ struct KeysignCustomMessageConfirmView: View {
 
     @ViewBuilder
     var heroSection: some View {
+        if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
+            DAppRequestBanner(metadata: metadata)
+        }
         if let title = viewModel.decodedFunctionName {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
@@ -74,7 +77,10 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var hasHeroSection: Bool {
-        viewModel.decodedFunctionName != nil
+        if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
+            return true
+        }
+        return viewModel.decodedFunctionName != nil
     }
 
     var hasTransactionDetails: Bool {
