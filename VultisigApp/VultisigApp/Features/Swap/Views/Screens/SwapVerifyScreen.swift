@@ -216,7 +216,7 @@ struct SwapVerifyScreen: View {
 
     @ViewBuilder
     var signButton: some View {
-        if currentTransaction.isFastVault {
+        if vault.isFastVault {
             Text(NSLocalizedString("holdForPairedSign", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)

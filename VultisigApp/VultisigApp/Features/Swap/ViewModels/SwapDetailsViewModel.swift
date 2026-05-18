@@ -33,7 +33,6 @@ final class SwapDetailsViewModel {
     var gas: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
-    var isFastVault: Bool = false
 
     // MARK: - UI state (details-screen-only)
 
@@ -78,13 +77,6 @@ final class SwapDetailsViewModel {
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
         dataLoaded = true
-    }
-
-    /// Snapshots the FastVault eligibility from the vault's cache (populated by
-    /// `FastVaultEligibilityRefresher`). Captured at form time so a later cache
-    /// refresh doesn't flip the routing decision mid-flow.
-    func captureFastVaultEligibility(from vault: Vault) {
-        isFastVault = vault.fastVaultEligibility
     }
 
     func updateCoinLists() {
@@ -212,7 +204,6 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            isFastVault: isFastVault,
             feeCoin: feeCoin
         )
     }

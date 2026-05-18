@@ -24,7 +24,7 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.memo, "")
         XCTAssertEqual(vm.feeMode, .default)
         XCTAssertFalse(vm.sendMaxAmount)
-        XCTAssertFalse(vm.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
         XCTAssertNil(vm.customGasLimit)
         XCTAssertNil(vm.customByteFee)
         XCTAssertTrue(vm.memoFunctionDictionary.isEmpty)
@@ -329,21 +329,33 @@ final class SendDetailsViewModelTests: XCTestCase {
     }
 
     // MARK: - Fast vault
-    // `isFastVault` is now a computed property reading `vault.fastVaultEligibility`.
-    // The cache is populated by `FastVaultEligibilityRefresher` (see its tests).
+    // `vault.isFastVault` is the unified read — cache-first with structural
+    // fallback. The cache is populated by `FastVaultEligibilityRefresher`
+    // (see its tests for the populate path).
 
-    func testIsFastVaultReflectsVaultCacheTrue() {
+    func testVaultIsFastVaultReflectsCachedTrue() {
         let vault = SendFormFixture.makeVault()
         vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = Date()
         let vm = SendFormFixture.make(vault: vault)
-        XCTAssertTrue(vm.isFastVault)
+        XCTAssertTrue(vm.vault.isFastVault)
     }
 
-    func testIsFastVaultReflectsVaultCacheFalse() {
+    func testVaultIsFastVaultReflectsCachedFalse() {
         let vault = SendFormFixture.makeVault()
         vault.fastVaultEligibility = false
+        vault.fastVaultEligibilityCheckedAt = Date()
         let vm = SendFormFixture.make(vault: vault)
-        XCTAssertFalse(vm.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
+    }
+
+    func testVaultIsFastVaultFallsBackToStructuralWhenCacheEmpty() {
+        // No cache yet (checkedAt == nil). With a `server-` signer in the
+        // list, the structural fallback returns true.
+        let vault = SendFormFixture.makeVault()
+        vault.signers = ["iPhone-test", "server-abc"]
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertTrue(vm.vault.isFastVault)
     }
 
     // MARK: - Amount sync validation (Phase 2b)

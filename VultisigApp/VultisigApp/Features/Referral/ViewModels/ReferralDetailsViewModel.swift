@@ -78,11 +78,8 @@ final class ReferralDetailsViewModel {
     // MARK: - Async state
     var isLoading: Bool = false
 
-    // MARK: - Send-transaction props (replaces tx.gas / tx.isFastVault)
+    // MARK: - Send-transaction props (replaces tx.gas)
     var gas: BigInt = .zero
-    /// FastVault eligibility — sourced from the `Vault` cache populated by
-    /// `FastVaultEligibilityRefresher` (app foreground + vault switch).
-    var isFastVault: Bool { vault.fastVaultEligibility }
 
     // MARK: - Alert
     var showReferralAlert: Bool = false
@@ -351,7 +348,6 @@ final class ReferralDetailsViewModel {
             amount: totalFee.formatDecimalToLocale(),
             memo: memo,
             gas: gas,
-            isFastVault: isFastVault,
             transactionType: .unspecified,
             memoFunctionDictionary: ["memo": ""]
         )

@@ -28,7 +28,6 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertEqual(tx.fee, .zero)
         XCTAssertEqual(tx.feeMode, .default)
         XCTAssertFalse(tx.sendMaxAmount)
-        XCTAssertFalse(tx.isFastVault)
         XCTAssertNil(tx.customGasLimit)
         XCTAssertNil(tx.customByteFee)
         XCTAssertTrue(tx.memoFunctionDictionary.isEmpty)
@@ -113,7 +112,6 @@ final class SendTransactionTests: XCTestCase {
             customGasLimit: BigInt(50_000), // user pinned
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
@@ -154,7 +152,6 @@ final class SendTransactionTests: XCTestCase {
             customGasLimit: nil,
             customByteFee: BigInt(80),
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
@@ -250,12 +247,6 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertTrue(updated.sendMaxAmount)
     }
 
-    func testWithUpdatesIsFastVault() throws {
-        let tx = try seed(isFastVault: false)
-        let updated = tx.with(isFastVault: true)
-        XCTAssertTrue(updated.isFastVault)
-    }
-
     func testWithUpdatesIsStakingOperation() throws {
         let tx = try seed(isStakingOperation: false)
         let updated = tx.with(isStakingOperation: true)
@@ -292,7 +283,7 @@ final class SendTransactionTests: XCTestCase {
         let updated = tx.with(
             toAddress: "x", amount: "y", gas: BigInt(1), fee: BigInt(2),
             feeMode: .fast, estimatedGasLimit: BigInt(3), memo: "z",
-            sendMaxAmount: true, isFastVault: true, isStakingOperation: true,
+            sendMaxAmount: true, isStakingOperation: true,
             memoFunctionDictionary: ["k": "v"], wasmContractPayload: nil
         )
         XCTAssertEqual(updated.coin, tx.coin)
@@ -314,7 +305,6 @@ final class SendTransactionTests: XCTestCase {
         memo: String = "",
         feeMode: FeeMode = .default,
         sendMaxAmount: Bool = false,
-        isFastVault: Bool = false,
         isStakingOperation: Bool = false
     ) throws -> SendTransaction {
         let vault = try TestStore.makeVault()
@@ -327,7 +317,7 @@ final class SendTransactionTests: XCTestCase {
             feeMode: feeMode,
             estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
             sendMaxAmount: sendMaxAmount,
-            isFastVault: isFastVault, isStakingOperation: isStakingOperation,
+            isStakingOperation: isStakingOperation,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth

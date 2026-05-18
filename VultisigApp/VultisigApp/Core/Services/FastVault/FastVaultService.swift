@@ -122,7 +122,10 @@ final class FastVaultService {
     /// - Returns: `true` if the vault exists in the backend, is not a local backup, and is configured as a fast vault
     func isEligibleForFastSign(vault: Vault) async -> Bool {
         let isExist = await exist(pubKeyECDSA: vault.pubKeyECDSA)
-        return isExist && vault.isFastVault
+        // Use the structural helper, NOT `vault.isFastVault`. The latter reads
+        // the cache that this method's result feeds — reading it here would
+        // permanently lock eligibility at the first cached value.
+        return isExist && vault.hasServerSigner
     }
 
     func create(
