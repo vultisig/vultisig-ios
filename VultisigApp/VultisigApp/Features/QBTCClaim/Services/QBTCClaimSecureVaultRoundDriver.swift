@@ -3,10 +3,10 @@
 //  VultisigApp
 //
 //  Production wiring for the SecureVault path of QBTC claim. The peer
-//  device has already scanned the QR (which encoded the keysign payload
-//  + qbtcClaimContext) and joined the relay session. This driver is
-//  constructed AFTER that handshake — the screen passes the session
-//  + participants in via init.
+//  device has already scanned the QR (an `isQbtcClaim`-flagged keysign
+//  payload) and joined the relay session. This driver is constructed
+//  AFTER that handshake — the screen passes the session + participants
+//  in via init.
 //
 //  Post-qbtc#158: only one MPC round (BTC ECDSA via DKLS); the proof
 //  service signs and broadcasts the cosmos tx.

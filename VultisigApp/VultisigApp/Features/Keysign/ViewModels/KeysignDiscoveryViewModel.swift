@@ -56,7 +56,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
-            qbtcClaimContext: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )
@@ -106,20 +106,22 @@ class KeysignDiscoveryViewModel: ObservableObject {
 
         var coin: Coin?
         if let keysignPayload {
-            if let qbtcContext = keysignPayload.qbtcClaimContext {
+            if keysignPayload.isQbtcClaim {
                 // QBTC claim flow uses a non-standard payload (skipBroadcast,
                 // empty utxos, zero amount) — the BTC ECDSA message hash is
                 // derived from `QBTCClaimHashes` by the orchestrator and the
                 // peer driver, not from a built BTC transaction. Compute it
                 // here so the standard "no messages" guard below passes and
-                // both devices share the same hash.
+                // both devices share the same hash. The claimer's QBTC
+                // address comes from this device's own vault.
                 let btcCoin = keysignPayload.coin
-                if let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) {
+                if let qbtcCoin = vault.nativeCoin(for: .qbtc),
+                   let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) {
                     do {
                         let hashes = try QBTCClaimHashes.computeAll(
                             btcAddress: btcCoin.address,
                             compressedPubkey: compressedPubkey,
-                            qbtcAddress: qbtcContext.claimerAddress,
+                            qbtcAddress: qbtcCoin.address,
                             chainId: QBTCClaimConfig.chainId
                         )
                         self.keysignMessages = [hashes.messageHash.toHexString()]
@@ -130,7 +132,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                         self.status = .FailToStart
                     }
                 } else {
-                    self.logger.error("BTC compressed public key is malformed")
+                    self.logger.error("BTC compressed public key malformed or vault missing QBTC coin")
                     self.errorMessage = "qbtcClaimErrorInvalidBtcPublicKey".localized
                     self.status = .FailToStart
                 }

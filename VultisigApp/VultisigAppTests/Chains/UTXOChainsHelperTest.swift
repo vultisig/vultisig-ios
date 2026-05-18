@@ -99,7 +99,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
-                qbtcClaimContext: nil,
+                isQbtcClaim: false,
                 skipBroadcast: false,
                 signData: nil
             )
@@ -141,7 +141,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
-                qbtcClaimContext: nil,
+                isQbtcClaim: false,
                 skipBroadcast: false,
                 signData: nil
             )
@@ -172,7 +172,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
                 qbtcClaimPayload: nil,
-                qbtcClaimContext: nil,
+                isQbtcClaim: false,
                 skipBroadcast: false,
                 signData: nil
             ),

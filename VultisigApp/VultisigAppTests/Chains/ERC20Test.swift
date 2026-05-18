@@ -62,7 +62,7 @@ final class ERC20ChainsHelperTest: XCTestCase {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
-            qbtcClaimContext: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )

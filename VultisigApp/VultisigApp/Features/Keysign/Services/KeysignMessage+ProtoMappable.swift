@@ -127,11 +127,11 @@ extension KeysignPayload: ProtoMappable {
         // see nil and simply sign the relayed message hashes without claim UX.
         self.qbtcClaimPayload = nil
 
-        // QBTC claim context DOES round-trip — the peer needs it to compute
-        // round-1's message hash and reconstruct round-2's SignDoc.
-        self.qbtcClaimContext = proto.hasQbtcClaimContext
-            ? QBTCClaimContext(proto: proto.qbtcClaimContext)
-            : nil
+        // `isQbtcClaim` round-trips: the peer needs to know this is a claim
+        // so it can derive the claimer's QBTC address from its own vault
+        // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash
+        // locally instead of blind-signing whatever the initiator sends.
+        self.isQbtcClaim = proto.isQbtcClaim
 
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
@@ -179,9 +179,7 @@ extension KeysignPayload: ProtoMappable {
                 $0.contractPayload = .tronTransferAssetContractPayload(tronTransferAssetContractPayload.mapToProtobuff())
             }
 
-            if let qbtcClaimContext {
-                $0.qbtcClaimContext = qbtcClaimContext.mapToProtobuff()
-            }
+            $0.isQbtcClaim = isQbtcClaim
 
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()

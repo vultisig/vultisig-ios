@@ -22,11 +22,11 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
         serverAddr: "https://relay.vultisig.test"
     )
 
-    private static let context = QBTCClaimContext(claimerAddress: "qbtc1abc")
-
-    /// Returns a vault that has a Bitcoin coin with a valid 33-byte
-    /// compressed pubkey so `QBTCClaimHashes.computeAll` succeeds — the
-    /// driver fails fast otherwise and we never reach the session methods.
+    /// Returns a vault that has BTC + QBTC coins. BTC carries a valid
+    /// 33-byte compressed pubkey so `QBTCClaimHashes.computeAll` succeeds;
+    /// QBTC carries the claimer address the peer now derives from the
+    /// vault (replacing the round-tripped `QBTCClaimContext`). The driver
+    /// fails fast on either missing — we never reach the session methods.
     private func makeVault() -> Vault {
         let vault = Vault(name: "TestVault")
         let btcAsset = CoinMeta(
@@ -43,7 +43,21 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
             address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
             hexPublicKey: "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
         )
-        vault.coins = [btcCoin]
+        let qbtcAsset = CoinMeta(
+            chain: .qbtc,
+            ticker: "QBTC",
+            logo: "qbtc",
+            decimals: 8,
+            priceProviderId: "qbtc",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        let qbtcCoin = Coin(
+            asset: qbtcAsset,
+            address: "qbtc1abc",
+            hexPublicKey: "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
+        )
+        vault.coins = [btcCoin, qbtcCoin]
         return vault
     }
 
@@ -55,7 +69,6 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
 
         let driver = QBTCClaimJoinDriver(
             vault: makeVault(),
-            context: Self.context,
             session: Self.testSession,
             sessionService: service
         )

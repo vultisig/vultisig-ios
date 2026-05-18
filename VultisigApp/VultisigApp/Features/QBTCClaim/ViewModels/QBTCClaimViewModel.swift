@@ -296,11 +296,7 @@ final class QBTCClaimViewModel: ObservableObject {
 
         do {
             let session = try sessionService.newSession(vault: vault)
-            let context = QBTCClaimContext(claimerAddress: qbtcCoin.address)
-            let payload = makeSecureVaultKeysignPayload(
-                btcCoin: btcCoin,
-                context: context
-            )
+            let payload = makeSecureVaultKeysignPayload(btcCoin: btcCoin)
             try await sessionService.registerAsParticipant(session: session)
 
             pendingPairContext = QBTCClaimPairContext(
@@ -316,10 +312,7 @@ final class QBTCClaimViewModel: ObservableObject {
         }
     }
 
-    private func makeSecureVaultKeysignPayload(
-        btcCoin: Coin,
-        context: QBTCClaimContext
-    ) -> KeysignPayload {
+    private func makeSecureVaultKeysignPayload(btcCoin: Coin) -> KeysignPayload {
         KeysignPayload(
             coin: btcCoin,
             toAddress: "",
@@ -337,7 +330,7 @@ final class QBTCClaimViewModel: ObservableObject {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
-            qbtcClaimContext: context,
+            isQbtcClaim: true,
             skipBroadcast: true,
             signData: nil
         )

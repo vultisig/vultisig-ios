@@ -32,8 +32,8 @@ enum JoinKeysignStatus {
     case KeysignNoCameraAccess
     case VaultTypeDoesntMatch
     /// Multi-round QBTC claim — driven by `qbtcClaimDriver` rather than
-    /// the standard single-keysign flow. Set when the scanned QR carries
-    /// a `qbtcClaimContext`. See [[v2-secure-vault-design]].
+    /// the standard single-keysign flow. Set when the scanned QR has
+    /// `isQbtcClaim == true`. See [[v2-secure-vault-design]].
     case QBTCClaim
 }
 
@@ -54,9 +54,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
-    /// Set when the scanned QR carries a `qbtcClaimContext`. The standard
+    /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
-    /// peer-side multi-round flow. See [[v2-secure-vault-design]].
+    /// peer-side flow. See [[v2-secure-vault-design]].
     @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
@@ -222,11 +222,11 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        // QBTC claim payloads carry a `qbtcClaimContext` and don't have a
-        // standard tx body; the QBTCClaimJoinDriver computes the round-1
+        // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
+        // a standard tx body; the QBTCClaimJoinDriver computes the round-1
         // message hash itself. Skip the standard factory so it doesn't
         // fail trying to build sighashes from a body that isn't there.
-        if keysignPayload.qbtcClaimContext != nil {
+        if keysignPayload.isQbtcClaim {
             return
         }
         do {
@@ -303,15 +303,16 @@ class JoinKeysignViewModel: ObservableObject {
                 }
             }
 
-            // QBTC claim fork — if the loaded payload carries a
-            // qbtcClaimContext, hand off to the QBTC-claim peer driver
-            // and step the standard single-keysign flow aside. Reads from
+            // QBTC claim fork — if the loaded payload is flagged with
+            // `isQbtcClaim`, hand off to the QBTC-claim peer driver and
+            // step the standard single-keysign flow aside. Reads from
             // `self.keysignPayload` so it covers both inline payloads and
             // ones fetched from the relay via `ensureKeysignPayload`.
             // Post-qbtc#158 the peer only runs one BTC ECDSA round; the
             // session is the keysign message's own session, not a
-            // round-suffixed derivation of a base session.
-            if let payload = self.keysignPayload, let context = payload.qbtcClaimContext {
+            // round-suffixed derivation of a base session. The peer
+            // derives the claimer's QBTC address from its own vault.
+            if let payload = self.keysignPayload, payload.isQbtcClaim {
                 let session = KeysignSessionInfo(
                     sessionId: keysignMsg.sessionID,
                     encryptionKeyHex: keysignMsg.encryptionKeyHex,
@@ -321,7 +322,6 @@ class JoinKeysignViewModel: ObservableObject {
                 )
                 let driver = QBTCClaimJoinDriver(
                     vault: self.vault,
-                    context: context,
                     session: session
                 )
                 self.qbtcClaimDriver = driver

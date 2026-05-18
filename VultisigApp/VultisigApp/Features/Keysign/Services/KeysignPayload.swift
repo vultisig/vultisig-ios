@@ -26,11 +26,13 @@ struct KeysignPayload: Codable, Hashable {
     /// not round-tripped through the proto `KeysignPayload`. See
     /// `QBTCClaimPayload` for rationale.
     let qbtcClaimPayload: QBTCClaimPayload?
-    /// Sanity-check context for a SecureVault QBTC claim — round-trips
-    /// through the proto so the peer device can compute the BTC ECDSA
-    /// message hash locally and refuse to blind-sign whatever the
-    /// initiator asks for. See `QBTCClaimContext`.
-    let qbtcClaimContext: QBTCClaimContext?
+    /// Marker round-tripped through the proto: signals to the peer device
+    /// that the BTC ECDSA signature it's about to produce is for a QBTC
+    /// claim. The peer derives the claimer's QBTC address from its own
+    /// vault (same SecureVault → same QBTC coin → same derived address)
+    /// and computes the message hash locally, refusing to blind-sign
+    /// whatever the initiator asks for.
+    let isQbtcClaim: Bool
     let skipBroadcast: Bool
     let signData: SignData?
     let dappMetadata: DAppMetadata?
@@ -55,7 +57,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?,
         tronTransferAssetContractPayload: TronTransferAssetContractPayload?,
         qbtcClaimPayload: QBTCClaimPayload?,
-        qbtcClaimContext: QBTCClaimContext?,
+        isQbtcClaim: Bool,
         skipBroadcast: Bool,
         signData: SignData?,
         dappMetadata: DAppMetadata? = nil
@@ -76,7 +78,7 @@ struct KeysignPayload: Codable, Hashable {
         self.tronTriggerSmartContractPayload = tronTriggerSmartContractPayload
         self.tronTransferAssetContractPayload = tronTransferAssetContractPayload
         self.qbtcClaimPayload = qbtcClaimPayload
-        self.qbtcClaimContext = qbtcClaimContext
+        self.isQbtcClaim = isQbtcClaim
         self.skipBroadcast = skipBroadcast
         self.signData = signData
         self.dappMetadata = dappMetadata
@@ -200,7 +202,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTriggerSmartContractPayload: nil,
         tronTransferAssetContractPayload: nil,
         qbtcClaimPayload: nil,
-        qbtcClaimContext: nil,
+        isQbtcClaim: false,
         skipBroadcast: false,
         signData: nil,
         dappMetadata: nil

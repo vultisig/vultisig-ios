@@ -3,10 +3,11 @@
 //  VultisigApp
 //
 //  Peer-side driver for the SecureVault QBTC claim flow. Constructed
-//  after `JoinKeysignViewModel.handleQrCodeSuccessResult` detects a
-//  `qbtcClaimContext` on the parsed `KeysignPayload` — the existing
-//  one-QR-one-keysign flow steps aside and this driver runs the
-//  single BTC ECDSA round.
+//  after `JoinKeysignViewModel.handleQrCodeSuccessResult` detects
+//  `isQbtcClaim == true` on the parsed `KeysignPayload` — the existing
+//  one-QR-one-keysign flow steps aside and this driver runs the single
+//  BTC ECDSA round. The claimer's QBTC address is derived from the
+//  peer's own vault (same SecureVault → same QBTC coin).
 //
 //  Post-qbtc#158: only one MPC round (BTC ECDSA). The initiator
 //  takes over after the round completes — POSTs `/prove` with
@@ -28,6 +29,7 @@ import Tss
 
 enum QBTCClaimJoinDriverError: LocalizedError {
     case missingBitcoinCoin
+    case missingQbtcCoin
     case invalidCompressedPubkey
     case round1SignatureMissing
 
@@ -35,6 +37,8 @@ enum QBTCClaimJoinDriverError: LocalizedError {
         switch self {
         case .missingBitcoinCoin:
             return "Vault is missing the Bitcoin coin needed for QBTC claim"
+        case .missingQbtcCoin:
+            return "Vault is missing the QBTC coin needed to derive the claimer address"
         case .invalidCompressedPubkey:
             return "Bitcoin compressed public key is malformed"
         case .round1SignatureMissing:
@@ -65,7 +69,6 @@ final class QBTCClaimJoinDriver: ObservableObject {
     /// Exposed so the peer-side view can build the shared
     /// `QBTCClaimDoneScreen` once the run completes.
     let vault: Vault
-    private let context: QBTCClaimContext
     private let session: KeysignSessionInfo
     private let sessionService: KeysignSessionServicing
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-join")
@@ -76,12 +79,10 @@ final class QBTCClaimJoinDriver: ObservableObject {
 
     init(
         vault: Vault,
-        context: QBTCClaimContext,
         session: KeysignSessionInfo,
         sessionService: KeysignSessionServicing = KeysignSessionService()
     ) {
         self.vault = vault
-        self.context = context
         self.session = session
         self.sessionService = sessionService
     }
@@ -105,6 +106,13 @@ final class QBTCClaimJoinDriver: ObservableObject {
         guard let btcCoin = vault.nativeCoin(for: .bitcoin) else {
             throw QBTCClaimJoinDriverError.missingBitcoinCoin
         }
+        // Derive the claimer's QBTC address from the peer's own vault — both
+        // initiator and peer share the same SecureVault, so the QBTC coin
+        // (and thus its derived address) is the same across devices. No need
+        // to round-trip it through the keysign payload.
+        guard let qbtcCoin = vault.nativeCoin(for: .qbtc) else {
+            throw QBTCClaimJoinDriverError.missingQbtcCoin
+        }
         guard let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) else {
             throw QBTCClaimJoinDriverError.invalidCompressedPubkey
         }
@@ -113,7 +121,7 @@ final class QBTCClaimJoinDriver: ObservableObject {
         let hashes = try QBTCClaimHashes.computeAll(
             btcAddress: btcCoin.address,
             compressedPubkey: compressedPubkey,
-            qbtcAddress: context.claimerAddress,
+            qbtcAddress: qbtcCoin.address,
             chainId: QBTCClaimConfig.chainId
         )
         let messageHashHex = hashes.messageHash.toHexString()

@@ -116,7 +116,7 @@ private extension SecurityScannerTransactionFactory {
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
-            qbtcClaimContext: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )
