@@ -20,7 +20,6 @@ struct SettingsCustomMessageView: View {
 
     @State var fastVaultPassword: String = .empty
     @State var fastPasswordPresented = false
-    @State var isFastVault = false
 
     let vault: Vault
     private let fastVaultService = FastVaultService.shared
@@ -30,7 +29,6 @@ struct SettingsCustomMessageView: View {
             Background()
             main
         }
-        .onLoad(perform: onLoad)
     }
 
     var view: some View {
@@ -119,7 +117,7 @@ struct SettingsCustomMessageView: View {
                     type: .Keysign,
                     viewModel: shareSheetViewModel
                 )
-                .showIf(!isFastVault)
+                .showIf(!vault.isFastVault)
             }
         }
     }
@@ -150,7 +148,7 @@ struct SettingsCustomMessageView: View {
     @ViewBuilder
     var signButton: some View {
         VStack(spacing: 16) {
-            if isFastVault {
+            if vault.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
@@ -176,12 +174,6 @@ struct SettingsCustomMessageView: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-
-    func onLoad() {
-        // Cached value populated by `FastVaultEligibilityRefresher` on app
-        // foreground + vault switch. No network call here.
-        isFastVault = vault.fastVaultEligibility
     }
 
     func onSignPress() {

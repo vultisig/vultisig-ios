@@ -48,9 +48,6 @@ final class EditReferralDetailsViewModel {
 
     // MARK: - Send-transaction props
     var gas: BigInt = .zero
-    /// FastVault eligibility — sourced from the `Vault` cache populated by
-    /// `FastVaultEligibilityRefresher` (app foreground + vault switch).
-    var isFastVault: Bool { vault.fastVaultEligibility }
 
     // MARK: - Init
 
@@ -173,7 +170,6 @@ final class EditReferralDetailsViewModel {
             amount: totalFeeAmount.formatDecimalToLocale(),
             memo: memo,
             gas: gas,
-            isFastVault: isFastVault,
             transactionType: .unspecified,
             memoFunctionDictionary: ["memo": ""]
         )

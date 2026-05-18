@@ -29,7 +29,7 @@ final class ReferralDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.registrationFee, 0)
         XCTAssertEqual(vm.feePerBlock, 0)
         XCTAssertEqual(vm.gas, .zero)
-        XCTAssertFalse(vm.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
     }
 
     func testNativeCoinResolvesFromVaultRuneCoin() {

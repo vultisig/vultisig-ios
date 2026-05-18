@@ -220,7 +220,6 @@ struct TronFreezeView: View {
 
         // The memo encodes the freeze operation type for TronHelper.
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
-        let isFast = vault.fastVaultEligibility
 
         await MainActor.run {
             isLoading = false
@@ -228,7 +227,6 @@ struct TronFreezeView: View {
                 toAddress: coin.address,  // Freeze goes to self
                 amount: amountDec.description,
                 memo: memo,
-                isFastVault: isFast,
                 isStakingOperation: true
             )
             router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: vault))

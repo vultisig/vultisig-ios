@@ -58,10 +58,6 @@ final class SendDetailsViewModel {
     var memo: String = ""
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
-    /// FastVault eligibility — sourced from the `Vault` cache populated by
-    /// `FastVaultEligibilityRefresher` (app foreground + vault switch). No
-    /// per-screen network call needed.
-    var isFastVault: Bool { vault.fastVaultEligibility }
     var isStakingOperation: Bool = false
     var transactionType: VSTransactionType = .unspecified
     var memoFunctionDictionary: [String: String] = [:]
@@ -132,8 +128,6 @@ final class SendDetailsViewModel {
         memo = seed.memo
         feeMode = seed.feeMode
         sendMaxAmount = seed.sendMaxAmount
-        // `isFastVault` is computed from `vault.fastVaultEligibility` — no
-        // hydration needed; the cache is the source of truth.
         isStakingOperation = seed.isStakingOperation
         transactionType = seed.transactionType
         memoFunctionDictionary = seed.memoFunctionDictionary
@@ -658,7 +652,6 @@ final class SendDetailsViewModel {
             customGasLimit: customGasLimit,
             customByteFee: customByteFee,
             sendMaxAmount: sendMaxAmount,
-            isFastVault: isFastVault,
             isStakingOperation: isStakingOperation,
             transactionType: transactionType,
             memoFunctionDictionary: memoFunctionDictionary,
