@@ -11,53 +11,26 @@ struct ReferralInitialScreen: View {
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var referralViewModel = ReferralViewModel()
 
-    @StateObject var keyboardObserver = KeyboardObserver()
-    @State var scrollViewProxy: ScrollViewProxy?
-    @State var screenHeight: CGFloat = 0
     @Environment(\.router) var router
-
-    private let referralSavePercentage: String = "10%"
-    private let referralSavePercentage2: String = "20%"
-    private let scrollToReferenceId = "scrollTo"
-
     @EnvironmentObject var appViewModel: AppViewModel
 
-    var isLoading: Bool {
-        referredViewModel.isLoading || referralViewModel.isLoading
-    }
+    private let referredSavePercentage: String = "10%"
+    private let createSavePercentage: String = "20%"
 
     var body: some View {
         Screen {
-            GeometryReader { geo in
-                ScrollViewReader { proxy in
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 0) {
-                            image
-                            Spacer()
-                            VStack(spacing: 16) {
-                                referredContent
-                                    .id(scrollToReferenceId)
-                                orSeparator
-                                referralContent
-                            }
-                        }
-                        .frame(maxHeight: screenHeight)
-                    }
-                    .onLoad {
-                        screenHeight = geo.size.height
-                        scrollViewProxy = proxy
-                    }
-                }
+            VStack(spacing: 0) {
+                Spacer()
+                image
+                Spacer()
+                cards
             }
         }
         .screenTitle("vultisig-referrals".localized)
-        .overlay(referredViewModel.isLoading ? Loader() : nil)
         .onAppear {
             referralViewModel.currentVault = appViewModel.selectedVault
+            referredViewModel.currentVault = appViewModel.selectedVault
             referredViewModel.setData()
-        }
-        .onDisappear {
-            referredViewModel.clearFormMessages()
         }
         .onChange(of: referralViewModel.currentVault) { _, _ in
             // TODO: - Remove after release
@@ -66,126 +39,158 @@ struct ReferralInitialScreen: View {
                 await referralViewModel.fetchVaultData()
             }
         }
-        #if os(iOS)
-        .onChange(of: keyboardObserver.keyboardHeight) { _, height in
-            guard height > 250 else {
-                return
-            }
-
-            withAnimation {
-                scrollViewProxy?.scrollTo(scrollToReferenceId, anchor: .bottom)
-            }
-        }
-        #endif
-    }
-
-    var orSeparator: some View {
-        HStack(spacing: 16) {
-            separator
-
-            Text(NSLocalizedString("or", comment: "").uppercased())
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-
-            separator
-        }
-    }
-
-    var separator: some View {
-        Separator()
-            .opacity(0.2)
     }
 
     var image: some View {
-        Image("ReferralLaunchOverview")
+        Image("referral-initial")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(maxWidth: 365)
+            .frame(maxWidth: 375)
+            .mask(
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .black, location: 0.15),
+                        .init(color: .black, location: 0.85),
+                        .init(color: .clear, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .mask(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.0),
+                            .init(color: .black, location: 0.1),
+                            .init(color: .black, location: 0.9),
+                            .init(color: .clear, location: 1.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+            )
     }
 
-    var referredContent: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                HStack(spacing: 0) {
-                    HighlightedText(
-                        text: String(format: "referredSaveOnSwaps".localized, referralSavePercentage),
-                        highlightedText: referralSavePercentage
-                    ) {
-                        $0.font = Theme.fonts.bodySMedium
-                        $0.foregroundColor = Theme.colors.textPrimary
-                    } highlightedTextStyle: {
-                        $0.foregroundColor = Theme.colors.primaryAccent4
-                    }
-                }
-
-                referredTextField
-            }
-
-            referredCodeButton
-        }
-    }
-}
-
-// MARK: - Referred
-
-private extension ReferralInitialScreen {
-    var referredCodeButton: some View {
-        PrimaryButton(title: referredViewModel.referredButtonTitle, type: .secondary) {
-            Task { @MainActor in
-                await referredViewModel.verifyAndSaveReferredCode()
-            }
-        }
-        .disabled(referredViewModel.referredButtonDisabled)
-    }
-
-    var referredTextField: some View {
-        ReferralTextField(
-            text: $referredViewModel.referredCode,
-            placeholderText: "enterUpto4Characters",
-            action: .Paste,
-            errorMessage: $referredViewModel.referredLaunchViewErrorMessage
-        )
-    }
-}
-
-// MARK: - Referral
-
-private extension ReferralInitialScreen {
-    var referralContent: some View {
-        VStack(spacing: 16) {
-            referralTitle
-            if referralViewModel.hasReferralCode {
-                editReferralButton
-            } else {
-                createReferralButton
-            }
+    var cards: some View {
+        VStack(spacing: 14) {
+            saveReferralCard
+            createReferralCard
         }
     }
 
-    var referralTitle: some View {
-        HighlightedText(
-            text: String(format: "createYourCodeAndEarn".localized, referralSavePercentage2),
-            highlightedText: referralSavePercentage2
+    var saveReferralCard: some View {
+        ReferralEntryCard(
+            iconName: "megaphone",
+            title: "saveReferralCardTitle".localized,
+            description: String(format: "saveReferralCardBody".localized, referredSavePercentage),
+            highlightedText: referredSavePercentage,
+            showActiveBadge: referredViewModel.hasReferredCode
         ) {
-            $0.font = Theme.fonts.bodySMedium
-            $0.foregroundColor = Theme.colors.textPrimary
-        } highlightedTextStyle: {
-            $0.foregroundColor = Theme.colors.primaryAccent4
-        }
-        .multilineTextAlignment(.center)
-        .fixedSize(horizontal: false, vertical: true)
-    }
-
-    var createReferralButton: some View {
-        PrimaryButton(title: "createReferral") {
-            router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: VaultSelectedViewModel()))
+            router.navigate(to: ReferralRoute.referredCodeForm)
         }
     }
 
-    var editReferralButton: some View {
-        PrimaryButton(title: "editReferral") {
-            router.navigate(to: ReferralRoute.main)
+    @ViewBuilder
+    var createReferralCard: some View {
+        if referralViewModel.hasReferralCode {
+            ReferralEntryCard(
+                iconName: "image-avatar-sparkle",
+                title: "myReferralCardTitle".localized,
+                description: "myReferralCardBody".localized,
+                highlightedText: nil,
+                showActiveBadge: false
+            ) {
+                router.navigate(to: ReferralRoute.main)
+            }
+        } else {
+            ReferralEntryCard(
+                iconName: "image-avatar-sparkle",
+                title: "createReferralCardTitle".localized,
+                description: String(format: "createYourCodeAndEarn".localized, createSavePercentage),
+                highlightedText: createSavePercentage,
+                showActiveBadge: false
+            ) {
+                router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: VaultSelectedViewModel()))
+            }
         }
+    }
+}
+
+private struct ReferralEntryCard: View {
+    let iconName: String
+    let title: String
+    let description: String
+    let highlightedText: String?
+    let showActiveBadge: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 24) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Icon(named: iconName, color: Theme.colors.primaryAccent4, size: 24)
+                        Text(title)
+                            .font(Theme.fonts.title3)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                        if showActiveBadge {
+                            activeBadge
+                        }
+                    }
+                    descriptionText
+                        .multilineTextAlignment(.leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Icon(
+                    named: "chevron-right",
+                    color: Theme.colors.textPrimary,
+                    size: 20
+                )
+            }
+            .padding(24)
+            .background(Theme.colors.bgSurface1)
+            .cornerRadius(16)
+            .contentShape(Rectangle())
+        }
+    }
+
+    @ViewBuilder
+    var descriptionText: some View {
+        if let highlightedText {
+            HighlightedText(
+                text: description,
+                highlightedText: highlightedText
+            ) {
+                $0.font = Theme.fonts.footnote
+                $0.foregroundColor = Theme.colors.textSecondary
+            } highlightedTextStyle: {
+                $0.foregroundColor = Theme.colors.primaryAccent4
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            Text(description)
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    var activeBadge: some View {
+        Text("active".localized)
+            .font(Theme.fonts.footnote)
+            .foregroundStyle(Theme.colors.alertSuccess)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(Theme.colors.alertSuccess.opacity(0.05))
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Theme.colors.alertSuccess, lineWidth: 1)
+            )
     }
 }
 

@@ -213,6 +213,7 @@
 "createFolder" = "Ordner erstellen";
 "createQR" = "QR erstellen";
 "createReferral" = "Empfehlung erstellen";
+"createReferralCardTitle" = "Empfehlung erstellen";
 "createReferralCode" = "Empfehlungscode erstellen";
 "createVault" = "Tresor erstellen";
 "createYourCodeAndEarn" = "Erstelle deinen eigenen Code und verdiene 10 Bps beim Swappen";
@@ -499,6 +500,7 @@
 "memoLabel" = "Memo";
 "Merge" = "Zusammenführen";
 "messageDeposit" = "%@ Nachrichteneinzahlung";
+"messageToSign" = "Zu signierende Nachricht";
 "messageVote" = "%@ Nachrichtenabstimmung";
 "migrate" = "Migrieren";
 "migratePasswordDescription" = "Gib dein Passwort ein, um deinen Serveranteil zu entsperren und das Upgrade zu starten";
@@ -514,6 +516,8 @@
 "moreInfo" = "Mehr Infos";
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
+"myReferralCardBody" = "Verwalte deinen Empfehlungscode und sammle Belohnungen.";
+"myReferralCardTitle" = "Meine Empfehlung";
 "myVaults" = "Meine Tresore";
 "name" = "Name";
 "nameYourVault" = "Benennen Sie Ihren Tresor";
@@ -608,7 +612,6 @@
 "operatorFeesLabel" = "Betreibergebühren (Basis Punkte)";
 "optional" = "(optional)";
 "optionalPasswordProtectBackup" = "Optionale Passwortsicherung deines Tresors";
-"or" = "ODER";
 "other" = "Andere";
 "overview" = "Übersicht";
 "pair" = "Koppeln";
@@ -762,6 +765,8 @@
 "savedAddresses" = "Gespeicherte Adressen";
 "saveOnSwaps" = "Speichern Sie %@ bei Swaps";
 "saveReferral" = "Empfehlung speichern";
+"saveReferralCardBody" = "Speichere den Empfehlungscode eines Freundes und spare %@ bei Swaps.";
+"saveReferralCardTitle" = "Empfehlung speichern";
 "saveReferredCode" = "Empfehlungscode speichern";
 "saveVaultQR" = "Tresor-QR speichern";
 "scannerModeCamera" = "Kamera";
@@ -858,6 +863,7 @@
 "signer" = "Unterzeichner";
 "signFasterThanEverBefore" = "Schneller als je zuvor signieren";
 "signingErrorTryAgain" = "Fehler beim Unterschreiben";
+"signingMethod" = "Signaturmethode";
 "signingTransaction" = "Transaktion wird signiert";
 "signTransaction" = "Transaktion signieren";
 "skip" = "Überspringen";
@@ -1104,7 +1110,7 @@
 "vultDiscountTiers" = "$VULT Rabattstufen";
 "vultDiscountTiersDescription" = "Halten Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
 "vultiserverPassword" = "Vultiserver-Passwort";
-"vultisig-referrals" = "Vultisig – Empfehlungen";
+"vultisig-referrals" = "Vultisig Empfehlungen";
 "vultisigCommunity" = "Vultisig -Gemeinschaft";
 "vultisigEducation" = "Vultisig -Bildung";
 "vultisigWebsite" = "Vultisig -Website";

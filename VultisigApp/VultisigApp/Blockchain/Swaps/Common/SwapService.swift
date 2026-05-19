@@ -14,8 +14,13 @@ struct SwapService {
     static let shared = SwapService()
 
     /// Fall back from rapid to streaming THORChain swap when rapid slippage
-    /// (`fees.total` share of output) exceeds this threshold. 300 bps = 3%.
-    static let streamingSlippageThresholdBps = 300
+    /// (`fees.total` share of output) exceeds this threshold. 100 bps = 1%.
+    /// Streaming typically drops slippage from ~41 bps to ~9 bps on trades
+    /// it covers; a 1% cutoff captures mid-size cross-chain swaps that
+    /// otherwise route via rapid despite being good streaming candidates.
+    /// Mirrored in `vultisig-sdk` (`THORCHAIN_STREAMING_SLIPPAGE_THRESHOLD_BPS`)
+    /// and `vultisig-android` (`STREAMING_SLIPPAGE_THRESHOLD_BPS`).
+    static let streamingSlippageThresholdBps = 100
 
     func fetchQuote(
         amount: Decimal,

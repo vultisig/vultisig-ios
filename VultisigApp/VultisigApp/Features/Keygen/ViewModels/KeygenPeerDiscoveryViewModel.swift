@@ -278,7 +278,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 $0.forEach { peer in
                     self.autoSelectPeer(peer)
                 }
-                self.startFastVaultKeygenIfNeeded(state: state)
+                self.startKeygenIfNeeded(state: state)
             }
     }
 
@@ -309,7 +309,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         return status == .WaitingForDevices && selections.count < 2
     }
 
-    func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
+    func startKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
@@ -320,6 +320,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         let isValid = selections.contains(where: { $0.contains("Server-") })
         return isValid
+    }
+
+    /// Decides whether peer-discovery has reached the auto-kickoff threshold.
+    /// Fixed-device flows (2/2 and 3/3) skip the manual Continue button once
+    /// every peer is connected; 4+ device flows require an explicit tap so the
+    /// initiating device can choose which peers to commit. Reshare never
+    /// auto-starts. Mirrors the Windows `AutoStartKeygen` component
+    /// (`core/ui/mpc/keygen/peers/AutoStartKeygen.tsx`). See vultisig-ios#4374.
+    func shouldAutoStartKeygen(totalDeviceCount: Int) -> Bool {
+        guard tssType != .Reshare else { return false }
+        guard totalDeviceCount <= 3 else { return false }
+        guard status == .WaitingForDevices else { return false }
+        return selections.count >= totalDeviceCount
     }
 
     func startDiscovery() {

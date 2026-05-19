@@ -12,6 +12,7 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
 
     enum KeysignState: Int, CaseIterable {
         case initial = 1
+        case verify
         case pair
         case keysign
         case done
@@ -20,6 +21,8 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
             switch self {
             case .initial:
                 return "Sign message".localized
+            case .verify:
+                return "verify".localized
             case .pair:
                 return "pair".localized
             case .keysign:
@@ -53,7 +56,7 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
         switch state {
         case .done, .keysign:
             return false
-        case .initial, .pair:
+        case .initial, .verify, .pair:
             return true
         }
     }

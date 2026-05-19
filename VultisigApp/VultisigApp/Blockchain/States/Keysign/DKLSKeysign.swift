@@ -387,9 +387,17 @@ final class DKLSKeysign {
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch {
-            print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
+            logger.error("Failed to sign message (\(messageToSign, privacy: .public)) on attempt \(attempt, privacy: .public): \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+            } else {
+                // Surface retry-exhaustion as a typed throw rather than silently
+                // returning. Previously the caller only learned about the failure
+                // indirectly via `signatures.isEmpty` further up the stack, which
+                // collapsed every cause into a generic "fail to sign transaction"
+                // message and risked leaving the UI in a half-finished state.
+                // See vultisig-ios#4327.
+                throw HelperError.runtimeError("DKLS sign message exhausted retries: \(error.localizedDescription)")
             }
         }
     }
