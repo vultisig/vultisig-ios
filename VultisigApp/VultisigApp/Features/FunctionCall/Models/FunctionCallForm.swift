@@ -44,7 +44,6 @@ class FunctionCallForm: ObservableObject, Hashable {
     @Published var isCalculatingFee: Bool = false
     @Published var feeMode: FeeMode = .default
     @Published var sendMaxAmount: Bool = false
-    @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
     @Published var isStakingOperation: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()

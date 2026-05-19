@@ -24,7 +24,7 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.memo, "")
         XCTAssertEqual(vm.feeMode, .default)
         XCTAssertFalse(vm.sendMaxAmount)
-        XCTAssertFalse(vm.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
         XCTAssertNil(vm.customGasLimit)
         XCTAssertNil(vm.customByteFee)
         XCTAssertTrue(vm.memoFunctionDictionary.isEmpty)
@@ -329,26 +329,33 @@ final class SendDetailsViewModelTests: XCTestCase {
     }
 
     // MARK: - Fast vault
+    // `vault.isFastVault` is the unified read — cache-first with structural
+    // fallback. The cache is populated by `FastVaultEligibilityRefresher`
+    // (see its tests for the populate path).
 
-    func testLoadFastVaultEligibleSetsFlag() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = true
-        let vm = SendFormFixture.make(interactor: interactor)
-
-        await vm.loadFastVault()
-
-        XCTAssertTrue(vm.isFastVault)
-        XCTAssertEqual(interactor.loadFastVaultCalls.count, 1)
+    func testVaultIsFastVaultReflectsCachedTrue() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = Date()
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertTrue(vm.vault.isFastVault)
     }
 
-    func testLoadFastVaultIneligibleLeavesFlagFalse() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = false
-        let vm = SendFormFixture.make(interactor: interactor)
+    func testVaultIsFastVaultReflectsCachedFalse() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = false
+        vault.fastVaultEligibilityCheckedAt = Date()
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertFalse(vm.vault.isFastVault)
+    }
 
-        await vm.loadFastVault()
-
-        XCTAssertFalse(vm.isFastVault)
+    func testVaultIsFastVaultFallsBackToStructuralWhenCacheEmpty() {
+        // No cache yet (checkedAt == nil). With a `server-` signer in the
+        // list, the structural fallback returns true.
+        let vault = SendFormFixture.makeVault()
+        vault.signers = ["iPhone-test", "server-abc"]
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertTrue(vm.vault.isFastVault)
     }
 
     // MARK: - Amount sync validation (Phase 2b)

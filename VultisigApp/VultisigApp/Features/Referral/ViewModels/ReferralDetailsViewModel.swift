@@ -78,9 +78,8 @@ final class ReferralDetailsViewModel {
     // MARK: - Async state
     var isLoading: Bool = false
 
-    // MARK: - Send-transaction props (replaces tx.gas / tx.isFastVault)
+    // MARK: - Send-transaction props (replaces tx.gas)
     var gas: BigInt = .zero
-    var isFastVault: Bool = false
 
     // MARK: - Alert
     var showReferralAlert: Bool = false
@@ -250,12 +249,6 @@ final class ReferralDetailsViewModel {
         }
     }
 
-    // MARK: - Network — fast vault
-
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
-    }
-
     // MARK: - Network — referral data
 
     func fetchReferralCodeDetails() async {
@@ -355,7 +348,6 @@ final class ReferralDetailsViewModel {
             amount: totalFee.formatDecimalToLocale(),
             memo: memo,
             gas: gas,
-            isFastVault: isFastVault,
             transactionType: .unspecified,
             memoFunctionDictionary: ["memo": ""]
         )

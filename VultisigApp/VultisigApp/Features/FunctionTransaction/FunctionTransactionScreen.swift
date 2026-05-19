@@ -150,7 +150,6 @@ struct FunctionTransactionScreen: View {
             let tx = transactionBuilder.buildTransaction()
 
             await functionCallViewModel.loadGasInfoForSending(tx: tx)
-            await functionCallViewModel.loadFastVault(tx: tx, vault: vault)
 
             sendTx = tx
             isLoading = false

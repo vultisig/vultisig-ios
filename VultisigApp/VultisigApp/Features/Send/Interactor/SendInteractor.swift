@@ -87,10 +87,6 @@ struct SendFeeEstimateRequest: Equatable {
 }
 
 protocol SendInteractor {
-    /// Fast Vault eligibility for a given vault — exists on the server AND
-    /// wasn't a local-only backup.
-    func loadFastVault(vault: Vault) async -> Bool
-
     /// Chain-specific fee / nonce / blockhash data needed to assemble the
     /// keysign payload. `feeMode` controls EVM priority and UTXO byte-fee
     /// tier — never hardcode `.default` at the call site.

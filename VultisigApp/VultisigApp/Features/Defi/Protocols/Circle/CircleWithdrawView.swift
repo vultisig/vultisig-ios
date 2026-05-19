@@ -20,7 +20,6 @@ struct CircleWithdrawView: View {
     @State var percentage: Double = 0.0
     @State var isLoading = false
     @State var error: Error?
-    @State var isFastVault = false
     @State var fastPasswordPresented = false
     @State var fastVaultPassword: String = ""
 
@@ -42,9 +41,6 @@ struct CircleWithdrawView: View {
         }
         .screenTitle("circleWithdrawTitle".localized)
         .withLoading(isLoading: $isLoading)
-        .task {
-            await loadFastVaultStatus()
-        }
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $fastVaultPassword,
@@ -163,7 +159,7 @@ struct CircleWithdrawView: View {
 
     @ViewBuilder
     var withdrawButton: some View {
-        if isFastVault {
+        if vault.isFastVault {
             VStack {
                 Text("holdForPairedSign".localized)
                     .foregroundColor(Theme.colors.textTertiary)
@@ -192,15 +188,6 @@ struct CircleWithdrawView: View {
 
     var isButtonDisabled: Bool {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
-    }
-
-    func loadFastVaultStatus() async {
-        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        await MainActor.run {
-            isFastVault = isExist && !isLocalBackup
-        }
     }
 
     func updatePercentage(from amountStr: String) async {
@@ -288,8 +275,7 @@ struct CircleWithdrawView: View {
             await MainActor.run {
                 let immutableTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
                     toAddress: recipientCoin.address,
-                    amount: amount,
-                    isFastVault: isFastVault
+                    amount: amount
                 )
                 router.navigate(
                     to: SendRoute.pairing(

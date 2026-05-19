@@ -29,6 +29,12 @@ final class Vault: ObservableObject, Codable {
     var defiChains: [Chain] = []
     var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
 
+    // FastVault eligibility cache — populated by FastVaultEligibilityRefresher on
+    // app foreground + vault switch. Reads are sync; refresh happens at planned
+    // trigger points rather than per-screen-mount. Not encoded (local-only state).
+    var fastVaultEligibility: Bool = false
+    var fastVaultEligibilityCheckedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
@@ -170,7 +176,33 @@ final class Vault: ObservableObject, Codable {
         return coins.first(where: { $0.chain == chain && $0.isNativeToken })
     }
 
+    /// Whether this vault can be signed via the FastVault path. Single
+    /// source of truth — readers everywhere route on this. The value is
+    /// cached on the model (`fastVaultEligibility` + `fastVaultEligibilityCheckedAt`,
+    /// populated by `FastVaultEligibilityRefresher` on vault open + scenePhase
+    /// active) and falls back to the structural `hasServerSigner` check when
+    /// the cache hasn't been populated yet — best-effort optimistic value
+    /// until the refresher fires.
+    ///
+    /// Never true for the server-side party itself; only the user-side
+    /// devices ever route to FastVault signing.
     var isFastVault: Bool {
+        guard !localPartyID.lowercased().starts(with: "server-") else { return false }
+
+        if fastVaultEligibilityCheckedAt != nil {
+            return fastVaultEligibility
+        }
+
+        return hasServerSigner
+    }
+
+    /// Structural-only check: is there a `server-` party in this vault's
+    /// signer list (and we're not the server ourselves)? Internal helper —
+    /// used by `FastVaultService.isEligibleForFastSign` to compute the
+    /// canonical eligibility (`isExist && hasServerSigner`) before writing
+    /// the result to the cache. Reading `isFastVault` here would create a
+    /// circular dependency on the cached value the refresher is computing.
+    var hasServerSigner: Bool {
         if localPartyID.lowercased().starts(with: "server-") {
             return false
         }

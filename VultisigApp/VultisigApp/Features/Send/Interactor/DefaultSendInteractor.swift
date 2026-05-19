@@ -28,12 +28,6 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
-    func loadFastVault(vault: Vault) async -> Bool {
-        let exists = await fastVault.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().hasPrefix("server-")
-        return exists && !isLocalBackup
-    }
-
     func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
         try await blockchain.fetchSendBlockChainSpecific(
             coin: request.coin,

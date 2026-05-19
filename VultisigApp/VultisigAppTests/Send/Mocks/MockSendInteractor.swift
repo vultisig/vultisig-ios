@@ -60,7 +60,6 @@ final class MockSendInteractor: SendInteractor {
         let vault: Vault
     }
 
-    private(set) var loadFastVaultCalls: [Vault] = []
     private(set) var fetchChainSpecificCalls: [FetchChainSpecificCall] = []
     private(set) var calculateEVMFeeCalls: [CalculateEVMFeeCall] = []
     private(set) var buildKeysignPayloadCalls: [BuildKeysignPayloadCall] = []
@@ -70,7 +69,6 @@ final class MockSendInteractor: SendInteractor {
 
     // MARK: - Stubs
 
-    var loadFastVaultResult: Bool = false
     var fetchChainSpecificStub: ((FetchChainSpecificCall) throws -> BlockChainSpecific) = { _ in
         // Sensible default: a Cosmos-shaped chain specific with zero fees.
         .Cosmos(accountNumber: 0, sequence: 0, gas: .zero, transactionType: 0, ibcDenomTrace: nil)
@@ -85,11 +83,6 @@ final class MockSendInteractor: SendInteractor {
     var buildKeysignPayloadStub: ((BuildKeysignPayloadCall) throws -> KeysignPayload)?
 
     // MARK: - Conformance
-
-    func loadFastVault(vault: Vault) async -> Bool {
-        loadFastVaultCalls.append(vault)
-        return loadFastVaultResult
-    }
 
     func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
         let call = FetchChainSpecificCall(request: request)

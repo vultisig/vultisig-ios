@@ -48,7 +48,6 @@ final class EditReferralDetailsViewModel {
 
     // MARK: - Send-transaction props
     var gas: BigInt = .zero
-    var isFastVault: Bool = false
 
     // MARK: - Init
 
@@ -138,12 +137,6 @@ final class EditReferralDetailsViewModel {
         }
     }
 
-    // MARK: - Network — fast vault
-
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
-    }
-
     // MARK: - Verify + boundary
 
     /// Verifies edit inputs and returns the immutable `SendTransaction` to
@@ -177,7 +170,6 @@ final class EditReferralDetailsViewModel {
             amount: totalFeeAmount.formatDecimalToLocale(),
             memo: memo,
             gas: gas,
-            isFastVault: isFastVault,
             transactionType: .unspecified,
             memoFunctionDictionary: ["memo": ""]
         )
