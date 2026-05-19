@@ -69,6 +69,65 @@ struct TronAPIService {
         return String(account.balance ?? 0)
     }
 
+    // MARK: - Contract simulation
+
+    /// Simulates a TRC20 `transfer(address,uint256)` call via TRON's
+    /// `/wallet/triggerconstantcontract` endpoint and returns the decoded
+    /// response (`energy_used` is the field consumed by fee estimation).
+    /// A placeholder `amount` of `1` is used — energy cost of an ERC20-style
+    /// transfer is dominated by storage-slot writes and is effectively
+    /// constant across amounts on typical TRC20 contracts.
+    ///
+    /// See https://developers.tron.network/docs/resource-model#dynamic-energy-model.
+    func simulateTRC20Transfer(
+        ownerAddress: String,
+        contractAddress: String,
+        toAddress: String
+    ) async throws -> TronTriggerConstantResponse {
+        let parameter = try Self.encodeTrc20TransferParameter(toAddress: toAddress, amount: 1)
+        let response = try await httpClient.request(
+            TronAPI.triggerConstantContract(
+                ownerAddress: ownerAddress,
+                contractAddress: contractAddress,
+                functionSelector: "transfer(address,uint256)",
+                parameter: parameter
+            ),
+            responseType: TronTriggerConstantResponse.self
+        )
+        return response.data
+    }
+
+    /// ABI-encodes `(address, uint256)` for `transfer(address,uint256)`.
+    /// Strips the TRON `41` prefix from the decoded base58 address so the
+    /// resulting hex matches the EVM-style 20-byte address that the TVM
+    /// expects in the calldata.
+    private static func encodeTrc20TransferParameter(
+        toAddress: String,
+        amount: BigInt
+    ) throws -> String {
+        guard let toAddressData = Base58.decode(string: toAddress) else {
+            throw TronAPIError.invalidAddress
+        }
+        var addressHex = toAddressData.hexString
+        if addressHex.lowercased().hasPrefix("41") {
+            addressHex = String(addressHex.dropFirst(2))
+        }
+        // Reject any payload that doesn't yield a canonical 20-byte (40 hex chars)
+        // address after stripping the optional TRON `41` prefix. Without this
+        // guard, a malformed base58 input could produce ABI calldata that the
+        // TVM silently accepts but simulates against the wrong recipient,
+        // returning a misleading `energy_used`.
+        guard addressHex.count == 40 else {
+            throw TronAPIError.invalidAddress
+        }
+        let paddedAddress = String(repeating: "0", count: max(0, 64 - addressHex.count)) + addressHex
+
+        let amountHex = String(amount, radix: 16)
+        let paddedAmount = String(repeating: "0", count: max(0, 64 - amountHex.count)) + amountHex
+
+        return paddedAddress + paddedAmount
+    }
+
     // MARK: - Token Info
 
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
