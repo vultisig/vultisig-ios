@@ -85,13 +85,11 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildMacScannerScreen(
         type: DeeplinkFlowType,
-        sendTx: FunctionCallForm,
         selectedVault: Vault?
     ) -> some View {
         #if os(macOS)
         MacScannerView(
             type: type,
-            sendTx: sendTx,
             selectedVault: selectedVault
         )
         #else
@@ -117,14 +115,16 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildGeneralQRImportScreen(
         type: DeeplinkFlowType,
-        selectedVault: Vault?,
-        sendTx: FunctionCallForm?
+        selectedVault: Vault?
     ) -> some View {
         GeneralQRImportMacView(
             type: type,
             selectedVault: selectedVault
-        ) { address in
-            sendTx?.toAddress = address
+        ) { _ in
+            // Deeplink prefill is handled by HomeScreen via DeeplinkViewModel
+            // (`handleSendDeeplinkAfterVaultSelection` / `processAddressOnlyDeeplink`),
+            // which now plumb prefill onto `VaultAction.send` instead of mutating
+            // a shared FunctionCallForm instance.
         }
     }
 

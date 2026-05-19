@@ -23,8 +23,6 @@ struct ChainDetailScreen: View {
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
 
-    @StateObject private var sendTx = FunctionCallForm()
-
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -100,7 +98,6 @@ struct ChainDetailScreen: View {
                 CoinDetailScreen(
                     coin: coin,
                     vault: vault,
-                    sendTx: sendTx,
                     isPresented: $showCoinDetail,
                     onCoinAction: onCoinAction
                 )
@@ -267,7 +264,6 @@ private extension ChainDetailScreen {
     }
 
     func onAction(_ action: CoinAction) {
-        sendTx.reset(coin: nativeCoin)
         var vaultAction: VaultAction?
         switch action {
         case .receive:
@@ -279,11 +275,6 @@ private extension ChainDetailScreen {
             guard let fromCoin = viewModel.tokens.first else { return }
             vaultAction = .swap(fromCoin: fromCoin)
         case .deposit, .bridge, .memo:
-            if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
-                sendTx.reset(coin: nativeCoin)
-            } else if let firstCoin = viewModel.tokens.first {
-                sendTx.reset(coin: firstCoin)
-            }
             vaultAction = .function(coin: nativeCoin)
         case .buy:
             vaultAction = .buy(
@@ -310,7 +301,7 @@ private extension ChainDetailScreen {
     }
 
     func navigateToAction(action: VaultAction) {
-        router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
+        router.navigate(to: HomeRoute.vaultAction(action: action, vault: vault))
     }
 }
 

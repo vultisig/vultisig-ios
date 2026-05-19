@@ -23,7 +23,6 @@ struct HomeScreen: View {
 
     @State var showScanner: Bool = false
     @State var showBackupNow = false
-    @StateObject private var sendTx = FunctionCallForm()
     @State var selectedChain: Chain? = nil
 
     @State var walletShowPortfolioHeader: Bool = false
@@ -220,7 +219,7 @@ struct HomeScreen: View {
                 case .createVault:
                     router.navigate(to: VaultRoute.createVault(showBackButton: true))
                 case .mainAction(let action):
-                    router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: selectedVault))
+                    router.navigate(to: HomeRoute.vaultAction(action: action, vault: selectedVault))
                 case .transactionHistory:
                     router.navigate(to: TransactionHistoryRoute.list(
                         pubKeyECDSA: selectedVault.pubKeyECDSA,
@@ -243,7 +242,6 @@ struct HomeScreen: View {
                 guard shouldNavigate else { return }
                 router.navigate(to: KeygenRoute.macScanner(
                     type: .SignTransaction,
-                    sendTx: sendTx,
                     selectedVault: selectedVault
                 ))
                 showScanner = false
@@ -264,7 +262,6 @@ struct HomeScreen: View {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,
                         selectedChain: $selectedChain,
-                        sendTX: sendTx,
                         onJoinKeygen: {
                             navigateToJoinKeygen(selectedVault: selectedVault)
                         },
@@ -510,29 +507,16 @@ extension HomeScreen {
         let savedAmount = deeplinkViewModel.sendAmount
         let savedMemo = deeplinkViewModel.sendMemo
 
-        let coinToUse: Coin?
-        if let coin = coin {
-            coinToUse = coin
-            sendTx.reset(coin: coin)
-        } else if let defaultCoin = vault.coins.first {
-            coinToUse = defaultCoin
-            sendTx.reset(coin: defaultCoin)
-        } else {
-            coinToUse = nil
-        }
-
-        if let address = savedAddress {
-            sendTx.toAddress = address
-        }
-        if let amount = savedAmount {
-            sendTx.amount = amount
-        }
-        if let memo = savedMemo {
-            sendTx.memo = memo
-        }
+        let coinToUse: Coin? = coin ?? vault.coins.first
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            vaultRoute = .mainAction(.send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
+            vaultRoute = .mainAction(.send(
+                coin: coinToUse,
+                hasPreselectedCoin: coinToUse != nil,
+                prefilledToAddress: savedAddress,
+                prefilledAmount: savedAmount,
+                prefilledMemo: savedMemo
+            ))
         }
     }
 
@@ -601,16 +585,15 @@ extension HomeScreen {
             return
         }
 
-        if let coin = coinToUse {
-            sendTx.reset(coin: coin)
-        }
-
-        sendTx.toAddress = address
         deeplinkViewModel.address = address
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.vaultRoute = .mainAction(
-                .send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
+                .send(
+                    coin: coinToUse,
+                    hasPreselectedCoin: coinToUse != nil,
+                    prefilledToAddress: address
+                ))
         }
     }
 

@@ -47,10 +47,9 @@ struct KeygenRouter {
             )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)
-        case .macScanner(let type, let sendTx, let selectedVault):
+        case .macScanner(let type, let selectedVault):
             viewBuilder.buildMacScannerScreen(
                 type: type,
-                sendTx: sendTx,
                 selectedVault: selectedVault
             )
         case .macAddressScanner(let selectedVault, let resultId):
@@ -58,11 +57,10 @@ struct KeygenRouter {
                 selectedVault: selectedVault,
                 resultId: resultId
             )
-        case .generalQRImport(let type, let selectedVault, let sendTx):
+        case .generalQRImport(let type, let selectedVault):
             viewBuilder.buildGeneralQRImportScreen(
                 type: type,
-                selectedVault: selectedVault,
-                sendTx: sendTx
+                selectedVault: selectedVault
             )
         case .reviewYourVaults(let vault, let tssType, let keygenCommittee, let email, let keyImportInput, let isInitiateDevice):
             viewBuilder.buildReviewYourVaultsScreen(
