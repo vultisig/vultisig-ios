@@ -711,7 +711,7 @@ private extension BlockChainService {
             // 60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
-            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo)
+            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap)
         }
     }
 
