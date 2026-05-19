@@ -14,6 +14,7 @@ struct SendCryptoContent: Hashable {
     let coin: Coin
     let amountCrypto: String
     let amountFiat: String
+    var hero: HeroContent? = nil
     let hash: String
     let explorerLink: String
     let memo: String
@@ -25,4 +26,7 @@ struct SendCryptoContent: Hashable {
     let fee: FeeDisplay
     let keysignPayload: KeysignPayload?
     let pubKeyECDSA: String
+    /// Forwarded into `SendCryptoDoneHeaderView` so the dApp request banner can
+    /// render above the hero on the done screen.
+    var dappMetadata: DAppMetadata? = nil
 }

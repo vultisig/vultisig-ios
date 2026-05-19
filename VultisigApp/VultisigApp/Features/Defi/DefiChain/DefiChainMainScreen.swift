@@ -10,7 +10,7 @@ import SwiftUI
 struct DefiChainMainScreen: View {
     @Environment(\.router) var router
     @ObservedObject var vault: Vault
-    let group: GroupedChain
+    let chain: Chain
 
     @StateObject var viewModel: DefiChainMainViewModel
     @StateObject var bondViewModel: DefiChainBondViewModel
@@ -19,20 +19,32 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
+    @State private var refreshErrorToast: String?
+    @State private var isRefreshing = false
 
-    init(vault: Vault, group: GroupedChain) {
+    init(vault: Vault, chain: Chain) {
         self.vault = vault
-        self.group = group
-        self._bondViewModel = StateObject(wrappedValue: DefiChainBondViewModel(vault: vault, chain: group.chain))
-        self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: group.chain))
-        self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: group.chain))
-        self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: group.chain))
+        self.chain = chain
+        self._bondViewModel = StateObject(wrappedValue: DefiChainBondViewModel(vault: vault, chain: chain))
+        self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: chain))
+        self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
+        self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
+    }
+
+    private var nativeCoin: Coin? {
+        vault.nativeCoin(for: chain)
+    }
+
+    /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
+    /// today — Stake and LP refreshes silently keep persisted rows on failure (see ViewModels).
+    private var refreshError: String? {
+        bondViewModel.refreshError
     }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
-                DefiChainBalanceView(vault: vault, groupedChain: group)
+                DefiChainBalanceView(vault: vault, chain: chain)
                 positionsSegmentedControlView
                 selectedPositionView
             }
@@ -45,15 +57,25 @@ struct DefiChainMainScreen: View {
             viewModel.onLoad()
             Task { await refresh() }
         }
-        .refreshable { await refresh() }
+        .refreshable {
+            // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
+            // When the user lets go, the spinner dismisses and the task is cancelled —
+            // which propagates to every in-flight network call inside `refresh()` and
+            // surfaces as `CancellationError`. Detach so cancellation stops here.
+            await Task { @MainActor in await refresh() }.value
+        }
         .onChange(of: vault) { _, vault in
             update(vault: vault)
         }
         .onChange(of: vault.defiPositions) { _, _ in
             Task { await refresh() }
         }
-        .onChange(of: viewModel.selectedPosition) { _, _ in
-            Task { await refresh() }
+        // Segment switching does NOT refresh — `refresh()` already loads all three position
+        // types in parallel on initial load and pull-to-refresh, so the data the new segment
+        // needs is already cached. Re-running `refresh()` here would fire 4 extra API calls
+        // every time the user swipes between segments.
+        .onChange(of: refreshError) { _, newValue in
+            refreshErrorToast = newValue
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
             DefiChainSelectPositionsScreen(
@@ -61,8 +83,15 @@ struct DefiChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true) {}
+        .crossPlatformToolbar(ignoresTopEdge: true) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(onRefresh: { Task { await refresh() } })
+            }
+            #endif
+        }
         .withLoading(isLoading: $isLoading)
+        .withBanner(text: $refreshErrorToast, style: .error)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),
@@ -87,13 +116,15 @@ struct DefiChainMainScreen: View {
         Group {
             switch viewModel.selectedPosition {
             case .bond:
-                DefiChainBondedView(
-                    viewModel: bondViewModel,
-                    coin: group.nativeCoin,
-                    onBond: { onTransactionToPresent(.bond(coin: group.nativeCoin.toCoinMeta(), node: $0?.address)) },
-                    onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
-                    emptyStateView: { emptyStateView }
-                )
+                if let nativeCoin {
+                    DefiChainBondedView(
+                        viewModel: bondViewModel,
+                        coin: nativeCoin,
+                        onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
+                        onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
+                        emptyStateView: { emptyStateView }
+                    )
+                }
             case .stake:
                 DefiChainStakedView(
                     viewModel: stakeViewModel,
@@ -109,6 +140,7 @@ struct DefiChainMainScreen: View {
                             rewardsCoin: rewardsCoin
                         ))
                     },
+                    onTransfer: { onTransfer(position: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .liquidityPool:
@@ -141,8 +173,10 @@ struct DefiChainMainScreen: View {
 
     func onStake(position: StakePosition) {
         switch position.type {
-        case .stake, .compound:
-            onTransactionToPresent(.stake(coin: position.coin, defaultAutocompound: false))
+        case .stake:
+            onTransactionToPresent(.stake(coin: position.coin, isAutocompound: false))
+        case .compound:
+            onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), isAutocompound: true))
         case .index:
             onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
         }
@@ -150,16 +184,43 @@ struct DefiChainMainScreen: View {
 
     func onUnstake(position: StakePosition) {
         switch position.type {
-        case .stake, .compound:
+        case .stake:
             onTransactionToPresent(
                 .unstake(
                     coin: position.coin,
-                    defaultAutocompound: false,
+                    isAutocompound: false,
                     availableToUnstake: position.availableToUnstake
+                )
+            )
+        case .compound:
+            onTransactionToPresent(
+                .unstake(
+                    coin: stakeCoin(for: position.coin),
+                    isAutocompound: true,
+                    availableToUnstake: position.amount
                 )
             )
         case .index:
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
+        }
+    }
+
+    func onTransfer(position: StakePosition) {
+        guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
+            return
+        }
+        router.navigate(to: HomeRoute.vaultAction(
+            action: .send(coin: coin, hasPreselectedCoin: true),
+            vault: vault
+        ))
+    }
+
+    func stakeCoin(for compoundCoin: CoinMeta) -> CoinMeta {
+        switch compoundCoin.ticker.uppercased() {
+        case "STCY":
+            return TokensStore.tcy
+        default:
+            return compoundCoin
         }
     }
 
@@ -240,15 +301,22 @@ private extension DefiChainMainScreen {
 
 private extension DefiChainMainScreen {
     func refresh() async {
-        Task { await viewModel.refresh() }
-        switch viewModel.selectedPosition {
-        case .bond:
-            await bondViewModel.refresh()
-        case .stake:
-            await stakeViewModel.refresh()
-        case .liquidityPool:
-            await lpsViewModel.refresh()
-        }
+        guard !isRefreshing else { return }
+
+        isRefreshing = true
+        // `defer` runs even on Task cancellation (e.g. view disappears
+        // mid-refresh). Without it, the flag stays `true` forever and the
+        // guard above silently drops every subsequent refresh call.
+        defer { isRefreshing = false }
+
+        // Refresh all three position categories in parallel so the aggregate balance shown
+        // in `DefiChainBalanceView` reflects every position type — not just the currently
+        // selected segment. The native-coin balance refresh runs independently.
+        async let mainRefresh: Void = viewModel.refresh()
+        async let bondRefresh: Void = bondViewModel.refresh()
+        async let stakeRefresh: Void = stakeViewModel.refresh()
+        async let lpsRefresh: Void = lpsViewModel.refresh()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
     }
 
     func update(vault: Vault) {
@@ -260,6 +328,6 @@ private extension DefiChainMainScreen {
 }
 
 #Preview {
-    DefiChainMainScreen(vault: .example, group: .example)
+    DefiChainMainScreen(vault: .example, chain: .thorChain)
         .environmentObject(HomeViewModel())
 }

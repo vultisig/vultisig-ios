@@ -5,6 +5,8 @@
 import OSLog
 import SwiftUI
 
+private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
+
 struct KeysignView: View {
     let vault: Vault
     let keysignCommittee: [String]
@@ -17,11 +19,21 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
+    var decodedFunctionName: String? = nil
+    var decodedTokenAmount: String? = nil
+    var decodedTokenTicker: String? = nil
+    var decodedTokenLogo: String? = nil
+    var decodedTokenDisplay: String? = nil
+    var decodedTokenIsUnlimited: Bool = false
+    var decodedFunctionSignature: String? = nil
+    var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
 
     @State var showAlert = false
     @State var showDoneText = false
     @State var showError = false
+
+    @Environment(\.scenePhase) private var scenePhase
 
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
@@ -30,6 +42,16 @@ struct KeysignView: View {
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
+            // Observability hook for vultisig-ios#4327: the issue reporter sees
+            // the "Signing" screen unblock after backgrounding + foregrounding,
+            // which fingerprints iOS auto-resuming a suspended network session.
+            // The log line lets us correlate scene transitions with the status
+            // trail in `os_log` captures from a TestFlight repro.
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                let isSigning: [KeysignStatus] = [.CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA]
+                guard isSigning.contains(viewModel.status) else { return }
+                logger.info("scenePhase: \(String(describing: oldPhase), privacy: .public) → \(String(describing: newPhase), privacy: .public) while status=\(String(describing: viewModel.status), privacy: .public)")
+            }
         #if os(iOS)
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
@@ -50,20 +72,21 @@ struct KeysignView: View {
     var content: some View {
         ZStack {
             switch viewModel.status {
-            case .CreatingInstance:
-                SendCryptoKeysignView()
-            case .KeysignECDSA:
-                SendCryptoKeysignView()
-            case .KeysignEdDSA:
-                SendCryptoKeysignView()
-            case .KeysignMLDSA:
-                SendCryptoKeysignView()
+            case .CreatingInstance,
+                    .KeysignECDSA,
+                    .KeysignEdDSA,
+                    .KeysignMLDSA:
+                SendCryptoKeysignView(coinLogo: keysignPayload?.coin.logo)
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
                 sendCryptoKeysignView
+                    .padding(.horizontal, 16)
+            case .KeysignRetryRequested:
+                retryRequestedView
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
+                    .padding(.horizontal, 16)
             }
 
             PopupCapsule(text: "hashCopied", showPopup: $showAlert)
@@ -113,6 +136,21 @@ struct KeysignView: View {
             }
     }
 
+    var retryRequestedView: some View {
+        SendCryptoKeysignView(
+            title: viewModel.retryReason?.userFacingMessage ?? .empty,
+            showError: true,
+            errorButtonTitle: "tryAgain".localized,
+            errorAction: {
+                guard let reason = viewModel.retryReason else { return }
+                transferViewModel?.retryBroadcast(reason: reason)
+            }
+        )
+        .onAppear {
+            showError = true
+        }
+    }
+
     var keysignVaultMismatchErrorView: some View {
         KeysignVaultMismatchErrorView()
             .onAppear {
@@ -138,6 +176,14 @@ struct KeysignView: View {
             encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: self.isInitiateDevice
         )
+        viewModel.decodedFunctionName = decodedFunctionName
+        viewModel.decodedTokenAmount = decodedTokenAmount
+        viewModel.decodedTokenTicker = decodedTokenTicker
+        viewModel.decodedTokenLogo = decodedTokenLogo
+        viewModel.decodedTokenDisplay = decodedTokenDisplay
+        viewModel.decodedTokenIsUnlimited = decodedTokenIsUnlimited
+        viewModel.decodedFunctionSignature = decodedFunctionSignature
+        viewModel.decodedFunctionArguments = decodedFunctionArguments
     }
 
     private func movetoDoneView() {

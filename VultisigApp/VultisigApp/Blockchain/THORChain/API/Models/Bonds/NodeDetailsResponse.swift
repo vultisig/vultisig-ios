@@ -8,7 +8,7 @@
 import Foundation
 
 /// Response model for THORChain node details
-/// Endpoint: GET https://thornode.thorchain.network/thorchain/node/{node_address}
+/// Endpoint: GET https://gateway.liquify.com/chain/thorchain_api/thorchain/node/{node_address}
 struct NodeDetailsResponse: Decodable {
     let nodeAddress: String
     let status: String

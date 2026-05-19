@@ -12,6 +12,8 @@ class ThorchainChainnetService: ThorchainSwapProvider {
     var network: String = ""
     static let shared = ThorchainChainnetService()
 
+    private let httpClient: HTTPClientProtocol = HTTPClient()
+
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
@@ -20,64 +22,69 @@ class ThorchainChainnetService: ThorchainSwapProvider {
 
     private init() {}
 
+    // MARK: - Helpers
+
+    /// The environment for this service is fixed at `.chainnet` — the file
+    /// name says "Stagenet" but the actual host is `chainnet-thornode.*`,
+    /// matching Vultisig's internal "Stagenet-1" naming.
+    private let env: ThorchainStagenetAPI.Environment = .chainnet
+
+    // MARK: - Public API
+
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
-        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainChainnet(address: address)) else {
-            return [CosmosBalance]()
-        }
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        return balanceResponse.balances
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.balances(env: env, address: address),
+            responseType: CosmosBalanceResponse.self
+        )
+        return response.data.balances
     }
 
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
-        do {
-            let balances: [CosmosBalance] =  try await fetchBalances(address)
-            var coinMetaList = [CoinMeta]()
-            for balance in balances {
-                var ticker: String
-                var decimals: Int
-                var logo: String
+        let balances: [CosmosBalance] = try await fetchBalances(address)
+        var coinMetaList = [CoinMeta]()
+        // Native RUNE is the chain's main asset and is added separately;
+        // including it here would surface a duplicate non-native row.
+        for balance in balances where balance.denom.caseInsensitiveCompare("rune") != .orderedSame {
+            var ticker: String
+            var decimals: Int
+            var logo: String
 
-                do {
-                    let metadata = try await getCosmosTokenMetadata(denom: balance.denom)
-                    ticker = metadata.ticker
-                    decimals = metadata.decimals
-                    logo = ticker.replacingOccurrences(of: "/", with: "")
-                } catch {
-                    let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
-                    ticker = info.ticker
-                    decimals = info.decimals
-                    logo = info.logo
-                }
-
-                // Find local asset to get correct logo and metadata
-                let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
-
-                if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
-                    ticker = ticker.uppercased()
-                }
-
-                // Use localAsset logo if available, otherwise use factory-generated logo
-                let finalLogo = localAsset?.logo ?? logo
-
-                let coinMeta = CoinMeta(
-                    chain: .thorChainChainnet,
-                    ticker: ticker,
-                    logo: finalLogo,
-                    decimals: decimals,
-                    priceProviderId: localAsset?.priceProviderId ?? "",
-                    contractAddress: balance.denom,
-                    isNativeToken: false
-                )
-                coinMetaList.append(coinMeta)
+            do {
+                let metadata = try await getCosmosTokenMetadata(denom: balance.denom)
+                ticker = metadata.ticker
+                decimals = metadata.decimals
+                logo = ticker.replacingOccurrences(of: "/", with: "")
+            } catch {
+                let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
+                ticker = info.ticker
+                decimals = info.decimals
+                logo = info.logo
             }
-            return coinMetaList
-        } catch {
-            throw error
+
+            // Find local asset to get correct logo and metadata
+            let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
+
+            if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
+                ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
+                ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
+                ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
+                ticker = ticker.uppercased()
+            }
+
+            let finalLogo = localAsset?.logo ?? logo
+
+            let coinMeta = CoinMeta(
+                chain: .thorChainChainnet,
+                ticker: ticker,
+                logo: finalLogo,
+                decimals: decimals,
+                priceProviderId: localAsset?.priceProviderId ?? "",
+                contractAddress: balance.denom,
+                isNativeToken: false
+            )
+            coinMetaList.append(coinMeta)
         }
+        return coinMetaList
     }
 
     func resolveTNS(name: String, chain: Chain) async throws -> String {
@@ -89,11 +96,12 @@ class ThorchainChainnetService: ThorchainSwapProvider {
             let entries: [Entry]
         }
 
-        let url = Endpoint.resolveTNS(name: name, chain: chain)
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode(Response.self, from: data)
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.resolveTNS(name: name),
+            responseType: Response.self
+        )
 
-        guard let entry = response.entries.first(where: {
+        guard let entry = response.data.entries.first(where: {
             $0.chain.lowercased() == chain.swapAsset.lowercased()
         }) else {
             throw Errors.tnsEntryNotFound
@@ -103,18 +111,11 @@ class ThorchainChainnetService: ThorchainSwapProvider {
     }
 
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
-        guard let url = URL(string: Endpoint.fetchAccountNumberThorchainChainnet(address)) else {
-            return nil
-        }
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
-        return accountResponse.result.value
-    }
-
-    func get9RRequest(url: URL) -> URLRequest {
-        var req = URLRequest(url: url)
-        req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
-        return req
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.accountNumber(env: env, address: address),
+            responseType: THORChainAccountNumberResponse.self
+        )
+        return response.data.result.value
     }
 
     func fetchSwapQuotes(
@@ -123,28 +124,35 @@ class ThorchainChainnetService: ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
+        streamingQuantity: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
+        let (affiliates, affiliateBps) = ThorchainService.affiliateParams(
+            referredCode: referredCode,
+            discountBps: vultTierDiscount
+        )
 
-        let url = Endpoint.fetchSwapQuoteThorchain(
-            chain: .thorchainChainnet,
-            address: address,
+        let target = ThorchainStagenetAPI.swapQuote(
+            env: env,
             fromAsset: fromAsset,
             toAsset: toAsset,
             amount: amount,
-            interval: String(interval),
-            referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount
+            destination: address,
+            streamingInterval: String(interval),
+            streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
+            affiliates: affiliates,
+            affiliateBps: affiliateBps
         )
 
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-
         do {
-            let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
-            return response
-        } catch {
-            let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
+            let raw = try await httpClient.request(target)
+            return try ThorchainService.decodeSwapQuoteOrError(from: raw.data)
+        } catch let error as HTTPError {
+            if case .statusCode(_, let data?) = error,
+               let swapError = try? JSONDecoder().decode(ThorchainSwapError.self, from: data) {
+                throw swapError
+            }
             throw error
         }
     }
@@ -155,11 +163,12 @@ class ThorchainChainnetService: ThorchainSwapProvider {
             return UInt64(cachedData.native_tx_fee_rune) ?? 0
         }
 
-        let urlString = Endpoint.fetchThorchainChainnetNetworkInfoNineRealms
-        let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        let thorchainNetworkInfo = try JSONDecoder().decode(ThorchainNetworkInfo.self, from: data)
-        self.cacheFeePrice.set(cacheKey, (data: thorchainNetworkInfo, timestamp: Date()))
-        return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.networkInfo(env: env),
+            responseType: ThorchainNetworkInfo.self
+        )
+        self.cacheFeePrice.set(cacheKey, (data: response.data, timestamp: Date()))
+        return UInt64(response.data.native_tx_fee_rune) ?? 0
     }
 
     func fetchThorchainInboundAddress() async -> [InboundAddress] {
@@ -174,11 +183,12 @@ class ThorchainChainnetService: ThorchainSwapProvider {
                 return cachedData
             }
 
-            let urlString = Endpoint.fetchThorchainChainnetInboundAddressesNineRealms
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            let inboundAddresses = try JSONDecoder().decode([InboundAddress].self, from: data)
-            self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
-            return inboundAddresses
+            let response = try await httpClient.request(
+                ThorchainStagenetAPI.inboundAddresses(env: env),
+                responseType: [InboundAddress].self
+            )
+            self.cacheInboundAddresses.set(cacheKey, (data: response.data, timestamp: Date()))
+            return response.data
         } catch {
             return []
         }
@@ -188,10 +198,12 @@ class ThorchainChainnetService: ThorchainSwapProvider {
         if !network.isEmpty {
             return network
         }
-        let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainChainnetNetworkInfo)
-        let response = try JSONDecoder().decode(THORChainNetworkStatus.self, from: data)
-        network = response.result.node_info.network
-        return response.result.node_info.network
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.networkStatus(env: env),
+            responseType: THORChainNetworkStatus.self
+        )
+        network = response.data.result.node_info.network
+        return network
     }
 
     func ensureTHORChainChainID() -> String {
@@ -203,7 +215,7 @@ class ThorchainChainnetService: ThorchainSwapProvider {
         DispatchQueue.global().async {
             Task {
                 do {
-                    _ =  try await self.getTHORChainChainID()
+                    _ = try await self.getTHORChainChainID()
                 } catch {
                     // Expected failure during network init
                 }
@@ -215,36 +227,23 @@ class ThorchainChainnetService: ThorchainSwapProvider {
     }
 
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
-        let url = URL(string: Endpoint.broadcastTransactionThorchainChainnet)!
-
         guard let jsonData = jsonString.data(using: .utf8) else {
             return .failure(HelperError.runtimeError("fail to convert input json to data"))
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = jsonData
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            let (data, resp)  =  try await URLSession.shared.data(for: request)
-            guard let httpResponse = resp as? HTTPURLResponse else {
-                return .failure(HelperError.runtimeError("Invalid http response"))
-            }
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                return .failure(HelperError.runtimeError("status code:\(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"))
-            }
-            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: data)
-            // Check if the transaction was successful based on the `code` field
-            // code 19 means the transaction has been exist in the mempool , which indicate another party already broadcast successfully
+            let raw = try await httpClient.request(ThorchainStagenetAPI.broadcast(env: env, body: jsonData))
+            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
+            // code 0 = success; code 19 = already in mempool (idempotent success)
             if let code = response.txResponse?.code, code == 0 || code == 19 {
-                // Transaction successful
                 if let txHash = response.txResponse?.txhash {
                     return .success(txHash)
                 }
             }
-            return .failure(HelperError.runtimeError(String(data: data, encoding: .utf8) ?? "Unknown error"))
-
+            return .failure(HelperError.runtimeError(String(data: raw.data, encoding: .utf8) ?? "Unknown error"))
+        } catch HTTPError.statusCode(let code, let data) {
+            let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "Unknown error"
+            return .failure(HelperError.runtimeError("status code:\(code), \(body)"))
         } catch {
             return .failure(error)
         }
@@ -265,7 +264,6 @@ extension ThorchainChainnetService {
     // swiftlint:disable:next unused_parameter async_without_await
     func fetchYieldTokenPrice(for contract: String) async -> Double? {
         // Stagenet doesn't support yield tokens (yRUNE, yTCY)
-        // Return nil to indicate no price available
         return nil
     }
 
@@ -288,31 +286,16 @@ extension ThorchainChainnetService {
     }
 
     private func fetchAssetPrice(assetName: String) async throws -> Double {
-        let endpoint = Endpoint.fetchChainnetPoolInfo(asset: assetName)
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.poolInfo(env: env, asset: assetName),
+            responseType: THORChainPoolResponse.self
+        )
 
-        guard let url = URL(string: endpoint) else {
-            throw Errors.invalidURL
-        }
-
-        let (data, response) = try await URLSession.shared.data(from: url)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw Errors.invalidResponse
-        }
-
-        if httpResponse.statusCode != 200 {
-            throw Errors.apiError("HTTP Error: \(httpResponse.statusCode)")
-        }
-
-        let decoder = JSONDecoder()
-        let poolResponse = try decoder.decode(THORChainPoolResponse.self, from: data)
-
-        guard let priceValue = Double(poolResponse.assetTorPrice) else {
+        guard let priceValue = Double(response.data.assetTorPrice) else {
             throw Errors.invalidPriceFormat
         }
 
-        let price = priceValue / 100_000_000
-        return price
+        return priceValue / 100_000_000
     }
 
     private func getCosmosTokenMetadata(denom: String) async throws -> CosmosTokenMetadata {
@@ -399,47 +382,26 @@ extension ThorchainChainnetService {
     }
 
     private func attemptDirectFetch(denom: String) async throws -> DenomMetadata? {
-        let urlString = Endpoint.fetchThorchainChainnetDenomMetadata(denom: denom)
-
-        guard let url = URL(string: urlString) else {
-            return nil
-        }
-
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                let metadataResponse = try JSONDecoder().decode(MetadataResponse.self, from: data)
-                return metadataResponse.metadata
-            }
+            let response = try await httpClient.request(
+                ThorchainStagenetAPI.denomMetadata(env: env, denom: denom),
+                responseType: MetadataResponse.self
+            )
+            return response.data.metadata
         } catch {
             return nil
         }
-
-        return nil
     }
 
     private func attemptListFetch(denom: String) async throws -> DenomMetadata? {
-        let urlString = Endpoint.fetchThorchainChainnetAllDenomMetadata()
-
-        guard let url = URL(string: urlString) else {
-            return nil
-        }
-
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                let metadatasResponse = try JSONDecoder().decode(MetadatasResponse.self, from: data)
-
-                if let metadatas = metadatasResponse.metadatas {
-                    for metadata in metadatas {
-                        if metadata.base == denom {
-                            return metadata
-                        }
-                    }
+            let response = try await httpClient.request(
+                ThorchainStagenetAPI.allDenomMetadata(env: env),
+                responseType: MetadatasResponse.self
+            )
+            if let metadatas = response.data.metadatas {
+                for metadata in metadatas where metadata.base == denom {
+                    return metadata
                 }
             }
         } catch {
@@ -472,17 +434,16 @@ extension ThorchainChainnetService {
 
         for pool in pools {
             do {
-                let poolUrlString = Endpoint.fetchThorchainChainnetPoolLiquidityProvider(asset: pool.asset, address: address)
-                guard let poolUrl = URL(string: poolUrlString) else { continue }
+                let poolResponse = try await httpClient.request(
+                    ThorchainStagenetAPI.poolLiquidityProvider(env: env, asset: pool.asset, address: address)
+                )
 
-                let (poolData, response) = try await URLSession.shared.data(for: get9RRequest(url: poolUrl))
-
-                if let httpResponse = response as? HTTPURLResponse,
-                   httpResponse.statusCode == 404 {
+                // 404 means no position on this pool — TargetType validation accepts it.
+                if poolResponse.response.statusCode == 404 {
                     continue
                 }
 
-                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolData) {
+                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolResponse.data) {
                     if let units = Int64(lpResponse.units), units > 0 {
                         let position = ThorchainLPPosition(
                             asset: lpResponse.asset,
@@ -514,15 +475,11 @@ extension ThorchainChainnetService {
     }
 
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let urlString = Endpoint.fetchChainnetPoolInfo(asset: asset)
-
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("Invalid URL")
-        }
-
-        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let pool = try JSONDecoder().decode(ThorchainPool.self, from: data)
-        return pool
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.poolInfo(env: env, asset: asset),
+            responseType: ThorchainPool.self
+        )
+        return response.data
     }
 
     func fetchLPPools() async throws -> [ThorchainPool] {
@@ -535,24 +492,12 @@ extension ThorchainChainnetService {
         }
 
         return try await withRetry(maxAttempts: 3) {
-            let urlString = Endpoint.fetchThorchainChainnetPools
-
-            guard let url = URL(string: urlString) else {
-                throw HelperError.runtimeError("Invalid URL")
-            }
-
-            let config = URLSessionConfiguration.default
-            config.timeoutIntervalForRequest = 10.0
-            config.timeoutIntervalForResource = 15.0
-            let session = URLSession(configuration: config)
-
-            let (data, _) = try await session.data(for: get9RRequest(url: url))
-            let pools = try JSONDecoder().decode([ThorchainPool].self, from: data)
-
-            let availablePools = pools.filter { $0.status == "Available" }
-
+            let response = try await httpClient.request(
+                ThorchainStagenetAPI.pools(env: env),
+                responseType: [ThorchainPool].self
+            )
+            let availablePools = response.data.filter { $0.status == "Available" }
             cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
-
             return availablePools
         }
     }
@@ -582,7 +527,7 @@ extension ThorchainChainnetService {
         return 0
     }
     // swiftlint:disable:next unused_parameter async_without_await
-    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
+    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
         // Stagenet doesn't support TCY auto-compound
         return 0
     }

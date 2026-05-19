@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum VaultBannerType: String, CarouselBannerType, CaseIterable {
-    case upgradeVault, backupVault, followVultisig
+    case upgradeVault, backupVault, buyVult, followVultisig
 
     var id: String {
         rawValue
@@ -19,7 +19,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         switch self {
         case .upgradeVault, .backupVault:
             return false
-        case .followVultisig:
+        case .buyVult, .followVultisig:
             return true
         }
     }
@@ -30,6 +30,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "signFasterThanEverBefore".localized
         case .backupVault:
             "backupBannerTitle".localized
+        case .buyVult:
+            "buyVultBannerTitle".localized
         case .followVultisig:
             "followVultisigBannerTitle".localized
         }
@@ -40,6 +42,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "upgradeYourVaultNow".localized
         case .backupVault:
             "backupBannerSubtitle".localized
+        case .buyVult:
+            "buyVultBannerSubtitle".localized
         case .followVultisig:
             "followVultisigBannerSubtitle".localized
         }
@@ -51,6 +55,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "upgradeNow".localized
         case .backupVault:
             "backupBannerButtonTitle".localized
+        case .buyVult:
+            "buyVultBannerButtonTitle".localized
         case .followVultisig:
             "followVultisigBannerButtonTitle".localized
         }
@@ -62,6 +68,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "upgrade-vault-banner-icon"
         case .backupVault:
             "backup-vault-banner-icon"
+        case .buyVult:
+            "buy-vult-banner-icon"
         case .followVultisig:
             "follow-vultisig-banner-icon"
         }
@@ -73,6 +81,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             nil
         case .backupVault:
             "backup-vault-banner-background"
+        case .buyVult:
+            nil
         case .followVultisig:
             "follow-vultisig-banner-background"
         }

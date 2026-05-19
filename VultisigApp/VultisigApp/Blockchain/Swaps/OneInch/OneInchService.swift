@@ -13,6 +13,8 @@ struct OneInchService {
     static let shared = OneInchService()
     static let referredFee = 0.5
 
+    private let httpClient: HTTPClientProtocol = HTTPClient()
+
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
@@ -42,55 +44,71 @@ struct OneInchService {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
 
-        let url = Endpoint.fetch1InchSwapQuote(
-            chain: chain,
+        let params = OneInchAPI.SwapParams(
             source: sourceAddress,
             destination: destinationAddress,
             amount: amount,
             from: from,
             slippage: "0.5",
             referrer: referrerAddress,
-            fee: bps(for: vultTierDiscount),
-            isAffiliate: isAffiliate
+            fee: isAffiliate ? bps(for: vultTierDiscount) : 0
         )
 
-        var request = URLRequest(url: url)
-        request.allHTTPHeaderFields = [
-            "accept": "application/json"
-        ]
+        do {
+            let response = try await httpClient.request(
+                OneInchAPI.swap(chain: chain, params: params),
+                responseType: EVMQuote.self
+            )
 
-        let (data, resp) = try await URLSession.shared.data(for: request)
+            let quote = response.data
+            let gasPrice = BigInt(quote.tx.gasPrice) ?? 0
+            let gas = BigInt(quote.tx.gas)
+            let fee = gas * gasPrice
 
-        print("1inch response: \(String(data: data, encoding: .utf8) ?? "")")
-        guard let httpResponse = resp as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            let result = try JSONDecoder().decode(OneInchQuoteError.self, from: data)
-            throw HelperError.runtimeError(result.description)
+            return (quote, fee)
+        } catch HTTPError.statusCode(_, let data) {
+            if let data, let error = try? JSONDecoder().decode(OneInchQuoteError.self, from: data) {
+                throw HelperError.runtimeError(error.description)
+            }
+            throw HelperError.runtimeError("1inch swap request failed")
         }
-
-        let response = try JSONDecoder().decode(EVMQuote.self, from: data)
-
-        let gasPrice = BigInt(response.tx.gasPrice) ?? 0
-        let gas = BigInt(response.tx.gas)
-        let fee = gas * gasPrice
-
-        return (response, fee)
     }
 
     func fetchTokens(chain: Int) async throws -> [OneInchToken] {
-        let response: OneInchTokensResponse = try await Utils.fetchObject(from: Endpoint.fetchTokens(chain: chain))
-        let tokens = Array(arrayLiteral: response.tokens.values).reduce([], +)
-        return tokens
+        let response = try await httpClient.request(
+            OneInchAPI.tokens(chain: chain),
+            responseType: OneInchTokensResponse.self
+        )
+        return Array(response.data.tokens.values)
+    }
+
+    /// Fetch the ERC-20 balance map for an address. Returns a dictionary keyed
+    /// on lowercased contract address; values are decimal strings of base-unit
+    /// balances. Used by the EVM coin-finder to skip the per-token RPC call
+    /// for tokens the address doesn't actually hold.
+    func fetchBalances(chain: Int, address: String) async throws -> [String: String] {
+        let response = try await httpClient.request(
+            OneInchAPI.balances(chain: chain, address: address),
+            responseType: [String: String].self
+        )
+        return response.data
+    }
+
+    /// Bulk metadata lookup for a set of contract addresses. The response is
+    /// keyed on contract address (lowercased). Used by the EVM coin-finder
+    /// after `fetchBalances` to resolve symbol/decimals/logo for the address's
+    /// actual holdings.
+    func fetchCustomTokens(chain: Int, addresses: [String]) async throws -> [String: OneInchToken] {
+        guard !addresses.isEmpty else { return [:] }
+        let response = try await httpClient.request(
+            OneInchAPI.customTokens(chain: chain, addresses: addresses),
+            responseType: [String: OneInchToken].self
+        )
+        return response.data
     }
 
     func bps(for discount: Int) -> Double {
         let formattedDiscount = Double(discount) / 100.0
         return max(0, Self.referredFee - formattedDiscount)
-    }
-}
-
-private extension OneInchService {
-
-    struct OneInchTokensResponse: Codable {
-        let tokens: [String: OneInchToken]
     }
 }

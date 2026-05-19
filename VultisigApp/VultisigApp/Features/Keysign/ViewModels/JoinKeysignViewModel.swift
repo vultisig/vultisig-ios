@@ -9,6 +9,17 @@ import BigInt
 import SwiftData
 import SwiftUI
 
+private typealias ContractCallHeroDisplay = (
+    display: String,
+    amountText: String,
+    ticker: String,
+    logo: String,
+    /// True when the amount is a MAX_UINT256 sentinel that we're labeling
+    /// "Unlimited". The UI should highlight this as a warning since granting
+    /// unlimited approval is the riskiest case an unsuspecting user can sign.
+    isUnlimited: Bool
+)
+
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
     case DiscoverService
@@ -20,6 +31,10 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
     case VaultTypeDoesntMatch
+    /// Multi-round QBTC claim — driven by `qbtcClaimDriver` rather than
+    /// the standard single-keysign flow. Set when the scanned QR has
+    /// `isQbtcClaim == true`. See [[v2-secure-vault-design]].
+    case QBTCClaim
 }
 
 @MainActor
@@ -39,6 +54,10 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    /// Set when the scanned QR has `isQbtcClaim == true`. The standard
+    /// single-keysign flow steps aside while this driver runs the
+    /// peer-side flow. See [[v2-secure-vault-design]].
+    @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
@@ -48,6 +67,15 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedMemo: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
+    @Published var decodedFunctionName: String?
+    @Published var decodedTokenDisplay: String?
+    @Published var decodedTokenIsUnlimited: Bool = false
+    @Published var decodedTokenAmount: String?
+    @Published var decodedTokenTicker: String?
+    @Published var decodedTokenLogo: String?
+    @Published var blockaidSimulation: BlockaidSimulationInfo?
+    @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var didLoadSimulation: Bool = false
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -194,6 +222,13 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+        // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
+        // a standard tx body; the QBTCClaimJoinDriver computes the round-1
+        // message hash itself. Skip the standard factory so it doesn't
+        // fail trying to build sighashes from a body that isn't there.
+        if keysignPayload.isQbtcClaim {
+            return
+        }
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
@@ -267,6 +302,32 @@ class JoinKeysignViewModel: ObservableObject {
                     logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                 }
             }
+
+            // QBTC claim fork — if the loaded payload is flagged with
+            // `isQbtcClaim`, hand off to the QBTC-claim peer driver and
+            // step the standard single-keysign flow aside. Reads from
+            // `self.keysignPayload` so it covers both inline payloads and
+            // ones fetched from the relay via `ensureKeysignPayload`.
+            // Post-qbtc#158 the peer only runs one BTC ECDSA round; the
+            // session is the keysign message's own session, not a
+            // round-suffixed derivation of a base session. The peer
+            // derives the claimer's QBTC address from its own vault.
+            if let payload = self.keysignPayload, payload.isQbtcClaim {
+                let session = KeysignSessionInfo(
+                    sessionId: keysignMsg.sessionID,
+                    encryptionKeyHex: keysignMsg.encryptionKeyHex,
+                    serviceName: keysignMsg.serviceName,
+                    localPartyId: self.localPartyID,
+                    serverAddr: Endpoint.vultisigRelay
+                )
+                let driver = QBTCClaimJoinDriver(
+                    vault: self.vault,
+                    session: session
+                )
+                self.qbtcClaimDriver = driver
+                self.status = .QBTCClaim
+                Task { await driver.run() }
+            }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -274,6 +335,11 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func manageQrCodeStates() {
+        // QBTC claim flow drives its own status transitions via
+        // `qbtcClaimDriver.phase`; don't let the standard flow override.
+        if status == .QBTCClaim {
+            return
+        }
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch
@@ -367,13 +433,30 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+        // TON path: TonConnect bodies don't carry an EVM-style 4byte memo, so
+        // skip the EVM decoder entirely and surface a jetton hero straight
+        // from the BOC payloads. Hero appears only when we can resolve the
+        // jetton's display metadata from the active vault.
+        if resolvedContractCallChain() == .ton,
+           let messages = keysignPayload?.signTon?.tonMessages, !messages.isEmpty {
+            let display = TonOperationExtractor.extract(messages: messages, vault: vault)
+            self.decodedTokenDisplay = display?.display
+            self.decodedTokenAmount = display?.amountText
+            self.decodedTokenTicker = display?.ticker
+            self.decodedTokenLogo = display?.logo
+            self.decodedTokenIsUnlimited = false
+            return
+        }
+
+        let candidates = [keysignPayload?.memo, customMessagePayload?.message]
+        guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
         }
 
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
-        if keysignPayload?.coin.chainType == .EVM, memo.hasPrefix("0x") {
+        let isEvm = resolvedContractCallChain()?.chainType == .EVM
+        if isEvm, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
 
@@ -381,9 +464,20 @@ class JoinKeysignViewModel: ObservableObject {
         // This handles known selectors (Transfer, Approve), Kyber, etc.
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
 
+        let functionName = parsedParams.flatMap {
+            ContractCallExtractor.evmFunctionName(from: $0.functionSignature)
+        }.map(capitalizeFirstCharacter)
+        let resolvedTokenDisplay = await resolveTokenDisplay(parsedParams: parsedParams)
+
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
             self.decodedMemo = extensionDecoded
+            self.decodedFunctionName = functionName
+            self.decodedTokenDisplay = resolvedTokenDisplay?.display
+            self.decodedTokenAmount = resolvedTokenDisplay?.amountText
+            self.decodedTokenTicker = resolvedTokenDisplay?.ticker
+            self.decodedTokenLogo = resolvedTokenDisplay?.logo
+            self.decodedTokenIsUnlimited = resolvedTokenDisplay?.isUnlimited ?? false
 
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
@@ -413,8 +507,182 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
 
+    private func resolveTokenDisplay(
+        parsedParams: ParsedMemoParams?
+    ) async -> ContractCallHeroDisplay? {
+        guard let params = parsedParams else { return nil }
+        guard let pair = ContractCallExtractor.extract(
+            signature: params.functionSignature,
+            argsJson: params.functionArguments,
+            toAddress: keysignPayload?.toAddress
+        ) else { return nil }
+
+        guard let chain = resolvedContractCallChain() else { return nil }
+        let addressLower = pair.tokenAddress.lowercased()
+
+        // Check vault first (user has added it), then built-in tokens registry, then a
+        // live `eth_call` against the contract for unknown tokens.
+        let ticker: String
+        let decimals: Int
+        let logo: String
+        if let vaultMatch = vault.coins.first(where: {
+            $0.chain == chain && $0.contractAddress.lowercased() == addressLower
+        }) {
+            ticker = vaultMatch.ticker
+            decimals = vaultMatch.decimals
+            logo = vaultMatch.logo
+        } else if let builtIn = TokensStore.findTokenMeta(
+            chain: chain,
+            contractAddress: pair.tokenAddress
+        ) {
+            ticker = builtIn.ticker
+            decimals = builtIn.decimals
+            logo = builtIn.logo
+        } else if let resolved = await TokenMetadataResolver.shared.resolve(
+            contractAddress: pair.tokenAddress,
+            on: chain
+        ) {
+            ticker = resolved.symbol
+            decimals = resolved.decimals
+            logo = "" // No logo asset for resolved-only tokens; the user can add to vault to attach one.
+        } else {
+            return nil
+        }
+
+        guard let amount = BigInt(pair.rawAmount) else { return nil }
+
+        // MAX_UINT256 is a sentinel. For approvals → "Unlimited". For withdraw/repay
+        // the exact amount depends on on-chain state — return nil (skip display).
+        if pair.rawAmount == ContractCallExtractor.maxUInt256Decimal,
+           let funcName = ContractCallExtractor.evmFunctionName(from: params.functionSignature) {
+            guard let label = ContractCallExtractor.sentinelLabelFor(funcName: funcName) else { return nil }
+            return (
+                display: "\(label) \(ticker)",
+                amountText: label,
+                ticker: ticker,
+                logo: logo,
+                isUnlimited: true
+            )
+        }
+
+        let divisor = BigInt(10).power(decimals)
+        let whole = amount / divisor
+        let remainder = amount % divisor
+        let formatted: String
+        if remainder == 0 {
+            formatted = "\(whole)"
+        } else {
+            let remainderStr = String(remainder)
+            let padded = String(repeating: "0", count: max(0, decimals - remainderStr.count)) + remainderStr
+            var trimmed = padded
+            while trimmed.hasSuffix("0") {
+                trimmed.removeLast()
+            }
+            formatted = trimmed.isEmpty ? "\(whole)" : "\(whole).\(trimmed)"
+        }
+        return (
+            display: "\(formatted) \(ticker)",
+            amountText: formatted,
+            ticker: ticker,
+            logo: logo,
+            isUnlimited: false
+        )
+    }
+
+    private func resolvedContractCallChain() -> Chain? {
+        if let chain = keysignPayload?.coin.chain {
+            return chain
+        }
+
+        guard let chainValue = customMessagePayload?.chain, !chainValue.isEmpty else {
+            return nil
+        }
+
+        return Chain(rawValue: chainValue) ?? Chain(name: chainValue)
+    }
+
+    private func capitalizeFirstCharacter(_ value: String) -> String {
+        guard let first = value.first else { return value }
+        return first.uppercased() + value.dropFirst()
+    }
+
+    func loadSimulation() async {
+        guard let payload = keysignPayload else {
+            didLoadSimulation = true
+            return
+        }
+        securityScannerState = .scanning
+        let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        blockaidSimulation = result.simulation
+        if let scannerResult = result.scannerResult {
+            securityScannerState = .scanned(scannerResult)
+        } else {
+            securityScannerState = .idle
+        }
+        didLoadSimulation = true
+    }
+
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
+    var heroContent: HeroContent? {
+        if let sim = blockaidSimulation {
+            switch sim {
+            case .transfer(let coin, _):
+                return .send(
+                    title: decodedFunctionName,
+                    coin: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: coin.ticker,
+                        logo: coin.logo
+                    )
+                )
+            case .swap(let from, let to, _, _):
+                return .swap(
+                    title: decodedFunctionName,
+                    from: HeroCoinAmount(
+                        amount: sim.heroAmountText,
+                        ticker: from.ticker,
+                        logo: from.logo
+                    ),
+                    to: HeroCoinAmount(
+                        amount: sim.heroToAmountText ?? "",
+                        ticker: to.ticker,
+                        logo: to.logo
+                    )
+                )
+            }
+        }
+
+        // TON-side fallback: when the BOC decoder resolved a jetton hero we
+        // surface it directly, even though Blockaid never simulates TON.
+        if let amount = decodedTokenAmount,
+           let ticker = decodedTokenTicker,
+           let logo = decodedTokenLogo,
+           !amount.isEmpty {
+            return .send(
+                title: decodedFunctionName,
+                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo)
+            )
+        }
+
+        if didLoadSimulation,
+           blockaidSimulation == nil,
+           let name = decodedFunctionName {
+            return .title(text: name, caption: "unverifiedFunction".localized)
+        }
+        return nil
+    }
+
     var providerName: String {
         keysignPayload?.swapPayload?.providerName ?? .empty
+    }
+
+    /// dApp identity (name / url / icon) attached to the keysign request, if
+    /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
+    /// metadata is treated as absent.
+    var dappMetadata: DAppMetadata? {
+        keysignPayload?.dappMetadata
     }
 
     func getFromAmount() -> String {

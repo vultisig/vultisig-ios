@@ -11,7 +11,7 @@
   "defaultOptions" : {
     "targetForVariableExpansion" : {
       "containerPath" : "container:VultisigApp.xcodeproj",
-      "identifier" : "DE49A17F2B65F6DB000F3AFB",
+      "identifier" : "369E35E38F74E363E1D60437",
       "name" : "VultisigAppUITests"
     }
   },
@@ -19,7 +19,7 @@
     {
       "target" : {
         "containerPath" : "container:VultisigApp.xcodeproj",
-        "identifier" : "DE49A17F2B65F6DB000F3AFB",
+        "identifier" : "369E35E38F74E363E1D60437",
         "name" : "VultisigAppUITests"
       }
     }

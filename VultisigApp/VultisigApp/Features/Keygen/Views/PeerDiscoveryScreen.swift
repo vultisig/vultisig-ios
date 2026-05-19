@@ -118,6 +118,27 @@ struct PeerDiscoveryScreen: View {
         Int(ceil(Double(count) * 2.0 / 3.0))
     }
 
+    var explicitParticipantCount: Int? {
+        switch tssType {
+        case .Reshare:
+            return nil
+        case .Migrate, .SingleKeygen:
+            return vault.signers.count
+        case .Keygen, .KeyImport:
+            if setupType != nil || selectedTab != .secure {
+                return totalDeviceCount
+            }
+            return nil
+        }
+    }
+
+    var vaultTypeDescription: String {
+        guard let total = explicitParticipantCount else { return .empty }
+        guard total > 0 else { return .empty }
+        let threshold = thresholdForCount(total)
+        return String(format: "shareQRTypeFormat".localized, threshold, total)
+    }
+
     var continueButtonTitle: String {
         let count = viewModel.selections.count
         if count < minRequiredDevices {
@@ -421,11 +442,7 @@ struct PeerDiscoveryScreen: View {
     }
 
     func autoStartKeygenIfReady() {
-        guard isFixedDeviceMode,
-              viewModel.selections.count >= totalDeviceCount,
-              viewModel.status == .WaitingForDevices else {
-            return
-        }
+        guard viewModel.shouldAutoStartKeygen(totalDeviceCount: totalDeviceCount) else { return }
         viewModel.startKeygen()
     }
 
@@ -479,6 +496,7 @@ struct PeerDiscoveryScreen: View {
             keyImportInput: keyImportInput,
             singleKeygenType: singleKeygenType,
             isInitiateDevice: true,
+            isTssBatch: viewModel.isTssBatch,
             hideBackButton: $hideBackButton
         )
     }
@@ -533,7 +551,9 @@ struct PeerDiscoveryScreen: View {
             qrCodeImage: qrCodeImage,
             qrCodeData: qrCodeString,
             displayScale: displayScale,
-            type: .Keygen
+            type: .Keygen,
+            vaultName: vault.name,
+            vaultType: vaultTypeDescription
         )
     }
 }

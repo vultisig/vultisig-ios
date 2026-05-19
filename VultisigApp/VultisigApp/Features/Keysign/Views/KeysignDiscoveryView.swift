@@ -25,8 +25,9 @@ struct KeysignDiscoveryView: View {
     let fastVaultPassword: String?
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     @State var previewType: QRShareSheetType = .Send
-    var swapTransaction: SwapTransaction = SwapTransaction()
+    var swapTransaction: SwapTransaction?
     var contentPadding: CGFloat?
+    var presetSession: KeysignSessionInfo? = nil
     var onKeysignInput: (KeysignInput) -> Void
 
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -146,11 +147,13 @@ struct KeysignDiscoveryView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.colors.bgButtonDisabled.opacity(0.5))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .inset(by: 0.5)
-                    .stroke(.white.opacity(0.03), lineWidth: 1)
-                    .fill(Theme.colors.bgButtonDisabled.opacity(0.5))
+                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
             )
         }
         .disabled(isDisabled)
@@ -238,6 +241,7 @@ struct KeysignDiscoveryView: View {
             customMessagePayload: customMessagePayload,
             participantDiscovery: participantDiscovery,
             fastVaultPassword: fastVaultPassword,
+            presetSession: presetSession,
             onFastKeysign: { startKeysign() }
         )
 
@@ -260,6 +264,7 @@ struct KeysignDiscoveryView: View {
             vaultName: vault.name,
             amount: previewType == .Send ? keysignPayload?.toAmountWithTickerString ?? "" : "",
             toAddress: previewType == .Send ? keysignPayload?.toAddress ?? "" : "",
+            coinLogo: previewType == .Send ? keysignPayload?.coin.logo ?? "" : "",
             fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )
@@ -275,7 +280,7 @@ struct KeysignDiscoveryView: View {
     }
 
     func getSwapFromAmount() -> String {
-        let tx = swapTransaction
+        guard let tx = swapTransaction else { return "" }
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
@@ -285,12 +290,13 @@ struct KeysignDiscoveryView: View {
     }
 
     func getSwapToAmount() -> String {
-        let tx = swapTransaction
+        guard let tx = swapTransaction else { return "" }
+        let toAmount = tx.toAmountDecimal
 
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+            return "\(toAmount.description) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(toAmount.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
 

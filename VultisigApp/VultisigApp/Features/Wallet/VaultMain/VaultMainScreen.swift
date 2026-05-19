@@ -19,6 +19,7 @@ struct VaultMainScreen: View {
     var onCamera: () -> Void
 
     @Environment(\.modelContext) var modelContext
+    @Environment(\.router) var router
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
@@ -32,6 +33,10 @@ struct VaultMainScreen: View {
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
+    /// Chain asset the user tried to enable that requires an MLDSA key the
+    /// vault doesn't have yet (today: QBTC). Persisted across the keygen
+    /// hop so we can auto-add it on `qbtcQuantumKeygenCompleted`.
+    @State private var pendingQuantumChainAsset: CoinMeta?
 
     // Capture geometry width to avoid circular layout dependency during sheet presentation
     @State private var capturedGeometryWidth: CGFloat = 400
@@ -46,7 +51,8 @@ struct VaultMainScreen: View {
                 ScrollViewReader { proxy in
                     VaultMainScreenScrollView(
                         showsIndicators: false,
-                        contentInset: contentInset,
+                        topInset: contentInset,
+                        bottomInset: 0,
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
@@ -91,7 +97,8 @@ struct VaultMainScreen: View {
                 .crossPlatformSheet(isPresented: $showChainSelection) {
                     VaultSelectChainScreen(
                         vault: vault,
-                        isPresented: $showChainSelection
+                        isPresented: $showChainSelection,
+                        onRequireQuantumKeygen: onRequireQuantumKeygen
                     ) { refresh() }
                 }
                 .crossPlatformSheet(isPresented: $showReceiveList) {
@@ -124,6 +131,9 @@ struct VaultMainScreen: View {
             if oldValue.count != newValue.count {
                 refresh()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .qbtcQuantumKeygenCompleted)) { note in
+            handleQuantumKeygenCompleted(note: note)
         }
     }
 
@@ -225,8 +235,8 @@ struct VaultMainScreen: View {
         }
     }
 
-    func onCopy(_ group: GroupedChain) {
-        addressToCopy = group.nativeCoin
+    func onCopy(_ chain: Chain) {
+        addressToCopy = vault.nativeCoin(for: chain)
     }
 
     func refresh() {
@@ -234,7 +244,11 @@ struct VaultMainScreen: View {
         viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
 
-        viewModel.groupChains(vault: vault)
+        // `updateBalance` handles the sort end-to-end with fresh data and is
+        // debounced. The previous synchronous `groupChains` here re-sorted on
+        // stale cached balances and produced a visible stale-then-fresh
+        // reorder (#4337). The list keeps its prior order until the async
+        // refresh lands — preferable to two transitions per refresh.
         viewModel.updateBalance(vault: vault)
     }
 
@@ -260,19 +274,22 @@ struct VaultMainScreen: View {
     func onAction(_ action: CoinAction) {
         var vaultAction: VaultAction?
 
+        let selectedChain = viewModel.selectedChain
+        let selectedNativeCoin = selectedChain.flatMap { vault.nativeCoin(for: $0) }
+
         switch action {
         case .send:
-            vaultAction = .send(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false)
+            vaultAction = .send(coin: selectedNativeCoin, hasPreselectedCoin: false)
         case .swap:
-            guard let fromCoin = viewModel.selectedGroup?.nativeCoin else { return }
+            guard let fromCoin = selectedNativeCoin else { return }
             vaultAction = .swap(fromCoin: fromCoin)
         case .deposit, .bridge, .memo:
-            vaultAction = .function(coin: viewModel.selectedGroup?.nativeCoin)
+            vaultAction = .function(coin: selectedNativeCoin)
         case .buy:
             vaultAction = .buy(
-                address: viewModel.selectedGroup?.address ?? "",
-                blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
-                coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? ""
+                address: selectedChain.flatMap { vault.address(for: $0) } ?? "",
+                blockChainCode: selectedChain?.banxaBlockchainCode ?? "",
+                coinType: selectedNativeCoin?.ticker ?? ""
             )
         case .sell:
             break
@@ -291,13 +308,49 @@ struct VaultMainScreen: View {
             showUpgradeVaultSheet = true
         case .backupVault:
             showBackupNow = true
+        case .buyVult:
+            openSwapToVult()
         case .followVultisig:
             openURL(StaticURL.XVultisigURL)
         }
     }
 
+    private func openSwapToVult() {
+        let vultService = VultTierService()
+        let fromCoin = vault.nativeCoin(for: .ethereum)
+            ?? vault.coins.first(where: { $0.isNativeToken })
+        let toCoin = vultService.getVultToken(for: vault)
+        router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: toCoin, vault: vault))
+    }
+
     func onBannerClosed(_ banner: VaultBannerType) {
         viewModel.removeBanner(for: vault, banner: banner)
+    }
+
+    func onRequireQuantumKeygen(_ asset: CoinMeta) {
+        pendingQuantumChainAsset = asset
+        showChainSelection = false
+        // Wait for the sheet dismissal to settle before kicking off the
+        // route change — otherwise the navigation can race with the sheet
+        // and the destination screen ends up rendered behind it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            routeToPresent = .quantumSecurityIntro(vault: vault)
+        }
+    }
+
+    func handleQuantumKeygenCompleted(note: Notification) {
+        guard let pendingAsset = pendingQuantumChainAsset else { return }
+        let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
+        guard completedPubKey == vault.pubKeyECDSA else { return }
+        pendingQuantumChainAsset = nil
+        Task { @MainActor in
+            let currentSelection = Set(vault.coins.map { $0.toCoinMeta() })
+            await CoinService.saveAssets(
+                for: vault,
+                selection: currentSelection.union([pendingAsset])
+            )
+            refresh()
+        }
     }
 }
 

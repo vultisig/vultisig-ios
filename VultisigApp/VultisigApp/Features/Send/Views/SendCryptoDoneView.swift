@@ -25,8 +25,6 @@ struct SendCryptoDoneView: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
-
     @State private var showAlert = false
     @State private var alertTitle = "hashCopied"
 
@@ -92,15 +90,15 @@ struct SendCryptoDoneView: View {
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 toAlias: toAlias,
-                fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
+                fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx)),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA
             ),
             showAlert: $showAlert
         ) {
-            if let send = sendTransaction {
-                send.reset(coin: send.coin)
-            }
+            // Legacy `tx.reset(coin:)` mutation removed — the immutable struct
+            // can't be reset in place. Form-VM rewrite will clear the form on
+            // the next Details onAppear (Phase B step 5).
         }
     }
 
@@ -112,7 +110,6 @@ struct SendCryptoDoneView: View {
             hash: hash,
             approveHash: approveHash,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
         )
     }
 
@@ -128,20 +125,19 @@ struct SendCryptoDoneView: View {
 
     private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
         SwapCryptoDoneView(
-            tx: tx,
+            transaction: tx,
             vault: vault,
             hash: hash,
             approveHash: approveHash,
             progressLink: progressLink,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel,
             showAlert: $showAlert,
             alertTitle: $alertTitle
         )
     }
 
     func explorerLink() -> String {
-        return Endpoint.getExplorerURL(chain: chain, txid: hash)
+        return ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash)
     }
 }
 
@@ -152,7 +148,7 @@ struct SendCryptoDoneView: View {
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
-        sendTransaction: SendTransaction(),
+        sendTransaction: nil,
         swapTransaction: nil,
         isSend: true
     )

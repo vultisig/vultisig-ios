@@ -11,7 +11,7 @@ import WalletCore
 
 struct CustomTokenScreen: View {
     let vault: Vault
-    @ObservedObject var group: GroupedChain
+    let chain: Chain
     @Binding var isPresented: Bool
     var onClose: () -> Void
 
@@ -83,7 +83,7 @@ struct CustomTokenScreen: View {
             }
         }
         .onLoad {
-            tokenViewModel.loadData(groupedChain: group, vault: vault)
+            tokenViewModel.loadData(chain: chain, vault: vault)
         }
         .onChange(of: contractAddress) { _, newValue in
             validateAddress(newValue)
@@ -92,6 +92,9 @@ struct CustomTokenScreen: View {
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
     }
 
+    /// Builds a banner view displaying the given error with an optional retry button.
+    /// - Parameter error: The error to present. Rate-limit errors hide the retry action.
+    /// - Returns: An ``ActionBannerView`` configured for the error.
     func errorView(error: Error) -> some View {
         ActionBannerView(
             title: error.localizedDescription,
@@ -103,6 +106,7 @@ struct CustomTokenScreen: View {
         }
     }
 
+    /// A card view showing the resolved custom token's icon, ticker, chain badge, and contract address.
     var tokenInfoView: some View {
         ZStack(alignment: .top) {
             HStack(spacing: 12) {
@@ -141,6 +145,9 @@ struct CustomTokenScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    /// Looks up token metadata for the current ``contractAddress`` by dispatching to the appropriate
+    /// chain-specific service (EVM, Solana, Tron, or TON). On success, populates the token preview;
+    /// on failure, sets the ``error`` state.
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
 
@@ -155,41 +162,39 @@ struct CustomTokenScreen: View {
         error = nil
 
         do {
-            if ChainType.EVM == group.chain.chainType {
+            if chain == .cardano {
 
-                let service = try EvmService.getService(forChain: group.chain)
-                let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
-
-                if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
-                    let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
-                    if let nativeToken = nativeTokenOptional {
-                        self.token = CoinMeta(
-                            chain: nativeToken.chain,
-                            ticker: symbol,
-                            logo: .empty,
-                            decimals: decimals,
-                            priceProviderId: .empty,
-                            contractAddress: contractAddress,
-                            isNativeToken: false
-                        )
-                        self.tokenName = name
-                        self.tokenSymbol = symbol
-                        self.tokenDecimals = decimals
-                        self.showTokenInfo = true
-                        self.isLoading = false
-                    } else {
-                        self.error = TokenNotFoundError()
-                        self.isLoading = false
-                    }
-
-                } else {
-
+                let normalisedId = contractAddress.lowercased()
+                let metadata: CardanoTokenMetadata
+                do {
+                    metadata = try await CardanoNativeTokensService.shared.resolveMetadata(assetId: normalisedId)
+                } catch CardanoNativeTokensServiceError.assetNotFound {
                     self.error = TokenNotFoundError()
                     self.isLoading = false
-
+                    return
                 }
+                // Prefer the built-in registry entry when we know the asset —
+                // gives us the curated ticker, logo, and `priceProviderId`
+                // (`USDM` instead of the `_USDM` masked from the CIP-67 prefix,
+                // `usdm-2` instead of the empty default).
+                let coinMeta = TokensStore.findTokenMeta(chain: chain, contractAddress: metadata.assetId)
+                    ?? CoinMeta(
+                        chain: chain,
+                        ticker: metadata.ticker,
+                        logo: metadata.registryLogo ?? .empty,
+                        decimals: metadata.decimals,
+                        priceProviderId: .empty,
+                        contractAddress: metadata.assetId,
+                        isNativeToken: false
+                    )
+                self.token = coinMeta
+                self.tokenName = coinMeta.ticker
+                self.tokenSymbol = coinMeta.ticker
+                self.tokenDecimals = coinMeta.decimals
+                self.showTokenInfo = true
+                self.isLoading = false
 
-            } else if ChainType.Solana == group.chain.chainType {
+            } else if ChainType.Solana == chain.chainType {
 
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])
 
@@ -209,15 +214,31 @@ struct CustomTokenScreen: View {
 
                 }
 
-            } else if ChainType.Tron == group.chain.chainType {
+            } else {
 
-                let (name, symbol, decimals) = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
+                // EVM, TRON, and TON all share the same (name, symbol, decimals) lookup pattern
+                let tokenInfo: (name: String, symbol: String, decimals: Int)
+
+                switch chain.chainType {
+                case .EVM:
+                    let service = try EvmService.getService(forChain: chain)
+                    tokenInfo = try await service.getTokenInfo(contractAddress: contractAddress)
+                case .Tron:
+                    tokenInfo = try await TronService.shared.getTokenInfo(contractAddress: contractAddress)
+                case .Ton:
+                    tokenInfo = try await TonService.shared.getTokenInfo(contractAddress: contractAddress)
+                default:
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+                    return
+                }
+
+                let (name, symbol, decimals) = tokenInfo
 
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
-                    let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
-                    if let nativeToken = nativeTokenOptional {
+                    if vault.nativeCoin(for: chain) != nil {
                         self.token = CoinMeta(
-                            chain: nativeToken.chain,
+                            chain: chain,
                             ticker: symbol,
                             logo: .empty,
                             decimals: decimals,
@@ -242,11 +263,6 @@ struct CustomTokenScreen: View {
 
                 }
 
-            } else {
-
-                self.error = TokenNotFoundError()
-                self.isLoading = false
-
             }
 
         } catch let error as NSError {
@@ -263,10 +279,21 @@ struct CustomTokenScreen: View {
         }
     }
 
+    /// Validates whether the given input is a well-formed identifier for the current chain.
+    /// For Cardano, the input is a native-token asset id (`policy_id.asset_name` hex);
+    /// other chains validate the input as a contract/account address.
+    /// Updates ``isValidAddress`` accordingly.
+    /// - Parameter address: The raw input string.
     private func validateAddress(_ address: String) {
-        isValidAddress = AddressService.validateAddress(address: address, group: group)
+        if chain == .cardano {
+            isValidAddress = (try? CardanoAssetId.parse(address)) != nil
+        } else {
+            isValidAddress = AddressService.validateAddress(address: address, chain: chain)
+        }
     }
 
+    /// Persists the resolved custom token to the vault and dismisses the screen.
+    /// Shows an "adding token" loading indicator while the save is in progress.
     private func saveAssets() {
         if let customToken = self.token {
             isAddingToken = true

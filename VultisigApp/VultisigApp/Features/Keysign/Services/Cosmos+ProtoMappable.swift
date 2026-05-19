@@ -11,8 +11,10 @@ enum SignData: Codable, Hashable {
     case signAmino(SignAmino)
     case signDirect(SignDirect)
     case signSolana(SignSolana)
+    case signTon(SignTon)
+    case signBitcoin(SignBitcoin)
 
-    init(proto: VSKeysignPayload.OneOf_SignData) {
+    init?(proto: VSKeysignPayload.OneOf_SignData) {
         switch proto {
         case .signAmino(let vSSignAmino):
             self = .signAmino(SignAmino(proto: vSSignAmino))
@@ -20,6 +22,10 @@ enum SignData: Codable, Hashable {
             self = .signDirect(SignDirect(proto: vSSignDirect))
         case .signSolana(let vSSignSolana):
             self = .signSolana(SignSolana(proto: vSSignSolana))
+        case .signTon(let vSSignTon):
+            self = .signTon(SignTon(proto: vSSignTon))
+        case .signBitcoin(let vSSignBitcoin):
+            self = .signBitcoin(SignBitcoin(proto: vSSignBitcoin))
         }
     }
 
@@ -31,6 +37,10 @@ enum SignData: Codable, Hashable {
             return .signDirect(vSSignDirect.mapToProtobuff())
         case .signSolana(let vSSignSolana):
             return .signSolana(vSSignSolana.mapToProtobuff())
+        case .signTon(let vSSignTon):
+            return .signTon(vSSignTon.mapToProtobuff())
+        case .signBitcoin(let vSSignBitcoin):
+            return .signBitcoin(vSSignBitcoin.mapToProtobuff())
         }
     }
 }

@@ -18,9 +18,7 @@ enum Field: Int, Hashable {
 
 struct SendDetailsScreen: View {
     @State var coin: Coin?
-    @ObservedObject var tx: SendTransaction
-    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
-    @StateObject var sendDetailsViewModel: SendDetailsViewModel
+    @State var viewModel: SendDetailsViewModel
     let vault: Vault
     @State var settingsPresented: Bool = false
 
@@ -31,105 +29,97 @@ struct SendDetailsScreen: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @State var countdownTimer: Timer?
     @Environment(\.router) var router
+
+    init(coin: Coin?, viewModel: SendDetailsViewModel, vault: Vault) {
+        self._coin = State(initialValue: coin)
+        self._viewModel = State(initialValue: viewModel)
+        self.vault = vault
+    }
 
     var body: some View {
         container
-            .disabled(sendCryptoViewModel.showLoader)
-            .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
+            .disabled(viewModel.showLoader)
+            .overlay(viewModel.showLoader ? Loader() : nil)
             .onAppear {
-                // Initialize button state immediately based on chain
-                sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
-                checkPendingTransactions()
+                viewModel.initializePendingTransactionState(for: viewModel.coin.chain)
+                viewModel.refreshPendingTransactionState()
             }
             .onLoad {
-                sendDetailsViewModel.onLoad()
+                viewModel.onLoad()
                 Task {
                     await setMainData()
-                    // Fee calculation moved to Verify screen
-                    checkPendingTransactions()
-
-                    // Start polling for current chain if there are pending transactions
-                    PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
+                    viewModel.refreshPendingTransactionState()
                 }
                 setData()
             }
-            .onChange(of: tx.coin) { oldValue, newValue in
-                // Initialize button state immediately for new chain
-                sendCryptoViewModel.initializePendingTransactionState(for: newValue.chain)
-
-                Task {
-                    // SEMPRE para o polling da chain anterior
-                    PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
-
-                    // Fee calculation moved to Verify screen
-                    checkPendingTransactions()
-
-                    // Só inicia polling se a NOVA chain suportar pending transactions
-                    if newValue.chain.supportsPendingTransactions {
-                        PendingTransactionManager.shared.startPollingForChain(newValue.chain)
-                    }
+            .onChange(of: viewModel.coin) { oldValue, newValue in
+                viewModel.initializePendingTransactionState(for: newValue.chain)
+                PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
+                viewModel.refreshPendingTransactionState()
+                // Per-chain capability lives on `Chain.supportsMemo`. Clear
+                // any previously-typed memo when switching into a chain that
+                // doesn't support memos so it doesn't ride along invisibly.
+                // (See #4326 / #4377 for the Cardano case.)
+                if !newValue.chain.supportsMemo {
+                    viewModel.memo = ""
                 }
             }
-            .onChange(of: tx.toAddress) { _, _ in
-                sendCryptoViewModel.cancelAddressResolution()
+            .onChange(of: viewModel.toAddress) { _, _ in
+                viewModel.cancelAddressResolution()
 
-                guard !tx.toAddress.isEmpty else {
-                    sendDetailsViewModel.addressSetupDone = false
+                guard !viewModel.toAddress.isEmpty else {
+                    viewModel.addressSetupDone = false
                     return
                 }
 
-                if sendCryptoViewModel.isValidAddressFormat(tx: tx) {
-                    sendDetailsViewModel.addressSetupDone = true
-                    sendDetailsViewModel.onSelect(tab: .amount)
+                if viewModel.isValidAddressFormat() {
+                    viewModel.addressSetupDone = true
+                    viewModel.onSelect(tab: .amount)
                 } else {
-                    sendCryptoViewModel.debouncedResolveAddress(tx: tx)
+                    viewModel.debouncedResolveAddress()
                 }
             }
-            .onChange(of: sendCryptoViewModel.addressResolved) { _, resolved in
+            .onChange(of: viewModel.isAddressResolved) { _, resolved in
                 guard let resolved else { return }
-                sendDetailsViewModel.addressSetupDone = resolved
+                viewModel.addressSetupDone = resolved
                 if resolved {
-                    sendDetailsViewModel.onSelect(tab: .amount)
-                } else if sendDetailsViewModel.selectedTab == .amount {
-                    sendDetailsViewModel.onSelect(tab: .address)
+                    viewModel.onSelect(tab: .amount)
+                } else if viewModel.selectedTab == .amount {
+                    viewModel.onSelect(tab: .address)
                 }
             }
             .onDisappear {
-                sendCryptoViewModel.stopMediator()
-                countdownTimer?.invalidate()
-
-                // Stop all polling when leaving Send screen
-                PendingTransactionManager.shared.stopAllPolling()
+                viewModel.stopMediator()
+                viewModel.tearDownPendingTransactionState()
             }
             .crossPlatformSheet(isPresented: $settingsPresented) {
                 SendGasSettingsView(
                     isPresented: $settingsPresented,
                     viewModel: SendGasSettingsViewModel(
-                        coin: tx.coin,
+                        coin: viewModel.coin,
                         vault: vault,
-                        gasLimit: tx.gasLimit,
-                        customByteFee: tx.customByteFee,
-                        selectedMode: tx.feeMode
+                        gasLimit: viewModel.gasLimit,
+                        customByteFee: viewModel.customByteFee,
+                        selectedMode: viewModel.feeMode
                     ),
                     output: self
                 )
             }
-            .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+            .crossPlatformSheet(isPresented: $viewModel.showChainPickerSheet) {
                 SwapChainPickerView(
                     vault: vault,
-                    showSheet: $sendDetailsViewModel.showChainPickerSheet,
-                    selectedChain: $sendDetailsViewModel.selectedChain
+                    showSheet: $viewModel.showChainPickerSheet,
+                    selectedChain: $viewModel.selectedChain
                 )
                 .environmentObject(coinSelectionViewModel)
             }
-            .crossPlatformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+            .crossPlatformSheet(isPresented: $viewModel.showCoinPickerSheet) {
                 SwapCoinPickerView(
                     vault: vault,
-                    showSheet: $sendDetailsViewModel.showCoinPickerSheet,
-                    selectedCoin: $tx.coin,
-                    selectedChain: sendDetailsViewModel.selectedChain
+                    showSheet: $viewModel.showCoinPickerSheet,
+                    selectedCoin: $viewModel.coin,
+                    selectedChain: viewModel.selectedChain
                 )
                 .environmentObject(coinSelectionViewModel)
             }
@@ -137,21 +127,21 @@ struct SendDetailsScreen: View {
 
     var content: some View {
         view
-            .onChange(of: tx.coin) { _, _ in
+            .onChange(of: viewModel.coin) { _, _ in
                 setData()
             }
             .onChange(of: focusedField) { _, focusedField in
                 onChange(focusedField: focusedField)
             }
-            .alert(isPresented: $sendCryptoViewModel.showAlert) {
+            .alert(isPresented: $viewModel.showAlert) {
                 alert
             }
     }
 
     var alert: Alert {
         Alert(
-            title: Text(NSLocalizedString(sendCryptoViewModel.errorTitle, comment: "")),
-            message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage ?? .empty, comment: "")),
+            title: Text(NSLocalizedString(viewModel.errorTitle, comment: "")),
+            message: Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -159,7 +149,7 @@ struct SendDetailsScreen: View {
     var button: some View {
         PrimaryButton(
             title: getButtonTitle(),
-            isLoading: sendCryptoViewModel.isLoading && !sendCryptoViewModel.hasPendingTransaction
+            isLoading: viewModel.isLoading && !viewModel.hasPendingTransaction
         ) {
             Task {
                 await validateForm()
@@ -169,38 +159,28 @@ struct SendDetailsScreen: View {
     }
 
     private func getButtonDisabled() -> Bool {
-        // Always disabled while loading normal operations
-        if sendCryptoViewModel.continueButtonDisabled {
+        if viewModel.continueButtonDisabled {
             return true
         }
-
-        // Only check pending transactions for supported chains
-        if tx.coin.chain.supportsPendingTransactions {
-            // Disabled while checking for pending transactions (prevents flickering)
-            if sendCryptoViewModel.isCheckingPendingTransactions {
+        if viewModel.coin.chain.supportsPendingTransactions {
+            if viewModel.isCheckingPendingTransactions {
                 return true
             }
-
-            // Disabled if there are confirmed pending transactions
-            if sendCryptoViewModel.hasPendingTransaction {
+            if viewModel.hasPendingTransaction {
                 return true
             }
         }
-
-        // For non-supported chains or no pending transactions, button is enabled
         return false
     }
 
     private func getButtonTitle() -> String {
-        // Only show pending states for supported chains
-        if tx.coin.chain.supportsPendingTransactions {
-            if sendCryptoViewModel.isCheckingPendingTransactions {
+        if viewModel.coin.chain.supportsPendingTransactions {
+            if viewModel.isCheckingPendingTransactions {
                 return "Checking pending transactions..."
-            } else if sendCryptoViewModel.hasPendingTransaction {
-                let elapsed = sendCryptoViewModel.pendingTransactionCountdown
+            } else if viewModel.hasPendingTransaction {
+                let elapsed = viewModel.pendingTransactionCountdown
                 let minutes = elapsed / 60
                 let seconds = elapsed % 60
-
                 if minutes > 0 {
                     return "Pending transaction (\(minutes)m \(seconds)s)"
                 } else {
@@ -208,9 +188,7 @@ struct SendDetailsScreen: View {
                 }
             }
         }
-
-        // Default states for all chains
-        if sendCryptoViewModel.isLoading {
+        if viewModel.isLoading {
             return "loadingDetails"
         } else {
             return "continue"
@@ -222,27 +200,21 @@ struct SendDetailsScreen: View {
             ScrollView {
                 VStack(spacing: 12) {
                     SendDetailsAssetTab(
-                        isExpanded: sendDetailsViewModel.selectedTab == .asset,
-                        tx: tx,
-                        viewModel: sendDetailsViewModel,
-                        sendCryptoViewModel: sendCryptoViewModel
+                        isExpanded: viewModel.selectedTab == .asset,
+                        viewModel: viewModel
                     )
                     .id(SendDetailsFocusedTab.asset.rawValue)
 
                     SendDetailsAddressTab(
-                        isExpanded: sendDetailsViewModel.selectedTab == .address,
-                        tx: tx,
-                        viewModel: sendDetailsViewModel,
-                        sendCryptoViewModel: sendCryptoViewModel,
+                        isExpanded: viewModel.selectedTab == .address,
+                        viewModel: viewModel,
                         focusedField: $focusedField
                     )
                     .id(SendDetailsFocusedTab.address.rawValue)
 
                     SendDetailsAmountTab(
-                        isExpanded: sendDetailsViewModel.selectedTab == .amount,
-                        tx: tx,
-                        viewModel: sendDetailsViewModel,
-                        sendCryptoViewModel: sendCryptoViewModel,
+                        isExpanded: viewModel.selectedTab == .amount,
+                        viewModel: viewModel,
                         validateForm: validateForm,
                         focusedField: $focusedField,
                         settingsPresented: $settingsPresented
@@ -256,7 +228,7 @@ struct SendDetailsScreen: View {
             .onLoad {
                 scrollProxy = proxy
             }
-            .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
+            .onChange(of: viewModel.selectedTab) { oldValue, newValue in
                 handleScroll(newValue: newValue, oldValue: oldValue)
                 onSelectedTabChange(newTab: newValue)
             }
@@ -270,21 +242,18 @@ struct SendDetailsScreen: View {
     }
 
     func onSelectedTabChange(newTab: SendDetailsFocusedTab?) {
-        // Dismiss keyboard when switching away from address tab
         if newTab != .address && newTab != .amount {
             focusedField = nil
         }
     }
 
     func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
-        // This delay is necessary when the screen starts
         DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
             if newValue != .amount {
                 withAnimation(.easeInOut) {
                     scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
                 }
             }
-
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut) {
                     scrollProxy?.scrollTo(newValue?.rawValue, anchor: .bottom)
@@ -294,45 +263,50 @@ struct SendDetailsScreen: View {
     }
 
     func validateForm() async {
-        switch sendDetailsViewModel.selectedTab {
+        switch viewModel.selectedTab {
         case .none:
-            sendDetailsViewModel.onSelect(tab: .asset)
+            viewModel.onSelect(tab: .asset)
             return
         case .asset:
-            sendDetailsViewModel.onSelect(tab: .address)
+            viewModel.onSelect(tab: .address)
             return
         case .address:
-            sendDetailsViewModel.onSelect(tab: .amount)
+            viewModel.onSelect(tab: .amount)
             return
         case .amount:
-            await MainActor.run {
-                sendCryptoViewModel.isValidatingForm = true
-            }
-            sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+            viewModel.isValidatingForm = true
+            viewModel.validateAmount(viewModel.amount)
 
-            if await sendCryptoViewModel.validateForm(tx: tx) {
+            if await viewModel.validateForm() {
                 await MainActor.run {
-                    router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
+                    do {
+                        let immutableTx = try viewModel.makeTransaction()
+                        router.navigate(to: SendRoute.verify(
+                            tx: immutableTx,
+                            retrySignal: SendRetrySignal(),
+                            vault: vault
+                        ))
+                    } catch {
+                        viewModel.errorMessage = error.localizedDescription
+                        viewModel.showAlert = true
+                    }
                 }
             }
         }
 
         await MainActor.run {
-            sendCryptoViewModel.isValidatingForm = false
+            viewModel.isValidatingForm = false
         }
     }
 
     func getBalance() async {
-        await BalanceService.shared.updateBalance(for: tx.coin)
+        await BalanceService.shared.updateBalance(for: viewModel.coin)
     }
 
     private func onRefresh() async {
-        // Fee calculation moved to Verify screen
-        async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
-        async let pendingCheck: Void = PendingTransactionManager.shared.forceCheckPendingTransactions()
+        async let bal: Void = BalanceService.shared.updateBalance(for: viewModel.coin)
+        async let pendingCheck: Void = viewModel.forceCheckPendingTransactions()
         _ = await (bal, pendingCheck)
-        if Task.isCancelled { return }
-        checkPendingTransactions()
     }
 }
 
@@ -341,145 +315,53 @@ extension SendDetailsScreen: SendGasSettingsOutput {
     func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
         switch chain.chainType {
         case .EVM:
-            tx.customGasLimit = gasLimit
+            viewModel.customGasLimit = gasLimit
         case .UTXO, .Cardano:
-            tx.customByteFee = byteFee
+            viewModel.customByteFee = byteFee
         default:
             return
         }
-
-        tx.feeMode = mode
+        viewModel.feeMode = mode
     }
 }
 
 extension SendDetailsScreen {
-private func setMainData() async {
-        guard !sendCryptoViewModel.isLoading else { return }
+    private func setMainData() async {
+        guard !viewModel.isLoading else { return }
 
         if let coin = coin {
-            // Store toAddress before reset if it's not empty
-            let savedToAddress = tx.toAddress.isEmpty ? nil : tx.toAddress
-
-            // Reset clears all state including fee
-            tx.reset(coin: coin)
-
-            // Restore or set toAddress
+            let savedToAddress = viewModel.toAddress.isEmpty ? nil : viewModel.toAddress
+            viewModel.reset(to: coin)
             if let saved = savedToAddress {
-                tx.toAddress = saved
-            } else if tx.toAddress.isEmpty {
-                tx.toAddress = deeplinkViewModel.address ?? ""
+                viewModel.toAddress = saved
+            } else if viewModel.toAddress.isEmpty {
+                viewModel.toAddress = deeplinkViewModel.address ?? ""
             }
-
             deeplinkViewModel.address = nil
             self.coin = nil
         } else {
-            // Even if coin is nil, try to get address from deeplinkViewModel if tx.toAddress is empty
-            if tx.toAddress.isEmpty, let deeplinkAddress = deeplinkViewModel.address {
-                tx.toAddress = deeplinkAddress
+            if viewModel.toAddress.isEmpty, let deeplinkAddress = deeplinkViewModel.address {
+                viewModel.toAddress = deeplinkAddress
                 deeplinkViewModel.address = nil
             }
         }
 
-        if !tx.toAddress.isEmpty {
-            if sendCryptoViewModel.isValidAddressFormat(tx: tx) {
-                sendDetailsViewModel.addressSetupDone = true
-                sendDetailsViewModel.onSelect(tab: .amount)
+        if !viewModel.toAddress.isEmpty {
+            if viewModel.isValidAddressFormat() {
+                viewModel.addressSetupDone = true
+                viewModel.onSelect(tab: .amount)
             } else {
-                let resolved = await sendCryptoViewModel.validateToAddress(tx: tx)
-                sendDetailsViewModel.addressSetupDone = resolved
+                let resolved = await viewModel.validateToAddress()
+                viewModel.addressSetupDone = resolved
                 if resolved {
-                    sendDetailsViewModel.onSelect(tab: .amount)
+                    viewModel.onSelect(tab: .amount)
                 }
             }
         }
 
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        await viewModel.loadFastVault()
     }
 
-    @MainActor
-    private func checkPendingTransactions() {
-        guard tx.coin.chain.supportsPendingTransactions else {
-            // For non-Cosmos chains, immediately enable button
-            sendCryptoViewModel.hasPendingTransaction = false
-            sendCryptoViewModel.pendingTransactionCountdown = 0
-            sendCryptoViewModel.isCheckingPendingTransactions = false
-            stopCountdownTimer()
-            return
-        }
-
-        // Set checking state first for Cosmos chains
-        sendCryptoViewModel.isCheckingPendingTransactions = true
-        let pendingTxManager = PendingTransactionManager.shared
-
-        // Get current pending transactions (polling automatically updates them)
-        let hasPending = pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain)
-
-        // Update SendCryptoViewModel properties and start/stop countdown timer
-        if hasPending {
-            sendCryptoViewModel.hasPendingTransaction = true
-            sendCryptoViewModel.isCheckingPendingTransactions = false
-            startCountdownTimer()
-
-            // Start polling APENAS se for chain que suporta pending transactions
-            if tx.coin.chain.supportsPendingTransactions {
-                PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
-            }
-        } else {
-            sendCryptoViewModel.hasPendingTransaction = false
-            sendCryptoViewModel.pendingTransactionCountdown = 0
-            sendCryptoViewModel.isCheckingPendingTransactions = false
-            stopCountdownTimer()
-
-            // SEMPRE para polling quando não há pendentes (qualquer chain)
-            PendingTransactionManager.shared.stopPollingForChain(tx.coin.chain)
-        }
-
-    }
-
-    private func startCountdownTimer() {
-        stopCountdownTimer() // Stop any existing timer
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            updateCountdown()
-        }
-    }
-
-    private func stopCountdownTimer() {
-        countdownTimer?.invalidate()
-        countdownTimer = nil
-    }
-
-    private func updateCountdown() {
-        guard tx.coin.chain.supportsPendingTransactions else {
-            return
-        }
-
-        let pendingTxManager = PendingTransactionManager.shared
-
-        if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
-            let elapsedSeconds = Int(Date().timeIntervalSince(oldestPending.timestamp))
-            sendCryptoViewModel.pendingTransactionCountdown = elapsedSeconds
-            // Keep transaction as pending - only confirmation should release it
-            sendCryptoViewModel.hasPendingTransaction = true
-
-        } else {
-            // No more pending transactions - they were confirmed and removed
-            sendCryptoViewModel.hasPendingTransaction = false
-            sendCryptoViewModel.pendingTransactionCountdown = 0
-            stopCountdownTimer()
-
-        }
-    }
-}
-
-#Preview {
-    SendDetailsScreen(
-        coin: Coin.example,
-        tx: SendTransaction(),
-        sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example
-    )
-    .environmentObject(CoinSelectionViewModel())
-    .environmentObject(DeeplinkViewModel())
 }
 
 #if os(iOS)
@@ -513,14 +395,6 @@ extension SendDetailsScreen {
         keyboardObserver.keyboardHeight = 0
         Task {
             await getBalance()
-        }
-    }
-
-    private func getButtonBackground() -> Color {
-        if keyboardObserver.keyboardHeight == 0 {
-            return Color.clear
-        } else {
-            return Theme.colors.bgPrimary
         }
     }
 }

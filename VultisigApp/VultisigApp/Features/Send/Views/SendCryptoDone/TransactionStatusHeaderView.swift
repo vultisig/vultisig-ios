@@ -10,6 +10,7 @@ import RiveRuntime
 
 struct TransactionStatusHeaderView: View {
     let status: TransactionStatus
+    var verb: TransactionActionVerb = .send
     @State private var pulseScale: CGFloat = 1.0
     @State private var successAnimationVM: RiveViewModel?
     @State private var errorAnimationVM: RiveViewModel?
@@ -33,7 +34,7 @@ struct TransactionStatusHeaderView: View {
             pendingAnimationVM?.fit = .contain
             successAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: false)
             successAnimationVM?.fit = .contain
-            errorAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: false)
+            errorAnimationVM = RiveViewModel(fileName: "transaction_error", autoPlay: false)
             errorAnimationVM?.fit = .contain
         }
     }
@@ -71,16 +72,16 @@ struct TransactionStatusHeaderView: View {
         Group {
             switch status {
             case .broadcasted:
-                Text("transactionBroadcasted")
+                Text(LocalizedStringKey(verb.broadcastedKey))
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyLMedium)
             case .pending:
-                Text("transactionPending")
+                Text(LocalizedStringKey(verb.pendingKey))
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyLMedium)
             case .confirmed:
                 CustomHighlightText(
-                    "transactionSuccessful".localized,
+                    verb.successfulKey.localized,
                     highlight: "transactionSuccessfulHighlight".localized,
                     style: LinearGradient.primaryGradientHorizontal
                 )
@@ -88,7 +89,7 @@ struct TransactionStatusHeaderView: View {
                 .font(Theme.fonts.bodyLMedium)
             case .timeout, .failed:
                 HighlightedText(
-                    text: "transactionFailed".localized,
+                    text: verb.failedKey.localized,
                     highlightedText: "transactionFailedHighlight".localized
                 ) { text in
                     text.foregroundColor = Theme.colors.textPrimary

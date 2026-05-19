@@ -53,12 +53,15 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var error: JoinKeygenError? = nil
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
+    @Published var isTssBatch: Bool = false
 
     var encryptionKeyHex: String = ""
     var singleKeygenType: SingleKeygenType = .MLDSA
     var vaults: [Vault] = []
+    private let httpClient: HTTPClientProtocol
 
-    init() {
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
         self.vault = Vault(name: "Main Vault")
     }
 
@@ -141,37 +144,30 @@ class JoinKeygenViewModel: ObservableObject {
     }
     /// Checks if the key generation process has started by querying the server.
     /// - Throws: `HelperError.runtimeError` if required information is missing or the URL is invalid.
-    ///           Any error thrown by `URLSession` or JSON decoding.
+    ///           Any error thrown by the HTTP client or JSON decoding.
     /// - Note: Updates the `keygenCommittee` and `status` on the main thread if the process has started.
     /// - Returns: Nothing. Updates state via side effects.
     private func checkKeygenStarted() async throws {
         guard let serverURL = serverAddress, let sessionID = sessionID else {
             throw HelperError.runtimeError("Required information for checking key generation status is missing.")
         }
-
-        let urlString = "\(serverURL)/start/\(sessionID)"
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("Invalid URL: \(urlString)")
+        guard let baseURL = URL(string: serverURL) else {
+            throw HelperError.runtimeError("Invalid URL: \(serverURL)")
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let response = try await httpClient.request(TssRelayAPI(
+            baseURL: baseURL,
+            endpoint: .checkKeygenStarted(sessionID: sessionID)
+        ))
 
-        let (data, resp) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = resp as? HTTPURLResponse else {
-            self.logger.error("Invalid response from server")
-            return
-        }
-        switch httpResponse.statusCode {
+        switch response.response.statusCode {
         case 200 ... 299:
-            if data.isEmpty {
+            if response.data.isEmpty {
                 self.logger.debug("Key generation not started yet (empty body)")
                 return
             }
             do {
-                let decoder = JSONDecoder()
-                let peers = try decoder.decode([String].self, from: data)
+                let peers = try JSONDecoder().decode([String].self, from: response.data)
                 DispatchQueue.main.async {
                     if peers.contains(self.localPartyID) {
                         // Trust the server's authoritative list order.
@@ -180,13 +176,13 @@ class JoinKeygenViewModel: ObservableObject {
                     }
                 }
             } catch {
-                self.logger.error("Failed to decode response to JSON: \(String(data: data, encoding: .utf8) ?? "N/A") , error: \(error.localizedDescription)")
+                self.logger.error("Failed to decode response to JSON: \(String(data: response.data, encoding: .utf8) ?? "N/A") , error: \(error.localizedDescription)")
             }
         case 404:
             // keygen not started yet
             self.logger.debug("Key generation not started yet (404)")
         default:
-            self.logger.error("Server returned status code \(httpResponse.statusCode)")
+            self.logger.error("Server returned status code \(response.response.statusCode)")
         }
     }
 
@@ -217,6 +213,7 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
                 keyImportChains = keygenMsg.chains
+                isTssBatch = keygenMsg.isTssBatch
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
                     error = .vaultNameAlreadyExists
                     logger.error("Vault name already exists: \(keygenMsg.vaultName)")
@@ -233,6 +230,7 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
+                isTssBatch = reshareMsg.isTssBatch
 
                 if tssType == .Migrate {
                     // this logic only applies to migrate

@@ -458,29 +458,36 @@ UI tests have their own dedicated scheme (`VultisigAppUITests`) and test plan (`
 
 ### Command Line
 
+Prefer the Makefile target (see `/make` skill) for full runs:
+
 ```bash
 # Run all UI tests (dedicated scheme)
-xcodebuild test \
-    -project VultisigApp/VultisigApp.xcodeproj \
-    -scheme VultisigAppUITests \
-    -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
-    2>&1 | xcpretty
+make ui_test
 
+# Override the simulator if needed
+make ui_test DESTINATION='platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
+```
+
+Drop to raw `xcodebuild` only when you need `-only-testing:` filtering. Prepend `make generate` so newly added test files are in the project:
+
+```bash
 # Run a specific test class
-xcodebuild test \
-    -project VultisigApp/VultisigApp.xcodeproj \
+make generate
+cd VultisigApp && xcodebuild test \
+    -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
-    -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
     -only-testing:VultisigAppUITests/HomeScreenTests \
-    2>&1 | xcpretty
+    -skipPackagePluginValidation
 
 # Run a specific test method
-xcodebuild test \
-    -project VultisigApp/VultisigApp.xcodeproj \
+make generate
+cd VultisigApp && xcodebuild test \
+    -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
-    -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
     -only-testing:VultisigAppUITests/HomeScreenTests/testHomeScreenShowsTabs \
-    2>&1 | xcpretty
+    -skipPackagePluginValidation
 ```
 
 ### Scheme & Test Plan Structure
@@ -525,13 +532,18 @@ Follow this checklist when adding UI tests for a screen:
 
 ### Step 5 — Run and Verify
 
+Always regenerate the project first — new Swift files aren't in `VultisigApp.xcodeproj` until `xcodegen` picks them up.
+
+Filtered runs need raw `xcodebuild`; full runs go through `make ui_test`:
+
 ```bash
-xcodebuild test \
-    -project VultisigApp/VultisigApp.xcodeproj \
+make generate
+cd VultisigApp && xcodebuild test \
+    -project VultisigApp.xcodeproj \
     -scheme VultisigAppUITests \
-    -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
     -only-testing:VultisigAppUITests/{TestClass} \
-    2>&1 | xcpretty
+    -skipPackagePluginValidation
 ```
 
 ---

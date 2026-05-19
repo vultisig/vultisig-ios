@@ -40,6 +40,9 @@ class RpcService {
             throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
         }
 
+        // Generic JSON-RPC client used across many chains; doesn't fit
+        // `TargetType`/`HTTPClient`'s typed-JSON model.
+        // swiftlint:disable:next no_raw_urlrequest
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

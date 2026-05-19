@@ -5,7 +5,10 @@
 //  Created by Enrique Souza on 2025-12-11.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-circle-row")
 
 struct DefiCircleRow: View {
     let vault: Vault
@@ -54,7 +57,6 @@ struct DefiCircleRow: View {
         .padding(.vertical, 12)
         .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
         .buttonStyle(.plain)
         .task {
             await loadBalance()
@@ -108,25 +110,27 @@ struct DefiCircleRow: View {
         }
     }
 
+    @MainActor
     private func loadBalance() async {
+        if let cached = vault.circlePosition {
+            circleBalance = cached.usdcBalance
+            isLoading = false
+        }
+
         guard let address = vault.circleWalletAddress, !address.isEmpty else {
-            await MainActor.run {
-                isLoading = false
-            }
+            isLoading = false
             return
         }
 
         do {
-            let (usdcBalance, _) = try await logic.fetchData(address: address, vault: vault)
-            await MainActor.run {
-                circleBalance = usdcBalance
-                isLoading = false
-                hasError = false
-            }
+            let (usdcBalance, _) = try await logic.refresh(vault: vault)
+            circleBalance = usdcBalance
+            isLoading = false
+            hasError = false
         } catch {
-            print("DefiCircleRow: Error loading balance: \(error.localizedDescription)")
-            await MainActor.run {
-                isLoading = false
+            logger.error("Error loading balance: \(error.localizedDescription)")
+            isLoading = false
+            if circleBalance == nil {
                 hasError = true
             }
         }

@@ -16,7 +16,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
+      - name: Install XcodeGen
+        # Idempotent: skip `brew install` if xcodegen is already on the runner.
+        run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+
+      - name: Generate Xcode project
+        run: make generate
+
       - name: Cache SwiftPM
         uses: actions/cache@v4
         with:

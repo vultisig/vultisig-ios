@@ -24,8 +24,6 @@ struct CircleWithdrawView: View {
     @State var fastPasswordPresented = false
     @State var fastVaultPassword: String = ""
 
-    @StateObject var sendTransaction = SendTransaction()
-
     init(vault: Vault, model: CircleViewModel) {
         self.vault = vault
         self._model = StateObject(wrappedValue: model)
@@ -288,16 +286,16 @@ struct CircleWithdrawView: View {
             }
 
             await MainActor.run {
-                self.sendTransaction.reset(coin: usdcCoin)
-                self.sendTransaction.amount = amount
-                self.sendTransaction.toAddress = recipientCoin.address
-                self.sendTransaction.isFastVault = isFastVault
-                self.sendTransaction.fastVaultPassword = fastVaultPassword
-
+                let immutableTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
+                    toAddress: recipientCoin.address,
+                    amount: amount,
+                    isFastVault: isFastVault
+                )
                 router.navigate(
                     to: SendRoute.pairing(
                         vault: vault,
-                        tx: sendTransaction,
+                        tx: immutableTx,
+                        retrySignal: SendRetrySignal(),
                         keysignPayload: payload,
                         fastVaultPassword: fastVaultPassword.nilIfEmpty
                     )

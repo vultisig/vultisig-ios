@@ -41,11 +41,16 @@ class HiddenToken {
         contractAddress.lowercased()
     }
 
-    /// Known old contract addresses that were migrated in PR #3837
-    /// Maps old address -> new address for THORChain staking tokens
+    /// Maps a stale contract address recorded on existing hidden tokens to the
+    /// current `TokensStore` value, so toggling the same asset off then on
+    /// continues to match even when its contractAddress was rewritten.
+    ///   - sTCY: chain moved `x/staking-x/tcy → x/staking-tcy` (PR #3837).
+    ///   - sRUJI: PR #3837 also renamed sRUJI locally, but issue #4318 reverts
+    ///            that — vaults that stored the renamed value need to match
+    ///            the on-chain denom now used by `TokensStore.sruji`.
     private static let migratedContractAddresses: [String: String] = [
         "x/staking-x/tcy": "x/staking-tcy",
-        "x/staking-x/ruji": "x/staking-ruji"
+        "x/staking-ruji": TokensStore.sruji.contractAddress
     ]
 
     /// Check if this hidden token matches a CoinMeta

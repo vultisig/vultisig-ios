@@ -11,6 +11,10 @@ struct CreateVaultView: View {
     @Environment(\.router) var router
     let selectedVault: Vault?
     var showBackButton = false
+    /// Bypass the staggered-reveal animation and render the fully-revealed
+    /// static layout. Used by snapshot tests so the captured frame doesn't
+    /// depend on real-time `asyncAfter` dispatches firing on a busy CI host.
+    let staticForSnapshot: Bool
 
     @State var showNewVaultButton = false
     @State var showSeparator = false
@@ -25,9 +29,13 @@ struct CreateVaultView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
 
-    init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
+    init(selectedVault: Vault? = nil, showBackButton: Bool = false, staticForSnapshot: Bool = false) {
         self.selectedVault = selectedVault
         self.showBackButton = showBackButton
+        self.staticForSnapshot = staticForSnapshot
+        self._showNewVaultButton = State(initialValue: staticForSnapshot)
+        self._showSeparator = State(initialValue: staticForSnapshot)
+        self._showButtonStack = State(initialValue: staticForSnapshot)
     }
 
     var body: some View {
@@ -39,7 +47,6 @@ struct CreateVaultView: View {
             guard shouldNavigate else { return }
             router.navigate(to: KeygenRoute.macScanner(
                 type: .NewVault,
-                sendTx: SendTransaction(),
                 selectedVault: selectedVault
             ))
             navigateToScanQR = false
@@ -48,8 +55,7 @@ struct CreateVaultView: View {
             guard shouldNavigate else { return }
             router.navigate(to: KeygenRoute.generalQRImport(
                 type: .NewVault,
-                selectedVault: nil,
-                sendTx: nil
+                selectedVault: nil
             ))
             navigateToGeneralQRImport = false
         }
@@ -74,7 +80,7 @@ struct CreateVaultView: View {
     var view: some View {
         VStack(spacing: 0) {
             Spacer()
-            VultisigLogoAnimation()
+            VultisigLogoAnimation(isStatic: staticForSnapshot)
             Spacer()
             buttons
         }
@@ -158,6 +164,8 @@ struct CreateVaultView: View {
     }
 
     private func setData() {
+        guard !staticForSnapshot else { return }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             showNewVaultButton = true
         }
@@ -201,7 +209,6 @@ extension CreateVaultView {
                 GeneralCodeScannerView(
                     showSheet: $showSheet,
                     selectedChain: .constant(nil),
-                    sendTX: SendTransaction(),
                     onJoinKeygen: {
                         shouldJoinKeygen = true
                     }

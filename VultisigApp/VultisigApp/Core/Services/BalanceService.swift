@@ -84,6 +84,10 @@ class BalanceService {
         } catch {
             logger.error("Update Balances error: \(error.localizedDescription)")
         }
+
+        // Phase 4: Discover Cardano native tokens silently — mirrors Windows
+        // CoinFinder behaviour. Failures here must never break a balance refresh.
+        await discoverCardanoNativeTokens(vault: vault)
     }
 
     /// Phase 1: Extract coin identifiers on MainActor
@@ -236,7 +240,7 @@ class BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
 
         case .cardano:
-            return try await cardano.getBalance(address: address)
+            return try await cardano.getBalance(coin: coin, address: address)
 
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
@@ -346,7 +350,9 @@ private extension BalanceService {
                 let tcyStakedBalance = await service.fetchTcyStakedAmount(address: identifier.address)
 
                 if enableAutoCompoundStakedBalance {
-                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: identifier.address)
+                    // Auto-compound contributes to the displayed balance; on transient failure
+                    // fall back to the staked-only amount rather than blanking the whole row.
+                    let tcyAutoCompoundBalance = (try? await service.fetchTcyAutoCompoundAmount(address: identifier.address)) ?? .zero
                     let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
                     return totalStakedBalance.description
                 }
@@ -394,10 +400,81 @@ private extension BalanceService {
                 return "0"
             }
 
+        case .tron:
+            // Native TRX is the only stake-able asset on Tron. Frozen (Stake 2.0
+            // bandwidth + energy) plus unfreezing (in cooldown) TRX represent
+            // the user's DeFi position. Returning `nil` on transient failure
+            // preserves the previously persisted value rather than clobbering
+            // it with 0.
+            guard identifier.isNativeToken else { return nil }
+            do {
+                let account = try await TronService.shared.getAccount(address: identifier.address)
+                let totalSun = account.frozenBandwidthSun + account.frozenEnergySun + account.unfreezingTotalSun
+                return Decimal(totalSun).description
+            } catch {
+                logger.warning("Failed to fetch Tron frozen balance for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
+
         default:
             // All other chains currently don't support staking
             return nil
         }
     }
 
+    /// Auto-discover Cardano native tokens (CNT) held at the vault's Cardano
+    /// address and add any new ones. Mirrors vultisig-windows' `CoinFinder`
+    /// silent-discovery behaviour. Run after each balance refresh.
+    @MainActor
+    private func discoverCardanoNativeTokens(vault: Vault) async {
+        guard let cardanoNative = vault.coins.first(where: { $0.chain == .cardano && $0.isNativeToken }) else {
+            return
+        }
+
+        let address = cardanoNative.address
+        let knownContractAddresses = Set(
+            vault.coins
+                .filter { $0.chain == .cardano && !$0.isNativeToken }
+                .map { $0.contractAddress.lowercased() }
+        )
+
+        let discovered: [CardanoTokenMetadata]
+        do {
+            discovered = try await CardanoNativeTokensService.shared.discoverTokens(address: address)
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Cardano CNT discovery failed: \(error.localizedDescription)")
+            }
+            return
+        }
+
+        let newTokens = discovered.filter { !knownContractAddresses.contains($0.assetId) }
+        guard !newTokens.isEmpty else { return }
+
+        // Prefer the built-in registry entry when we know the asset — it carries
+        // a human ticker (`USDM` rather than the `_USDM` derived from masking
+        // the CIP-67 prefix), the bundled logo asset, and a working
+        // `priceProviderId`. Falls back to the API-derived metadata for assets
+        // the registry doesn't know about.
+        let newCoinMetas = newTokens.map { metadata in
+            if let known = TokensStore.findTokenMeta(chain: .cardano, contractAddress: metadata.assetId) {
+                return known
+            }
+            return CoinMeta(
+                chain: .cardano,
+                ticker: metadata.ticker,
+                logo: metadata.registryLogo ?? .empty,
+                decimals: metadata.decimals,
+                priceProviderId: .empty,
+                contractAddress: metadata.assetId,
+                isNativeToken: false
+            )
+        }
+
+        do {
+            try await CoinService.addToChain(assets: newCoinMetas, to: vault)
+        } catch {
+            logger.warning("Cardano CNT auto-add failed: \(error.localizedDescription)")
+        }
+    }
 }

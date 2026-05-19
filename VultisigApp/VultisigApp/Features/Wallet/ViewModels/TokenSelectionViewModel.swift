@@ -23,7 +23,7 @@ class TokenSelectionViewModel: ObservableObject {
         return logic.showRetry(error: error)
     }
 
-    func loadData(groupedChain: GroupedChain, vault: Vault) {
+    func loadData(chain: Chain, vault: Vault) {
         // Cancel any existing loading task
         loadingTask?.cancel()
 
@@ -32,13 +32,14 @@ class TokenSelectionViewModel: ObservableObject {
 
         // Load basic tokens immediately (synchronous)
         let hiddenTokens = vault.hiddenTokens
-        selectedTokens = logic.selectedTokens(groupedChain: groupedChain, tokens: tokens)
-        preExistTokens = logic.preExistingTokens(groupedChain: groupedChain, hiddenTokens: hiddenTokens)
+        let chainCoins = vault.coins(for: chain)
+        selectedTokens = logic.selectedTokens(chainCoins: chainCoins, tokens: tokens)
+        preExistTokens = logic.preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
 
         // Start async loading of external tokens
         loadingTask = Task { [weak self] in
             guard let self else { return }
-            await self.loadExternalTokens(groupedChain: groupedChain, hiddenTokens: hiddenTokens)
+            await self.loadExternalTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
         }
     }
 
@@ -47,18 +48,24 @@ class TokenSelectionViewModel: ObservableObject {
         isLoading = false
     }
 
-    func updateSearchedTokens(groupedChain: GroupedChain) {
-        searchedTokens = logic.filteredTokens(groupedChain: groupedChain, searchText: searchText, tokens: tokens)
+    func updateSearchedTokens(chain: Chain, vault: Vault) {
+        let chainCoins = vault.coins(for: chain)
+        searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: tokens)
     }
 
-    private func loadExternalTokens(groupedChain: GroupedChain, hiddenTokens: [HiddenToken]) async {
+    private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {
         guard !Task.isCancelled else { return }
 
         isLoading = true
         error = nil
 
         do {
-            let result = try await logic.loadExternalTokens(groupedChain: groupedChain, currentTokens: tokens, hiddenTokens: hiddenTokens)
+            let result = try await logic.loadExternalTokens(
+                chain: chain,
+                chainCoins: chainCoins,
+                currentTokens: tokens,
+                hiddenTokens: hiddenTokens
+            )
 
             if !Task.isCancelled {
                 tokens.append(contentsOf: result.newTokens)
@@ -83,8 +90,8 @@ struct TokenSelectionLogic {
 
     private init() {}
 
-    func selectedTokens(groupedChain: GroupedChain, tokens: [CoinMeta]) -> [CoinMeta] {
-        let tickers = groupedChain.coins
+    func selectedTokens(chainCoins: [Coin], tokens: [CoinMeta]) -> [CoinMeta] {
+        let tickers = chainCoins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
 
@@ -92,7 +99,7 @@ struct TokenSelectionLogic {
             tickers.contains(token.ticker.lowercased())
         }
         // Convert tickers to tokens if they are not already in the existing tokens list
-        let tickerTokens = groupedChain.coins.filter { coin in
+        let tickerTokens = chainCoins.filter { coin in
             tickers.contains(coin.ticker.lowercased()) &&
             !tokens.contains { token in token.ticker.lowercased() == coin.ticker.lowercased() }
         }.map { coin in
@@ -102,26 +109,26 @@ struct TokenSelectionLogic {
         return (filteredTokens + tickerTokens).uniqueBy { $0.uniqueId }
     }
 
-    func preExistingTokens(groupedChain: GroupedChain, hiddenTokens: [HiddenToken]) -> [CoinMeta] {
-        let tickers = groupedChain.coins
+    func preExistingTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) -> [CoinMeta] {
+        let tickers = chainCoins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
 
         return TokensStore.TokenSelectionAssets
             .filter { token in
-                token.chain == groupedChain.chain &&
+                token.chain == chain &&
                 !token.isNativeToken &&
                 !tickers.contains(token.ticker.lowercased()) &&
                 !hiddenTokens.contains { $0.matches(token) }
             }
     }
 
-    func filteredTokens(groupedChain: GroupedChain, searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
+    func filteredTokens(chainCoins: [Coin], searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
 
-        let tickers = groupedChain.coins
+        let tickers = chainCoins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
 
@@ -148,16 +155,21 @@ struct TokenSelectionLogic {
         let updatedPreExistTokens: [CoinMeta]
     }
 
-    func loadExternalTokens(groupedChain: GroupedChain, currentTokens: [CoinMeta], hiddenTokens: [HiddenToken]) async throws -> LoadResult {
+    func loadExternalTokens(
+        chain: Chain,
+        chainCoins: [Coin],
+        currentTokens: [CoinMeta],
+        hiddenTokens: [HiddenToken]
+    ) async throws -> LoadResult {
         let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
 
         // Propagate errors instead of swallowing them with try?
-        let newTokens = try await searchService.loadTokens(for: groupedChain.chain)
+        let newTokens = try await searchService.loadTokens(for: chain)
         let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
 
         let allTokens = currentTokens + uniqueTokens
-        let updatedSelectedTokens = selectedTokens(groupedChain: groupedChain, tokens: allTokens)
-        let updatedPreExistTokens = preExistingTokens(groupedChain: groupedChain, hiddenTokens: hiddenTokens)
+        let updatedSelectedTokens = selectedTokens(chainCoins: chainCoins, tokens: allTokens)
+        let updatedPreExistTokens = preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
 
         return LoadResult(
             newTokens: uniqueTokens,

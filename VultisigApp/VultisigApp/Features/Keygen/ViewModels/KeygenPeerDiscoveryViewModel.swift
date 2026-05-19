@@ -15,6 +15,15 @@ enum PeerDiscoveryStatus {
     case Failure
 }
 
+struct VaultRegistrationSnapshot {
+    let name: String
+    let pubKeyECDSA: String
+    let hexChainCode: String
+    let signers: [String]
+    let resharePrefix: String
+    let libType: LibType
+}
+
 class KeygenPeerDiscoveryViewModel: ObservableObject {
 
     private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
@@ -24,6 +33,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
     var chains: [Chain]?
+
+    @AppStorage("tssBatchEnabled") private var tssBatchEnabled: Bool = false
+
+    var isTssBatch: Bool {
+        let supportsBatch = vault.libType == .DKLS || vault.libType == .KeyImport
+        return supportsBatch && tssBatchEnabled
+    }
 
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -113,57 +129,134 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             break
         }
         if let config = fastSignConfig {
-            switch tssType {
-            case .Keygen:
-                fastVaultService.create(name: vault.name,
-                                        sessionID: sessionID,
-                                        hexEncryptionKey: encryptionKeyHex!,
-                                        hexChainCode: vault.hexChainCode,
-                                        encryptionPassword: config.password,
-                                        email: config.email,
-                                        lib_type: vault.libType == .DKLS ? 1 : 0)
-            case .KeyImport:
-                fastVaultService.keyImport(name: vault.name,
-                                           sessionID: sessionID,
-                                           hexEncryptionKey: encryptionKeyHex!,
-                                           hexChainCode: vault.hexChainCode,
-                                           encryptionPassword: config.password,
-                                           email: config.email,
-                                           lib_type: 2,
-                                           chains: chains?.map { $0.name } ?? [])
-            case .Reshare:
-                let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                fastVaultService.reshare(
+            let snapshot = VaultRegistrationSnapshot(
+                name: vault.name,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                hexChainCode: vault.hexChainCode,
+                signers: vault.signers,
+                resharePrefix: vault.resharePrefix ?? "",
+                libType: vault.libType ?? .GG20
+            )
+            Task { [weak self] in
+                guard let self else { return }
+                do {
+                    try await self.registerFastVaultServer(tssType: tssType, config: config, vault: snapshot)
+                } catch {
+                    self.logger.error("FastVault registration failed: \(error.localizedDescription, privacy: .public)")
+                    await MainActor.run {
+                        self.errorMessage = "fastVaultRegistrationFailed".localized
+                        self.status = .Failure
+                    }
+                }
+            }
+        }
+        // isLoading reflects peer-discovery state, not registration — registration failure is surfaced via status = .Failure
+        self.isLoading = false
+    }
+
+    private func registerFastVaultServer(
+        tssType: TssType,
+        config: FastSignConfig,
+        vault: VaultRegistrationSnapshot
+    ) async throws {
+        guard let encryptionKeyHex else {
+            throw FastVaultServiceError.missingEncryptionKey
+        }
+        let supportsBatch = vault.libType == .DKLS || vault.libType == .KeyImport
+        let isTssBatch = supportsBatch && tssBatchEnabled
+        let chainNames = chains?.map { $0.name } ?? []
+        let libTypeCode = vault.libType == .DKLS ? 1 : 0
+        switch tssType {
+        case .Keygen:
+            if isTssBatch {
+                try await fastVaultService.batchCreate(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: libTypeCode,
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.create(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: libTypeCode
+                )
+            }
+        case .KeyImport:
+            if isTssBatch {
+                try await fastVaultService.batchKeyImport(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: 2,
+                    chains: chainNames,
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.keyImport(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    lib_type: 2,
+                    chains: chainNames
+                )
+            }
+        case .Reshare:
+            let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
+            if isTssBatch {
+                try await fastVaultService.batchReshare(
+                    publicKeyECDSA: pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    oldParties: vault.signers,
+                    protocols: [BatchKeygenRequest.protocolECDSA, BatchKeygenRequest.protocolEdDSA]
+                )
+            } else {
+                try await fastVaultService.reshare(
                     name: vault.name,
                     publicKeyECDSA: pubKeyECDSA,
                     sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
+                    hexEncryptionKey: encryptionKeyHex,
                     hexChainCode: vault.hexChainCode,
                     encryptionPassword: config.password,
                     email: config.email,
                     oldParties: vault.signers,
-                    oldResharePrefix: vault.resharePrefix ?? "",
-                    lib_type: vault.libType == .DKLS ? 1 : 0
-                )
-            case .Migrate:
-                fastVaultService.migrate(
-                    publicKeyECDSA: vault.pubKeyECDSA,
-                    sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
-                    encryptionPassword: config.password,
-                    email: config.email
-                )
-            case .SingleKeygen:
-                fastVaultService.singleKeygen(
-                    publicKeyECDSA: vault.pubKeyECDSA,
-                    sessionID: sessionID,
-                    hexEncryptionKey: encryptionKeyHex!,
-                    encryptionPassword: config.password,
-                    email: config.email
+                    oldResharePrefix: vault.resharePrefix,
+                    lib_type: libTypeCode
                 )
             }
+        case .Migrate:
+            try await fastVaultService.migrate(
+                publicKeyECDSA: vault.pubKeyECDSA,
+                sessionID: sessionID,
+                hexEncryptionKey: encryptionKeyHex,
+                encryptionPassword: config.password,
+                email: config.email
+            )
+        case .SingleKeygen:
+            try await fastVaultService.singleKeygen(
+                publicKeyECDSA: vault.pubKeyECDSA,
+                sessionID: sessionID,
+                hexEncryptionKey: encryptionKeyHex,
+                encryptionPassword: config.password,
+                email: config.email
+            )
         }
-        self.isLoading = false
     }
 
     func setupPeersFoundCancellable(
@@ -185,7 +278,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 $0.forEach { peer in
                     self.autoSelectPeer(peer)
                 }
-                self.startFastVaultKeygenIfNeeded(state: state)
+                self.startKeygenIfNeeded(state: state)
             }
     }
 
@@ -216,7 +309,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         return status == .WaitingForDevices && selections.count < 2
     }
 
-    func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
+    func startKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
@@ -227,6 +320,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         let isValid = selections.contains(where: { $0.contains("Server-") })
         return isValid
+    }
+
+    /// Decides whether peer-discovery has reached the auto-kickoff threshold.
+    /// Fixed-device flows (2/2 and 3/3) skip the manual Continue button once
+    /// every peer is connected; 4+ device flows require an explicit tap so the
+    /// initiating device can choose which peers to commit. Reshare never
+    /// auto-starts. Mirrors the Windows `AutoStartKeygen` component
+    /// (`core/ui/mpc/keygen/peers/AutoStartKeygen.tsx`). See vultisig-ios#4374.
+    func shouldAutoStartKeygen(totalDeviceCount: Int) -> Bool {
+        guard tssType != .Reshare else { return false }
+        guard totalDeviceCount <= 3 else { return false }
+        guard status == .WaitingForDevices else { return false }
+        return selections.count >= totalDeviceCount
     }
 
     func startDiscovery() {
@@ -344,7 +450,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
                     libType: vault.libType ?? .GG20,
-                    chains: chains ?? []
+                    chains: chains ?? [],
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
@@ -359,7 +466,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     oldResharePrefix: vault.resharePrefix ?? "",
                     vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
+                    libType: vault.libType ?? .GG20,
+                    isTssBatch: isTssBatch
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"

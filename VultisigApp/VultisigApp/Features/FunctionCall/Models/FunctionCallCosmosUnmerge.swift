@@ -45,14 +45,14 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     @Published var availableBalance: Decimal = 0.0  // Available balance for validation
     @Published var isLoading: Bool = false
 
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: FunctionCallForm
 
     private var vault: Vault
 
     private var cancellables = Set<AnyCancellable>()
 
     required init(
-        tx: SendTransaction, vault: Vault
+        tx: FunctionCallForm, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault

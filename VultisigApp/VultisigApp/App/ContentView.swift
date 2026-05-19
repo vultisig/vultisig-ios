@@ -47,6 +47,7 @@ struct ContentView: View {
             }
             .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }
             .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
+            .navigationDestination(for: SwapRoute.self) { router.swapRouter.build($0) }
             .navigationDestination(for: KeygenRoute.self) { router.keygenRouter.build($0) }
             .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
             .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
@@ -55,8 +56,8 @@ struct ContentView: View {
             .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
             .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
-            .navigationDestination(for: AgentRoute.self) { router.agentRouter.build($0) }
             .navigationDestination(for: TransactionHistoryRoute.self) { router.transactionHistoryRouter.build($0) }
+            .navigationDestination(for: QBTCClaimRoute.self) { router.qbtcClaimRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)

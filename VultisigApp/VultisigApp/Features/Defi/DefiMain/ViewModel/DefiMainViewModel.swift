@@ -7,101 +7,55 @@
 
 import Foundation
 
+enum DefiMainItem: Identifiable, Hashable {
+    case chain(Chain)
+    case circle
+
+    var id: String {
+        switch self {
+        case .chain(let chain): return chain.rawValue
+        case .circle: return "circle"
+        }
+    }
+}
+
 @MainActor
 final class DefiMainViewModel: ObservableObject {
-    @Published private var groups = [GroupedChain]()
+    @Published private var chains = [Chain]()
+    @Published private var showsCircle: Bool = false
     @Published var searchText: String = ""
 
-    private let groupedChainListBuilder = GroupedChainListBuilder()
+    private let logic = VaultDetailLogic()
 
     init() {}
 
-    var filteredGroups: [GroupedChain] {
-        guard !searchText.isEmpty else {
-            return groups
+    func filteredItems(in vault: Vault) -> [DefiMainItem] {
+        let prefix: [DefiMainItem] = showsCircle && matchesSearch(circleName) ? [.circle] : []
+        let filtered = chains.filter { chain in
+            let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
+            let tickerMatches = vault.nativeCoin(for: chain)?.ticker
+                .localizedCaseInsensitiveContains(searchText) ?? false
+            return searchText.isEmpty || nameMatches || tickerMatches
         }
-        return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
-        }
+        return prefix + filtered.map { .chain($0) }
     }
 
     func groupChains(vault: Vault) {
-        let groups = self.groupedChainListBuilder
-            .groupChains(
-                for: vault,
-                sortedBy: \.defiBalanceInFiatDecimal
-            ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
-
-        self.groups = groups
-
-        // Circle requires Ethereum chain available (not necessarily as a DeFi chain)
-        if vault.chains.contains(.ethereum) {
-            createCircleGroup(vault: vault, groups: groups)
+        let defiChains = vault.chainsWithCoins.filter { chain in
+            vault.defiChains.contains(chain) && CoinAction.defiChains.contains(chain)
         }
+
+        chains = logic.sortedChains(
+            chains: defiChains,
+            value: { vault.coins(for: $0).totalDefiBalanceInFiatDecimal }
+        )
+
+        showsCircle = vault.isCircleEnabled && vault.chains.contains(.ethereum)
     }
 
-    private func createCircleGroup(vault: Vault, groups: [GroupedChain]) {
-        // Check if Circle is enabled in the vault settings
-        guard vault.isCircleEnabled else { return }
+    private var circleName: String { "Circle" }
 
-        let chain: Chain = .ethereum
-        let address = vault.circleWalletAddress ?? "" // If there is no address you will be able to create one, after refresh it will be updated
-
-        let circleAsset = CoinMeta(
-            chain: chain,
-            ticker: "USDC",
-            logo: "usdc",
-            decimals: 6,
-            priceProviderId: "usd-coin",
-            contractAddress: CircleConstants.usdcMainnet,
-            isNativeToken: false
-        )
-
-        var circleCoin: Coin?
-        do {
-            var pubKeyECDSA = vault.pubKeyECDSA
-            var isDerived = false
-
-            if vault.libType == .KeyImport {
-                if let ethKey = vault.chainPublicKeys.first(where: { $0.chain == .ethereum })?.publicKeyHex {
-                    pubKeyECDSA = ethKey
-                    isDerived = true
-                }
-            }
-
-            // Use CoinFactory to create the coin with correct hexPublicKey and hexChainCode
-            circleCoin = try CoinFactory.create(
-                asset: circleAsset,
-                publicKeyECDSA: pubKeyECDSA,
-                publicKeyEdDSA: vault.pubKeyEdDSA,
-                hexChainCode: vault.hexChainCode,
-                isDerived: isDerived
-            )
-        } catch {
-            print("Error creating Circle Coin: \(error.localizedDescription)")
-            return
-        }
-
-        if let circleCoin = circleCoin, !address.isEmpty {
-            circleCoin.address = address
-        }
-
-        guard let circleCoin else {
-            print("Error creating Circle Coin")
-            return
-        }
-
-        let group = GroupedChain(
-            chain: chain,
-            address: address,
-            logo: "circle-logo",
-            count: 1,
-            coins: [circleCoin],
-            name: "Circle"
-        )
-
-        var allGroups = groups
-        allGroups.insert(group, at: 0)
-        self.groups = allGroups
+    private func matchesSearch(_ value: String) -> Bool {
+        searchText.isEmpty || value.localizedCaseInsensitiveContains(searchText)
     }
 }

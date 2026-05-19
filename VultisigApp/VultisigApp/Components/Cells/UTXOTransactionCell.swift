@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UTXOTransactionCell: View {
     let transaction: UTXOTransactionMempool
-    let tx: SendTransaction
+    let chain: Chain
     @ObservedObject var utxoTransactionsService: UTXOTransactionsService
 
     let selfText = NSLocalizedString("self", comment: "")
@@ -32,7 +32,7 @@ struct UTXOTransactionCell: View {
 
     var transactionIDCell: some View {
         let id = transaction.txid
-        let url = Endpoint.getExplorerURL(chain: tx.coin.chain, txid: id)
+        let url = ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: id)
         let image = transaction.isSent ? "arrow.up.circle" : "arrow.down.circle"
 
         return TransactionCell(
@@ -55,7 +55,7 @@ struct UTXOTransactionCell: View {
             address = id
         }
 
-        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
+        let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address) ?? ""
 
         return TransactionCell(
             title: "from",
@@ -76,7 +76,7 @@ struct UTXOTransactionCell: View {
             address = transaction.receivedFrom.first ?? ""
         }
 
-        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
+        let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address) ?? ""
 
         return TransactionCell(
             title: "to",
@@ -94,7 +94,7 @@ struct UTXOTransactionCell: View {
             }
 
             Separator()
-            getSummaryCell(title: "fee", value: String(transaction.fee) + " \(tx.coin.chain.feeUnit)")
+            getSummaryCell(title: "fee", value: String(transaction.fee) + " \(chain.feeUnit)")
         }
     }
 

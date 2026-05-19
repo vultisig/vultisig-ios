@@ -1,5 +1,5 @@
 //
-//  DefiTHORChainBalanceView.swift
+//  DefiChainBalanceView.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 17/10/2025.
@@ -9,18 +9,17 @@ import SwiftUI
 
 struct DefiChainBalanceView: View {
     @ObservedObject var vault: Vault
-    let groupedChain: GroupedChain
+    let chain: Chain
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
-    let service = DefiBalanceService()
-    var balance: String {
-        service.totalBalanceInFiatString(for: groupedChain.chain, vault: vault)
-    }
+    private let service = DefiBalanceService()
+
+    @State private var balance: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(groupedChain.name)
+            Text(chain.name)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
 
@@ -38,6 +37,18 @@ struct DefiChainBalanceView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(backgroundView)
+        .onAppear { updateBalance() }
+        .onChange(of: vault) { _, _ in
+            updateBalance()
+        }
+        .onChange(of: vault.defiPositions) { _, _ in
+            updateBalance()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
+            // SwiftData mutates the vault's nested position arrays in place; the parent vault's
+            // `objectWillChange` does not fire, so observe the explicit upsert notification.
+            updateBalance()
+        }
     }
 
     var backgroundView: some View {
@@ -50,7 +61,7 @@ struct DefiChainBalanceView: View {
     }
 
     var imageName: String {
-        switch groupedChain.chain {
+        switch chain {
         case .thorChain:
             "thorchain-banner"
         case .mayaChain:
@@ -76,16 +87,13 @@ struct DefiChainBalanceView: View {
             endPoint: UnitPoint(x: 0.5, y: 1)
         ).opacity(0.09)
     }
+
+    func updateBalance() {
+        balance = service.totalBalanceInFiatString(for: chain, vault: vault)
+    }
 }
 
 #Preview {
-    let groupedChain = GroupedChain(
-        chain: .thorChain,
-        address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq",
-        logo: "thorchain",
-        count: 3,
-        coins: [Coin.example]
-    )
-    DefiChainBalanceView(vault: .example, groupedChain: groupedChain)
+    DefiChainBalanceView(vault: .example, chain: .thorChain)
         .environmentObject(HomeViewModel())
 }

@@ -80,6 +80,7 @@ class KeygenViewModel: ObservableObject {
     var isInitiateDevice: Bool
     var keyImportInput: KeyImportInput?
     var singleKeygenType: SingleKeygenType?
+    var isTssBatch: Bool = false
 
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -120,7 +121,8 @@ class KeygenViewModel: ObservableObject {
                  oldResharePrefix: String,
                  initiateDevice: Bool,
                  keyImportInput: KeyImportInput? = nil,
-                 singleKeygenType: SingleKeygenType? = nil
+                 singleKeygenType: SingleKeygenType? = nil,
+                 isTssBatch: Bool = false
     ) async {
         self.vault = vault
         self.tssType = tssType
@@ -133,6 +135,7 @@ class KeygenViewModel: ObservableObject {
         self.isInitiateDevice = initiateDevice
         self.keyImportInput = keyImportInput
         self.singleKeygenType = singleKeygenType
+        self.isTssBatch = isTssBatch
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
@@ -294,6 +297,11 @@ class KeygenViewModel: ObservableObject {
             }
 
             try context.save()
+            // Broadcast completion so pending QBTC follow-ups (token-
+            // selection intercept, BTC chain-detail claim banner) can
+            // finish their "add QBTC + show claim" handoff without
+            // threading a closure through the keygen routes.
+            QuantumKeygenNotification.postCompleted(vaultPubKeyECDSA: self.vault.pubKeyECDSA)
             self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate MLDSA key, error: \(error.localizedDescription)")
@@ -303,68 +311,125 @@ class KeygenViewModel: ObservableObject {
     }
 
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
+        let useParallelPath = self.isTssBatch
+        self.logger.info("KeyImport flow starting: execution=\(useParallelPath ? "parallel" : "sequential")")
+
         var wallet: HDWallet?
 
         let steps = 2 + (keyImportInput?.chains.count ?? 0)
         let stepPercentage: Float = 100.0 / Float(steps)
 
+        self.status = .KeygenECDSA
         await addProgress(stepPercentage)
+
         if self.isInitiateDevice {
             guard let keyImportInput else {
                 throw HelperError.runtimeError("Key import keygen should have keyImportInput")
             }
-
             guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemonic, passphrase: "") else {
                 throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
             }
-
             wallet = mnemonicWallet
         }
 
-        try await startRootKeyImportKeygen(wallet: wallet)
-
-        guard let chains = keyImportInput?.chains else {
+        guard let chains = keyImportInput?.chains, !chains.isEmpty else {
             throw HelperError.runtimeError("KeyImportInput should have at least one chain")
         }
 
-        for chain in chains {
-            await addProgress(stepPercentage)
-            var chainKey: Data?
-            if isInitiateDevice {
-                chainKey = getChainKey(for: chain, wallet: wallet)
-            }
+        let ecdsaHex = wallet?.getMasterKey(curve: .secp256k1).data.hexString
+        var eddsaHex: String?
+        if let edDSAKey = wallet?.getMasterKey(curve: .ed25519) {
+            eddsaHex = Data.clampThenUniformScalar(from: edDSAKey.data)?.hexString
+        }
+        let rootDkls = makeDklsKeygen(localUI: ecdsaHex)
+        let rootSchnorr = makeSchnorrKeygen(localUI: eddsaHex)
 
-            let keyshare: DKLSKeyshare
-            if chain.isECDSA {
-                self.logger.info("Starting DKLS process for chain \(chain.name)")
-                keyshare = try await importDklsKey(
-                    ecdsaPrivateKeyHex: chainKey?.hexString,
-                    chain: chain
-                )
-                self.logger.info("Finished DKLS process for chain \(chain.name). Generated pub key: \(keyshare.PubKey)")
-            } else {
-                var chainSeed: Data?
-                if isInitiateDevice {
-                    guard let chainKey, let serializedChainSeed = Data.clampThenUniformScalar(from: chainKey) else {
-                        throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for chain \(chain.name)")
-                    }
-                    chainSeed = serializedChainSeed
+        // Batch key import uses the same relay exchange namespaces as batch keygen
+        // (p-ecdsa, p-eddsa, p-{chain}) because the server's /batch/import handler
+        // polls those channels. Root DKLS setup goes to the default namespace;
+        // root Schnorr setup has its own eddsa_key_import namespace to avoid collision.
+        let rootEcdsaRouting: KeygenRouting = useParallelPath
+            ? KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootECDSA)
+            : .default
+        let rootEddsaRouting: KeygenRouting = useParallelPath
+            ? KeygenRouting.from(
+                setupMessageId: KeygenMessageId.rootEdDSAKeyImport,
+                exchangeMessageId: KeygenMessageId.rootEdDSA
+              )
+            : .default
+
+        let chainJobs = try buildChainImportJobs(chains: chains, wallet: wallet, useParallelPath: useParallelPath)
+
+        // Phase 1 (parallel path only): upload every setup message to the relay
+        // before any protocol starts TSS exchange. The server's /batch/import
+        // endpoint downloads all setup messages serially with a 1-minute timeout
+        // each before launching any keygen goroutine; if per-chain setups arrive
+        // only after root keygen exchange starts, the server times out and both
+        // sides hang on mismatched relay channels.
+        if useParallelPath {
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await rootDkls.prepareKeyImportSetup(routing: rootEcdsaRouting)
                 }
-
-                self.logger.info("Starting Schnorr process for chain \(chain.name)")
-                keyshare = try await importSchnorrKey(
-                    eddsaPrivateKeyHex: chainSeed?.hexString,
-                    chain: chain
-                )
-                self.logger.info("Finished Schnorr process for chain \(chain.name). Generated pub key: \(keyshare.PubKey)")
+                group.addTask {
+                    try await rootSchnorr.prepareKeyImportSetup(routing: rootEddsaRouting)
+                }
+                for job in chainJobs {
+                    group.addTask {
+                        try await Self.prepareChainImportJob(job)
+                    }
+                }
+                try await group.waitForAll()
             }
-            self.vault.keyshares.append(KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare))
+        }
 
+        try await runRootKeyImportKeygen(
+            dklsKeygen: rootDkls,
+            schnorrKeygen: rootSchnorr,
+            useParallelPath: useParallelPath,
+            ecdsaRouting: rootEcdsaRouting,
+            eddsaRouting: rootEddsaRouting
+        )
+
+        var seenPubKeys: Set<String> = [self.vault.pubKeyECDSA, self.vault.pubKeyEdDSA]
+
+        let chainResults: [KeyImportChainResult]
+        if useParallelPath {
+            chainResults = try await withThrowingTaskGroup(of: (Int, KeyImportChainResult).self) { group in
+                for (index, job) in chainJobs.enumerated() {
+                    group.addTask {
+                        let result = try await Self.executeChainImportJob(job)
+                        return (index, result)
+                    }
+                }
+                var collected: [(Int, KeyImportChainResult)] = []
+                for try await pair in group {
+                    collected.append(pair)
+                    await addProgress(stepPercentage)
+                }
+                return collected.sorted { $0.0 < $1.0 }.map { $0.1 }
+            }
+        } else {
+            var collected: [KeyImportChainResult] = []
+            for job in chainJobs {
+                let result = try await Self.executeChainImportJob(job)
+                await addProgress(stepPercentage)
+                collected.append(result)
+            }
+            chainResults = collected
+        }
+
+        for result in chainResults {
+            if seenPubKeys.insert(result.keyshare.PubKey).inserted {
+                self.vault.keyshares.append(
+                    KeyShare(pubkey: result.keyshare.PubKey, keyshare: result.keyshare.Keyshare)
+                )
+            }
             self.vault.chainPublicKeys.append(
                 ChainPublicKey(
-                    chain: chain,
-                    publicKeyHex: keyshare.PubKey,
-                    isEddsa: !chain.isECDSA
+                    chain: result.chain,
+                    publicKeyHex: result.keyshare.PubKey,
+                    isEddsa: result.isEddsa
                 )
             )
         }
@@ -395,26 +460,132 @@ class KeygenViewModel: ObservableObject {
         self.status = .KeygenFinished
     }
 
-    func startRootKeyImportKeygen(wallet: HDWallet?) async throws {
+    private func runRootKeyImportKeygen(
+        dklsKeygen: DKLSKeygen,
+        schnorrKeygen: SchnorrKeygen,
+        useParallelPath: Bool,
+        ecdsaRouting: KeygenRouting,
+        eddsaRouting: KeygenRouting
+    ) async throws {
         self.logger.info("Starting Root Key import process")
 
-        self.logger.info("Starting DKLS process for root key")
-        let ecDSAKey = wallet?.getMasterKey(curve: .secp256k1)
-        let keyshareECDSA = try await importDklsKey(ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
-        self.logger.info("Finished DKLS process for root key. Generated pub key: \(keyshareECDSA.PubKey)")
-
-        self.logger.info("Starting Schnorr process for root key")
-        let edDSAKey = wallet?.getMasterKey(curve: .ed25519)
-        var edDSAKeySerialized: Data?
-        if let edDSAKey {
-            edDSAKeySerialized = Data.clampThenUniformScalar(from: edDSAKey.data)
+        if useParallelPath {
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
+                }
+                group.addTask {
+                    try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: eddsaRouting)
+                }
+                try await group.waitForAll()
+            }
+        } else {
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
+            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: eddsaRouting)
         }
-        let keyshareEdDSA = try await importSchnorrKey(eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
-        self.logger.info("Finished Schnorr process for root key. Generated pub key: \(keyshareEdDSA.PubKey)")
 
-        self.vault.pubKeyECDSA = keyshareECDSA.PubKey
-        self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
-        self.vault.hexChainCode = keyshareECDSA.chaincode
+        guard let rootEcdsa = dklsKeygen.getKeyshare() else {
+            throw HelperError.runtimeError("fail to get ECDSA keyshare after root import")
+        }
+        guard let rootEddsa = schnorrKeygen.getKeyshare() else {
+            throw HelperError.runtimeError("fail to get EdDSA keyshare after root import")
+        }
+
+        self.logger.info("Finished root key import. ECDSA pub: \(rootEcdsa.PubKey), EdDSA pub: \(rootEddsa.PubKey)")
+
+        self.vault.pubKeyECDSA = rootEcdsa.PubKey
+        self.vault.pubKeyEdDSA = rootEddsa.PubKey
+        self.vault.hexChainCode = rootEcdsa.chaincode
+        self.vault.keyshares.append(KeyShare(pubkey: rootEcdsa.PubKey, keyshare: rootEcdsa.Keyshare))
+        self.vault.keyshares.append(KeyShare(pubkey: rootEddsa.PubKey, keyshare: rootEddsa.Keyshare))
+    }
+
+    private func buildChainImportJobs(chains: [Chain], wallet: HDWallet?, useParallelPath: Bool) throws -> [KeyImportChainJob] {
+        var jobs: [KeyImportChainJob] = []
+        for chain in chains {
+            var chainKey: Data?
+            if isInitiateDevice {
+                chainKey = getChainKey(for: chain, wallet: wallet)
+            }
+
+            // Parallel path: setup goes to chain.name, exchange to p-{chain.name}
+            // (matching the server's /batch/import relay channels). Sequential path
+            // keeps the legacy shared exchange namespace — only setup is chain-scoped.
+            let routing: KeygenRouting = useParallelPath
+                ? KeygenRouting.from(setupMessageId: chain.name, exchangeMessageId: "p-\(chain.name)")
+                : KeygenRouting.from(setupMessageId: chain.name)
+
+            if chain.isECDSA {
+                let dkls = makeDklsKeygen(localUI: chainKey?.hexString)
+                jobs.append(KeyImportChainJob(chain: chain, isEddsa: false, routing: routing, dkls: dkls, schnorr: nil))
+            } else {
+                var chainSeedHex: String?
+                if isInitiateDevice {
+                    guard let chainKey, let serializedChainSeed = Data.clampThenUniformScalar(from: chainKey) else {
+                        throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for chain \(chain.name)")
+                    }
+                    chainSeedHex = serializedChainSeed.hexString
+                }
+                let schnorr = makeSchnorrKeygen(localUI: chainSeedHex)
+                jobs.append(KeyImportChainJob(chain: chain, isEddsa: true, routing: routing, dkls: nil, schnorr: schnorr))
+            }
+        }
+        return jobs
+    }
+
+    nonisolated private static func prepareChainImportJob(_ job: KeyImportChainJob) async throws {
+        if let dkls = job.dkls {
+            try await dkls.prepareKeyImportSetup(routing: job.routing)
+            return
+        }
+        if let schnorr = job.schnorr {
+            try await schnorr.prepareKeyImportSetup(routing: job.routing)
+            return
+        }
+        throw HelperError.runtimeError("invalid chain import job for \(job.chain.name)")
+    }
+
+    nonisolated private static func executeChainImportJob(_ job: KeyImportChainJob) async throws -> KeyImportChainResult {
+        if let dkls = job.dkls {
+            try await dkls.DKLSKeygenWithRetry(attempt: 0, routing: job.routing)
+            guard let keyshare = dkls.getKeyshare() else {
+                throw HelperError.runtimeError("fail to get ECDSA keyshare for chain \(job.chain.name)")
+            }
+            return KeyImportChainResult(chain: job.chain, keyshare: keyshare, isEddsa: false)
+        }
+        if let schnorr = job.schnorr {
+            try await schnorr.SchnorrKeygenWithRetry(attempt: 0, routing: job.routing)
+            guard let keyshare = schnorr.getKeyshare() else {
+                throw HelperError.runtimeError("fail to get EdDSA keyshare for chain \(job.chain.name)")
+            }
+            return KeyImportChainResult(chain: job.chain, keyshare: keyshare, isEddsa: true)
+        }
+        throw HelperError.runtimeError("invalid chain import job for \(job.chain.name)")
+    }
+
+    private func makeDklsKeygen(localUI: String?) -> DKLSKeygen {
+        DKLSKeygen(vault: self.vault,
+                   tssType: self.tssType,
+                   keygenCommittee: self.keygenCommittee,
+                   vaultOldCommittee: self.vaultOldCommittee,
+                   mediatorURL: self.mediatorURL,
+                   sessionID: self.sessionID,
+                   encryptionKeyHex: self.encryptionKeyHex,
+                   isInitiateDevice: self.isInitiateDevice,
+                   localUI: localUI)
+    }
+
+    private func makeSchnorrKeygen(localUI: String?) -> SchnorrKeygen {
+        SchnorrKeygen(vault: self.vault,
+                      tssType: self.tssType,
+                      keygenCommittee: self.keygenCommittee,
+                      vaultOldCommittee: self.vaultOldCommittee,
+                      mediatorURL: self.mediatorURL,
+                      sessionID: self.sessionID,
+                      encryptionKeyHex: self.encryptionKeyHex,
+                      isInitiatedDevice: self.isInitiateDevice,
+                      setupMessage: [UInt8](),
+                      localUI: localUI)
     }
 
     /// Gets the chain key using the appropriate derivation based on KeyImportInput settings.
@@ -431,52 +602,18 @@ class KeygenViewModel: ObservableObject {
         return wallet.getKeyForCoin(coin: chain.coinType).data
     }
 
-    // Import existing ECDSA private key to DKLS vault
-    func importDklsKey(ecdsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
-        do {
-            let dklsKeygen = DKLSKeygen(vault: self.vault,
-                                        tssType: self.tssType,
-                                        keygenCommittee: self.keygenCommittee,
-                                        vaultOldCommittee: self.vaultOldCommittee,
-                                        mediatorURL: self.mediatorURL,
-                                        sessionID: self.sessionID,
-                                        encryptionKeyHex: self.encryptionKeyHex,
-                                        isInitiateDevice: self.isInitiateDevice,
-                                        localUI: ecdsaPrivateKeyHex)
-            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
-            guard let keyShare = dklsKeygen.getKeyshare() else {
-                throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
-            }
-
-            return keyShare
-        } catch {
-            self.logger.error("Failed to import Ecdsa private key, error: \(error.localizedDescription)")
-            throw error
-        }
+    private struct KeyImportChainJob: @unchecked Sendable {
+        let chain: Chain
+        let isEddsa: Bool
+        let routing: KeygenRouting
+        let dkls: DKLSKeygen?
+        let schnorr: SchnorrKeygen?
     }
-    // Import existing EdDSA private key to DKLS vault
-    func importSchnorrKey(eddsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
-        do {
-            let schnorrKeygen = SchnorrKeygen(vault: self.vault,
-                                              tssType: self.tssType,
-                                              keygenCommittee: self.keygenCommittee,
-                                              vaultOldCommittee: self.vaultOldCommittee,
-                                              mediatorURL: self.mediatorURL,
-                                              sessionID: self.sessionID,
-                                              encryptionKeyHex: self.encryptionKeyHex,
-                                              isInitiatedDevice: self.isInitiateDevice,
-                                              setupMessage: [UInt8](),
-                                              localUI: eddsaPrivateKeyHex)
-            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
-            guard let keyShare = schnorrKeygen.getKeyshare() else {
-                throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
-            }
 
-            return keyShare
-        } catch {
-            self.logger.error("Failed to import EdDSA private key, error: \(error.localizedDescription)")
-            throw error
-        }
+    private struct KeyImportChainResult: @unchecked Sendable {
+        let chain: Chain
+        let keyshare: DKLSKeyshare
+        let isEddsa: Bool
     }
 
     // Create DKLS vault via keygen or reshare
@@ -484,6 +621,9 @@ class KeygenViewModel: ObservableObject {
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         await updateProgress(50)
         do {
+            let useParallelPath = self.isTssBatch && (self.tssType == .Keygen || self.tssType == .Migrate || self.tssType == .Reshare)
+            self.logger.info("\(self.tssType.rawValue) flow starting: execution=\(useParallelPath ? "parallel" : "sequential")")
+
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
                                         keygenCommittee: self.keygenCommittee,
@@ -493,6 +633,66 @@ class KeygenViewModel: ObservableObject {
                                         encryptionKeyHex: self.encryptionKeyHex,
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: localUIEcdsa)
+
+            if useParallelPath {
+                // Parallel: ECDSA and EdDSA run concurrently with isolated relay namespaces.
+                // Schnorr gets empty setupMessage — for keygen it downloads the shared setup
+                // from relay on demand; for reshare each protocol creates its own setup message.
+                let schnorrKeygen = SchnorrKeygen(vault: self.vault,
+                                                  tssType: self.tssType,
+                                                  keygenCommittee: self.keygenCommittee,
+                                                  vaultOldCommittee: self.vaultOldCommittee,
+                                                  mediatorURL: self.mediatorURL,
+                                                  sessionID: self.sessionID,
+                                                  encryptionKeyHex: self.encryptionKeyHex,
+                                                  isInitiatedDevice: self.isInitiateDevice,
+                                                  setupMessage: [UInt8](),
+                                                  localUI: localUIEddsa)
+
+                let ecdsaRouting = KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootECDSA)
+                let eddsaRouting = KeygenRouting.from(exchangeMessageId: KeygenMessageId.rootEdDSA)
+
+                if self.tssType == .Reshare {
+                    // Reshare: each protocol creates its own setup message, so setup also needs routing.
+                    let ecdsaReshareRouting = KeygenRouting.from(
+                        setupMessageId: KeygenMessageId.rootECDSA,
+                        exchangeMessageId: KeygenMessageId.rootECDSA
+                    )
+                    let eddsaReshareRouting = KeygenRouting.from(
+                        setupMessageId: KeygenMessageId.rootEdDSA,
+                        exchangeMessageId: KeygenMessageId.rootEdDSA
+                    )
+                    self.status = .ReshareECDSA
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            try await dklsKeygen.DKLSReshareWithRetry(attempt: 0, routing: ecdsaReshareRouting)
+                        }
+                        group.addTask {
+                            try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0, routing: eddsaReshareRouting)
+                        }
+                        try await group.waitForAll()
+                    }
+                } else {
+                    // Keygen / Migrate: shared setup message, only exchange needs routing.
+                    self.status = .KeygenECDSA
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, routing: ecdsaRouting)
+                        }
+                        group.addTask {
+                            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, routing: eddsaRouting)
+                        }
+                        try await group.waitForAll()
+                    }
+                }
+
+                await updateProgress(100)
+
+                try await finalizeDKLSKeygen(dklsKeygen: dklsKeygen, schnorrKeygen: schnorrKeygen, context: context)
+                return
+            }
+
+            // Sequential path (flag off, or key import which has its own parallel handling).
             switch self.tssType {
             case .Keygen, .Migrate:
                 self.status = .KeygenECDSA
@@ -535,61 +735,63 @@ class KeygenViewModel: ObservableObject {
 
             await updateProgress(100)
 
-            self.vault.signers = self.keygenCommittee
-            let keyshareECDSA = dklsKeygen.getKeyshare()
-            let keyshareEdDSA = schnorrKeygen.getKeyshare()
-
-            guard let keyshareECDSA else {
-                throw HelperError.runtimeError("fail to get ECDSA keyshare")
-            }
-            guard let keyshareEdDSA else {
-                throw HelperError.runtimeError("fail to get EdDSA keyshare")
-            }
-
-            // ensure all party created vault successfully
-            let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
-                                            sessionID: self.sessionID,
-                                            localPartyID: self.vault.localPartyID,
-                                            keygenCommittee: self.keygenCommittee)
-            await keygenVerify.markLocalPartyComplete()
-            let allFinished = await keygenVerify.checkCompletedParties()
-            if !allFinished {
-                throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
-            }
-
-            self.vault.pubKeyECDSA = keyshareECDSA.PubKey
-            self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
-            self.vault.hexChainCode = keyshareECDSA.chaincode
-
-            if self.tssType == .Migrate {
-                // make sure we set the vault's lib type to DKLS , otherwise it won't work
-                self.vault.libType = .DKLS
-            }
-            self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                    KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
-
-            let needsInsert = self.tssType == .Keygen ||
-                !self.vaultOldCommittee.contains(self.vault.localPartyID)
-
-            if needsInsert {
-                let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
-                if !shouldProceed {
-                    self.didCancelDuplicateVault = true
-                    return
-                }
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
-                context.insert(self.vault)
-            }
-
-            try context.save()
-            self.status = .KeygenFinished
+            try await finalizeDKLSKeygen(dklsKeygen: dklsKeygen, schnorrKeygen: schnorrKeygen, context: context)
         } catch {
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed
             self.keygenError = error.localizedDescription
             return
         }
+    }
+
+    private func finalizeDKLSKeygen(dklsKeygen: DKLSKeygen, schnorrKeygen: SchnorrKeygen, context: ModelContext) async throws {
+        self.vault.signers = self.keygenCommittee
+        let keyshareECDSA = dklsKeygen.getKeyshare()
+        let keyshareEdDSA = schnorrKeygen.getKeyshare()
+
+        guard let keyshareECDSA else {
+            throw HelperError.runtimeError("fail to get ECDSA keyshare")
+        }
+        guard let keyshareEdDSA else {
+            throw HelperError.runtimeError("fail to get EdDSA keyshare")
+        }
+
+        let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
+                                        sessionID: self.sessionID,
+                                        localPartyID: self.vault.localPartyID,
+                                        keygenCommittee: self.keygenCommittee)
+        await keygenVerify.markLocalPartyComplete()
+        let allFinished = await keygenVerify.checkCompletedParties()
+        if !allFinished {
+            throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
+        }
+
+        self.vault.pubKeyECDSA = keyshareECDSA.PubKey
+        self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
+        self.vault.hexChainCode = keyshareECDSA.chaincode
+
+        if self.tssType == .Migrate {
+            self.vault.libType = .DKLS
+        }
+        self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+                                KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+
+        let needsInsert = self.tssType == .Keygen ||
+            !self.vaultOldCommittee.contains(self.vault.localPartyID)
+
+        if needsInsert {
+            let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
+            if !shouldProceed {
+                self.didCancelDuplicateVault = true
+                return
+            }
+            VaultDefaultCoinService(context: context)
+                .setDefaultCoinsOnce(vault: self.vault)
+            context.insert(self.vault)
+        }
+
+        try context.save()
+        self.status = .KeygenFinished
     }
 
     func startKeygenGG20(context: ModelContext) async {

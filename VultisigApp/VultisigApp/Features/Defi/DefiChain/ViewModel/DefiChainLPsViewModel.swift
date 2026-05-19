@@ -6,29 +6,42 @@
 //
 
 import Foundation
-import SwiftData
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-lps-view-model")
 
 @MainActor
 final class DefiChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
-    @Published private(set) var lpPositions: [LPPosition] = []
-    @Published private(set) var initialLoadingDone: Bool = false
+    @Published private(set) var initialLoadingDone: Bool
 
-    var hasLPPositions: Bool {
-        !vaultLPPositions.isEmpty
+    private let chain: Chain
+    private let interactor: LPsInteractor?
+    private let storage: DefiPositionsStorageService
+
+    /// See `DefiChainStakeViewModel.stakePositions` for why this is computed and not cached.
+    var lpPositions: [LPPosition] {
+        vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
     }
+
+    var hasLPPositions: Bool { !lpPositions.isEmpty }
 
     var vaultLPPositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.lps ?? []
     }
 
-    private let interactor: LPsInteractor?
-    private let chain: Chain
-
-    init(vault: Vault, chain: Chain) {
+    init(
+        vault: Vault,
+        chain: Chain,
+        interactor: LPsInteractor? = nil,
+        storage: DefiPositionsStorageService = DefiPositionsStorageService()
+    ) {
         self.vault = vault
         self.chain = chain
-        self.interactor = DefiInteractorResolver.lpsInteractor(for: chain)
+        self.interactor = interactor ?? DefiInteractorResolver.lpsInteractor(for: chain)
+        self.storage = storage
+        let enabledLPs = vault.defiPositions.first { $0.chain == chain }?.lps ?? []
+        self.initialLoadingDone = vault.lpPositions.contains { enabledLPs.contains($0.coin2) }
     }
 
     func update(vault: Vault) {
@@ -36,27 +49,16 @@ final class DefiChainLPsViewModel: ObservableObject {
     }
 
     func refresh() async {
-        guard hasLPPositions else {
-            lpPositions = []
+        guard let interactor else {
             initialLoadingDone = true
             return
         }
 
-        lpPositions = vault.lpPositions.filter {
-            vaultLPPositions.contains($0.coin2)
-        }
-        if !lpPositions.isEmpty {
-            initialLoadingDone = true
-        }
-
-        guard let interactor = interactor else {
-            initialLoadingDone = true
-            return
-        }
-
-        let positions = await interactor.fetchLPPositions(vault: vault)
-        if !positions.isEmpty {
-            lpPositions = positions
+        let dtos = await interactor.fetchLPPositions(vault: vault)
+        do {
+            try storage.upsert(lp: dtos, for: vault)
+        } catch {
+            logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
         initialLoadingDone = true
     }

@@ -14,11 +14,47 @@ struct FunctionCallInfo: Codable {
     let encodedArguments: String // JSON representation of arguments
 }
 
+enum FourByteAPI: TargetType {
+    case signatures(hex: String)
+
+    var baseURL: URL {
+        URL(string: "https://www.4byte.directory")!
+    }
+
+    var path: String {
+        "/api/v1/signatures/"
+    }
+
+    var method: HTTPMethod { .get }
+
+    var task: HTTPTask {
+        switch self {
+        case .signatures(let hex):
+            return .requestParameters([
+                "format": "json",
+                "hex_signature": hex,
+                "ordering": "created_at"
+            ], .urlEncoding)
+        }
+    }
+}
+
+private struct FourByteResponse: Decodable {
+    struct Result: Decodable {
+        let text_signature: String
+    }
+    let results: [Result]
+}
+
 struct FourByteRepository {
 
     static let shared = FourByteRepository()
 
-    private init() {}
+    private let httpClient: HTTPClientProtocol
+
+    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func decode(memo: String) async throws -> FunctionCallInfo? {
         guard memo.count >= 10, memo.hasPrefix("0x") else { return nil }
@@ -77,22 +113,12 @@ struct FourByteRepository {
     }
 
     private func fetchSignature(hex: String) async -> String? {
-        let url = Endpoint.fetchFourByteSignature(hexSignature: hex)
-
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-
-            struct FourByteResponse: Decodable {
-                struct Result: Decodable {
-                    let text_signature: String
-                }
-                let results: [Result]
-            }
-
-            let response = try JSONDecoder().decode(FourByteResponse.self, from: data)
-            // Return the first matching signature
-            return response.results.first?.text_signature
-
+            let response = try await httpClient.request(
+                FourByteAPI.signatures(hex: hex),
+                responseType: FourByteResponse.self
+            )
+            return response.data.results.first?.text_signature
         } catch {
             return nil
         }

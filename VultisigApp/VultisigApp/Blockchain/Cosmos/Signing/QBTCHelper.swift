@@ -47,6 +47,11 @@ struct QBTCHelper {
     }
 
     // MARK: - Signed Transaction
+    //
+    // The QBTC claim flow does NOT go through this helper any more — the
+    // proof service signs and broadcasts `MsgClaimWithProof` directly
+    // (qbtc#158). This path handles regular sends, IBC transfers, votes,
+    // and staking only.
 
     func getSignedTransaction(
         keysignPayload: KeysignPayload,

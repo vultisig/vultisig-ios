@@ -24,6 +24,6 @@ enum VaultRoute: Hashable {
     case advancedSettings(vault: Vault)
     case customMessage(vault: Vault)
     case onChainSecurity
-    case chainDetail(group: GroupedChain, vault: Vault)
-    case defiChain(group: GroupedChain, vault: Vault)
+    case chainDetail(chain: Chain, vault: Vault)
+    case defiChain(chain: Chain, vault: Vault)
 }

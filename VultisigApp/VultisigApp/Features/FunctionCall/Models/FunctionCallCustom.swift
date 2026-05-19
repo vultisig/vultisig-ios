@@ -26,7 +26,7 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     @Published var amountValid: Bool = false
     @Published var customValid: Bool = false
 
-    @ObservedObject var tx: SendTransaction
+    @ObservedObject var tx: FunctionCallForm
     private var vault: Vault
 
     private var cancellables = Set<AnyCancellable>()
@@ -36,7 +36,7 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
         set { _ = newValue }
     }
 
-    required init(tx: SendTransaction, vault: Vault) {
+    required init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }

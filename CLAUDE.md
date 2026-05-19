@@ -8,7 +8,7 @@ HIGH — Wallet app with TSS key management. Crypto/JNI changes require maintain
 
 - `VultisigApp/Blockchain/Tss/` — TSS keygen/keysign bindings. Do not modify without explicit review.
 - `VultisigApp/Model/` — SwiftData @Model classes (core entities only: Vault, Coin, Chain, KeyShare, etc.). Schema changes affect migrations.
-- `VultisigApp.xcodeproj/project.pbxproj` — Use `/add-xcode-files` skill, never edit directly.
+- `VultisigApp/project.yml` — XcodeGen spec. The `.xcodeproj` is generated from this file; never edit `project.pbxproj` directly. Run `make generate` (from the repo root) after changing sources or dependencies. See the `/make` skill for all available commands.
 
 ## Project Overview
 
@@ -74,7 +74,7 @@ Domain knowledge loads on-demand via skills:
 | `ui-testing` | XCUITest architecture, AccessibilityID enum, page objects, test helpers, test execution |
 | `/lint` | SwiftLint commands, config summary, common warnings, fix guidance |
 | `/build-check` | SwiftLint + xcodebuild full quality check |
-| `/add-xcode-files` | Add new .swift files to project.pbxproj |
+| `/make` | Makefile targets: bootstrap, generate, test, ui_test |
 | `/batch` | Overnight task runner — PRDs, parallel worktree agents, PRs with CodeRabbit integration |
 | `/batch-review` | Morning dashboard — PR statuses, CodeRabbit feedback, next actions |
 | `/batch-retry` | Retry failed batch tasks — cleanup, re-execute with failure context |

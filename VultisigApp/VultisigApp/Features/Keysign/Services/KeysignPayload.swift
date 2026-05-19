@@ -22,8 +22,67 @@ struct KeysignPayload: Codable, Hashable {
     let tronTransferContractPayload: TronTransferContractPayload?
     let tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?
     let tronTransferAssetContractPayload: TronTransferAssetContractPayload?
+    /// Set on the initiating device when constructing a QBTC claim. Local-only:
+    /// not round-tripped through the proto `KeysignPayload`. See
+    /// `QBTCClaimPayload` for rationale.
+    let qbtcClaimPayload: QBTCClaimPayload?
+    /// Marker round-tripped through the proto: signals to the peer device
+    /// that the BTC ECDSA signature it's about to produce is for a QBTC
+    /// claim. The peer derives the claimer's QBTC address from its own
+    /// vault (same SecureVault → same QBTC coin → same derived address)
+    /// and computes the message hash locally, refusing to blind-sign
+    /// whatever the initiator asks for.
+    let isQbtcClaim: Bool
     let skipBroadcast: Bool
     let signData: SignData?
+    let dappMetadata: DAppMetadata?
+
+    /// Memberwise init with `dappMetadata` defaulting to `nil` so existing
+    /// construction sites don't need to opt into the new field. The proto
+    /// mapping is the only producer of non-nil dApp metadata today.
+    init(
+        coin: Coin,
+        toAddress: String,
+        toAmount: BigInt,
+        chainSpecific: BlockChainSpecific,
+        utxos: [UtxoInfo],
+        memo: String?,
+        swapPayload: SwapPayload?,
+        approvePayload: ERC20ApprovePayload?,
+        vaultPubKeyECDSA: String,
+        vaultLocalPartyID: String,
+        libType: String,
+        wasmExecuteContractPayload: WasmExecuteContractPayload?,
+        tronTransferContractPayload: TronTransferContractPayload?,
+        tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?,
+        tronTransferAssetContractPayload: TronTransferAssetContractPayload?,
+        qbtcClaimPayload: QBTCClaimPayload?,
+        isQbtcClaim: Bool,
+        skipBroadcast: Bool,
+        signData: SignData?,
+        dappMetadata: DAppMetadata? = nil
+    ) {
+        self.coin = coin
+        self.toAddress = toAddress
+        self.toAmount = toAmount
+        self.chainSpecific = chainSpecific
+        self.utxos = utxos
+        self.memo = memo
+        self.swapPayload = swapPayload
+        self.approvePayload = approvePayload
+        self.vaultPubKeyECDSA = vaultPubKeyECDSA
+        self.vaultLocalPartyID = vaultLocalPartyID
+        self.libType = libType
+        self.wasmExecuteContractPayload = wasmExecuteContractPayload
+        self.tronTransferContractPayload = tronTransferContractPayload
+        self.tronTriggerSmartContractPayload = tronTriggerSmartContractPayload
+        self.tronTransferAssetContractPayload = tronTransferAssetContractPayload
+        self.qbtcClaimPayload = qbtcClaimPayload
+        self.isQbtcClaim = isQbtcClaim
+        self.skipBroadcast = skipBroadcast
+        self.signData = signData
+        self.dappMetadata = dappMetadata
+    }
 
     var signAmino: SignAmino? {
         guard case let .signAmino(amino) = signData else {
@@ -44,6 +103,20 @@ struct KeysignPayload: Codable, Hashable {
             return nil
         }
         return solana
+    }
+
+    var signBitcoin: SignBitcoin? {
+        guard case let .signBitcoin(bitcoin) = signData else {
+            return nil
+        }
+        return bitcoin
+    }
+
+    var signTon: SignTon? {
+        guard case let .signTon(ton) = signData else {
+            return nil
+        }
+        return ton
     }
 
     var fromAmountString: String {
@@ -81,6 +154,37 @@ struct KeysignPayload: Codable, Hashable {
         return coin.fiat(decimal: toAmountDecimal).description
     }
 
+    /// Returns the dApp-supplied fee amount (in base units) for Cosmos-based chains,
+    /// extracted from `signAmino.fee.amount`. Returns `nil` when no dApp signData is
+    /// present or the chain isn't Cosmos-rooted, letting callers fall back to the
+    /// estimated `blockChainSpecific` fee.
+    ///
+    /// Fixes: Rujira CosmWasm calls declare `fee.amount = 0` but the estimate shows
+    /// a non-zero fallback (e.g. 0.02 RUNE). Parity with Windows PR #3843.
+    func dappSuppliedCosmosFee() -> UInt64? {
+        guard coin.chainType == .Cosmos || coin.chainType == .THORChain else {
+            return nil
+        }
+
+        // signAmino path: fee is directly accessible.
+        // Filter by the chain's native fee denom to avoid mixing denominations
+        // (e.g. native token + IBC token fees summed together).
+        if let amino = signAmino {
+            let nativeDenom = coin.chain.feeUnit.lowercased()
+            let denomMatched = amino.fee.amount
+                .filter { $0.denom.lowercased() == nativeDenom }
+                .compactMap { UInt64($0.amount) }
+            if !denomMatched.isEmpty {
+                return denomMatched.reduce(0, +)
+            }
+            return nil
+        }
+
+        // signDirect would require protobuf decoding of authInfoBytes — skip for now.
+        // Rujira CosmWasm uses signAmino as the primary signing path.
+        return nil
+    }
+
     static let example = KeysignPayload(
         coin: Coin.example,
         toAddress: "toAddress",
@@ -97,7 +201,10 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferContractPayload: nil,
         tronTriggerSmartContractPayload: nil,
         tronTransferAssetContractPayload: nil,
+        qbtcClaimPayload: nil,
+        isQbtcClaim: false,
         skipBroadcast: false,
-        signData: nil
+        signData: nil,
+        dappMetadata: nil
     )
 }

@@ -7,11 +7,22 @@
 
 import Foundation
 
+enum CoinActionsAPI: TargetType {
+    case getDefault
+
+    var baseURL: URL { URL(string: "https://api.vultisig.com")! }
+    var path: String { "/actions/default.json" }
+    var method: HTTPMethod { .get }
+    var task: HTTPTask { .requestPlain }
+}
+
 final class CoinActionResolver {
 
     private var config: Config?
+    private let httpClient: HTTPClientProtocol
 
-    init() {
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
         Task {
             _ = try? await fetchConfig()
         }
@@ -43,11 +54,8 @@ private extension CoinActionResolver {
     }
 
     private func fetchConfig() async throws -> Config {
-        let url = URL(string: "https://api.vultisig.com/actions/default.json")!
-
-        let (jsonData, _) = try await URLSession.shared.data(from: url)
-        let config = try JSONDecoder().decode(Config.self, from: jsonData)
-        self.config = config
-        return config
+        let response = try await httpClient.request(CoinActionsAPI.getDefault, responseType: Config.self)
+        self.config = response.data
+        return response.data
     }
 }

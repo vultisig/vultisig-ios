@@ -61,6 +61,8 @@ struct KeysignPayloadFactory {
                 tronTransferContractPayload: nil,
                 tronTriggerSmartContractPayload: nil,
                 tronTransferAssetContractPayload: nil,
+                qbtcClaimPayload: nil,
+                isQbtcClaim: false,
                 skipBroadcast: false,
                 signData: nil
             )
@@ -93,6 +95,8 @@ struct KeysignPayloadFactory {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )
@@ -152,6 +156,8 @@ struct KeysignPayloadFactory {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )
@@ -170,48 +176,35 @@ struct KeysignPayloadFactory {
     }
 
     private func selectCardanoUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
-        // Fetch all available UTXOs for Cardano using Koios API
-        let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: keysignPayload.coin)
+        // Mirror SDK behaviour: ship every available UTXO at the address as
+        // an input. WalletCore's Cardano signer picks what it needs at
+        // build time. We deliberately don't run `AnySigner.plan(...)` here
+        // because its UTXO selection trips `errorLowBalance` on CNT sends —
+        // see `Cardano.swift:getCardanoPreSignInputData` for the rationale.
+        //
+        // The initiator (this code) is the only side that hits Koios; per-UTxO
+        // token data crosses the wire via `UtxoInfo.cardanoTokens`. Cosigners
+        // read those bytes verbatim — no extra Koios call, no fetch-ordering
+        // drift, identical input bytes on both peers by construction.
+        let extendedUTXOs = try await CardanoService.shared.getExtendedUTXOs(coin: keysignPayload.coin)
 
-        guard !cardanoUTXOs.isEmpty else {
+        guard !extendedUTXOs.isEmpty else {
             throw Errors.notEnoughUTXOError
         }
 
-        // Create temporary payload with all available UTXOs for WalletCore planning
-        let tmpKeysignPayload = KeysignPayload(
-            coin: keysignPayload.coin,
-            toAddress: keysignPayload.toAddress,
-            toAmount: keysignPayload.toAmount,
-            chainSpecific: keysignPayload.chainSpecific,
-            utxos: cardanoUTXOs,
-            memo: keysignPayload.memo,
-            swapPayload: keysignPayload.swapPayload,
-            approvePayload: keysignPayload.approvePayload,
-            vaultPubKeyECDSA: keysignPayload.vaultPubKeyECDSA,
-            vaultLocalPartyID: keysignPayload.vaultLocalPartyID,
-            libType: keysignPayload.libType,
-            wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
-            tronTransferContractPayload: nil,
-            tronTriggerSmartContractPayload: nil,
-            tronTransferAssetContractPayload: nil,
-            skipBroadcast: keysignPayload.skipBroadcast,
-            signData: nil
-        )
-
-        // Use WalletCore's Cardano transaction planning to select optimal UTXOs
-        let cardanoHelper = CardanoHelper()
-
-        let plan = try cardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
-        if plan.utxos.isEmpty {
-            throw Errors.notEnoughUTXOError
-        }
-
-        // Convert WalletCore's selected UTXOs back to UtxoInfo format
-        return plan.utxos.map { utxo in
-            UtxoInfo(
-                hash: utxo.outPoint.txHash.toHexString(),
+        return extendedUTXOs.map { utxo in
+            // Sort tokens canonically so the proto serialises identically
+            // regardless of Koios's per-response ordering — keeps the keysign
+            // session id stable across retries.
+            let sortedAssets = utxo.assets.sorted { lhs, rhs in
+                if lhs.policyId != rhs.policyId { return lhs.policyId < rhs.policyId }
+                return lhs.assetNameHex < rhs.assetNameHex
+            }
+            return UtxoInfo(
+                hash: utxo.hash,
                 amount: Int64(utxo.amount),
-                index: UInt32(utxo.outPoint.outputIndex)
+                index: utxo.index,
+                cardanoTokens: sortedAssets
             )
         }
     }

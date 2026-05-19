@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct ReferralTransactionOverviewView: View {
     let hash: String
-    let sendTx: SendTransaction
+    let sendTx: FunctionCallForm
     let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
 
@@ -22,7 +22,7 @@ struct ReferralTransactionOverviewView: View {
                     amountCrypto: "\(sendTx.amount) \(sendTx.coin.ticker)",
                     amountFiat: sendTx.amountInFiat,
                     hash: hash,
-                    explorerLink: Endpoint.getExplorerURL(chain: sendTx.coin.chain, txid: hash),
+                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: sendTx.coin.chain, txid: hash),
                     memo: sendTx.memo,
                     isSend: false,
                     fromAddress: sendTx.fromAddress,
@@ -50,7 +50,7 @@ struct ReferralTransactionOverviewView: View {
 #Preview {
     ReferralTransactionOverviewView(
         hash: "",
-        sendTx: SendTransaction(),
+        sendTx: FunctionCallForm(),
         isEdit: false,
         referralViewModel: ReferralViewModel()
     )

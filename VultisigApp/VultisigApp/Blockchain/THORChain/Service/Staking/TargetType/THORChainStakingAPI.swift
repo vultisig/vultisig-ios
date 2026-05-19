@@ -22,9 +22,9 @@ enum THORChainStakingAPI: TargetType {
         case .getRujiStaking:
             return URL(string: "https://api.vultisig.com/ruji/api/graphql")!
         case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance, .getTcyStakers:
-            return URL(string: "https://thornode.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
         case .getTcyUserDistributions:
-            return URL(string: "https://midgard.thorchain.network")!
+            return URL(string: "https://gateway.liquify.com/chain/thorchain_midgard")!
         }
     }
 
@@ -111,6 +111,7 @@ enum THORChainStakingAPI: TargetType {
                   summary {
                     apr {
                       value
+                      status
                     }
                   }
                 }

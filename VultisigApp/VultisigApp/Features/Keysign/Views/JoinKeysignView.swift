@@ -29,6 +29,12 @@ struct JoinKeysignView: View {
             }
     }
 
+    var isInAnimationState: Bool {
+        viewModel.status == .WaitingForKeysignToStart
+            || viewModel.status == .KeysignStarted
+            || viewModel.status == .QBTCClaim
+    }
+
     var states: some View {
         ZStack {
             switch viewModel.status {
@@ -52,11 +58,16 @@ struct JoinKeysignView: View {
                 NoCameraPermissionView()
             case .VaultTypeDoesntMatch:
                 KeysignWrongVaultTypeErrorView()
+            case .QBTCClaim:
+                if let driver = viewModel.qbtcClaimDriver {
+                    QBTCClaimJoinView(driver: driver)
+                } else {
+                    keysignFailedText
+                }
             }
 
         }
-        .padding()
-        .cornerRadius(10)
+        .if(!isInAnimationState) { $0.padding().cornerRadius(10) }
     }
 
     var keysignStartedView: some View {
@@ -95,7 +106,15 @@ struct JoinKeysignView: View {
             customMessagePayload: viewModel.customMessagePayload,
             transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            isInitiateDevice: false
+            isInitiateDevice: false,
+            decodedFunctionName: viewModel.decodedFunctionName,
+            decodedTokenAmount: viewModel.decodedTokenAmount,
+            decodedTokenTicker: viewModel.decodedTokenTicker,
+            decodedTokenLogo: viewModel.decodedTokenLogo,
+            decodedTokenDisplay: viewModel.decodedTokenDisplay,
+            decodedTokenIsUnlimited: viewModel.decodedTokenIsUnlimited,
+            decodedFunctionSignature: viewModel.decodedFunctionSignature,
+            decodedFunctionArguments: viewModel.decodedFunctionArguments
         )
     }
 
@@ -177,20 +196,31 @@ extension JoinKeysignView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
+        .if(!isInAnimationState) {
+            $0
+                .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                        NavigationHelpButton()
+                    }
+                }
+        }
+        .if(isInAnimationState) {
+            $0.toolbar(.hidden, for: .navigationBar)
         }
     }
 
+    @ViewBuilder
     var main: some View {
-        VStack {
-            Spacer()
+        if isInAnimationState {
             states
-            Spacer()
+        } else {
+            VStack {
+                Spacer()
+                states
+                Spacer()
+            }
         }
     }
 }
@@ -207,12 +237,17 @@ extension JoinKeysignView {
         }
     }
 
+    @ViewBuilder
     var main: some View {
-        VStack {
-            headerMac
-            Spacer()
+        if isInAnimationState {
             states
-            Spacer()
+        } else {
+            VStack {
+                headerMac
+                Spacer()
+                states
+                Spacer()
+            }
         }
     }
 

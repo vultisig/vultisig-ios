@@ -10,6 +10,7 @@ import SwiftUI
 final class VultisigRouter: ObservableObject {
     @Published var navigationRouter: NavigationRouter
     let sendRouter: SendRouter
+    let swapRouter: SwapRouter
     let keygenRouter: KeygenRouter
     let vaultRouter: VaultRouter
     let onboardingRouter: OnboardingRouter
@@ -19,12 +20,13 @@ final class VultisigRouter: ObservableObject {
     let homeRouter: HomeRouter
     let circleRouter: CircleRouter
     let tronRouter: TronRouter
-    let agentRouter: AgentRouter
     let transactionHistoryRouter: TransactionHistoryRouter
+    let qbtcClaimRouter: QBTCClaimRouter
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
         self.sendRouter = SendRouter()
+        self.swapRouter = SwapRouter()
         self.keygenRouter = KeygenRouter()
         self.vaultRouter = VaultRouter()
         self.onboardingRouter = OnboardingRouter()
@@ -34,7 +36,7 @@ final class VultisigRouter: ObservableObject {
         self.homeRouter = HomeRouter()
         self.circleRouter = CircleRouter()
         self.tronRouter = TronRouter()
-        self.agentRouter = AgentRouter()
         self.transactionHistoryRouter = TransactionHistoryRouter()
+        self.qbtcClaimRouter = QBTCClaimRouter()
     }
 }

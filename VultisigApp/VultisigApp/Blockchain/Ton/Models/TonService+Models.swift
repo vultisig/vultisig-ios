@@ -19,18 +19,6 @@ struct JettonWalletInfo: Codable {
     let data_hash: String?
 }
 
-struct RunGetMethodResponse: Codable {
-    let ok: Bool
-    let result: RunGetMethodResult?
-    let error: String?
-}
-
-struct RunGetMethodResult: Codable {
-    let stack: [StackItem]?
-    let gas_used: Int64?
-    let exit_code: Int?
-}
-
 struct StackItem: Codable {
     let type: String?
     let value: StackValue?
@@ -187,3 +175,56 @@ struct FlexibleValue: Codable {
 }
 
 private struct EmptyCodable: Codable {}
+
+// MARK: - Jetton Master Info (Toncenter v3 /jetton/masters)
+
+/// Response from the Toncenter v3 `/jetton/masters` endpoint.
+/// Contains an array of jetton master contract entries and optional rich metadata keyed by master address.
+struct JettonMastersResponse: Codable {
+    let jetton_masters: [JettonMasterEntry]
+    let metadata: [String: JettonMasterMetadata]?
+}
+
+/// A single jetton master contract entry returned by Toncenter.
+/// Holds the on-chain address, supply info, and inline content metadata.
+struct JettonMasterEntry: Codable {
+    let address: String
+    let total_supply: String?
+    let mintable: Bool?
+    let jetton_content: JettonContent?
+}
+
+/// On-chain jetton content stored in the master contract (TEP-64).
+/// Fields may be nil when the master contract does not expose them.
+struct JettonContent: Codable {
+    let decimals: String?
+    let uri: String?
+    let name: String?
+    let symbol: String?
+    let image: String?
+}
+
+/// Rich metadata provided by Toncenter's indexer for a jetton master.
+/// Contains validated token info entries when available.
+struct JettonMasterMetadata: Codable {
+    let is_indexed: Bool?
+    let token_info: [JettonTokenInfo]?
+}
+
+/// Validated token metadata from Toncenter's indexer.
+/// Only entries where `valid == true` should be trusted for display.
+struct JettonTokenInfo: Codable {
+    let valid: Bool?
+    let type: String?
+    let name: String?
+    let symbol: String?
+    let description: String?
+    let image: String?
+    let extra: JettonTokenInfoExtra?
+}
+
+/// Extra fields attached to a ``JettonTokenInfo`` entry (e.g. decimals, off-chain URI).
+struct JettonTokenInfoExtra: Codable {
+    let decimals: String?
+    let uri: String?
+}

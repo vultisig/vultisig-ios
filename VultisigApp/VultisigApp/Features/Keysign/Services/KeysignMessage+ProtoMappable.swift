@@ -122,8 +122,32 @@ extension KeysignPayload: ProtoMappable {
             self.tronTransferAssetContractPayload = nil
         }
 
+        // QBTC claim payload is local-only — never round-tripped through proto.
+        // The initiating device sets it; peer devices in a SecureVault flow
+        // see nil and simply sign the relayed message hashes without claim UX.
+        self.qbtcClaimPayload = nil
+
+        // `isQbtcClaim` round-trips: the peer needs to know this is a claim
+        // so it can derive the claimer's QBTC address from its own vault
+        // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash
+        // locally instead of blind-signing whatever the initiator sends.
+        self.isQbtcClaim = proto.isQbtcClaim
+
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
+        if proto.hasDappMetadata {
+            // Treat whitespace-only proto strings as missing — `isEmpty` and
+            // `host` derive from these, so trim once at the boundary rather
+            // than re-normalizing at every consumer.
+            let metadata = DAppMetadata(
+                name: proto.dappMetadata.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                url: proto.dappMetadata.url.trimmingCharacters(in: .whitespacesAndNewlines),
+                iconURL: proto.dappMetadata.iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            self.dappMetadata = metadata.isEmpty ? nil : metadata
+        } else {
+            self.dappMetadata = nil
+        }
     }
 
     func mapToProtobuff() -> VSKeysignPayload {
@@ -155,8 +179,17 @@ extension KeysignPayload: ProtoMappable {
                 $0.contractPayload = .tronTransferAssetContractPayload(tronTransferAssetContractPayload.mapToProtobuff())
             }
 
+            $0.isQbtcClaim = isQbtcClaim
+
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
+            if let dappMetadata {
+                $0.dappMetadata = .with {
+                    $0.name = dappMetadata.name
+                    $0.url = dappMetadata.url
+                    $0.iconURL = dappMetadata.iconURL
+                }
+            }
         }
     }
 }
@@ -554,6 +587,15 @@ extension UtxoInfo {
         self.amount = proto.amount
         self.hash = proto.hash
         self.index = proto.index
+        self.cardanoTokens = proto.cardanoTokens.compactMap { asset in
+            guard let amount = BigInt(asset.amount) else { return nil }
+            return CardanoUtxoAsset(
+                policyId: asset.policyID,
+                assetNameHex: asset.assetNameHex,
+                amount: amount,
+                decimals: 0
+            )
+        }
     }
 
     func mapToProtobuff() -> VSUtxoInfo {
@@ -561,6 +603,15 @@ extension UtxoInfo {
             $0.amount = amount
             $0.hash = hash
             $0.index = index
+            if !cardanoTokens.isEmpty {
+                $0.cardanoTokens = cardanoTokens.map { asset in
+                    VSCardanoTokenAsset.with {
+                        $0.policyID = asset.policyId
+                        $0.assetNameHex = asset.assetNameHex
+                        $0.amount = asset.amount.description
+                    }
+                }
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func loadGasInfoForSending(tx: SendTransaction) async {
+    func loadGasInfoForSending(tx: FunctionCallForm) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas
@@ -40,11 +40,11 @@ class FunctionCallViewModel: ObservableObject {
         }
     }
 
-    func loadFastVault(tx: SendTransaction, vault: Vault) async {
+    func loadFastVault(tx: FunctionCallForm, vault: Vault) async {
         tx.isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
-    func validateAddress(tx: SendTransaction, address: String) {
+    func validateAddress(tx: FunctionCallForm, address: String) {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
@@ -59,34 +59,27 @@ class FunctionCallViewModel: ObservableObject {
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 
-    func memoDictionary(for txDict: ThreadSafeDictionary<String, String>) -> [String: String] {
-        guard !txDict.allKeysInOrder().isEmpty else {
+    func memoDictionary(for txDict: [String: String]) -> [String: String] {
+        guard !txDict.isEmpty else {
             return [String: String]()
         }
 
-        let validKeys = txDict.allKeysInOrder().filter { key in
-            guard let value = txDict.get(key) else { return false }
-            return !value.isEmpty && value != "0" && value != "0.0"
-        }
-
         var dict = [String: String]()
-        validKeys.forEach { key in
-            guard let value = txDict.get(key) else {
-                return
-            }
+        for (key, value) in txDict {
+            guard !value.isEmpty, value != "0", value != "0.0" else { continue }
             dict[key.toFormattedTitleCase()] = value
         }
 
         return dict
     }
 
-    func setRujiToken(to tx: SendTransaction, vault: Vault) {
+    func setRujiToken(to tx: FunctionCallForm, vault: Vault) {
         let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
         guard let rujiToken else { return }
         tx.coin = rujiToken
     }
 
-    func setTcyToken(to tx: SendTransaction, vault: Vault) {
+    func setTcyToken(to tx: FunctionCallForm, vault: Vault) {
         let tcyToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
         guard let tcyToken else { return }
         tx.coin = tcyToken

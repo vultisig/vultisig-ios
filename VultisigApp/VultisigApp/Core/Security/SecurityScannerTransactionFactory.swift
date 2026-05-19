@@ -115,6 +115,8 @@ private extension SecurityScannerTransactionFactory {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )
@@ -211,7 +213,7 @@ private extension SecurityScannerTransactionFactory {
                 data: quote.tx.data,
                 isApprovalRequired: transaction.isApproveRequired
             )
-        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet, .none:
+        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
         }
     }

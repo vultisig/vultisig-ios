@@ -9,9 +9,7 @@ import SwiftUI
 
 struct SendDetailsAmountTab: View {
     let isExpanded: Bool
-    @ObservedObject var tx: SendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
     let validateForm: () async -> Void
     @FocusState.Binding var focusedField: Field?
     @Binding var settingsPresented: Bool
@@ -22,10 +20,7 @@ struct SendDetailsAmountTab: View {
             .padding(.bottom, 65)
             .clipped()
             .onChange(of: isExpanded) { _, newValue in
-                guard newValue else {
-                    return
-                }
-
+                guard newValue else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     focusedField = .amount
                 }
@@ -40,7 +35,7 @@ struct SendDetailsAmountTab: View {
                 separator
                 amountFieldSection
 
-                if sendCryptoViewModel.showAmountAlert {
+                if viewModel.showAmountAlert {
                     errorText
                 }
 
@@ -74,7 +69,7 @@ struct SendDetailsAmountTab: View {
     }
 
     var showGasSelector: Bool {
-        isExpanded && tx.coin.supportsFeeSettings
+        isExpanded && viewModel.coin.supportsFeeSettings
     }
 
     var gasSelector: some View {
@@ -92,7 +87,7 @@ struct SendDetailsAmountTab: View {
     }
 
     var amountFieldSection: some View {
-        SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
+        SendDetailsAmountTextField(viewModel: viewModel, focusedField: $focusedField)
             .id(Field.amount)
             .onSubmit {
                 Task {
@@ -103,21 +98,21 @@ struct SendDetailsAmountTab: View {
 
     @ViewBuilder
     var percentageButtons: some View {
-        let isDisabled = sendCryptoViewModel.isLoading || tx.isCalculatingFee
+        let isDisabled = viewModel.isLoading || viewModel.isCalculatingFee
         PercentageButtonsStack(selectedPercentage: $percentage)
-        .opacity(isDisabled ? 0.5 : 1.0)
-        .disabled(isDisabled)
-        .onChange(of: percentage) { _, newValue in
-            guard let newValue else { return }
-            sendCryptoViewModel.setMaxValues(tx: tx, percentage: newValue)
-        }
+            .opacity(isDisabled ? 0.5 : 1.0)
+            .disabled(isDisabled)
+            .onChange(of: percentage) { _, newValue in
+                guard let newValue else { return }
+                Task { await viewModel.setMaxAmount(percentage: newValue) }
+            }
     }
 
     var balanceSection: some View {
         HStack {
             Text(NSLocalizedString("balanceAvailable", comment: ""))
             Spacer()
-            Text(tx.coin.balanceString + " " + tx.coin.ticker)
+            Text(viewModel.coin.balanceString + " " + viewModel.coin.ticker)
         }
         .font(Theme.fonts.bodySMedium)
         .foregroundColor(Theme.colors.textPrimary)
@@ -128,11 +123,11 @@ struct SendDetailsAmountTab: View {
     }
 
     var additionalOptionsSection: some View {
-        SendDetailsAdditionalSection(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+        SendDetailsAdditionalSection(viewModel: viewModel)
     }
 
     var errorText: some View {
-        Text(NSLocalizedString(sendCryptoViewModel.errorMessage ?? .empty, comment: ""))
+        Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: ""))
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)

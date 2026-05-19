@@ -105,6 +105,8 @@ final class BlockChainService {
             tronTransferContractPayload: payload.tronTransferContractPayload,
             tronTriggerSmartContractPayload: payload.tronTriggerSmartContractPayload,
             tronTransferAssetContractPayload: payload.tronTransferAssetContractPayload,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
             skipBroadcast: payload.skipBroadcast,
             signData: nil
         )
@@ -151,6 +153,18 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
+    /// Entry point used by the FunctionCall flow (`FunctionCallForm` is its
+    /// mutable form-state class). Converts to the immutable struct and
+    /// dispatches to the unified `fetchSpecific(tx: SendTransaction)`. The
+    /// conversion resolves vault via `tx.txVault` (`tx.vault ??
+    /// AppViewModel.shared.selectedVault`); throws if neither is available.
+    func fetchSpecific(tx: FunctionCallForm) async throws -> BlockChainSpecific {
+        let converted = try SendTransaction.fromForm(tx)
+        return try await fetchSpecific(tx: converted)
+    }
+
+    /// Unified entry point taking the new immutable `SendTransaction` struct.
+    /// Dispatches to the cached chain-specific impls.
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
@@ -160,26 +174,68 @@ final class BlockChainService {
         }
     }
 
-    func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        let quote = "\(String(describing: tx.quote?.hashValue))"
-        let cacheKey =  getCacheKey(for: tx.fromCoin,
-                                    action: .swap,
-                                    sendMaxAmount: false,
-                                    isDeposit: tx.isDeposit,
-                                    transactionType: .unspecified,
-                                    fromAddress: tx.fromCoin.address,
-                                    toAddress: nil,  // Swaps don't have a specific toAddress in the same way
-                                    memo: nil,  // Swaps don't have memos
-                                    feeMode: .fast, quote: quote)
-        // Use centralized cache checking method
-        if let cachedResult = shouldUseCache(for: tx.fromCoin.chain, cacheKey: cacheKey) {
+    /// Primitive-typed entry point for the new SendInteractor. Wraps the
+    /// private full-signature `fetchSpecific(for:action:…)` so the interactor
+    /// doesn't need a `FunctionCallForm` reference (Phase A4 / Phase B).
+    func fetchSendBlockChainSpecific(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        sendMaxAmount: Bool,
+        isDeposit: Bool,
+        transactionType: VSTransactionType,
+        gasLimit: BigInt?,
+        feeMode: FeeMode,
+        fromAddress: String
+    ) async throws -> BlockChainSpecific {
+        try await fetchSpecific(
+            for: coin,
+            action: .transfer,
+            sendMaxAmount: sendMaxAmount,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            memo: memo,
+            feeMode: feeMode,
+            amount: amount
+        )
+    }
+
+    func fetchSwapBlockChainSpecific(
+        fromCoin: Coin,
+        // swiftlint:disable:next unused_parameter
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BlockChainSpecific {
+        let quoteHash = "\(String(describing: quote?.hashValue))"
+        let isDeposit = SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+        let cacheKey = getCacheKey(
+            for: fromCoin,
+            action: .swap,
+            sendMaxAmount: false,
+            isDeposit: isDeposit,
+            transactionType: .unspecified,
+            fromAddress: fromCoin.address,
+            toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+            memo: nil,  // Swaps don't have memos
+            feeMode: .fast, quote: quoteHash
+        )
+        if let cachedResult = shouldUseCache(for: fromCoin.chain, cacheKey: cacheKey) {
             return cachedResult
         }
 
-        let gasLimit = try await estimateSwapGasLimit(tx: tx)
+        let gasLimit = try await estimateSwapGasLimit(
+            fromCoin: fromCoin,
+            fromAmount: fromAmount,
+            quote: quote
+        )
 
         let action: Action
-        switch tx.quote {
+        switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             action = .transfer
         default:
@@ -187,20 +243,19 @@ final class BlockChainService {
         }
 
         let specific = try await fetchSpecific(
-            for: tx.fromCoin,
+            for: fromCoin,
             action: action,
             sendMaxAmount: false,
-            isDeposit: tx.isDeposit,
+            isDeposit: isDeposit,
             transactionType: .unspecified,
             gasLimit: gasLimit,
-            fromAddress: tx.fromCoin.address,
+            fromAddress: fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
             feeMode: .fast,
             amount: nil
         )
-        // Use centralized cache setting method
-        setCacheIfAllowed(for: tx.fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
+        setCacheIfAllowed(for: fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
         return specific
     }
 
@@ -460,6 +515,8 @@ private extension BlockChainService {
                     tronTransferContractPayload: nil,
                     tronTriggerSmartContractPayload: nil,
                     tronTransferAssetContractPayload: nil,
+                    qbtcClaimPayload: nil,
+                    isQbtcClaim: false,
                     skipBroadcast: false,
                     signData: nil
                 )
@@ -698,26 +755,31 @@ private extension BlockChainService {
         return gas
     }
 
-    func estimateSwapGasLimit(tx: SwapTransaction) async throws -> BigInt? {
-        if tx.fromCoin.chainType != .EVM {
-            return nil
-        }
-        let service = try EvmService.getService(forChain: tx.fromCoin.chain)
-        switch tx.quote {
+    func estimateSwapGasLimit(
+        fromCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?
+    ) async throws -> BigInt? {
+        guard fromCoin.chainType == .EVM else { return nil }
+        let service = try EvmService.getService(forChain: fromCoin.chain)
+        switch quote {
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
             // 23000 is too low. Using 120000 (same as ERC20) is safer.
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
-            if tx.fromCoin.isNativeToken {
-                do {
-                    return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
-                } catch {
-                    // If estimation fails, return nil to fall back to default gas limit
-                    return nil
-                }
+        case .oneinch(let evmQuote, _), .kyberswap(let evmQuote, _), .lifi(let evmQuote, _, _):
+            guard fromCoin.isNativeToken else { return nil }
+            do {
+                let amountInCoin = fromCoin.raw(for: fromAmount)
+                return try await service.estimateGasLimitForSwap(
+                    senderAddress: fromCoin.address,
+                    toAddress: evmQuote.tx.to,
+                    value: amountInCoin,
+                    data: evmQuote.tx.data
+                )
+            } catch {
+                return nil
             }
-            return nil
         case .none:
             return nil
         }

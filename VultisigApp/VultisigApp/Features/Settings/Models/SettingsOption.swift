@@ -99,7 +99,7 @@ enum SettingsOption: String, Identifiable {
         case .faq:
             return "bubble-question"
         case .education:
-            return nil
+            return "books"
         case .checkForUpdates:
             return "cloud-upload"
         case .shareApp:
@@ -145,6 +145,8 @@ enum SettingsOption: String, Identifiable {
             return .link(url: StaticURL.PrivacyPolicyURL)
         case .termsOfService:
             return .link(url: StaticURL.TermsOfServiceURL)
+        case .education:
+            return .link(url: StaticURL.VultisigDocsURL)
         case .referralCode:
             return .button
         default:

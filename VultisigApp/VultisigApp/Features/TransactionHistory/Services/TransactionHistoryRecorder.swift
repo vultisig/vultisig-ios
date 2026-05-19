@@ -198,7 +198,7 @@ final class TransactionHistoryRecorder {
                 feeCrypto: "",
                 feeFiat: "",
                 chain: keysignPayload.coin.chain,
-                explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash),
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash),
                 provider: swapPayload.providerName
             )
         } else {
@@ -213,7 +213,7 @@ final class TransactionHistoryRecorder {
                 feeCrypto: "",
                 feeFiat: "",
                 chain: keysignPayload.coin.chain,
-                explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash)
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash)
             )
         }
 
@@ -225,7 +225,7 @@ final class TransactionHistoryRecorder {
                 amountCrypto: approvePayload.amount.toDecimal(decimals: keysignPayload.coin.decimals).formatForDisplay(),
                 spender: approvePayload.spender,
                 chain: keysignPayload.coin.chain,
-                explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: approveTxHash)
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: approveTxHash)
             )
         }
     }

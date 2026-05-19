@@ -12,6 +12,7 @@ struct SendKeysignScreen: View {
 
     let input: KeysignInput
     let tx: SendTransaction
+    let retrySignal: SendRetrySignal
     @StateObject var viewModel = SendKeysignViewModel()
 
     var body: some View {
@@ -30,8 +31,8 @@ struct SendKeysignScreen: View {
                 isInitiateDevice: input.isInitiateDevice
             )
         }
-        .screenTitle("keysign".localized)
-        .screenBackButtonHidden()
+        .screenNavigationBarHidden()
+        .screenEdgeInsets(.zero)
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished else { return }
 
@@ -48,16 +49,29 @@ struct SendKeysignScreen: View {
                 keysignPayload: input.keysignPayload
             ))
         }
+        .onChange(of: viewModel.pendingRetryReason) { _, reason in
+            guard let reason else { return }
+            retrySignal.pendingRetryReason = reason
+            viewModel.pendingRetryReason = nil
+            // Stack: details -> verify -> pairing -> keysign. Pop pairing + keysign.
+            let popCount = min(2, router.navPath.count)
+            router.navPath.removeLast(popCount)
+        }
     }
 }
 
 class SendKeysignViewModel: ObservableObject, TransferViewModel {
     @Published var keysignFinished: Bool = false
+    @Published var pendingRetryReason: BroadcastRetryReason?
 
     var hash: String?
     var approveHash: String?
 
     func moveToNextView() {
         keysignFinished = true
+    }
+
+    func retryBroadcast(reason: BroadcastRetryReason) {
+        pendingRetryReason = reason
     }
 }

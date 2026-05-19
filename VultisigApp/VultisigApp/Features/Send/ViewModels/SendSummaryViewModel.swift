@@ -5,12 +5,13 @@
 //  Created by Amol Kumar on 2024-11-19.
 //
 
+import BigInt
 import Foundation
 
 @MainActor
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction) -> String {
-        let formattedAmount = tx.fromAmountDecimal.formatForDisplay()
+        let formattedAmount = tx.fromAmount.formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.fromCoin.ticker)"
@@ -30,22 +31,29 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func swapFeeString(_ tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        // `tx.gas` is gas price (wei/gas for EVM) — converting it directly to
+        // fiat understates the network fee by ~6 orders of magnitude. `tx.fee`
+        // is the precomputed total payable network fee in the chain's smallest
+        // unit, which is what we actually owe.
+        let networkFee = tx.feeCoin.fiat(value: tx.fee)
 
-        let fromCoin = feeCoin(tx: tx)
+        if let swapFeeBigInt = tx.quote.evmSwapFeeBigInt {
+            let feeDecimal = tx.feeCoin.decimal(for: swapFeeBigInt)
+            let swapFee = tx.feeCoin.fiat(decimal: feeDecimal)
+            return (swapFee + networkFee).formatToFiat(includeCurrencySymbol: true)
+        }
+
+        guard let inboundFeeDecimal = tx.quote.inboundFeeDecimal(toCoin: tx.toCoin) else { return .empty }
+
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        let fee = tx.toCoin.fiat(value: inboundFee) + networkFee
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
-    private func feeCoin(tx: SwapTransaction) -> Coin {
-        // Fees are always paid in native token
-        guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-        return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
-    }
-
-    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
-        guard let nativeCoin = vault.nativeCoin(for: tx.coin) else {
+    /// Decision 2 win: vault is non-optional on SendTransaction, so the vault
+    /// parameter is no longer needed — read it off `tx.vault` directly.
+    func feesInReadable(tx: SendTransaction) -> String {
+        guard let nativeCoin = tx.vault.nativeCoin(for: tx.coin) else {
             return .empty
         }
 

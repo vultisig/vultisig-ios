@@ -29,6 +29,74 @@ class CacheCoinGeckoCoin {
     }
 }
 
+/// TargetType for the price/coin-metadata endpoints used by CryptoPriceService.
+/// Three distinct hosts (vultisigApiProxy for CoinGecko-proxy + LiFi + MAYAChain
+/// node) are modelled as per-case `baseURL`.
+enum CryptoPriceAPI: TargetType {
+    case coinGeckoCoinsList
+    case pricesByIds(ids: String, currencies: String)
+    case pricesByContract(network: String, addresses: String, currencies: String)
+    case lifiTokenPrice(network: String, address: String)
+    case mayaChainPool(asset: String)
+
+    var baseURL: URL {
+        switch self {
+        case .coinGeckoCoinsList, .pricesByIds, .pricesByContract:
+            return URL(string: Endpoint.vultisigApiProxy)!
+        case .lifiTokenPrice:
+            return URL(string: "https://li.quest")!
+        case .mayaChainPool:
+            return URL(string: "https://mayanode.mayachain.info")!
+        }
+    }
+
+    var path: String {
+        switch self {
+        case .coinGeckoCoinsList:
+            return "/coingeicko/api/v3/coins/list"
+        case .pricesByIds:
+            return "/coingeicko/api/v3/simple/price"
+        case .pricesByContract(let network, _, _):
+            return "/coingeicko/api/v3/simple/token_price/\(network.lowercased())"
+        case .lifiTokenPrice:
+            return "/v1/token"
+        case .mayaChainPool(let asset):
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encodedAsset = asset.addingPercentEncoding(withAllowedCharacters: allowed) ?? asset
+            return "/mayachain/pool/\(encodedAsset)"
+        }
+    }
+
+    var method: HTTPMethod { .get }
+
+    var task: HTTPTask {
+        switch self {
+        case .coinGeckoCoinsList:
+            return .requestParameters([
+                "include_platform": "true",
+                "status": "active"
+            ], .urlEncoding)
+        case .pricesByIds(let ids, let currencies):
+            return .requestParameters([
+                "ids": ids,
+                "vs_currencies": currencies
+            ], .urlEncoding)
+        case .pricesByContract(_, let addresses, let currencies):
+            return .requestParameters([
+                "contract_addresses": addresses,
+                "vs_currencies": currencies
+            ], .urlEncoding)
+        case .lifiTokenPrice(let network, let address):
+            return .requestParameters([
+                "chain": network.lowercased(),
+                "token": address
+            ], .urlEncoding)
+        case .mayaChainPool:
+            return .requestPlain
+        }
+    }
+}
+
 public class CryptoPriceService: ObservableObject {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
 
@@ -40,8 +108,11 @@ public class CryptoPriceService: ObservableObject {
     public static let shared = CryptoPriceService()
     private let cache: NSCache<NSString, CacheCoinGeckoCoin> = NSCache()
     private let coinGeckoListCacheKey: NSString = "coingecko-list"
+    private let httpClient: HTTPClientProtocol
 
-    private init() {}
+    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     func fetchPrices(vault: Vault) async throws {
         try await fetchPrices(coins: vault.coins)
@@ -76,16 +147,11 @@ public class CryptoPriceService: ObservableObject {
             let target = cachedList.coins.first { $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
             return target?.id
         }
-        let requestUrl = Endpoint.coinGeckoCoinsList()
-        let request = URLRequest(url: requestUrl)
-        let (data, resp) = try await URLSession.shared.data(for: request)
-
-        guard let httpResp = resp as? HTTPURLResponse, httpResp.statusCode == 200 else {
-            logger.error("Invalid response from server for CoinGecko coins list")
-            return nil
-        }
-        let decoder = JSONDecoder()
-        let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
+        let response = try await httpClient.request(
+            CryptoPriceAPI.coinGeckoCoinsList,
+            responseType: [CoinGeckoCoin].self
+        )
+        let coinsList = response.data
         if !coinsList.isEmpty {
             self.cache.setObject(CacheCoinGeckoCoin(coins: coinsList, timestamp: Date()), forKey: coinGeckoListCacheKey)
         }
@@ -93,6 +159,31 @@ public class CryptoPriceService: ObservableObject {
         return target?.id
     }
 }
+
+extension CryptoPriceService {
+    /// Pure computation for the MAYAChain pool-derived USD price of a non-CACAO Maya asset.
+    /// Internal access so unit tests can validate the math without exercising the live mayanode endpoint.
+    func calculateMayaPoolPrice(pool: MAYAChainPoolResponse, cacaoPriceUSD: Double, coins: [CoinMeta], assetName: String) -> Double {
+        guard let balanceCacao = Double(pool.balanceCacao),
+              let balanceAsset = Double(pool.balanceAsset),
+              balanceAsset > 0 else {
+            return 0.0
+        }
+
+        let ticker = assetName.components(separatedBy: ".").last ?? ""
+        let assetDecimals = coins.first(where: {
+            $0.chain == .mayaChain && $0.ticker.uppercased() == ticker
+        })?.decimals ?? 4
+
+        let cacaoDecimals: Double = 10
+        let cacaoNormalized = balanceCacao / pow(10, cacaoDecimals)
+        let assetNormalized = balanceAsset / pow(10, Double(assetDecimals))
+        let priceInCacao = cacaoNormalized / assetNormalized
+
+        return priceInCacao * cacaoPriceUSD
+    }
+}
+
 private extension CryptoPriceService {
 
     @MainActor func refresh(vault: Vault) {
@@ -134,15 +225,12 @@ private extension CryptoPriceService {
             .map { $0.rawValue }
             .joined(separator: ",")
 
-        let url = Endpoint.fetchCryptoPrices(
-            ids: idsQuery,
-            currencies: currencies
-        )
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-
-            try await RateProvider.shared.save(rates: mapRates(response: response))
+            let response = try await httpClient.request(
+                CryptoPriceAPI.pricesByIds(ids: idsQuery, currencies: currencies),
+                responseType: [String: [String: Double]].self
+            )
+            try await RateProvider.shared.save(rates: mapRates(response: response.data))
         } catch {
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 logger.debug("Price fetch cancelled")
@@ -233,15 +321,15 @@ private extension CryptoPriceService {
                 .map { $0.rawValue }
                 .joined(separator: ",")
 
-            let url = Endpoint.fetchTokenPrice(
-                network: coinGeckoPlatform(chain: chain),
-                addresses: contracts,
-                currencies: currencies
-            )
-
-            let (data, _) = try await URLSession.shared.data(from: url)
-
-            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
+            let addresses = contracts.joined(separator: ",")
+            let response = try await httpClient.request(
+                CryptoPriceAPI.pricesByContract(
+                    network: coinGeckoPlatform(chain: chain),
+                    addresses: addresses,
+                    currencies: currencies
+                ),
+                responseType: [String: [String: Double]].self
+            ).data
 
             let contractsNotFoundOnCoingecko = contracts.filter { !response.keys.contains($0) }
 
@@ -258,16 +346,12 @@ private extension CryptoPriceService {
     }
 
     func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate {
-        let url = Endpoint.fetchLifiTokenPrice(
-            network: chain.ticker,
-            address: contract
+        let response = try await httpClient.request(
+            CryptoPriceAPI.lifiTokenPrice(network: chain.ticker, address: contract)
         )
-
-        let (data, _) = try await URLSession.shared.data(from: url)
-        if let priceUsd = Utils.extractResultFromJson(fromData: data, path: "priceUSD") as? String {
+        if let priceUsd = Utils.extractResultFromJson(fromData: response.data, path: "priceUSD") as? String {
             let price = Double(priceUsd) ?? 0.0
-            let rate: Rate = .init(fiat: "usd", crypto: contract, value: price)
-            return rate
+            return .init(fiat: "usd", crypto: contract, value: price)
         }
 
         return .init(fiat: "usd", crypto: contract, value: 0.0)
@@ -310,46 +394,16 @@ private extension CryptoPriceService {
     }
 
     func fetchMayaChainPoolPrice(assetName: String, cacaoPriceUSD: Double, coins: [CoinMeta]) async -> Double? {
-        let endpoint = Endpoint.fetchMayaChainPoolInfo(asset: assetName)
-
-        guard let url = URL(string: endpoint) else {
-            logger.warning("Invalid MAYAChain pool URL for \(assetName)")
-            return nil
-        }
-
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return nil
-            }
-
-            let pool = try JSONDecoder().decode(MAYAChainPoolResponse.self, from: data)
-            return calculateMayaPoolPrice(pool: pool, cacaoPriceUSD: cacaoPriceUSD, coins: coins, assetName: assetName)
+            let response = try await httpClient.request(
+                CryptoPriceAPI.mayaChainPool(asset: assetName),
+                responseType: MAYAChainPoolResponse.self
+            )
+            return calculateMayaPoolPrice(pool: response.data, cacaoPriceUSD: cacaoPriceUSD, coins: coins, assetName: assetName)
         } catch {
             logger.warning("Failed to fetch MAYAChain pool price for \(assetName): \(error.localizedDescription)")
             return nil
         }
-    }
-
-    func calculateMayaPoolPrice(pool: MAYAChainPoolResponse, cacaoPriceUSD: Double, coins: [CoinMeta], assetName: String) -> Double {
-        guard let balanceCacao = Double(pool.balanceCacao),
-              let balanceAsset = Double(pool.balanceAsset),
-              balanceAsset > 0 else {
-            return 0.0
-        }
-
-        let ticker = assetName.components(separatedBy: ".").last ?? ""
-        let assetDecimals = coins.first(where: {
-            $0.chain == .mayaChain && $0.ticker.uppercased() == ticker
-        })?.decimals ?? 4
-
-        let cacaoDecimals: Double = 10
-        let cacaoNormalized = balanceCacao / pow(10, cacaoDecimals)
-        let assetNormalized = balanceAsset / pow(10, Double(assetDecimals))
-        let priceInCacao = cacaoNormalized / assetNormalized
-
-        return priceInCacao * cacaoPriceUSD
     }
 
     private func coinGeckoPlatform(chain: Chain) -> String {

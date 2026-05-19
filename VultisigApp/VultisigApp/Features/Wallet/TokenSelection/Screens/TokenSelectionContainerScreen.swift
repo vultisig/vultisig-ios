@@ -9,32 +9,32 @@ import SwiftUI
 
 struct TokenSelectionContainerScreen: View {
     let vault: Vault
-    let group: GroupedChain
+    let chain: Chain
     @Binding var isPresented: Bool
 
     @State var showTokenSelection: Bool = true
 
     var body: some View {
-            ZStack {
-                Group {
-                    if showTokenSelection {
-                        TokenSelectionScreen(
-                            vault: vault,
-                            group: group,
-                            isPresented: $isPresented,
-                            onCustomToken: toggleSheet
-                        )
-                    } else {
-                        CustomTokenScreen(
-                            vault: vault,
-                            group: group,
-                            isPresented: $isPresented,
-                            onClose: toggleSheet
-                        )
-                    }
+        ZStack {
+            Group {
+                if showTokenSelection {
+                    TokenSelectionScreen(
+                        vault: vault,
+                        chain: chain,
+                        isPresented: $isPresented,
+                        onCustomToken: toggleSheet
+                    )
+                } else {
+                    CustomTokenScreen(
+                        vault: vault,
+                        chain: chain,
+                        isPresented: $isPresented,
+                        onClose: toggleSheet
+                    )
                 }
             }
-                    .background(Theme.colors.bgPrimary)
+        }
+        .background(Theme.colors.bgPrimary)
         .applySheetSize()
         .sheetStyle(padding: 0)
     }
@@ -47,7 +47,7 @@ struct TokenSelectionContainerScreen: View {
 #Preview {
     TokenSelectionContainerScreen(
         vault: .example,
-        group: .example,
+        chain: .bitcoin,
         isPresented: .constant(true)
     )
 }
