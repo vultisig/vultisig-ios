@@ -442,11 +442,7 @@ struct PeerDiscoveryScreen: View {
     }
 
     func autoStartKeygenIfReady() {
-        guard isFixedDeviceMode,
-              viewModel.selections.count >= totalDeviceCount,
-              viewModel.status == .WaitingForDevices else {
-            return
-        }
+        guard viewModel.shouldAutoStartKeygen(totalDeviceCount: totalDeviceCount) else { return }
         viewModel.startKeygen()
     }
 

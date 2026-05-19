@@ -210,6 +210,7 @@
 "createFolder" = "폴더 생성";
 "createQR" = "QR 생성";
 "createReferral" = "추천 코드 생성";
+"createReferralCardTitle" = "추천 만들기";
 "createReferralCode" = "추천 코드 생성";
 "createVault" = "볼트 생성";
 "createYourCodeAndEarn" = "자신만의 코드를 만들고 추천 스왑에서 %@을 버세요";
@@ -500,6 +501,7 @@
 "Merge" = "병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
+"messageToSign" = "서명할 메시지";
 "messageVote" = "%@ 메시지 투표";
 "migrate" = "마이그레이션";
 "migratePasswordDescription" = "비밀번호를 입력하여 서버 공유를 잠금 해제하고 업그레이드를 시작하세요";
@@ -515,6 +517,8 @@
 "moreInfo" = "더 많은 정보";
 "moreInfoDescription" = "비밀번호는 하드 드라이브 암호화처럼 백업 파일을 로컬에서 암호화하는 데 사용됩니다. 다음 단계에서 힌트를 추가할 수 있습니다";
 "mustAgreeTermsError" = "약관에 동의해야 합니다.";
+"myReferralCardBody" = "추천 코드를 관리하고 보상을 수집하세요.";
+"myReferralCardTitle" = "내 추천";
 "myVaults" = "내 볼트";
 "name" = "이름";
 "nameYourVault" = "볼트 이름 짓기";
@@ -610,7 +614,6 @@
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
 "optionalPasswordProtectBackup" = "볼트의 선택적 비밀번호 보호";
-"or" = "또는";
 "other" = "기타";
 "overview" = "개요";
 "pair" = "쌍";
@@ -729,6 +732,8 @@
 "savedAddresses" = "저장된 주소";
 "saveOnSwaps" = "스왑에서 %@ 절약";
 "saveReferral" = "추천 코드 저장";
+"saveReferralCardBody" = "친구의 추천 코드를 저장하고 스왑에서 %@를 절약하세요.";
+"saveReferralCardTitle" = "추천 저장";
 "saveReferredCode" = "추천받은 코드 저장";
 "saveVaultQR" = "볼트 QR 저장";
 "scannerModeCamera" = "카메라";
@@ -826,6 +831,7 @@
 "signer" = "서명자";
 "signFasterThanEverBefore" = "그 어느 때보다 빠르게 서명하세요";
 "signingErrorTryAgain" = "서명 오류";
+"signingMethod" = "서명 방식";
 "signingTransaction" = "트랜잭션 서명 중";
 "signTransaction" = "트랜잭션 서명";
 "skip" = "건너뛰기";
@@ -1077,7 +1083,7 @@
 "vultDiscountTiers" = "$VULT 할인 티어";
 "vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
-"vultisig-referrals" = "Vultisig - 추천";
+"vultisig-referrals" = "Vultisig 추천";
 "vultisigCommunity" = "Vultisig 커뮤니티";
 "vultisigEducation" = "Vultisig 교육";
 "vultisigWebsite" = "Vultisig 웹사이트";

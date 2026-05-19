@@ -12,6 +12,7 @@ struct ReferredCodeFormScreen: View {
 
     private let referralSavePercentage: String = "10%"
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         Screen {
@@ -75,6 +76,7 @@ struct ReferredCodeFormScreen: View {
     }
 
     private func setData() {
+        referredViewModel.currentVault = appViewModel.selectedVault
         referredViewModel.resetData()
         if referredViewModel.hasReferredCode {
             referredViewModel.referredCode = referredViewModel.savedReferredCode
@@ -84,4 +86,5 @@ struct ReferredCodeFormScreen: View {
 
 #Preview {
     ReferredCodeFormScreen()
+        .environmentObject(AppViewModel())
 }

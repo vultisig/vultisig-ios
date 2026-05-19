@@ -208,6 +208,7 @@
 "createFolder" = "Criar pasta";
 "createQR" = "Criar QR";
 "createReferral" = "Criar indicação";
+"createReferralCardTitle" = "Criar indicação";
 "createReferralCode" = "Crie código de referência";
 "createVault" = "Criar cofre";
 "createYourCodeAndEarn" = "Crie seu próprio código e ganhe 10 bps em swaps";
@@ -494,6 +495,7 @@
 "memoLabel" = "Memo";
 "Merge" = "Fundir";
 "messageDeposit" = "%@ depósito de mensagem";
+"messageToSign" = "Mensagem a assinar";
 "messageVote" = "%@ voto de mensagem";
 "migrate" = "Migrar";
 "migratePasswordDescription" = "Digite sua senha para desbloquear sua Parte do Servidor e iniciar a atualização";
@@ -509,6 +511,8 @@
 "moreInfo" = "Mais informações";
 "moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
 "mustAgreeTermsError" = "Você deve concordar com os termos.";
+"myReferralCardBody" = "Gerencie seu código de indicação e colete recompensas.";
+"myReferralCardTitle" = "Minha indicação";
 "myVaults" = "Meus Cofres";
 "name" = "Nome";
 "nameYourVault" = "Nomeie seu cofre";
@@ -603,7 +607,6 @@
 "operatorFeesLabel" = "Taxas do operador (Pontos Base)";
 "optional" = "(opcional)";
 "optionalPasswordProtectBackup" = "Proteção opcional do seu cofre com senha";
-"or" = "OU";
 "other" = "Outro";
 "overview" = "Visão geral";
 "pair" = "Emparelhar";
@@ -721,6 +724,8 @@
 "savedAddresses" = "Endereços salvos";
 "saveOnSwaps" = "Economize %@ em swaps";
 "saveReferral" = "Salvar indicação";
+"saveReferralCardBody" = "Salve o código de indicação de um amigo e economize %@ em swaps.";
+"saveReferralCardTitle" = "Salvar indicação";
 "saveReferredCode" = "Salvar código de indicação";
 "saveVaultQR" = "Salvar QR do Cofre";
 "scannerModeCamera" = "Câmera";
@@ -817,6 +822,7 @@
 "signer" = "Assinante";
 "signFasterThanEverBefore" = "Assine mais rápido do que nunca";
 "signingErrorTryAgain" = "Erro ao Assinar";
+"signingMethod" = "Método de assinatura";
 "signingTransaction" = "Assinando transação";
 "signTransaction" = "Assinar transação";
 "skip" = "Pular";
@@ -1063,7 +1069,7 @@
 "vultDiscountTiers" = "Níveis de Desconto $VULT";
 "vultDiscountTiersDescription" = "Mantenha $VULT para desbloquear taxas de negociação mais baixas.";
 "vultiserverPassword" = "Senha do Vultiserver";
-"vultisig-referrals" = "Vultisig - Indicações";
+"vultisig-referrals" = "Vultisig Indicações";
 "vultisigCommunity" = "Comunidade Vultisig";
 "vultisigEducation" = "Educação Vultisig";
 "vultisigWebsite" = "Site do Vultisig";

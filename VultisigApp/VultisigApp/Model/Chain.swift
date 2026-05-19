@@ -598,6 +598,22 @@ extension Chain {
         }
     }
 
+    /// Whether the Send flow's memo input should be exposed for this chain.
+    /// Currently every chain supports a memo at the protocol level except
+    /// Cardano — WalletCore doesn't yet expose CIP-20 auxiliary data fields,
+    /// so iOS Cardano signing silently drops anything the user types. Hiding
+    /// the input avoids the silent-drop bug until proper metadata support
+    /// lands. See #4326 (root) and #4377 (this mitigation); remove the
+    /// `.cardano` case here when #4326 closes.
+    var supportsMemo: Bool {
+        switch self {
+        case .cardano:
+            return false
+        default:
+            return true
+        }
+    }
+
     static var keyImportEnabledChains: [Chain] {
         allCases.filter {
             switch $0 {
