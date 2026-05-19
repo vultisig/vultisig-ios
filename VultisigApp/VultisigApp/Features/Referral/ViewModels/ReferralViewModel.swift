@@ -5,51 +5,18 @@
 //  Created by Amol Kumar on 2025-06-13.
 //
 
-import BigInt
 import SwiftUI
 import SwiftData
 
+/// Main-screen view model for the Referral feature. Owns the data shown on
+/// `ReferralMainScreen` (saved code, expiry, collected rewards, vault data)
+/// and the cold-start vault-data fetch used by `ReferralInitialScreen`. Form
+/// state for *creating* and *editing* a referral code lives on
+/// `ReferralDetailsViewModel` / `EditReferralDetailsViewModel` (introduced by
+/// vultisig-ios#4369 — see [[transaction-model-refactor/function-call-form-elimination-plan]]).
 @MainActor
 class ReferralViewModel: ObservableObject {
-    enum ReferralCodeAvailabilityStatus {
-        case available
-        case alreadyTaken
-
-        var color: Color {
-            switch self {
-            case .available:
-                return Theme.colors.alertSuccess
-            case .alreadyTaken:
-                return Theme.colors.alertError
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .available:
-                return "available".localized
-            case .alreadyTaken:
-                return "alreadyTaken".localized
-            }
-        }
-    }
-
     @Published var isLoading: Bool = false
-
-    @Published var referralCode: String = ""
-    @Published var referralAvailabilityErrorMessage: String?
-    @Published var availabilityStatus: ReferralCodeAvailabilityStatus?
-    @Published var isReferralCodeVerified: Bool = false
-    @Published var expireInCount: Int = 1
-
-    @Published var showReferralAlert = false
-    @Published var referralAlertMessage = ""
-
-    // Fees
-    @Published var nativeCoin: Coin? = nil
-    @Published var registrationFee: Decimal = 0
-    @Published var feePerBlock: Decimal = 0
-    @Published var isFeesLoading: Bool = false
 
     // Expires On
     @Published var expiresOn: String = ""
@@ -73,10 +40,6 @@ class ReferralViewModel: ObservableObject {
         self.currentBlockheight = currentBlockheight
     }
 
-    var createReferralButtonEnabled: Bool {
-        availabilityStatus == .available && !isLoading
-    }
-
     var yourVaultName: String? {
         currentVault?.name
     }
@@ -91,176 +54,6 @@ class ReferralViewModel: ObservableObject {
 
     var canEditCode: Bool {
         !isLoading && thornameDetails != nil
-    }
-
-    var registrationFeeFiat: String {
-        getFiatAmount(for: getRegistrationFee())
-    }
-
-    var totalFee: Decimal {
-        getTotalFee()
-    }
-
-    var totalFeeFiat: String {
-        getFiatAmount(for: getTotalFee())
-    }
-
-    var isTotalFeesLoading: Bool {
-        guard expireInCount>0 else {
-            return true
-        }
-
-        return isFeesLoading
-    }
-
-    func verifyReferralCode() async {
-        isLoading = true
-        resetReferralData()
-        nameErrorCheck(code: referralCode, forReferralCode: true)
-
-        guard referralAvailabilityErrorMessage == nil else {
-            return
-        }
-
-        await checkNameAvailability(code: referralCode)
-    }
-
-    func handleCounterIncrease() {
-        expireInCount += 1
-    }
-
-    func handleCounterDecrease() {
-        guard expireInCount > 0 else {
-            return
-        }
-
-        expireInCount -= 1
-    }
-
-    func getRegistrationFee() -> Decimal {
-        registrationFee / 100_000_000
-    }
-
-    func getTotalFee() -> Decimal {
-        let amount: Decimal
-        if expireInCount > 1 {
-            amount = (feePerBlock * Decimal(ReferralExpiryDataCalculator.blockPerYear * UInt64(expireInCount - 1)))
-        } else {
-            // Registration comes with 1 free year, but sending exactly 10 RUNE fails
-            // So we need to send a little bit more
-            amount = feePerBlock
-        }
-
-        return (registrationFee + amount) / 100_000_000
-    }
-
-    func getFiatAmount(for amount: Decimal) -> String {
-        guard let nativeCoin else {
-            return ""
-        }
-
-        let fiatAmount = RateProvider.shared.fiatBalance(value: amount, coin: nativeCoin)
-        return fiatAmount.formatToFiat(includeCurrencySymbol: true)
-    }
-
-    func resetAllData() {
-        referralCode = ""
-        referralAvailabilityErrorMessage = nil
-        availabilityStatus = nil
-        isReferralCodeVerified = false
-        expireInCount = 1
-
-        showReferralAlert = false
-        referralAlertMessage = ""
-
-        nativeCoin = nil
-        registrationFee = 0
-        feePerBlock = 0
-        isFeesLoading = false
-    }
-
-    private func showAlert(with message: String) {
-        referralAlertMessage = message
-        showReferralAlert = true
-    }
-
-    private func showNameError(with message: String) {
-        if message == "alreadyTaken" {
-            availabilityStatus = .alreadyTaken
-        } else {
-            referralAvailabilityErrorMessage = message.localized
-        }
-
-        isLoading = false
-    }
-
-    private func saveReferralCode() {
-        isReferralCodeVerified = true
-        availabilityStatus = .available
-        isLoading = false
-        isReferralCodeVerified = true
-    }
-
-    func resetReferralData() {
-        referralAvailabilityErrorMessage = nil
-        availabilityStatus = nil
-        isReferralCodeVerified = false
-    }
-
-    private func nameErrorCheck(code: String, forReferralCode: Bool) {
-        guard !code.isEmpty else {
-            showNameError(with: "emptyField")
-            return
-        }
-
-        guard !containsWhitespace(code) else {
-            showNameError(with: "whitespaceNotAllowed")
-            return
-        }
-
-        if !forReferralCode {
-            guard code != savedReferralCode else {
-                showNameError(with: "referralCodeMatch")
-                return
-            }
-        }
-
-        guard code.count <= 4 else {
-            showNameError(with: "referralLaunchCodeLengthError")
-            return
-        }
-    }
-
-    private func checkNameAvailability(code: String) async {
-        defer { isLoading = false }
-        do {
-            _ = try await thorchainReferralService.getThornameLookup(name: code)
-            showNameError(with: "alreadyTaken")
-        } catch {
-            guard error as? THORChainAPIError == .thornameNotFound else {
-                showNameError(with: "systemErrorMessage")
-                return
-            }
-
-            saveReferralCode()
-        }
-    }
-
-    func calculateFees() async {
-        isFeesLoading = true
-
-        do {
-            let info = try await thorchainReferralService.getNetwork()
-            registrationFee = info.tns_register_fee_rune.toDecimal()
-            feePerBlock = info.tns_fee_per_block_rune.toDecimal()
-            isFeesLoading = false
-        } catch {
-            isFeesLoading = false
-        }
-    }
-
-    private func containsWhitespace(_ text: String) -> Bool {
-        return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 
     func fetchReferralCodeDetails() async {
@@ -312,40 +105,14 @@ class ReferralViewModel: ObservableObject {
         return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
 
-    func setup(defaultVault: Vault?) {
-        if currentVault == nil {
-            currentVault = defaultVault
-        }
-        nativeCoin = currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
-    }
-
-    func updateReferralCode(code: String) {
-        guard let currentVault else {
-            showNameError(with: "systemErrorMessage")
-            return
-        }
-        if let vaultReferral = currentVault.referralCode {
-            vaultReferral.code = code
-        } else {
-            let referral = ReferralCode(code: code, vault: currentVault)
-            Storage.shared.insert(referral)
-        }
-
-        do {
-            try Storage.shared.save()
-        } catch {
-            showNameError(with: "systemErrorMessage")
-        }
-    }
-
     func fetchVaultData() async {
-        await MainActor.run { isLoading = true }
+        isLoading = true
         guard
             let currentVault,
             currentVault.referralCode == nil,
             let thorAddress = currentVault.nativeCoin(for: .thorChain)?.address
         else {
-            await MainActor.run { isLoading = false }
+            isLoading = false
             return
         }
 
@@ -358,6 +125,6 @@ class ReferralViewModel: ObservableObject {
             Storage.shared.insert(referralCode)
             try? Storage.shared.save()
         }
-        await MainActor.run { isLoading = false }
+        isLoading = false
     }
 }
