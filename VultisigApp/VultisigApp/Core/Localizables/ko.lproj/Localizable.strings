@@ -191,6 +191,11 @@
 "circleWithdrawAmount" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
+"claim" = "수령";
+"claimBroadcasted" = "수령 브로드캐스트됨";
+"claimFailed" = "수령 실패";
+"claimPending" = "수령 처리 중...";
+"claimSuccessful" = "수령 성공";
 "clearFilters" = "필터 초기화";
 "close" = "닫기";
 "coinAddressCopied" = "%@ 주소 복사됨";
@@ -210,6 +215,7 @@
 "createFolder" = "폴더 생성";
 "createQR" = "QR 생성";
 "createReferral" = "추천 코드 생성";
+"createReferralCardTitle" = "추천 만들기";
 "createReferralCode" = "추천 코드 생성";
 "createVault" = "볼트 생성";
 "createYourCodeAndEarn" = "자신만의 코드를 만들고 추천 스왑에서 %@을 버세요";
@@ -500,6 +506,7 @@
 "Merge" = "병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
+"messageToSign" = "서명할 메시지";
 "messageVote" = "%@ 메시지 투표";
 "migrate" = "마이그레이션";
 "migratePasswordDescription" = "비밀번호를 입력하여 서버 공유를 잠금 해제하고 업그레이드를 시작하세요";
@@ -515,6 +522,8 @@
 "moreInfo" = "더 많은 정보";
 "moreInfoDescription" = "비밀번호는 하드 드라이브 암호화처럼 백업 파일을 로컬에서 암호화하는 데 사용됩니다. 다음 단계에서 힌트를 추가할 수 있습니다";
 "mustAgreeTermsError" = "약관에 동의해야 합니다.";
+"myReferralCardBody" = "추천 코드를 관리하고 보상을 수집하세요.";
+"myReferralCardTitle" = "내 추천";
 "myVaults" = "내 볼트";
 "name" = "이름";
 "nameYourVault" = "볼트 이름 짓기";
@@ -610,7 +619,6 @@
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
 "optionalPasswordProtectBackup" = "볼트의 선택적 비밀번호 보호";
-"or" = "또는";
 "other" = "기타";
 "overview" = "개요";
 "pair" = "쌍";
@@ -657,6 +665,21 @@
 "psbtTransactionDetails" = "트랜잭션 세부 정보 (PSBT)";
 "pushNotifications" = "푸시 알림";
 "pushNotificationsDescription" = "서명이 필요하거나 기기가 액세스를 요청할 때 알림을 받으세요.";
+"qbtcClaimCancelled" = "청구가 취소됨";
+"qbtcClaimEmptyPassword" = "계속하려면 Fast Vault 비밀번호를 입력하세요.";
+"qbtcClaimErrorInvalidBtcPublicKey" = "vault의 BTC 코인에 잘못된 Bitcoin 공개 키가 있습니다.";
+"qbtcClaimErrorProofHashMismatch" = "프루프 서비스가 로컬 계산과 일치하지 않는 해시를 반환했습니다; 청구를 중단합니다.";
+"qbtcClaimErrorSignatureMissing" = "MPC 세션이 %@에 대한 서명을 생성하지 못한 채 완료되었습니다";
+"qbtcClaimFailedToLoadTitle" = "청구 데이터를 불러오지 못함";
+"qbtcClaimLoading" = "청구 자격 확인 중…";
+"qbtcClaimMissingCoinDetail" = "vault에 청구에 필요한 %@ 코인이 없습니다.";
+"qbtcClaimMissingCoinTitle" = "체인 없음";
+"qbtcClaimNoUtxosDetail" = "Bitcoin 주소에 청구할 수 있는 미사용 UTXO가 없습니다.";
+"qbtcClaimNoUtxosTitle" = "청구할 항목 없음";
+"qbtcClaimTitle" = "QBTC 청구";
+"qbtcClaimUnavailableDetail" = "현재 체인에서 청구가 비활성화되어 있습니다. 나중에 다시 시도하세요.";
+"qbtcClaimUnavailableTitle" = "청구 불가";
+"qbtcClaimUnsupportedAddressTitle" = "지원되지 않는 주소";
 "rawPayload" = "원시 페이로드";
 "ready" = "준비 완료";
 "Rebond" = "재본드";
@@ -729,6 +752,8 @@
 "savedAddresses" = "저장된 주소";
 "saveOnSwaps" = "스왑에서 %@ 절약";
 "saveReferral" = "추천 코드 저장";
+"saveReferralCardBody" = "친구의 추천 코드를 저장하고 스왑에서 %@를 절약하세요.";
+"saveReferralCardTitle" = "추천 저장";
 "saveReferredCode" = "추천받은 코드 저장";
 "saveVaultQR" = "볼트 QR 저장";
 "scannerModeCamera" = "카메라";
@@ -826,6 +851,7 @@
 "signer" = "서명자";
 "signFasterThanEverBefore" = "그 어느 때보다 빠르게 서명하세요";
 "signingErrorTryAgain" = "서명 오류";
+"signingMethod" = "서명 방식";
 "signingTransaction" = "트랜잭션 서명 중";
 "signTransaction" = "트랜잭션 서명";
 "skip" = "건너뛰기";
@@ -1077,7 +1103,7 @@
 "vultDiscountTiers" = "$VULT 할인 티어";
 "vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
-"vultisig-referrals" = "Vultisig - 추천";
+"vultisig-referrals" = "Vultisig 추천";
 "vultisigCommunity" = "Vultisig 커뮤니티";
 "vultisigEducation" = "Vultisig 교육";
 "vultisigWebsite" = "Vultisig 웹사이트";

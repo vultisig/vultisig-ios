@@ -30,7 +30,9 @@ struct JoinKeysignView: View {
     }
 
     var isInAnimationState: Bool {
-        viewModel.status == .WaitingForKeysignToStart || viewModel.status == .KeysignStarted
+        viewModel.status == .WaitingForKeysignToStart
+            || viewModel.status == .KeysignStarted
+            || viewModel.status == .QBTCClaim
     }
 
     var states: some View {
@@ -56,6 +58,12 @@ struct JoinKeysignView: View {
                 NoCameraPermissionView()
             case .VaultTypeDoesntMatch:
                 KeysignWrongVaultTypeErrorView()
+            case .QBTCClaim:
+                if let driver = viewModel.qbtcClaimDriver {
+                    QBTCClaimJoinView(driver: driver)
+                } else {
+                    keysignFailedText
+                }
             }
 
         }

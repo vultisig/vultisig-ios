@@ -7,5 +7,5 @@
 
 enum HomeRoute: Hashable {
     case home(showingVaultSelector: Bool)
-    case vaultAction(action: VaultAction, sendTx: FunctionCallForm, vault: Vault)
+    case vaultAction(action: VaultAction, vault: Vault)
 }

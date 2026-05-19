@@ -12,12 +12,10 @@ struct FunctionCallRouteBuilder {
     @ViewBuilder
     func buildDetailsScreen(
         defaultCoin: Coin?,
-        sendTx: FunctionCallForm,
         vault: Vault
     ) -> some View {
         FunctionCallDetailsScreen(
             vault: vault,
-            tx: sendTx,
             defaultCoin: defaultCoin
         )
     }

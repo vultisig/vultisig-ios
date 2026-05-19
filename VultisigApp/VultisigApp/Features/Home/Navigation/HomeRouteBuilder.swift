@@ -16,23 +16,28 @@ struct HomeRouteBuilder {
 
     @MainActor
     @ViewBuilder
-    func buildActionRoute(action: VaultAction, sendTx: FunctionCallForm, vault: Vault) -> some View {
+    func buildActionRoute(action: VaultAction, vault: Vault) -> some View {
         switch action {
-        case .send(let coin, let hasPreselectedCoin):
-            SendRouteBuilder().buildDetailsScreen(
-                seed: SendDetailsSeed.fromForm(
-                    sendTx,
-                    coin: coin,
-                    vault: vault,
-                    hasPreselectedCoin: hasPreselectedCoin
+        case .send(let coin, let hasPreselectedCoin, let prefilledToAddress, let prefilledAmount, let prefilledMemo):
+            if let resolvedCoin = coin ?? vault.coins.first(where: { $0.isNativeToken }) ?? vault.coins.first {
+                SendRouteBuilder().buildDetailsScreen(
+                    seed: SendDetailsSeed.fromAction(
+                        coin: resolvedCoin,
+                        vault: vault,
+                        hasPreselectedCoin: hasPreselectedCoin,
+                        prefilledToAddress: prefilledToAddress,
+                        prefilledAmount: prefilledAmount,
+                        prefilledMemo: prefilledMemo
+                    )
                 )
-            )
+            } else {
+                EmptyView()
+            }
         case .swap(let fromCoin):
             SwapRouter().buildDetailsScreen(fromCoin: fromCoin, toCoin: nil, vault: vault)
         case .function(let coin):
             FunctionCallRouteBuilder().buildDetailsScreen(
                 defaultCoin: coin,
-                sendTx: sendTx,
                 vault: vault
             )
         case .buy(let address, let blockChainCode, let coinType):
@@ -41,6 +46,8 @@ struct HomeRouteBuilder {
                 blockChainCode: blockChainCode,
                 coinType: coinType
             )
+        case .qbtcClaim(let vault):
+            QBTCClaimScreen(vault: vault)
         }
     }
 }

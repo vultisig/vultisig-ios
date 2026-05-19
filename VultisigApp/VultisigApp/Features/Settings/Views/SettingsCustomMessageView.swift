@@ -42,6 +42,8 @@ struct SettingsCustomMessageView: View {
             switch viewModel.state {
             case .initial:
                 customMessage
+            case .verify:
+                verify
             case .pair:
                 pair
             case .keysign, .done:
@@ -57,10 +59,50 @@ struct SettingsCustomMessageView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
+                continueButton
+                    .padding(.bottom, isMacOS ? 40 : 0)
+            }
+        }
+    }
+
+    var verify: some View {
+        ScrollView {
+            verifyContent
+                .padding(.horizontal, 16)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if viewModel.state == .verify {
                 signButton
                     .padding(.bottom, isMacOS ? 40 : 0)
             }
         }
+    }
+
+    var verifyContent: some View {
+        VStack(spacing: 16) {
+            verifyRow(title: "signingMethod".localized, value: method)
+            verifyRow(title: "messageToSign".localized, value: message)
+        }
+        .padding(.top, 12)
+    }
+
+    private func verifyRow(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textTertiary)
+            Text(value)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Theme.colors.bgSurface2)
+                )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var keysign: some View {
@@ -143,6 +185,14 @@ struct SettingsCustomMessageView: View {
                                     vaultLocalPartyID: vault.localPartyID,
                                     chain: Chain.ethereum.name,
                                     decodedMessage: nil)
+    }
+
+    var continueButton: some View {
+        PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+            viewModel.moveToNextView()
+        }
+        .disabled(!signButtonEnabled)
+        .padding(.horizontal, 16)
     }
 
     @ViewBuilder

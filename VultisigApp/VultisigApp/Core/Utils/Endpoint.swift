@@ -464,6 +464,26 @@ class Endpoint {
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
+    /// Base URL for the QBTC PLONK proof service (vultisig-proxied).
+    /// SDK default is `https://proof.qbtc.network`; we use the proxied URL
+    /// to match `vultisig-windows`. Endpoints under this base: `/health`,
+    /// `/prove`. See `QBTCProofServiceAPI`.
+    static let qbtcProofServiceBaseURL = "https://api.vultisig.com/qbtc-proof"
+
+    /// Base URL for the QBTC chain REST (Cosmos SDK gRPC-gateway).
+    /// Endpoints under this base: `/cosmos/auth/v1beta1/accounts/{addr}`,
+    /// `/cosmos/base/tendermint/v1beta1/blocks/latest`,
+    /// `/qbtc/v1/params/{name}`, `/cosmos/tx/v1beta1/txs`. See `QBTCChainAPI`.
+    static let qbtcRestBaseURL = "https://api.vultisig.com/qbtc-rpc"
+
+    static func getSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+    }
+
+    static func getStagenetSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
+    }
+
     static func thorchainNodeExplorerURL(_ address: String) -> String {
         return "https://thorchain.net/node/\(address)"
     }

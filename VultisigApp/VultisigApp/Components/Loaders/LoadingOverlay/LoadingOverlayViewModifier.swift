@@ -10,7 +10,17 @@ import SwiftUI
 struct LoadingOverlayViewModifier: ViewModifier {
     let text: String
     @Binding var isLoading: Bool
-    @State private var isLoadingInternal: Bool = false
+    @State private var isLoadingInternal: Bool
+
+    init(text: String, isLoading: Binding<Bool>) {
+        self.text = text
+        self._isLoading = isLoading
+        // Seed the internal state from the binding so an `isLoading` that
+        // is already `true` on first appear renders the overlay
+        // immediately — `.onChange` below only fires for subsequent
+        // changes, so without this seed the very first show is missed.
+        self._isLoadingInternal = State(initialValue: isLoading.wrappedValue)
+    }
 
     func body(content: Content) -> some View {
         content

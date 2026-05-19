@@ -16,4 +16,10 @@ struct KeysignRequest: Hashable, Codable {
     let is_ecdsa: Bool
     let vault_password: String
     let chain: String
+    /// Routes Vultiserver into the MLDSA signing path (currently only used for the
+    /// QBTC claim's round 2). When false, the server picks ECDSA / EdDSA based on
+    /// `is_ecdsa`. Without this flag, MLDSA requests are silently treated as EdDSA
+    /// and the server-side MPC never starts — iOS sees an empty inbound-message
+    /// poll forever. See vultiserver `internal/types/keysign.go`.
+    let mldsa: Bool
 }

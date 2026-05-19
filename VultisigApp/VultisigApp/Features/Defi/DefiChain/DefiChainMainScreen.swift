@@ -16,7 +16,6 @@ struct DefiChainMainScreen: View {
     @StateObject var bondViewModel: DefiChainBondViewModel
     @StateObject var lpsViewModel: DefiChainLPsViewModel
     @StateObject var stakeViewModel: DefiChainStakeViewModel
-    @StateObject private var sendTx = FunctionCallForm()
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -210,10 +209,8 @@ struct DefiChainMainScreen: View {
         guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
             return
         }
-        sendTx.reset(coin: coin)
         router.navigate(to: HomeRoute.vaultAction(
             action: .send(coin: coin, hasPreselectedCoin: true),
-            sendTx: sendTx,
             vault: vault
         ))
     }

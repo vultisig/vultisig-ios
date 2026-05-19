@@ -10,7 +10,6 @@ import SwiftUI
 struct CoinDetailScreen: View {
     let coin: Coin
     let vault: Vault
-    @ObservedObject var sendTx: FunctionCallForm
     @Binding var isPresented: Bool
     var onCoinAction: (VaultAction) -> Void
 
@@ -25,13 +24,11 @@ struct CoinDetailScreen: View {
     init(
         coin: Coin,
         vault: Vault,
-        sendTx: FunctionCallForm,
         isPresented: Binding<Bool>,
         onCoinAction: @escaping (VaultAction) -> Void
     ) {
         self.coin = coin
         self.vault = vault
-        self.sendTx = sendTx
         self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
         self.onCoinAction = onCoinAction
@@ -156,7 +153,6 @@ private extension CoinDetailScreen {
     }
 
     func onAction(_ action: CoinAction) {
-        sendTx.reset(coin: coin)
         var vaultAction: VaultAction?
         switch action {
         case .receive:
@@ -166,7 +162,6 @@ private extension CoinDetailScreen {
         case .swap:
             vaultAction = .swap(fromCoin: coin)
         case .deposit, .bridge, .memo:
-            sendTx.coin = coin
             vaultAction = .function(coin: coin)
         case .buy:
             vaultAction = .buy(
@@ -187,7 +182,6 @@ private extension CoinDetailScreen {
     CoinDetailScreen(
         coin: .example,
         vault: .example,
-        sendTx: .init(),
         isPresented: .constant(true),
         onCoinAction: { _ in}
     )

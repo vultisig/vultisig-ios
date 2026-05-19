@@ -103,6 +103,44 @@ struct SendDetailsSeed: Hashable {
             wasmContractPayload: tx.wasmContractPayload
         )
     }
+
+    /// Builds an empty seed prefilled with the deeplink/scanner fields that
+    /// previously lived on the shared `FunctionCallForm` instance. Used by
+    /// `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
+    /// rides on the route value instead of mutating a long-lived form.
+    static func fromAction(
+        coin: Coin,
+        vault: Vault,
+        hasPreselectedCoin: Bool,
+        prefilledToAddress: String?,
+        prefilledAmount: String?,
+        prefilledMemo: String?
+    ) -> SendDetailsSeed {
+        SendDetailsSeed(
+            coin: coin,
+            vault: vault,
+            hasPreselectedCoin: hasPreselectedCoin,
+            fromAddress: coin.address,
+            toAddress: prefilledToAddress ?? "",
+            toAddressLabel: nil,
+            lastResolvedAddress: nil,
+            amount: prefilledAmount ?? "",
+            amountInFiat: "",
+            memo: prefilledMemo ?? "",
+            gas: .zero,
+            fee: .zero,
+            feeMode: .default,
+            estimatedGasLimit: nil,
+            customGasLimit: nil,
+            customByteFee: nil,
+            sendMaxAmount: false,
+            isFastVault: false,
+            isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:],
+            wasmContractPayload: nil
+        )
+    }
 }
 
 struct SendCoinSnapshot: Hashable {
