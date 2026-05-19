@@ -5,6 +5,8 @@
 import OSLog
 import SwiftUI
 
+private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
+
 struct KeysignView: View {
     let vault: Vault
     let keysignCommittee: [String]
@@ -31,6 +33,8 @@ struct KeysignView: View {
     @State var showDoneText = false
     @State var showError = false
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
     var body: some View {
@@ -38,6 +42,16 @@ struct KeysignView: View {
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
+            // Observability hook for vultisig-ios#4327: the issue reporter sees
+            // the "Signing" screen unblock after backgrounding + foregrounding,
+            // which fingerprints iOS auto-resuming a suspended network session.
+            // The log line lets us correlate scene transitions with the status
+            // trail in `os_log` captures from a TestFlight repro.
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                let isSigning: [KeysignStatus] = [.CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA]
+                guard isSigning.contains(viewModel.status) else { return }
+                logger.info("scenePhase: \(String(describing: oldPhase), privacy: .public) → \(String(describing: newPhase), privacy: .public) while status=\(String(describing: viewModel.status), privacy: .public)")
+            }
         #if os(iOS)
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
