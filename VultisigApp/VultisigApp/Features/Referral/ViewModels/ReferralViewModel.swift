@@ -264,9 +264,9 @@ class ReferralViewModel: ObservableObject {
     }
 
     func fetchReferralCodeDetails() async {
-        await MainActor.run { isLoading = true }
+        isLoading = true
         guard savedReferralCode.isNotEmpty else {
-            await MainActor.run { isLoading = false }
+            isLoading = false
             return
         }
         do {
@@ -275,20 +275,16 @@ class ReferralViewModel: ObservableObject {
             let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
             let collectedRunes = await calculateCollectedRewards(details: details)
             // Saved referral code and vault association
-            await MainActor.run {
-                self.currentBlockheight = lastBlock
-                self.expiresOn = expiresOn
-                self.collectedRewards = collectedRunes
-                self.thornameDetails = details
-            }
+            self.currentBlockheight = lastBlock
+            self.expiresOn = expiresOn
+            self.collectedRewards = collectedRunes
+            self.thornameDetails = details
         } catch {
-            await MainActor.run {
-                self.expiresOn = "-"
-                self.collectedRewards = "-"
-            }
+            self.expiresOn = "-"
+            self.collectedRewards = "-"
         }
 
-        await MainActor.run { isLoading = false }
+        isLoading = false
     }
 
     func calculateCollectedRewards(details: THORName) async -> String {
@@ -317,7 +313,9 @@ class ReferralViewModel: ObservableObject {
     }
 
     func setup(defaultVault: Vault?) {
-        self.currentVault = currentVault ?? defaultVault
+        if currentVault == nil {
+            currentVault = defaultVault
+        }
         nativeCoin = currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
     }
 

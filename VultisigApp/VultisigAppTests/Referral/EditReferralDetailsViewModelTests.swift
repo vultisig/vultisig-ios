@@ -134,7 +134,7 @@ final class EditReferralDetailsViewModelTests: XCTestCase {
         let tx = vm.verifyReferralEntries()
         XCTAssertNil(tx)
         XCTAssertTrue(vm.hasError)
-        XCTAssertEqual(vm.errorMessage, "insufficientBalance")
+        XCTAssertEqual(vm.errorMessage, "insufficientBalance".localized)
     }
 
     // MARK: - Singleton avoidance (decision-pin)

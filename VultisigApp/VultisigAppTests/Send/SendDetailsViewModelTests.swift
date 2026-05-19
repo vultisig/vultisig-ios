@@ -329,9 +329,11 @@ final class SendDetailsViewModelTests: XCTestCase {
     }
 
     // MARK: - Fast vault
-    // `vault.isFastVault` is the unified read — cache-first with structural
-    // fallback. The cache is populated by `FastVaultEligibilityRefresher`
-    // (see its tests for the populate path).
+    // `vault.isFastVault` reads the cache populated by
+    // `FastVaultEligibilityRefresher`. Returns `false` until the cache is
+    // populated — an extra paired-sign round trip in that narrow window is
+    // preferable to routing a non-eligible vault into FastVault based on the
+    // structural `hasServerSigner` alone.
 
     func testVaultIsFastVaultReflectsCachedTrue() {
         let vault = SendFormFixture.makeVault()
@@ -349,13 +351,14 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertFalse(vm.vault.isFastVault)
     }
 
-    func testVaultIsFastVaultFallsBackToStructuralWhenCacheEmpty() {
-        // No cache yet (checkedAt == nil). With a `server-` signer in the
-        // list, the structural fallback returns true.
+    func testVaultIsFastVaultIsFalseUntilCacheHydrates() {
+        // No cache yet (checkedAt == nil). Even with a `server-` signer
+        // present, the read returns false — the refresher hasn't confirmed
+        // eligibility yet.
         let vault = SendFormFixture.makeVault()
         vault.signers = ["iPhone-test", "server-abc"]
         let vm = SendFormFixture.make(vault: vault)
-        XCTAssertTrue(vm.vault.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
     }
 
     // MARK: - Amount sync validation (Phase 2b)

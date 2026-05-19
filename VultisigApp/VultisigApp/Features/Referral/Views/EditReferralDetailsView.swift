@@ -13,7 +13,7 @@ struct EditReferralDetailsView: View {
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
-    @State var showPreferredAssetSelection: Bool = false
+    @State private var showPreferredAssetSelection: Bool = false
 
     init(
         viewModel: EditReferralDetailsViewModel,
@@ -156,7 +156,7 @@ struct EditReferralDetailsView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: "")),
+            message: Text(viewModel.errorMessage ?? .empty),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }

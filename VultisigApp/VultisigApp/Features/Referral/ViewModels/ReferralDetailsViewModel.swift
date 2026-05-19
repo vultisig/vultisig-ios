@@ -174,7 +174,9 @@ final class ReferralDetailsViewModel {
     }
 
     func handleCounterDecrease() {
-        guard expireInCount > 0 else { return }
+        // Counter must stay ≥ 1 — 0 makes `isTotalFeesLoading` flip true while
+        // `getTotalFee()` still prices it like the 1-year case.
+        guard expireInCount > 1 else { return }
         expireInCount -= 1
     }
 
@@ -206,7 +208,10 @@ final class ReferralDetailsViewModel {
         resetReferralData()
         nameErrorCheck(code: referralCode, forReferralCode: true)
 
-        guard referralAvailabilityErrorMessage == nil else { return }
+        guard referralAvailabilityErrorMessage == nil else {
+            isLoading = false
+            return
+        }
 
         await checkNameAvailability(code: referralCode)
     }
@@ -356,15 +361,15 @@ final class ReferralDetailsViewModel {
     func persistReferralCode(_ code: String) {
         if let vaultReferral = vault.referralCode {
             vaultReferral.code = code
+            do {
+                try Storage.shared.save()
+            } catch {
+                showNameError(with: "systemErrorMessage")
+            }
         } else {
+            // `saveReferralCode` already handles insert + save.
             let referral = ReferralCode(code: code, vault: vault)
             saveReferralCode(referral)
-        }
-
-        do {
-            try Storage.shared.save()
-        } catch {
-            showNameError(with: "systemErrorMessage")
         }
     }
 

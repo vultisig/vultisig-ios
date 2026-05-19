@@ -104,11 +104,17 @@ final class EditReferralDetailsViewModel {
     // MARK: - Setup
 
     func setup() async {
+        // Preferred-asset comes from `thornameDetails` (already in memory) — keep
+        // it outside the throwing path so a fee-fetch failure doesn't leave both
+        // nil and have `buildSendTransaction()` drop the current asset on retry.
+        preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
+        initialPreferredAsset = preferredAsset
+
+        loadingFees = true
+        defer { loadingFees = false }
         do {
             let fee = try await thorchainService.getNetwork().tns_fee_per_block_rune.toDecimal()
             feePerBlock = fee
-            preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
-            initialPreferredAsset = preferredAsset
         } catch {
             showError(message: "referralNetworkError")
         }
@@ -186,7 +192,7 @@ final class EditReferralDetailsViewModel {
     }
 
     private func showError(message: String) {
-        errorMessage = message
+        errorMessage = message.localized
         hasError = true
     }
 

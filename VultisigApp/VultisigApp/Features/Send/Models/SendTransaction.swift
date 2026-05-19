@@ -134,7 +134,6 @@ struct SendDetailsSeed: Hashable {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
