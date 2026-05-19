@@ -501,6 +501,7 @@
 "Merge" = "Merge";
 "message" = "Message";
 "messageDeposit" = "%@ message deposit";
+"messageToSign" = "Message to sign";
 "messageVote" = "%@ message vote";
 "migrate" = "Migrate";
 "migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";
@@ -827,6 +828,7 @@
 "signer" = "Signer";
 "signFasterThanEverBefore" = "Sign faster than ever before";
 "signingErrorTryAgain" = "Signing Error";
+"signingMethod" = "Signing method";
 "signingTransaction" = "Signing transaction";
 "signTransaction" = "Sign transaction";
 "skip" = "Skip";

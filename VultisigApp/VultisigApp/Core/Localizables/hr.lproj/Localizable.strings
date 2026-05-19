@@ -494,6 +494,7 @@
 "memoLabel" = "Memo";
 "Merge" = "Spoji";
 "messageDeposit" = "%@ depozit poruke";
+"messageToSign" = "Poruka za potpisivanje";
 "messageVote" = "%@ glas poruke";
 "migrate" = "Migrirati";
 "migratePasswordDescription" = "Unesite svoju lozinku za otključavanje server dijela i pokretanje nadogradnje";
@@ -817,6 +818,7 @@
 "signer" = "Potpisnik";
 "signFasterThanEverBefore" = "Potpiši brže nego ikad prije";
 "signingErrorTryAgain" = "Greška pri prijavi";
+"signingMethod" = "Metoda potpisa";
 "signingTransaction" = "Potpisivanje transakcije";
 "signTransaction" = "Potpiši transakciju";
 "skip" = "Preskoči";

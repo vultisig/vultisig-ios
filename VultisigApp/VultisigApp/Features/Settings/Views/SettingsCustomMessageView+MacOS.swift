@@ -16,6 +16,9 @@ extension SettingsCustomMessageView {
             case .initial:
                 customMessage
                     .crossPlatformToolbar(viewModel.state.title)
+            case .verify:
+                verify
+                    .crossPlatformToolbar(viewModel.state.title)
             case .pair:
                 pair
             case .keysign, .done:
