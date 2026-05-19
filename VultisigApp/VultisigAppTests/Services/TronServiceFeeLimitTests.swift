@@ -157,9 +157,10 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
         let gasFee = extractGasFee(result)
 
-        // Not the contract default — should be the coin.feeDefault fallback,
-        // which is much smaller than `DEFAULT_MAX_ENERGY_USED × energyPrice`.
-        XCTAssertLessThan(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+        // Bandwidth-discounted fee is 0, so `getBlockInfo` falls through to
+        // `coin.feeDefault` for the UI binding. For TRX that resolves to
+        // 100_000 sun (0.1 TRX) — see `Coin.feeDefault`.
+        XCTAssertEqual(gasFee, 100_000)
     }
 
     // MARK: - Helpers

@@ -112,6 +112,14 @@ struct TronAPIService {
         if addressHex.lowercased().hasPrefix("41") {
             addressHex = String(addressHex.dropFirst(2))
         }
+        // Reject any payload that doesn't yield a canonical 20-byte (40 hex chars)
+        // address after stripping the optional TRON `41` prefix. Without this
+        // guard, a malformed base58 input could produce ABI calldata that the
+        // TVM silently accepts but simulates against the wrong recipient,
+        // returning a misleading `energy_used`.
+        guard addressHex.count == 40 else {
+            throw TronAPIError.invalidAddress
+        }
         let paddedAddress = String(repeating: "0", count: max(0, 64 - addressHex.count)) + addressHex
 
         let amountHex = String(amount, radix: 16)

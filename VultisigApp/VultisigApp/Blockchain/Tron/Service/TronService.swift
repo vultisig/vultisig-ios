@@ -152,7 +152,7 @@ class TronService {
         let transactionFee: BigInt
         if coin.isNativeToken {
             if isSwap {
-                transactionFee = BigInt(Self.DEFAULT_MAX_ENERGY_USED * energyPrice)
+                transactionFee = Self.defaultContractFeeLimit(energyPrice: energyPrice)
             } else {
                 transactionFee = (try? await calculateNativeTrxFee(coin: coin)) ?? .zero
             }
@@ -198,17 +198,21 @@ class TronService {
 
     /// Conservative fallback budget for contract-execution paths whenever
     /// simulation isn't possible or fails. Used so a transient RPC error
-    /// doesn't silently reintroduce `OUT_OF_ENERGY`.
+    /// doesn't silently reintroduce `OUT_OF_ENERGY`. Operands are widened to
+    /// `BigInt` before multiplying so anomalous chain-parameter values can't
+    /// overflow `Int64`.
     static func defaultContractFeeLimit(energyPrice: Int64) -> BigInt {
-        BigInt(DEFAULT_MAX_ENERGY_USED * energyPrice)
+        BigInt(DEFAULT_MAX_ENERGY_USED) * BigInt(energyPrice)
     }
 
     /// Translates a simulated `energy_used` into a `fee_limit` cap (in sun),
     /// applying the documented 30% safety multiplier for dynamic-energy
-    /// surges. Pulled out so the math is testable in isolation.
+    /// surges. Pulled out so the math is testable in isolation. All
+    /// multiplications are performed in `BigInt` so an unexpectedly large
+    /// `energy_used` or `energyPrice` can't overflow `Int64` mid-calculation.
     static func contractFeeLimit(energyUsed: Int64, energyPrice: Int64) -> BigInt {
-        let maxEnergyUnits = energyUsed * ENERGY_SAFETY_NUMERATOR / ENERGY_SAFETY_DENOMINATOR
-        return BigInt(maxEnergyUnits * energyPrice)
+        let maxEnergyUnits = (BigInt(energyUsed) * BigInt(ENERGY_SAFETY_NUMERATOR)) / BigInt(ENERGY_SAFETY_DENOMINATOR)
+        return maxEnergyUnits * BigInt(energyPrice)
     }
 
     private func getCachedChainParameters() async throws -> TronChainParametersResponse {

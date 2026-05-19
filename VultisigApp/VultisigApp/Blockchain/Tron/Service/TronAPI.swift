@@ -213,7 +213,8 @@ struct TronChainParametersResponse: Codable {
     /// `feeLimit = energyBudget * energyFeePrice`.
     /// See https://developers.tron.network/docs/resource-model#dynamic-energy-model.
     var energyFeePrice: Int64 {
-        chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 420
+        let value = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
+        return value > 0 ? value : 420
     }
 
     var memoFeeEstimate: Int64 {
