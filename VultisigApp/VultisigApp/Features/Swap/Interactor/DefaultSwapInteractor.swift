@@ -24,12 +24,6 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
     }
 
-    func loadFastVault(vault: Vault) async -> Bool {
-        let exists = await fastVault.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().hasPrefix("server-")
-        return exists && !isLocalBackup
-    }
-
     func fetchQuote(
         amount: Decimal,
         fromCoin: Coin,

@@ -79,9 +79,6 @@ struct SwapDetailsScreen: View {
             detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
             setData()
         }
-        .task {
-            await detailsViewModel.loadFastVault(vault: vault)
-        }
         .onDisappear {
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = false

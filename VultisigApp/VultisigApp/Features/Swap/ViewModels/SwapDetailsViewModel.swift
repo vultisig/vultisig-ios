@@ -33,7 +33,6 @@ final class SwapDetailsViewModel {
     var gas: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
-    var isFastVault: Bool = false
 
     // MARK: - UI state (details-screen-only)
 
@@ -78,10 +77,6 @@ final class SwapDetailsViewModel {
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
         dataLoaded = true
-    }
-
-    func loadFastVault(vault: Vault) async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     func updateCoinLists() {
@@ -209,7 +204,6 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            isFastVault: isFastVault,
             feeCoin: feeCoin
         )
     }

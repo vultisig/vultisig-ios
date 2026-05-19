@@ -40,10 +40,6 @@ class FunctionCallViewModel: ObservableObject {
         }
     }
 
-    func loadFastVault(tx: FunctionCallForm, vault: Vault) async {
-        tx.isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
-    }
-
     func validateAddress(tx: FunctionCallForm, address: String) {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }

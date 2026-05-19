@@ -42,7 +42,7 @@ struct CircleDepositView: View {
     }
 
     func handleVerify() async {
-        guard let immutableTx = await viewModel.makeTransaction() else { return }
+        guard let immutableTx = viewModel.makeTransaction() else { return }
         await MainActor.run {
             router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: viewModel.vault))
         }

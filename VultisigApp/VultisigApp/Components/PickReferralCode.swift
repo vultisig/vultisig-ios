@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PickReferralCode: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @Bindable var viewModel: ReferralDetailsViewModel
 
     var body: some View {
         return VStack(spacing: 8) {
@@ -20,7 +20,7 @@ struct PickReferralCode: View {
             }
 
             status
-                .animation(.easeInOut, value: referralViewModel.availabilityStatus != nil)
+                .animation(.easeInOut, value: viewModel.availabilityStatus != nil)
         }
     }
 
@@ -33,32 +33,32 @@ struct PickReferralCode: View {
 
     var pickReferralTextfield: some View {
         ReferralTextField(
-            text: $referralViewModel.referralCode,
+            text: $viewModel.referralCode,
             placeholderText: "enter4Characters",
             action: .None,
-            errorMessage: $referralViewModel.referralAvailabilityErrorMessage,
-            showSuccess: referralViewModel.availabilityStatus == .available
+            errorMessage: $viewModel.referralAvailabilityErrorMessage,
+            showSuccess: viewModel.availabilityStatus == .available
         )
         .layoutPriority(1)
         .frame(maxWidth: .infinity)
-        .onChange(of: referralViewModel.referralCode) { _, _ in
-            referralViewModel.resetReferralData()
+        .onChange(of: viewModel.referralCode) { _, _ in
+            viewModel.resetReferralData()
         }
     }
 
     var searchButton: some View {
         PrimaryButton(title: "search".localized, size: .squared) {
             Task {
-                await referralViewModel.verifyReferralCode()
+                await viewModel.verifyReferralCode()
             }
         }
         .scaledToFit()
-        .disabled(referralViewModel.isLoading)
+        .disabled(viewModel.isLoading)
     }
 
     @ViewBuilder
     var status: some View {
-        if let status = referralViewModel.availabilityStatus {
+        if let status = viewModel.availabilityStatus {
             HStack {
                 Text(NSLocalizedString("status", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
@@ -79,8 +79,4 @@ struct PickReferralCode: View {
             .padding(.top, 2)
         }
     }
-}
-
-#Preview {
-    PickReferralCode(referralViewModel: ReferralViewModel())
 }

@@ -39,7 +39,7 @@ struct FunctionCallVerifyScreen: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if transaction.isFastVault {
+            if vault.isFastVault {
                 fastVaultPassword = .empty
             }
         }
@@ -88,7 +88,7 @@ struct FunctionCallVerifyScreen: View {
 
     var pairedSignButton: some View {
         VStack {
-            if transaction.isFastVault {
+            if vault.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)

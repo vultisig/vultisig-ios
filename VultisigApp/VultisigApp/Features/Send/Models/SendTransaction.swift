@@ -41,7 +41,6 @@ struct SendDetailsSeed: Hashable {
     let customGasLimit: BigInt?
     let customByteFee: BigInt?
     let sendMaxAmount: Bool
-    let isFastVault: Bool
     let isStakingOperation: Bool
     let transactionType: VSTransactionType
     let memoFunctionDictionary: [String: String]
@@ -66,7 +65,6 @@ struct SendDetailsSeed: Hashable {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
@@ -99,7 +97,6 @@ struct SendDetailsSeed: Hashable {
             customGasLimit: tx.customGasLimit,
             customByteFee: tx.customByteFee,
             sendMaxAmount: tx.sendMaxAmount,
-            isFastVault: tx.isFastVault,
             isStakingOperation: tx.isStakingOperation,
             transactionType: tx.transactionType,
             memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
@@ -137,7 +134,6 @@ struct SendDetailsSeed: Hashable {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
@@ -218,7 +214,6 @@ struct SendTransaction: Hashable {
 
     // Mode flags
     let sendMaxAmount: Bool
-    let isFastVault: Bool
     let isStakingOperation: Bool
     let transactionType: VSTransactionType
 
@@ -252,7 +247,6 @@ extension SendTransaction {
             lhs.customGasLimit == rhs.customGasLimit &&
             lhs.customByteFee == rhs.customByteFee &&
             lhs.sendMaxAmount == rhs.sendMaxAmount &&
-            lhs.isFastVault == rhs.isFastVault &&
             lhs.isStakingOperation == rhs.isStakingOperation &&
             lhs.transactionType == rhs.transactionType &&
             lhs.memoFunctionDictionary == rhs.memoFunctionDictionary &&
@@ -276,7 +270,6 @@ extension SendTransaction {
         hasher.combine(customGasLimit)
         hasher.combine(customByteFee)
         hasher.combine(sendMaxAmount)
-        hasher.combine(isFastVault)
         hasher.combine(isStakingOperation)
         hasher.combine(transactionType)
         hasher.combine(memoFunctionDictionary)
@@ -302,7 +295,6 @@ extension SendTransaction {
         customGasLimit: BigInt?,
         customByteFee: BigInt?,
         sendMaxAmount: Bool,
-        isFastVault: Bool,
         isStakingOperation: Bool,
         transactionType: VSTransactionType,
         memoFunctionDictionary: [String: String],
@@ -326,7 +318,6 @@ extension SendTransaction {
         self.customGasLimit = customGasLimit
         self.customByteFee = customByteFee
         self.sendMaxAmount = sendMaxAmount
-        self.isFastVault = isFastVault
         self.isStakingOperation = isStakingOperation
         self.transactionType = transactionType
         self.memoFunctionDictionary = memoFunctionDictionary
@@ -367,7 +358,6 @@ extension SendTransaction {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
@@ -396,7 +386,6 @@ extension SendTransaction {
         customGasLimit: SendTransactionUpdate<BigInt?>? = nil,
         customByteFee: SendTransactionUpdate<BigInt?>? = nil,
         sendMaxAmount: Bool? = nil,
-        isFastVault: Bool? = nil,
         isStakingOperation: Bool? = nil,
         transactionType: VSTransactionType? = nil,
         memoFunctionDictionary: [String: String]? = nil,
@@ -441,7 +430,6 @@ extension SendTransaction {
             customGasLimit: resolvedCustomGasLimit,
             customByteFee: resolvedCustomByteFee,
             sendMaxAmount: sendMaxAmount ?? self.sendMaxAmount,
-            isFastVault: isFastVault ?? self.isFastVault,
             isStakingOperation: isStakingOperation ?? self.isStakingOperation,
             transactionType: transactionType ?? self.transactionType,
             memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
@@ -466,7 +454,6 @@ extension SendTransaction {
         estimatedGasLimit: BigInt? = nil,
         memo: String? = nil,
         sendMaxAmount: Bool? = nil,
-        isFastVault: Bool? = nil,
         isStakingOperation: Bool? = nil,
         memoFunctionDictionary: [String: String]? = nil,
         wasmContractPayload: WasmExecuteContractPayload? = nil
@@ -480,7 +467,6 @@ extension SendTransaction {
             feeMode: feeMode,
             estimatedGasLimit: estimatedGasLimit.map { .set($0) },
             sendMaxAmount: sendMaxAmount,
-            isFastVault: isFastVault,
             isStakingOperation: isStakingOperation,
             memoFunctionDictionary: memoFunctionDictionary,
             wasmContractPayload: wasmContractPayload.map { .set($0) }
@@ -534,7 +520,6 @@ extension SendTransaction {
             customGasLimit: tx.customGasLimit,
             customByteFee: tx.customByteFee,
             sendMaxAmount: tx.sendMaxAmount,
-            isFastVault: tx.isFastVault,
             isStakingOperation: tx.isStakingOperation,
             transactionType: tx.transactionType,
             memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),

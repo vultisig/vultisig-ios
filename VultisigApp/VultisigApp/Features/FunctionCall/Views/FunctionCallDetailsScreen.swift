@@ -298,6 +298,5 @@ private extension FunctionCallDetailsScreen {
 
     func loadGasInfo() async {
         await functionCallViewModel.loadGasInfoForSending(tx: tx)
-        await functionCallViewModel.loadFastVault(tx: tx, vault: vault)
     }
 }

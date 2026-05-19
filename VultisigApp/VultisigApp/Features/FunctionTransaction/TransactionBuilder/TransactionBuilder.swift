@@ -58,7 +58,6 @@ extension TransactionBuilder {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: sendMaxAmount,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: transactionType,
             memoFunctionDictionary: memoFunctionDictionary.allItems(),

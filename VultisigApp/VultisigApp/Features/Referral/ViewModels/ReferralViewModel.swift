@@ -137,23 +137,6 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
 
-    func verifyReferralEntries(tx: FunctionCallForm) async -> Bool {
-        await verifyReferralCode()
-
-        guard isReferralCodeVerified else {
-            showAlert(with: "pickValidCode")
-            return false
-        }
-
-        guard enoughGas(tx: tx) else {
-            showAlert(with: "insufficientBalance")
-            return false
-        }
-
-        setupTransaction(tx: tx)
-        return true
-    }
-
     func getRegistrationFee() -> Decimal {
         registrationFee / 100_000_000
     }
@@ -180,23 +163,6 @@ class ReferralViewModel: ObservableObject {
         return fiatAmount.formatToFiat(includeCurrencySymbol: true)
     }
 
-    func getNativeCoin(tx: FunctionCallForm) {
-        nativeCoin = tx.vault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
-
-        if let nativeCoin {
-            tx.coin = nativeCoin
-        }
-    }
-
-    func loadGasInfoForSending(tx: FunctionCallForm) async {
-        do {
-            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-            tx.gas = chainSpecific.gas
-        } catch {
-            print("error fetching data: \(error.localizedDescription)")
-        }
-    }
-
     func resetAllData() {
         referralCode = ""
         referralAvailabilityErrorMessage = nil
@@ -211,27 +177,6 @@ class ReferralViewModel: ObservableObject {
         registrationFee = 0
         feePerBlock = 0
         isFeesLoading = false
-    }
-
-    private func setupTransaction(tx: FunctionCallForm) {
-        tx.amount = totalFee.formatDecimalToLocale()
-
-        guard let currentVault else {
-            return
-        }
-
-        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom(tx: tx, vault: currentVault))
-        tx.memoFunctionDictionary = fnCallInstance.toDictionary()
-        tx.transactionType = fnCallInstance.getTransactionType()
-
-        guard let nativeCoin else {
-            return
-        }
-
-        let memo = "~:\(referralCode.uppercased()):THOR:\(nativeCoin.address):\(nativeCoin.address)"
-        tx.memo = memo
-        tx.coin = nativeCoin
-        tx.fromAddress = nativeCoin.address
     }
 
     private func showAlert(with message: String) {
@@ -318,19 +263,10 @@ class ReferralViewModel: ObservableObject {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 
-    private func enoughGas(tx: FunctionCallForm) -> Bool {
-        let decimals = tx.coin.decimals
-        let gas = Decimal(tx.gas) / pow(10, decimals)
-        let amount = totalFee + gas
-        let vaultAmount = nativeCoin?.balanceDecimal ?? 0
-
-        return vaultAmount >= amount
-    }
-
     func fetchReferralCodeDetails() async {
-        await MainActor.run { isLoading = true }
+        isLoading = true
         guard savedReferralCode.isNotEmpty else {
-            await MainActor.run { isLoading = false }
+            isLoading = false
             return
         }
         do {
@@ -339,20 +275,16 @@ class ReferralViewModel: ObservableObject {
             let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
             let collectedRunes = await calculateCollectedRewards(details: details)
             // Saved referral code and vault association
-            await MainActor.run {
-                self.currentBlockheight = lastBlock
-                self.expiresOn = expiresOn
-                self.collectedRewards = collectedRunes
-                self.thornameDetails = details
-            }
+            self.currentBlockheight = lastBlock
+            self.expiresOn = expiresOn
+            self.collectedRewards = collectedRunes
+            self.thornameDetails = details
         } catch {
-            await MainActor.run {
-                self.expiresOn = "-"
-                self.collectedRewards = "-"
-            }
+            self.expiresOn = "-"
+            self.collectedRewards = "-"
         }
 
-        await MainActor.run { isLoading = false }
+        isLoading = false
     }
 
     func calculateCollectedRewards(details: THORName) async -> String {
@@ -380,13 +312,11 @@ class ReferralViewModel: ObservableObject {
         return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
 
-    func setup(tx: FunctionCallForm, defaultVault: Vault?) {
-        self.currentVault = currentVault ?? defaultVault
-        let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
-        let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-        tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
-        tx.vault = currentVault
-        getNativeCoin(tx: tx)
+    func setup(defaultVault: Vault?) {
+        if currentVault == nil {
+            currentVault = defaultVault
+        }
+        nativeCoin = currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
     }
 
     func updateReferralCode(code: String) {

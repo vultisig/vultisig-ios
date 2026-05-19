@@ -202,7 +202,6 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            isFastVault: false,
             feeCoin: rune
         )
     }
@@ -219,7 +218,6 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            isFastVault: false,
             feeCoin: cacao
         )
     }
@@ -236,7 +234,6 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            isFastVault: false,
             feeCoin: eth
         )
     }

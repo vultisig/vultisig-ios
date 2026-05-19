@@ -358,8 +358,6 @@ extension SendDetailsScreen {
                 }
             }
         }
-
-        await viewModel.loadFastVault()
     }
 
 }

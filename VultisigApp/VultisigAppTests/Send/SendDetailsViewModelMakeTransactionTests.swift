@@ -30,7 +30,6 @@ final class SendDetailsViewModelMakeTransactionTests: XCTestCase {
         vm.feeMode = .fast
         vm.estimatedGasLimit = BigInt(21_000)
         vm.sendMaxAmount = false
-        vm.isFastVault = true
         vm.isStakingOperation = false
         vm.transactionType = .unspecified
 
@@ -49,7 +48,6 @@ final class SendDetailsViewModelMakeTransactionTests: XCTestCase {
         XCTAssertEqual(tx.feeMode, .fast)
         XCTAssertEqual(tx.estimatedGasLimit, BigInt(21_000))
         XCTAssertFalse(tx.sendMaxAmount)
-        XCTAssertTrue(tx.isFastVault)
         XCTAssertFalse(tx.isStakingOperation)
         XCTAssertEqual(tx.transactionType, .unspecified)
     }
