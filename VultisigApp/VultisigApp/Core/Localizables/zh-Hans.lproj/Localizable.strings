@@ -208,6 +208,7 @@
 "createFolder" = "创建文件夹";
 "createQR" = "创建二维码";
 "createReferral" = "创建推荐";
+"createReferralCardTitle" = "创建推荐";
 "createReferralCode" = "创建推荐码";
 "createVault" = "创建保险库";
 "createYourCodeAndEarn" = "创建您自己的代码并在推荐交换中赚取 %@";
@@ -510,6 +511,8 @@
 "moreInfo" = "更多信息";
 "moreInfoDescription" = "这是因为密码用于本地加密备份文件，类似于硬盘驱动器的加密方式。在下一步中，您可以选择添加提示";
 "mustAgreeTermsError" = "您必须同意条款";
+"myReferralCardBody" = "管理您的推荐码并领取奖励。";
+"myReferralCardTitle" = "我的推荐";
 "myVaults" = "我的保险库";
 "name" = "名称";
 "nameYourVault" = "命名您的保险库";
@@ -605,7 +608,6 @@
 "operatorFeesLabel" = "运营商费用（基点）";
 "optional" = "(可选)";
 "optionalPasswordProtectBackup" = "保险库的可选密码保护";
-"or" = "或";
 "other" = "其他";
 "overview" = "概览";
 "pair" = "配对";
@@ -722,6 +724,8 @@
 "savedAddresses" = "已保存的地址";
 "saveOnSwaps" = "在交换中节省 %@";
 "saveReferral" = "保存推荐";
+"saveReferralCardBody" = "保存朋友的推荐码，在交换中节省 %@。";
+"saveReferralCardTitle" = "保存推荐";
 "saveReferredCode" = "保存推荐码";
 "saveVaultQR" = "保存保险库二维码";
 "scannerModeCamera" = "摄像头";
@@ -1066,7 +1070,7 @@
 "vultDiscountTiers" = "$VULT 折扣等级";
 "vultDiscountTiersDescription" = "持有 $VULT 以解锁较低的交易费用";
 "vultiserverPassword" = "Vultiserver 密码";
-"vultisig-referrals" = "Vultisig - 推荐";
+"vultisig-referrals" = "Vultisig 推荐";
 "vultisigCommunity" = "Vultisig 社区";
 "vultisigEducation" = "Vultisig 教育";
 "vultisigWebsite" = "Vultisig 网站";

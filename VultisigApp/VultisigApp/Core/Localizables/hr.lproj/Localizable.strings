@@ -208,6 +208,7 @@
 "createFolder" = "Kreiraj mapu";
 "createQR" = "Stvori QR";
 "createReferral" = "Kreiraj preporuku";
+"createReferralCardTitle" = "Kreiraj preporuku";
 "createReferralCode" = "Stvorite referalni kod";
 "createVault" = "Stvori trezor";
 "createYourCodeAndEarn" = "Kreiraj vlastiti kod i zaradi 10 bps na swapovima";
@@ -510,6 +511,8 @@
 "moreInfo" = "Više informacija";
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
+"myReferralCardBody" = "Upravljaj svojim kodom preporuke i prikupljaj nagrade.";
+"myReferralCardTitle" = "Moja preporuka";
 "myVaults" = "Moji trezori";
 "name" = "Ime";
 "nameYourVault" = "Imenujte svoj trezor";
@@ -604,7 +607,6 @@
 "operatorFeesLabel" = "Naknade operatora (Bazne točke)";
 "optional" = "(neobavezno)";
 "optionalPasswordProtectBackup" = "Neobavezna zaštita lozinkom vašeg spremišta";
-"or" = "ILI";
 "other" = "Ostalo";
 "overview" = "Pregled";
 "pair" = "Upareni";
@@ -722,6 +724,8 @@
 "savedAddresses" = "Spremljene adrese";
 "saveOnSwaps" = "Spremite %@ na zamjene";
 "saveReferral" = "Spremi referalu";
+"saveReferralCardBody" = "Spremi prijateljev kod preporuke i uštedi %@ na swapovima.";
+"saveReferralCardTitle" = "Spremi preporuku";
 "saveReferredCode" = "Spremi referalni kod";
 "saveVaultQR" = "Spremi QR trezora";
 "scannerModeCamera" = "Kamera";
@@ -1065,7 +1069,7 @@
 "vultDiscountTiers" = "$VULT Razine Popusta";
 "vultDiscountTiersDescription" = "Držite $VULT da biste otključali niže naknade za trgovanje.";
 "vultiserverPassword" = "Vultiserver lozinka";
-"vultisig-referrals" = "Vultisig – Preporuke";
+"vultisig-referrals" = "Vultisig Preporuke";
 "vultisigCommunity" = "Vultisig zajednica";
 "vultisigEducation" = "Edukacija Vultisig";
 "vultisigWebsite" = "Web stranica Vultisig";

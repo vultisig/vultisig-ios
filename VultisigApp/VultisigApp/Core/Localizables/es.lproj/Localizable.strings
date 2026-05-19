@@ -208,6 +208,7 @@
 "createFolder" = "Crear carpeta";
 "createQR" = "Crear QR";
 "createReferral" = "Crear referido";
+"createReferralCardTitle" = "Crear referido";
 "createReferralCode" = "Crear código de referencia";
 "createVault" = "Crear bóveda";
 "createYourCodeAndEarn" = "Crea tu propio código y gana 10 bps en swaps";
@@ -510,6 +511,8 @@
 "moreInfo" = "Más información";
 "moreInfoDescription" = "Esto ocurre porque la contraseña se utiliza para cifrar localmente el archivo de copia de seguridad, de forma similar a cómo se cifra un disco duro. En el siguiente paso, tienes la opción de añadir una pista.";
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
+"myReferralCardBody" = "Gestiona tu código de referido y recoge recompensas.";
+"myReferralCardTitle" = "Mi referido";
 "myVaults" = "Mis Bóvedas";
 "name" = "Nombre";
 "nameYourVault" = "Nombra tu bóveda";
@@ -604,7 +607,6 @@
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
 "optional" = "(opcional)";
 "optionalPasswordProtectBackup" = "Protección opcional con contraseña de tu almacén";
-"or" = "O";
 "other" = "Otro";
 "overview" = "Resumen";
 "pair" = "Emparejar";
@@ -722,6 +724,8 @@
 "savedAddresses" = "Direcciones guardadas";
 "saveOnSwaps" = "Guardar %@ en swaps";
 "saveReferral" = "Guardar referido";
+"saveReferralCardBody" = "Guarda el código de referido de un amigo y ahorra %@ en swaps.";
+"saveReferralCardTitle" = "Guardar referido";
 "saveReferredCode" = "Guardar código de referido";
 "saveVaultQR" = "Guardar QR del Vault";
 "scannerModeCamera" = "Cámara";
@@ -1065,7 +1069,7 @@
 "vultDiscountTiers" = "Niveles de Descuento $VULT";
 "vultDiscountTiersDescription" = "Mantén $VULT para desbloquear comisiones de trading más bajas.";
 "vultiserverPassword" = "Contraseña de Vultiserver";
-"vultisig-referrals" = "Vultisig - Referidos";
+"vultisig-referrals" = "Vultisig Referidos";
 "vultisigCommunity" = "Comunidad Vultisig";
 "vultisigEducation" = "Educación Vultisig";
 "vultisigWebsite" = "Sitio web de Vultisig";

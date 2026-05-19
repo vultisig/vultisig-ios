@@ -43,7 +43,6 @@ class ReferredViewModel: ObservableObject {
     }
 
     func setData() {
-        currentVault = AppViewModel.shared.selectedVault
         referredCode = savedReferredCode
     }
 

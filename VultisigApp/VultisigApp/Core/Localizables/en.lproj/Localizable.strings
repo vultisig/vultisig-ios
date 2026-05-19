@@ -210,6 +210,7 @@
 "createFolder" = "Create Folder";
 "createQR" = "Create QR";
 "createReferral" = "Create referral";
+"createReferralCardTitle" = "Create Referral";
 "createReferralCode" = "Create referral code";
 "createVault" = "Create vault";
 "createYourCodeAndEarn" = "Create your own code and earn %@ on referred swaps";
@@ -517,6 +518,8 @@
 "moreInfo" = "More info";
 "moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint";
 "mustAgreeTermsError" = "You must agree with the terms.";
+"myReferralCardBody" = "Manage your referral code and collect rewards.";
+"myReferralCardTitle" = "My Referral";
 "myVaults" = "My Vaults";
 "name" = "Name";
 "nameYourVault" = "Name your vault";
@@ -612,7 +615,6 @@
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "optional" = "(optional)";
 "optionalPasswordProtectBackup" = "Optional password protection of your Vault";
-"or" = "OR";
 "other" = "Other";
 "overview" = "Overview";
 "pair" = "Pair";
@@ -731,6 +733,8 @@
 "savedAddresses" = "Saved Addresses";
 "saveOnSwaps" = "Save %@ on swaps";
 "saveReferral" = "Save referral";
+"saveReferralCardBody" = "Save a friend's referral code and save %@ on swaps.";
+"saveReferralCardTitle" = "Save Referral";
 "saveReferredCode" = "Save referred code";
 "saveVaultQR" = "Save Vault QR";
 "scannerModeCamera" = "Camera";
@@ -1081,7 +1085,7 @@
 "vultDiscountTiers" = "$VULT Discount Tiers";
 "vultDiscountTiersDescription" = "Hold $VULT to unlock lower trading fees.";
 "vultiserverPassword" = "Vultiserver Password";
-"vultisig-referrals" = "Vultisig - Referrals";
+"vultisig-referrals" = "Vultisig Referrals";
 "vultisigCommunity" = "Vultisig Community";
 "vultisigEducation" = "Vultisig Education";
 "vultisigWebsite" = "Vultisig Website";
