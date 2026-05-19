@@ -42,6 +42,11 @@ class CoinSelectionViewModel: ObservableObject {
         await balanceService.updateBalance(for: coin)
     }
 
+    /// When true, MLDSA-backed chains (e.g. QBTC) are visible in the list even
+    /// if the vault has no MLDSA key yet. Callers handle the keygen prompt
+    /// before the user can actually persist the chain.
+    var showMldsaChainsWithoutKey: Bool = false
+
     func setData(for vault: Vault, checkForSelected: Bool = true) {
         if checkForSelected {
             checkSelected(for: vault)
@@ -49,6 +54,11 @@ class CoinSelectionViewModel: ObservableObject {
             selection = []
         }
         groupAssets(vault: vault)
+    }
+
+    func requiresQuantumKeygen(for asset: CoinMeta, vault: Vault) -> Bool {
+        guard asset.chain.signingKeyType == .MLDSA else { return false }
+        return vault.publicKeyMLDSA44 == nil || vault.publicKeyMLDSA44?.isEmpty == true
     }
 
     private func checkSelected(for vault: Vault) {
@@ -74,7 +84,7 @@ class CoinSelectionViewModel: ObservableObject {
                 return enableThorchainChainnet
             }
             if asset.chain.signingKeyType == .MLDSA {
-                return hasMLDSAKey
+                return hasMLDSAKey || showMldsaChainsWithoutKey
             }
             return true
         }

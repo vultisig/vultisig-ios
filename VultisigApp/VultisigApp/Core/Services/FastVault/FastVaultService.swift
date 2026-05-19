@@ -283,7 +283,8 @@ final class FastVaultService {
         derivePath: String,
         isECDSA: Bool,
         vaultPassword: String,
-        chain: String
+        chain: String,
+        isMldsa: Bool = false
     ) async throws {
         let request = KeysignRequest(
             public_key: publicKeyEcdsa,
@@ -293,7 +294,8 @@ final class FastVaultService {
             derive_path: derivePath,
             is_ecdsa: isECDSA,
             vault_password: vaultPassword,
-            chain: chain
+            chain: chain,
+            mldsa: isMldsa
         )
         do {
             _ = try await httpClient.request(FastVaultAPI.sign(request))

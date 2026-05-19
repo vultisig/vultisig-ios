@@ -192,7 +192,7 @@ enum ExplorerLinkBuilder {
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
         case .qbtc:
-            return ""
+            return "https://qbtc-explorer.vercel.app/qbtc/tx/\(txid)"
         }
     }
 

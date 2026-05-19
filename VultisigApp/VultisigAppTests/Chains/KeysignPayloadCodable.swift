@@ -1255,16 +1255,10 @@ extension VSBitcoinInput: @retroactive Codable {
         try container.encode(amount, forKey: .amount)
         try container.encode(scriptPubKey, forKey: .scriptPubKey)
         try container.encode(scriptType, forKey: .scriptType)
-        if hasSighashType {
-            try container.encode(sighashType, forKey: .sighashType)
-        }
+        if hasSighashType { try container.encode(sighashType, forKey: .sighashType) }
         try container.encode(isOurs, forKey: .isOurs)
-        if hasRedeemScript {
-            try container.encode(redeemScript, forKey: .redeemScript)
-        }
-        if hasSequence {
-            try container.encode(sequence, forKey: .sequence)
-        }
+        if hasRedeemScript { try container.encode(redeemScript, forKey: .redeemScript) }
+        if hasSequence { try container.encode(sequence, forKey: .sequence) }
     }
 
     public init(from decoder: any Decoder) throws {
@@ -1275,15 +1269,15 @@ extension VSBitcoinInput: @retroactive Codable {
         amount = try container.decode(Int64.self, forKey: .amount)
         scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
         scriptType = try container.decode(String.self, forKey: .scriptType)
-        if let v = try container.decodeIfPresent(UInt32.self, forKey: .sighashType) {
-            sighashType = v
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sighashType) {
+            sighashType = value
         }
         isOurs = try container.decode(Bool.self, forKey: .isOurs)
-        if let v = try container.decodeIfPresent(String.self, forKey: .redeemScript) {
-            redeemScript = v
+        if let value = try container.decodeIfPresent(String.self, forKey: .redeemScript) {
+            redeemScript = value
         }
-        if let v = try container.decodeIfPresent(UInt32.self, forKey: .sequence) {
-            sequence = v
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sequence) {
+            sequence = value
         }
     }
 }
@@ -1301,9 +1295,7 @@ extension VSBitcoinOutput: @retroactive Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(amount, forKey: .amount)
         try container.encode(address, forKey: .address)
-        if hasOpReturnData {
-            try container.encode(opReturnData, forKey: .opReturnData)
-        }
+        if hasOpReturnData { try container.encode(opReturnData, forKey: .opReturnData) }
         try container.encode(scriptPubKey, forKey: .scriptPubKey)
         try container.encode(isChange, forKey: .isChange)
     }
@@ -1313,8 +1305,8 @@ extension VSBitcoinOutput: @retroactive Codable {
         self.init()
         amount = try container.decode(Int64.self, forKey: .amount)
         address = try container.decode(String.self, forKey: .address)
-        if let v = try container.decodeIfPresent(String.self, forKey: .opReturnData) {
-            opReturnData = v
+        if let value = try container.decodeIfPresent(String.self, forKey: .opReturnData) {
+            opReturnData = value
         }
         scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
         isChange = try container.decode(Bool.self, forKey: .isChange)

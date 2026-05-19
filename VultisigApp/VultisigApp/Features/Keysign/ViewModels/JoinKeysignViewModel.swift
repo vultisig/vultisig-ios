@@ -31,6 +31,10 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
     case VaultTypeDoesntMatch
+    /// Multi-round QBTC claim — driven by `qbtcClaimDriver` rather than
+    /// the standard single-keysign flow. Set when the scanned QR has
+    /// `isQbtcClaim == true`. See [[v2-secure-vault-design]].
+    case QBTCClaim
 }
 
 @MainActor
@@ -50,6 +54,10 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    /// Set when the scanned QR has `isQbtcClaim == true`. The standard
+    /// single-keysign flow steps aside while this driver runs the
+    /// peer-side flow. See [[v2-secure-vault-design]].
+    @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
@@ -214,6 +222,13 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+        // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
+        // a standard tx body; the QBTCClaimJoinDriver computes the round-1
+        // message hash itself. Skip the standard factory so it doesn't
+        // fail trying to build sighashes from a body that isn't there.
+        if keysignPayload.isQbtcClaim {
+            return
+        }
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
@@ -287,6 +302,32 @@ class JoinKeysignViewModel: ObservableObject {
                     logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                 }
             }
+
+            // QBTC claim fork — if the loaded payload is flagged with
+            // `isQbtcClaim`, hand off to the QBTC-claim peer driver and
+            // step the standard single-keysign flow aside. Reads from
+            // `self.keysignPayload` so it covers both inline payloads and
+            // ones fetched from the relay via `ensureKeysignPayload`.
+            // Post-qbtc#158 the peer only runs one BTC ECDSA round; the
+            // session is the keysign message's own session, not a
+            // round-suffixed derivation of a base session. The peer
+            // derives the claimer's QBTC address from its own vault.
+            if let payload = self.keysignPayload, payload.isQbtcClaim {
+                let session = KeysignSessionInfo(
+                    sessionId: keysignMsg.sessionID,
+                    encryptionKeyHex: keysignMsg.encryptionKeyHex,
+                    serviceName: keysignMsg.serviceName,
+                    localPartyId: self.localPartyID,
+                    serverAddr: Endpoint.vultisigRelay
+                )
+                let driver = QBTCClaimJoinDriver(
+                    vault: self.vault,
+                    session: session
+                )
+                self.qbtcClaimDriver = driver
+                self.status = .QBTCClaim
+                Task { await driver.run() }
+            }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -294,6 +335,11 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func manageQrCodeStates() {
+        // QBTC claim flow drives its own status transitions via
+        // `qbtcClaimDriver.phase`; don't let the standard flow override.
+        if status == .QBTCClaim {
+            return
+        }
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch

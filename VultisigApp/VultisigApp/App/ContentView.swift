@@ -57,6 +57,7 @@ struct ContentView: View {
             .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
             .navigationDestination(for: TransactionHistoryRoute.self) { router.transactionHistoryRouter.build($0) }
+            .navigationDestination(for: QBTCClaimRoute.self) { router.qbtcClaimRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)

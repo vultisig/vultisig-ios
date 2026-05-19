@@ -22,6 +22,17 @@ struct KeysignPayload: Codable, Hashable {
     let tronTransferContractPayload: TronTransferContractPayload?
     let tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?
     let tronTransferAssetContractPayload: TronTransferAssetContractPayload?
+    /// Set on the initiating device when constructing a QBTC claim. Local-only:
+    /// not round-tripped through the proto `KeysignPayload`. See
+    /// `QBTCClaimPayload` for rationale.
+    let qbtcClaimPayload: QBTCClaimPayload?
+    /// Marker round-tripped through the proto: signals to the peer device
+    /// that the BTC ECDSA signature it's about to produce is for a QBTC
+    /// claim. The peer derives the claimer's QBTC address from its own
+    /// vault (same SecureVault → same QBTC coin → same derived address)
+    /// and computes the message hash locally, refusing to blind-sign
+    /// whatever the initiator asks for.
+    let isQbtcClaim: Bool
     let skipBroadcast: Bool
     let signData: SignData?
     let dappMetadata: DAppMetadata?
@@ -45,6 +56,8 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferContractPayload: TronTransferContractPayload?,
         tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?,
         tronTransferAssetContractPayload: TronTransferAssetContractPayload?,
+        qbtcClaimPayload: QBTCClaimPayload?,
+        isQbtcClaim: Bool,
         skipBroadcast: Bool,
         signData: SignData?,
         dappMetadata: DAppMetadata? = nil
@@ -64,6 +77,8 @@ struct KeysignPayload: Codable, Hashable {
         self.tronTransferContractPayload = tronTransferContractPayload
         self.tronTriggerSmartContractPayload = tronTriggerSmartContractPayload
         self.tronTransferAssetContractPayload = tronTransferAssetContractPayload
+        self.qbtcClaimPayload = qbtcClaimPayload
+        self.isQbtcClaim = isQbtcClaim
         self.skipBroadcast = skipBroadcast
         self.signData = signData
         self.dappMetadata = dappMetadata
@@ -90,18 +105,18 @@ struct KeysignPayload: Codable, Hashable {
         return solana
     }
 
-    var signTon: SignTon? {
-        guard case let .signTon(ton) = signData else {
-            return nil
-        }
-        return ton
-    }
-
     var signBitcoin: SignBitcoin? {
         guard case let .signBitcoin(bitcoin) = signData else {
             return nil
         }
         return bitcoin
+    }
+
+    var signTon: SignTon? {
+        guard case let .signTon(ton) = signData else {
+            return nil
+        }
+        return ton
     }
 
     var fromAmountString: String {
@@ -186,6 +201,8 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferContractPayload: nil,
         tronTriggerSmartContractPayload: nil,
         tronTransferAssetContractPayload: nil,
+        qbtcClaimPayload: nil,
+        isQbtcClaim: false,
         skipBroadcast: false,
         signData: nil,
         dappMetadata: nil

@@ -226,6 +226,8 @@ struct HomeScreen: View {
                         vaultName: selectedVault.name,
                         chainFilter: nil
                     ))
+                case .quantumSecurityIntro(let vault):
+                    router.navigate(to: KeygenRoute.quantumSecurityIntro(vault: vault))
                 }
 
                 vaultRoute = nil

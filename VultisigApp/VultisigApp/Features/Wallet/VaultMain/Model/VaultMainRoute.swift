@@ -10,6 +10,7 @@ enum VaultMainRoute: Equatable, Hashable {
     case createVault
     case mainAction(VaultAction)
     case transactionHistory
+    case quantumSecurityIntro(vault: Vault)
 }
 
 enum VaultAction: Equatable, Hashable {
@@ -23,4 +24,6 @@ enum VaultAction: Equatable, Hashable {
     case swap(fromCoin: Coin)
     case function(coin: Coin?)
     case buy(address: String, blockChainCode: String, coinType: String)
+    /// QBTC-specific claim flow — see `Features/QBTCClaim/`.
+    case qbtcClaim(vault: Vault)
 }

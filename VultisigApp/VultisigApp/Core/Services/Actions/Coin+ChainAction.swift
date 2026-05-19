@@ -27,6 +27,7 @@ extension CoinAction {
         .mayaChain,
         .tron
     ]
+
 }
 
 extension Chain {
@@ -38,6 +39,7 @@ extension Chain {
             actions.append(.swap)
         }
         actions.append(.send) // always include send
+
         let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
         // when hasBuyEnabledSet has not been set , set it to true
         if hasBuyEnabledSet == nil {

@@ -14,6 +14,7 @@ struct SendCryptoDoneHeaderView: View {
     let hero: HeroContent?
     let status: TransactionStatus
     let dappMetadata: DAppMetadata?
+    let verb: TransactionActionVerb
 
     init(
         coin: Coin?,
@@ -21,7 +22,8 @@ struct SendCryptoDoneHeaderView: View {
         fiatAmount: String,
         hero: HeroContent?,
         status: TransactionStatus,
-        dappMetadata: DAppMetadata? = nil
+        dappMetadata: DAppMetadata? = nil,
+        verb: TransactionActionVerb = .send
     ) {
         self.coin = coin
         self.cryptoAmount = cryptoAmount
@@ -29,11 +31,12 @@ struct SendCryptoDoneHeaderView: View {
         self.hero = hero
         self.status = status
         self.dappMetadata = dappMetadata
+        self.verb = verb
     }
 
     var body: some View {
         VStack(spacing: 36) {
-            TransactionStatusHeaderView(status: status)
+            TransactionStatusHeaderView(status: status, verb: verb)
                 .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {

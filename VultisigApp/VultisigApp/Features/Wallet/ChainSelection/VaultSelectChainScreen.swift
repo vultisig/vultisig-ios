@@ -12,6 +12,11 @@ struct VaultSelectChainScreen: View {
     let preselectChains: Bool
     @Binding var isPresented: Bool
     var onSave: () -> Void
+    /// Invoked when the user taps a chain that requires a yet-unprovisioned
+    /// MLDSA key (today: QBTC). Caller is expected to dismiss this sheet and
+    /// drive the user through `KeygenRoute.quantumSecurityIntro`. When `nil`,
+    /// such chains are hidden entirely (legacy behavior used by onboarding).
+    var onRequireQuantumKeygen: ((CoinMeta) -> Void)?
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
 
@@ -21,11 +26,13 @@ struct VaultSelectChainScreen: View {
         vault: Vault,
         preselectChains: Bool = true,
         isPresented: Binding<Bool>,
+        onRequireQuantumKeygen: ((CoinMeta) -> Void)? = nil,
         onSave: @escaping () -> Void
     ) {
         self.vault = vault
         self.preselectChains = preselectChains
         self._isPresented = isPresented
+        self.onRequireQuantumKeygen = onRequireQuantumKeygen
         self.onSave = onSave
     }
 
@@ -51,6 +58,7 @@ struct VaultSelectChainScreen: View {
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .onLoad {
+            viewModel.showMldsaChainsWithoutKey = onRequireQuantumKeygen != nil
             viewModel.setData(for: vault, checkForSelected: preselectChains)
         }
     }
@@ -74,6 +82,12 @@ private extension VaultSelectChainScreen {
     }
 
     func onSelection(_ chainSelection: ChainSelection) {
+        if chainSelection.selected,
+           let onRequireQuantumKeygen,
+           viewModel.requiresQuantumKeygen(for: chainSelection.asset, vault: vault) {
+            onRequireQuantumKeygen(chainSelection.asset)
+            return
+        }
         viewModel.handleSelection(isSelected: chainSelection.selected, asset: chainSelection.asset)
     }
 

@@ -10,6 +10,7 @@ import RiveRuntime
 
 struct SendCryptoDoneContentView: View {
     let input: SendCryptoContent
+    let verb: TransactionActionVerb
     @Binding var showAlert: Bool
     var onDone: () -> Void = {}
 
@@ -19,8 +20,14 @@ struct SendCryptoDoneContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.router) var router
 
-    init(input: SendCryptoContent, showAlert: Binding<Bool>, onDone: @escaping () -> Void = {}) {
+    init(
+        input: SendCryptoContent,
+        verb: TransactionActionVerb = .send,
+        showAlert: Binding<Bool>,
+        onDone: @escaping () -> Void = {}
+    ) {
         self.input = input
+        self.verb = verb
         self._showAlert = showAlert
         self.onDone = onDone
 
@@ -45,7 +52,8 @@ struct SendCryptoDoneContentView: View {
                     fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
                     hero: input.hero,
                     status: statusViewModel.status,
-                    dappMetadata: input.dappMetadata
+                    dappMetadata: input.dappMetadata,
+                    verb: verb
                 )
 
                 VStack(spacing: 16) {
