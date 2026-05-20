@@ -97,10 +97,38 @@ struct SwapCryptoDoneView: View {
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
                 provider: transaction.quote.displayName
             )
+
+            attachSwapKitTrackingIfNeeded()
         }
         .onDisappear {
             // Stop polling when view disappears
             statusViewModel.stopPolling()
+        }
+    }
+
+    /// Wires SwapKit-routed swaps into the `/track` polling service. No-op
+    /// for THORChain/Maya/1inch/Kyber/LiFi routes — those already have their
+    /// own status sources.
+    private func attachSwapKitTrackingIfNeeded() {
+        guard case let .swapkit(response, _, _) = transaction.quote else { return }
+        guard let chainId = SwapKitChainIdentifier.chainId(for: transaction.fromCoin.chain) else {
+            // No chainId mapping for the source chain — `/track` would 400.
+            // Skip polling; the explorer link remains as the fallback.
+            return
+        }
+        TransactionHistoryRecorder.shared.attachSwapKitTracking(
+            txHash: hash,
+            pubKeyECDSA: vault.pubKeyECDSA,
+            swapId: response.swapId,
+            routeId: response.routeId,
+            broadcastHash: hash,
+            sourceChainId: chainId,
+            provider: response.subProvider
+        )
+        // Start polling immediately so the row updates live.
+        let inFlight = (try? TransactionHistoryStorage.shared.fetchInFlightSwapKitSwaps()) ?? []
+        if let row = inFlight.first(where: { $0.txHash == hash && $0.pubKeyECDSA == vault.pubKeyECDSA }) {
+            SwapKitTrackingService.shared.start(swap: row)
         }
     }
 

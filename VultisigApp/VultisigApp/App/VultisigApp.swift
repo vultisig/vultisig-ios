@@ -160,8 +160,15 @@ extension VultisigApp {
                 case .active:
                     continueLogin()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
+                    Task { @MainActor in
+                        SwapKitTrackingService.shared.setActive(true)
+                        SwapKitTrackingService.shared.resumeInFlightSwaps()
+                    }
                 case .background:
                     resetLogin()
+                    Task { @MainActor in
+                        SwapKitTrackingService.shared.setActive(false)
+                    }
                 default:
                     break
                 }
@@ -189,6 +196,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    SwapKitTrackingService.shared.resumeInFlightSwaps()
                 }
             }
     }
@@ -227,6 +238,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    SwapKitTrackingService.shared.resumeInFlightSwaps()
                 }
             }
     }

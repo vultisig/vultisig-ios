@@ -29,6 +29,7 @@ class TransactionHistoryViewModel: ObservableObject {
 
     private let storage = TransactionHistoryStorage.shared
     private let poller = TransactionStatusPoller.shared
+    private let swapKitTracking = SwapKitTrackingService.shared
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
 
     init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
@@ -47,6 +48,7 @@ class TransactionHistoryViewModel: ObservableObject {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
             pollInProgressTransactions()
+            resumeSwapKitTracking()
         } catch {
             logger.error("Failed to load: \(error)")
         }
@@ -54,6 +56,12 @@ class TransactionHistoryViewModel: ObservableObject {
 
     func refresh() async {
         load()
+        // Pull-to-refresh forces an immediate poll for every in-flight
+        // SwapKit row so the user sees fresh status rather than waiting for
+        // the next scheduled tick.
+        for tx in transactions where tx.isSwapKitRouted && !tx.swapKitUiStatus.isTerminal {
+            await swapKitTracking.forceRefresh(swap: tx)
+        }
         // Allow pull-to-refresh animation to complete
         try? await Task.sleep(for: .milliseconds(300))
     }
@@ -78,6 +86,14 @@ class TransactionHistoryViewModel: ObservableObject {
             ) { [weak self] newStatus, errorMessage in
                 self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)
             }
+        }
+    }
+
+    /// Restart SwapKit `/track` pollers for any still-in-flight rows. The
+    /// service is idempotent — already-running pollers are left untouched.
+    private func resumeSwapKitTracking() {
+        for tx in transactions where tx.isSwapKitRouted && !tx.swapKitUiStatus.isTerminal {
+            swapKitTracking.start(swap: tx)
         }
     }
 
@@ -113,7 +129,16 @@ class TransactionHistoryViewModel: ObservableObject {
             createdAt: old.createdAt,
             completedAt: Date(),
             estimatedTime: old.estimatedTime,
-            errorMessage: errorMessage ?? old.errorMessage
+            errorMessage: errorMessage ?? old.errorMessage,
+            swapKitSwapId: old.swapKitSwapId,
+            swapKitRouteId: old.swapKitRouteId,
+            swapKitBroadcastHash: old.swapKitBroadcastHash,
+            swapKitSourceChainId: old.swapKitSourceChainId,
+            swapKitProvider: old.swapKitProvider,
+            swapKitLatestStatus: old.swapKitLatestStatus,
+            swapKitLatestTrackingStatus: old.swapKitLatestTrackingStatus,
+            swapKitLastPolledAt: old.swapKitLastPolledAt,
+            swapKitTrackingStartedAt: old.swapKitTrackingStartedAt
         )
         transactions[index] = updated
 

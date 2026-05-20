@@ -239,4 +239,35 @@ final class TransactionHistoryRecorder {
             logger.error("Update status failed for txHash=\(txHash): \(error)")
         }
     }
+
+    // MARK: - SwapKit tracking
+
+    /// Attach SwapKit-tracking metadata (route/swap ids + broadcast hash +
+    /// source chain id + provider) to an existing swap row, so the tracking
+    /// service can drive `/track` polls from then on. Called by the done
+    /// screen right after the broadcast, once the SwapKit response is in
+    /// hand.
+    func attachSwapKitTracking(
+        txHash: String,
+        pubKeyECDSA: String,
+        swapId: String?,
+        routeId: String?,
+        broadcastHash: String,
+        sourceChainId: String,
+        provider: String?
+    ) {
+        do {
+            try storage.attachSwapKitTracking(
+                txHash: txHash,
+                pubKeyECDSA: pubKeyECDSA,
+                swapId: swapId,
+                routeId: routeId,
+                broadcastHash: broadcastHash,
+                sourceChainId: sourceChainId,
+                provider: provider
+            )
+        } catch {
+            logger.error("Attach SwapKit tracking failed for txHash=\(txHash): \(error)")
+        }
+    }
 }

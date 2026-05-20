@@ -95,4 +95,105 @@ final class TransactionHistoryStorage {
         let descriptor = FetchDescriptor(predicate: predicate)
         return (try? modelContext.fetchCount(descriptor)) ?? 0 > 0
     }
+
+    // MARK: - SwapKit tracking
+
+    /// Persist the SwapKit-track-key fields onto an existing row. Idempotent
+    /// — overwrites whatever was there previously. Called from
+    /// `TransactionHistoryRecorder` immediately after a SwapKit broadcast so
+    /// the tracking service has the data it needs to start polling.
+    func attachSwapKitTracking(
+        txHash: String,
+        pubKeyECDSA: String,
+        swapId: String?,
+        routeId: String?,
+        broadcastHash: String,
+        sourceChainId: String,
+        provider: String?
+    ) throws {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        guard let item = try modelContext.fetch(descriptor).first else { return }
+
+        item.swapKitSwapId = swapId
+        item.swapKitRouteId = routeId
+        item.swapKitBroadcastHash = broadcastHash
+        item.swapKitSourceChainId = sourceChainId
+        item.swapKitProvider = provider
+        try modelContext.save()
+    }
+
+    /// Persist a poll observation. Called by the tracking service on each
+    /// successful `/track` response. Updates the `inProgress`/`successful`/
+    /// `error` summary status to match the SwapKit UI state so the row's
+    /// existing on-chain status indicator stays in sync.
+    func updateSwapKitStatus(
+        txHash: String,
+        pubKeyECDSA: String,
+        latestStatus: String?,
+        latestTrackingStatus: String?,
+        uiStatus: SwapKitUiStatus,
+        polledAt: Date
+    ) throws {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        guard let item = try modelContext.fetch(descriptor).first else { return }
+
+        item.swapKitLatestStatus = latestStatus
+        item.swapKitLatestTrackingStatus = latestTrackingStatus
+        item.swapKitLastPolledAt = polledAt
+        if item.swapKitTrackingStartedAt == nil {
+            item.swapKitTrackingStartedAt = polledAt
+        }
+
+        switch uiStatus {
+        case .completed:
+            item.statusRawValue = TransactionHistoryStatus.successful.rawValue
+            item.completedAt = polledAt
+        case .refunded, .failed, .unknownPendingExtended:
+            item.statusRawValue = TransactionHistoryStatus.error.rawValue
+            item.completedAt = polledAt
+        case .pending, .swapping:
+            // Keep `inProgress` — the on-chain row already starts there.
+            break
+        }
+        try modelContext.save()
+    }
+
+    /// Stamp `lastPolledAt` without changing status. Used after transient
+    /// failures (5xx / network errors) so the backoff scheduler can compute
+    /// the next wake-up from a stable timestamp.
+    func touchSwapKitLastPolled(
+        txHash: String,
+        pubKeyECDSA: String,
+        polledAt: Date
+    ) throws {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        guard let item = try modelContext.fetch(descriptor).first else { return }
+        item.swapKitLastPolledAt = polledAt
+        try modelContext.save()
+    }
+
+    /// Fetch all swap rows that are mid-flight on SwapKit and need polling
+    /// resumed (called from the tx-history viewmodel `onAppear`, the
+    /// done-screen handoff, and the ScenePhase observer on `.active`).
+    func fetchInFlightSwapKitSwaps() throws -> [TransactionHistoryData] {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.swapKitBroadcastHash != nil && item.swapKitSourceChainId != nil
+        }
+        let descriptor = FetchDescriptor(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor)
+            .map { TransactionHistoryData(item: $0) }
+            .filter { !$0.swapKitUiStatus.isTerminal }
+    }
 }
