@@ -568,12 +568,41 @@ class KeysignViewModel: ObservableObject {
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
             case .swapkit(let payload):
-                // Phase 2 wires the payload up to here; the actual PSBT
-                // sign + compile path lands in a follow-up. Throw a typed
-                // error so a SwapKit BTC swap that reaches keysign without
-                // the signing path in place fails visibly rather than
-                // silently dropping signatures.
-                throw SwapKitError.unsupportedTxType(payload.txType)
+                // Dispatch on SwapKit's `meta.txType`. PSBT (BTC), SUI, and
+                // TRON have SwapKit-specific signers because their pre-built
+                // bytes drive transaction assembly directly. TON + CARDANO
+                // fall through to the per-chain helpers at the bottom of
+                // this method — the SwapKit builder already pointed
+                // `toAddress` / `toAmount` at the deposit address + amount.
+                switch payload.txType {
+                case "PSBT":
+                    let tx = try SwapKitBTCSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "SUI":
+                    let tx = try SwapKitSuiSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "TRON":
+                    let tx = try SwapKitTronSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "TON", "CARDANO":
+                    break
+                case "EVM", "SOLANA":
+                    throw SwapKitError.unsupportedTxType(payload.txType)
+                default:
+                    throw SwapKitError.unsupportedTxType(payload.txType)
+                }
             }
         }
 
