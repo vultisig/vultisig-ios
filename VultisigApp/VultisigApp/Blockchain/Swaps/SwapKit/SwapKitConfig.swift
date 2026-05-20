@@ -2,30 +2,32 @@
 //  SwapKitConfig.swift
 //  VultisigApp
 //
-//  Configuration constants for the SwapKit aggregator integration.
-//  The API key is read from `Bundle.main.infoDictionary["SwapKitAPIKey"]`,
-//  which xcodegen wires from `VultisigApp.xcconfig` (gitignored) at build
-//  time. As a development convenience, `SWAPKIT_API_KEY` from the process
-//  environment is honoured when the Info.plist value is absent — useful for
-//  CI / Xcode run schemes that inject the key as an env var.
+//  Configuration constants for the SwapKit aggregator integration. iOS does
+//  NOT call `api.swapkit.dev` directly — requests are routed through a
+//  Vultisig backend proxy at `https://api.vultisig.com/swapkit/` which
+//  attaches the partner API key server-side. Same pattern as the existing
+//  1inch proxy (`api.vultisig.com/1inch/`).
+//
+//  Rationale: keeps the SwapKit partner key off the iOS binary, avoids
+//  per-platform key rotation, and lets the backend enforce platform-level
+//  affiliate routing if it ever needs to.
 //
 
 import Foundation
 
 enum SwapKitConfig {
-    /// Base URL for the SwapKit V3 API. The trailing `/v3` is intentional —
-    /// the `/v3/quote` and `/v3/swap` endpoints live here. `/track` is rooted
-    /// at the parent host (see `SwapKitAPI.trackBaseURL`).
-    static let baseURL = URL(string: "https://api.swapkit.dev/v3")!
+    /// Base URL for SwapKit's V3 surface (quote + swap + providers) via the
+    /// Vultisig proxy. The proxy forwards `/v3/quote`, `/v3/swap`,
+    /// `/providers` 1:1 under the `/swapkit/` prefix.
+    static let baseURL = URL(string: "https://api.vultisig.com/swapkit/v3")!
 
-    /// `/track` lives at the bare host, not under `/v3` — confirmed in the
-    /// npm SDK and the SwapKit V3 docs. Keep these separate so we can't
+    /// `/track` lives off the bare host upstream (not under `/v3`), so the
+    /// proxy mounts it at `/swapkit/track`. Keep separate so we can't
     /// accidentally double-prefix.
-    static let trackBaseURL = URL(string: "https://api.swapkit.dev")!
+    static let trackBaseURL = URL(string: "https://api.vultisig.com/swapkit")!
 
     /// `Referer` header value the SwapKit partner dashboard uses to segment
-    /// fee accounting by client. Must stay in sync with the registered
-    /// integrator name in the dashboard.
+    /// fee accounting by client. Sent through the proxy unchanged.
     static let referer = "vultisig-ios"
 
     /// Default request timeout. SwapKit responses observed sub-5s in the
@@ -52,21 +54,4 @@ enum SwapKitConfig {
         "MAYACHAIN",
         "MAYACHAIN_STREAMING"
     ]
-
-    /// API key read at runtime. The Info.plist value is the production path
-    /// (xcconfig → Info.plist substitution). The env var is a development
-    /// fallback. Returning `nil` here means the integration is disabled at
-    /// runtime — callers should treat that as "skip SwapKit" rather than
-    /// raising an error visible to the user.
-    static var apiKey: String? {
-        if let value = Bundle.main.object(forInfoDictionaryKey: "SwapKitAPIKey") as? String,
-           !value.isEmpty {
-            return value
-        }
-        if let value = ProcessInfo.processInfo.environment["SWAPKIT_API_KEY"],
-           !value.isEmpty {
-            return value
-        }
-        return nil
-    }
 }

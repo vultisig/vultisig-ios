@@ -2,9 +2,12 @@
 //  SwapKitAPI.swift
 //  VultisigApp
 //
-//  TargetType definitions for the SwapKit V3 REST surface. Quote + Build are
-//  separate calls (`POST /v3/quote` then `POST /v3/swap`) and tracking lives
-//  off the base host (`POST /track`, not under `/v3`).
+//  TargetType definitions for the SwapKit V3 REST surface, routed through
+//  the Vultisig backend proxy (`api.vultisig.com/swapkit/`). The proxy
+//  attaches the SwapKit partner API key server-side — iOS does not see or
+//  ship the key. Quote + Build are separate calls (`POST /v3/quote` then
+//  `POST /v3/swap`) and tracking lives off the proxy root (`POST /track`,
+//  not under `/v3`).
 //
 
 import Foundation
@@ -62,17 +65,13 @@ extension SwapKitAPI: TargetType {
     }
 
     var headers: [String: String]? {
-        var values: [String: String] = [
+        // The proxy attaches `x-api-key` server-side. iOS only sends the
+        // `Referer` so the partner dashboard can attribute volume by client.
+        return [
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Referer": SwapKitConfig.referer
         ]
-        if let key = SwapKitConfig.apiKey {
-            // TODO: Per design §5, prefer hash-auth (`x-payload-hash + Referer`) over
-            // raw `x-api-key` once partner contact confirms our key supports it.
-            values["x-api-key"] = key
-        }
-        return values
     }
 
     var timeoutInterval: TimeInterval {

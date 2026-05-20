@@ -40,11 +40,11 @@ struct SwapKitService {
         amount: Decimal,
         slippagePercent: Double = SwapKitConfig.defaultSlippagePercent
     ) async throws -> SwapKitRoute? {
-        guard SwapKitConfig.apiKey != nil else {
-            logger.info("[swapkit] API key absent — skipping fetch")
-            return nil
-        }
-
+        // No client-side feature flag — the Vultisig proxy
+        // (`api.vultisig.com/swapkit/`) attaches the partner API key
+        // server-side, so the integration is always reachable from the
+        // client perspective. The proxy is the single point of credential
+        // control across iOS / Android / Windows.
         let rawAmount = fromCoin.raw(for: amount)
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
