@@ -4,7 +4,8 @@
 //
 //  Decodable models for the V3 `/v3/swap` response. The `tx` field shape is
 //  driven by `meta.txType` — Phase 1 ships typed `EVM` and `SOLANA` variants,
-//  Phase 2 adds `PSBT` (Bitcoin), and everything else stashes through the
+//  Phase 2 adds `PSBT` (Bitcoin), and Phase 3 promotes `TON` / `CARDANO` /
+//  `SUI` / `TRON` into typed cases. Everything else still stashes through the
 //  passthrough JSON blob until its own per-chain phase promotes it.
 //
 
@@ -28,6 +29,11 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     let approvalTx: SwapKitApprovalTx?
     let fees: [SwapKitFee]
     let warnings: [SwapKitWarning]?
+
+    /// Some chains (Cardano) return responses without a `tx` field at all —
+    /// see `SwapKitTx.cardano`. The `Hashable` synthesis still works because
+    /// `tx` always exists as a value; `.cardano` is the sentinel for "no
+    /// transaction body returned".
 
     /// First provider in the route — used as the verify-screen sub-provider
     /// tag ("via Chainflip", "via NEAR Intents"). Phase 1 ships single-hop
@@ -97,11 +103,57 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             // the proto `tx_payload` bytes field for cross-device transit.
             let base64 = try container.decode(String.self, forKey: .tx)
             return .psbt(base64: base64)
+        case "TON":
+            // TON source: SwapKit returns `tx` as a single-element array of
+            // `{address, amount}` objects. `amount` is raw nano-TON (1e9 =
+            // 1 TON). The deposit address matches `targetAddress`. The
+            // keysign-side dispatcher JSON-encodes the array verbatim into
+            // `tx_payload` bytes for cross-device transit, then rebuilds a
+            // plain TON transfer to the deposit address with the raw amount.
+            let transfers = try container.decode([SwapKitTonTransfer].self, forKey: .tx)
+            return .ton(transfers)
+        case "CARDANO":
+            // Cardano source: deposit-only flow. SwapKit returns no
+            // transaction body — `tx` is null at the wire, and in observed
+            // fixtures the key is sometimes omitted entirely. Vultisig
+            // builds a plain ADA transfer to `targetAddress` for
+            // `sellAmount` via the existing Cardano send path. Tolerate
+            // both shapes: `tx: null` and `tx` absent.
+            if container.contains(.tx) {
+                if try container.decodeNil(forKey: .tx) {
+                    return .cardano
+                }
+                // Forward-compat: some future provider may start returning a
+                // structured Cardano tx. Surface as `.unsupported` so the
+                // decoder doesn't silently drop the payload.
+                let raw = try container.decode(SwapKitRawJSON.self, forKey: .tx)
+                return .unsupported(txType: meta.txType, raw: raw)
+            }
+            return .cardano
+        case "SUI":
+            // Sui source: SwapKit returns a base64-encoded pre-built Sui
+            // programmable transaction block (PTB), ~5KB. The keysign-side
+            // dispatcher base64-decodes into bytes for cross-device transit.
+            // Signing is greenfield (existing Pay/PaySui paths don't accept a
+            // pre-built PTB) — deferred to the consolidated signing PR.
+            let base64 = try container.decode(String.self, forKey: .tx)
+            return .sui(base64: base64)
+        case "TRON":
+            // TRON source: SwapKit returns a TronWeb-shaped object with
+            // `{txID, raw_data {...}, raw_data_hex, visible?}`. We model the
+            // top-level fields strictly and stash `raw_data` through a JSON
+            // passthrough so unexpected sub-fields don't break decoding
+            // (`raw_data` shape varies by Tron contract type). The
+            // keysign-side dispatcher JSON-encodes the canonical TronWeb
+            // object verbatim into `tx_payload` bytes for cross-device
+            // transit.
+            let tron = try container.decode(SwapKitTronTx.self, forKey: .tx)
+            return .tron(tron)
         default:
-            // Phase 2 types EVM + Solana + PSBT; later phases promote TRON,
-            // SUI, COSMOS, TON, CARDANO into typed cases. Until then we keep
-            // the raw JSON so the keysign dispatcher can surface a descriptive
-            // "not yet supported" error rather than silently misdecoding.
+            // Phase 3 types EVM + Solana + PSBT + TON + CARDANO + SUI + TRON.
+            // Anything else still stashes through the raw-JSON passthrough so
+            // the keysign dispatcher can surface a descriptive "not yet
+            // supported" error rather than silently misdecoding.
             let raw = try container.decode(SwapKitRawJSON.self, forKey: .tx)
             return .unsupported(txType: meta.txType, raw: raw)
         }
@@ -117,7 +169,62 @@ enum SwapKitTx: Hashable {
     /// every SwapKit BTC provider observed in the Phase 0 spike (NEAR,
     /// FLASHNET, GARDEN; Chainflip BTC validated structurally only).
     case psbt(base64: String)
+    /// TON source — single-element array of `{address, amount}` transfers.
+    /// `amount` is raw nano-TON. Deposit address matches `targetAddress`.
+    /// No memo. Built from a plain TON transfer via the existing send path.
+    case ton([SwapKitTonTransfer])
+    /// Cardano source — deposit-only flow. SwapKit returns `tx: null` (and
+    /// some responses omit `tx` entirely). Vultisig builds a plain ADA
+    /// transfer to `targetAddress` for `sellAmount` via the existing
+    /// Cardano send path. No CBOR construction, no metadata.
+    case cardano
+    /// Sui source — base64-encoded pre-built programmable transaction block
+    /// (PTB). Signing requires a greenfield "sign pre-built PTB" path
+    /// (existing Pay / PaySui flows won't accept a serialized PTB). Deferred
+    /// to the consolidated signing PR.
+    case sui(base64: String)
+    /// TRON source — TronWeb-shaped object with `txID`, `rawData`, and
+    /// `rawDataHex`. The `raw_data_hex` is the canonical input to WalletCore
+    /// Tron signing; the rest is kept verbatim for the verify screen.
+    case tron(SwapKitTronTx)
     case unsupported(txType: String, raw: SwapKitRawJSON)
+}
+
+/// TON `tx[]` element. `amount` is raw nano-TON (decimal string, NOT TON
+/// units). SwapKit always returns a single-element array in the Phase 0
+/// spike — the array shape is preserved so multi-output transfers (if SwapKit
+/// ever exposes them) decode cleanly.
+struct SwapKitTonTransfer: Codable, Hashable {
+    let address: String
+    let amount: String
+}
+
+/// TRON `tx` object. We model the strict top-level shape and preserve
+/// `rawData` through a JSON passthrough so the contract-specific sub-fields
+/// (TriggerSmartContract / TransferContract / ...) survive intact. The
+/// `rawDataHex` field is what WalletCore Tron signing consumes — that's the
+/// load-bearing field for the deferred signing PR.
+struct SwapKitTronTx: Codable, Hashable {
+    /// Tron transaction id, hex string (sha256 of `raw_data` per Tron protocol).
+    let txID: String
+    /// Pre-encoded raw transaction bytes, hex string. Canonical input to
+    /// WalletCore Tron signing.
+    let rawDataHex: String
+    /// Visibility flag (TronWeb addresses encoded as base58 when true).
+    /// Optional — not all providers populate it.
+    let visible: Bool?
+    /// Nested `raw_data` object. Sub-fields (`contract[]`, `ref_block_*`,
+    /// `fee_limit`, `expiration`, `timestamp`) vary by contract type, so we
+    /// stash them through `SwapKitJSONValue` to preserve unexpected shapes
+    /// without locking the schema down.
+    let rawData: SwapKitJSONValue
+
+    private enum CodingKeys: String, CodingKey {
+        case txID
+        case rawData = "raw_data"
+        case rawDataHex = "raw_data_hex"
+        case visible
+    }
 }
 
 struct SwapKitEvmTx: Decodable, Hashable {

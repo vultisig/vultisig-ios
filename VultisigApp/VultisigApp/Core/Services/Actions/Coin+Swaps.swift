@@ -155,8 +155,10 @@ extension Coin {
         case .ripple:
             return [.thorchain]
         case .tron:
-            return [.thorchain]
-        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei, .qbtc, .bittensor:
+            return [.thorchain, .swapkit]
+        case .ton, .cardano, .sui:
+            return [.swapkit]
+        case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }
     }
