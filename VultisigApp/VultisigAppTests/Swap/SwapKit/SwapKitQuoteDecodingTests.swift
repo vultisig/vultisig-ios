@@ -67,6 +67,21 @@ final class SwapKitQuoteDecodingTests: XCTestCase {
         XCTAssertEqual(response.inboundAddress, "2yBEjZS6CC44UwBBGvx8Z1xXHJj4sSD5ZRwba4ijtD7n")
     }
 
+    func testBitcoinSwapResponseDecodesAsPSBT() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-real-btc-all-swap"
+        )
+        XCTAssertEqual(response.meta.txType, "PSBT")
+        XCTAssertEqual(response.subProvider, "NEAR")
+        guard case let .psbt(base64) = response.tx else {
+            XCTFail("Expected PSBT tx variant")
+            return
+        }
+        XCTAssertTrue(base64.hasPrefix("cHNidP8B"), "PSBT magic prefix")
+        XCTAssertNotNil(Data(base64Encoded: base64))
+    }
+
     func testTronSwapResponseDecodesAsUnsupported() throws {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,

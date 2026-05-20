@@ -823,6 +823,59 @@ extension VSKyberSwapPayload: @retroactive Codable {
     }
 }
 
+extension VSSwapKitSwapPayload: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case fromCoin = "from_coin"
+        case toCoin = "to_coin"
+        case fromAmount = "from_amount"
+        case toAmountDecimal = "to_amount_decimal"
+        case txType = "tx_type"
+        case txPayload = "tx_payload"
+        case targetAddress = "target_address"
+        case inboundAddress = "inbound_address"
+        case memo
+        case subProvider = "sub_provider"
+        case swapID = "swap_id"
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(fromCoin, forKey: .fromCoin)
+        try container.encode(toCoin, forKey: .toCoin)
+        try container.encode(fromAmount, forKey: .fromAmount)
+        try container.encode(toAmountDecimal, forKey: .toAmountDecimal)
+        try container.encode(txType, forKey: .txType)
+        try container.encode(txPayload, forKey: .txPayload)
+        try container.encode(targetAddress, forKey: .targetAddress)
+        if hasInboundAddress {
+            try container.encode(inboundAddress, forKey: .inboundAddress)
+        }
+        if hasMemo {
+            try container.encode(memo, forKey: .memo)
+        }
+        try container.encode(subProvider, forKey: .subProvider)
+        try container.encode(swapID, forKey: .swapID)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        fromCoin = try container.decode(VSCoin.self, forKey: .fromCoin)
+        toCoin = try container.decode(VSCoin.self, forKey: .toCoin)
+        fromAmount = try container.decode(String.self, forKey: .fromAmount)
+        toAmountDecimal = try container.decode(String.self, forKey: .toAmountDecimal)
+        txType = try container.decode(String.self, forKey: .txType)
+        txPayload = try container.decode(Data.self, forKey: .txPayload)
+        targetAddress = try container.decode(String.self, forKey: .targetAddress)
+        if let inbound = try container.decodeIfPresent(String.self, forKey: .inboundAddress) {
+            inboundAddress = inbound
+        }
+        if let memoValue = try container.decodeIfPresent(String.self, forKey: .memo) {
+            memo = memoValue
+        }
+        subProvider = try container.decode(String.self, forKey: .subProvider)
+        swapID = try container.decode(String.self, forKey: .swapID)
+    }
+}
+
 extension VSCosmosCoin: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case denom
@@ -1007,6 +1060,8 @@ extension VSKeysignPayload: @retroactive Codable {
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("OneinchSwapPayload"))
         case .mayachainSwapPayload(let payload):
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("MayachainSwapPayload"))
+        case .swapkitSwapPayload(let payload):
+            try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("SwapkitSwapPayload"))
         case .none:
             print("No swap payload to encode")
         }

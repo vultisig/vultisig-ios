@@ -232,34 +232,98 @@ extension SwapCryptoLogic {
             )
 
         case let .swapkit(swapResponse, _, _):
-            let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
-            // Re-derive the approve payload from SwapKit's `approvalTx` (or
-            // fall back to the standard ERC20 path against `targetAddress`).
-            let resolvedApprovePayload = buildSwapKitApprovePayload(
-                fromCoin: fromCoin,
-                amount: amountInCoin,
-                swapResponse: swapResponse,
-                fallback: approvePayload
-            )
-            let payload = GenericSwapPayload(
-                fromCoin: fromCoin,
-                toCoin: toCoin,
-                fromAmount: amountInCoin,
-                toAmountDecimal: toDecimal,
-                quote: evmQuote,
-                provider: .swapkit
-            )
-            return try await keysignFactory.buildTransfer(
-                coin: fromCoin,
-                toAddress: swapResponse.targetAddress,
-                amount: amountInCoin,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: .generic(payload),
-                approvePayload: resolvedApprovePayload,
-                vault: vault
-            )
+            // Phase 2: dispatch on SwapKit's `meta.txType`. EVM and Solana
+            // ride `SwapPayload.generic` (their wire shape matches
+            // `OneInchSwapPayload` 1:1); PSBT (Bitcoin) rides the new
+            // `SwapPayload.swapkit` variant that wraps the bytes for cross-
+            // device transit. Future phases (TRON, TON, SUI, Cardano) add
+            // their own `txType` branches here.
+            switch swapResponse.tx {
+            case .evm, .solana:
+                let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
+                // Re-derive the approve payload from SwapKit's `approvalTx`
+                // (or fall back to the standard ERC20 path against
+                // `targetAddress`).
+                let resolvedApprovePayload = buildSwapKitApprovePayload(
+                    fromCoin: fromCoin,
+                    amount: amountInCoin,
+                    swapResponse: swapResponse,
+                    fallback: approvePayload
+                )
+                let payload = GenericSwapPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmount: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    quote: evmQuote,
+                    provider: .swapkit
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .generic(payload),
+                    approvePayload: resolvedApprovePayload,
+                    vault: vault
+                )
+
+            case .psbt(let base64):
+                let swapKitPayload = try buildSwapKitPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .unsupported(let txType, _):
+                throw SwapKitError.unsupportedTxType(txType)
+            }
         }
+    }
+
+    /// Build a `SwapKitSwapPayload` for the BTC PSBT path: base64-decode the
+    /// PSBT into raw bytes (peer doesn't need to round-trip through base64),
+    /// stash the SwapKit-returned `targetAddress` + sub-provider tag, and
+    /// keep `inboundAddress` + `memo` for forward compatibility with future
+    /// providers that may populate them.
+    static func buildSwapKitPSBTPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        base64PSBT: String,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        guard let psbtBytes = Data(base64Encoded: base64PSBT) else {
+            throw SwapKitError.generic(message: "SwapKit PSBT payload is not valid base64")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "PSBT",
+            txPayload: psbtBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
     }
 
     /// Translates a SwapKit `/v3/swap` response into the existing `EVMQuote`
@@ -313,6 +377,14 @@ extension SwapCryptoLogic {
                     gas: 0
                 )
             )
+
+        case .psbt:
+            // PSBT routes are dispatched at the outer call site via the new
+            // `SwapPayload.swapkit` variant. Reaching this branch means a
+            // caller mis-routed — preserve the typed error so the bug
+            // surfaces in tests rather than silently building a broken EVM
+            // quote.
+            throw SwapKitError.unsupportedTxType("PSBT")
 
         case .unsupported(let txType, _):
             throw SwapKitError.unsupportedTxType(txType)

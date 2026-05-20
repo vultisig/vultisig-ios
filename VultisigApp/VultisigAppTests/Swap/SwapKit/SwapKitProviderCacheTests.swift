@@ -30,6 +30,14 @@ final class SwapKitProviderCacheTests: XCTestCase {
         XCTAssertTrue(SwapKitProviderCache.chainEnabled(.solana, in: providers))
     }
 
+    /// Phase 2 chain. The cached `/providers` snapshot lists NEAR /
+    /// FLASHNET / GARDEN / HARBOR / CHAINFLIP enabling `bitcoin` — none of
+    /// those are filtered, so the predicate reports the chain as enabled
+    /// for SwapKit.
+    func testBitcoinIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.bitcoin, in: providers))
+    }
+
     func testMantleIsNotEnabled() {
         XCTAssertFalse(SwapKitProviderCache.chainEnabled(.mantle, in: providers))
     }

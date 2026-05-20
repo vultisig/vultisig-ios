@@ -57,6 +57,12 @@ struct KeysignMessageFactory {
                 }
                 let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+            case .swapkit(let swapKitPayload):
+                // Phase 2 wires the payload up to here; the actual PSBT-aware
+                // signing path lives in `UTXOChainsHelper` and is a follow-up.
+                // Surface a typed error rather than silently signing nothing
+                // so a misrouted SwapKit BTC swap fails loudly in tests + UI.
+                throw SwapKitError.unsupportedTxType(swapKitPayload.txType)
             }
         }
 

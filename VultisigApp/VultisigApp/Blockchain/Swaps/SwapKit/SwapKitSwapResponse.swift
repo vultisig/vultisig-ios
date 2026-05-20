@@ -3,9 +3,9 @@
 //  VultisigApp
 //
 //  Decodable models for the V3 `/v3/swap` response. The `tx` field shape is
-//  driven by `meta.txType` — Phase 1 ships typed `EVM` and `SOLANA` variants
-//  and stashes everything else as a passthrough JSON blob. Later phases
-//  promote those to typed cases as the per-chain payload paths come online.
+//  driven by `meta.txType` — Phase 1 ships typed `EVM` and `SOLANA` variants,
+//  Phase 2 adds `PSBT` (Bitcoin), and everything else stashes through the
+//  passthrough JSON blob until its own per-chain phase promotes it.
 //
 
 import Foundation
@@ -89,12 +89,19 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         case "SOLANA":
             let base64 = try container.decode(String.self, forKey: .tx)
             return .solana(base64: base64)
+        case "PSBT":
+            // Bitcoin source: SwapKit returns the unsigned PSBT as a single
+            // base64 string in `tx` (~480 chars, magic prefix `cHNidP8B...`).
+            // No nested object — `tx` is the bare string, mirroring the
+            // Solana shape. The keysign-side dispatcher base64-decodes into
+            // the proto `tx_payload` bytes field for cross-device transit.
+            let base64 = try container.decode(String.self, forKey: .tx)
+            return .psbt(base64: base64)
         default:
-            // Phase 1 only types EVM + Solana; later phases promote TRON,
-            // SUI, PSBT, COSMOS, TON, CARDANO into typed cases. Until then
-            // we keep the raw JSON so the keysign dispatcher can surface a
-            // descriptive "not yet supported" error rather than silently
-            // misdecoding.
+            // Phase 2 types EVM + Solana + PSBT; later phases promote TRON,
+            // SUI, COSMOS, TON, CARDANO into typed cases. Until then we keep
+            // the raw JSON so the keysign dispatcher can surface a descriptive
+            // "not yet supported" error rather than silently misdecoding.
             let raw = try container.decode(SwapKitRawJSON.self, forKey: .tx)
             return .unsupported(txType: meta.txType, raw: raw)
         }
@@ -106,6 +113,10 @@ struct SwapKitSwapResponse: Decodable, Hashable {
 enum SwapKitTx: Hashable {
     case evm(SwapKitEvmTx)
     case solana(base64: String)
+    /// Bitcoin source — base64-encoded PSBT string. Same wire shape across
+    /// every SwapKit BTC provider observed in the Phase 0 spike (NEAR,
+    /// FLASHNET, GARDEN; Chainflip BTC validated structurally only).
+    case psbt(base64: String)
     case unsupported(txType: String, raw: SwapKitRawJSON)
 }
 

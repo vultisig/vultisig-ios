@@ -83,6 +83,13 @@ final class ChainHelperTests: XCTestCase {
                 let swaps = OneInchSwaps()
                 result += try swaps.getPreSignedImageHash(payload: oneInchSwapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
             }
+        case .swapkit:
+            // Phase 2 fixtures don't exercise the SwapKit BTC PSBT signing
+            // path yet — that lands in a follow-up alongside the actual
+            // per-chain signer wiring in `UTXOChainsHelper`. Surface a
+            // failure so the gap is visible if a future test case starts
+            // shipping a `.swapkit` swap payload through this runner.
+            XCTFail("SwapKit swap payload not yet handled by this test runner — \(testCase.name)")
         case .none:
             XCTFail("Swap payload is nil for test case \(testCase.name)")
         }
