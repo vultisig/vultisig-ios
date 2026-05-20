@@ -40,11 +40,19 @@ struct SwapKitService {
         amount: Decimal,
         slippagePercent: Double = SwapKitConfig.defaultSlippagePercent
     ) async throws -> SwapKitRoute? {
-        // No client-side feature flag — the Vultisig proxy
+        // Opt-in feature flag (Settings → Advanced → "SwapKit"). When the
+        // flag is off, short-circuit even if `Coin+Swaps.swapProviders`
+        // already filtered `.swapkit` out — defense in depth so a future
+        // call site that bypasses the provider list can't accidentally
+        // light SwapKit up. The Vultisig proxy
         // (`api.vultisig.com/swapkit/`) attaches the partner API key
-        // server-side, so the integration is always reachable from the
-        // client perspective. The proxy is the single point of credential
-        // control across iOS / Android / Windows.
+        // server-side; this flag exists to control client-side visibility
+        // during smoke testing.
+        guard SwapKitConfig.isFeatureEnabled else {
+            logger.info("[swapkit] feature flag disabled — skipping fetch")
+            return nil
+        }
+
         let rawAmount = fromCoin.raw(for: amount)
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),

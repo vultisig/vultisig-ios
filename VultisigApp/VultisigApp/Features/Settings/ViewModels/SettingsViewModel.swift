@@ -35,6 +35,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
     @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
+    @AppStorage("swapkitEnabled") var swapkitEnabled: Bool = false
 
     init() {
         self.selectedCurrency = SettingsCurrency.current

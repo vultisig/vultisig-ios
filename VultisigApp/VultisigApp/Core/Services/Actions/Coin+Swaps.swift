@@ -23,6 +23,18 @@ extension Coin {
     }
 
     var swapProviders: [SwapProvider] {
+        // SwapKit is opt-in behind the Settings → Advanced → "SwapKit"
+        // toggle. When the flag is off, drop `.swapkit` from every chain's
+        // provider list — ranking falls back to the other providers exactly
+        // as before the SwapKit integration shipped. Single point of
+        // gating: every chain's switch arm below carries `.swapkit` as if
+        // unconditionally enabled, and this filter prunes when needed.
+        let providers = naturalSwapProviders
+        guard !SwapKitConfig.isFeatureEnabled else { return providers }
+        return providers.filter { $0 != .swapkit }
+    }
+
+    private var naturalSwapProviders: [SwapProvider] {
         switch chain {
         case .mayaChain, .dash, .kujira:
             return [.mayachain]

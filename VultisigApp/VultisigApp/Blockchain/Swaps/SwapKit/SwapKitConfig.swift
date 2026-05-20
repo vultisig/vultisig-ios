@@ -54,4 +54,14 @@ enum SwapKitConfig {
         "MAYACHAIN",
         "MAYACHAIN_STREAMING"
     ]
+
+    /// Advanced-settings opt-in flag (Settings → Advanced → "SwapKit"). When
+    /// `false`, SwapKit is dropped from every coin's `swapProviders` list
+    /// and `SwapKitService.fetchBestRoute` short-circuits to `nil`. The key
+    /// is the same `@AppStorage` value `SettingsViewModel.swapkitEnabled`
+    /// writes to, so the toggle and this read share one source of truth.
+    /// Default `false` — opt-in while we smoke-test in production.
+    static var isFeatureEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "swapkitEnabled")
+    }
 }
