@@ -214,6 +214,13 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+          # Exclude the fixture JSONs from the generic-sources scan; they're
+          # picked up explicitly below as a folder reference so they land at
+          # `__fixtures__/*.json` inside the bundle. Without this exclude,
+          # XcodeGen treats every `.json` under the tree as a flattened
+          # resource and collides with `ChainHelperTests.testChainHelpers`,
+          # which enumerates every top-level JSON in the bundle root.
+          - "Swap/SwapKit/__fixtures__/**"
       # Static fixture JSONs bundled with the test target as a *folder
       # reference* (blue folder in Xcode) so they land at
       # `__fixtures__/*.json` inside the bundle instead of flattening into

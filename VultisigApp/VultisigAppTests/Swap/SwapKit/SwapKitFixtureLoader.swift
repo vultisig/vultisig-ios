@@ -19,16 +19,20 @@ enum SwapKitFixtureLoader {
 
     static func loadData(_ name: String) throws -> Data {
         let bundle = Bundle(for: SwapKitFixtureLoaderAnchor.self)
-        let url = bundle.url(
+        // No bundle-root fallback: requiring `__fixtures__/` keeps misplaced
+        // fixtures from silently resolving to an unrelated same-named JSON
+        // in another test area, and it surfaces project.yml regressions
+        // (the resources buildPhase deleting the folder reference) here
+        // rather than masking them with a confusing decode error.
+        guard let url = bundle.url(
             forResource: name,
             withExtension: "json",
             subdirectory: fixturesSubdirectory
-        ) ?? bundle.url(forResource: name, withExtension: "json")
-        guard let url else {
+        ) else {
             throw NSError(
                 domain: "SwapKitFixtureLoader",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Missing fixture: \(name).json"]
+                userInfo: [NSLocalizedDescriptionKey: "Missing fixture: \(fixturesSubdirectory)/\(name).json"]
             )
         }
         return try Data(contentsOf: url)

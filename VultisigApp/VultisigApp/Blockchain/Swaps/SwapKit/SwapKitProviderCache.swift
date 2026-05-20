@@ -70,7 +70,13 @@ actor SwapKitProviderCache {
     ) -> Bool {
         let chainId = SwapKitChainIDMapper.swapKitChainId(for: chain)
         return providers.contains { provider in
-            guard !SwapKitConfig.filteredProviders.contains(provider.provider) else {
+            // Normalize before comparison — `SwapKitConfig.filteredProviders`
+            // is upper-case but the upstream API has historically returned
+            // mixed casing for some providers (e.g. `THORCHAIN_STREAMING` vs
+            // `thorchain_streaming`). Lower-casing the filter set could
+            // silently let a route slip through, so normalize the API value
+            // instead.
+            guard !SwapKitConfig.filteredProviders.contains(provider.provider.uppercased()) else {
                 return false
             }
             return provider.enabledChainIds.contains(chainId)

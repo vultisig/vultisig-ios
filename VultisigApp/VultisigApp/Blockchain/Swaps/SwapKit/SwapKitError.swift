@@ -77,35 +77,35 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .apiKeyMissing:
-            return "SwapKit API key not configured"
+            return "swapKitErrorApiKeyMissing".localized
         case .apiKeyInvalid:
-            return "SwapKit API key is invalid"
+            return "swapKitErrorApiKeyInvalid".localized
         case .insufficientBalance:
-            return "Insufficient balance for this route"
+            return "swapKitErrorInsufficientBalance".localized
         case .insufficientAllowance:
-            return "Token allowance is insufficient — approve first"
+            return "swapKitErrorInsufficientAllowance".localized
         case .unableToBuildTransaction:
-            return "This route is currently unavailable, try a different provider"
+            return "swapKitErrorUnableToBuildTransaction".localized
         case .swapRouteNotFound:
-            return "Selected route has expired"
+            return "swapKitErrorSwapRouteNotFound".localized
         case .outputAmountDeviationTooHigh:
-            return "Quote drifted more than 5% — refresh to continue"
+            return "swapKitErrorOutputAmountDeviationTooHigh".localized
         case .noRoutesFound:
-            return "No routes available for this pair"
+            return "swapKitErrorNoRoutesFound".localized
         case .blackListAsset:
-            return "This asset is blocked by the aggregator"
+            return "swapKitErrorBlackListAsset".localized
         case .invalidSourceAddress:
-            return "Source address is invalid"
+            return "swapKitErrorInvalidSourceAddress".localized
         case .invalidDestinationAddress:
-            return "Destination address is invalid"
+            return "swapKitErrorInvalidDestinationAddress".localized
         case .isSanctionedAddress, .addressScreeningFailed:
-            return "Address screening failed — contact support"
+            return "swapKitErrorAddressScreening".localized
         case .unsupportedTxType(let txType):
-            return "SwapKit txType \(txType) is not yet supported on iOS"
+            return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
         case .providerNotEnabled:
-            return "SwapKit is not enabled on this chain"
+            return "swapKitErrorProviderNotEnabled".localized
         case .routeFiltered:
-            return "All routes were filtered out for this pair"
+            return "swapKitErrorRouteFiltered".localized
         case .generic(let message):
             return message
         }

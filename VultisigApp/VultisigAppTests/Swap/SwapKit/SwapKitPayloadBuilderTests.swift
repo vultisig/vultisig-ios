@@ -73,9 +73,9 @@ final class SwapKitPayloadBuilderTests: XCTestCase {
         )
     }
 
-    func testApprovePayloadFallsBackForNativeSource() {
+    func testApprovePayloadFallsBackForNativeSource() throws {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        let response = makeMinimalEvmResponse()
+        let response = try makeMinimalEvmResponse()
         let payload = SwapCryptoLogic.buildSwapKitApprovePayload(
             fromCoin: eth,
             amount: BigInt(1),
@@ -92,7 +92,7 @@ final class SwapKitPayloadBuilderTests: XCTestCase {
         return Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
     }
 
-    private func makeMinimalEvmResponse() -> SwapKitSwapResponse {
+    private func makeMinimalEvmResponse() throws -> SwapKitSwapResponse {
         // Synthesise a minimal EVM-flavoured response by re-encoding a tiny
         // JSON literal. Keeps the test independent of the network fixtures.
         let json = """
@@ -116,7 +116,6 @@ final class SwapKitPayloadBuilderTests: XCTestCase {
           "approvalTx": null
         }
         """
-        // swiftlint:disable:next force_try
-        return try! JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
+        return try JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
     }
 }

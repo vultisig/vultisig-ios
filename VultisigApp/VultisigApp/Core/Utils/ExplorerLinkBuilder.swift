@@ -42,7 +42,7 @@ enum ExplorerLinkBuilder {
             // Phase 1 ships the explorer-link fallback; `/track` polling is
             // covered by the follow-up tx-history plan. `track.swapkit.dev`
             // accepts on-chain hashes for the source chain.
-            return "https://track.swapkit.dev/?hash=\(txHash)"
+            return swapkitTracker(txid: txHash)
         case .oneinch, .kyberswap, .none:
             return getExplorerURL(chain: fromChain, txid: txHash)
         }
@@ -61,10 +61,14 @@ enum ExplorerLinkBuilder {
         case .mayachain:
             return mayaTracker(txid: txHash)
         case .generic(let payload):
-            if payload.provider == .lifi {
+            switch payload.provider {
+            case .lifi:
                 return lifiTracker(txid: txHash)
+            case .swapkit:
+                return swapkitTracker(txid: txHash)
+            case .oneInch, .kyberSwap, .unknown:
+                return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
             }
-            return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
         case .none:
             return nil
         }
@@ -87,6 +91,8 @@ enum ExplorerLinkBuilder {
             switch normalized {
             case "lifi":
                 return URL(string: lifiTracker(txid: txHash))
+            case "swapkit":
+                return URL(string: swapkitTracker(txid: txHash))
             case "maya", "mayachain", "mayaprotocol":
                 return URL(string: mayaTracker(txid: txHash))
             case "thorchainstagenet":
@@ -297,6 +303,10 @@ enum ExplorerLinkBuilder {
 
     private static func lifiTracker(txid: String) -> String {
         "https://scan.li.fi/tx/\(txid)"
+    }
+
+    private static func swapkitTracker(txid: String) -> String {
+        "https://track.swapkit.dev/?hash=\(txid)"
     }
 
     private static func mayaTracker(txid: String) -> String {

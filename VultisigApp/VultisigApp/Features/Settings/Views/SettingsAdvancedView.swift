@@ -68,7 +68,7 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
-                title: "SwapKit",
+                title: "settingsAdvancedSwapKitToggle".localized,
                 icon: "arrow.triangle.swap",
                 isEnabled: $settingsViewModel.swapkitEnabled
             )

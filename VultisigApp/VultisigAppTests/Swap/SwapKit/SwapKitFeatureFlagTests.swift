@@ -82,14 +82,14 @@ final class SwapKitFeatureFlagTests: XCTestCase {
     }
 
     func testFlagOffDoesNotAffectNonSwapKitChains() {
-        // Mantle has no `.swapkit` arm in the switch (SwapKit doesn't enable
-        // Mantle per /v3/providers). Toggling the flag must not change its
-        // provider list — pinned so a future refactor doesn't drop it into
-        // the filter path.
+        // THORChain has no `.swapkit` arm in the switch (the SwapKit
+        // integration explicitly filters THORChain/Maya routes upstream).
+        // Toggling the flag must not change its provider list — pinned so a
+        // future refactor doesn't drop it into the filter path.
         UserDefaults.standard.set(false, forKey: flagKey)
-        let off = makeCoin(chain: .mantle, ticker: "MNT").swapProviders
+        let off = makeCoin(chain: .thorChain, ticker: "RUNE").swapProviders
         UserDefaults.standard.set(true, forKey: flagKey)
-        let on = makeCoin(chain: .mantle, ticker: "MNT").swapProviders
+        let on = makeCoin(chain: .thorChain, ticker: "RUNE").swapProviders
         XCTAssertEqual(off, on)
     }
 

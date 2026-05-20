@@ -83,11 +83,15 @@ extension Coin {
         case .optimism, .polygon, .polygonV2:
             return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
         case .mantle:
-            return [.lifi, .oneinch(chain), .kyberswap(chain)] // SwapKit not enabled per /v3/providers
+            // `.swapkit` is included unconditionally — eligibility per chain
+            // is gated dynamically by `SwapKitProviderCache.isEnabled`
+            // against the cached `/v3/providers.enabledChainIds`. If
+            // SwapKit lights up Mantle later, no iOS release needed.
+            return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit]
         case .zksync:
-            return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync; SwapKit not enabled
+            return [.oneinch(chain), .lifi, .swapkit] // KyberSwap not supported on zkSync
         case .blast:
-            return [.lifi] // KyberSwap not supported on Blast; SwapKit not enabled
+            return [.lifi, .swapkit] // KyberSwap not supported on Blast
         case .thorChain:
             return [.thorchain, .mayachain]
         case .thorChainChainnet:
