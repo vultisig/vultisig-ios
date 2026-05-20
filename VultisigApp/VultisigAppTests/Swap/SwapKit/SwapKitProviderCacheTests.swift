@@ -38,6 +38,26 @@ final class SwapKitProviderCacheTests: XCTestCase {
         XCTAssertTrue(SwapKitProviderCache.chainEnabled(.bitcoin, in: providers))
     }
 
+    /// Phase 3 chains. NEAR Intents is enabled on each of these in the
+    /// cached `/providers` snapshot; SwapKit routes any of them through
+    /// NEAR by default. None of the other Phase 3 source chains have a
+    /// non-NEAR provider in the fixture.
+    func testTonIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.ton, in: providers))
+    }
+
+    func testCardanoIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.cardano, in: providers))
+    }
+
+    func testSuiIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.sui, in: providers))
+    }
+
+    func testTronIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.tron, in: providers))
+    }
+
     func testMantleIsNotEnabled() {
         XCTAssertFalse(SwapKitProviderCache.chainEnabled(.mantle, in: providers))
     }

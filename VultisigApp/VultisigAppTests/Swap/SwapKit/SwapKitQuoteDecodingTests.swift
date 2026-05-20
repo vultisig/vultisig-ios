@@ -82,17 +82,38 @@ final class SwapKitQuoteDecodingTests: XCTestCase {
         XCTAssertNotNil(Data(base64Encoded: base64))
     }
 
-    func testTronSwapResponseDecodesAsUnsupported() throws {
-        let response = try SwapKitFixtureLoader.decode(
-            SwapKitSwapResponse.self,
-            from: "v3-tron-final-swap-fresh"
-        )
-        XCTAssertEqual(response.meta.txType, "TRON")
-        guard case let .unsupported(txType, _) = response.tx else {
-            XCTFail("Expected unsupported tx variant for Phase 1")
-            return
+    /// Synthesizes a fictional unknown `tx_type` to lock the decoder's
+    /// fall-through behaviour. TRON used to live here as a Phase 1 sentinel;
+    /// Phase 3 promoted it to a typed `.tron` case (see
+    /// `SwapKitLongTailTests.testTronSwapResponseDecodesAsTronWebObject`)
+    /// so this test now uses a never-shipped chain string to stand in for
+    /// "future SwapKit chain we don't yet decode."
+    func testUnknownTxTypeFallsThroughToUnsupported() throws {
+        let json = #"""
+        {
+          "swapId": "00000000-0000-0000-0000-000000000000",
+          "routeId": "00000000-0000-0000-0000-000000000000",
+          "providers": ["FUTURE_PROVIDER"],
+          "sellAsset": "FUTURE.TOKEN",
+          "buyAsset": "ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "sellAmount": "1",
+          "expectedBuyAmount": "1",
+          "expectedBuyAmountMaxSlippage": "1",
+          "sourceAddress": "future-address",
+          "destinationAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+          "targetAddress": "future-deposit-address",
+          "meta": { "txType": "FUTURE_CHAIN" },
+          "tx": { "any": "shape" },
+          "fees": []
         }
-        XCTAssertEqual(txType, "TRON")
+        """#
+        let data = Data(json.utf8)
+        let response = try JSONDecoder().decode(SwapKitSwapResponse.self, from: data)
+        XCTAssertEqual(response.meta.txType, "FUTURE_CHAIN")
+        guard case let .unsupported(txType, _) = response.tx else {
+            return XCTFail("Expected unsupported tx variant for unknown txType")
+        }
+        XCTAssertEqual(txType, "FUTURE_CHAIN")
     }
 
     func testProvidersFixtureDecodesEnabledChainIds() throws {
