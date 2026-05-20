@@ -69,6 +69,11 @@ enum ExplorerLinkBuilder {
             case .oneInch, .kyberSwap, .unknown:
                 return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
             }
+        case .swapkit:
+            // Phase 2 ships explorer-link fallback for BTC PSBT routes.
+            // `/track` polling integration is covered by the follow-up
+            // tx-history plan; track.swapkit.dev accepts the on-chain hash.
+            return swapkitTracker(txid: txHash)
         case .none:
             return nil
         }

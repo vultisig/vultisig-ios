@@ -85,6 +85,25 @@ final class SwapKitServiceTests: XCTestCase {
         XCTAssertEqual(best.providers, ["ONEINCH"])
     }
 
+    /// BTC routes returned by the spike are all single-hop NEAR / FLASHNET /
+    /// GARDEN. None carry THORChain/Maya, so the client-side filter keeps
+    /// every one and the best-net-output ranking picks the NEAR route
+    /// (highest `expectedBuyAmount`).
+    func testBitcoinFixtureQuoteSurvivesFilter() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitQuoteResponse.self,
+            from: "v3-real-btc-all-quote"
+        )
+        let filtered = SwapKitService.filterRoutes(response.routes)
+        XCTAssertEqual(filtered.count, response.routes.count)
+        XCTAssertEqual(
+            Set(filtered.flatMap(\.providers)),
+            Set(["NEAR", "FLASHNET", "GARDEN"])
+        )
+        let best = try XCTUnwrap(SwapKitService.bestRoute(in: filtered))
+        XCTAssertEqual(best.providers, ["NEAR"])
+    }
+
     // MARK: - Fixtures
 
     private func makeRoute(

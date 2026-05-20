@@ -567,6 +567,13 @@ class KeysignViewModel: ObservableObject {
                 let swaps = THORChainSwaps()
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
+            case .swapkit(let payload):
+                // Phase 2 wires the payload up to here; the actual PSBT
+                // sign + compile path lands in a follow-up. Throw a typed
+                // error so a SwapKit BTC swap that reaches keysign without
+                // the signing path in place fails visibly rather than
+                // silently dropping signatures.
+                throw SwapKitError.unsupportedTxType(payload.txType)
             }
         }
 
