@@ -38,6 +38,11 @@ enum ExplorerLinkBuilder {
             return mayaTracker(txid: txHash)
         case .lifi:
             return lifiTracker(txid: txHash)
+        case .swapkit:
+            // Phase 1 ships the explorer-link fallback; `/track` polling is
+            // covered by the follow-up tx-history plan. `track.swapkit.dev`
+            // accepts on-chain hashes for the source chain.
+            return "https://track.swapkit.dev/?hash=\(txHash)"
         case .oneinch, .kyberswap, .none:
             return getExplorerURL(chain: fromChain, txid: txHash)
         }

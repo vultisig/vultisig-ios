@@ -197,6 +197,13 @@ struct SwapService {
                 toCoin: toCoin,
                 vultTierDiscount: vultTierDiscount
             )
+        case .swapkit:
+            return try await fetchSwapKitQuote(
+                service: SwapKitService.shared,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin
+            )
         }
     }
 }
@@ -346,6 +353,35 @@ private extension SwapService {
         print("LiFi Quote: \(response.quote)")
         return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
+
+    func fetchSwapKitQuote(
+        service: SwapKitService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin
+    ) async throws -> SwapQuote {
+        // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
+        // doesn't enable. Fails open if the cache can't be loaded so we don't
+        // silently disable the aggregator on a bad network day.
+        let fromEnabled = await service.isChainEnabled(fromCoin.chain)
+        let toEnabled = await service.isChainEnabled(toCoin.chain)
+        guard fromEnabled, toEnabled else {
+            throw SwapKitError.providerNotEnabled
+        }
+        guard let route = try await service.fetchBestRoute(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            amount: amount
+        ) else {
+            throw SwapKitError.routeFiltered
+        }
+        let response = try await service.buildSwapTx(
+            routeId: route.routeId,
+            sourceAddress: fromCoin.address,
+            destinationAddress: toCoin.address
+        )
+        return .swapkit(response, fee: nil, subProvider: response.subProvider)
+    }
 }
 
 // MARK: - THORChain anti-rekt streaming fallback
@@ -393,7 +429,7 @@ extension SwapService {
         switch provider {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
             return true
-        case .mayachain, .oneinch, .kyberswap, .lifi:
+        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit:
             return false
         }
     }

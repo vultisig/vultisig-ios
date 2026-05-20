@@ -16,6 +16,7 @@ enum SwapQuote: Hashable {
     case oneinch(EVMQuote, fee: BigInt?)
     case kyberswap(EVMQuote, fee: BigInt?)
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
+    case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
 
     var swapProviderId: SwapProviderId? {
         switch self {
@@ -27,6 +28,8 @@ enum SwapQuote: Hashable {
             return .kyberSwap
         case .lifi:
             return .lifi
+        case .swapkit:
+            return .swapkit
         }
     }
 
@@ -38,6 +41,8 @@ enum SwapQuote: Hashable {
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
+        case .swapkit(let response, _, _):
+            return response.targetAddress
         }
     }
 
@@ -45,7 +50,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.totalSwapSeconds
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .swapkit:
             return nil
         }
     }
@@ -58,6 +63,8 @@ enum SwapQuote: Hashable {
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
+        case .swapkit(let response, _, _):
+            return response.inboundAddress ?? response.targetAddress
         }
     }
 
@@ -77,6 +84,9 @@ enum SwapQuote: Hashable {
             return "KyberSwap"
         case .lifi:
             return "LI.FI"
+        case .swapkit(_, _, let subProvider):
+            // Surface the sub-provider so the verify screen can show "via Chainflip".
+            return "SwapKit (\(subProvider))"
         }
     }
 
@@ -90,7 +100,7 @@ enum SwapQuote: Hashable {
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
-        case .oneinch, .kyberswap:
+        case .oneinch, .kyberswap, .swapkit:
             // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
         }
@@ -101,6 +111,11 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
             guard let fee = BigInt(quote.tx.swapFee), fee > 0 else { return nil }
             return fee
+        case .swapkit:
+            // SwapKit's affiliate fee is dashboard-driven, no per-tx swap-fee
+            // field on the wire today. Revisit when partner dashboard wiring
+            // lands.
+            return nil
         default:
             return nil
         }
@@ -120,7 +135,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.memo
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .swapkit:
             return nil
         }
     }
@@ -132,6 +147,9 @@ enum SwapQuote: Hashable {
             return Decimal(slippageBps) / 10000
         case .oneinch, .kyberswap, .lifi:
             return nil
+        case .swapkit(let response, _, _):
+            guard let impact = response.meta.priceImpact else { return nil }
+            return Decimal(impact)
         }
     }
 
@@ -139,7 +157,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.fees.total
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .swapkit:
             return nil
         }
     }
@@ -164,6 +182,10 @@ enum SwapQuote: Hashable {
             hasher.combine(quote)
             hasher.combine(fee)
             hasher.combine(integratorFee)
+        case .swapkit(let response, let fee, let subProvider):
+            hasher.combine(response)
+            hasher.combine(fee)
+            hasher.combine(subProvider)
         }
     }
 }

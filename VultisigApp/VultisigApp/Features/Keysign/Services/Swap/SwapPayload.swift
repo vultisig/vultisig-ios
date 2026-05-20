@@ -87,6 +87,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
                 return "LI.FI"
             case .kyberSwap:
                 return "KyberSwap"
+            case .swapkit:
+                return "SwapKit"
             }
         }
     }

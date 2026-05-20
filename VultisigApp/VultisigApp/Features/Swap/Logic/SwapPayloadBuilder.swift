@@ -230,6 +230,119 @@ extension SwapCryptoLogic {
                 approvePayload: approvePayload,
                 vault: vault
             )
+
+        case let .swapkit(swapResponse, _, _):
+            let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
+            // Re-derive the approve payload from SwapKit's `approvalTx` (or
+            // fall back to the standard ERC20 path against `targetAddress`).
+            let resolvedApprovePayload = buildSwapKitApprovePayload(
+                fromCoin: fromCoin,
+                amount: amountInCoin,
+                swapResponse: swapResponse,
+                fallback: approvePayload
+            )
+            let payload = GenericSwapPayload(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: amountInCoin,
+                toAmountDecimal: toDecimal,
+                quote: evmQuote,
+                provider: .swapkit
+            )
+            return try await keysignFactory.buildTransfer(
+                coin: fromCoin,
+                toAddress: swapResponse.targetAddress,
+                amount: amountInCoin,
+                memo: nil,
+                chainSpecific: chainSpecific,
+                swapPayload: .generic(payload),
+                approvePayload: resolvedApprovePayload,
+                vault: vault
+            )
         }
+    }
+
+    /// Translates a SwapKit `/v3/swap` response into the existing `EVMQuote`
+    /// shape so the keysign dispatcher can reuse the OneInch / Solana paths
+    /// unchanged. EVM and Solana are typed in Phase 1; other `txType` values
+    /// throw a descriptive error so callers can surface "not yet supported".
+    static func buildEVMQuoteFromSwapKit(
+        swapResponse: SwapKitSwapResponse
+    ) throws -> EVMQuote {
+        switch swapResponse.tx {
+        case .evm(let tx):
+            let value = BigInt(tx.value) ?? .zero
+            let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
+            let gas = Int64(tx.gas.stripHexPrefix(), radix: 16) ?? 0
+            // Trust SwapKit's `tx.gas` for the gas limit; the EVM helper
+            // bumps gasPrice against the chain-specific fee oracle in
+            // OneInchSwaps.getPreSignedInputData.
+            let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
+            return EVMQuote(
+                dstAmount: rawAmountString(from: swapResponse.expectedBuyAmount),
+                tx: EVMQuote.Transaction(
+                    from: tx.from,
+                    to: tx.to,
+                    data: tx.data,
+                    value: String(value),
+                    gasPrice: String(gasPrice),
+                    gas: normalizedGas
+                )
+            )
+
+        case .solana(let base64):
+            // SwapKit returns a base64-encoded Solana wire-format tx. The
+            // existing SolanaSwaps signer base64-decodes from `tx.data` and
+            // injects the recent blockhash — preserve that contract by
+            // stashing the base64 into the `data` field of an EVMQuote-shaped
+            // value that flows through `SwapPayload.generic` and gets routed
+            // to SolanaSwaps by `KeysignMessageFactory`.
+            return EVMQuote(
+                dstAmount: rawAmountString(from: swapResponse.expectedBuyAmount),
+                tx: EVMQuote.Transaction(
+                    from: swapResponse.sourceAddress,
+                    to: swapResponse.targetAddress,
+                    data: base64,
+                    value: "0",
+                    gasPrice: "0",
+                    gas: 0
+                )
+            )
+
+        case .unsupported(let txType, _):
+            throw SwapKitError.unsupportedTxType(txType)
+        }
+    }
+
+    /// SwapKit's `approvalTx` carries the exact spender + amount the EVM
+    /// approve call needs. When it's populated we honour it verbatim; when
+    /// absent we fall back to the caller's pre-built approve payload (which
+    /// defaults to ERC20 approve against `targetAddress`).
+    static func buildSwapKitApprovePayload(
+        fromCoin: Coin,
+        amount: BigInt,
+        swapResponse: SwapKitSwapResponse,
+        fallback: ERC20ApprovePayload?
+    ) -> ERC20ApprovePayload? {
+        guard fromCoin.shouldApprove else { return nil }
+        if let approvalTx = swapResponse.approvalTx {
+            // The spender lives in `approvalAddress` (or is encoded in
+            // `approvalTx.data` after the `0x095ea7b3` selector). We prefer
+            // the meta field — confirmed by the spike to match the calldata
+            // spender — and fall back to the `to` field of the approve tx
+            // itself.
+            let spender = swapResponse.meta.approvalAddress ?? approvalTx.to
+            return ERC20ApprovePayload(amount: amount, spender: spender)
+        }
+        return fallback
+    }
+
+    private static func rawAmountString(from expectedBuyAmount: String) -> String {
+        // SwapKit returns human-units decimals; OneInch expects raw base
+        // units in `dstAmount`. We don't have the destination decimals
+        // wired through this helper, so we surface `expectedBuyAmount`
+        // verbatim — the downstream ranking already special-cases SwapKit
+        // (see SwapQuote+Ranking.expectedNetToAmount).
+        return expectedBuyAmount.isEmpty ? "0" : expectedBuyAmount
     }
 }

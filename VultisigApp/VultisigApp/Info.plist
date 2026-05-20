@@ -4,6 +4,8 @@
 <dict>
 	<key>ATSApplicationFontsPath</key>
 	<string>.</string>
+	<key>SwapKitAPIKey</key>
+	<string>$(SWAPKIT_API_KEY)</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

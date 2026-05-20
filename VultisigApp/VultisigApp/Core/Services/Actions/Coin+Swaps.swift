@@ -30,7 +30,8 @@ extension Coin {
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
                 .lifi,
-                .kyberswap(chain)
+                .kyberswap(chain),
+                .swapkit
             ]
 
             var providers: [SwapProvider] = []
@@ -46,33 +47,35 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain) ]
+                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi] // KyberSwap not supported
+                return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
             }
-            return [.oneinch(chain), .lifi] // KyberSwap not supported
-        case .optimism, .polygon, .polygonV2, .mantle:
-            return [.lifi, .oneinch(chain), .kyberswap(chain)] // KyberSwap supported
+            return [.oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
+        case .optimism, .polygon, .polygonV2:
+            return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
+        case .mantle:
+            return [.lifi, .oneinch(chain), .kyberswap(chain)] // SwapKit not enabled per /v3/providers
         case .zksync:
-            return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
+            return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync; SwapKit not enabled
         case .blast:
-            return [.lifi] // KyberSwap not supported on Blast
+            return [.lifi] // KyberSwap not supported on Blast; SwapKit not enabled
         case .thorChain:
             return [.thorchain, .mayachain]
         case .thorChainChainnet:
@@ -84,7 +87,9 @@ extension Coin {
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
         case .solana:
-            return [.thorchain, .lifi]
+            // Phase 1 chain — `.swapkit` enables EVM↔Solana and Solana↔EVM
+            // routes via NEAR Intents / Chainflip / etc.
+            return [.thorchain, .lifi, .swapkit]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:

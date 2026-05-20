@@ -97,6 +97,12 @@ VultisigApp.app
 # Claude Code - ignore local settings
 .claude/settings.local.json
 
+# Local xcconfig override holding developer secrets (SwapKit API key, etc.).
+# The base `VultisigApp.xcconfig` is committed and pulls this in via
+# `#include?`. The committed companion `VultisigApp.local.xcconfig.example`
+# documents the schema.
+VultisigApp/VultisigApp.local.xcconfig
+
 # XcodeGen — project is generated from VultisigApp/project.yml.
 # Run `make generate` from the repo root after pulling project.yml changes.
 VultisigApp/VultisigApp.xcodeproj/project.pbxproj

@@ -9,6 +9,7 @@ enum SwapProviderId: String, Codable {
     case oneInch = "1inch"
     case lifi = "li.fi"
     case kyberSwap = "kyber"
+    case swapkit = "swapkit"
 
     var name: String {
         switch self {
@@ -18,6 +19,8 @@ enum SwapProviderId: String, Codable {
             return "KyberSwap"
         case .lifi:
             return "LI.FI"
+        case .swapkit:
+            return "SwapKit"
         }
     }
 }

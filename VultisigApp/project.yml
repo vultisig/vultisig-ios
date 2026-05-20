@@ -93,6 +93,14 @@ targets:
       # below, not via XcodeGen's `info:` / `entitlements:` blocks (which
       # would regenerate and overwrite them).
 
+    # Developer-supplied configuration (SwapKit API key, etc.). The path is
+    # gitignored — the committed companion is `VultisigApp.xcconfig.example`.
+    # When the file is missing the build still succeeds; the SwapKit
+    # integration disables itself at runtime via `SwapKitConfig.apiKey`.
+    configFiles:
+      Debug: VultisigApp.xcconfig
+      Release: VultisigApp.xcconfig
+
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vultisig.wallet
@@ -214,6 +222,15 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+      # Static fixture JSONs bundled with the test target as a *folder
+      # reference* (blue folder in Xcode) so they land at
+      # `__fixtures__/*.json` inside the bundle instead of flattening into
+      # the resource root. Flattening would collide with
+      # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
+      # JSON and decodes it as `[ChainHelperTestCase]`.
+      - path: VultisigAppTests/Swap/SwapKit/__fixtures__
+        type: folder
+        buildPhase: resources
 
     settings:
       base:
