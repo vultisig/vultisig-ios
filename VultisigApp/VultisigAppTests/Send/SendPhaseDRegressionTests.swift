@@ -123,13 +123,13 @@ final class SendPhaseDRegressionTests: XCTestCase {
 
     // MARK: - Lesson 4 — hasPrefix("server-") in local-party check
 
-    /// Site covered: `DefaultSendInteractor.loadFastVault(vault:)`.
+    /// Site covered: `Vault.isFastVault` (`Model/Vault.swift`).
     ///
     /// The check is `vault.localPartyID.lowercased().hasPrefix("server-")`.
     /// This test pins the canonical cases so a refactor that "simplifies"
     /// the check (drops `.lowercased()`, removes the hyphen, etc.) gets
     /// caught by the regression suite. The test mirrors the same expression
-    /// the interactor uses — if you change one, change the other.
+    /// the property uses — if you change one, change the other.
     func testFastVaultLocalPartyServerPrefixCases() {
         let cases: [(input: String, isServerLocalBackup: Bool)] = [
             ("server-12345", true),
@@ -144,7 +144,7 @@ final class SendPhaseDRegressionTests: XCTestCase {
         for (input, expected) in cases {
             let isServerLocalBackup = input.lowercased().hasPrefix("server-")
             XCTAssertEqual(isServerLocalBackup, expected,
-                "local-party check disagreement on '\(input)' — DefaultSendInteractor.loadFastVault must match this contract.")
+                "local-party check disagreement on '\(input)' — Vault.isFastVault must match this contract.")
         }
     }
 
