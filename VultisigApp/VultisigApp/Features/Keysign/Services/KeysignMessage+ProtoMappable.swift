@@ -261,7 +261,7 @@ extension SwapPayload {
                         swapFeeTokenContract: ""
                     )
                 ),
-                provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
+                provider: SwapProviderId.from(rawValue: value.provider)
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(

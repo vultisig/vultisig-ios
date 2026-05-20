@@ -80,16 +80,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         case .mayachain:
             return "Maya Protocol"
         case .generic(let payload):
-            switch payload.provider {
-            case .oneInch:
-                return "1Inch"
-            case .lifi:
-                return "LI.FI"
-            case .kyberSwap:
-                return "KyberSwap"
-            case .swapkit:
-                return "SwapKit"
-            }
+            return payload.provider.name
         }
     }
 }
