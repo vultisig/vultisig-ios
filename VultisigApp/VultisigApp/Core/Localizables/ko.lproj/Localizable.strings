@@ -925,6 +925,7 @@
 "swapKitStatusRefundedReason" = "스왑이 원래 주소로 환불되었습니다";
 "swapKitViewOnTracker" = "SwapKit 추적기에서 보기";
 "swapOverview" = "스왑 개요";
+"swapPickerViaSwapKit" = "SwapKit를 통해";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
 "swapTrackingLink" = "스왑 추적 링크";

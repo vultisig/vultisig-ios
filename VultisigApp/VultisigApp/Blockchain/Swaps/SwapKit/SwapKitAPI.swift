@@ -17,6 +17,9 @@ enum SwapKitAPI {
     case swap(SwapKitSwapRequest)
     case track(SwapKitTrackRequest)
     case providers
+    /// `GET /tokens?provider=<NAME>` — per-provider token list. Mounted off
+    /// the bare proxy root (not under `/v3/`), same shape as `/track`.
+    case tokens(provider: String)
 }
 
 extension SwapKitAPI: TargetType {
@@ -26,9 +29,9 @@ extension SwapKitAPI: TargetType {
             // V3 surface: `/v3/quote`, `/v3/swap`. Base URL is
             // `.../swapkit/v3`; the path adds the leaf only.
             return SwapKitConfig.baseURL
-        case .track, .providers:
-            // Bare-host endpoints — SwapKit's `/track` and `/providers`
-            // live at the host root, not under `/v3`. Hitting
+        case .track, .providers, .tokens:
+            // Bare-host endpoints — SwapKit's `/track`, `/providers`, and
+            // `/tokens` live at the host root, not under `/v3`. Hitting
             // `.../swapkit/v3/providers` returns 404 from the proxy.
             return SwapKitConfig.trackBaseURL
         }
@@ -44,12 +47,14 @@ extension SwapKitAPI: TargetType {
             return "/track"
         case .providers:
             return "/providers"
+        case .tokens:
+            return "/tokens"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .providers:
+        case .providers, .tokens:
             return .get
         case .quote, .swap, .track:
             return .post
@@ -66,6 +71,8 @@ extension SwapKitAPI: TargetType {
             return .requestCodable(request, .jsonEncoding)
         case .providers:
             return .requestPlain
+        case .tokens(let provider):
+            return .requestParameters(["provider": provider], .urlEncoding)
         }
     }
 

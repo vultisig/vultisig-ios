@@ -14,17 +14,29 @@ class SwapCoinSelectionViewModel: ObservableObject {
     @Published var filteredTokens: [CoinMeta] = []
     @Published var searchText: String = ""
     @Published var error: Error?
+    /// Lowercased `CoinMeta.uniqueId`s of tokens the SwapKit `/tokens` cache
+    /// surfaced but that aren't in the curated + 1inch + Jupiter union. The
+    /// cell uses this to show the "via SwapKit" tag. Empty when the picker
+    /// is opened for the source side or when the SwapKit feature flag is
+    /// off — see `SwapCoinSelectionLogic.fetchCoins(chain:)` for the gating.
+    @Published var swapKitOnlyIds: Set<String> = []
 
     let vault: Vault
     let selectedCoin: Coin
+    let isDestination: Bool
 
     private let logic: SwapCoinSelectionLogic
     private var cancellable: AnyCancellable?
 
-    init(vault: Vault, selectedCoin: Coin) {
+    init(vault: Vault, selectedCoin: Coin, isDestination: Bool) {
         self.vault = vault
         self.selectedCoin = selectedCoin
-        self.logic = SwapCoinSelectionLogic(vault: vault, selectedCoin: selectedCoin)
+        self.isDestination = isDestination
+        self.logic = SwapCoinSelectionLogic(
+            vault: vault,
+            selectedCoin: selectedCoin,
+            isDestination: isDestination
+        )
     }
 
     func setup() {
@@ -45,8 +57,9 @@ class SwapCoinSelectionViewModel: ObservableObject {
         do {
             let result = try await logic.fetchCoins(chain: chain)
             await MainActor.run {
-                self.tokens = result
-                self.filteredTokens = result
+                self.tokens = result.tokens
+                self.filteredTokens = result.tokens
+                self.swapKitOnlyIds = result.swapKitOnlyIds
                 isLoading = false
             }
         } catch {
@@ -55,6 +68,13 @@ class SwapCoinSelectionViewModel: ObservableObject {
                 isLoading = false
             }
         }
+    }
+
+    /// Whether `coin` was surfaced exclusively by SwapKit's `/tokens` list —
+    /// i.e. the curated allowlist + 1inch + Jupiter union didn't already
+    /// know about it. Drives the "via SwapKit" tag in `SwapCoinCell`.
+    func isSwapKitOnly(_ coin: CoinMeta) -> Bool {
+        swapKitOnlyIds.contains(coin.uniqueId)
     }
 
     @MainActor func onSelect(coin: CoinMeta) -> Coin? {
@@ -68,24 +88,79 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
 // MARK: - SwapCoinSelectionLogic
 
+/// Result of a single `fetchCoins` call. `tokens` is the picker-ready list
+/// (preset + external + SwapKit, deduped, sorted); `swapKitOnlyIds` flags
+/// the subset of those tokens that were discovered exclusively via SwapKit
+/// `/tokens` so the cell can render the "via SwapKit" tag.
+struct SwapCoinSelectionResult {
+    let tokens: [CoinMeta]
+    let swapKitOnlyIds: Set<String>
+}
+
 struct SwapCoinSelectionLogic {
     private let vault: Vault
     private let selectedCoin: Coin
-    private let service = TokenSearchService.shared
+    private let isDestination: Bool
+    private let service: TokenSearchService
+    private let swapKitTokens: SwapKitTokensCache
 
-    init(vault: Vault, selectedCoin: Coin) {
+    init(
+        vault: Vault,
+        selectedCoin: Coin,
+        isDestination: Bool,
+        service: TokenSearchService = .shared,
+        swapKitTokens: SwapKitTokensCache = .shared
+    ) {
         self.vault = vault
         self.selectedCoin = selectedCoin
+        self.isDestination = isDestination
+        self.service = service
+        self.swapKitTokens = swapKitTokens
     }
 
-    func fetchCoins(chain: Chain) async throws -> [CoinMeta] {
+    func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
-        let tokens = ([nativeToken] + externalTokens).compactMap { $0 }
-        let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
-        return sort(tokens: uniqueTokens)
+        let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
+        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
+        let baseUniqueIds = Set(baseUnique.map { $0.uniqueId })
+
+        // SwapKit destinations only — source-side picker stays Phase-1
+        // identical. `SwapKitTokensCache.tokens(for:)` already short-circuits
+        // when the feature flag is off, but the `isDestination` gate avoids
+        // spinning up the fetch task at all on the source side.
+        let swapKitBucket: SwapKitTokensBucket
+        if isDestination {
+            swapKitBucket = await swapKitTokens.tokens(for: chain)
+        } else {
+            swapKitBucket = SwapKitTokensBucket(chain: chain, byIdentifier: [:], uniqueIds: [])
+        }
+
+        // Existing 1inch / Jupiter / preset entries win on overlap — their
+        // CoinFactory + price-provider plumbing is already in place. SwapKit
+        // residual tokens (those NOT in the base union) get tagged.
+        let merged = Self.mergeWithSwapKit(
+            base: baseUnique,
+            swapKit: swapKitBucket
+        )
+        let sorted = sort(tokens: merged)
+
+        let swapKitOnlyIds = swapKitBucket.uniqueIds.subtracting(baseUniqueIds)
+        return SwapCoinSelectionResult(tokens: sorted, swapKitOnlyIds: swapKitOnlyIds)
+    }
+
+    /// Pure-function merge — exposed for tests. Base list keeps its order;
+    /// SwapKit-only tokens append after, deduped by `CoinMeta.uniqueId`
+    /// (chain + lowercased ticker + lowercased contract).
+    static func mergeWithSwapKit(
+        base: [CoinMeta],
+        swapKit: SwapKitTokensBucket
+    ) -> [CoinMeta] {
+        let baseIds = Set(base.map { $0.uniqueId })
+        let novel = swapKit.tokens.filter { !baseIds.contains($0.uniqueId) }
+        return base + novel
     }
 
     func sort(tokens: [CoinMeta]) -> [CoinMeta] {

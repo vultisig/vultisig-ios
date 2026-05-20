@@ -938,6 +938,7 @@
 "swapKitStatusRefundedReason" = "Lo scambio è stato rimborsato al tuo indirizzo di origine";
 "swapKitViewOnTracker" = "Visualizza su SwapKit Tracker";
 "swapOverview" = "Panoramica dello scambio";
+"swapPickerViaSwapKit" = "via SwapKit";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
 "swapTrackingLink" = "Link di tracciamento dello scambio";

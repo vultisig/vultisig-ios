@@ -948,6 +948,7 @@
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
 "swapKitViewOnTracker" = "View on SwapKit Tracker";
 "swapOverview" = "Swap overview";
+"swapPickerViaSwapKit" = "via SwapKit";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Swap tracking link";
