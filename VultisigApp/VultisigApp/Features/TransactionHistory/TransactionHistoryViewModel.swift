@@ -44,19 +44,21 @@ class TransactionHistoryViewModel: ObservableObject {
 
     private let storage = TransactionHistoryStorage.shared
     private let poller: TransactionHistoryNativePoller
-    private let swapKitTracking = SwapKitTrackingService.shared
+    private let registry: SwapTrackingRegistry
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
 
     init(
         pubKeyECDSA: String,
         vaultName: String,
         chainFilter: Chain?,
-        poller: TransactionHistoryNativePoller = TransactionStatusPoller.shared
+        poller: TransactionHistoryNativePoller = TransactionStatusPoller.shared,
+        registry: SwapTrackingRegistry = .shared
     ) {
         self.pubKeyECDSA = pubKeyECDSA
         self.vaultName = vaultName
         self.chainFilter = chainFilter
         self.poller = poller
+        self.registry = registry
     }
 
     // MARK: - Loading
@@ -69,7 +71,7 @@ class TransactionHistoryViewModel: ObservableObject {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
             pollInProgressTransactions()
-            resumeSwapKitTracking()
+            resumeSwapTracking()
         } catch {
             logger.error("Failed to load: \(error)")
         }
@@ -78,10 +80,14 @@ class TransactionHistoryViewModel: ObservableObject {
     func refresh() async {
         load()
         // Pull-to-refresh forces an immediate poll for every in-flight
-        // SwapKit row so the user sees fresh status rather than waiting for
-        // the next scheduled tick.
-        for tx in transactions where tx.isSwapKitRouted && !tx.swapKitUiStatus.isTerminal {
-            await swapKitTracking.forceRefresh(swap: tx)
+        // tracked row so the user sees fresh status rather than waiting for
+        // the next scheduled tick. Only SwapKit currently surfaces a
+        // forced-refresh API; future providers add equivalent helpers and
+        // we route by provider kind here.
+        for tx in transactions where tx.isSwapRouted && !tx.swapTrackingUiStatus.isTerminal {
+            if let _ = registry.service(for: tx), tx.swapTracking?.providerKind == SwapKitTrackingService.providerKind {
+                await SwapKitTrackingService.shared.forceRefresh(tx: tx)
+            }
         }
         // Allow pull-to-refresh animation to complete
         try? await Task.sleep(for: .milliseconds(300))
@@ -97,20 +103,21 @@ class TransactionHistoryViewModel: ObservableObject {
 
     func pollInProgressTransactions() {
         for tx in transactions where tx.status == .inProgress {
-            // SwapKit-routed rows are exclusively `/track`'s territory under
-            // normal conditions — skip them so native polling can't race
-            // `/track` and last-writer-wins the row to `.successful` on a
-            // source-chain confirm while the cross-chain leg is still in
-            // flight. The one exception is when `swapKitTrackerOutage` is
-            // `true`: `/track` has been unavailable long enough that we
-            // fall back to native polling so the user at least sees the
-            // source-chain confirmation. The next successful `/track`
-            // response clears the flag and `/track` is authoritative again.
+            // Rows owned by a registered tracking service are exclusively
+            // that service's territory under normal conditions — skip them
+            // so native polling can't race the tracker and last-writer-wins
+            // the row to `.successful` on a source-chain confirm while the
+            // cross-chain leg is still in flight. The one exception is when
+            // `trackerOutage` is `true`: the tracker has been unavailable
+            // long enough that we fall back to native polling so the user
+            // at least sees the source-chain confirmation. The next
+            // successful tracker response clears the flag and the tracker
+            // regains authority.
             //
             // The poller enforces the same gate internally (belt-and-
             // suspenders); duplicating it here avoids spinning up the
             // chain-config lookup for rows we already know to skip.
-            if tx.isSwapKitRouted && tx.swapKitTrackerOutage != true {
+            if registry.service(for: tx) != nil && tx.swapTracking?.trackerOutage != true {
                 continue
             }
 
@@ -120,11 +127,11 @@ class TransactionHistoryViewModel: ObservableObject {
         }
     }
 
-    /// Restart SwapKit `/track` pollers for any still-in-flight rows. The
+    /// Restart tracking pollers for any still-in-flight rows. Each registered
     /// service is idempotent — already-running pollers are left untouched.
-    private func resumeSwapKitTracking() {
-        for tx in transactions where tx.isSwapKitRouted && !tx.swapKitUiStatus.isTerminal {
-            swapKitTracking.start(swap: tx)
+    private func resumeSwapTracking() {
+        for tx in transactions where tx.isSwapRouted && !tx.swapTrackingUiStatus.isTerminal {
+            registry.service(for: tx)?.start(tx: tx)
         }
     }
 
@@ -161,16 +168,7 @@ class TransactionHistoryViewModel: ObservableObject {
             completedAt: Date(),
             estimatedTime: old.estimatedTime,
             errorMessage: errorMessage ?? old.errorMessage,
-            swapKitSwapId: old.swapKitSwapId,
-            swapKitRouteId: old.swapKitRouteId,
-            swapKitBroadcastHash: old.swapKitBroadcastHash,
-            swapKitSourceChainId: old.swapKitSourceChainId,
-            swapKitProvider: old.swapKitProvider,
-            swapKitLatestStatus: old.swapKitLatestStatus,
-            swapKitLatestTrackingStatus: old.swapKitLatestTrackingStatus,
-            swapKitLastPolledAt: old.swapKitLastPolledAt,
-            swapKitTrackingStartedAt: old.swapKitTrackingStartedAt,
-            swapKitTrackerOutage: old.swapKitTrackerOutage
+            swapTracking: old.swapTracking
         )
         transactions[index] = updated
 

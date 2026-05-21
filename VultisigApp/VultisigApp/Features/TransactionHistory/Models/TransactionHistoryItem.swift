@@ -59,44 +59,13 @@ final class TransactionHistoryItem {
     // Error details
     var errorMessage: String?
 
-    // SwapKit `/track` integration — all optional so the migration is
-    // additive (no schema bump needed for existing rows).
-    /// Aggregator id returned by `/v3/swap`. Analytics + cross-reference only;
-    /// not a tracking key.
-    var swapKitSwapId: String?
-    /// Route id from the prior `/v3/quote` call. Forensic debugging only.
-    var swapKitRouteId: String?
-    /// The source-chain tx hash SwapKit's `/track` uses as the polling key.
-    /// May equal `txHash` for native sends; kept separate so non-EVM source
-    /// chains (where the broadcast hash differs from the SwapKit-known hash)
-    /// can still poll.
-    var swapKitBroadcastHash: String?
-    /// `chainId` string passed alongside `broadcastHash` to `/track`. Mirrors
-    /// the canonical chain table in `swapkit-spike/api-contract.md`.
-    var swapKitSourceChainId: String?
-    /// Provider name from the SwapKit response (`CHAINFLIP`, `NEAR`, etc.) —
-    /// kept separate from the existing `swapProvider` display string so the
-    /// detail screen can match against the wire enum.
-    var swapKitProvider: String?
-    /// Latest coarse `TxnStatus` string seen on a `/track` response.
-    /// `not_started | pending | swapping | completed | refunded | unknown | failed`.
-    var swapKitLatestStatus: String?
-    /// Latest fine-grained `TrackingStatus` string seen on `/track`.
-    /// 14 documented values per `api-contract.md`.
-    var swapKitLatestTrackingStatus: String?
-    /// Timestamp of the most recent `/track` poll (success or failure). Used
-    /// for backoff + resume-from-background scheduling.
-    var swapKitLastPolledAt: Date?
-    /// Timestamp the first `/track` poll succeeded — used as the start of the
-    /// "stuck in unknown" 10-minute window. Set lazily on first poll.
-    var swapKitTrackingStartedAt: Date?
-    /// `true` once `SwapKitTrackingService` has given up on `/track` (promoted
-    /// the row to `unknownPendingExtended` after exhausting retries / the
-    /// unknown give-up window). While set, the tx-history viewmodel falls
-    /// back to native chain polling so the user still sees source-chain
-    /// confirmation. Cleared back to `false` on the next successful `/track`
-    /// response so `/track` regains authority.
-    var swapKitTrackerOutage: Bool?
+    /// Provider-agnostic swap-tracking state. `nil` for rows that aren't
+    /// routed through any tracked aggregator (native sends, approve txs,
+    /// legacy swap providers without tracker integration). The discriminator
+    /// inside (`providerKind`) selects the `SwapTrackingService` conformer
+    /// that owns polling for this row.
+    @Relationship(deleteRule: .cascade)
+    var swapTracking: SwapTrackingMetadata?
 
     init(
         id: UUID = UUID(),
@@ -127,16 +96,7 @@ final class TransactionHistoryItem {
         completedAt: Date? = nil,
         estimatedTime: String? = nil,
         errorMessage: String? = nil,
-        swapKitSwapId: String? = nil,
-        swapKitRouteId: String? = nil,
-        swapKitBroadcastHash: String? = nil,
-        swapKitSourceChainId: String? = nil,
-        swapKitProvider: String? = nil,
-        swapKitLatestStatus: String? = nil,
-        swapKitLatestTrackingStatus: String? = nil,
-        swapKitLastPolledAt: Date? = nil,
-        swapKitTrackingStartedAt: Date? = nil,
-        swapKitTrackerOutage: Bool? = nil
+        swapTracking: SwapTrackingMetadata? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -166,15 +126,6 @@ final class TransactionHistoryItem {
         self.completedAt = completedAt
         self.estimatedTime = estimatedTime
         self.errorMessage = errorMessage
-        self.swapKitSwapId = swapKitSwapId
-        self.swapKitRouteId = swapKitRouteId
-        self.swapKitBroadcastHash = swapKitBroadcastHash
-        self.swapKitSourceChainId = swapKitSourceChainId
-        self.swapKitProvider = swapKitProvider
-        self.swapKitLatestStatus = swapKitLatestStatus
-        self.swapKitLatestTrackingStatus = swapKitLatestTrackingStatus
-        self.swapKitLastPolledAt = swapKitLastPolledAt
-        self.swapKitTrackingStartedAt = swapKitTrackingStartedAt
-        self.swapKitTrackerOutage = swapKitTrackerOutage
+        self.swapTracking = swapTracking
     }
 }

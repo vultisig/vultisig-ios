@@ -240,34 +240,36 @@ final class TransactionHistoryRecorder {
         }
     }
 
-    // MARK: - SwapKit tracking
+    // MARK: - Swap tracking
 
-    /// Attach SwapKit-tracking metadata (route/swap ids + broadcast hash +
-    /// source chain id + provider) to an existing swap row, so the tracking
-    /// service can drive `/track` polls from then on. Called by the done
-    /// screen right after the broadcast, once the SwapKit response is in
-    /// hand.
-    func attachSwapKitTracking(
+    /// Attach swap-tracking metadata (route/swap ids + broadcast hash +
+    /// source chain id + sub-provider) to an existing swap row, so the
+    /// registered `SwapTrackingService` conformer for `providerKind` can
+    /// drive polls from then on. Called by the done screen right after the
+    /// broadcast, once the aggregator response is in hand.
+    func attachSwapTracking(
         txHash: String,
         pubKeyECDSA: String,
+        providerKind: String,
         swapId: String?,
         routeId: String?,
         broadcastHash: String,
         sourceChainId: String,
-        provider: String?
+        subProvider: String?
     ) {
         do {
-            try storage.attachSwapKitTracking(
+            try storage.attachSwapTracking(
                 txHash: txHash,
                 pubKeyECDSA: pubKeyECDSA,
+                providerKind: providerKind,
                 swapId: swapId,
                 routeId: routeId,
                 broadcastHash: broadcastHash,
                 sourceChainId: sourceChainId,
-                provider: provider
+                subProvider: subProvider
             )
         } catch {
-            logger.error("Attach SwapKit tracking failed for txHash=\(txHash): \(error)")
+            logger.error("Attach swap tracking failed for txHash=\(txHash): \(error)")
         }
     }
 }

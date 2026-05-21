@@ -22,23 +22,26 @@ final class TransactionStatusPoller: ObservableObject {
     private init() {}
 
     /// Typed entry point for the tx-history viewmodel. Routes through the
-    /// `txHash`-keyed core implementation after enforcing the SwapKit gate.
+    /// `txHash`-keyed core implementation after enforcing the swap-tracker
+    /// gate.
     ///
-    /// Defensive guard: SwapKit-routed rows are exclusively `/track`'s
-    /// territory unless `swapKitTrackerOutage == true`, in which case
-    /// native polling is the fallback signal source. This guard
-    /// duplicates the higher-level filter in
-    /// `TransactionHistoryViewModel.pollInProgressTransactions` so a
-    /// future caller can't accidentally re-introduce the dual-polling
-    /// regression that lets a source-chain confirmation overwrite a
-    /// still-in-flight cross-chain swap as `.successful`.
+    /// Defensive guard: rows owned by a registered `SwapTrackingService`
+    /// (looked up via `SwapTrackingRegistry`) are exclusively that service's
+    /// territory unless `swapTracking.trackerOutage == true`, in which case
+    /// native polling is the fallback signal source. This guard duplicates
+    /// the higher-level filter in
+    /// `TransactionHistoryViewModel.pollInProgressTransactions` so a future
+    /// caller can't accidentally re-introduce the dual-polling regression
+    /// that lets a source-chain confirmation overwrite a still-in-flight
+    /// cross-chain swap as `.successful`.
     @discardableResult
     func poll(
         tx: TransactionHistoryData,
         onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) -> Bool {
-        if tx.isSwapKitRouted && tx.swapKitTrackerOutage != true {
-            logger.debug("Skipping native poll for SwapKit-routed tx \(tx.txHash) — /track is authoritative")
+        if SwapTrackingRegistry.shared.service(for: tx) != nil
+            && tx.swapTracking?.trackerOutage != true {
+            logger.debug("Skipping native poll for swap-tracked tx \(tx.txHash) — tracker is authoritative")
             return false
         }
         guard let chain = Chain(rawValue: tx.chainRawValue) else { return false }

@@ -159,18 +159,19 @@ class TransactionStatusViewModel: ObservableObject {
 
             // Update transaction history status on terminal states
             if let pubKeyECDSA, status.isTerminal {
-                // Defensive guard — SwapKit-routed rows take their status
-                // exclusively from `/track` because source-chain confirmation
-                // does not imply the cross-chain leg has finished. Skip the
-                // native-poller write so a quick source confirm can't bypass
-                // `/track` and mark the row `.successful` prematurely. The
-                // tx-history viewmodel already filters SwapKit rows out of
-                // the active poller; this is a belt-and-suspenders gate for
-                // any other caller (e.g. `BackgroundTransactionPoller` on
-                // app relaunch) that resumes a viewmodel without filtering.
+                // Defensive guard — rows owned by a registered swap-tracking
+                // service take their status exclusively from that service
+                // because source-chain confirmation does not imply the
+                // cross-chain leg has finished. Skip the native-poller write
+                // so a quick source confirm can't bypass the tracker and mark
+                // the row `.successful` prematurely. The tx-history viewmodel
+                // already filters tracked rows out of the active poller; this
+                // is a belt-and-suspenders gate for any other caller (e.g.
+                // `BackgroundTransactionPoller` on app relaunch) that resumes
+                // a viewmodel without filtering.
                 if let historyRow = try? TransactionHistoryStorage.shared
                     .fetchTransaction(txHash: txHash, pubKeyECDSA: pubKeyECDSA),
-                    historyRow.isSwapKitRouted {
+                    SwapTrackingRegistry.shared.service(for: historyRow) != nil {
                     return
                 }
                 let historyStatus: TransactionHistoryStatus = (status == .confirmed) ? .successful : .error

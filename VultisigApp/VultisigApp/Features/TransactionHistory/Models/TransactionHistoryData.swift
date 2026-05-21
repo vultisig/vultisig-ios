@@ -52,20 +52,13 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
     let completedAt: Date?
     let estimatedTime: String?
     let errorMessage: String?
-    let swapKitSwapId: String?
-    let swapKitRouteId: String?
-    let swapKitBroadcastHash: String?
-    let swapKitSourceChainId: String?
-    let swapKitProvider: String?
-    let swapKitLatestStatus: String?
-    let swapKitLatestTrackingStatus: String?
-    let swapKitLastPolledAt: Date?
-    let swapKitTrackingStartedAt: Date?
-    let swapKitTrackerOutage: Bool?
+    /// Aggregator-agnostic tracking state. `nil` when the row isn't routed
+    /// through any tracked provider. `providerKind` selects which
+    /// `SwapTrackingService` conformer owns polling.
+    let swapTracking: SwapTrackingMetadataData?
 
-    // Explicit memberwise initializer — the SwapKit-tracking fields default
-    // to `nil` so call-sites that don't care (the existing recorder paths)
-    // can keep their positional arg list unchanged after the schema bump.
+    // Explicit memberwise initializer — `swapTracking` defaults to `nil` so
+    // existing call sites that don't care (the recorder paths) can omit it.
     init(
         id: UUID,
         txHash: String,
@@ -95,16 +88,7 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         completedAt: Date?,
         estimatedTime: String?,
         errorMessage: String?,
-        swapKitSwapId: String? = nil,
-        swapKitRouteId: String? = nil,
-        swapKitBroadcastHash: String? = nil,
-        swapKitSourceChainId: String? = nil,
-        swapKitProvider: String? = nil,
-        swapKitLatestStatus: String? = nil,
-        swapKitLatestTrackingStatus: String? = nil,
-        swapKitLastPolledAt: Date? = nil,
-        swapKitTrackingStartedAt: Date? = nil,
-        swapKitTrackerOutage: Bool? = nil
+        swapTracking: SwapTrackingMetadataData? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -134,42 +118,36 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         self.completedAt = completedAt
         self.estimatedTime = estimatedTime
         self.errorMessage = errorMessage
-        self.swapKitSwapId = swapKitSwapId
-        self.swapKitRouteId = swapKitRouteId
-        self.swapKitBroadcastHash = swapKitBroadcastHash
-        self.swapKitSourceChainId = swapKitSourceChainId
-        self.swapKitProvider = swapKitProvider
-        self.swapKitLatestStatus = swapKitLatestStatus
-        self.swapKitLatestTrackingStatus = swapKitLatestTrackingStatus
-        self.swapKitLastPolledAt = swapKitLastPolledAt
-        self.swapKitTrackingStartedAt = swapKitTrackingStartedAt
-        self.swapKitTrackerOutage = swapKitTrackerOutage
+        self.swapTracking = swapTracking
     }
 }
 
 extension TransactionHistoryData {
-    /// True when this row was routed through SwapKit and we have the data we
-    /// need to drive a `/track` poll. Used by the tx-history viewmodel to
-    /// decide whether to surface the SwapKit status badge / detail screen.
-    var isSwapKitRouted: Bool {
-        guard type == .swap,
-              let hash = swapKitBroadcastHash, !hash.isEmpty,
-              let chainId = swapKitSourceChainId, !chainId.isEmpty else {
-            return false
-        }
-        return true
+    /// True when this row was routed through a swap aggregator with a
+    /// registered tracking service. Provider-agnostic — the registry
+    /// resolves the actual conformer from `swapTracking.providerKind`.
+    var isSwapRouted: Bool {
+        swapTracking != nil
     }
 
-    /// The iOS UI state, derived from whatever `/track` data has been
+    /// The iOS UI state, derived from whatever tracking data has been
     /// persisted. Falls back to `pending` when no poll has been recorded yet.
-    var swapKitUiStatus: SwapKitUiStatus {
-        SwapKitTrackingStatusMapper.map(trackingStatus: swapKitLatestTrackingStatus)
+    /// Today only SwapKit has a tracker integration, so the mapping table
+    /// lives in `SwapKitTrackingStatusMapper`; future providers add their
+    /// own mappers and a dispatch on `providerKind` will route here.
+    var swapTrackingUiStatus: SwapTrackingUiStatus {
+        SwapKitTrackingStatusMapper.map(trackingStatus: swapTracking?.latestTrackingStatus)
     }
 
-    /// SwapKit's public block-explorer deep link. Always available as a
-    /// fallback regardless of whether polling is currently active.
+    /// SwapKit's public block-explorer deep link. Only available for rows
+    /// routed through SwapKit (the detail-sheet button checks for this
+    /// specifically). Future providers add their own deep-link helpers.
     var swapKitTrackerURL: URL? {
-        guard let hash = swapKitBroadcastHash, !hash.isEmpty else { return nil }
+        guard let tracking = swapTracking,
+              tracking.providerKind == SwapKitTrackingService.providerKind,
+              let hash = tracking.broadcastHash, !hash.isEmpty else {
+            return nil
+        }
         return URL(string: "https://track.swapkit.dev/?hash=\(hash)")
     }
 }
@@ -208,18 +186,10 @@ extension TransactionHistoryData {
         self.completedAt = item.completedAt
         self.estimatedTime = item.estimatedTime
         self.errorMessage = item.errorMessage
-        self.swapKitSwapId = item.swapKitSwapId
-        self.swapKitRouteId = item.swapKitRouteId
-        self.swapKitBroadcastHash = item.swapKitBroadcastHash
-        self.swapKitSourceChainId = item.swapKitSourceChainId
-        self.swapKitProvider = item.swapKitProvider
-        self.swapKitLatestStatus = item.swapKitLatestStatus
-        self.swapKitLatestTrackingStatus = item.swapKitLatestTrackingStatus
-        self.swapKitLastPolledAt = item.swapKitLastPolledAt
-        self.swapKitTrackingStartedAt = item.swapKitTrackingStartedAt
-        self.swapKitTrackerOutage = item.swapKitTrackerOutage
+        self.swapTracking = item.swapTracking.map { SwapTrackingMetadataData(model: $0) }
     }
 
+    @MainActor
     func toItem() -> TransactionHistoryItem {
         TransactionHistoryItem(
             id: id,
@@ -250,16 +220,7 @@ extension TransactionHistoryData {
             completedAt: completedAt,
             estimatedTime: estimatedTime,
             errorMessage: errorMessage,
-            swapKitSwapId: swapKitSwapId,
-            swapKitRouteId: swapKitRouteId,
-            swapKitBroadcastHash: swapKitBroadcastHash,
-            swapKitSourceChainId: swapKitSourceChainId,
-            swapKitProvider: swapKitProvider,
-            swapKitLatestStatus: swapKitLatestStatus,
-            swapKitLatestTrackingStatus: swapKitLatestTrackingStatus,
-            swapKitLastPolledAt: swapKitLastPolledAt,
-            swapKitTrackingStartedAt: swapKitTrackingStartedAt,
-            swapKitTrackerOutage: swapKitTrackerOutage
+            swapTracking: swapTracking?.toModel()
         )
     }
 }

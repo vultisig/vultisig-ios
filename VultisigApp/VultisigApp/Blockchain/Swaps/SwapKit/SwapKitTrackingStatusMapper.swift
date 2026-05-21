@@ -28,7 +28,9 @@ import Foundation
 
 /// Coarse UI state surfaced by the tx-history list cell, detail sheet, and
 /// done-screen banner. Maps to the design-system colours and pill copy.
-enum SwapKitUiStatus: String, Codable, Sendable, Hashable {
+/// Aggregator-agnostic — the same 6-value enum drives every
+/// `SwapTrackingService` implementation regardless of provider.
+enum SwapTrackingUiStatus: String, Codable, Sendable, Hashable {
     case pending
     case swapping
     case completed
@@ -40,7 +42,7 @@ enum SwapKitUiStatus: String, Codable, Sendable, Hashable {
     case unknownPendingExtended
 }
 
-extension SwapKitUiStatus {
+extension SwapTrackingUiStatus {
     /// Terminal states never get polled again.
     var isTerminal: Bool {
         switch self {
@@ -58,7 +60,7 @@ enum SwapKitTrackingStatusMapper {
     /// `pending` so a future SwapKit-side enum value doesn't crash the UI;
     /// the "stuck in unknown" path is policed by the polling service via
     /// the elapsed-time check, not by this function.
-    static func map(trackingStatus raw: String?) -> SwapKitUiStatus {
+    static func map(trackingStatus raw: String?) -> SwapTrackingUiStatus {
         guard let raw = raw?.lowercased(), !raw.isEmpty else {
             return .pending
         }
@@ -82,7 +84,7 @@ enum SwapKitTrackingStatusMapper {
 
     /// Fallback path used when only the coarse `status` field is populated.
     /// Mirrors the `trackingStatus` table at a coarser granularity.
-    static func map(coarseStatus status: SwapKitTrackingStatus) -> SwapKitUiStatus {
+    static func map(coarseStatus status: SwapKitTrackingStatus) -> SwapTrackingUiStatus {
         switch status {
         case .notStarted, .pending:
             return .pending
@@ -102,7 +104,7 @@ enum SwapKitTrackingStatusMapper {
     /// Combined mapping — prefers the fine-grained `trackingStatus` when
     /// present, falls back to the coarse `status` otherwise. Centralised so
     /// the tracking service and the UI agree on the precedence rule.
-    static func map(_ response: SwapKitTrackingResponse) -> SwapKitUiStatus {
+    static func map(_ response: SwapKitTrackingResponse) -> SwapTrackingUiStatus {
         if let raw = response.trackingStatus, !raw.isEmpty {
             return map(trackingStatus: raw)
         }

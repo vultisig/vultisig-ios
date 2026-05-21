@@ -36,7 +36,7 @@ struct TransactionHistoryDetailSheet: View {
                 }
                 detailRows
                 explorerButton
-                if transaction.isSwapKitRouted, transaction.swapKitTrackerURL != nil {
+                if transaction.swapKitTrackerURL != nil {
                     swapKitTrackerButton
                 }
             }

@@ -115,6 +115,11 @@ struct SwapCryptoDoneView: View {
     /// Wires SwapKit-routed swaps into the `/track` polling service. No-op
     /// for THORChain/Maya/1inch/Kyber/LiFi routes — those already have their
     /// own status sources.
+    ///
+    /// Observes `SwapKitTrackingService.shared` directly via `@ObservedObject`
+    /// (the concrete type is required for the property wrapper). A future
+    /// done-screen that handles multiple providers can look up the owning
+    /// service via `SwapTrackingRegistry.shared.service(for:)` instead.
     private func attachSwapKitTrackingIfNeeded() {
         guard case let .swapkit(response, _, _) = transaction.quote else { return }
         guard let chainId = SwapKitChainIdentifier.chainId(for: transaction.fromCoin.chain) else {
@@ -122,19 +127,20 @@ struct SwapCryptoDoneView: View {
             // Skip polling; the explorer link remains as the fallback.
             return
         }
-        TransactionHistoryRecorder.shared.attachSwapKitTracking(
+        TransactionHistoryRecorder.shared.attachSwapTracking(
             txHash: hash,
             pubKeyECDSA: vault.pubKeyECDSA,
+            providerKind: SwapKitTrackingService.providerKind,
             swapId: response.swapId,
             routeId: response.routeId,
             broadcastHash: hash,
             sourceChainId: chainId,
-            provider: response.subProvider
+            subProvider: response.subProvider
         )
         // Start polling immediately so the row updates live.
-        let inFlight = (try? TransactionHistoryStorage.shared.fetchInFlightSwapKitSwaps()) ?? []
+        let inFlight = (try? TransactionHistoryStorage.shared.fetchInFlightSwapTracking(providerKind: SwapKitTrackingService.providerKind)) ?? []
         if let row = inFlight.first(where: { $0.txHash == hash && $0.pubKeyECDSA == vault.pubKeyECDSA }) {
-            SwapKitTrackingService.shared.start(swap: row)
+            SwapKitTrackingService.shared.start(tx: row)
         }
     }
 
@@ -172,7 +178,7 @@ struct SwapCryptoDoneView: View {
     /// `TransactionStatus`. Extracted to a `static` so unit tests can pin the
     /// table without standing up a view.
     static func mapSwapKitStatus(
-        _ ui: SwapKitUiStatus?,
+        _ ui: SwapTrackingUiStatus?,
         estimatedTime: String
     ) -> TransactionStatus {
         switch ui {

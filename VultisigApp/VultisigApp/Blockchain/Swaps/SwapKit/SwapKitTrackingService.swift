@@ -16,6 +16,9 @@
 //  drive the state machine through the documented sequence without ever
 //  hitting the wire.
 //
+//  Conforms to `SwapTrackingService`. Discriminated by the `"swapKit"`
+//  `providerKind` value stored on `SwapTrackingMetadata`.
+//
 
 import Foundation
 import OSLog
@@ -23,27 +26,29 @@ import OSLog
 /// Storage surface the tracking service depends on. Extracted as a protocol
 /// so unit tests can inject an in-memory fake without bringing up SwiftData.
 @MainActor
-protocol SwapKitTrackingStorage {
-    func updateSwapKitStatus(
+protocol SwapTrackingStorage {
+    func updateSwapTrackingStatus(
         txHash: String,
         pubKeyECDSA: String,
         latestStatus: String?,
         latestTrackingStatus: String?,
-        uiStatus: SwapKitUiStatus,
+        uiStatus: SwapTrackingUiStatus,
         polledAt: Date
     ) throws
-    func touchSwapKitLastPolled(
+    func touchSwapTrackingLastPolled(
         txHash: String,
         pubKeyECDSA: String,
         polledAt: Date
     ) throws
-    func fetchInFlightSwapKitSwaps() throws -> [TransactionHistoryData]
+    func fetchInFlightSwapTracking(providerKind: String) throws -> [TransactionHistoryData]
 }
 
-extension TransactionHistoryStorage: SwapKitTrackingStorage {}
+extension TransactionHistoryStorage: SwapTrackingStorage {}
 
 @MainActor
-final class SwapKitTrackingService: ObservableObject {
+final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
+    static let providerKind: String = "swapKit"
+
     static let shared = SwapKitTrackingService(
         httpClient: HTTPClient(),
         storage: TransactionHistoryStorage.shared
@@ -52,7 +57,7 @@ final class SwapKitTrackingService: ObservableObject {
     /// Latest UI status per `txHash`, observable by views that want to react
     /// to `/track` updates without re-reading SwiftData. Updated on every
     /// successful poll and on the give-up `unknownPendingExtended` promotion.
-    @Published private(set) var uiStatusByTxHash: [String: SwapKitUiStatus] = [:]
+    @Published private(set) var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
 
     /// Polling cadence on the happy path. Conservative pick per
     /// `track-in-tx-history-plan.md` §"Polling cadence".
@@ -68,7 +73,7 @@ final class SwapKitTrackingService: ObservableObject {
     private static let unknownGiveUpInterval: TimeInterval = 10 * 60
 
     private let httpClient: HTTPClientProtocol
-    private let storage: SwapKitTrackingStorage
+    private let storage: SwapTrackingStorage
     private let clock: () -> Date
     private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-tracking")
 
@@ -81,7 +86,7 @@ final class SwapKitTrackingService: ObservableObject {
 
     init(
         httpClient: HTTPClientProtocol,
-        storage: SwapKitTrackingStorage,
+        storage: SwapTrackingStorage,
         clock: @escaping () -> Date = Date.init
     ) {
         self.httpClient = httpClient
@@ -89,43 +94,37 @@ final class SwapKitTrackingService: ObservableObject {
         self.clock = clock
     }
 
-    // MARK: - Public API
+    // MARK: - SwapTrackingService
 
-    /// Begin polling for `swap`. No-op if a poller is already running for the
-    /// same `txHash`, the row isn't routed through SwapKit, or the row is
+    /// Begin polling for `tx`. No-op if a poller is already running for the
+    /// same `txHash`, the row isn't owned by this provider, or the row is
     /// already in a terminal state.
-    func start(swap: TransactionHistoryData) {
-        guard swap.isSwapKitRouted else {
-            logger.debug("Skipping non-SwapKit row \(swap.txHash, privacy: .public)")
+    func start(tx: TransactionHistoryData) {
+        guard isOwnedByThisProvider(tx) else {
+            logger.debug("Skipping non-SwapKit row \(tx.txHash, privacy: .public)")
             return
         }
         // Seed the observable cache with whatever status was last persisted so
         // views that mount before the first poll completes still see the right
         // state (e.g. after app relaunch on a still-in-flight swap).
-        uiStatusByTxHash[swap.txHash] = swap.swapKitUiStatus
-        guard !swap.swapKitUiStatus.isTerminal else {
-            logger.debug("Skipping terminal SwapKit row \(swap.txHash, privacy: .public)")
+        uiStatusByTxHash[tx.txHash] = tx.swapTrackingUiStatus
+        guard !tx.swapTrackingUiStatus.isTerminal else {
+            logger.debug("Skipping terminal SwapKit row \(tx.txHash, privacy: .public)")
             return
         }
-        guard pollers[swap.txHash] == nil else {
-            logger.debug("Poller already running for \(swap.txHash, privacy: .public)")
+        guard pollers[tx.txHash] == nil else {
+            logger.debug("Poller already running for \(tx.txHash, privacy: .public)")
             return
         }
         guard isActive else {
             // App is backgrounded; register a placeholder so resume() picks
             // it up when ScenePhase flips back to .active.
-            pollers[swap.txHash] = PollerEntry(swap: swap, task: nil, failingSince: nil, nextDelay: Self.baseInterval)
+            pollers[tx.txHash] = PollerEntry(tx: tx, task: nil, failingSince: nil, nextDelay: Self.baseInterval)
             return
         }
-        let entry = PollerEntry(swap: swap, task: nil, failingSince: nil, nextDelay: Self.baseInterval)
-        pollers[swap.txHash] = entry
-        spawnTask(for: swap.txHash)
-    }
-
-    /// Stop the active poller (if any) and forget the entry. Used by the
-    /// done-screen on disappear and the viewmodel on terminal-state.
-    func stop(swap: TransactionHistoryData) {
-        stop(txHash: swap.txHash)
+        let entry = PollerEntry(tx: tx, task: nil, failingSince: nil, nextDelay: Self.baseInterval)
+        pollers[tx.txHash] = entry
+        spawnTask(for: tx.txHash)
     }
 
     func stop(txHash: String) {
@@ -134,13 +133,20 @@ final class SwapKitTrackingService: ObservableObject {
         logger.debug("Stopped poller for \(txHash, privacy: .public)")
     }
 
-    /// One-shot refresh — fires a single `/track` request immediately
-    /// regardless of the backoff schedule. Used by pull-to-refresh.
-    func forceRefresh(swap: TransactionHistoryData) async {
-        guard swap.isSwapKitRouted,
-              let hash = swap.swapKitBroadcastHash,
-              let chainId = swap.swapKitSourceChainId else { return }
-        await pollOnce(txHash: swap.txHash, pubKeyECDSA: swap.pubKeyECDSA, broadcastHash: hash, chainId: chainId)
+    /// On viewmodel `.onAppear` / `ScenePhase.active`, re-scan SwiftData for
+    /// any non-terminal SwapKit rows the user has and start polling them.
+    /// Idempotent — already-running pollers are left alone.
+    func resumeInFlight() async {
+        let inFlight: [TransactionHistoryData]
+        do {
+            inFlight = try storage.fetchInFlightSwapTracking(providerKind: Self.providerKind)
+        } catch {
+            logger.error("Failed to fetch in-flight SwapKit swaps: \(error.localizedDescription, privacy: .public)")
+            return
+        }
+        for tx in inFlight {
+            start(tx: tx)
+        }
     }
 
     /// Wired from the top-level ScenePhase observer. `false` cancels every
@@ -156,20 +162,16 @@ final class SwapKitTrackingService: ObservableObject {
         }
     }
 
-    /// On viewmodel `.onAppear` / `ScenePhase.active`, re-scan SwiftData for
-    /// any non-terminal SwapKit rows the user has and start polling them.
-    /// Idempotent — already-running pollers are left alone.
-    func resumeInFlightSwaps() {
-        let inFlight: [TransactionHistoryData]
-        do {
-            inFlight = try storage.fetchInFlightSwapKitSwaps()
-        } catch {
-            logger.error("Failed to fetch in-flight SwapKit swaps: \(error.localizedDescription, privacy: .public)")
-            return
-        }
-        for swap in inFlight {
-            start(swap: swap)
-        }
+    // MARK: - Public helpers (SwapKit-specific)
+
+    /// One-shot refresh — fires a single `/track` request immediately
+    /// regardless of the backoff schedule. Used by pull-to-refresh.
+    func forceRefresh(tx: TransactionHistoryData) async {
+        guard isOwnedByThisProvider(tx),
+              let tracking = tx.swapTracking,
+              let hash = tracking.broadcastHash,
+              let chainId = tracking.sourceChainId else { return }
+        await pollOnce(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, broadcastHash: hash, chainId: chainId)
     }
 
     /// Test-only state inspection. Returns the number of currently-tracked
@@ -202,9 +204,10 @@ final class SwapKitTrackingService: ObservableObject {
 
     private func spawnTask(for txHash: String) {
         guard let entry = pollers[txHash], entry.task == nil else { return }
-        let swap = entry.swap
-        guard let hash = swap.swapKitBroadcastHash,
-              let chainId = swap.swapKitSourceChainId else {
+        let tx = entry.tx
+        guard let tracking = tx.swapTracking,
+              let hash = tracking.broadcastHash,
+              let chainId = tracking.sourceChainId else {
             pollers.removeValue(forKey: txHash)
             return
         }
@@ -212,12 +215,16 @@ final class SwapKitTrackingService: ObservableObject {
             guard let self else { return }
             await self.runLoop(
                 txHash: txHash,
-                pubKeyECDSA: swap.pubKeyECDSA,
+                pubKeyECDSA: tx.pubKeyECDSA,
                 broadcastHash: hash,
                 chainId: chainId
             )
         }
         pollers[txHash]?.task = task
+    }
+
+    private func isOwnedByThisProvider(_ tx: TransactionHistoryData) -> Bool {
+        tx.swapTracking?.providerKind == Self.providerKind
     }
 
     // MARK: - Loop
@@ -279,13 +286,13 @@ final class SwapKitTrackingService: ObservableObject {
         // doesn't hang forever when SwapKit can't index the hash.
         if uiStatus == .pending,
            response.trackingStatus?.lowercased() == "unknown" || response.status == .unknown,
-           let started = pollers[txHash]?.swap.swapKitTrackingStartedAt ?? trackingStartedFromStorage(txHash: txHash, pubKeyECDSA: pubKeyECDSA),
+           let started = pollers[txHash]?.tx.swapTracking?.trackingStartedAt ?? trackingStartedFromStorage(txHash: txHash, pubKeyECDSA: pubKeyECDSA),
            now.timeIntervalSince(started) > Self.unknownGiveUpInterval {
             uiStatus = .unknownPendingExtended
         }
 
         do {
-            try storage.updateSwapKitStatus(
+            try storage.updateSwapTrackingStatus(
                 txHash: txHash,
                 pubKeyECDSA: pubKeyECDSA,
                 latestStatus: response.status.rawValue,
@@ -303,15 +310,15 @@ final class SwapKitTrackingService: ObservableObject {
 
         // Reset backoff bookkeeping on every success — even mid-flight.
         if var entry = pollers[txHash] {
-            let refreshedSwap = applyResponseToSwap(
-                swap: entry.swap,
+            let refreshedTx = applyResponseToTx(
+                tx: entry.tx,
                 response: response,
                 now: now,
                 uiStatus: uiStatus
             )
             entry.failingSince = nil
             entry.nextDelay = Self.baseInterval
-            entry.swap = refreshedSwap
+            entry.tx = refreshedTx
             pollers[txHash] = entry
         }
 
@@ -327,7 +334,7 @@ final class SwapKitTrackingService: ObservableObject {
         error: Error
     ) -> PollOutcome {
         let now = clock()
-        try? storage.touchSwapKitLastPolled(txHash: txHash, pubKeyECDSA: pubKeyECDSA, polledAt: now)
+        try? storage.touchSwapTrackingLastPolled(txHash: txHash, pubKeyECDSA: pubKeyECDSA, polledAt: now)
 
         guard pollers[txHash] != nil else {
             return PollOutcome(shouldStop: true, nextDelay: 0)
@@ -340,11 +347,11 @@ final class SwapKitTrackingService: ObservableObject {
             logger.warning("SwapKit /track unavailable for \(txHash, privacy: .public) — giving up after \(Int(Self.failureGiveUpInterval), privacy: .public)s")
             // Promote to a tracker-unavailable terminal so the UI can
             // surface "check explorer" copy without blocking the user.
-            try? storage.updateSwapKitStatus(
+            try? storage.updateSwapTrackingStatus(
                 txHash: txHash,
                 pubKeyECDSA: pubKeyECDSA,
-                latestStatus: pollers[txHash]?.swap.swapKitLatestStatus,
-                latestTrackingStatus: pollers[txHash]?.swap.swapKitLatestTrackingStatus,
+                latestStatus: pollers[txHash]?.tx.swapTracking?.latestStatus,
+                latestTrackingStatus: pollers[txHash]?.tx.swapTracking?.latestTrackingStatus,
                 uiStatus: .unknownPendingExtended,
                 polledAt: now
             )
@@ -360,68 +367,73 @@ final class SwapKitTrackingService: ObservableObject {
         return PollOutcome(shouldStop: false, nextDelay: nextDelay)
     }
 
-    private func applyResponseToSwap(
-        swap: TransactionHistoryData,
+    private func applyResponseToTx(
+        tx: TransactionHistoryData,
         response: SwapKitTrackingResponse,
         now: Date,
-        uiStatus: SwapKitUiStatus
+        uiStatus: SwapTrackingUiStatus
     ) -> TransactionHistoryData {
-        TransactionHistoryData(
-            id: swap.id,
-            txHash: swap.txHash,
-            approveTxHash: swap.approveTxHash,
-            pubKeyECDSA: swap.pubKeyECDSA,
-            type: swap.type,
-            status: swap.status,
-            chainRawValue: swap.chainRawValue,
-            coinTicker: swap.coinTicker,
-            coinLogo: swap.coinLogo,
-            coinChainLogo: swap.coinChainLogo,
-            amountCrypto: swap.amountCrypto,
-            amountFiat: swap.amountFiat,
-            fromAddress: swap.fromAddress,
-            toAddress: swap.toAddress,
-            toCoinTicker: swap.toCoinTicker,
-            toCoinLogo: swap.toCoinLogo,
-            toCoinChainLogo: swap.toCoinChainLogo,
-            toAmountCrypto: swap.toAmountCrypto,
-            toAmountFiat: swap.toAmountFiat,
-            swapProvider: swap.swapProvider,
-            feeCrypto: swap.feeCrypto,
-            feeFiat: swap.feeFiat,
-            network: swap.network,
-            explorerLink: swap.explorerLink,
-            createdAt: swap.createdAt,
-            completedAt: uiStatus.isTerminal ? now : swap.completedAt,
-            estimatedTime: swap.estimatedTime,
-            errorMessage: swap.errorMessage,
-            swapKitSwapId: swap.swapKitSwapId,
-            swapKitRouteId: swap.swapKitRouteId,
-            swapKitBroadcastHash: swap.swapKitBroadcastHash,
-            swapKitSourceChainId: swap.swapKitSourceChainId,
-            swapKitProvider: swap.swapKitProvider,
-            swapKitLatestStatus: response.status.rawValue,
-            swapKitLatestTrackingStatus: response.trackingStatus,
-            swapKitLastPolledAt: now,
-            swapKitTrackingStartedAt: swap.swapKitTrackingStartedAt ?? now,
+        let oldTracking = tx.swapTracking
+        let refreshedTracking = SwapTrackingMetadataData(
+            providerKind: oldTracking?.providerKind ?? Self.providerKind,
+            swapId: oldTracking?.swapId,
+            routeId: oldTracking?.routeId,
+            broadcastHash: oldTracking?.broadcastHash,
+            sourceChainId: oldTracking?.sourceChainId,
+            subProvider: oldTracking?.subProvider,
+            latestStatus: response.status.rawValue,
+            latestTrackingStatus: response.trackingStatus,
+            lastPolledAt: now,
+            trackingStartedAt: oldTracking?.trackingStartedAt ?? now,
             // Mirror the storage rule: outage is set iff we just promoted
             // to `unknownPendingExtended`, cleared on every other UI status.
-            swapKitTrackerOutage: uiStatus == .unknownPendingExtended
+            trackerOutage: uiStatus == .unknownPendingExtended
+        )
+        return TransactionHistoryData(
+            id: tx.id,
+            txHash: tx.txHash,
+            approveTxHash: tx.approveTxHash,
+            pubKeyECDSA: tx.pubKeyECDSA,
+            type: tx.type,
+            status: tx.status,
+            chainRawValue: tx.chainRawValue,
+            coinTicker: tx.coinTicker,
+            coinLogo: tx.coinLogo,
+            coinChainLogo: tx.coinChainLogo,
+            amountCrypto: tx.amountCrypto,
+            amountFiat: tx.amountFiat,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            toCoinTicker: tx.toCoinTicker,
+            toCoinLogo: tx.toCoinLogo,
+            toCoinChainLogo: tx.toCoinChainLogo,
+            toAmountCrypto: tx.toAmountCrypto,
+            toAmountFiat: tx.toAmountFiat,
+            swapProvider: tx.swapProvider,
+            feeCrypto: tx.feeCrypto,
+            feeFiat: tx.feeFiat,
+            network: tx.network,
+            explorerLink: tx.explorerLink,
+            createdAt: tx.createdAt,
+            completedAt: uiStatus.isTerminal ? now : tx.completedAt,
+            estimatedTime: tx.estimatedTime,
+            errorMessage: tx.errorMessage,
+            swapTracking: refreshedTracking
         )
     }
 
     private func trackingStartedFromStorage(txHash: String, pubKeyECDSA: String) -> Date? {
         // Best-effort lookup; if storage can't be read the give-up window is
         // simply skipped this round and re-evaluated next poll.
-        let swaps = (try? storage.fetchInFlightSwapKitSwaps()) ?? []
-        return swaps.first(where: { $0.txHash == txHash && $0.pubKeyECDSA == pubKeyECDSA })?.swapKitTrackingStartedAt
+        let swaps = (try? storage.fetchInFlightSwapTracking(providerKind: Self.providerKind)) ?? []
+        return swaps.first(where: { $0.txHash == txHash && $0.pubKeyECDSA == pubKeyECDSA })?.swapTracking?.trackingStartedAt
     }
 }
 
 // MARK: - Internal types
 
 private struct PollerEntry {
-    var swap: TransactionHistoryData
+    var tx: TransactionHistoryData
     var task: Task<Void, Never>?
     /// Timestamp of the first failure in the current failure streak. `nil`
     /// when the last poll succeeded.
