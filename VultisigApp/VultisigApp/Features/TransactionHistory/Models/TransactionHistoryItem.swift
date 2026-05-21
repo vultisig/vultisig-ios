@@ -90,6 +90,13 @@ final class TransactionHistoryItem {
     /// Timestamp the first `/track` poll succeeded — used as the start of the
     /// "stuck in unknown" 10-minute window. Set lazily on first poll.
     var swapKitTrackingStartedAt: Date?
+    /// `true` once `SwapKitTrackingService` has given up on `/track` (promoted
+    /// the row to `unknownPendingExtended` after exhausting retries / the
+    /// unknown give-up window). While set, the tx-history viewmodel falls
+    /// back to native chain polling so the user still sees source-chain
+    /// confirmation. Cleared back to `false` on the next successful `/track`
+    /// response so `/track` regains authority.
+    var swapKitTrackerOutage: Bool?
 
     init(
         id: UUID = UUID(),
@@ -128,7 +135,8 @@ final class TransactionHistoryItem {
         swapKitLatestStatus: String? = nil,
         swapKitLatestTrackingStatus: String? = nil,
         swapKitLastPolledAt: Date? = nil,
-        swapKitTrackingStartedAt: Date? = nil
+        swapKitTrackingStartedAt: Date? = nil,
+        swapKitTrackerOutage: Bool? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -167,5 +175,6 @@ final class TransactionHistoryItem {
         self.swapKitLatestTrackingStatus = swapKitLatestTrackingStatus
         self.swapKitLastPolledAt = swapKitLastPolledAt
         self.swapKitTrackingStartedAt = swapKitTrackingStartedAt
+        self.swapKitTrackerOutage = swapKitTrackerOutage
     }
 }

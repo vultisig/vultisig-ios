@@ -150,13 +150,29 @@ final class TransactionHistoryStorage {
             item.swapKitTrackingStartedAt = polledAt
         }
 
+        // Outage flag: `unknownPendingExtended` means `/track` has been
+        // unavailable long enough that we want native polling to take over
+        // as a fallback signal. Any other UI status (including transient
+        // `pending`/`swapping` or terminal `completed`/`refunded`/`failed`)
+        // means `/track` is answering — clear the flag so native polling
+        // backs off and `/track` is authoritative again.
+        item.swapKitTrackerOutage = (uiStatus == .unknownPendingExtended)
+
         switch uiStatus {
         case .completed:
             item.statusRawValue = TransactionHistoryStatus.successful.rawValue
             item.completedAt = polledAt
-        case .refunded, .failed, .unknownPendingExtended:
+        case .refunded, .failed:
             item.statusRawValue = TransactionHistoryStatus.error.rawValue
             item.completedAt = polledAt
+        case .unknownPendingExtended:
+            // Tracker-outage sentinel: keep the row `.inProgress` so the
+            // tx-history viewmodel can fall back to native chain polling
+            // for at least the source-chain confirmation. If `/track`
+            // recovers later this gets overwritten by the next successful
+            // poll; if native polling reaches a terminal first that path
+            // writes the coarse status itself.
+            break
         case .pending, .swapping:
             // Keep `inProgress` — the on-chain row already starts there.
             break

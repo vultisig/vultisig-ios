@@ -61,6 +61,7 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
     let swapKitLatestTrackingStatus: String?
     let swapKitLastPolledAt: Date?
     let swapKitTrackingStartedAt: Date?
+    let swapKitTrackerOutage: Bool?
 
     // Explicit memberwise initializer — the SwapKit-tracking fields default
     // to `nil` so call-sites that don't care (the existing recorder paths)
@@ -102,7 +103,8 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         swapKitLatestStatus: String? = nil,
         swapKitLatestTrackingStatus: String? = nil,
         swapKitLastPolledAt: Date? = nil,
-        swapKitTrackingStartedAt: Date? = nil
+        swapKitTrackingStartedAt: Date? = nil,
+        swapKitTrackerOutage: Bool? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -141,6 +143,7 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         self.swapKitLatestTrackingStatus = swapKitLatestTrackingStatus
         self.swapKitLastPolledAt = swapKitLastPolledAt
         self.swapKitTrackingStartedAt = swapKitTrackingStartedAt
+        self.swapKitTrackerOutage = swapKitTrackerOutage
     }
 }
 
@@ -214,6 +217,7 @@ extension TransactionHistoryData {
         self.swapKitLatestTrackingStatus = item.swapKitLatestTrackingStatus
         self.swapKitLastPolledAt = item.swapKitLastPolledAt
         self.swapKitTrackingStartedAt = item.swapKitTrackingStartedAt
+        self.swapKitTrackerOutage = item.swapKitTrackerOutage
     }
 
     func toItem() -> TransactionHistoryItem {
@@ -254,7 +258,8 @@ extension TransactionHistoryData {
             swapKitLatestStatus: swapKitLatestStatus,
             swapKitLatestTrackingStatus: swapKitLatestTrackingStatus,
             swapKitLastPolledAt: swapKitLastPolledAt,
-            swapKitTrackingStartedAt: swapKitTrackingStartedAt
+            swapKitTrackingStartedAt: swapKitTrackingStartedAt,
+            swapKitTrackerOutage: swapKitTrackerOutage
         )
     }
 }
