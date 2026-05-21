@@ -71,7 +71,7 @@ struct SwapKitService {
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
             buyAsset: assetIdentifier(for: toCoin),
-            sellAmount: formatSellAmount(amount),
+            sellAmount: Self.formatSellAmount(amount),
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
             destinationAddress: toCoin.address.isEmpty ? nil : toCoin.address,
             slippage: slippagePercent,
