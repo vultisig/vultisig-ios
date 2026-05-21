@@ -4,12 +4,15 @@
 //
 //  Lock down the gate inside
 //  `TransactionHistoryViewModel.pollInProgressTransactions` that keeps the
-//  native `TransactionStatusPoller` away from SwapKit-routed rows under
-//  normal conditions, and lets it take over as a fallback when
-//  `swapKitTrackerOutage == true`.
+//  native `TransactionStatusPoller` away from rows owned by a registered
+//  `SwapTrackingService` under normal conditions, and lets it take over as
+//  a fallback when `swapTracking.trackerOutage == true`.
 //
 //  Uses an in-process `SpyNativePoller` so the tests never spin up
-//  per-chain RPC clients, never touch the wire, and never sleep.
+//  per-chain RPC clients, never touch the wire, and never sleep. The
+//  registry is swapped for a per-test instance with a registered fake
+//  tracking service so the assertions are deterministic regardless of
+//  registration order at app startup.
 //
 
 import XCTest
@@ -18,22 +21,26 @@ import XCTest
 @MainActor
 final class TransactionHistoryViewModelSwapKitGateTests: XCTestCase {
 
-    func testSkipsSwapKitRoutedRowWhenTrackerOutageIsFalse() {
+    private let providerKind = "swapKit"
+
+    func testSkipsTrackedRowWhenTrackerOutageIsFalse() {
         let poller = SpyNativePoller()
-        let vm = makeViewModel(poller: poller)
+        let registry = makeRegistryWithFakeService()
+        let vm = makeViewModel(poller: poller, registry: registry)
         vm.transactions = [Self.makeSwapKitInProgress(outage: false)]
 
         vm.pollInProgressTransactions()
 
         XCTAssertEqual(
             poller.pollCalls.count, 0,
-            "Native poller must not be invoked for a SwapKit-routed row while /track is healthy"
+            "Native poller must not be invoked for a tracked row while the tracker is healthy"
         )
     }
 
-    func testRunsNativePollerWhenSwapKitRowIsInTrackerOutage() {
+    func testRunsNativePollerWhenTrackedRowIsInTrackerOutage() {
         let poller = SpyNativePoller()
-        let vm = makeViewModel(poller: poller)
+        let registry = makeRegistryWithFakeService()
+        let vm = makeViewModel(poller: poller, registry: registry)
         let outageRow = Self.makeSwapKitInProgress(outage: true)
         vm.transactions = [outageRow]
 
@@ -42,13 +49,14 @@ final class TransactionHistoryViewModelSwapKitGateTests: XCTestCase {
         XCTAssertEqual(
             poller.pollCalls.map(\.txHash),
             [outageRow.txHash],
-            "Native poller must take over for the SwapKit row once /track outage is declared"
+            "Native poller must take over for the tracked row once tracker outage is declared"
         )
     }
 
-    func testRunsNativePollerForNonSwapKitRowRegardless() {
+    func testRunsNativePollerForUntrackedRowRegardless() {
         let poller = SpyNativePoller()
-        let vm = makeViewModel(poller: poller)
+        let registry = makeRegistryWithFakeService()
+        let vm = makeViewModel(poller: poller, registry: registry)
         let nativeRow = Self.makeNativeInProgress()
         vm.transactions = [nativeRow]
 
@@ -57,46 +65,58 @@ final class TransactionHistoryViewModelSwapKitGateTests: XCTestCase {
         XCTAssertEqual(
             poller.pollCalls.map(\.txHash),
             [nativeRow.txHash],
-            "Non-SwapKit rows must continue to flow through the native poller"
+            "Untracked rows must continue to flow through the native poller"
         )
     }
 
     func testMixedRowsRouteCorrectly() {
         let poller = SpyNativePoller()
-        let vm = makeViewModel(poller: poller)
+        let registry = makeRegistryWithFakeService()
+        let vm = makeViewModel(poller: poller, registry: registry)
         let nativeRow = Self.makeNativeInProgress()
-        let healthySwapKitRow = Self.makeSwapKitInProgress(outage: false)
-        let outageSwapKitRow = Self.makeSwapKitInProgress(outage: true)
-        vm.transactions = [nativeRow, healthySwapKitRow, outageSwapKitRow]
+        let healthyTrackedRow = Self.makeSwapKitInProgress(outage: false)
+        let outageTrackedRow = Self.makeSwapKitInProgress(outage: true)
+        vm.transactions = [nativeRow, healthyTrackedRow, outageTrackedRow]
 
         vm.pollInProgressTransactions()
 
         XCTAssertEqual(
             Set(poller.pollCalls.map(\.txHash)),
-            Set([nativeRow.txHash, outageSwapKitRow.txHash]),
-            "Only non-SwapKit + outage-SwapKit rows should reach native polling"
+            Set([nativeRow.txHash, outageTrackedRow.txHash]),
+            "Only untracked + outage-tracked rows should reach native polling"
         )
         XCTAssertFalse(
-            poller.pollCalls.contains(where: { $0.txHash == healthySwapKitRow.txHash }),
-            "Healthy SwapKit-routed row must not appear in the native poller's call log"
+            poller.pollCalls.contains(where: { $0.txHash == healthyTrackedRow.txHash }),
+            "Healthy tracked row must not appear in the native poller's call log"
         )
     }
 
     // MARK: - Fixtures
 
-    private func makeViewModel(poller: SpyNativePoller) -> TransactionHistoryViewModel {
+    private func makeRegistryWithFakeService() -> SwapTrackingRegistry {
+        let registry = SwapTrackingRegistry()
+        registry.register(FakeTrackingService())
+        return registry
+    }
+
+    private func makeViewModel(
+        poller: SpyNativePoller,
+        registry: SwapTrackingRegistry
+    ) -> TransactionHistoryViewModel {
         TransactionHistoryViewModel(
             pubKeyECDSA: "vault-pub",
             vaultName: "Test Vault",
             chainFilter: nil,
-            poller: poller
+            poller: poller,
+            registry: registry
         )
     }
 
     private static func makeSwapKitInProgress(outage: Bool) -> TransactionHistoryData {
-        TransactionHistoryData(
+        let txHash = outage ? "0xsk-outage" : "0xsk-healthy"
+        return TransactionHistoryData(
             id: UUID(),
-            txHash: outage ? "0xsk-outage" : "0xsk-healthy",
+            txHash: txHash,
             approveTxHash: nil,
             pubKeyECDSA: "vault-pub",
             type: .swap,
@@ -123,16 +143,15 @@ final class TransactionHistoryViewModelSwapKitGateTests: XCTestCase {
             completedAt: nil,
             estimatedTime: nil,
             errorMessage: nil,
-            swapKitSwapId: "swap-1",
-            swapKitRouteId: "route-1",
-            swapKitBroadcastHash: outage ? "0xsk-outage" : "0xsk-healthy",
-            swapKitSourceChainId: "1",
-            swapKitProvider: "CHAINFLIP",
-            swapKitLatestStatus: nil,
-            swapKitLatestTrackingStatus: nil,
-            swapKitLastPolledAt: nil,
-            swapKitTrackingStartedAt: nil,
-            swapKitTrackerOutage: outage
+            swapTracking: SwapTrackingMetadataData(
+                providerKind: "swapKit",
+                swapId: "swap-1",
+                routeId: "route-1",
+                broadcastHash: txHash,
+                sourceChainId: "1",
+                subProvider: "CHAINFLIP",
+                trackerOutage: outage
+            )
         )
     }
 
@@ -170,7 +189,7 @@ final class TransactionHistoryViewModelSwapKitGateTests: XCTestCase {
     }
 }
 
-// MARK: - Spy
+// MARK: - Spy + Fake service
 
 @MainActor
 private final class SpyNativePoller: TransactionHistoryNativePoller {
@@ -193,4 +212,14 @@ private final class SpyNativePoller: TransactionHistoryNativePoller {
     func stopPolling(txHash: String) {
         stopCalls.append(txHash)
     }
+}
+
+@MainActor
+private final class FakeTrackingService: SwapTrackingService {
+    static var providerKind: String { "swapKit" }
+    var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
+    func start(tx: TransactionHistoryData) {}
+    func stop(txHash: String) {}
+    func resumeInFlight() async {}
+    func setActive(_ active: Bool) {}
 }

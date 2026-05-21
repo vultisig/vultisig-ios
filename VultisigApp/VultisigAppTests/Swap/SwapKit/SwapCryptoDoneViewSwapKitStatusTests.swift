@@ -5,8 +5,8 @@
 //  Pure-function coverage for `SwapCryptoDoneView.mapSwapKitStatus` — the
 //  done-screen's `/track` → `TransactionStatus` mapping for SwapKit-routed
 //  swaps. The mapping replaces the native per-chain RPC poller (which races
-//  against the cross-chain leg) for these routes, so each `SwapKitUiStatus`
-//  value must surface the right done-screen frame:
+//  against the cross-chain leg) for these routes, so each
+//  `SwapTrackingUiStatus` value must surface the right done-screen frame:
 //
 //    nil / pending           → broadcasted     (pre-`/track` UI)
 //    swapping                → pending         (cross-chain leg in flight)

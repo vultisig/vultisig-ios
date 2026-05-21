@@ -2,7 +2,7 @@
 //  SwapKitTrackingStatusMapperTests.swift
 //  VultisigAppTests
 //
-//  Pure-function coverage for the 14-value `TrackingStatus → SwapKitUiStatus`
+//  Pure-function coverage for the 14-value `TrackingStatus → SwapTrackingUiStatus`
 //  table documented in `track-in-tx-history-plan.md` §"State mapping".
 //  Augmented with edge cases:
 //
@@ -98,19 +98,19 @@ final class SwapKitTrackingStatusMapperTests: XCTestCase {
     // MARK: - isTerminal
 
     func testIsTerminalCoversAll() {
-        XCTAssertTrue(SwapKitUiStatus.completed.isTerminal)
-        XCTAssertTrue(SwapKitUiStatus.refunded.isTerminal)
-        XCTAssertTrue(SwapKitUiStatus.failed.isTerminal)
-        XCTAssertTrue(SwapKitUiStatus.unknownPendingExtended.isTerminal)
-        XCTAssertFalse(SwapKitUiStatus.pending.isTerminal)
-        XCTAssertFalse(SwapKitUiStatus.swapping.isTerminal)
+        XCTAssertTrue(SwapTrackingUiStatus.completed.isTerminal)
+        XCTAssertTrue(SwapTrackingUiStatus.refunded.isTerminal)
+        XCTAssertTrue(SwapTrackingUiStatus.failed.isTerminal)
+        XCTAssertTrue(SwapTrackingUiStatus.unknownPendingExtended.isTerminal)
+        XCTAssertFalse(SwapTrackingUiStatus.pending.isTerminal)
+        XCTAssertFalse(SwapTrackingUiStatus.swapping.isTerminal)
     }
 
     // MARK: - Full state-transition sequence
 
     func testHappyPathStateTransition() {
         // not_started → starting → broadcasted → mempool → inbound → swapping → outbound → completed
-        let sequence: [(String, SwapKitUiStatus)] = [
+        let sequence: [(String, SwapTrackingUiStatus)] = [
             ("not_started", .pending),
             ("starting", .pending),
             ("broadcasted", .pending),
@@ -130,7 +130,7 @@ final class SwapKitTrackingStatusMapperTests: XCTestCase {
     }
 
     func testRefundPathTransition() {
-        let sequence: [(String, SwapKitUiStatus)] = [
+        let sequence: [(String, SwapTrackingUiStatus)] = [
             ("broadcasted", .pending),
             ("mempool", .pending),
             ("inbound", .pending),
@@ -143,7 +143,7 @@ final class SwapKitTrackingStatusMapperTests: XCTestCase {
 
     func testPartiallyRefundedAlsoTerminal() {
         XCTAssertEqual(SwapKitTrackingStatusMapper.map(trackingStatus: "partially_refunded"), .refunded)
-        XCTAssertTrue(SwapKitUiStatus.refunded.isTerminal)
+        XCTAssertTrue(SwapTrackingUiStatus.refunded.isTerminal)
     }
 
     func testAllDocumentedFailureTerminalsMapToFailed() {

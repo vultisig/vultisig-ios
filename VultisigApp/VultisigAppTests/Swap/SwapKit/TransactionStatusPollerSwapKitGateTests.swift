@@ -4,11 +4,12 @@
 //
 //  Belt-and-suspenders coverage: the typed
 //  `TransactionStatusPoller.poll(tx:onUpdate:)` entry point refuses to
-//  schedule any per-chain RPC work for a SwapKit-routed row unless the
-//  tracker has been declared in outage (`swapKitTrackerOutage == true`).
-//  Mirrors the gate in `TransactionHistoryViewModel`; protects against a
-//  future caller re-introducing the dual-polling regression that lets a
-//  source-chain confirmation overwrite a still-in-flight cross-chain swap.
+//  schedule any per-chain RPC work for a row owned by a registered
+//  `SwapTrackingService` unless the tracker has been declared in outage
+//  (`swapTracking.trackerOutage == true`). Mirrors the gate in
+//  `TransactionHistoryViewModel`; protects against a future caller
+//  re-introducing the dual-polling regression that lets a source-chain
+//  confirmation overwrite a still-in-flight cross-chain swap.
 //
 
 import XCTest
@@ -17,39 +18,47 @@ import XCTest
 @MainActor
 final class TransactionStatusPollerSwapKitGateTests: XCTestCase {
 
-    func testSwapKitRoutedRowWithoutOutageIsNoOp() {
+    override func setUp() {
+        super.setUp()
+        // The poller looks up `SwapTrackingRegistry.shared`. Register the
+        // SwapKit service so the gate has something to find — production
+        // does this in `VultisigApp.init`, which doesn't run for unit tests.
+        SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+    }
+
+    func testTrackedRowWithoutOutageIsNoOp() {
         let poller = TransactionStatusPoller.shared
         let row = Self.makeSwapKitInProgress(outage: false)
 
         let scheduled = poller.poll(tx: row) { _, _ in
-            XCTFail("onUpdate must not fire for a gated SwapKit row")
+            XCTFail("onUpdate must not fire for a gated tracked row")
         }
 
-        XCTAssertFalse(scheduled, "poll(tx:) must report no work scheduled for a healthy SwapKit row")
+        XCTAssertFalse(scheduled, "poll(tx:) must report no work scheduled for a healthy tracked row")
     }
 
-    func testSwapKitRoutedRowWithOutageSchedulesWork() {
-        // outage == true means /track has given up — native polling becomes
-        // the fallback signal source. We don't want to actually run the
-        // chain RPC in a unit test, so we immediately stop the task that
-        // would have been started.
+    func testTrackedRowWithOutageSchedulesWork() {
+        // outage == true means the tracker has given up — native polling
+        // becomes the fallback signal source. We don't want to actually run
+        // the chain RPC in a unit test, so we immediately stop the task
+        // that would have been started.
         let poller = TransactionStatusPoller.shared
         let row = Self.makeSwapKitInProgress(outage: true)
 
         let scheduled = poller.poll(tx: row) { _, _ in }
         defer { poller.stopPolling(txHash: row.txHash) }
 
-        XCTAssertTrue(scheduled, "Outage SwapKit row must fall through the gate to native polling")
+        XCTAssertTrue(scheduled, "Outage tracked row must fall through the gate to native polling")
     }
 
-    func testNonSwapKitRowAlwaysSchedules() {
+    func testUntrackedRowAlwaysSchedules() {
         let poller = TransactionStatusPoller.shared
         let row = Self.makeNativeInProgress()
 
         let scheduled = poller.poll(tx: row) { _, _ in }
         defer { poller.stopPolling(txHash: row.txHash) }
 
-        XCTAssertTrue(scheduled, "Non-SwapKit rows must always schedule native polling")
+        XCTAssertTrue(scheduled, "Untracked rows must always schedule native polling")
     }
 
     func testUnsupportedChainReturnsFalse() {
@@ -98,12 +107,15 @@ final class TransactionStatusPollerSwapKitGateTests: XCTestCase {
             completedAt: nil,
             estimatedTime: nil,
             errorMessage: nil,
-            swapKitSwapId: "swap-1",
-            swapKitRouteId: "route-1",
-            swapKitBroadcastHash: hash,
-            swapKitSourceChainId: "1",
-            swapKitProvider: "CHAINFLIP",
-            swapKitTrackerOutage: outage
+            swapTracking: SwapTrackingMetadataData(
+                providerKind: "swapKit",
+                swapId: "swap-1",
+                routeId: "route-1",
+                broadcastHash: hash,
+                sourceChainId: "1",
+                subProvider: "CHAINFLIP",
+                trackerOutage: outage
+            )
         )
     }
 

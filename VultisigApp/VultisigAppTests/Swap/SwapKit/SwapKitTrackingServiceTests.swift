@@ -2,8 +2,8 @@
 //  SwapKitTrackingServiceTests.swift
 //  VultisigAppTests
 //
-//  Lifecycle coverage for `SwapKitTrackingService` — uses in-memory mocks for
-//  `HTTPClientProtocol` + `SwapKitTrackingStorage` so the tests never sleep
+//  Lifecycle coverage for `SwapKitTrackingService` — uses in-memory mocks
+//  for `HTTPClientProtocol` + `SwapTrackingStorage` so the tests never sleep
 //  and never touch SwiftData. Drives the documented state-transition
 //  sequence (`not_started → starting → broadcasted → mempool → inbound →
 //  swapping → outbound → completed`), refund / failure terminals, and the
@@ -23,7 +23,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     // MARK: - State-transition coverage
 
     func testHappyPathTransitionsThroughFullSequence() async throws {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
@@ -33,8 +33,8 @@ final class SwapKitTrackingServiceTests: XCTestCase {
             clock: { clockTick }
         )
 
-        let swap = Self.makeSwapKitSwap()
-        storage.inFlight = [swap]
+        let tx = Self.makeSwapKitTx()
+        storage.inFlight = [tx]
 
         let sequence: [(String, SwapKitTrackingStatus)] = [
             ("not_started", .notStarted),
@@ -49,7 +49,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         http.responses = sequence.map { Self.makeResponse(status: $0.1, trackingStatus: $0.0) }
 
         for (raw, _) in sequence {
-            await service.forceRefresh(swap: swap)
+            await service.forceRefresh(tx: tx)
             clockTick = clockTick.addingTimeInterval(10)
             let observed = storage.observations.last
             XCTAssertEqual(observed?.trackingStatus, raw)
@@ -60,14 +60,14 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     }
 
     func testRefundPathMapsToTerminalRefunded() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
+        let tx = Self.makeSwapKitTx()
         http.responses = [Self.makeResponse(status: .refunded, trackingStatus: "refunded")]
 
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
 
         let observed = storage.observations.last
         XCTAssertEqual(observed?.uiStatus, .refunded)
@@ -75,12 +75,12 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     }
 
     func testPartialRefundAlsoTerminal() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
         http.responses = [Self.makeResponse(status: .refunded, trackingStatus: "partially_refunded")]
-        await service.forceRefresh(swap: Self.makeSwapKitSwap())
+        await service.forceRefresh(tx: Self.makeSwapKitTx())
 
         XCTAssertEqual(storage.observations.last?.uiStatus, .refunded)
     }
@@ -88,11 +88,11 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     func testFailureTerminalsAllMapToFailed() async {
         let terminals = ["dropped", "reverted", "replaced", "retries_exceeded", "parsing_error"]
         for raw in terminals {
-            let storage = FakeSwapKitTrackingStorage()
+            let storage = FakeSwapTrackingStorage()
             let http = StubHTTPClient()
             let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
             http.responses = [Self.makeResponse(status: .failed, trackingStatus: raw)]
-            await service.forceRefresh(swap: Self.makeSwapKitSwap())
+            await service.forceRefresh(tx: Self.makeSwapKitTx())
             XCTAssertEqual(
                 storage.observations.last?.uiStatus,
                 .failed,
@@ -104,7 +104,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     // MARK: - Unknown give-up window
 
     func testUnknownUnderTenMinutesStaysPending() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
@@ -114,20 +114,20 @@ final class SwapKitTrackingServiceTests: XCTestCase {
             clock: { clockTick }
         )
 
-        var swap = Self.makeSwapKitSwap()
+        var tx = Self.makeSwapKitTx()
         // Tracking started 5 minutes ago — within the 10-minute window.
-        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-5 * 60))
-        storage.inFlight = [swap]
+        tx = Self.applyTrackingStarted(tx, date: baseDate.addingTimeInterval(-5 * 60))
+        storage.inFlight = [tx]
 
         http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
         clockTick = clockTick.addingTimeInterval(1)
 
         XCTAssertEqual(storage.observations.last?.uiStatus, .pending)
     }
 
     func testUnknownPastTenMinutesPromotesToTerminalUnknownExtended() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
@@ -137,13 +137,13 @@ final class SwapKitTrackingServiceTests: XCTestCase {
             clock: { clockTick }
         )
 
-        var swap = Self.makeSwapKitSwap()
+        var tx = Self.makeSwapKitTx()
         // Tracking started 11 minutes ago — past the give-up window.
-        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
-        storage.inFlight = [swap]
+        tx = Self.applyTrackingStarted(tx, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [tx]
 
         http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
         clockTick = clockTick.addingTimeInterval(1)
 
         XCTAssertEqual(storage.observations.last?.uiStatus, .unknownPendingExtended)
@@ -153,7 +153,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     // MARK: - Tracker-outage flag wiring
 
     func testTrackerOutageFlipsTrueOnUnknownExtendedPromotion() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
@@ -167,12 +167,12 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         // give-up window. The next `/track` poll should promote the row
         // to `unknownPendingExtended` *and* set the outage flag so the
         // tx-history viewmodel can hand the row back to native polling.
-        var swap = Self.makeSwapKitSwap()
-        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
-        storage.inFlight = [swap]
+        var tx = Self.makeSwapKitTx()
+        tx = Self.applyTrackingStarted(tx, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [tx]
 
         http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
         clockTick = clockTick.addingTimeInterval(1)
 
         XCTAssertEqual(storage.observations.last?.uiStatus, .unknownPendingExtended)
@@ -181,7 +181,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     }
 
     func testTrackerOutageClearsOnNextSuccessfulTrackResponse() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
@@ -192,23 +192,23 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         )
 
         // First poll: stuck-in-unknown beyond the give-up window.
-        var swap = Self.makeSwapKitSwap()
-        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
-        storage.inFlight = [swap]
+        var tx = Self.makeSwapKitTx()
+        tx = Self.applyTrackingStarted(tx, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [tx]
 
         http.responses = [
             Self.makeResponse(status: .unknown, trackingStatus: "unknown"),
             Self.makeResponse(status: .swapping, trackingStatus: "swapping")
         ]
 
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
         XCTAssertEqual(storage.observations.last?.trackerOutage, true)
 
         // Now `/track` recovers — the next response carries an actual
         // status. Outage flag must clear so native polling steps back
         // and `/track` regains authority.
         clockTick = clockTick.addingTimeInterval(15)
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
 
         XCTAssertEqual(storage.observations.last?.uiStatus, .swapping)
         XCTAssertEqual(storage.observations.last?.trackerOutage, false,
@@ -216,7 +216,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     }
 
     func testTrackerOutageStaysFalseOnHappyPath() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(
             httpClient: http,
@@ -230,7 +230,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
             Self.makeResponse(status: .completed, trackingStatus: "completed")
         ]
         for _ in 0..<3 {
-            await service.forceRefresh(swap: Self.makeSwapKitSwap())
+            await service.forceRefresh(tx: Self.makeSwapKitTx())
         }
 
         XCTAssertEqual(storage.observations.count, 3)
@@ -243,13 +243,13 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     // MARK: - Failure handling — touches lastPolledAt without mutating status
 
     func testTransientFailureTouchesLastPolledOnly() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         http.shouldThrow = TestError.network
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
-        await service.forceRefresh(swap: swap)
+        let tx = Self.makeSwapKitTx()
+        await service.forceRefresh(tx: tx)
 
         XCTAssertTrue(storage.observations.isEmpty, "Failure should not write a status row")
         XCTAssertEqual(storage.touchCount, 1, "Failure should touch lastPolledAt once")
@@ -258,138 +258,139 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     // MARK: - Start/stop bookkeeping
 
     func testStartIsIdempotent() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
-        service.start(swap: swap)
-        service.start(swap: swap)
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
+        service.start(tx: tx)
         XCTAssertEqual(service.trackedSwapCountForTesting, 1, "Duplicate start should be a no-op")
     }
 
     func testStartSkipsTerminalRows() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap(latestTrackingStatus: "completed")
-        service.start(swap: swap)
+        let tx = Self.makeSwapKitTx(latestTrackingStatus: "completed")
+        service.start(tx: tx)
         XCTAssertEqual(service.trackedSwapCountForTesting, 0)
     }
 
-    func testStartSkipsNonSwapKitRows() {
-        let storage = FakeSwapKitTrackingStorage()
+    func testStartSkipsRowsOwnedByOtherProviders() {
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeNonSwapKitSwap()
-        service.start(swap: swap)
+        let tx = Self.makeNonSwapKitTx()
+        service.start(tx: tx)
         XCTAssertEqual(service.trackedSwapCountForTesting, 0)
     }
 
     func testStopRemovesEntry() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
-        service.start(swap: swap)
-        service.stop(swap: swap)
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
+        service.stop(txHash: tx.txHash)
         XCTAssertEqual(service.trackedSwapCountForTesting, 0)
     }
 
-    func testResumeInFlightStartsAllNonTerminalSwapKitRows() {
-        let storage = FakeSwapKitTrackingStorage()
+    func testResumeInFlightStartsAllNonTerminalSwapKitRows() async {
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
         storage.inFlight = [
-            Self.makeSwapKitSwap(txHash: "0xaaa"),
-            Self.makeSwapKitSwap(txHash: "0xbbb"),
-            Self.makeSwapKitSwap(txHash: "0xccc", latestTrackingStatus: "completed")
+            Self.makeSwapKitTx(txHash: "0xaaa"),
+            Self.makeSwapKitTx(txHash: "0xbbb"),
+            Self.makeSwapKitTx(txHash: "0xccc", latestTrackingStatus: "completed")
         ]
-        service.resumeInFlightSwaps()
-        // The fake's `fetchInFlightSwapKitSwaps` already filters terminals out
-        // (mirroring the real storage). Verify only the 3rd was filtered.
+        await service.resumeInFlight()
+        // The fake's `fetchInFlightSwapTracking` already filters terminals
+        // out (mirroring the real storage). Verify only the 3rd was filtered.
         XCTAssertLessThanOrEqual(service.trackedSwapCountForTesting, 2)
     }
 
     // MARK: - Observable UI-status cache
 
     func testStartSeedsUiStatusCacheWithPersistedRowStatus() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
         // Simulate a row already past the broadcast frame — the cache should
         // surface that the moment the view subscribes, without waiting for
         // the first poll round-trip.
-        let swap = Self.makeSwapKitSwap(latestTrackingStatus: "swapping")
-        service.start(swap: swap)
+        let tx = Self.makeSwapKitTx(latestTrackingStatus: "swapping")
+        service.start(tx: tx)
 
-        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .swapping)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .swapping)
     }
 
     func testStartOnFreshRowSeedsCacheWithPending() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        // No persisted `/track` data yet — `swapKitUiStatus` defaults to
-        // `.pending` via the model extension; the cache must mirror that so
-        // the done-screen surfaces the broadcast frame on first appearance.
-        let swap = Self.makeSwapKitSwap()
-        service.start(swap: swap)
+        // No persisted `/track` data yet — `swapTrackingUiStatus` defaults
+        // to `.pending` via the model extension; the cache must mirror that
+        // so the done-screen surfaces the broadcast frame on first
+        // appearance.
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
 
-        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .pending)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .pending)
     }
 
     func testHappyPathPollUpdatesUiStatusCache() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
+        let tx = Self.makeSwapKitTx()
         http.responses = [
             Self.makeResponse(status: .swapping, trackingStatus: "swapping"),
             Self.makeResponse(status: .completed, trackingStatus: "completed")
         ]
 
-        await service.forceRefresh(swap: swap)
-        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .swapping)
+        await service.forceRefresh(tx: tx)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .swapping)
 
-        await service.forceRefresh(swap: swap)
-        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .completed)
+        await service.forceRefresh(tx: tx)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .completed)
     }
 
     func testGiveUpUnknownExtendedPromotionUpdatesCache() async {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
         var clockTick = baseDate
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { clockTick })
 
-        var swap = Self.makeSwapKitSwap()
-        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
-        storage.inFlight = [swap]
+        var tx = Self.makeSwapKitTx()
+        tx = Self.applyTrackingStarted(tx, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [tx]
 
         http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
-        await service.forceRefresh(swap: swap)
+        await service.forceRefresh(tx: tx)
         clockTick = clockTick.addingTimeInterval(1)
 
-        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .unknownPendingExtended)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .unknownPendingExtended)
     }
 
     // MARK: - ScenePhase
 
     func testSetActiveToFalseCancelsRunningPollers() {
-        let storage = FakeSwapKitTrackingStorage()
+        let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()
         let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
 
-        let swap = Self.makeSwapKitSwap()
-        service.start(swap: swap)
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
         XCTAssertEqual(service.trackedSwapCountForTesting, 1)
 
         service.setActive(false)
@@ -402,7 +403,7 @@ final class SwapKitTrackingServiceTests: XCTestCase {
 
     // MARK: - Fixtures
 
-    private static func makeSwapKitSwap(
+    private static func makeSwapKitTx(
         txHash: String = "0xbroadcast",
         latestTrackingStatus: String? = nil
     ) -> TransactionHistoryData {
@@ -435,17 +436,23 @@ final class SwapKitTrackingServiceTests: XCTestCase {
             completedAt: nil,
             estimatedTime: nil,
             errorMessage: nil,
-            swapKitSwapId: "swap-1",
-            swapKitRouteId: "route-1",
-            swapKitBroadcastHash: txHash,
-            swapKitSourceChainId: "1",
-            swapKitProvider: "CHAINFLIP",
-            swapKitLatestStatus: nil,
-            swapKitLatestTrackingStatus: latestTrackingStatus
+            swapTracking: SwapTrackingMetadataData(
+                providerKind: "swapKit",
+                swapId: "swap-1",
+                routeId: "route-1",
+                broadcastHash: txHash,
+                sourceChainId: "1",
+                subProvider: "CHAINFLIP",
+                latestStatus: nil,
+                latestTrackingStatus: latestTrackingStatus
+            )
         )
     }
 
-    private static func makeNonSwapKitSwap() -> TransactionHistoryData {
+    private static func makeNonSwapKitTx() -> TransactionHistoryData {
+        // No swap-tracking metadata at all — represents a row routed through
+        // a swap aggregator without a registered tracker (e.g. legacy
+        // 1inch / Kyber / LiFi paths).
         TransactionHistoryData(
             id: UUID(),
             txHash: "0xnon-swapkit",
@@ -479,47 +486,53 @@ final class SwapKitTrackingServiceTests: XCTestCase {
     }
 
     private static func applyTrackingStarted(
-        _ swap: TransactionHistoryData,
+        _ tx: TransactionHistoryData,
         date: Date
     ) -> TransactionHistoryData {
-        TransactionHistoryData(
-            id: swap.id,
-            txHash: swap.txHash,
-            approveTxHash: swap.approveTxHash,
-            pubKeyECDSA: swap.pubKeyECDSA,
-            type: swap.type,
-            status: swap.status,
-            chainRawValue: swap.chainRawValue,
-            coinTicker: swap.coinTicker,
-            coinLogo: swap.coinLogo,
-            coinChainLogo: swap.coinChainLogo,
-            amountCrypto: swap.amountCrypto,
-            amountFiat: swap.amountFiat,
-            fromAddress: swap.fromAddress,
-            toAddress: swap.toAddress,
-            toCoinTicker: swap.toCoinTicker,
-            toCoinLogo: swap.toCoinLogo,
-            toCoinChainLogo: swap.toCoinChainLogo,
-            toAmountCrypto: swap.toAmountCrypto,
-            toAmountFiat: swap.toAmountFiat,
-            swapProvider: swap.swapProvider,
-            feeCrypto: swap.feeCrypto,
-            feeFiat: swap.feeFiat,
-            network: swap.network,
-            explorerLink: swap.explorerLink,
-            createdAt: swap.createdAt,
-            completedAt: swap.completedAt,
-            estimatedTime: swap.estimatedTime,
-            errorMessage: swap.errorMessage,
-            swapKitSwapId: swap.swapKitSwapId,
-            swapKitRouteId: swap.swapKitRouteId,
-            swapKitBroadcastHash: swap.swapKitBroadcastHash,
-            swapKitSourceChainId: swap.swapKitSourceChainId,
-            swapKitProvider: swap.swapKitProvider,
-            swapKitLatestStatus: swap.swapKitLatestStatus,
-            swapKitLatestTrackingStatus: swap.swapKitLatestTrackingStatus,
-            swapKitLastPolledAt: swap.swapKitLastPolledAt,
-            swapKitTrackingStartedAt: date
+        let oldTracking = tx.swapTracking
+        let updatedTracking = SwapTrackingMetadataData(
+            providerKind: oldTracking?.providerKind ?? "swapKit",
+            swapId: oldTracking?.swapId,
+            routeId: oldTracking?.routeId,
+            broadcastHash: oldTracking?.broadcastHash,
+            sourceChainId: oldTracking?.sourceChainId,
+            subProvider: oldTracking?.subProvider,
+            latestStatus: oldTracking?.latestStatus,
+            latestTrackingStatus: oldTracking?.latestTrackingStatus,
+            lastPolledAt: oldTracking?.lastPolledAt,
+            trackingStartedAt: date,
+            trackerOutage: oldTracking?.trackerOutage
+        )
+        return TransactionHistoryData(
+            id: tx.id,
+            txHash: tx.txHash,
+            approveTxHash: tx.approveTxHash,
+            pubKeyECDSA: tx.pubKeyECDSA,
+            type: tx.type,
+            status: tx.status,
+            chainRawValue: tx.chainRawValue,
+            coinTicker: tx.coinTicker,
+            coinLogo: tx.coinLogo,
+            coinChainLogo: tx.coinChainLogo,
+            amountCrypto: tx.amountCrypto,
+            amountFiat: tx.amountFiat,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            toCoinTicker: tx.toCoinTicker,
+            toCoinLogo: tx.toCoinLogo,
+            toCoinChainLogo: tx.toCoinChainLogo,
+            toAmountCrypto: tx.toAmountCrypto,
+            toAmountFiat: tx.toAmountFiat,
+            swapProvider: tx.swapProvider,
+            feeCrypto: tx.feeCrypto,
+            feeFiat: tx.feeFiat,
+            network: tx.network,
+            explorerLink: tx.explorerLink,
+            createdAt: tx.createdAt,
+            completedAt: tx.completedAt,
+            estimatedTime: tx.estimatedTime,
+            errorMessage: tx.errorMessage,
+            swapTracking: updatedTracking
         )
     }
 
@@ -604,15 +617,15 @@ private final class StubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 }
 
 @MainActor
-private final class FakeSwapKitTrackingStorage: SwapKitTrackingStorage {
+private final class FakeSwapTrackingStorage: SwapTrackingStorage {
     struct Observation: Equatable {
         let txHash: String
         let pubKeyECDSA: String
         let latestStatus: String?
         let trackingStatus: String?
-        let uiStatus: SwapKitUiStatus
+        let uiStatus: SwapTrackingUiStatus
         let polledAt: Date
-        /// Mirrors the real storage rule: `swapKitTrackerOutage` is `true`
+        /// Mirrors the real storage rule: `trackerOutage` is `true`
         /// iff `uiStatus == .unknownPendingExtended`. Exposed here so the
         /// unit tests can assert the flag's behaviour without bringing up
         /// SwiftData.
@@ -623,12 +636,12 @@ private final class FakeSwapKitTrackingStorage: SwapKitTrackingStorage {
     private(set) var observations: [Observation] = []
     private(set) var touchCount = 0
 
-    func updateSwapKitStatus(
+    func updateSwapTrackingStatus(
         txHash: String,
         pubKeyECDSA: String,
         latestStatus: String?,
         latestTrackingStatus: String?,
-        uiStatus: SwapKitUiStatus,
+        uiStatus: SwapTrackingUiStatus,
         polledAt: Date
     ) throws {
         observations.append(Observation(
@@ -642,14 +655,16 @@ private final class FakeSwapKitTrackingStorage: SwapKitTrackingStorage {
         ))
     }
 
-    func touchSwapKitLastPolled(txHash: String, pubKeyECDSA: String, polledAt: Date) throws {
+    func touchSwapTrackingLastPolled(txHash: String, pubKeyECDSA: String, polledAt: Date) throws {
         _ = txHash
         _ = pubKeyECDSA
         _ = polledAt
         touchCount += 1
     }
 
-    func fetchInFlightSwapKitSwaps() throws -> [TransactionHistoryData] {
-        inFlight.filter { !$0.swapKitUiStatus.isTerminal }
+    func fetchInFlightSwapTracking(providerKind: String) throws -> [TransactionHistoryData] {
+        inFlight
+            .filter { $0.swapTracking?.providerKind == providerKind }
+            .filter { !$0.swapTrackingUiStatus.isTerminal }
     }
 }
