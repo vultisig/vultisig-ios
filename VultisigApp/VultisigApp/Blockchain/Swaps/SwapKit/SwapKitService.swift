@@ -53,7 +53,13 @@ struct SwapKitService {
             return nil
         }
 
-        let rawAmount = fromCoin.raw(for: amount)
+        // `sellAmount` must be a decimal-with-dot string (e.g. "0.0086"),
+        // NOT raw base units. Per the SwapKit API contract:
+        //   "Amount in basic units (decimals separated with a dot)"
+        // Sending raw wei ("8600000000000000") causes SwapKit to interpret
+        // the amount as 8.6 quadrillion BNB — far above any provider's
+        // liquidity — and the quote returns `noRoutesFound`.
+        //
         // Omit `slippage` from the request when the caller doesn't override.
         // Empirically, sending any explicit slippage value to NEAR Intents
         // for same-chain BSC pairs returns `noRoutesFound` — NEAR negotiates
@@ -65,7 +71,7 @@ struct SwapKitService {
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
             buyAsset: assetIdentifier(for: toCoin),
-            sellAmount: String(rawAmount.description),
+            sellAmount: formatSellAmount(amount),
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
             destinationAddress: toCoin.address.isEmpty ? nil : toCoin.address,
             slippage: slippagePercent,
@@ -147,6 +153,26 @@ struct SwapKitService {
             return (route, amount)
         }
         return ranked.max(by: { $0.1 < $1.1 })?.0
+    }
+
+    /// Format an amount as a dot-separated decimal string suitable for
+    /// `SwapKitQuoteRequest.sellAmount`. SwapKit interprets the value as the
+    /// human-readable amount of the source asset (e.g. "0.0086" BNB), NOT
+    /// raw base units. Uses POSIX formatting to avoid locale-introduced
+    /// commas. Trims trailing zeros after the decimal point so "1.0000"
+    /// becomes "1" — matches what the docs samples show and what the spike
+    /// fixtures pinned.
+    static func formatSellAmount(_ amount: Decimal) -> String {
+        var value = amount
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 38, .plain)
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.maximumFractionDigits = 38
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: rounded as NSDecimalNumber) ?? "\(amount)"
     }
 }
 
