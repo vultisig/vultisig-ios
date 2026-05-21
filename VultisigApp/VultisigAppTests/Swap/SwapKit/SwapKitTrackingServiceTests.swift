@@ -315,6 +315,72 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         XCTAssertLessThanOrEqual(service.trackedSwapCountForTesting, 2)
     }
 
+    // MARK: - Observable UI-status cache
+
+    func testStartSeedsUiStatusCacheWithPersistedRowStatus() {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
+
+        // Simulate a row already past the broadcast frame — the cache should
+        // surface that the moment the view subscribes, without waiting for
+        // the first poll round-trip.
+        let swap = Self.makeSwapKitSwap(latestTrackingStatus: "swapping")
+        service.start(swap: swap)
+
+        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .swapping)
+    }
+
+    func testStartOnFreshRowSeedsCacheWithPending() {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
+
+        // No persisted `/track` data yet — `swapKitUiStatus` defaults to
+        // `.pending` via the model extension; the cache must mirror that so
+        // the done-screen surfaces the broadcast frame on first appearance.
+        let swap = Self.makeSwapKitSwap()
+        service.start(swap: swap)
+
+        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .pending)
+    }
+
+    func testHappyPathPollUpdatesUiStatusCache() async {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
+
+        let swap = Self.makeSwapKitSwap()
+        http.responses = [
+            Self.makeResponse(status: .swapping, trackingStatus: "swapping"),
+            Self.makeResponse(status: .completed, trackingStatus: "completed")
+        ]
+
+        await service.forceRefresh(swap: swap)
+        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .swapping)
+
+        await service.forceRefresh(swap: swap)
+        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .completed)
+    }
+
+    func testGiveUpUnknownExtendedPromotionUpdatesCache() async {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
+        var clockTick = baseDate
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { clockTick })
+
+        var swap = Self.makeSwapKitSwap()
+        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [swap]
+
+        http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
+        await service.forceRefresh(swap: swap)
+        clockTick = clockTick.addingTimeInterval(1)
+
+        XCTAssertEqual(service.uiStatusByTxHash[swap.txHash], .unknownPendingExtended)
+    }
+
     // MARK: - ScenePhase
 
     func testSetActiveToFalseCancelsRunningPollers() {
