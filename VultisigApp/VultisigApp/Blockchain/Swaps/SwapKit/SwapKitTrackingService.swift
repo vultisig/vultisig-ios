@@ -389,7 +389,10 @@ final class SwapKitTrackingService {
             swapKitLatestStatus: response.status.rawValue,
             swapKitLatestTrackingStatus: response.trackingStatus,
             swapKitLastPolledAt: now,
-            swapKitTrackingStartedAt: swap.swapKitTrackingStartedAt ?? now
+            swapKitTrackingStartedAt: swap.swapKitTrackingStartedAt ?? now,
+            // Mirror the storage rule: outage is set iff we just promoted
+            // to `unknownPendingExtended`, cleared on every other UI status.
+            swapKitTrackerOutage: uiStatus == .unknownPendingExtended
         )
     }
 

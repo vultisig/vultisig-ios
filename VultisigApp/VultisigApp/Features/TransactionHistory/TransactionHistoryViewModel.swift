@@ -14,6 +14,21 @@ struct TransactionHistoryCoinAsset: Hashable {
     let network: String
 }
 
+/// Surface for native chain polling — extracted as a protocol so the
+/// tx-history viewmodel can inject a spy in tests without standing up the
+/// real per-chain RPC client.
+@MainActor
+protocol TransactionHistoryNativePoller {
+    @discardableResult
+    func poll(
+        tx: TransactionHistoryData,
+        onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
+    ) -> Bool
+    func stopPolling(txHash: String)
+}
+
+extension TransactionStatusPoller: TransactionHistoryNativePoller {}
+
 @MainActor
 class TransactionHistoryViewModel: ObservableObject {
     @Published var transactions: [TransactionHistoryData] = []
@@ -28,14 +43,20 @@ class TransactionHistoryViewModel: ObservableObject {
     let chainFilter: Chain?
 
     private let storage = TransactionHistoryStorage.shared
-    private let poller = TransactionStatusPoller.shared
+    private let poller: TransactionHistoryNativePoller
     private let swapKitTracking = SwapKitTrackingService.shared
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
 
-    init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
+    init(
+        pubKeyECDSA: String,
+        vaultName: String,
+        chainFilter: Chain?,
+        poller: TransactionHistoryNativePoller = TransactionStatusPoller.shared
+    ) {
         self.pubKeyECDSA = pubKeyECDSA
         self.vaultName = vaultName
         self.chainFilter = chainFilter
+        self.poller = poller
     }
 
     // MARK: - Loading
@@ -74,16 +95,26 @@ class TransactionHistoryViewModel: ObservableObject {
 
     // MARK: - Status Polling
 
-    private func pollInProgressTransactions() {
+    func pollInProgressTransactions() {
         for tx in transactions where tx.status == .inProgress {
-            guard let chain = Chain(rawValue: tx.chainRawValue) else { continue }
+            // SwapKit-routed rows are exclusively `/track`'s territory under
+            // normal conditions — skip them so native polling can't race
+            // `/track` and last-writer-wins the row to `.successful` on a
+            // source-chain confirm while the cross-chain leg is still in
+            // flight. The one exception is when `swapKitTrackerOutage` is
+            // `true`: `/track` has been unavailable long enough that we
+            // fall back to native polling so the user at least sees the
+            // source-chain confirmation. The next successful `/track`
+            // response clears the flag and `/track` is authoritative again.
+            //
+            // The poller enforces the same gate internally (belt-and-
+            // suspenders); duplicating it here avoids spinning up the
+            // chain-config lookup for rows we already know to skip.
+            if tx.isSwapKitRouted && tx.swapKitTrackerOutage != true {
+                continue
+            }
 
-            poller.poll(
-                txHash: tx.txHash,
-                chain: chain,
-                createdAt: tx.createdAt,
-                pubKeyECDSA: pubKeyECDSA
-            ) { [weak self] newStatus, errorMessage in
+            poller.poll(tx: tx) { [weak self] newStatus, errorMessage in
                 self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)
             }
         }
@@ -138,7 +169,8 @@ class TransactionHistoryViewModel: ObservableObject {
             swapKitLatestStatus: old.swapKitLatestStatus,
             swapKitLatestTrackingStatus: old.swapKitLatestTrackingStatus,
             swapKitLastPolledAt: old.swapKitLastPolledAt,
-            swapKitTrackingStartedAt: old.swapKitTrackingStartedAt
+            swapKitTrackingStartedAt: old.swapKitTrackingStartedAt,
+            swapKitTrackerOutage: old.swapKitTrackerOutage
         )
         transactions[index] = updated
 
