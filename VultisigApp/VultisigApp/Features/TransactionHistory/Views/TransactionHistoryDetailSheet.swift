@@ -34,14 +34,8 @@ struct TransactionHistoryDetailSheet: View {
                 if transaction.type == .swap {
                     fromToCards
                 }
-                if transaction.isSwapKitRouted {
-                    swapKitStateMachine
-                }
                 detailRows
                 explorerButton
-                if transaction.isSwapKitRouted {
-                    swapKitTrackerButton
-                }
             }
             .padding(16)
             .padding(.top, 20)
@@ -306,75 +300,4 @@ struct TransactionHistoryDetailSheet: View {
         return "\(address.prefix(8))...\(address.suffix(6))"
     }
 
-    // MARK: - SwapKit State Machine
-
-    private var swapKitStateMachine: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("swapKitTrackingTitle".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-
-            VStack(spacing: 8) {
-                swapKitStateRow(.pending, label: "swapKitStateBroadcast".localized)
-                swapKitStateRow(.swapping, label: "swapKitStateSwapping".localized)
-                swapKitStateRow(.completed, label: "swapKitStateCompleted".localized)
-            }
-            if let raw = transaction.swapKitLatestTrackingStatus, !raw.isEmpty {
-                Text("swapKitLatestStatus".localized + ": \(raw)")
-                    .font(Theme.fonts.caption10)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
-    }
-
-    @ViewBuilder
-    private func swapKitStateRow(_ stage: SwapKitUiStatus, label: String) -> some View {
-        let stageState = swapKitStageState(for: stage)
-        HStack(spacing: 12) {
-            Image(systemName: stageState.icon)
-                .foregroundStyle(stageState.tint)
-                .font(Theme.fonts.bodySMedium)
-            Text(label)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(stageState.tint)
-            Spacer()
-        }
-    }
-
-    private func swapKitStageState(for stage: SwapKitUiStatus) -> (icon: String, tint: Color) {
-        let current = transaction.swapKitUiStatus
-        // Refunded / failed branches are always rendered on the "completed" row
-        // because they are the terminal frame the user lands in.
-        switch (stage, current) {
-        case (.completed, .completed):
-            return ("checkmark.circle.fill", Theme.colors.alertSuccess)
-        case (.completed, .refunded):
-            return ("arrow.uturn.backward.circle.fill", Theme.colors.alertError)
-        case (.completed, .failed), (.completed, .unknownPendingExtended):
-            return ("xmark.circle.fill", Theme.colors.alertError)
-        case (.swapping, .swapping), (.swapping, .completed), (.swapping, .refunded), (.swapping, .failed), (.swapping, .unknownPendingExtended):
-            return ("checkmark.circle.fill", Theme.colors.alertSuccess)
-        case (.pending, _):
-            return ("checkmark.circle.fill", Theme.colors.alertSuccess)
-        default:
-            return ("circle", Theme.colors.textTertiary)
-        }
-    }
-
-    private var swapKitTrackerButton: some View {
-        PrimaryButton(title: "swapKitViewOnTracker", type: .secondary) {
-            if let url = transaction.swapKitTrackerURL {
-                openURL(url)
-            }
-        }
-        .fixedSize()
-    }
 }

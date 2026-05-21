@@ -64,66 +64,11 @@ struct TransactionHistoryCardView: View {
 
             Spacer()
 
-            if transaction.isSwapKitRouted {
-                swapKitStatusBadge
-            } else if transaction.status == .inProgress {
+            if transaction.status == .inProgress {
                 inProgressChip
             } else {
                 statusView
             }
-        }
-    }
-
-    // MARK: - SwapKit Tracking Badge
-
-    @ViewBuilder
-    private var swapKitStatusBadge: some View {
-        let ui = transaction.swapKitUiStatus
-        Text(swapKitBadgeText(ui))
-            .font(Theme.fonts.caption12)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(swapKitBadgeBackground(ui))
-            .foregroundStyle(swapKitBadgeForeground(ui))
-            .cornerRadius(99)
-    }
-
-    private func swapKitBadgeText(_ ui: SwapKitUiStatus) -> String {
-        switch ui {
-        case .pending:
-            return "swapKitStatusPending".localized
-        case .swapping:
-            return "swapKitStatusSwapping".localized
-        case .completed:
-            return "swapKitStatusCompleted".localized
-        case .refunded:
-            return "swapKitStatusRefunded".localized
-        case .failed:
-            return "swapKitStatusFailed".localized
-        case .unknownPendingExtended:
-            return "swapKitStatusTrackerUnavailable".localized
-        }
-    }
-
-    private func swapKitBadgeBackground(_ ui: SwapKitUiStatus) -> Color {
-        switch ui {
-        case .completed:
-            return Theme.colors.alertSuccess.opacity(0.15)
-        case .refunded, .failed, .unknownPendingExtended:
-            return Theme.colors.alertError.opacity(0.15)
-        case .pending, .swapping:
-            return Theme.colors.bgPrimary
-        }
-    }
-
-    private func swapKitBadgeForeground(_ ui: SwapKitUiStatus) -> Color {
-        switch ui {
-        case .completed:
-            return Theme.colors.alertSuccess
-        case .refunded, .failed, .unknownPendingExtended:
-            return Theme.colors.alertError
-        case .pending, .swapping:
-            return Theme.colors.textPrimary
         }
     }
 
