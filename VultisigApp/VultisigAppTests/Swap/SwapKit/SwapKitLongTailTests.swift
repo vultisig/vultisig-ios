@@ -69,6 +69,21 @@ final class SwapKitLongTailTests: XCTestCase {
                        "deposit-only flow: inboundAddress == targetAddress")
     }
 
+    func testCardanoCborTxTypeAliasDecodesAsDepositOnly() throws {
+        // SwapKit upstream switched live from `meta.txType: "CARDANO"` to
+        // `"CBOR"` without versioning. Our decoder accepts both — pin both
+        // so a future flip back doesn't regress us either way.
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-real-ada-cbor-swap"
+        )
+        XCTAssertEqual(response.meta.txType, "CBOR")
+        guard case .cardano = response.tx else {
+            return XCTFail("`CBOR` txType must alias to .cardano (deposit-only flow), got \(response.tx)")
+        }
+        XCTAssertFalse(response.targetAddress.isEmpty)
+    }
+
     // MARK: - Sui
 
     func testSuiSwapResponseDecodesAsPtbBase64() throws {

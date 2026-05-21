@@ -121,13 +121,18 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             // plain TON transfer to the deposit address with the raw amount.
             let transfers = try container.decode([SwapKitTonTransfer].self, forKey: .tx)
             return .ton(transfers)
-        case "CARDANO":
+        case "CARDANO", "CBOR":
             // Cardano source: deposit-only flow. SwapKit returns no
             // transaction body — `tx` is null at the wire, and in observed
             // fixtures the key is sometimes omitted entirely. Vultisig
             // builds a plain ADA transfer to `targetAddress` for
             // `sellAmount` via the existing Cardano send path. Tolerate
             // both shapes: `tx: null` and `tx` absent.
+            //
+            // `CARDANO` was the original wire value at integration time;
+            // upstream switched live to `CBOR` (Cardano's native wire
+            // serialisation format) without versioning the change.
+            // Accept both so a flip back doesn't break us either.
             if container.contains(.tx) {
                 if try container.decodeNil(forKey: .tx) {
                     return .cardano
