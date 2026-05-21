@@ -208,7 +208,11 @@ struct SwapDetailsScreen: View {
     @ViewBuilder
     var continueButton: some View {
         let isFormValid = detailsViewModel.validateForm()
-        let isDisabled = !isFormValid || detailsViewModel.isLoading
+        // Block Continue while the fee estimate is still in flight — the
+        // form already has a non-zero fee from the previous quote in that
+        // window, but using it advances with stale data. validateForm()
+        // doesn't see `isLoadingFees` since it's a screen-local concern.
+        let isDisabled = !isFormValid || detailsViewModel.isLoading || detailsViewModel.isLoadingFees
 
         if detailsViewModel.isLoadingTransaction {
             ButtonLoader()
