@@ -38,7 +38,7 @@ struct SwapKitService {
         fromCoin: Coin,
         toCoin: Coin,
         amount: Decimal,
-        slippagePercent: Double = SwapKitConfig.defaultSlippagePercent
+        slippagePercent: Double? = nil
     ) async throws -> SwapKitRoute? {
         // Opt-in feature flag (Settings → Advanced → "SwapKit"). When the
         // flag is off, short-circuit even if `Coin+Swaps.swapProviders`
@@ -54,6 +54,14 @@ struct SwapKitService {
         }
 
         let rawAmount = fromCoin.raw(for: amount)
+        // Omit `slippage` from the request when the caller doesn't override.
+        // Empirically, sending any explicit slippage value to NEAR Intents
+        // for same-chain BSC pairs returns `noRoutesFound` — NEAR negotiates
+        // its own per-route slippage based on the cross-chain settlement
+        // model and a hard client-side cap (even 0.5%) is incompatible.
+        // Letting SwapKit pick the per-provider default works for every pair
+        // we've spike-tested. Override only when surfacing a user-tuned
+        // slippage tolerance through the UI in a later phase.
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
             buyAsset: assetIdentifier(for: toCoin),

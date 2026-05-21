@@ -35,10 +35,6 @@ enum SwapKitConfig {
     /// without blocking the UI.
     static let timeoutInterval: TimeInterval = 30
 
-    /// Default slippage tolerance in percent. Mirrors the value the existing
-    /// 1inch / Kyber integrations use.
-    static let defaultSlippagePercent: Double = 0.5
-
     /// Provider TTL — how long the cached `/providers` response is reused
     /// before re-fetching. 24h matches the design decision §4.
     static let providerCacheTTL: TimeInterval = 24 * 60 * 60
