@@ -380,7 +380,11 @@ private extension SwapService {
             sourceAddress: fromCoin.address,
             destinationAddress: toCoin.address
         )
-        return .swapkit(response, fee: nil, subProvider: response.subProvider)
+        return .swapkit(
+            response,
+            fee: service.inboundFee(from: response, fromCoin: fromCoin),
+            subProvider: response.subProvider
+        )
     }
 }
 

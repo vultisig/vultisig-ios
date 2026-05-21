@@ -178,6 +178,30 @@ struct SwapKitService {
 
 // MARK: - Asset identifiers
 
+extension SwapKitService {
+    /// Source-chain network fee from a SwapKit swap response, in
+    /// `fromCoin`'s raw units. SwapKit surfaces this uniformly across EVM
+    /// and non-EVM responses as the `fees[]` entry with `type == "inbound"`
+    /// and `chain` matching the source coin's canonical SwapKit prefix —
+    /// value in decimal native units (e.g. "0.000005" SOL). We pull from
+    /// that single field rather than parsing per-chain tx shapes
+    /// (EVM `gas * gasPrice`, Solana base64 compute budget, Tron/SUI/PSBT
+    /// fee math) so the same code path covers every Phase 1+ chain *and*
+    /// the gas-coin balance check in `SwapCryptoLogic.balanceError` gets a
+    /// real value to compare against.
+    func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
+        let prefix = chainPrefix(for: fromCoin.chain, fallback: fromCoin.ticker)
+        guard
+            let inbound = response.fees.first(where: { $0.type == "inbound" && $0.chain == prefix }),
+            let amount = Decimal(string: inbound.amount)
+        else {
+            return nil
+        }
+        let raw = fromCoin.raw(for: amount)
+        return raw == .zero ? nil : raw
+    }
+}
+
 private extension SwapKitService {
     /// SwapKit asset identifier format: `Chain.Ticker` for native tokens,
     /// `Chain.Ticker-Contract` for tokens with an on-chain contract address.
