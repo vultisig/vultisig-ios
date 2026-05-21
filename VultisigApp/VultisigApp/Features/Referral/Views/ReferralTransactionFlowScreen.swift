@@ -8,84 +8,60 @@
 import SwiftUI
 
 struct ReferralTransactionFlowScreen: View {
-    @StateObject var referralViewModel: ReferralViewModel
     @ObservedObject var vaultSelectionViewModel: VaultSelectedViewModel
+    let thornameDetails: THORName?
+    let currentBlockHeight: UInt64
 
-    @StateObject private var sendTx = FunctionCallForm()
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    @StateObject var functionCallViewModel = FunctionCallViewModel()
-    @StateObject var functionCallVerifyViewModel = FunctionCallVerifyViewModel()
-
-    @State var keysignPayload: KeysignPayload? = nil
-    @State var keysignView: KeysignView? = nil
-    @State var isLoading = false
     @Environment(\.router) var router
-
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(viewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockHeight: UInt64) {
         self.vaultSelectionViewModel = viewModel
-        self._referralViewModel = StateObject(
-            wrappedValue: ReferralViewModel(
-                thornameDetails: thornameDetails,
-                currentBlockheight: currentBlockHeight
-            )
-        )
+        self.thornameDetails = thornameDetails
+        self.currentBlockHeight = currentBlockHeight
     }
 
-    var vault: Vault? {
-        vaultSelectionViewModel.selectedVault ?? referralViewModel.currentVault
+    private var resolvedVault: Vault? {
+        vaultSelectionViewModel.selectedVault ?? appViewModel.selectedVault
     }
 
     var body: some View {
-        detailsView
-            .withLoading(isLoading: $isLoading)
-            .frame(maxHeight: .infinity)
-            .onLoad {
-                isLoading = true
-                referralViewModel.setup(tx: sendTx, defaultVault: appViewModel.selectedVault)
-                isLoading = false
-
-                Task {
-                    if let vault {
-                        await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
-                    }
-                }
+        Group {
+            if let vault = resolvedVault,
+               let nativeCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
+                detailsView(vault: vault, nativeCoin: nativeCoin)
+            } else {
+                EmptyView()
             }
+        }
+        .frame(maxHeight: .infinity)
     }
 
     @ViewBuilder
-    var detailsView: some View {
-        if let details = referralViewModel.thornameDetails,
-           let nativeCoin = referralViewModel.nativeCoin,
-           let vault {
+    private func detailsView(vault: Vault, nativeCoin: Coin) -> some View {
+        if let details = thornameDetails {
             EditReferralDetailsView(
-                viewModel: EditReferralViewModel(
+                viewModel: EditReferralDetailsViewModel(
                     nativeCoin: nativeCoin,
                     vault: vault,
                     thornameDetails: details,
-                    currentBlockHeight: referralViewModel.currentBlockheight
+                    currentBlockHeight: currentBlockHeight
                 ),
-                sendTx: sendTx,
-                onNext: moveToNext
+                onNext: { tx in moveToNext(tx: tx, vault: vault) }
             )
         } else {
             CreateReferralDetailsView(
-                sendTx: sendTx,
-                referralViewModel: referralViewModel,
-                onNext: moveToNext
+                viewModel: ReferralDetailsViewModel(
+                    vault: vault,
+                    thornameDetails: nil,
+                    currentBlockheight: currentBlockHeight
+                ),
+                onNext: { tx in moveToNext(tx: tx, vault: vault) }
             )
         }
     }
 
-    func moveToNext() {
-        guard let vault else { return }
-        let immutableTx = SendTransaction.fromForm(sendTx, vault: vault)
-        router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+    private func moveToNext(tx: SendTransaction, vault: Vault) {
+        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
     }
-}
-
-#Preview {
-    ReferralTransactionFlowScreen(viewModel: VaultSelectedViewModel(), thornameDetails: nil, currentBlockHeight: 0)
-        .environmentObject(AppViewModel())
 }

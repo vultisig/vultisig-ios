@@ -58,7 +58,6 @@ final class SendDetailsViewModel {
     var memo: String = ""
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
-    var isFastVault: Bool = false
     var isStakingOperation: Bool = false
     var transactionType: VSTransactionType = .unspecified
     var memoFunctionDictionary: [String: String] = [:]
@@ -129,7 +128,6 @@ final class SendDetailsViewModel {
         memo = seed.memo
         feeMode = seed.feeMode
         sendMaxAmount = seed.sendMaxAmount
-        isFastVault = seed.isFastVault
         isStakingOperation = seed.isStakingOperation
         transactionType = seed.transactionType
         memoFunctionDictionary = seed.memoFunctionDictionary
@@ -320,15 +318,6 @@ final class SendDetailsViewModel {
     private func stopCountdownTask() {
         countdownTask?.cancel()
         countdownTask = nil
-    }
-
-    // MARK: - Fast vault
-
-    /// Decision 2 win: vault is non-optional, so no singleton lookup.
-    /// Decision: use `hasPrefix("server-")` for local-party check (Phase D
-    /// lesson) — the interactor's `loadFastVault(vault:)` already does this.
-    func loadFastVault() async {
-        isFastVault = await interactor.loadFastVault(vault: vault)
     }
 
     // MARK: - Address resolution
@@ -663,7 +652,6 @@ final class SendDetailsViewModel {
             customGasLimit: customGasLimit,
             customByteFee: customByteFee,
             sendMaxAmount: sendMaxAmount,
-            isFastVault: isFastVault,
             isStakingOperation: isStakingOperation,
             transactionType: transactionType,
             memoFunctionDictionary: memoFunctionDictionary,

@@ -11,10 +11,6 @@ import BigInt
 import Foundation
 
 protocol SwapInteractor {
-    /// Fast Vault eligibility for a given vault — exists on the server AND wasn't a
-    /// local-only backup.
-    func loadFastVault(vault: Vault) async -> Bool
-
     /// Aggregator quote fetch + discount-tier resolution. Returns nil when there's no
     /// amount to quote; throws `SwapCryptoLogic.Errors.sameAsset` when from/to coins match.
     func fetchQuote(

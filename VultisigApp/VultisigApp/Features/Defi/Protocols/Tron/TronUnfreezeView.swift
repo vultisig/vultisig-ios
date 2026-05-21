@@ -256,7 +256,6 @@ struct TronUnfreezeView: View {
 
         // The memo encodes the unfreeze operation type for TronHelper.
         let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
-        let isFast = await sendInteractor.loadFastVault(vault: vault)
 
         await MainActor.run {
             isLoading = false
@@ -264,7 +263,6 @@ struct TronUnfreezeView: View {
                 toAddress: trxCoin.address,  // Unfreeze returns to self
                 amount: amountDecimal.description,
                 memo: memo,
-                isFastVault: isFast,
                 isStakingOperation: true
             )
             router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: vault))

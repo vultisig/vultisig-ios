@@ -163,7 +163,7 @@ struct SendVerifyScreen: View {
 
     var pairedSignButton: some View {
         VStack {
-            if tx.isFastVault {
+            if vault.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)

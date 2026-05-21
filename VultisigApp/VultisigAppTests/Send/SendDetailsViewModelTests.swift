@@ -24,7 +24,7 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.memo, "")
         XCTAssertEqual(vm.feeMode, .default)
         XCTAssertFalse(vm.sendMaxAmount)
-        XCTAssertFalse(vm.isFastVault)
+        XCTAssertFalse(vm.vault.isFastVault)
         XCTAssertNil(vm.customGasLimit)
         XCTAssertNil(vm.customByteFee)
         XCTAssertTrue(vm.memoFunctionDictionary.isEmpty)
@@ -329,26 +329,36 @@ final class SendDetailsViewModelTests: XCTestCase {
     }
 
     // MARK: - Fast vault
+    // `vault.isFastVault` reads the cache populated by
+    // `FastVaultEligibilityRefresher`. Returns `false` until the cache is
+    // populated — an extra paired-sign round trip in that narrow window is
+    // preferable to routing a non-eligible vault into FastVault based on the
+    // structural `hasServerSigner` alone.
 
-    func testLoadFastVaultEligibleSetsFlag() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = true
-        let vm = SendFormFixture.make(interactor: interactor)
-
-        await vm.loadFastVault()
-
-        XCTAssertTrue(vm.isFastVault)
-        XCTAssertEqual(interactor.loadFastVaultCalls.count, 1)
+    func testVaultIsFastVaultReflectsCachedTrue() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = Date()
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertTrue(vm.vault.isFastVault)
     }
 
-    func testLoadFastVaultIneligibleLeavesFlagFalse() async {
-        let interactor = MockSendInteractor()
-        interactor.loadFastVaultResult = false
-        let vm = SendFormFixture.make(interactor: interactor)
+    func testVaultIsFastVaultReflectsCachedFalse() {
+        let vault = SendFormFixture.makeVault()
+        vault.fastVaultEligibility = false
+        vault.fastVaultEligibilityCheckedAt = Date()
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertFalse(vm.vault.isFastVault)
+    }
 
-        await vm.loadFastVault()
-
-        XCTAssertFalse(vm.isFastVault)
+    func testVaultIsFastVaultIsFalseUntilCacheHydrates() {
+        // No cache yet (checkedAt == nil). Even with a `server-` signer
+        // present, the read returns false — the refresher hasn't confirmed
+        // eligibility yet.
+        let vault = SendFormFixture.makeVault()
+        vault.signers = ["iPhone-test", "server-abc"]
+        let vm = SendFormFixture.make(vault: vault)
+        XCTAssertFalse(vm.vault.isFastVault)
     }
 
     // MARK: - Amount sync validation (Phase 2b)

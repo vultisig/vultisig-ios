@@ -10,42 +10,10 @@ import XCTest
 @MainActor
 final class DefaultSwapInteractorTests: XCTestCase {
 
-    // MARK: - loadFastVault
-
-    func testLoadFastVaultReturnsTrueWhenServerExistsAndPartyIsRemote() async {
-        let fastVault = MockFastVaultService()
-        fastVault.stubbedExist = true
-        let interactor = makeInteractor(fastVault: fastVault)
-
-        let vault = makeVault(localPartyID: "iPhone-12345")
-        let result = await interactor.loadFastVault(vault: vault)
-
-        XCTAssertTrue(result)
-        XCTAssertEqual(fastVault.existCallCount, 1)
-        XCTAssertEqual(fastVault.lastQueriedPubKey, vault.pubKeyECDSA)
-    }
-
-    func testLoadFastVaultReturnsFalseForServerPrefixLocalParty() async {
-        let fastVault = MockFastVaultService()
-        fastVault.stubbedExist = true
-        let interactor = makeInteractor(fastVault: fastVault)
-
-        let vault = makeVault(localPartyID: "Server-12345")
-        let result = await interactor.loadFastVault(vault: vault)
-
-        XCTAssertFalse(result)
-    }
-
-    func testLoadFastVaultReturnsFalseWhenServerDoesNotExist() async {
-        let fastVault = MockFastVaultService()
-        fastVault.stubbedExist = false
-        let interactor = makeInteractor(fastVault: fastVault)
-
-        let result = await interactor.loadFastVault(vault: makeVault())
-        XCTAssertFalse(result)
-    }
-
     // MARK: - fetchQuote guards
+    // Note: FastVault eligibility moved off the interactor — now lives on
+    // `Vault.fastVaultEligibility` populated by `FastVaultEligibilityRefresher`.
+    // See `FastVaultEligibilityRefresherTests` for the eligibility logic tests.
 
     func testFetchQuoteReturnsNilForZeroAmount() async throws {
         let quoteService = MockQuoteService(stubbedResult: .failure(StubError.shouldNotBeCalled))

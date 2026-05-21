@@ -59,7 +59,7 @@ final class CircleDepositViewModel: ObservableObject, Form {
         usdcCoin = coin
     }
 
-    func makeTransaction() async -> SendTransaction? {
+    func makeTransaction() -> SendTransaction? {
         guard let coin = usdcCoin,
               let toAddress = vault.circleWalletAddress else {
             return nil
@@ -68,11 +68,9 @@ final class CircleDepositViewModel: ObservableObject, Form {
         isLoading = true
         defer { isLoading = false }
 
-        let isFast = await sendInteractor.loadFastVault(vault: vault)
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: toAddress,
-            amount: amountField.value,
-            isFastVault: isFast
+            amount: amountField.value
         )
     }
 }

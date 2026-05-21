@@ -208,6 +208,15 @@ struct TronChainParametersResponse: Codable {
         chainParameter.first { $0.key == "getTransactionFee" }?.value ?? 1000
     }
 
+    /// Sun per energy unit (≈420 sun/energy at the time of writing). Used to
+    /// translate an energy budget into a `fee_limit` value via
+    /// `feeLimit = energyBudget * energyFeePrice`.
+    /// See https://developers.tron.network/docs/resource-model#dynamic-energy-model.
+    var energyFeePrice: Int64 {
+        let value = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
+        return value > 0 ? value : 420
+    }
+
     var memoFeeEstimate: Int64 {
         let memoFee = chainParameter.first { $0.key == "getMemoFee" }?.value ?? 0
         return memoFee > 0 ? memoFee : 1_000_000

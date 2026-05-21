@@ -53,11 +53,7 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Temporary: pinned to the head of vultisig/commondata#83
-    # (`TRANSACTION_TYPE_QBTC_CLAIM_WITH_PROOF` + `QbtcClaimContext` replaced
-    # by `is_qbtc_claim` bool, merged with main for Cardano tokens + DAppMetadata).
-    # Flip to a `revision: <merge-sha>` once that PR merges.
-    revision: c26bb9f9839429967a47fc44bd0440958e755709
+    revision: 9d2ee6358a9895cb408e792f4e48af03ec6b31cf
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

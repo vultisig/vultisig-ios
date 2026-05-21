@@ -138,7 +138,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             gas: tx.gas, fee: tx.fee, feeMode: .default,
             estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
             sendMaxAmount: true,
-            isFastVault: false, isStakingOperation: false,
+            isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth
@@ -191,7 +191,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             customGasLimit: BigInt(50_000),
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false, isStakingOperation: false,
+            isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth
@@ -324,7 +324,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             amount: "1", amountInFiat: "", memo: "",
             gas: .zero, fee: .zero, feeMode: .default,
             estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
-            sendMaxAmount: false, isFastVault: false, isStakingOperation: false,
+            sendMaxAmount: false, isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth
@@ -358,7 +358,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             gas: .zero, fee: .zero, feeMode: .default,
             estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
             sendMaxAmount: true,  // <-- the path under test
-            isFastVault: false, isStakingOperation: false,
+            isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth
@@ -389,7 +389,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             estimatedGasLimit: BigInt(21_000),
             customGasLimit: BigInt(50_000),
             customByteFee: nil,
-            sendMaxAmount: false, isFastVault: false, isStakingOperation: false,
+            sendMaxAmount: false, isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:], wasmContractPayload: nil,
             feeCoin: eth
@@ -517,7 +517,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             customGasLimit: customGasLimit,
             customByteFee: nil,
             sendMaxAmount: false,
-            isFastVault: false,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
