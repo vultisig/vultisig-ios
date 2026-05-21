@@ -846,6 +846,8 @@
 "setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite svoju lozinku.";
 "setPasswordHintTitle" = "Dodajte opcionalni podsjetnik";
 "settings" = "Postavke";
+"settingsAdvancedForcedSwapProvider" = "Force swap provider";
+"settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";

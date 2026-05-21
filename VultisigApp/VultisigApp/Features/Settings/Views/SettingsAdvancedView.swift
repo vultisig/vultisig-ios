@@ -72,6 +72,21 @@ struct SettingsAdvancedView: View {
                 icon: "arrow.triangle.swap",
                 isEnabled: $settingsViewModel.swapkitEnabled
             )
+
+            SettingPickerCell(
+                title: "settingsAdvancedForcedSwapProvider".localized,
+                icon: "arrow.triangle.branch",
+                options: [
+                    .init(value: "", label: "settingsAdvancedForcedSwapProviderAll".localized),
+                    .init(value: "swapkit", label: "SwapKit only"),
+                    .init(value: "oneInch", label: "1Inch only"),
+                    .init(value: "kyberSwap", label: "KyberSwap only"),
+                    .init(value: "lifi", label: "LI.FI only"),
+                    .init(value: "thorchain", label: "THORChain only"),
+                    .init(value: "mayachain", label: "Maya only")
+                ],
+                selection: $settingsViewModel.forcedSwapProvider
+            )
         }
     }
 }

@@ -834,6 +834,8 @@
 "setPasswordHintSubtitle" = "비밀번호를 잊어버린 경우 표시됩니다.";
 "setPasswordHintTitle" = "선택적 힌트 추가";
 "settings" = "설정";
+"settingsAdvancedForcedSwapProvider" = "Force swap provider";
+"settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";

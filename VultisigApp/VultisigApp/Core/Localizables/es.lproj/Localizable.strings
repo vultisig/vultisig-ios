@@ -846,6 +846,8 @@
 "setPasswordHintSubtitle" = "Esto se mostrará en caso de que olvides tu contraseña.";
 "setPasswordHintTitle" = "Añadir una pista opcional";
 "settings" = "Configuración";
+"settingsAdvancedForcedSwapProvider" = "Force swap provider";
+"settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";

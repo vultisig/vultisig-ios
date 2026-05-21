@@ -29,9 +29,44 @@ extension Coin {
         // as before the SwapKit integration shipped. Single point of
         // gating: every chain's switch arm below carries `.swapkit` as if
         // unconditionally enabled, and this filter prunes when needed.
-        let providers = naturalSwapProviders
-        guard !SwapKitConfig.isFeatureEnabled else { return providers }
-        return providers.filter { $0 != .swapkit }
+        let raw = naturalSwapProviders
+        let afterSwapKitGate = SwapKitConfig.isFeatureEnabled
+            ? raw
+            : raw.filter { $0 != .swapkit }
+
+        // Debug-only: Settings → Advanced → "Force swap provider" lets a
+        // tester pin every quote to a single provider so the chosen
+        // signing path is exercised in isolation (ranking ties don't
+        // matter). Empty UserDefaults value = no force = production
+        // ranking across all providers. The forced-provider gate runs
+        // AFTER the SwapKit feature flag — if SwapKit is off and the
+        // forced provider is "swapkit", the result is empty and the swap
+        // UI surfaces "no providers available" rather than silently
+        // re-enabling SwapKit.
+        let forced = UserDefaults.standard.string(forKey: "forcedSwapProvider") ?? ""
+        guard !forced.isEmpty else { return afterSwapKitGate }
+        return afterSwapKitGate.filter { matchesForcedProvider($0, forced: forced) }
+    }
+
+    private func matchesForcedProvider(_ provider: SwapProvider, forced: String) -> Bool {
+        switch (forced, provider) {
+        case ("swapkit", .swapkit):
+            return true
+        case ("oneInch", .oneinch):
+            return true
+        case ("kyberSwap", .kyberswap):
+            return true
+        case ("lifi", .lifi):
+            return true
+        case ("thorchain", .thorchain),
+             ("thorchain", .thorchainChainnet),
+             ("thorchain", .thorchainStagenet):
+            return true
+        case ("mayachain", .mayachain):
+            return true
+        default:
+            return false
+        }
     }
 
     private var naturalSwapProviders: [SwapProvider] {

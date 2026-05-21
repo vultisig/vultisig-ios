@@ -846,6 +846,8 @@
 "setPasswordHintSubtitle" = "Questo verrà mostrato nel caso in cui dimentichi la tua password.";
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
 "settings" = "Impostazioni";
+"settingsAdvancedForcedSwapProvider" = "Force swap provider";
+"settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartilhar";
 "shareOf" = "Condividi %d di %d";
