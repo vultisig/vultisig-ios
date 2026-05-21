@@ -31,6 +31,7 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     case unsupportedTxType(String)
     case providerNotEnabled
     case routeFiltered
+    case malformedAmount(String)
     case generic(message: String)
 
     init?(envelope: SwapKitErrorEnvelope?) {
@@ -106,6 +107,8 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorProviderNotEnabled".localized
         case .routeFiltered:
             return "swapKitErrorRouteFiltered".localized
+        case .malformedAmount(let raw):
+            return String(format: "swapKitErrorMalformedAmount".localized, raw)
         case .generic(let message):
             return message
         }

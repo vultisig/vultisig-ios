@@ -275,8 +275,10 @@ extension SwapCryptoLogic {
             // "10000000000000000"), but the docs describe an Ethers V6 tx
             // object where `value` can be hex (`0x...`). Be defensive on
             // the wire: detect the prefix and parse accordingly. Adjacent
-            // fields (`gas` / `gasPrice`) are documented as hex.
-            let value = Self.parseEvmAmount(tx.value)
+            // fields (`gas` / `gasPrice`) are documented as hex. Throwing
+            // here rather than silently zeroing — a malformed value would
+            // otherwise build a tx that sends 0 native and looks correct.
+            let value = try Self.parseEvmAmount(tx.value)
             let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
             let gas = Int64(tx.gas.stripHexPrefix(), radix: 16) ?? 0
             // Trust SwapKit's `tx.gas` for the gas limit; the EVM helper
@@ -343,15 +345,18 @@ extension SwapCryptoLogic {
     }
 
     /// Parses an EVM-style amount string that may arrive as decimal wei or as
-    /// `0x`-prefixed hex. Returns `0` on any malformed input rather than
-    /// throwing — the caller is in a non-throwing decode path and a zero
-    /// value will surface as a clearly-wrong tx upstream (gas estimate
-    /// mismatch, ranking elimination) rather than misbehaving silently.
-    static func parseEvmAmount(_ raw: String) -> BigInt {
+    /// `0x`-prefixed hex. Throws `SwapKitError.malformedAmount` on any
+    /// unparseable input — silent coercion to zero would build a tx that
+    /// sends 0 native and look syntactically correct.
+    static func parseEvmAmount(_ raw: String) throws -> BigInt {
         if raw.hasPrefix("0x") || raw.hasPrefix("0X") {
-            return BigInt(raw.stripHexPrefix(), radix: 16) ?? .zero
+            if let value = BigInt(raw.stripHexPrefix(), radix: 16) {
+                return value
+            }
+        } else if let value = BigInt(raw) {
+            return value
         }
-        return BigInt(raw) ?? .zero
+        throw SwapKitError.malformedAmount(raw)
     }
 
     private static func rawAmountString(from expectedBuyAmount: String) -> String {

@@ -936,6 +936,7 @@
 "swapKitErrorInsufficientBalance" = "Insufficient balance for this route";
 "swapKitErrorInvalidDestinationAddress" = "Destination address is invalid";
 "swapKitErrorInvalidSourceAddress" = "Source address is invalid";
+"swapKitErrorMalformedAmount" = "Invalid amount returned by SwapKit: %@";
 "swapKitErrorNoRoutesFound" = "No routes available for this pair";
 "swapKitErrorOutputAmountDeviationTooHigh" = "Quote drifted more than 5% — refresh to continue";
 "swapKitErrorProviderNotEnabled" = "SwapKit is not enabled on this chain";

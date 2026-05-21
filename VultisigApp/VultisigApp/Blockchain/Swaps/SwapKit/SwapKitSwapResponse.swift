@@ -72,7 +72,11 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         inboundAddress = try container.decodeIfPresent(String.self, forKey: .inboundAddress)
         meta = try container.decode(SwapKitSwapResponseMeta.self, forKey: .meta)
         approvalTx = try container.decodeIfPresent(SwapKitApprovalTx.self, forKey: .approvalTx)
-        fees = (try? container.decode([SwapKitFee].self, forKey: .fees)) ?? []
+        // `decodeIfPresent` (not `try?`) so a malformed `fees` payload
+        // surfaces as a decode error instead of silently flattening to an
+        // empty array — silent collapse would hide an upstream wire change
+        // and leave `inboundFee` returning nil at quote time.
+        fees = try container.decodeIfPresent([SwapKitFee].self, forKey: .fees) ?? []
         warnings = try container.decodeIfPresent([SwapKitWarning].self, forKey: .warnings)
         tx = try Self.decodeTx(meta: meta, container: container)
     }
