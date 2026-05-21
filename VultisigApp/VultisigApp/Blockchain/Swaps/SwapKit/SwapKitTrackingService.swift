@@ -43,11 +43,16 @@ protocol SwapKitTrackingStorage {
 extension TransactionHistoryStorage: SwapKitTrackingStorage {}
 
 @MainActor
-final class SwapKitTrackingService {
+final class SwapKitTrackingService: ObservableObject {
     static let shared = SwapKitTrackingService(
         httpClient: HTTPClient(),
         storage: TransactionHistoryStorage.shared
     )
+
+    /// Latest UI status per `txHash`, observable by views that want to react
+    /// to `/track` updates without re-reading SwiftData. Updated on every
+    /// successful poll and on the give-up `unknownPendingExtended` promotion.
+    @Published private(set) var uiStatusByTxHash: [String: SwapKitUiStatus] = [:]
 
     /// Polling cadence on the happy path. Conservative pick per
     /// `track-in-tx-history-plan.md` §"Polling cadence".
@@ -94,6 +99,10 @@ final class SwapKitTrackingService {
             logger.debug("Skipping non-SwapKit row \(swap.txHash, privacy: .public)")
             return
         }
+        // Seed the observable cache with whatever status was last persisted so
+        // views that mount before the first poll completes still see the right
+        // state (e.g. after app relaunch on a still-in-flight swap).
+        uiStatusByTxHash[swap.txHash] = swap.swapKitUiStatus
         guard !swap.swapKitUiStatus.isTerminal else {
             logger.debug("Skipping terminal SwapKit row \(swap.txHash, privacy: .public)")
             return
@@ -288,6 +297,10 @@ final class SwapKitTrackingService {
             logger.error("Failed to persist SwapKit status for \(txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
 
+        // Mirror the persisted status into the observable cache so any view
+        // currently rendering this row updates without re-reading SwiftData.
+        uiStatusByTxHash[txHash] = uiStatus
+
         // Reset backoff bookkeeping on every success — even mid-flight.
         if var entry = pollers[txHash] {
             let refreshedSwap = applyResponseToSwap(
@@ -335,6 +348,7 @@ final class SwapKitTrackingService {
                 uiStatus: .unknownPendingExtended,
                 polledAt: now
             )
+            uiStatusByTxHash[txHash] = .unknownPendingExtended
             return PollOutcome(shouldStop: true, nextDelay: 0)
         }
 

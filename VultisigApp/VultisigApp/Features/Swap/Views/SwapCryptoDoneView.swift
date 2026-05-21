@@ -19,6 +19,7 @@ struct SwapCryptoDoneView: View {
 
     @State var showFees: Bool = false
     @StateObject private var statusViewModel: TransactionStatusViewModel
+    @ObservedObject private var swapKitTracker = SwapKitTrackingService.shared
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
@@ -62,8 +63,13 @@ struct SwapCryptoDoneView: View {
             buttons
         }
         .onAppear {
-            // Start polling for transaction status
-            statusViewModel.startPolling()
+            // SwapKit-routed swaps drive their status off `/track` exclusively
+            // — the native per-chain poller would race the cross-chain leg and
+            // surface a premature "successful" once the source tx confirms.
+            // For every other route the native poller is still the source.
+            if !isSwapKitRouted {
+                statusViewModel.startPolling()
+            }
 
             // Record approve to transaction history (if applicable)
             if let approveHash {
@@ -134,13 +140,54 @@ struct SwapCryptoDoneView: View {
 
     var cards: some View {
         VStack(spacing: 24) {
-            TransactionStatusHeaderView(status: statusViewModel.status)
+            TransactionStatusHeaderView(status: displayedStatus)
                 .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
                 fromToCards
                 summary
             }
+        }
+    }
+
+    /// `true` when this swap was routed through SwapKit. The native chain
+    /// poller is skipped for these — `/track` is the source of truth.
+    private var isSwapKitRouted: Bool {
+        if case .swapkit = transaction.quote { return true }
+        return false
+    }
+
+    /// Status surfaced on the done-screen header. For SwapKit-routed swaps
+    /// this is derived from `/track`; for every other route it's the native
+    /// per-chain poller's view of the world.
+    private var displayedStatus: TransactionStatus {
+        guard isSwapKitRouted else { return statusViewModel.status }
+        return SwapCryptoDoneView.mapSwapKitStatus(
+            swapKitTracker.uiStatusByTxHash[hash],
+            estimatedTime: statusViewModel.status.broadcastedEstimatedTime
+        )
+    }
+
+    /// Pure mapping from a SwapKit `/track` UI status to the done-screen's
+    /// `TransactionStatus`. Extracted to a `static` so unit tests can pin the
+    /// table without standing up a view.
+    static func mapSwapKitStatus(
+        _ ui: SwapKitUiStatus?,
+        estimatedTime: String
+    ) -> TransactionStatus {
+        switch ui {
+        case .none, .pending:
+            return .broadcasted(estimatedTime: estimatedTime)
+        case .swapping:
+            return .pending
+        case .completed:
+            return .confirmed
+        case .refunded:
+            return .failed(reason: "swapKitStatusRefundedReason".localized)
+        case .failed:
+            return .failed(reason: "swapKitStatusFailedReason".localized)
+        case .unknownPendingExtended:
+            return .pending
         }
     }
 

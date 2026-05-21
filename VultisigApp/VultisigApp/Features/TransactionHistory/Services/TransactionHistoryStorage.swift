@@ -96,6 +96,19 @@ final class TransactionHistoryStorage {
         return (try? modelContext.fetchCount(descriptor)) ?? 0 > 0
     }
 
+    // MARK: - Fetch by Hash
+
+    /// Single-row lookup used by callers that want to inspect a row's metadata
+    /// (e.g. `isSwapKitRouted` for routing decisions) without iterating the
+    /// full history. Returns `nil` when no matching row exists.
+    func fetchTransaction(txHash: String, pubKeyECDSA: String) throws -> TransactionHistoryData? {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try modelContext.fetch(descriptor).first.map { TransactionHistoryData(item: $0) }
+    }
+
     // MARK: - SwapKit tracking
 
     /// Persist the SwapKit-track-key fields onto an existing row. Idempotent
