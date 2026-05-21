@@ -8,7 +8,8 @@
 //  against the cross-chain leg) for these routes, so each
 //  `SwapTrackingUiStatus` value must surface the right done-screen frame:
 //
-//    nil / pending           → broadcasted     (pre-`/track` UI)
+//    nil                     → broadcasted     (pre-attach frame, no /track data yet)
+//    pending                 → pending         (source-chain phase: mempool/inbound/etc.)
 //    swapping                → pending         (cross-chain leg in flight)
 //    completed               → confirmed       (success / Rive success anim)
 //    refunded                → failed("…")     (terminal — error frame)
@@ -24,17 +25,24 @@ final class SwapCryptoDoneViewSwapKitStatusTests: XCTestCase {
     private let estimatedTime = "~15-30 sec"
 
     func testNilStatusBeforeFirstPollReportsBroadcasted() {
+        // Pre-attach frame — the view body renders once before `onAppear`
+        // wires up `/track`, so the cache is empty. Show the "Broadcasted"
+        // copy with the chain's estimated time, same as a non-SwapKit swap.
         let status = SwapCryptoDoneView.mapSwapKitStatus(nil, estimatedTime: estimatedTime)
         XCTAssertEqual(status, .broadcasted(estimatedTime: estimatedTime))
     }
 
-    func testPendingStatusReportsBroadcasted() {
+    func testPendingStatusReportsPending() {
+        // `/track` reports the source-chain phase (not_started/starting/
+        // broadcasted/mempool/inbound/unknown collapse to UI `.pending`).
+        // Once we have any `/track` data the user has moved past the raw
+        // broadcast frame, so show "Pending" copy.
         let status = SwapCryptoDoneView.mapSwapKitStatus(.pending, estimatedTime: estimatedTime)
-        XCTAssertEqual(status, .broadcasted(estimatedTime: estimatedTime))
+        XCTAssertEqual(status, .pending)
     }
 
     func testSwappingStatusReportsPending() {
-        // Cross-chain leg in flight — header should *not* flip to confirmed
+        // Cross-chain leg in flight — header must *not* flip to confirmed
         // while the destination tx is still pending on the other side.
         let status = SwapCryptoDoneView.mapSwapKitStatus(.swapping, estimatedTime: estimatedTime)
         XCTAssertEqual(status, .pending)
@@ -84,10 +92,14 @@ final class SwapCryptoDoneViewSwapKitStatusTests: XCTestCase {
 
     func testEstimatedTimeFlowsThroughOnlyForBroadcasted() {
         // `estimatedTime` is the broadcast-time copy from the chain config —
-        // only the `.broadcasted` frame should display it; every other frame
-        // uses fixed copy in `TransactionStatusHeaderView`.
-        let broadcasted = SwapCryptoDoneView.mapSwapKitStatus(.pending, estimatedTime: "~30 min")
+        // only the `.broadcasted` frame (returned for `nil` UI status, i.e.
+        // the pre-attach pre-`/track` first paint) should display it; every
+        // other frame uses fixed copy in `TransactionStatusHeaderView`.
+        let broadcasted = SwapCryptoDoneView.mapSwapKitStatus(nil, estimatedTime: "~30 min")
         XCTAssertEqual(broadcasted.broadcastedEstimatedTime, "~30 min")
+
+        let pendingFromTrackerPending = SwapCryptoDoneView.mapSwapKitStatus(.pending, estimatedTime: "~30 min")
+        XCTAssertEqual(pendingFromTrackerPending.broadcastedEstimatedTime, "")
 
         let pendingFromSwapping = SwapCryptoDoneView.mapSwapKitStatus(.swapping, estimatedTime: "~30 min")
         XCTAssertEqual(pendingFromSwapping.broadcastedEstimatedTime, "")

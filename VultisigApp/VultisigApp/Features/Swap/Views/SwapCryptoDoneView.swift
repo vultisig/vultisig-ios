@@ -177,14 +177,29 @@ struct SwapCryptoDoneView: View {
     /// Pure mapping from a SwapKit `/track` UI status to the done-screen's
     /// `TransactionStatus`. Extracted to a `static` so unit tests can pin the
     /// table without standing up a view.
+    ///
+    /// - `nil` is the pre-attach frame (the view body renders once before
+    ///   `onAppear` wires up `/track` and seeds the cache) — show the
+    ///   "Broadcasted" copy with the chain's estimated time, same as a
+    ///   freshly-broadcast non-SwapKit swap.
+    /// - `.pending` is the source-chain phase (`/track` reports
+    ///   `not_started/starting/broadcasted/mempool/inbound`) — show the
+    ///   "Pending" copy so users see real progress beyond "Broadcasted"
+    ///   while the source-chain RPC catches up.
+    /// - `.swapping` is the cross-chain leg (`/track` reports
+    ///   `outbound/swapping`) — also show "Pending" until the destination
+    ///   tx lands.
+    /// - `.unknownPendingExtended` is the tracker-outage sentinel — keep
+    ///   "Pending" rather than flipping to a terminal failure frame; the
+    ///   user can still hit the SwapKit-tracker deep link for the truth.
     static func mapSwapKitStatus(
         _ ui: SwapTrackingUiStatus?,
         estimatedTime: String
     ) -> TransactionStatus {
         switch ui {
-        case .none, .pending:
+        case .none:
             return .broadcasted(estimatedTime: estimatedTime)
-        case .swapping:
+        case .pending, .swapping, .unknownPendingExtended:
             return .pending
         case .completed:
             return .confirmed
@@ -192,8 +207,6 @@ struct SwapCryptoDoneView: View {
             return .failed(reason: "swapKitStatusRefundedReason".localized)
         case .failed:
             return .failed(reason: "swapKitStatusFailedReason".localized)
-        case .unknownPendingExtended:
-            return .pending
         }
     }
 
