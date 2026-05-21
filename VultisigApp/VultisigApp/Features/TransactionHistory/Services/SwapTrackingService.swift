@@ -18,7 +18,9 @@ import Foundation
 protocol SwapTrackingService: AnyObject {
     /// Discriminator matched against `SwapTrackingMetadata.providerKind`.
     /// Static so the registry can dispatch without an instance.
-    static var providerKind: String { get }
+    /// `nonisolated` so non-MainActor callers (e.g. value-type extensions
+    /// on `TransactionHistoryData`) can read it without an actor hop.
+    nonisolated static var providerKind: String { get }
 
     /// Latest UI status per `txHash`. Observable so views can subscribe.
     /// Concrete types expose this as `@Published`.

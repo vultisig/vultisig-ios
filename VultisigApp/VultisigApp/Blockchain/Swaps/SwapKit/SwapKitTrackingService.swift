@@ -47,7 +47,11 @@ extension TransactionHistoryStorage: SwapTrackingStorage {}
 
 @MainActor
 final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
-    static let providerKind: String = "swapKit"
+    // `providerKind` is read from non-isolated contexts (e.g. the
+    // `TransactionHistoryData.swapKitTrackerURL` value-type extension), so
+    // it can't inherit the class's MainActor isolation. The string is a
+    // compile-time constant — there's no shared state to protect.
+    nonisolated static let providerKind: String = "swapKit"
 
     static let shared = SwapKitTrackingService(
         httpClient: HTTPClient(),
@@ -136,7 +140,11 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
     /// On viewmodel `.onAppear` / `ScenePhase.active`, re-scan SwiftData for
     /// any non-terminal SwapKit rows the user has and start polling them.
     /// Idempotent — already-running pollers are left alone.
-    func resumeInFlight() async {
+    ///
+    /// `async` is required by the `SwapTrackingService` protocol so future
+    /// providers can await an asynchronous fetch; this concrete impl's
+    /// fetch happens synchronously through `TransactionHistoryStorage`.
+    func resumeInFlight() async { // swiftlint:disable:this async_without_await
         let inFlight: [TransactionHistoryData]
         do {
             inFlight = try storage.fetchInFlightSwapTracking(providerKind: Self.providerKind)

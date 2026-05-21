@@ -51,14 +51,18 @@ class TransactionHistoryViewModel: ObservableObject {
         pubKeyECDSA: String,
         vaultName: String,
         chainFilter: Chain?,
-        poller: TransactionHistoryNativePoller = TransactionStatusPoller.shared,
-        registry: SwapTrackingRegistry = .shared
+        poller: TransactionHistoryNativePoller? = nil,
+        registry: SwapTrackingRegistry? = nil
     ) {
         self.pubKeyECDSA = pubKeyECDSA
         self.vaultName = vaultName
         self.chainFilter = chainFilter
-        self.poller = poller
-        self.registry = registry
+        // Defaults are resolved inside the body so the MainActor-isolated
+        // `.shared` singletons aren't referenced from default-argument
+        // expressions (which run in the caller's context and would warn
+        // under Swift 6 strict concurrency).
+        self.poller = poller ?? TransactionStatusPoller.shared
+        self.registry = registry ?? SwapTrackingRegistry.shared
     }
 
     // MARK: - Loading
