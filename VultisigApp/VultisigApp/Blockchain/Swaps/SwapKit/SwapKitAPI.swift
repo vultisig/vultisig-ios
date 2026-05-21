@@ -22,9 +22,14 @@ enum SwapKitAPI {
 extension SwapKitAPI: TargetType {
     var baseURL: URL {
         switch self {
-        case .quote, .swap, .providers:
+        case .quote, .swap:
+            // V3 surface: `/v3/quote`, `/v3/swap`. Base URL is
+            // `.../swapkit/v3`; the path adds the leaf only.
             return SwapKitConfig.baseURL
-        case .track:
+        case .track, .providers:
+            // Bare-host endpoints — SwapKit's `/track` and `/providers`
+            // live at the host root, not under `/v3`. Hitting
+            // `.../swapkit/v3/providers` returns 404 from the proxy.
             return SwapKitConfig.trackBaseURL
         }
     }
