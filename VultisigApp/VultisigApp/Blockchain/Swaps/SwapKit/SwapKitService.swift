@@ -157,12 +157,19 @@ private extension SwapKitService {
     }
 
     func chainPrefix(for chain: Chain, fallback: String) -> String {
+        // Canonical prefixes verified empirically against
+        // `/v3/tokens?provider=NEAR` — SwapKit uses chain-specific tickers
+        // for EVM L2s and BSC, not the gas-token tickers Vultisig stores in
+        // `coin.ticker`. Mismatches surface as `helpers_invalid_asset_identifier`
+        // 500s from the proxy at quote time.
         switch chain {
-        case .ethereum, .base, .optimism: return "ETH"
+        case .ethereum: return "ETH"
+        case .base: return "BASE"
+        case .optimism: return "OP"
         case .arbitrum: return "ARB"
         case .avalanche: return "AVAX"
-        case .bscChain: return "BNB"
-        case .polygon, .polygonV2: return "MATIC"
+        case .bscChain: return "BSC"
+        case .polygon, .polygonV2: return "POL"
         case .solana: return "SOL"
         case .bitcoin: return "BTC"
         case .bitcoinCash: return "BCH"
