@@ -934,6 +934,9 @@
 "swapKitErrorSwapRouteNotFound" = "A rota selecionada expirou";
 "swapKitErrorUnableToBuildTransaction" = "Esta rota não está disponível no momento, tente outro provedor";
 "swapKitErrorUnsupportedTxType" = "O tipo de transação %@ do SwapKit ainda não é suportado no iOS";
+"swapKitStatusFailedReason" = "A troca falhou no rastreador do SwapKit";
+"swapKitStatusRefundedReason" = "A troca foi reembolsada para seu endereço de origem";
+"swapKitViewOnTracker" = "Ver no SwapKit Tracker";
 "swapOverview" = "Visão geral da troca";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";

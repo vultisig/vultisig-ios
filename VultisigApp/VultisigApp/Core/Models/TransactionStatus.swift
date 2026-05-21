@@ -32,6 +32,18 @@ enum TransactionStatus: Equatable {
         case .timeout: return "timeout"
         }
     }
+
+    /// Surfaces the broadcast-time copy on the `broadcasted` branch so callers
+    /// re-deriving a `TransactionStatus` (e.g. the SwapKit `/track` mapping on
+    /// the swap done-screen) can preserve the original estimate.
+    var broadcastedEstimatedTime: String {
+        switch self {
+        case .broadcasted(let estimatedTime):
+            return estimatedTime
+        case .pending, .confirmed, .failed, .timeout:
+            return ""
+        }
+    }
 }
 
 struct TransactionStatusResult {
