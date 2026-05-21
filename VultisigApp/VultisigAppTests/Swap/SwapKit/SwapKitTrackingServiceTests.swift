@@ -150,6 +150,96 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         XCTAssertTrue(storage.observations.last!.uiStatus.isTerminal)
     }
 
+    // MARK: - Tracker-outage flag wiring
+
+    func testTrackerOutageFlipsTrueOnUnknownExtendedPromotion() async {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
+        var clockTick = baseDate
+        let service = SwapKitTrackingService(
+            httpClient: http,
+            storage: storage,
+            clock: { clockTick }
+        )
+
+        // Row's tracking started 11 minutes ago — outside the unknown
+        // give-up window. The next `/track` poll should promote the row
+        // to `unknownPendingExtended` *and* set the outage flag so the
+        // tx-history viewmodel can hand the row back to native polling.
+        var swap = Self.makeSwapKitSwap()
+        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [swap]
+
+        http.responses = [Self.makeResponse(status: .unknown, trackingStatus: "unknown")]
+        await service.forceRefresh(swap: swap)
+        clockTick = clockTick.addingTimeInterval(1)
+
+        XCTAssertEqual(storage.observations.last?.uiStatus, .unknownPendingExtended)
+        XCTAssertEqual(storage.observations.last?.trackerOutage, true,
+                       "Outage flag must flip true the moment we promote to unknownPendingExtended")
+    }
+
+    func testTrackerOutageClearsOnNextSuccessfulTrackResponse() async {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
+        var clockTick = baseDate
+        let service = SwapKitTrackingService(
+            httpClient: http,
+            storage: storage,
+            clock: { clockTick }
+        )
+
+        // First poll: stuck-in-unknown beyond the give-up window.
+        var swap = Self.makeSwapKitSwap()
+        swap = Self.applyTrackingStarted(swap, date: baseDate.addingTimeInterval(-11 * 60))
+        storage.inFlight = [swap]
+
+        http.responses = [
+            Self.makeResponse(status: .unknown, trackingStatus: "unknown"),
+            Self.makeResponse(status: .swapping, trackingStatus: "swapping")
+        ]
+
+        await service.forceRefresh(swap: swap)
+        XCTAssertEqual(storage.observations.last?.trackerOutage, true)
+
+        // Now `/track` recovers — the next response carries an actual
+        // status. Outage flag must clear so native polling steps back
+        // and `/track` regains authority.
+        clockTick = clockTick.addingTimeInterval(15)
+        await service.forceRefresh(swap: swap)
+
+        XCTAssertEqual(storage.observations.last?.uiStatus, .swapping)
+        XCTAssertEqual(storage.observations.last?.trackerOutage, false,
+                       "Outage flag must clear on the next successful /track response")
+    }
+
+    func testTrackerOutageStaysFalseOnHappyPath() async {
+        let storage = FakeSwapKitTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(
+            httpClient: http,
+            storage: storage,
+            clock: { Date() }
+        )
+
+        http.responses = [
+            Self.makeResponse(status: .pending, trackingStatus: "broadcasted"),
+            Self.makeResponse(status: .swapping, trackingStatus: "swapping"),
+            Self.makeResponse(status: .completed, trackingStatus: "completed")
+        ]
+        for _ in 0..<3 {
+            await service.forceRefresh(swap: Self.makeSwapKitSwap())
+        }
+
+        XCTAssertEqual(storage.observations.count, 3)
+        XCTAssertTrue(
+            storage.observations.allSatisfy { $0.trackerOutage == false },
+            "No happy-path response should ever flip the outage flag on"
+        )
+    }
+
     // MARK: - Failure handling — touches lastPolledAt without mutating status
 
     func testTransientFailureTouchesLastPolledOnly() async {
@@ -456,6 +546,11 @@ private final class FakeSwapKitTrackingStorage: SwapKitTrackingStorage {
         let trackingStatus: String?
         let uiStatus: SwapKitUiStatus
         let polledAt: Date
+        /// Mirrors the real storage rule: `swapKitTrackerOutage` is `true`
+        /// iff `uiStatus == .unknownPendingExtended`. Exposed here so the
+        /// unit tests can assert the flag's behaviour without bringing up
+        /// SwiftData.
+        let trackerOutage: Bool
     }
 
     var inFlight: [TransactionHistoryData] = []
@@ -476,7 +571,8 @@ private final class FakeSwapKitTrackingStorage: SwapKitTrackingStorage {
             latestStatus: latestStatus,
             trackingStatus: latestTrackingStatus,
             uiStatus: uiStatus,
-            polledAt: polledAt
+            polledAt: polledAt,
+            trackerOutage: uiStatus == .unknownPendingExtended
         ))
     }
 
