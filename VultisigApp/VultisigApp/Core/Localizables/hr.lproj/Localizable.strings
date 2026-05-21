@@ -936,6 +936,7 @@
 "swapKitErrorUnsupportedTxType" = "SwapKit txType %@ još nije podržan na iOS-u";
 "swapKitStatusFailedReason" = "Zamjena nije uspjela na SwapKit pratiocu";
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
+"swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";

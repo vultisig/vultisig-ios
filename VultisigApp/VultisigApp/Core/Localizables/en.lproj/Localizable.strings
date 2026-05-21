@@ -946,6 +946,7 @@
 "swapKitErrorUnsupportedTxType" = "SwapKit txType %@ is not yet supported on iOS";
 "swapKitStatusFailedReason" = "Swap failed on the SwapKit tracker";
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
+"swapKitViewOnTracker" = "View on SwapKit Tracker";
 "swapOverview" = "Swap overview";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";

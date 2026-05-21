@@ -936,6 +936,7 @@
 "swapKitErrorUnsupportedTxType" = "Il tipo di transazione SwapKit %@ non è ancora supportato su iOS";
 "swapKitStatusFailedReason" = "Lo scambio è fallito sul tracker di SwapKit";
 "swapKitStatusRefundedReason" = "Lo scambio è stato rimborsato al tuo indirizzo di origine";
+"swapKitViewOnTracker" = "Visualizza su SwapKit Tracker";
 "swapOverview" = "Panoramica dello scambio";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";

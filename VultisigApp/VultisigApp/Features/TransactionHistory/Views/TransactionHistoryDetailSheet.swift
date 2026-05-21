@@ -36,6 +36,9 @@ struct TransactionHistoryDetailSheet: View {
                 }
                 detailRows
                 explorerButton
+                if transaction.isSwapKitRouted, transaction.swapKitTrackerURL != nil {
+                    swapKitTrackerButton
+                }
             }
             .padding(16)
             .padding(.top, 20)
@@ -251,6 +254,15 @@ struct TransactionHistoryDetailSheet: View {
     private var explorerButton: some View {
         PrimaryButton(title: "viewOnExplorer", type: .secondary) {
             if let url = providerExplorerURL {
+                openURL(url)
+            }
+        }
+        .fixedSize()
+    }
+
+    private var swapKitTrackerButton: some View {
+        PrimaryButton(title: "swapKitViewOnTracker", type: .secondary) {
+            if let url = transaction.swapKitTrackerURL {
                 openURL(url)
             }
         }

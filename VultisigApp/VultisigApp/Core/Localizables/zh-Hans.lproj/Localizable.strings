@@ -936,6 +936,7 @@
 "swapKitErrorUnsupportedTxType" = "iOS 暂不支持 SwapKit 交易类型 %@";
 "swapKitStatusFailedReason" = "交换在 SwapKit 跟踪器上失败";
 "swapKitStatusRefundedReason" = "交换已退款至您的源地址";
+"swapKitViewOnTracker" = "在 SwapKit 跟踪器中查看";
 "swapOverview" = "交换概览";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";

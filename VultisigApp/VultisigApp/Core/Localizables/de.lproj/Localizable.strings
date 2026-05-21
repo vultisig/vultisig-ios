@@ -936,6 +936,7 @@
 "swapKitErrorUnsupportedTxType" = "SwapKit-Transaktionstyp %@ wird auf iOS noch nicht unterstützt";
 "swapKitStatusFailedReason" = "Tausch im SwapKit-Tracker fehlgeschlagen";
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
+"swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
 "swapOverview" = "Tauschübersicht";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
