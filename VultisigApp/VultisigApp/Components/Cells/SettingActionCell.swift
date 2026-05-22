@@ -21,22 +21,13 @@ struct SettingActionCell: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
             Text(title)
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            Button(action: action) {
-                Text(buttonLabel)
-                    .font(Theme.fonts.bodySRegular)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-                    )
-            }
+            PrimaryButton(title: buttonLabel, type: .secondary, size: .mini, action: action)
+                .fixedSize()
         }
         .padding(12)
         .background(Theme.colors.bgSurface1)
