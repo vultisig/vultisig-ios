@@ -116,8 +116,15 @@ final class SwapKitTokensCache: DestinationTokenProvider {
             logger.info("[swapkit-tokens] no provider snapshot available — skipping fetch")
             return nil
         }
+        // Fan out by `provider.provider` (the canonical API identifier), not
+        // `provider.name`. `SwapKitProviderCache.chainEnabled` filters
+        // THORChain/Maya by `provider.provider.uppercased()` against
+        // `SwapKitConfig.filteredProviders`, and the same identifier is the
+        // one `/tokens?provider=` accepts. Using `.name` here can both let
+        // filtered providers through (when name and identifier diverge) and
+        // request `/tokens` with a non-canonical value.
         let providerNames = allProviders
-            .map { $0.name.uppercased() }
+            .map { $0.provider.uppercased() }
             .filter { !SwapKitConfig.filteredProviders.contains($0) }
 
         guard !providerNames.isEmpty else {

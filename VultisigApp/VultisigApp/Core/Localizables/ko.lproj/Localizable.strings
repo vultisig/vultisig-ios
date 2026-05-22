@@ -834,10 +834,10 @@
 "setPasswordHintSubtitle" = "비밀번호를 잊어버린 경우 표시됩니다.";
 "setPasswordHintTitle" = "선택적 힌트 추가";
 "settings" = "설정";
+"settingsAdvancedClear" = "지우기";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
-"settingsAdvancedClear" = "지우기";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";

@@ -58,12 +58,22 @@ extension SwapKitToken {
             return nil
         }
 
-        // Treat as native iff the SwapKit `address` is absent OR empty AND
-        // the ticker matches the chain's native ticker prefix. The
-        // `SwapKitChainIDMapper.chain(forSwapKitChain:)` reverse map already
-        // pins the chain; here we just decide native vs token.
+        // Treat as native only when the SwapKit `address` is absent/empty
+        // AND the entry's `identifier` matches SwapKit's canonical native
+        // form (`<chain>.<ticker>`, e.g. `ARB.ETH`, `BSC.BNB`, `MONAD.MON`).
+        // The address check alone isn't enough — a malformed upstream entry
+        // with an empty address would otherwise be silently coerced into
+        // the destination chain's gas slot. `SwapKitChainIDMapper.chain(forSwapKitChain:)`
+        // has already pinned the destination chain; this guard just decides
+        // native vs token.
         let contract = address?.trimmingCharacters(in: .whitespaces) ?? ""
-        let isNative = contract.isEmpty
+        let canonicalNativeIdentifier = "\(self.chain.uppercased()).\(ticker.uppercased())"
+        let isNative = contract.isEmpty && identifier.uppercased() == canonicalNativeIdentifier
+        if contract.isEmpty, !isNative {
+            // Empty address but not canonical native — drop as malformed
+            // rather than coercing into the chain's native gas slot.
+            return nil
+        }
         if !isNative, !SwapKitToken.isUsableContract(contract, on: chain) {
             // Cross-chain wrapper identifiers (e.g. NEAR's `zec.omft.near`)
             // aren't on-chain ERC-20 / SPL contracts — drop. The user can
@@ -91,7 +101,9 @@ extension SwapKitToken {
     private static func isUsableContract(_ contract: String, on chain: Chain) -> Bool {
         switch chain.chainType {
         case .EVM:
-            return contract.hasPrefix("0x") && contract.count == 42
+            guard contract.hasPrefix("0x"), contract.count == 42 else { return false }
+            let payload = contract.dropFirst(2)
+            return payload.allSatisfy { $0.isHexDigit }
         case .Solana:
             // SPL mint addresses are base58 — length 32–44, no leading "0x".
             return !contract.contains(".") && !contract.hasPrefix("0x") && contract.count >= 32

@@ -93,9 +93,7 @@ struct SettingsAdvancedView: View {
                 icon: "arrow.clockwise",
                 buttonLabel: "settingsAdvancedClear".localized
             ) {
-                Task { @MainActor in
-                    SwapKitTokensCache.shared.clearCache()
-                }
+                SwapKitTokensCache.shared.clearCache()
             }
         }
     }

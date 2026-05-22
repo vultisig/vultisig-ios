@@ -846,10 +846,10 @@
 "setPasswordHintSubtitle" = "如果您忘记密码，将显示此内容";
 "setPasswordHintTitle" = "添加可选提示";
 "settings" = "设置";
+"settingsAdvancedClear" = "清除";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
-"settingsAdvancedClear" = "清除";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
