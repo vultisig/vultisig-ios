@@ -596,6 +596,16 @@ class KeysignViewModel: ObservableObject {
                         pubKeyHex: keysignPayload.coin.hexPublicKey
                     )
                     signedTransactions.append(tx)
+                case "CARDANO_PREBUILT":
+                    // Cardano signs with Ed25519 against the vault's EdDSA
+                    // public key — pass `vault.pubKeyEdDSA` (same convention
+                    // as the deposit-only send path in `CardanoHelper`).
+                    let tx = try SwapKitCardanoSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: vault.pubKeyEdDSA
+                    )
+                    signedTransactions.append(tx)
                 case "TON", "CARDANO":
                     break
                 case "EVM", "SOLANA":

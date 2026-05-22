@@ -1,0 +1,106 @@
+{
+  "sellAsset": "ADA.ADA",
+  "sellAmount": "45.5",
+  "buyAsset": "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "expectedBuyAmount": "11.07",
+  "expectedBuyAmountMaxSlippage": "10.96",
+  "fees": [
+    {
+      "type": "affiliate",
+      "amount": "0",
+      "amountBps": 0,
+      "asset": "ADA.ADA",
+      "chain": "NEAR",
+      "protocol": "NEAR"
+    },
+    {
+      "type": "service",
+      "amount": "0.068",
+      "amountBps": 15,
+      "asset": "ADA.ADA",
+      "chain": "NEAR",
+      "protocol": "NEAR"
+    },
+    {
+      "type": "outbound",
+      "amount": "0.3",
+      "asset": "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain": "ETH",
+      "protocol": "NEAR"
+    },
+    {
+      "type": "inbound",
+      "amount": "0.166",
+      "asset": "ADA.ADA",
+      "chain": "ADA",
+      "protocol": "NEAR"
+    }
+  ],
+  "routeId": "0a797a3f-1d33-4a9d-8e47-8c20f6dfbb31",
+  "providers": [
+    "NEAR"
+  ],
+  "expiration": "1779289707",
+  "estimatedTime": {
+    "inbound": 1200,
+    "swap": 30,
+    "outbound": 12.5,
+    "total": 1242.5
+  },
+  "totalSlippageBps": -100,
+  "legs": [
+    {
+      "provider": "NEAR",
+      "sellAsset": "ADA.ADA",
+      "sellAmount": "45.5",
+      "buyAsset": "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "buyAmount": "11.07",
+      "buyAmountMaxSlippage": "10.96",
+      "fees": []
+    }
+  ],
+  "warnings": [],
+  "sourceAddress": "addr1v9yg8pmjamtkaenz602yfe8c0y25fe304qqwka67epx7vtszj8749",
+  "destinationAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  "targetAddress": "addr1vy9sgnlkxkwg58axypgwllhgt522k045f0q7zst5faxqc2sgggj3a",
+  "inboundAddress": "addr1vy9sgnlkxkwg58axypgwllhgt522k045f0q7zst5faxqc2sgggj3a",
+  "tx": "84a40081825820f18b3c232d78ca5b1c9e5112314261d839d52a12a5c446c4f80317dc8ac60d48000182a200581d618749053dab2309d9b9eba75e17b0406d78302503b4187ca3af260960011a02b54eb8a200581d6148838772eed76ee662d3d444e4f8791544e62fa800eb775ec84de62e011a022046f7021a0002888d031a0b324cbba0f5f6",
+  "meta": {
+    "assets": [
+      {
+        "asset": "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "price": 0.999605,
+        "image": "https://storage.googleapis.com/token-list-swapkit/images/eth.usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
+      },
+      {
+        "asset": "ADA.ADA",
+        "price": 0.249917,
+        "image": "https://storage.googleapis.com/token-list-swapkit/images/ada.ada.png"
+      }
+    ],
+    "tags": [
+      "RECOMMENDED",
+      "FASTEST",
+      "CHEAPEST"
+    ],
+    "priceImpact": -0.01,
+    "affiliate": "notconfigured.near",
+    "affiliateFee": "0",
+    "txType": "CBOR",
+    "near": {
+      "destinationAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "sellAsset": "ADA.ADA",
+      "buyAsset": "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "sourceAddress": "addr1v9yg8pmjamtkaenz602yfe8c0y25fe304qqwka67epx7vtszj8749",
+      "sellAmount": "45.5",
+      "affiliateFees": {
+        "nearId": "notconfigured.near",
+        "feeBps": 0
+      },
+      "slippage": 1
+    },
+    "isFastQuote": false,
+    "isRefreshed": true
+  },
+  "swapId": "5781d5fc-2eff-4429-8746-37d1422e3adc"
+}

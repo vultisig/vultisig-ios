@@ -74,8 +74,14 @@ struct KeysignMessageFactory {
                     messages += try SwapKitSuiSigner.preSigningHashes(payload: swapKitPayload)
                 case "TRON":
                     messages += try SwapKitTronSigner.preSigningHashes(payload: swapKitPayload)
+                case "CARDANO_PREBUILT":
+                    // SwapKit-built CBOR. Hash item 0 of the envelope with
+                    // Blake2b-256 — that's the Cardano signing digest.
+                    messages += try SwapKitCardanoSigner.preSigningHashes(payload: swapKitPayload)
                 case "TON", "CARDANO":
-                    // Fall through to the existing per-chain helper below.
+                    // Fall through to the existing per-chain helper below
+                    // (deposit-only flows: the SwapKit builder already
+                    // pointed `toAddress` / `toAmount` at the deposit).
                     break
                 case "EVM", "SOLANA":
                     // EVM and Solana ride `SwapPayload.generic` — reaching
