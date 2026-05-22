@@ -22,6 +22,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
     private let logic: SwapCoinSelectionLogic
     private var cancellable: AnyCancellable?
 
+    @MainActor
     init(vault: Vault, selectedCoin: Coin, isDestination: Bool) {
         self.vault = vault
         self.selectedCoin = selectedCoin
@@ -85,20 +86,26 @@ struct SwapCoinSelectionLogic {
     private let selectedCoin: Coin
     private let isDestination: Bool
     private let service: TokenSearchService
-    private let swapKitTokens: SwapKitTokensCache
+    private let registry: DestinationTokenRegistry
 
+    @MainActor
     init(
         vault: Vault,
         selectedCoin: Coin,
         isDestination: Bool,
         service: TokenSearchService = .shared,
-        swapKitTokens: SwapKitTokensCache = .shared
+        registry: DestinationTokenRegistry? = nil
     ) {
         self.vault = vault
         self.selectedCoin = selectedCoin
         self.isDestination = isDestination
         self.service = service
-        self.swapKitTokens = swapKitTokens
+        // Defaults are resolved inside the body so the MainActor-isolated
+        // `.shared` singleton isn't referenced from a default-argument
+        // expression (which runs in the caller's context and would warn
+        // under Swift 6 strict concurrency). Same pattern as
+        // `TransactionHistoryViewModel.init` → `SwapTrackingRegistry.shared`.
+        self.registry = registry ?? DestinationTokenRegistry.shared
     }
 
     func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
@@ -109,39 +116,41 @@ struct SwapCoinSelectionLogic {
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
         let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
 
-        // SwapKit destinations only — source-side picker stays Phase-1
-        // identical. `SwapKitTokensCache.tokens(for:)` already short-circuits
-        // when the feature flag is off, but the `isDestination` gate avoids
-        // spinning up the fetch task at all on the source side.
-        let swapKitBucket: DestinationTokenBucket
+        // Destination-side picker pulls in tokens from every registered
+        // DestinationTokenProvider; source-side stays vault-bounded since
+        // SwapKit + sibling providers add no signal for tokens the user
+        // doesn't actually hold.
+        let externalBuckets: [DestinationTokenBucket]
         if isDestination {
-            swapKitBucket = await swapKitTokens.tokens(for: chain)
+            externalBuckets = await registry.tokens(for: chain)
         } else {
-            swapKitBucket = .empty(chain: chain)
+            externalBuckets = []
         }
 
-        // Existing 1inch / Jupiter / preset entries win on overlap — their
-        // CoinFactory + price-provider plumbing is already in place. SwapKit
-        // contributes any residual tokens (those NOT in the base union).
-        let merged = Self.mergeWithSwapKit(
-            base: baseUnique,
-            swapKit: swapKitBucket
-        )
+        let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
         let sorted = sort(tokens: merged)
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
 
     /// Pure-function merge — exposed for tests. Base list keeps its order;
-    /// SwapKit-only tokens append after, deduped by `CoinMeta.uniqueId`
-    /// (chain + lowercased ticker + lowercased contract).
-    static func mergeWithSwapKit(
+    /// novel tokens from each external bucket append after, deduped by
+    /// `CoinMeta.uniqueId` (chain + lowercased ticker + lowercased
+    /// contract). Same contract as the previous `mergeWithSwapKit`,
+    /// generalised over an arbitrary list of provider buckets.
+    static func mergeExternal(
         base: [CoinMeta],
-        swapKit: DestinationTokenBucket
+        externals: [DestinationTokenBucket]
     ) -> [CoinMeta] {
-        let baseIds = Set(base.map { $0.uniqueId })
-        let novel = swapKit.tokens.filter { !baseIds.contains($0.uniqueId) }
-        return base + novel
+        var seen = Set(base.map { $0.uniqueId })
+        var result = base
+        for bucket in externals {
+            for token in bucket.tokens where !seen.contains(token.uniqueId) {
+                result.append(token)
+                seen.insert(token.uniqueId)
+            }
+        }
+        return result
     }
 
     func sort(tokens: [CoinMeta]) -> [CoinMeta] {

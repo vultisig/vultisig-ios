@@ -42,10 +42,10 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         XCTAssertTrue(bucket.uniqueIds.isEmpty)
     }
 
-    func testMergeAppendsNovelSwapKitTokens() throws {
-        // Base list (e.g. from 1inch + curated) has ETH-ETH + USDC. SwapKit's
-        // bucket adds a token the base list doesn't know about (`NOVL`) — it
-        // must append to the merged list.
+    func testMergeExternalAppendsNovelTokens() throws {
+        // Base list (e.g. from 1inch + curated) has ETH-ETH + USDC. An external
+        // provider's bucket adds a token the base list doesn't know about
+        // (`NOVL`) — it must append to the merged list.
         let base: [CoinMeta] = [
             CoinMeta(chain: .ethereum, ticker: "ETH", logo: "", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true),
             CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
@@ -56,12 +56,12 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
             tokens: [novel],
             uniqueIds: [novel.uniqueId]
         )
-        let merged = SwapCoinSelectionLogic.mergeWithSwapKit(base: base, swapKit: bucket)
-        XCTAssertEqual(merged.count, 3, "Novel SwapKit token must append")
+        let merged = SwapCoinSelectionLogic.mergeExternal(base: base, externals: [bucket])
+        XCTAssertEqual(merged.count, 3, "Novel external token must append")
         XCTAssertEqual(merged.last?.ticker, "NOVL")
     }
 
-    func testMergeDropsSwapKitTokensAlreadyInBase() throws {
+    func testMergeExternalDropsTokensAlreadyInBase() throws {
         // Overlap case — 1inch already discovered USDC. SwapKit's USDC must
         // NOT duplicate in the picker.
         let usdc = CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
@@ -71,7 +71,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
             tokens: [usdc],
             uniqueIds: [usdc.uniqueId]
         )
-        let merged = SwapCoinSelectionLogic.mergeWithSwapKit(base: base, swapKit: bucket)
+        let merged = SwapCoinSelectionLogic.mergeExternal(base: base, externals: [bucket])
         XCTAssertEqual(merged.count, 1, "Overlap must not duplicate")
     }
 
