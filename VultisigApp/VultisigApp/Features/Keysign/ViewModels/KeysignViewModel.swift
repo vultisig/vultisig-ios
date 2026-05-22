@@ -596,6 +596,13 @@ class KeysignViewModel: ObservableObject {
                         pubKeyHex: keysignPayload.coin.hexPublicKey
                     )
                     signedTransactions.append(tx)
+                case "PSBT_DASH":
+                    let tx = try SwapKitDashSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
                 case "PSBT_ZEC":
                     let tx = try SwapKitZcashSigner.compileSignedTransaction(
                         payload: payload,

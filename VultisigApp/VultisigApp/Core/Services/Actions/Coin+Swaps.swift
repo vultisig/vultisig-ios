@@ -71,8 +71,15 @@ extension Coin {
 
     private var naturalSwapProviders: [SwapProvider] {
         switch chain {
-        case .mayaChain, .dash, .kujira:
+        case .mayaChain, .kujira:
             return [.mayachain]
+        case .dash:
+            // Tier 1 L1 source — `.swapkit` enables DASH↔EVM / DASH↔SOL routes
+            // via NEAR Intents. Wire shape mirrors DOGE (legacy P2PKH PSBT,
+            // no segwit); signed through `SwapKitDashSigner` riding
+            // WalletCore's `CoinType.dash` end-to-end. MayaChain stays as
+            // a provider — both rank against each other per quote.
+            return [.mayachain, .swapkit]
         case .ethereum:
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
