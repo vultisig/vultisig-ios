@@ -933,9 +933,9 @@
 "swapKitErrorRouteFiltered" = "Sve rute za ovaj par su filtrirane";
 "swapKitErrorSwapRouteNotFound" = "Odabrana ruta je istekla";
 "swapKitErrorUnableToBuildTransaction" = "Ova ruta trenutno nije dostupna, pokušajte s drugim pružateljem";
+"swapKitErrorUnsupportedShieldedTransaction" = "Vultisig ne može potpisati zaštićene Zcash transakcije";
 "swapKitErrorUnsupportedTxType" = "SwapKit txType %@ još nije podržan na iOS-u";
 "swapKitErrorUnsupportedZcashVersion" = "Nepodržana verzija Zcash transakcije (verzija %1$@, grupa %2$@) — samo Sapling v4 se može potpisati";
-"swapKitErrorUnsupportedShieldedTransaction" = "Vultisig ne može potpisati zaštićene Zcash transakcije";
 "swapKitStatusFailedReason" = "Zamjena nije uspjela na SwapKit pratiocu";
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";

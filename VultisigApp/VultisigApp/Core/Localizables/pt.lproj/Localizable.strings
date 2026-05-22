@@ -933,9 +933,9 @@
 "swapKitErrorRouteFiltered" = "Todas as rotas foram filtradas para este par";
 "swapKitErrorSwapRouteNotFound" = "A rota selecionada expirou";
 "swapKitErrorUnableToBuildTransaction" = "Esta rota não está disponível no momento, tente outro provedor";
+"swapKitErrorUnsupportedShieldedTransaction" = "Vultisig não pode assinar transações Zcash blindadas";
 "swapKitErrorUnsupportedTxType" = "O tipo de transação %@ do SwapKit ainda não é suportado no iOS";
 "swapKitErrorUnsupportedZcashVersion" = "Versão de transação Zcash não suportada (versão %1$@, grupo %2$@) — apenas Sapling v4 pode ser assinado";
-"swapKitErrorUnsupportedShieldedTransaction" = "Vultisig não pode assinar transações Zcash blindadas";
 "swapKitStatusFailedReason" = "A troca falhou no rastreador do SwapKit";
 "swapKitStatusRefundedReason" = "A troca foi reembolsada para seu endereço de origem";
 "swapKitViewOnTracker" = "Ver no SwapKit Tracker";
