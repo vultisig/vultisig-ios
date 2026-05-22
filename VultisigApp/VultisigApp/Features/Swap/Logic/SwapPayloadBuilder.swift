@@ -338,6 +338,41 @@ extension SwapCryptoLogic {
                     vault: vault
                 )
 
+            case .cardanoPrebuilt(let cbor):
+                // Cardano source: SwapKit-built CBOR flow. The unsigned
+                // transaction envelope is handed to us verbatim — UTXO
+                // selection, change splitting, and fee computation are all
+                // done server-side. The dispatcher routes
+                // `txType=CARDANO_PREBUILT` to `SwapKitCardanoSigner`, which
+                // signs item 0 (the body) of `tx_payload` directly. We don't
+                // re-build a Cardano transfer locally — that would compute a
+                // different tx_id and break NEAR Intents tracking.
+                //
+                // `buildTransfer` still runs `selectCardanoUTXOs` (Koios
+                // fetch) so the resulting `KeysignPayload.utxos` field is
+                // populated for cross-device transit. The pre-built signer
+                // ignores those UTXOs at signing time — the bytes in
+                // `txPayload` are authoritative — but populating them keeps
+                // the proto field uniform with the deposit-only path.
+                let swapKitPayload = buildSwapKitCardanoPrebuiltPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    cbor: cbor,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
             case .sui(let base64):
                 // Sui source: SwapKit returns a base64-encoded pre-built
                 // programmable transaction block (PTB), ~5KB. Existing Pay /
@@ -489,6 +524,36 @@ extension SwapCryptoLogic {
         )
     }
 
+    /// Build a `SwapKitSwapPayload` for the Cardano pre-built CBOR path.
+    /// `cbor` is the unsigned transaction envelope returned by SwapKit —
+    /// item 0 is the transaction body the keysign-side signer hashes with
+    /// Blake2b-256. The bytes are passed verbatim so the cosigning peer
+    /// derives the same digest. `txType` is `CARDANO_PREBUILT` (distinct
+    /// from the deposit-only `CARDANO`) so the dispatcher can route
+    /// independently.
+    static func buildSwapKitCardanoPrebuiltPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        cbor: Data,
+        swapResponse: SwapKitSwapResponse
+    ) -> SwapKitSwapPayload {
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "CARDANO_PREBUILT",
+            txPayload: cbor,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
     /// Build a `SwapKitSwapPayload` for the Sui PTB path. SwapKit returns a
     /// base64-encoded pre-built programmable transaction block; we decode it
     /// into raw bytes for the keysign payload. The signing PR will hand these
@@ -626,6 +691,11 @@ extension SwapCryptoLogic {
             // Cardano deposit-only flow — no transaction body to mirror into
             // an EVMQuote. Same defence-in-depth as PSBT.
             throw SwapKitError.unsupportedTxType("CARDANO")
+
+        case .cardanoPrebuilt:
+            // Cardano pre-built CBOR flow routes through `SwapPayload.swapkit`
+            // at the outer call site. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("CARDANO_PREBUILT")
 
         case .sui:
             // Sui PTB routes flow through `SwapPayload.swapkit` at the outer

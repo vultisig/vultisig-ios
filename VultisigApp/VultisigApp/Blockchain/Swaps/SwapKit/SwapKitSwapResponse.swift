@@ -122,24 +122,44 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             let transfers = try container.decode([SwapKitTonTransfer].self, forKey: .tx)
             return .ton(transfers)
         case "CARDANO", "CBOR":
-            // Cardano source: deposit-only flow. SwapKit returns no
-            // transaction body — `tx` is null at the wire, and in observed
-            // fixtures the key is sometimes omitted entirely. Vultisig
-            // builds a plain ADA transfer to `targetAddress` for
-            // `sellAmount` via the existing Cardano send path. Tolerate
-            // both shapes: `tx: null` and `tx` absent.
+            // Cardano source. Two live shapes observed in the wild:
+            //   1. Deposit-only (legacy): `tx` is null or absent. Vultisig
+            //      builds a plain ADA transfer to `targetAddress` for
+            //      `sellAmount` via the existing Cardano send path.
+            //   2. Pre-built (current): `tx` is a hex-encoded unsigned CBOR
+            //      transaction envelope. SwapKit has already done UTXO
+            //      selection, change splitting, and fee computation server-
+            //      side — we sign the bytes verbatim (re-deriving them would
+            //      change the txID, which NEAR Intents uses for route
+            //      tracking).
             //
-            // `CARDANO` was the original wire value at integration time;
-            // upstream switched live to `CBOR` (Cardano's native wire
-            // serialisation format) without versioning the change.
-            // Accept both so a flip back doesn't break us either.
+            // `CARDANO` was the original wire txType; upstream switched live
+            // to `CBOR` (the chain's native serialisation format) without
+            // versioning the change. Accept both — a future flip back to
+            // `CARDANO` shouldn't break us either.
             if container.contains(.tx) {
                 if try container.decodeNil(forKey: .tx) {
                     return .cardano
                 }
+                // Hex string → pre-built CBOR transaction. Strip an optional
+                // `0x` prefix defensively — SwapKit's observed responses ship
+                // bare hex, but hex-with-prefix is the standard EVM convention
+                // and a wire flip is cheap to absorb.
+                if let hexString = try? container.decode(String.self, forKey: .tx) {
+                    let stripped = hexString.stripHexPrefix()
+                    if let cbor = Data(hexString: stripped) {
+                        return .cardanoPrebuilt(cbor: cbor)
+                    }
+                    // Hex string that doesn't parse as hex — fall through to
+                    // `.unsupported` rather than silently dropping the body.
+                    let raw = try container.decode(SwapKitRawJSON.self, forKey: .tx)
+                    return .unsupported(txType: meta.txType, raw: raw)
+                }
                 // Forward-compat: some future provider may start returning a
-                // structured Cardano tx. Surface as `.unsupported` so the
-                // decoder doesn't silently drop the payload.
+                // structured Cardano tx (JSON object). Surface as
+                // `.unsupported` so the decoder doesn't silently drop the
+                // payload — the keysign dispatcher will throw with the
+                // txType in the message.
                 let raw = try container.decode(SwapKitRawJSON.self, forKey: .tx)
                 return .unsupported(txType: meta.txType, raw: raw)
             }
@@ -192,6 +212,13 @@ enum SwapKitTx: Hashable {
     /// transfer to `targetAddress` for `sellAmount` via the existing
     /// Cardano send path. No CBOR construction, no metadata.
     case cardano
+    /// Cardano source — pre-built CBOR flow. SwapKit has performed UTXO
+    /// selection, change splitting, and fee computation server-side and
+    /// returns the unsigned Cardano transaction envelope as hex CBOR (item
+    /// 0 of the top-level array is the transaction body Vultisig signs).
+    /// Re-deriving the body locally would change the tx_id; NEAR Intents
+    /// tracks routes by that hash, so we sign the bytes verbatim.
+    case cardanoPrebuilt(cbor: Data)
     /// Sui source — base64-encoded pre-built programmable transaction block
     /// (PTB). Signing requires a greenfield "sign pre-built PTB" path
     /// (existing Pay / PaySui flows won't accept a serialized PTB). Deferred
