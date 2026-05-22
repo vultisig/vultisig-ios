@@ -63,6 +63,33 @@ final class SwapKitRippleTests: XCTestCase {
         XCTAssertEqual(response.resolvedTargetAddress, "rXyz")
     }
 
+    func testRippleResolvedTagFromDtSuffixWithExtraQueryParams() throws {
+        // Multi-param query: `?dt=N&memo=foo` — the tag extractor must
+        // walk the parameters and find `dt=N`, not just match a
+        // `dt=`-prefixed suffix at end-of-string. Regression pin for the
+        // query-string parser fix.
+        let json = makeResponseJSON(targetAddress: "rXyz?dt=12345&memo=foo", topLevelTag: nil, metaTag: nil)
+        let response = try decodeResponse(json: json)
+        XCTAssertEqual(response.resolvedDestinationTag, 12345)
+        XCTAssertEqual(response.resolvedTargetAddress, "rXyz")
+    }
+
+    func testRippleResolvedTagFromDtSuffixAfterOtherParams() throws {
+        // `dt` not first: `?memo=foo&dt=12345` — order shouldn't matter.
+        let json = makeResponseJSON(targetAddress: "rXyz?memo=foo&dt=12345", topLevelTag: nil, metaTag: nil)
+        let response = try decodeResponse(json: json)
+        XCTAssertEqual(response.resolvedDestinationTag, 12345)
+        XCTAssertEqual(response.resolvedTargetAddress, "rXyz")
+    }
+
+    func testRippleResolvedTagAbsentWhenQueryHasNoDtParam() throws {
+        let json = makeResponseJSON(targetAddress: "rXyz?memo=foo", topLevelTag: nil, metaTag: nil)
+        let response = try decodeResponse(json: json)
+        XCTAssertNil(response.resolvedDestinationTag)
+        // Bare r-address still extracted, query suffix stripped.
+        XCTAssertEqual(response.resolvedTargetAddress, "rXyz")
+    }
+
     func testRippleResolvedTagFromPipeSuffix() throws {
         let json = makeResponseJSON(targetAddress: "rXyz|67890", topLevelTag: nil, metaTag: nil)
         let response = try decodeResponse(json: json)

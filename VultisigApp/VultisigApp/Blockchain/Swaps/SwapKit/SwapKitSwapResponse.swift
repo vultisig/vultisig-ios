@@ -133,9 +133,22 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// keysign dispatcher can route directly to the per-chain signer.
     /// Asset-prefix matching is case-insensitive to absorb any future
     /// `DOGE.DOGE` vs `Doge.doge` drift in upstream catalogs.
+    ///
+    /// Chain dispatch uses an explicit allowlist (no default fall-through
+    /// into `SwapKitBTCSigner`). Routing an unknown chain's PSBT into the
+    /// BIP-143 segwit signer would either produce an invalid signature
+    /// (if the body shape matches close enough to decode) or crash on a
+    /// parse error — both worse than a typed "txType not supported" error
+    /// at quote time. Unknown chains land on `.unsupported` so the keysign
+    /// dispatcher surfaces `unsupportedTxType` with the chain prefix
+    /// instead of silently signing.
     private static func psbtCase(forSellAsset sellAsset: String, base64: String) -> SwapKitTx {
         let chain = sellAsset.uppercased().split(separator: ".").first.map(String.init) ?? ""
         switch chain {
+        case "BTC", "LTC":
+            // LTC reuses the BTC segwit signer (its addresses are P2WPKH /
+            // P2SH-P2WPKH — `SwapKitBTCSigner.classifyScript` accepts both).
+            return .psbt(base64: base64)
         case "DOGE":
             return .dogecoinPsbt(base64: base64)
         case "BCH":
@@ -145,29 +158,41 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         case "ZEC":
             return .zcashPsbt(base64: base64)
         default:
-            // BTC + LTC + anything else PSBT-shaped. LTC reuses the BTC
-            // segwit signer (its addresses are P2WPKH / P2SH-P2WPKH —
-            // `SwapKitBTCSigner.classifyScript` accepts both).
-            return .psbt(base64: base64)
+            // Unknown chain over the PSBT wire. Don't guess — surface
+            // through the raw-JSON passthrough so the keysign dispatcher
+            // can throw `unsupportedTxType("PSBT/<chain>")` rather than
+            // silently misroute into the segwit signer.
+            let raw = SwapKitRawJSON(jsonValue: .string(base64))
+            return .unsupported(txType: "PSBT/\(chain.isEmpty ? "unknown" : chain)", raw: raw)
         }
     }
 
-    /// Split a `?dt=12345` or `|12345` suffix off an XRP target address.
-    /// Returns the bare r-address plus the parsed tag (or `nil`). Defensive —
-    /// no probe today returns a suffix, but the silent-misroute failure mode
-    /// is severe enough to absorb the ~20 lines of decoder.
+    /// Split a `?dt=12345` (or `?dt=12345&other=foo`) or `|12345` suffix
+    /// off an XRP target address. Returns the bare r-address plus the
+    /// parsed tag (or `nil`). Defensive — no probe today returns a suffix,
+    /// but the silent-misroute failure mode is severe enough to absorb
+    /// the decoder.
+    ///
+    /// Query parsing handles arbitrary parameter order
+    /// (`?dt=N`, `?dt=N&memo=foo`, `?memo=foo&dt=N`). Whichever key/value
+    /// pair parses as `dt=<UInt64>` wins; everything else is dropped.
     private static func extractTagSuffix(from address: String) -> (address: String, tag: UInt64?) {
-        // `?dt=` form: `rXyz?dt=12345`
+        // `?…` form: walk the query parameters and pick the first `dt=`
+        // that parses as a UInt64. Real-world XRP URIs usually have a
+        // single `dt=N`, but accepting the full `key=val&key=val` shape
+        // means a future flip to `?memo=...&dt=...` doesn't silently
+        // drop the tag.
         if let q = address.firstIndex(of: "?") {
-            let suffix = address[address.index(after: q)...]
-            // Accept `dt=` (most likely) or any parameter set whose first
-            // key is `dt`. Anything else falls through to "no tag".
-            if suffix.hasPrefix("dt=") {
-                let tagPart = suffix.dropFirst(3)
-                if let tag = UInt64(tagPart) {
-                    return (String(address[..<q]), tag)
+            let bare = String(address[..<q])
+            let query = address[address.index(after: q)...]
+            for pair in query.split(separator: "&", omittingEmptySubsequences: true) {
+                let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+                guard parts.count == 2, parts[0] == "dt" else { continue }
+                if let tag = UInt64(parts[1]) {
+                    return (bare, tag)
                 }
             }
+            return (bare, nil)
         }
         // `|` form: `rXyz|12345`
         if let pipe = address.firstIndex(of: "|") {
@@ -485,6 +510,15 @@ struct SwapKitRawJSON: Decodable, Hashable {
         } else {
             data = Data("{}".utf8)
         }
+    }
+
+    /// Build a raw-JSON passthrough from an in-memory `SwapKitJSONValue` —
+    /// used by the decoder when synthesising an `.unsupported` case for a
+    /// PSBT-chain we don't know how to dispatch. Re-encoding through
+    /// `JSONEncoder` keeps the wire shape consistent with the
+    /// `Decodable` init path.
+    init(jsonValue: SwapKitJSONValue) {
+        data = (try? JSONEncoder().encode(jsonValue)) ?? Data("{}".utf8)
     }
 }
 
