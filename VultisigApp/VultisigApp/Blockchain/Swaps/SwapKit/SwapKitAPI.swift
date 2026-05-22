@@ -94,6 +94,11 @@ struct SwapKitQuoteRequest: Encodable {
     let destinationAddress: String?
     let slippage: Double?
     let providers: [String]?
+    /// Affiliate fee override in basis points (0–1000). Omitting falls back
+    /// to the API key's configured default (currently 50 bps via the
+    /// Vultisig proxy). Sent explicitly so tier-discounted users get their
+    /// reduced rate rather than the proxy default.
+    let affiliateFee: Int?
 }
 
 struct SwapKitSwapRequest: Encodable {
