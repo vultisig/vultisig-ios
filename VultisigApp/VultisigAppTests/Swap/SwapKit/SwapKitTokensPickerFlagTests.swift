@@ -30,6 +30,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testCacheReturnsEmptyBucketWhenFlagOff() async {
         UserDefaults.standard.set(false, forKey: flagKey)
         let cache = SwapKitTokensCache()
@@ -50,9 +51,9 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
             CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
         ]
         let novel = CoinMeta(chain: .ethereum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x0000000000000000000000000000000000000abc", isNativeToken: false)
-        let bucket = SwapKitTokensBucket(
+        let bucket = DestinationTokenBucket(
             chain: .ethereum,
-            byIdentifier: ["ETH.NOVL-0x0000000000000000000000000000000000000abc": novel],
+            tokens: [novel],
             uniqueIds: [novel.uniqueId]
         )
         let merged = SwapCoinSelectionLogic.mergeWithSwapKit(base: base, swapKit: bucket)
@@ -65,25 +66,26 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         // NOT duplicate in the picker.
         let usdc = CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
         let base = [usdc]
-        let bucket = SwapKitTokensBucket(
+        let bucket = DestinationTokenBucket(
             chain: .ethereum,
-            byIdentifier: ["ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": usdc],
+            tokens: [usdc],
             uniqueIds: [usdc.uniqueId]
         )
         let merged = SwapCoinSelectionLogic.mergeWithSwapKit(base: base, swapKit: bucket)
         XCTAssertEqual(merged.count, 1, "Overlap must not duplicate")
     }
 
+    @MainActor
     func testCacheSeededSnapshotReturnsBucketsWhenFlagOn() async {
         UserDefaults.standard.set(true, forKey: flagKey)
         let novel = CoinMeta(chain: .arbitrum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x000000000000000000000000000000000000000A", isNativeToken: false)
-        let bucket = SwapKitTokensBucket(
+        let bucket = DestinationTokenBucket(
             chain: .arbitrum,
-            byIdentifier: ["ARB.NOVL-0x000000000000000000000000000000000000000A": novel],
+            tokens: [novel],
             uniqueIds: [novel.uniqueId]
         )
         let cache = SwapKitTokensCache()
-        await cache.setSnapshot(buckets: [.arbitrum: bucket])
+        cache.setSnapshot(buckets: [.arbitrum: bucket])
         let read = await cache.tokens(for: .arbitrum)
         XCTAssertEqual(read.tokens.count, 1)
         XCTAssertEqual(read.tokens.first?.ticker, "NOVL")

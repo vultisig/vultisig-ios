@@ -133,9 +133,9 @@ final class SwapKitTokensDecodingTests: XCTestCase {
         let buckets = SwapKitTokensCache.mergeByChain(responses: responses)
         let eth = try XCTUnwrap(buckets[.ethereum])
         XCTAssertEqual(eth.tokens.count, 2)
-        let usdtIdentifier = "ETH.USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7"
-        XCTAssertNotNil(
-            eth.byIdentifier[usdtIdentifier],
+        let usdtMatches = eth.tokens.filter { $0.ticker == "USDT" }
+        XCTAssertEqual(
+            usdtMatches.count, 1,
             "USDT must be present exactly once after dedup"
         )
     }

@@ -113,11 +113,11 @@ struct SwapCoinSelectionLogic {
         // identical. `SwapKitTokensCache.tokens(for:)` already short-circuits
         // when the feature flag is off, but the `isDestination` gate avoids
         // spinning up the fetch task at all on the source side.
-        let swapKitBucket: SwapKitTokensBucket
+        let swapKitBucket: DestinationTokenBucket
         if isDestination {
             swapKitBucket = await swapKitTokens.tokens(for: chain)
         } else {
-            swapKitBucket = SwapKitTokensBucket(chain: chain, byIdentifier: [:], uniqueIds: [])
+            swapKitBucket = .empty(chain: chain)
         }
 
         // Existing 1inch / Jupiter / preset entries win on overlap — their
@@ -137,7 +137,7 @@ struct SwapCoinSelectionLogic {
     /// (chain + lowercased ticker + lowercased contract).
     static func mergeWithSwapKit(
         base: [CoinMeta],
-        swapKit: SwapKitTokensBucket
+        swapKit: DestinationTokenBucket
     ) -> [CoinMeta] {
         let baseIds = Set(base.map { $0.uniqueId })
         let novel = swapKit.tokens.filter { !baseIds.contains($0.uniqueId) }

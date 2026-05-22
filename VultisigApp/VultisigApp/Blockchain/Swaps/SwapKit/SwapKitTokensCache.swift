@@ -5,9 +5,9 @@
 //  Fans out `GET /tokens?provider=<NAME>` against the providers currently
 //  enabled in the cached `/v3/providers` snapshot, dedupes by `identifier`,
 //  buckets by reverse-mapped Vultisig `Chain`, and caches the result in
-//  memory with a 24h TTL. The destination coin picker calls
-//  `tokens(for: chain)` to surface SwapKit destinations beyond the existing
-//  curated + 1inch + Jupiter lists.
+//  memory with a 24h TTL. The destination coin picker resolves SwapKit
+//  destinations via `DestinationTokenRegistry`, which calls
+//  `tokens(for: chain)` here.
 //
 //  Storage decision: in-memory only. SwapKit publishes a `timestamp` per
 //  response and the list changes rarely; offline = no swap anyway, so
@@ -20,31 +20,19 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-tokens-cache")
 
-/// Single bucket inside the cache — tokens for one Vultisig `Chain`, indexed
-/// by SwapKit identifier so the picker's "is this a SwapKit-only token?"
-/// predicate is O(1).
-struct SwapKitTokensBucket {
-    let chain: Chain
-    /// `identifier` (e.g. `"ETH.USDT-0xdAC17F..."`) -> adapted CoinMeta.
-    let byIdentifier: [String: CoinMeta]
-    /// Lowercased `CoinMeta.uniqueId` set — used by the picker to detect
-    /// "SwapKit unlocks this token" overlap against the existing curated +
-    /// 1inch + Jupiter union.
-    let uniqueIds: Set<String>
-
-    var tokens: [CoinMeta] { Array(byIdentifier.values) }
-}
-
-actor SwapKitTokensCache {
+@MainActor
+final class SwapKitTokensCache: DestinationTokenProvider {
     static let shared = SwapKitTokensCache()
+
+    let providerKind: String = "swapKit"
 
     private let httpClient: HTTPClientProtocol
     private let providerCache: SwapKitProviderCache
     private var snapshot: Snapshot?
-    private var inFlight: Task<[Chain: SwapKitTokensBucket]?, Never>?
+    private var inFlight: Task<[Chain: DestinationTokenBucket]?, Never>?
 
     private struct Snapshot {
-        let buckets: [Chain: SwapKitTokensBucket]
+        let buckets: [Chain: DestinationTokenBucket]
         let fetchedAt: Date
     }
 
@@ -64,25 +52,30 @@ actor SwapKitTokensCache {
     ///  - SwapKit has no tokens on this chain (cache built, bucket missing).
     /// The picker treats "empty bucket" identically to "no SwapKit unlock"
     /// and falls back to the curated + 1inch + Jupiter list it has today.
-    func tokens(for chain: Chain, now: Date = Date()) async -> SwapKitTokensBucket {
+    func tokens(for chain: Chain) async -> DestinationTokenBucket {
+        await tokens(for: chain, now: Date())
+    }
+
+    /// Date-injectable variant used by tests / TTL-sensitive callers.
+    func tokens(for chain: Chain, now: Date) async -> DestinationTokenBucket {
         guard SwapKitConfig.isFeatureEnabled else {
-            return SwapKitTokensBucket(chain: chain, byIdentifier: [:], uniqueIds: [])
+            return .empty(chain: chain)
         }
         let buckets = await ensureSnapshot(now: now)
-        return buckets?[chain] ?? SwapKitTokensBucket(chain: chain, byIdentifier: [:], uniqueIds: [])
+        return buckets?[chain] ?? .empty(chain: chain)
     }
 
     /// Coalescing fetch — concurrent callers share one in-flight Task to
     /// avoid stampeding the proxy on first picker open. Returns the cached
     /// snapshot when fresh; otherwise refreshes.
-    private func ensureSnapshot(now: Date) async -> [Chain: SwapKitTokensBucket]? {
+    private func ensureSnapshot(now: Date) async -> [Chain: DestinationTokenBucket]? {
         if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.providerCacheTTL {
             return snapshot.buckets
         }
         if let inFlight {
             return await inFlight.value
         }
-        let task = Task { [providerCache, httpClient] () -> [Chain: SwapKitTokensBucket]? in
+        let task = Task { [providerCache, httpClient] () -> [Chain: DestinationTokenBucket]? in
             await Self.fetchAll(providerCache: providerCache, httpClient: httpClient, now: now)
         }
         inFlight = task
@@ -97,7 +90,7 @@ actor SwapKitTokensCache {
     /// Replace the snapshot — exposed for tests so they don't need a fake
     /// `HTTPClient`. Mirrors the affordance `SwapKitProviderCache.setSnapshot`
     /// gives provider-cache tests.
-    func setSnapshot(buckets: [Chain: SwapKitTokensBucket], fetchedAt: Date = Date()) {
+    func setSnapshot(buckets: [Chain: DestinationTokenBucket], fetchedAt: Date = Date()) {
         snapshot = Snapshot(buckets: buckets, fetchedAt: fetchedAt)
     }
 
@@ -107,7 +100,7 @@ actor SwapKitTokensCache {
         providerCache: SwapKitProviderCache,
         httpClient: HTTPClientProtocol,
         now: Date
-    ) async -> [Chain: SwapKitTokensBucket]? {
+    ) async -> [Chain: DestinationTokenBucket]? {
         guard let allProviders = await providerCache.providers(now: now) else {
             logger.info("[swapkit-tokens] no provider snapshot available — skipping fetch")
             return nil
@@ -154,29 +147,36 @@ actor SwapKitTokensCache {
     }
 
     /// Dedup + bucket. Exposed as a static so tests can drive it from
-    /// fixture data without standing up the actor + HTTPClient.
-    static func mergeByChain(responses: [SwapKitTokensResponse]) -> [Chain: SwapKitTokensBucket] {
-        var byChain: [Chain: [String: CoinMeta]] = [:]
-        // Dedup priority: a token already seen (by identifier) on a given
-        // chain wins over a later one. SwapKit responses are stable within
-        // a provider; cross-provider collisions are USDC variants where the
-        // first hit is correct.
+    /// fixture data without standing up the cache + HTTPClient.
+    /// `nonisolated` since the body touches no instance state and the
+    /// inputs/outputs are value types — keeps test callers off MainActor.
+    ///
+    /// Dedup priority within a chain: a token already seen (by SwapKit
+    /// `identifier`) wins over a later one. SwapKit responses are stable
+    /// within a provider; cross-provider collisions are typically USDC
+    /// variants where the first hit is correct. Insertion order of the
+    /// resulting `tokens` array follows the order tokens were first
+    /// observed across the merged responses.
+    nonisolated static func mergeByChain(responses: [SwapKitTokensResponse]) -> [Chain: DestinationTokenBucket] {
+        var byChainTokens: [Chain: [CoinMeta]] = [:]
+        var byChainIdentifiers: [Chain: Set<String>] = [:]
         for response in responses {
             for token in response.tokens {
                 guard let coinMeta = token.toCoinMeta() else { continue }
                 let chain = coinMeta.chain
-                if byChain[chain] == nil { byChain[chain] = [:] }
-                if byChain[chain]?[token.identifier] == nil {
-                    byChain[chain]?[token.identifier] = coinMeta
-                }
+                var seen = byChainIdentifiers[chain] ?? []
+                guard !seen.contains(token.identifier) else { continue }
+                seen.insert(token.identifier)
+                byChainIdentifiers[chain] = seen
+                byChainTokens[chain, default: []].append(coinMeta)
             }
         }
-        var buckets: [Chain: SwapKitTokensBucket] = [:]
-        for (chain, byIdentifier) in byChain {
-            let uniqueIds = Set(byIdentifier.values.map { $0.uniqueId })
-            buckets[chain] = SwapKitTokensBucket(
+        var buckets: [Chain: DestinationTokenBucket] = [:]
+        for (chain, tokens) in byChainTokens {
+            let uniqueIds = Set(tokens.map { $0.uniqueId })
+            buckets[chain] = DestinationTokenBucket(
                 chain: chain,
-                byIdentifier: byIdentifier,
+                tokens: tokens,
                 uniqueIds: uniqueIds
             )
         }
