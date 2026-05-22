@@ -171,7 +171,12 @@ extension Coin {
         case .cronosChain:
             return [.lifi]
         case .zcash:
-            return [.mayachain]
+            // Tier 1 L1 source — `.swapkit` enables ZEC↔EVM / ZEC↔SOL routes
+            // via NEAR Intents. Transparent-only by hard MPC constraint
+            // (Vultisig can't manage shielded keys). Sapling-v4 PSBT signed
+            // through `SwapKitZcashSigner` with ZIP-243 sighash via
+            // WalletCore `CoinType.zcash`.
+            return [.mayachain, .swapkit]
         case .ripple:
             // Tier 1 L1 source — `.swapkit` enables XRP↔EVM / XRP↔SOL routes
             // via NEAR Intents. Deposit-only flow: SwapKit returns a per-route
