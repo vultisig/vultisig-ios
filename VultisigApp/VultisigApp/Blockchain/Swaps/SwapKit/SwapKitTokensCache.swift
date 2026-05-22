@@ -5,7 +5,7 @@
 //  Fans out `GET /tokens?provider=<NAME>` against the providers currently
 //  enabled in the cached `/v3/providers` snapshot, dedupes by `identifier`,
 //  buckets by reverse-mapped Vultisig `Chain`, and caches the result in
-//  memory with a 24h TTL. The destination coin picker resolves SwapKit
+//  memory with a 5-minute TTL. The destination coin picker resolves SwapKit
 //  destinations via `DestinationTokenRegistry`, which calls
 //  `tokens(for: chain)` here.
 //
@@ -69,7 +69,7 @@ final class SwapKitTokensCache: DestinationTokenProvider {
     /// avoid stampeding the proxy on first picker open. Returns the cached
     /// snapshot when fresh; otherwise refreshes.
     private func ensureSnapshot(now: Date) async -> [Chain: DestinationTokenBucket]? {
-        if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.providerCacheTTL {
+        if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.tokensCacheTTL {
             return snapshot.buckets
         }
         if let inFlight {

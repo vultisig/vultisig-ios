@@ -36,8 +36,18 @@ enum SwapKitConfig {
     static let timeoutInterval: TimeInterval = 30
 
     /// Provider TTL — how long the cached `/providers` response is reused
-    /// before re-fetching. 24h matches the design decision §4.
+    /// before re-fetching. 24h matches the design decision §4. Provider
+    /// eligibility (which chains each provider supports) changes rarely —
+    /// daily refresh is plenty.
     static let providerCacheTTL: TimeInterval = 24 * 60 * 60
+
+    /// Token-catalog TTL — how long the cached `/tokens?provider=…` fan-out
+    /// snapshot is reused before re-fetching. Shorter than `providerCacheTTL`
+    /// because new tokens get added to NEAR Intents / Chainflip / etc.
+    /// catalogs continuously, and a stale picker hides them. 5 min balances
+    /// "user sees new tokens within a reasonable window" against "don't
+    /// stampede the proxy every time the picker opens".
+    static let tokensCacheTTL: TimeInterval = 5 * 60
 
     /// Provider names that route through THORChain / MayaChain. Routes whose
     /// `providers[]` contain any of these are dropped at the fetcher
