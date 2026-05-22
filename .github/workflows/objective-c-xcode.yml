@@ -89,7 +89,7 @@ jobs:
           xcodebuild build analyze test \
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.1' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5' \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
