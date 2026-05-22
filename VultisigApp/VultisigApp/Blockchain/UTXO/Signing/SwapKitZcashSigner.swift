@@ -448,6 +448,7 @@ enum SwapKitZcashSigner {
         case .missingPSBT: return .missingPSBT
         case .truncated: return .truncated
         case .invalidMagic: return .invalidMagic
+        case .malformed(let reason): return .malformedPSBT(reason: reason)
         }
     }
 }

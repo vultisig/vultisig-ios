@@ -39,6 +39,7 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
     case truncated
     case invalidMagic
     case missingUnsignedTx
+    case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingPrevUtxo(inputIndex: Int)
     case invalidPrevUtxo(inputIndex: Int, reason: String)
@@ -57,6 +58,8 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
             return "SwapKit PSBT magic bytes are invalid"
         case .missingUnsignedTx:
             return "SwapKit PSBT is missing the unsigned-tx global record"
+        case .malformedPSBT(let reason):
+            return "SwapKit PSBT is malformed: \(reason)"
         case .unsupportedScript(let detail):
             return "SwapKit PSBT script not supported: \(detail)"
         case .missingPrevUtxo(let i):
@@ -611,6 +614,7 @@ enum SwapKitLegacyP2PKHSigner {
         case .missingPSBT: return .missingPSBT
         case .truncated: return .truncated
         case .invalidMagic: return .invalidMagic
+        case .malformed(let reason): return .malformedPSBT(reason: reason)
         }
     }
 }

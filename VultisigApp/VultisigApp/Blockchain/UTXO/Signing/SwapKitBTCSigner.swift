@@ -30,6 +30,7 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
     case truncated
     case invalidMagic
     case missingUnsignedTx
+    case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingWitnessUtxo(inputIndex: Int)
     case underlying(BitcoinPsbtSignerError)
@@ -44,6 +45,8 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
             return "SwapKit BTC PSBT magic bytes are invalid"
         case .missingUnsignedTx:
             return "SwapKit BTC PSBT is missing the unsigned-tx global record"
+        case .malformedPSBT(let reason):
+            return "SwapKit BTC PSBT is malformed: \(reason)"
         case .unsupportedScript(let detail):
             return "SwapKit BTC PSBT script not supported: \(detail)"
         case .missingWitnessUtxo(let i):
@@ -178,6 +181,7 @@ enum SwapKitBTCSigner {
         case .missingPSBT: return .missingPSBT
         case .truncated: return .truncated
         case .invalidMagic: return .invalidMagic
+        case .malformed(let reason): return .malformedPSBT(reason: reason)
         }
     }
 
@@ -206,7 +210,15 @@ enum SwapKitBTCSigner {
             guard bytes.count == 4 else {
                 throw SwapKitBTCSignerError.unsupportedScript("sighash-type record has \(bytes.count) bytes, expected 4")
             }
-            sighashType = bytes.withUnsafeBytes { $0.load(as: UInt32.self).littleEndian }
+            // Assemble byte-by-byte to avoid `withUnsafeBytes.load(as:)`'s
+            // natural-alignment requirement (same foot-gun the PSBT cursor
+            // avoids). Adversarial / corrupted PSBTs could otherwise
+            // exploit a misaligned 4-byte slice into a parent Data.
+            let base = bytes.startIndex
+            sighashType = UInt32(bytes[base])
+                | (UInt32(bytes[base + 1]) << 8)
+                | (UInt32(bytes[base + 2]) << 16)
+                | (UInt32(bytes[base + 3]) << 24)
         } else {
             sighashType = 0
         }
