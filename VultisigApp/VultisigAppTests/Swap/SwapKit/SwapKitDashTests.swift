@@ -70,7 +70,12 @@ final class SwapKitDashTests: XCTestCase {
         let payload = try makePayload()
         let hashes = try SwapKitDashSigner.preSigningHashes(payload: payload)
         XCTAssertEqual(hashes.count, 1)
-        XCTAssertEqual(hashes[0].count, 64)
+        // `XCTAssertEqual` is non-fatal, so a count mismatch would
+        // continue into `hashes[0]` and crash with an index out-of-range
+        // trap rather than reporting the size-vs-element assertion. Use
+        // `XCTUnwrap` on `hashes.first` to abort with a clean diagnostic.
+        let first = try XCTUnwrap(hashes.first)
+        XCTAssertEqual(first.count, 64)
     }
 
     func testDashSignerBuildsBitcoinSigningInputWithDashCoinType() throws {
