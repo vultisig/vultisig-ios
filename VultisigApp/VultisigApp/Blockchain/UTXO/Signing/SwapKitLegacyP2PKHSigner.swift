@@ -260,23 +260,19 @@ enum SwapKitLegacyP2PKHSigner {
             ))
         }
 
-        // BitcoinSigningInput's pre-flight validator rejects empty `toAddress`
-        // / `changeAddress` (WalletCore tries to derive a script from them
-        // even when a frozen plan is present). We don't have a way to derive
-        // a canonical chain-specific address from the raw scriptPubKey
-        // without a CashAddr / base58check encoder per chain, so reuse the
-        // SwapKit-returned `targetAddress` for both fields. The frozen plan
-        // dictates the actual outputs at signing time — these fields are
-        // structural placeholders.
-        let resolvedTarget = targetAddress.isEmpty
-            ? Self.legacyAddress(forHash: inputs[0].keyHash, coin: coin)
-            : targetAddress
+        // Output scriptPubKeys come from the PSBT body verbatim. WalletCore's
+        // `BitcoinSigner` reconstructs each output from `toAddress` /
+        // `changeAddress` (NOT from the frozen plan — the plan dictates
+        // amounts/fees/UTXOs but the output scripts are derived from the
+        // address strings on `BitcoinSigningInput`). To preserve the PSBT's
+        // actual recipients we derive both addresses from the parsed P2PKH
+        // hash160s and reject any non-P2PKH output (OP_RETURN, P2SH, P2WSH
+        // we can't faithfully re-emit through the address-only API).
         return try assembleSigningInput(
             coin: coin,
             inputs: inputs,
             outputs: parsedTx.outputs,
-            targetAddress: resolvedTarget,
-            changeAddress: resolvedTarget
+            targetAddressHint: targetAddress
         )
     }
 
@@ -286,11 +282,28 @@ enum SwapKitLegacyP2PKHSigner {
         coin: CoinType,
         inputs: [LegacyP2PKHInput],
         outputs: [LegacyP2PKHOutput],
-        targetAddress: String,
-        changeAddress: String
+        targetAddressHint: String
     ) throws -> BitcoinSigningInput {
         guard !inputs.isEmpty, !outputs.isEmpty else {
             throw SwapKitLegacyP2PKHSignerError.planError("empty inputs or outputs")
+        }
+        // WalletCore's BitcoinSigner reconstructs every output from
+        // `toAddress` + `changeAddress` (and optionally `outputOpReturn` /
+        // `extraOutputs`). It does NOT consume per-output scripts from the
+        // frozen plan — only `amount`, `change`, `fee`, and UTXOs flow
+        // through. So to preserve the PSBT's exact output scripts we
+        // assert every output is a P2PKH we can faithfully re-emit through
+        // the address-only API. Anything else (OP_RETURN, P2SH, P2WSH,
+        // multisig) we cannot signal through `BitcoinSigningInput` without
+        // changing the scriptPubKey — hard-reject so we never broadcast a
+        // tx that differs from the PSBT's intent.
+        guard outputs.count <= 2 else {
+            throw SwapKitLegacyP2PKHSignerError.unsupportedScript(
+                "PSBT has \(outputs.count) outputs; legacy signer expects 1 deposit + optional 1 change"
+            )
+        }
+        let outputKeyHashes = try outputs.enumerated().map { (idx, out) -> Data in
+            try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
         }
         let totalIn = inputs.reduce(Int64(0)) { $0 + $1.amount }
         let totalOut = outputs.reduce(Int64(0)) { $0 + $1.amount }
@@ -306,6 +319,25 @@ enum SwapKitLegacyP2PKHSigner {
         // `plan.utxos` + the deposit/change pair.
         let depositAmount = outputs[0].amount
         let changeAmount = outputs.dropFirst().reduce(Int64(0)) { $0 + $1.amount }
+        // Derive the addresses that round-trip back to the exact
+        // scriptPubKeys the PSBT shipped. `targetAddressHint` is only used
+        // if address derivation from a hash160 fails for `coin` (shouldn't
+        // happen for the supported chains — DOGE/BCH/DASH all decode cleanly
+        // via single-byte base58check).
+        let depositAddress = Self.legacyAddress(forHash: outputKeyHashes[0], coin: coin)
+            ?? targetAddressHint
+        let changeAddress: String
+        if outputs.count >= 2 {
+            changeAddress = Self.legacyAddress(forHash: outputKeyHashes[1], coin: coin)
+                ?? targetAddressHint
+        } else {
+            // No change output — point `changeAddress` at the source pubkey
+            // hash so the WalletCore validator accepts the input. The plan's
+            // `change = 0` means WalletCore won't actually emit a change
+            // output, so the address is a structural placeholder.
+            changeAddress = Self.legacyAddress(forHash: inputs[0].keyHash, coin: coin)
+                ?? targetAddressHint
+        }
 
         // Build UTXO list. `outPoint.hash` is the prev-tx hash in **internal
         // little-endian** wire order (same convention as the native helper
@@ -351,13 +383,12 @@ enum SwapKitLegacyP2PKHSigner {
             $0.useMaxAmount = false
             $0.amount = depositAmount
             $0.coinType = coin.rawValue
-            // toAddress / changeAddress aren't authoritative once the plan
-            // is frozen, but WalletCore's pre-flight validation rejects
-            // empty strings. We pass the SwapKit-returned deposit address
-            // (or fall back to the source-derived legacy address) so the
-            // validator is happy. The frozen plan still authoritatively
-            // dictates input/output bytes at preimage time.
-            $0.toAddress = targetAddress
+            // toAddress / changeAddress drive the output scripts WalletCore
+            // emits. We derive them from the PSBT's actual output hash160s
+            // (above) so the rebuilt tx is byte-identical to the PSBT's
+            // intended outputs — preserves the NEAR Intents route's
+            // `tx_id` and the deposit destination.
+            $0.toAddress = depositAddress
             $0.changeAddress = changeAddress
             $0.fixedDustThreshold = coin.getFixedDustThreshold()
         }
@@ -461,6 +492,29 @@ enum SwapKitLegacyP2PKHSigner {
 
     // MARK: - Script-type assertion
 
+    /// Output-side P2PKH assertion. Same shape check as
+    /// `assertP2PKHAndExtractKeyHash` but tags the error with `output #N`
+    /// so non-P2PKH output rejections (OP_RETURN, P2SH, P2WSH) read
+    /// distinctly from input-side rejections in logs.
+    private static func assertP2PKHForOutput(
+        scriptPubKey: Data,
+        outputIndex: Int
+    ) throws -> Data {
+        guard scriptPubKey.count == 25,
+              scriptPubKey[scriptPubKey.startIndex] == 0x76,
+              scriptPubKey[scriptPubKey.startIndex + 1] == 0xa9,
+              scriptPubKey[scriptPubKey.startIndex + 2] == 0x14,
+              scriptPubKey[scriptPubKey.startIndex + 23] == 0x88,
+              scriptPubKey[scriptPubKey.startIndex + 24] == 0xac
+        else {
+            throw SwapKitLegacyP2PKHSignerError.unsupportedScript(
+                "output #\(outputIndex) scriptPubKey is not P2PKH: \(scriptPubKey.hexString)"
+            )
+        }
+        let start = scriptPubKey.startIndex + 3
+        return Data(scriptPubKey[start..<(start + 20)])
+    }
+
     /// P2PKH scriptPubKey: 25 bytes — `OP_DUP OP_HASH160 PUSH20 <20-byte hash>
     /// OP_EQUALVERIFY OP_CHECKSIG` = `76 a9 14 <20> 88 ac`. Returns the
     /// 20-byte hash160. Throws `unsupportedScript` for any other shape.
@@ -522,34 +576,31 @@ enum SwapKitLegacyP2PKHSigner {
     // MARK: - Address derivation from P2PKH hash160
 
     /// Build a legacy base58-check P2PKH address for `coin` from a 20-byte
-    /// hash160. Used to derive a populated `changeAddress` from the source's
-    /// pubkey hash (SwapKit only ships the user's UTXOs in PSBT inputs, so
-    /// every input shares the same hash160 = the source's pubkey hash).
-    /// We re-emit it via WalletCore's `BitcoinAddress` so the version byte
-    /// matches the chain's mainnet (DOGE `0x1E`, BCH `0x00`, DASH `0x4C`).
-    private static func legacyAddress(forHash hash: Data, coin: CoinType) -> String {
-        var prefixed = Data([versionByte(for: coin)])
-        prefixed.append(hash)
-        if let address = BitcoinAddress(data: prefixed) {
-            return address.description
-        }
-        // Defensive: if WalletCore's `BitcoinAddress` ever rejects (e.g.
-        // BCH on certain SDK versions), reuse the raw hash hex as a last-
-        // resort token. The frozen plan supersedes anyway — this string is
-        // just a validator-satisfying placeholder.
-        return hash.hexString
+    /// hash160. Used to derive the deposit + change `toAddress` strings
+    /// WalletCore emits as output scripts. Version-byte / prefix per chain:
+    /// DOGE `0x1E` (`D…`), BCH `0x00` legacy (`1…` — CashAddr derives the
+    /// same hash), DASH `0x4C` (`X…`), ZEC `0x1C 0xB8` (`t1…`, two-byte
+    /// transparent prefix). Returns `nil` if no prefix is defined for the
+    /// coin — caller falls back to the SwapKit `targetAddress` hint to
+    /// satisfy WalletCore's non-empty validator.
+    static func legacyAddress(forHash hash: Data, coin: CoinType) -> String? {
+        guard let prefix = versionPrefix(for: coin) else { return nil }
+        var data = Data(prefix)
+        data.append(hash)
+        return Base58.encode(data: data)
     }
 
-    /// Mainnet P2PKH version bytes per chain. Listed inline rather than
-    /// pulled from WalletCore because `CoinType` doesn't surface this byte
-    /// directly through Swift bridging.
-    private static func versionByte(for coin: CoinType) -> UInt8 {
+    /// Mainnet P2PKH version prefix per chain. Multi-byte for chains whose
+    /// transparent address namespace uses a longer prefix (ZEC = 2 bytes).
+    /// Listed inline rather than pulled from WalletCore because `CoinType`
+    /// doesn't surface the prefix bytes through Swift bridging.
+    private static func versionPrefix(for coin: CoinType) -> [UInt8]? {
         switch coin {
-        case .dogecoin: return 0x1E       // DOGE `D…`
-        case .bitcoinCash: return 0x00    // BCH legacy `1…` (CashAddr derives the same hash)
-        case .dash: return 0x4C            // DASH `X…`
-        case .zcash: return 0x1C           // ZEC `t1` legacy version byte (high-order)
-        default: return 0x00
+        case .dogecoin: return [0x1E]            // DOGE `D…`
+        case .bitcoinCash: return [0x00]         // BCH legacy `1…` (CashAddr derives the same hash)
+        case .dash: return [0x4C]                 // DASH `X…`
+        case .zcash: return [0x1C, 0xB8]          // ZEC `t1…` (two-byte transparent prefix)
+        default: return nil
         }
     }
 

@@ -141,6 +141,30 @@ final class SwapKitZcashTests: XCTestCase {
         XCTAssertEqual(input.plan.branchID.hexString, "f04dec4d")
     }
 
+    func testZcashSignerDerivesToAddressFromPSBTOutputScriptNotTargetAddress() throws {
+        // The ZEC spike fixture's `targetAddress`
+        // (`t1MMyqcyYHTFRcXSDVFKmJBuUBmAjcEvBMf`, hash160
+        // `26463fc7c0e1687c41d0937d22cc64d22b29f35d`) does NOT match output
+        // 0's P2PKH hash (`19fb7ab04f2de927ced3b8337ab45d5d046db6cf` =
+        // `t1LEzADVN42PMeGGE8y2AxPydsdFNyAvpE3`) — the SwapKit-declared
+        // address differs from the actual on-chain deposit recipient. The
+        // ZIP-243 sighash includes the prevout scripts, but more
+        // importantly WalletCore reconstructs the tx body from
+        // `toAddress` + `changeAddress`, so we MUST derive both from the
+        // PSBT's actual scriptPubKeys or the signed tx routes funds to
+        // the wrong recipient. Regression pin.
+        let payload = try makePayload()
+        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload)
+        XCTAssertEqual(
+            input.toAddress, "t1LEzADVN42PMeGGE8y2AxPydsdFNyAvpE3",
+            "toAddress must be derived from PSBT output 0's hash160 (not from SwapKit's targetAddress)"
+        )
+        XCTAssertEqual(
+            input.changeAddress, "t1bnxtY7aLCjWx9Ru1YcGwRWch3eEWUFK7u",
+            "changeAddress must be derived from PSBT output 1's hash160 (source address)"
+        )
+    }
+
     // MARK: - EVM builder defence-in-depth
 
     func testEvmBuilderRejectsZcashPsbt() throws {

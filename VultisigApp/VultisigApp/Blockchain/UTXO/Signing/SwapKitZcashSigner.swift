@@ -295,6 +295,28 @@ enum SwapKitZcashSigner {
         throw SwapKitZcashSignerError.underlying(.missingPrevUtxo(inputIndex: inputIndex))
     }
 
+    /// Output-side P2PKH assertion. Tags errors with `output #N` so
+    /// non-P2PKH output rejections (OP_RETURN, P2SH, shielded leftover)
+    /// read distinctly from input-side rejections in logs.
+    private static func assertP2PKHForOutput(
+        scriptPubKey: Data,
+        outputIndex: Int
+    ) throws -> Data {
+        guard scriptPubKey.count == 25,
+              scriptPubKey[scriptPubKey.startIndex] == 0x76,
+              scriptPubKey[scriptPubKey.startIndex + 1] == 0xa9,
+              scriptPubKey[scriptPubKey.startIndex + 2] == 0x14,
+              scriptPubKey[scriptPubKey.startIndex + 23] == 0x88,
+              scriptPubKey[scriptPubKey.startIndex + 24] == 0xac
+        else {
+            throw SwapKitZcashSignerError.underlying(.unsupportedScript(
+                "output #\(outputIndex) scriptPubKey is not P2PKH: \(scriptPubKey.hexString)"
+            ))
+        }
+        let start = scriptPubKey.startIndex + 3
+        return Data(scriptPubKey[start..<(start + 20)])
+    }
+
     private static func assertP2PKHAndExtractKeyHash(
         scriptPubKey: Data,
         inputIndex: Int
@@ -323,6 +345,24 @@ enum SwapKitZcashSigner {
         guard !inputs.isEmpty, !outputs.isEmpty else {
             throw SwapKitZcashSignerError.underlying(.planError("empty inputs or outputs"))
         }
+        // WalletCore reconstructs each output from `toAddress` /
+        // `changeAddress` — it does NOT pull per-output scripts from the
+        // frozen plan. Validate every output is a P2PKH we can faithfully
+        // re-emit through the address-only API, then derive the t1
+        // addresses from the PSBT's actual hash160s (NOT from the SwapKit
+        // `targetAddress` — the spike fixture has output 0 going to a
+        // route-allocated transparent address that differs from
+        // `targetAddress`, so trusting `targetAddress` produces a tx whose
+        // deposit lands at the wrong recipient). Hard-reject anything
+        // other than 1 deposit + optional 1 change P2PKH outputs.
+        guard outputs.count <= 2 else {
+            throw SwapKitZcashSignerError.underlying(.unsupportedScript(
+                "Sapling PSBT has \(outputs.count) outputs; ZEC signer expects 1 deposit + optional 1 change"
+            ))
+        }
+        let outputKeyHashes = try outputs.enumerated().map { (idx, out) -> Data in
+            try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
+        }
         let totalIn = inputs.reduce(Int64(0)) { $0 + $1.amount }
         let totalOut = outputs.reduce(Int64(0)) { $0 + $1.amount }
         let fee = totalIn - totalOut
@@ -333,6 +373,26 @@ enum SwapKitZcashSigner {
         }
         let depositAmount = outputs[0].amount
         let changeAmount = outputs.dropFirst().reduce(Int64(0)) { $0 + $1.amount }
+        // Derive t1 addresses from the parsed output hash160s. Falls back
+        // to the SwapKit `targetAddress` hint only if address derivation
+        // fails — shouldn't happen for ZEC (`0x1C 0xB8` two-byte
+        // transparent prefix always encodes via base58check).
+        let depositAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
+            forHash: outputKeyHashes[0],
+            coin: .zcash
+        ) ?? targetAddress
+        let changeAddress: String
+        if outputs.count >= 2 {
+            changeAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
+                forHash: outputKeyHashes[1],
+                coin: .zcash
+            ) ?? targetAddress
+        } else {
+            changeAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
+                forHash: inputs[0].keyHash,
+                coin: .zcash
+            ) ?? targetAddress
+        }
 
         var utxos: [BitcoinUnspentTransaction] = []
         for input in inputs {
@@ -369,11 +429,13 @@ enum SwapKitZcashSigner {
             $0.useMaxAmount = false
             $0.amount = depositAmount
             $0.coinType = CoinType.zcash.rawValue
-            // toAddress / changeAddress: WalletCore validates non-empty
-            // strings even with a frozen plan. Reuse SwapKit's returned
-            // `targetAddress` for both — the plan supersedes at signing.
-            $0.toAddress = targetAddress
-            $0.changeAddress = targetAddress
+            // toAddress / changeAddress drive the output scripts WalletCore
+            // emits. Derived above from the PSBT's actual output hash160s
+            // so the rebuilt tx is byte-identical to the PSBT's intended
+            // outputs (preserves the NEAR Intents route tx_id and the
+            // deposit destination).
+            $0.toAddress = depositAddress
+            $0.changeAddress = changeAddress
         }
         signingInput.scripts = scripts
         signingInput.utxo = utxos

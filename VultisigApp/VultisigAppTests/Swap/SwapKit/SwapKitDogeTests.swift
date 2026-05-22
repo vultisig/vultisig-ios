@@ -105,6 +105,27 @@ final class SwapKitDogeTests: XCTestCase {
         XCTAssertEqual(input.scripts.count, 1, "One redeem-script entry per unique input hash")
     }
 
+    func testDogeSignerDerivesToAddressFromPSBTOutputScriptNotTargetAddress() throws {
+        // The DOGE spike fixture's `targetAddress`
+        // (`D9DTLZMyferY6TVquM7GryViP7GtBntqWj`) does NOT match output 0's
+        // P2PKH hash (`19fb7ab04f2de927ced3b8337ab45d5d046db6cf` =
+        // `D7WUh91sP7W3adPvw8CcNM3KW6nbVsmeA7`). The signer must derive
+        // `toAddress` from the parsed scriptPubKey, NOT from
+        // `targetAddress`, otherwise the broadcast tx would route funds to
+        // the wrong recipient. Regression pin for the output-script
+        // preservation fix.
+        let payload = try makePayload()
+        let input = try SwapKitDogeSigner.buildSigningInput(payload: payload)
+        XCTAssertEqual(
+            input.toAddress, "D7WUh91sP7W3adPvw8CcNM3KW6nbVsmeA7",
+            "toAddress must be derived from PSBT output 0's hash160 (not from SwapKit's targetAddress)"
+        )
+        XCTAssertEqual(
+            input.changeAddress, "DP4TRTe5fHrCtWZbohniMNaJKXBT62JmJv",
+            "changeAddress must be derived from PSBT output 1's hash160"
+        )
+    }
+
     func testDogeSignerRejectsEmptyPayload() {
         let empty = makeEmptyPayload()
         XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(payload: empty)) { err in
