@@ -90,7 +90,12 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         case "EVM":
             let evm = try container.decode(SwapKitEvmTx.self, forKey: .tx)
             return .evm(evm)
-        case "SOLANA":
+        case "SOLANA", "SERIALIZED_BASE64":
+            // SwapKit upstream switched live from `meta.txType: "SOLANA"`
+            // to `"SERIALIZED_BASE64"` (the generic name for base64-encoded
+            // pre-built transaction bytes) without versioning the change.
+            // Same wire shape — `tx` is a single base64 string. Accept both
+            // so a flip back doesn't break us either.
             let base64 = try container.decode(String.self, forKey: .tx)
             return .solana(base64: base64)
         default:
