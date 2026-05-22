@@ -140,7 +140,27 @@ extension Coin {
             // PSBT and we sign it through the same UTXO helper path
             // THORChain BTC swaps already use.
             return [.thorchain, .mayachain, .swapkit]
-        case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
+        case .dogecoin:
+            // Tier 1 L1 source — `.swapkit` enables DOGE↔EVM / DOGE↔SOL routes
+            // via NEAR Intents. Wire shape matches BTC (`meta.txType: "PSBT"`)
+            // but inputs are legacy P2PKH; signed through `SwapKitDogeSigner`
+            // riding WalletCore's `CoinType.dogecoin` end-to-end.
+            return [.thorchain, .swapkit]
+        case .bitcoinCash:
+            // Tier 1 L1 source — same shape as DOGE (legacy P2PKH PSBT).
+            // BCH adds SIGHASH_FORKID natively via WalletCore.
+            return [.thorchain, .swapkit]
+        case .litecoin:
+            // Tier 1 L1 source — flag-flip-ready. LTC reuses the existing
+            // `SwapKitBTCSigner` (segwit-compatible — LTC addresses are
+            // P2WPKH / P2SH-P2WPKH). No-op today because
+            // `SwapKitProviderCache.chainEnabled(.litecoin)` returns false
+            // until upstream lists `"litecoin"` in `/v3/providers.enabledChainIds`.
+            // Despite this, `/v3/quote` serves LTC routes via NEAR — the gate
+            // is overly conservative. Shipping the flip pre-emptively so the
+            // gate flip is the only diff when upstream lights up.
+            return [.thorchain, .swapkit]
+        case .gaiaChain:
             return [.thorchain]
         case .solana:
             // Phase 1 chain — `.swapkit` enables EVM↔Solana and Solana↔EVM

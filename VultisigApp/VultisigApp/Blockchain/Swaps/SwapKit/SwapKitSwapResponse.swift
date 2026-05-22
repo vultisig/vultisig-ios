@@ -122,7 +122,34 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         } else {
             destinationTag = nil
         }
-        tx = try Self.decodeTx(meta: meta, container: container)
+        tx = try Self.decodeTx(meta: meta, sellAsset: sellAsset, container: container)
+    }
+
+    /// Discriminate the PSBT shape by source chain. SwapKit's wire surface
+    /// is the same uniform base64 PSBT for every UTXO chain, but the inner
+    /// unsigned-tx body differs (segwit BIP-144 for BTC/LTC, legacy
+    /// pre-segwit for DOGE/BCH/DASH, Sapling-v4 for ZEC). The decoder picks
+    /// the right `SwapKitTx` case from the `sellAsset` prefix so the
+    /// keysign dispatcher can route directly to the per-chain signer.
+    /// Asset-prefix matching is case-insensitive to absorb any future
+    /// `DOGE.DOGE` vs `Doge.doge` drift in upstream catalogs.
+    private static func psbtCase(forSellAsset sellAsset: String, base64: String) -> SwapKitTx {
+        let chain = sellAsset.uppercased().split(separator: ".").first.map(String.init) ?? ""
+        switch chain {
+        case "DOGE":
+            return .dogecoinPsbt(base64: base64)
+        case "BCH":
+            return .bitcoinCashPsbt(base64: base64)
+        case "DASH":
+            return .dashPsbt(base64: base64)
+        case "ZEC":
+            return .zcashPsbt(base64: base64)
+        default:
+            // BTC + LTC + anything else PSBT-shaped. LTC reuses the BTC
+            // segwit signer (its addresses are P2WPKH / P2SH-P2WPKH —
+            // `SwapKitBTCSigner.classifyScript` accepts both).
+            return .psbt(base64: base64)
+        }
     }
 
     /// Split a `?dt=12345` or `|12345` suffix off an XRP target address.
@@ -154,6 +181,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
 
     private static func decodeTx(
         meta: SwapKitSwapResponseMeta,
+        sellAsset: String,
         container: KeyedDecodingContainer<CodingKeys>
     ) throws -> SwapKitTx {
         let txType = meta.txType.uppercased()
@@ -170,13 +198,16 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             let base64 = try container.decode(String.self, forKey: .tx)
             return .solana(base64: base64)
         case "PSBT":
-            // Bitcoin source: SwapKit returns the unsigned PSBT as a single
+            // UTXO source: SwapKit returns the unsigned PSBT as a single
             // base64 string in `tx` (~480 chars, magic prefix `cHNidP8B...`).
-            // No nested object — `tx` is the bare string, mirroring the
-            // Solana shape. The keysign-side dispatcher base64-decodes into
-            // the proto `tx_payload` bytes field for cross-device transit.
+            // Same wire shape across every UTXO chain — only the inner
+            // unsigned-tx body differs (segwit P2WPKH for BTC/LTC, legacy
+            // P2PKH for DOGE/BCH/DASH, Sapling-v4 for ZEC). Discriminate on
+            // the source chain at decode time so the keysign dispatcher
+            // routes to the right signer without grovelling around the PSBT
+            // body bytes.
             let base64 = try container.decode(String.self, forKey: .tx)
-            return .psbt(base64: base64)
+            return psbtCase(forSellAsset: sellAsset, base64: base64)
         case "TON":
             // TON source: SwapKit returns `tx` as a single-element array of
             // `{address, amount}` objects. `amount` is raw nano-TON (1e9 =
@@ -311,6 +342,22 @@ enum SwapKitTx: Hashable {
     /// existing `RippleHelper`. No transaction body to sign — same model as
     /// `.cardano`.
     case rippleDepositOnly
+    /// DOGE source — legacy P2PKH PSBT. Same `meta.txType: "PSBT"` wire as
+    /// BTC, but inputs are P2PKH (DOGE has no segwit). Signed via WalletCore
+    /// `CoinType.dogecoin` + frozen `BitcoinTransactionPlan` (no replanner
+    /// — preserves the broadcast tx_id NEAR Intents tracks the route by).
+    case dogecoinPsbt(base64: String)
+    /// BCH source — legacy P2PKH PSBT. Same structure as DOGE; BCH adds
+    /// SIGHASH_FORKID natively via `BitcoinScript.hashTypeForCoin(.bitcoinCash)`.
+    case bitcoinCashPsbt(base64: String)
+    /// DASH source — legacy P2PKH PSBT (DASH has no segwit). Same structure
+    /// as DOGE/BCH; signed via `CoinType.dash`.
+    case dashPsbt(base64: String)
+    /// ZEC source — Sapling-v4 transparent PSBT. Inputs are P2PKH; the
+    /// unsigned-tx body carries `nVersionGroupId` + `expiryHeight` + zeroed
+    /// shielded fields. Signed via `CoinType.zcash` with the Sapling
+    /// branchID (`0x76b809bb` LE) for ZIP-243 sighash.
+    case zcashPsbt(base64: String)
     case unsupported(txType: String, raw: SwapKitRawJSON)
 }
 

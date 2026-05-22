@@ -289,6 +289,90 @@ extension SwapCryptoLogic {
                     vault: vault
                 )
 
+            case .dogecoinPsbt(let base64):
+                let swapKitPayload = try buildSwapKitLegacyPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    txType: "PSBT_DOGE",
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .bitcoinCashPsbt(let base64):
+                let swapKitPayload = try buildSwapKitLegacyPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    txType: "PSBT_BCH",
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .dashPsbt(let base64):
+                let swapKitPayload = try buildSwapKitLegacyPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    txType: "PSBT_DASH",
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .zcashPsbt(let base64):
+                let swapKitPayload = try buildSwapKitLegacyPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    txType: "PSBT_ZEC",
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
             case .ton(let transfers):
                 // TON source: SwapKit returns `[{address, amount}]`. We
                 // JSON-encode the canonical array (verbatim from the wire) into
@@ -652,6 +736,40 @@ extension SwapCryptoLogic {
         )
     }
 
+    /// Build a `SwapKitSwapPayload` for the legacy-P2PKH PSBT chains
+    /// (DOGE / BCH / DASH / ZEC). Identical body to `buildSwapKitPSBTPayload`
+    /// — base64-decode the PSBT bytes, stash SwapKit's deposit address +
+    /// sub-provider tag — but the `txType` discriminator is per-chain so the
+    /// keysign dispatcher routes to the right `SwapKit<Chain>Signer`. Wire
+    /// shape on the cross-device proto matches the BTC variant 1:1; only the
+    /// discriminator differs.
+    static func buildSwapKitLegacyPSBTPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        base64PSBT: String,
+        txType: String,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        guard let psbtBytes = Data(base64Encoded: base64PSBT) else {
+            throw SwapKitError.generic(message: "SwapKit \(txType) payload is not valid base64")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: txType,
+            txPayload: psbtBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
     /// Build a `SwapKitSwapPayload` for the XRP deposit-only path. SwapKit
     /// returns no transaction body — the cosigning peer rebuilds a plain
     /// XRP Payment to `resolvedTargetAddress` for `fromAmount` and attaches
@@ -773,6 +891,18 @@ extension SwapCryptoLogic {
             // XRP deposit-only flow — no transaction body to mirror into
             // an EVMQuote. Same defence-in-depth as PSBT.
             throw SwapKitError.unsupportedTxType("XRP")
+
+        case .dogecoinPsbt:
+            throw SwapKitError.unsupportedTxType("PSBT_DOGE")
+
+        case .bitcoinCashPsbt:
+            throw SwapKitError.unsupportedTxType("PSBT_BCH")
+
+        case .dashPsbt:
+            throw SwapKitError.unsupportedTxType("PSBT_DASH")
+
+        case .zcashPsbt:
+            throw SwapKitError.unsupportedTxType("PSBT_ZEC")
 
         case .unsupported(let txType, _):
             throw SwapKitError.unsupportedTxType(txType)

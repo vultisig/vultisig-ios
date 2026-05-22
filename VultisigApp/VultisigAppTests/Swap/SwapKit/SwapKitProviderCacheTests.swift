@@ -62,6 +62,50 @@ final class SwapKitProviderCacheTests: XCTestCase {
         XCTAssertFalse(SwapKitProviderCache.chainEnabled(.mantle, in: providers))
     }
 
+    /// Tier 1 L1 chain. NEAR's `enabledChainIds` includes `"dogecoin"` and
+    /// `"bitcoincash"` — both are enabled for SwapKit out of the gate.
+    func testDogeIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.dogecoin, in: providers))
+    }
+
+    func testBitcoinCashIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.bitcoinCash, in: providers))
+    }
+
+    func testDashIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.dash, in: providers))
+    }
+
+    func testZcashIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.zcash, in: providers))
+    }
+
+    func testRippleIsEnabled() {
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.ripple, in: providers))
+    }
+
+    /// LTC is currently NOT in any provider's `enabledChainIds`, so the
+    /// cache reads it as "not enabled" and `Coin+Swaps.swift`'s `.litecoin`
+    /// arm (which lists `.swapkit`) is silently filtered out at the
+    /// `SwapService.fetchSwapKitQuote` gate.
+    ///
+    /// **Important caveat**: the upstream gate is a false-negative for LTC.
+    /// `/v3/quote` actually serves `LTC.LTC → ETH.USDC` routes via NEAR
+    /// despite NEAR's `enabledChainIds` omitting `"litecoin"`. We do not
+    /// relax the iOS gate here — the eligibility-cache contract is "the
+    /// provider says it doesn't serve this chain, don't try" — but the
+    /// long-term fix is the LTC source plan
+    /// (`pages/projects/vultisig/swapkit-integration/swapkit-ltc-source-plan.md`):
+    /// either NEAR fixes its `/v3/providers` metadata or we add a per-chain
+    /// override.
+    func testLitecoinIsCurrentlyGatedByEnabledChainIds() {
+        XCTAssertFalse(
+            SwapKitProviderCache.chainEnabled(.litecoin, in: providers),
+            "LTC stays gated until NEAR adds `litecoin` to enabledChainIds. " +
+            "Gate is overly conservative (live quotes work); see swapkit-ltc-source-plan."
+        )
+    }
+
     func testThorchainOnlyChainsAreNotEnabled() {
         // Synthesise a fixture where the only provider enabling a chain is
         // MAYACHAIN_STREAMING. The cache must ignore filtered providers

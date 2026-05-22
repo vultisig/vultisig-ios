@@ -70,6 +70,10 @@ struct KeysignMessageFactory {
                 switch swapKitPayload.txType {
                 case "PSBT":
                     messages += try SwapKitBTCSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_DOGE":
+                    messages += try SwapKitDogeSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_BCH":
+                    messages += try SwapKitBCHSigner.preSigningHashes(payload: swapKitPayload)
                 case "SUI":
                     messages += try SwapKitSuiSigner.preSigningHashes(payload: swapKitPayload)
                 case "TRON":
