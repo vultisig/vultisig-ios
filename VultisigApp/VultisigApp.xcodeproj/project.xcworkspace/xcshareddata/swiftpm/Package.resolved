@@ -32,7 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "revision" : "9d2ee6358a9895cb408e792f4e48af03ec6b31cf"
+        "branch" : "feat/swapkit-swap-payload",
+        "revision" : "b95e6206335e8eb0ca0ad1323d865dff12ea390c"
       }
     },
     {

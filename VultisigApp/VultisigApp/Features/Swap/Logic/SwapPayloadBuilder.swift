@@ -232,34 +232,392 @@ extension SwapCryptoLogic {
             )
 
         case let .swapkit(swapResponse, _, _):
-            let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
-            // Re-derive the approve payload from SwapKit's `approvalTx` (or
-            // fall back to the standard ERC20 path against `targetAddress`).
-            let resolvedApprovePayload = buildSwapKitApprovePayload(
-                fromCoin: fromCoin,
-                amount: amountInCoin,
-                swapResponse: swapResponse,
-                fallback: approvePayload
-            )
-            let payload = GenericSwapPayload(
-                fromCoin: fromCoin,
-                toCoin: toCoin,
-                fromAmount: amountInCoin,
-                toAmountDecimal: toDecimal,
-                quote: evmQuote,
-                provider: .swapkit
-            )
-            return try await keysignFactory.buildTransfer(
-                coin: fromCoin,
-                toAddress: swapResponse.targetAddress,
-                amount: amountInCoin,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: .generic(payload),
-                approvePayload: resolvedApprovePayload,
-                vault: vault
-            )
+            // Phase 2: dispatch on SwapKit's `meta.txType`. EVM and Solana
+            // ride `SwapPayload.generic` (their wire shape matches
+            // `OneInchSwapPayload` 1:1); PSBT (Bitcoin) rides the new
+            // `SwapPayload.swapkit` variant that wraps the bytes for cross-
+            // device transit. Future phases (TRON, TON, SUI, Cardano) add
+            // their own `txType` branches here.
+            switch swapResponse.tx {
+            case .evm, .solana:
+                let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
+                // Re-derive the approve payload from SwapKit's `approvalTx`
+                // (or fall back to the standard ERC20 path against
+                // `targetAddress`).
+                let resolvedApprovePayload = buildSwapKitApprovePayload(
+                    fromCoin: fromCoin,
+                    amount: amountInCoin,
+                    swapResponse: swapResponse,
+                    fallback: approvePayload
+                )
+                let payload = GenericSwapPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmount: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    quote: evmQuote,
+                    provider: .swapkit
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .generic(payload),
+                    approvePayload: resolvedApprovePayload,
+                    vault: vault
+                )
+
+            case .psbt(let base64):
+                let swapKitPayload = try buildSwapKitPSBTPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PSBT: base64,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .ton(let transfers):
+                // TON source: SwapKit returns `[{address, amount}]`. We
+                // JSON-encode the canonical array (verbatim from the wire) into
+                // `tx_payload` bytes so the cosigning peer can reconstruct the
+                // same transfer set. Signing reuses the existing TON send path
+                // — landed in the consolidated signing PR.
+                let swapKitPayload = try buildSwapKitTonPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    transfers: transfers,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .cardano:
+                // Cardano source: deposit-address-only flow. SwapKit returns
+                // no transaction body for Cardano source — Vultisig builds a
+                // plain ADA transfer to `targetAddress` for `sellAmount` via
+                // the existing Cardano send path. `tx_payload` is empty bytes;
+                // routing info lives entirely in `targetAddress` + `fromAmount`.
+                let swapKitPayload = buildSwapKitCardanoPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .cardanoPrebuilt(let cbor):
+                // Cardano source: SwapKit-built CBOR flow. The unsigned
+                // transaction envelope is handed to us verbatim — UTXO
+                // selection, change splitting, and fee computation are all
+                // done server-side. The dispatcher routes
+                // `txType=CARDANO_PREBUILT` to `SwapKitCardanoSigner`, which
+                // signs item 0 (the body) of `tx_payload` directly. We don't
+                // re-build a Cardano transfer locally — that would compute a
+                // different tx_id and break NEAR Intents tracking.
+                //
+                // `buildTransfer` still runs `selectCardanoUTXOs` (Koios
+                // fetch) so the resulting `KeysignPayload.utxos` field is
+                // populated for cross-device transit. The pre-built signer
+                // ignores those UTXOs at signing time — the bytes in
+                // `txPayload` are authoritative — but populating them keeps
+                // the proto field uniform with the deposit-only path.
+                let swapKitPayload = buildSwapKitCardanoPrebuiltPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    cbor: cbor,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .sui(let base64):
+                // Sui source: SwapKit returns a base64-encoded pre-built
+                // programmable transaction block (PTB), ~5KB. Existing Pay /
+                // PaySui flows won't accept a serialized PTB — the signing
+                // path is greenfield and lands in the consolidated signing
+                // PR. Scaffold here just stages the bytes on the keysign
+                // payload so the cosigning peer receives the canonical PTB
+                // intact.
+                let swapKitPayload = try buildSwapKitSuiPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    base64PTB: base64,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .tron(let tronTx):
+                // TRON source: SwapKit returns a TronWeb-shaped object. We
+                // JSON-encode the canonical representation into `tx_payload`
+                // bytes so the cosigning peer reconstructs the same object.
+                // `raw_data_hex` is the canonical input to WalletCore Tron
+                // signing — surfaced as a top-level field on the payload so
+                // the signing PR can pull it without re-parsing the JSON.
+                let swapKitPayload = try buildSwapKitTronPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    tronTx: tronTx,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
+            case .unsupported(let txType, _):
+                throw SwapKitError.unsupportedTxType(txType)
+            }
         }
+    }
+
+    /// Build a `SwapKitSwapPayload` for the BTC PSBT path: base64-decode the
+    /// PSBT into raw bytes (peer doesn't need to round-trip through base64),
+    /// stash the SwapKit-returned `targetAddress` + sub-provider tag, and
+    /// keep `inboundAddress` + `memo` for forward compatibility with future
+    /// providers that may populate them.
+    static func buildSwapKitPSBTPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        base64PSBT: String,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        guard let psbtBytes = Data(base64Encoded: base64PSBT) else {
+            throw SwapKitError.generic(message: "SwapKit PSBT payload is not valid base64")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "PSBT",
+            txPayload: psbtBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
+    /// Build a `SwapKitSwapPayload` for the TON path. SwapKit returns
+    /// `[{address, amount}]`; we JSON-encode that array verbatim into
+    /// `tx_payload` so the cosigning peer reconstructs the same transfer set.
+    /// Encoding uses `sortedKeys` for deterministic output across runs.
+    static func buildSwapKitTonPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        transfers: [SwapKitTonTransfer],
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let payloadBytes: Data
+        do {
+            payloadBytes = try encoder.encode(transfers)
+        } catch {
+            throw SwapKitError.generic(message: "Failed to encode SwapKit TON payload: \(error)")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "TON",
+            txPayload: payloadBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
+    /// Build a `SwapKitSwapPayload` for the Cardano deposit-only path.
+    /// SwapKit returns no transaction body (`tx: null` / omitted) — the
+    /// cosigning peer rebuilds a plain ADA transfer to `targetAddress` for
+    /// `fromAmount`. `tx_payload` is intentionally empty bytes.
+    static func buildSwapKitCardanoPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        swapResponse: SwapKitSwapResponse
+    ) -> SwapKitSwapPayload {
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "CARDANO",
+            txPayload: Data(),
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
+    /// Build a `SwapKitSwapPayload` for the Cardano pre-built CBOR path.
+    /// `cbor` is the unsigned transaction envelope returned by SwapKit —
+    /// item 0 is the transaction body the keysign-side signer hashes with
+    /// Blake2b-256. The bytes are passed verbatim so the cosigning peer
+    /// derives the same digest. `txType` is `CARDANO_PREBUILT` (distinct
+    /// from the deposit-only `CARDANO`) so the dispatcher can route
+    /// independently.
+    static func buildSwapKitCardanoPrebuiltPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        cbor: Data,
+        swapResponse: SwapKitSwapResponse
+    ) -> SwapKitSwapPayload {
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "CARDANO_PREBUILT",
+            txPayload: cbor,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
+    /// Build a `SwapKitSwapPayload` for the Sui PTB path. SwapKit returns a
+    /// base64-encoded pre-built programmable transaction block; we decode it
+    /// into raw bytes for the keysign payload. The signing PR will hand these
+    /// bytes to a greenfield Sui PTB signer.
+    static func buildSwapKitSuiPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        base64PTB: String,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        guard let ptbBytes = Data(base64Encoded: base64PTB) else {
+            throw SwapKitError.generic(message: "SwapKit Sui payload is not valid base64")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "SUI",
+            txPayload: ptbBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
+    /// Build a `SwapKitSwapPayload` for the TRON path. SwapKit returns a
+    /// TronWeb-shaped object; we JSON-encode the canonical representation
+    /// (preserving the wire field names — `raw_data`, `raw_data_hex`, `txID`,
+    /// `visible`) so the cosigning peer reconstructs it verbatim. `sortedKeys`
+    /// keeps the byte output deterministic for fixture tests.
+    static func buildSwapKitTronPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        tronTx: SwapKitTronTx,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> SwapKitSwapPayload {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let payloadBytes: Data
+        do {
+            payloadBytes = try encoder.encode(tronTx)
+        } catch {
+            throw SwapKitError.generic(message: "Failed to encode SwapKit TRON payload: \(error)")
+        }
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "TRON",
+            txPayload: payloadBytes,
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
     }
 
     /// Translates a SwapKit `/v3/swap` response into the existing `EVMQuote`
@@ -315,6 +673,39 @@ extension SwapCryptoLogic {
                     gas: 0
                 )
             )
+
+        case .psbt:
+            // PSBT routes are dispatched at the outer call site via the new
+            // `SwapPayload.swapkit` variant. Reaching this branch means a
+            // caller mis-routed — preserve the typed error so the bug
+            // surfaces in tests rather than silently building a broken EVM
+            // quote.
+            throw SwapKitError.unsupportedTxType("PSBT")
+
+        case .ton:
+            // TON routes flow through `SwapPayload.swapkit` at the outer call
+            // site. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("TON")
+
+        case .cardano:
+            // Cardano deposit-only flow — no transaction body to mirror into
+            // an EVMQuote. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("CARDANO")
+
+        case .cardanoPrebuilt:
+            // Cardano pre-built CBOR flow routes through `SwapPayload.swapkit`
+            // at the outer call site. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("CARDANO_PREBUILT")
+
+        case .sui:
+            // Sui PTB routes flow through `SwapPayload.swapkit` at the outer
+            // call site. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("SUI")
+
+        case .tron:
+            // TRON routes flow through `SwapPayload.swapkit` at the outer
+            // call site. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("TRON")
 
         case .unsupported(let txType, _):
             throw SwapKitError.unsupportedTxType(txType)

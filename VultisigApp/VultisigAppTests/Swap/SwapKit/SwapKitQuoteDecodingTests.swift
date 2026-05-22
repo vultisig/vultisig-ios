@@ -67,17 +67,53 @@ final class SwapKitQuoteDecodingTests: XCTestCase {
         XCTAssertEqual(response.inboundAddress, "2yBEjZS6CC44UwBBGvx8Z1xXHJj4sSD5ZRwba4ijtD7n")
     }
 
-    func testTronSwapResponseDecodesAsUnsupported() throws {
+    func testBitcoinSwapResponseDecodesAsPSBT() throws {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
-            from: "v3-tron-final-swap-fresh"
+            from: "v3-real-btc-all-swap"
         )
-        XCTAssertEqual(response.meta.txType, "TRON")
-        guard case let .unsupported(txType, _) = response.tx else {
-            XCTFail("Expected unsupported tx variant for Phase 1")
+        XCTAssertEqual(response.meta.txType, "PSBT")
+        XCTAssertEqual(response.subProvider, "NEAR")
+        guard case let .psbt(base64) = response.tx else {
+            XCTFail("Expected PSBT tx variant")
             return
         }
-        XCTAssertEqual(txType, "TRON")
+        XCTAssertTrue(base64.hasPrefix("cHNidP8B"), "PSBT magic prefix")
+        XCTAssertNotNil(Data(base64Encoded: base64))
+    }
+
+    /// Synthesizes a fictional unknown `tx_type` to lock the decoder's
+    /// fall-through behaviour. TRON used to live here as a Phase 1 sentinel;
+    /// Phase 3 promoted it to a typed `.tron` case (see
+    /// `SwapKitLongTailTests.testTronSwapResponseDecodesAsTronWebObject`)
+    /// so this test now uses a never-shipped chain string to stand in for
+    /// "future SwapKit chain we don't yet decode."
+    func testUnknownTxTypeFallsThroughToUnsupported() throws {
+        let json = #"""
+        {
+          "swapId": "00000000-0000-0000-0000-000000000000",
+          "routeId": "00000000-0000-0000-0000-000000000000",
+          "providers": ["FUTURE_PROVIDER"],
+          "sellAsset": "FUTURE.TOKEN",
+          "buyAsset": "ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "sellAmount": "1",
+          "expectedBuyAmount": "1",
+          "expectedBuyAmountMaxSlippage": "1",
+          "sourceAddress": "future-address",
+          "destinationAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+          "targetAddress": "future-deposit-address",
+          "meta": { "txType": "FUTURE_CHAIN" },
+          "tx": { "any": "shape" },
+          "fees": []
+        }
+        """#
+        let data = Data(json.utf8)
+        let response = try JSONDecoder().decode(SwapKitSwapResponse.self, from: data)
+        XCTAssertEqual(response.meta.txType, "FUTURE_CHAIN")
+        guard case let .unsupported(txType, _) = response.tx else {
+            return XCTFail("Expected unsupported tx variant for unknown txType")
+        }
+        XCTAssertEqual(txType, "FUTURE_CHAIN")
     }
 
     func testProvidersFixtureDecodesEnabledChainIds() throws {

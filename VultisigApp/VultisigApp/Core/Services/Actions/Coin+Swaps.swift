@@ -134,7 +134,12 @@ extension Coin {
         case .thorChainStagenet:
             return [.thorchainStagenet]
         case .bitcoin:
-            return [.thorchain, .mayachain]
+            // Phase 2 chain — `.swapkit` enables BTC↔EVM / BTC↔SOL / BTC↔TON
+            // / BTC↔SUI / BTC↔ADA routes via NEAR Intents / Chainflip /
+            // Garden / Flashnet / Harbor. SwapKit returns a pre-built base64
+            // PSBT and we sign it through the same UTXO helper path
+            // THORChain BTC swaps already use.
+            return [.thorchain, .mayachain, .swapkit]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
         case .solana:
@@ -150,8 +155,10 @@ extension Coin {
         case .ripple:
             return [.thorchain]
         case .tron:
-            return [.thorchain]
-        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei, .qbtc, .bittensor:
+            return [.thorchain, .swapkit]
+        case .ton, .cardano, .sui:
+            return [.swapkit]
+        case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }
     }
