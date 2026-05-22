@@ -142,8 +142,7 @@ struct SwapCoinPickerView: View {
                     coin: coinMeta,
                     balance: vaultCoin?.balanceString,
                     balanceFiat: vaultCoin?.balanceInFiat,
-                    isSelected: selectedCoin.toCoinMeta() == coinMeta,
-                    isSwapKitOnly: viewModel.isSwapKitOnly(coinMeta)
+                    isSelected: selectedCoin.toCoinMeta() == coinMeta
                 ) {
                     onSelect(coin: coinMeta)
                 }

@@ -44,8 +44,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
     func testMergeAppendsNovelSwapKitTokens() throws {
         // Base list (e.g. from 1inch + curated) has ETH-ETH + USDC. SwapKit's
         // bucket adds a token the base list doesn't know about (`NOVL`) — it
-        // must append AND its uniqueId must end up in the swapKitOnlyIds set
-        // that drives the "via SwapKit" tag.
+        // must append to the merged list.
         let base: [CoinMeta] = [
             CoinMeta(chain: .ethereum, ticker: "ETH", logo: "", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true),
             CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
@@ -63,8 +62,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
 
     func testMergeDropsSwapKitTokensAlreadyInBase() throws {
         // Overlap case — 1inch already discovered USDC. SwapKit's USDC must
-        // NOT duplicate in the picker, and USDC's uniqueId must NOT end up
-        // in the "swapKitOnlyIds" tag-set computed downstream by the logic.
+        // NOT duplicate in the picker.
         let usdc = CoinMeta(chain: .ethereum, ticker: "USDC", logo: "", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false)
         let base = [usdc]
         let bucket = SwapKitTokensBucket(

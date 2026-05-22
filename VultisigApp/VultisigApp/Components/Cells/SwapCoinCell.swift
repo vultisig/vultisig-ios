@@ -12,11 +12,6 @@ struct SwapCoinCell: View {
     let balance: String?
     let balanceFiat: String?
     let isSelected: Bool
-    /// Whether to show a small "via SwapKit" capsule next to the chain pill.
-    /// Set by `SwapCoinPickerView` for destination tokens that were surfaced
-    /// exclusively via SwapKit's `/tokens` list (not already in the curated
-    /// allowlist + 1inch + Jupiter union).
-    let isSwapKitOnly: Bool
 
     var onSelect: () -> Void
 
@@ -25,14 +20,12 @@ struct SwapCoinCell: View {
         balance: String?,
         balanceFiat: String?,
         isSelected: Bool,
-        isSwapKitOnly: Bool = false,
         onSelect: @escaping () -> Void
     ) {
         self.coin = coin
         self.balance = balance
         self.balanceFiat = balanceFiat
         self.isSelected = isSelected
-        self.isSwapKitOnly = isSwapKitOnly
         self.onSelect = onSelect
     }
 
@@ -58,26 +51,11 @@ struct SwapCoinCell: View {
             icon
             title
             chain
-            if isSwapKitOnly {
-                swapKitTag
-            }
             Spacer()
             balanceView
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
-    }
-
-    var swapKitTag: some View {
-        Text("swapPickerViaSwapKit".localized)
-            .foregroundStyle(Theme.colors.textSecondary)
-            .font(Theme.fonts.caption10)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-            )
     }
 
     var icon: some View {
