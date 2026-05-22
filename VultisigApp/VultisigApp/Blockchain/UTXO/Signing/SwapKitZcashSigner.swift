@@ -226,14 +226,16 @@ enum SwapKitZcashSigner {
         var cursor = framingPrefix.cursor
         var inputMaps: [[Data: Data]] = []
         for _ in 0..<parsedTx.inputs.count {
-            do { inputMaps.append(try cursor.readMap()) }
-            catch let err as SwapKitPSBTParserError {
+            do {
+                inputMaps.append(try cursor.readMap())
+            } catch let err as SwapKitPSBTParserError {
                 throw SwapKitZcashSignerError.underlying(mapParserError(err))
             }
         }
         for _ in 0..<parsedTx.outputs.count {
-            do { _ = try cursor.readMap() }
-            catch let err as SwapKitPSBTParserError {
+            do {
+                _ = try cursor.readMap()
+            } catch let err as SwapKitPSBTParserError {
                 throw SwapKitZcashSignerError.underlying(mapParserError(err))
             }
         }
@@ -315,7 +317,7 @@ enum SwapKitZcashSigner {
     private static func assembleZcashSigningInput(
         inputs: [LegacyP2PKHInput],
         outputs: [LegacyP2PKHOutput],
-        expiryHeight: UInt32,
+        expiryHeight _: UInt32,
         targetAddress: String
     ) throws -> BitcoinSigningInput {
         guard !inputs.isEmpty, !outputs.isEmpty else {

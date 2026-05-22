@@ -218,14 +218,20 @@ enum SwapKitLegacyP2PKHSigner {
         var inputMaps: [[Data: Data]] = []
         inputMaps.reserveCapacity(parsedTx.inputs.count)
         for _ in 0..<parsedTx.inputs.count {
-            do { inputMaps.append(try cursor.readMap()) }
-            catch let err as SwapKitPSBTParserError { throw mapParserError(err) }
+            do {
+                inputMaps.append(try cursor.readMap())
+            } catch let err as SwapKitPSBTParserError {
+                throw mapParserError(err)
+            }
         }
         // Per-output maps still parsed (forward-compat) even though we don't
         // read per-output fields.
         for _ in 0..<parsedTx.outputs.count {
-            do { _ = try cursor.readMap() }
-            catch let err as SwapKitPSBTParserError { throw mapParserError(err) }
+            do {
+                _ = try cursor.readMap()
+            } catch let err as SwapKitPSBTParserError {
+                throw mapParserError(err)
+            }
         }
 
         // 4. Resolve per-input scriptPubKey + amount + keyHash. SwapKit
