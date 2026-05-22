@@ -426,6 +426,38 @@ extension SwapCryptoLogic {
                     vault: vault
                 )
 
+            case .rippleDepositOnly:
+                // XRP source: deposit-only flow modelled on Cardano. SwapKit
+                // returns no transaction body — Vultisig builds a plain XRP
+                // Payment to `resolvedTargetAddress` for `sellAmount` via
+                // the existing `RippleHelper`. If a `destinationTag` was
+                // resolved (top-level / meta / suffix), stringify it into
+                // `memo` — `RippleHelper.getPreSignedInputData` parses
+                // numeric memos and attaches them as `destinationTag` on
+                // the `RippleOperationPayment`.
+                let resolvedTarget = swapResponse.resolvedTargetAddress
+                let resolvedTag = swapResponse.resolvedDestinationTag
+                let tagMemo = resolvedTag.map { String($0) }
+                let swapKitPayload = buildSwapKitRipplePayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    resolvedTargetAddress: resolvedTarget,
+                    destinationTag: tagMemo,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: resolvedTarget,
+                    amount: amountInCoin,
+                    memo: tagMemo,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
             case .unsupported(let txType, _):
                 throw SwapKitError.unsupportedTxType(txType)
             }
@@ -620,6 +652,36 @@ extension SwapCryptoLogic {
         )
     }
 
+    /// Build a `SwapKitSwapPayload` for the XRP deposit-only path. SwapKit
+    /// returns no transaction body — the cosigning peer rebuilds a plain
+    /// XRP Payment to `resolvedTargetAddress` for `fromAmount` and attaches
+    /// the destination tag via the memo field (`RippleHelper` parses
+    /// numeric memos into `destinationTag`). `tx_payload` is intentionally
+    /// empty bytes; routing info lives in `targetAddress` + `memo`.
+    static func buildSwapKitRipplePayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        resolvedTargetAddress: String,
+        destinationTag: String?,
+        swapResponse: SwapKitSwapResponse
+    ) -> SwapKitSwapPayload {
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "XRP",
+            txPayload: Data(),
+            targetAddress: resolvedTargetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: destinationTag,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
     /// Translates a SwapKit `/v3/swap` response into the existing `EVMQuote`
     /// shape so the keysign dispatcher can reuse the OneInch / Solana paths
     /// unchanged. EVM and Solana are typed in Phase 1; other `txType` values
@@ -706,6 +768,11 @@ extension SwapCryptoLogic {
             // TRON routes flow through `SwapPayload.swapkit` at the outer
             // call site. Same defence-in-depth as PSBT.
             throw SwapKitError.unsupportedTxType("TRON")
+
+        case .rippleDepositOnly:
+            // XRP deposit-only flow — no transaction body to mirror into
+            // an EVMQuote. Same defence-in-depth as PSBT.
+            throw SwapKitError.unsupportedTxType("XRP")
 
         case .unsupported(let txType, _):
             throw SwapKitError.unsupportedTxType(txType)

@@ -29,6 +29,13 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     let approvalTx: SwapKitApprovalTx?
     let fees: [SwapKitFee]
     let warnings: [SwapKitWarning]?
+    /// Optional top-level destination-tag field. Defensive: SwapKit's docs
+    /// don't list this for XRP routes today (NEAR allocates a per-route
+    /// ephemeral r-address, so no tag is needed), but the silent-misroute
+    /// failure mode for XRP-to-shared-vault transfers is severe enough that
+    /// we accept a tag from three sources at decode time and pick the first
+    /// non-nil via `resolvedDestinationTag`.
+    let destinationTag: UInt64?
 
     /// Some chains (Cardano) return responses without a `tx` field at all —
     /// see `SwapKitTx.cardano`. The `Hashable` synthesis still works because
@@ -40,6 +47,25 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// only, so this string is unambiguous.
     var subProvider: String {
         providers.first ?? "SwapKit"
+    }
+
+    /// XRP destination-tag resolution. Precedence: top-level field beats
+    /// `meta.destinationTag` beats the `?dt=` / `|` suffix on `targetAddress`.
+    /// Returns `nil` if no source surfaces one — the cosigning peer then
+    /// builds a tag-less Payment, which is the correct behaviour for NEAR-
+    /// allocated ephemeral deposit addresses.
+    var resolvedDestinationTag: UInt64? {
+        if let tag = destinationTag { return tag }
+        if let tag = meta.destinationTag { return tag }
+        return Self.extractTagSuffix(from: targetAddress).tag
+    }
+
+    /// XRP target-address stripped of any `?dt=…` or `|…` destination-tag
+    /// suffix. For non-XRP responses (no suffix present), returns
+    /// `targetAddress` verbatim. Defensive — every probe today returns a
+    /// bare r-address.
+    var resolvedTargetAddress: String {
+        Self.extractTagSuffix(from: targetAddress).address
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -60,6 +86,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         case approvalTx
         case fees
         case warnings
+        case destinationTag
     }
 
     init(from decoder: Decoder) throws {
@@ -84,7 +111,45 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         // and leave `inboundFee` returning nil at quote time.
         fees = try container.decodeIfPresent([SwapKitFee].self, forKey: .fees) ?? []
         warnings = try container.decodeIfPresent([SwapKitWarning].self, forKey: .warnings)
+        // SwapKit may surface a numeric `destinationTag` (rare) or a string-
+        // wrapped one (defensive — `meta.affiliateFee` arrives as a string
+        // even though it's numeric semantically, so accept both shapes).
+        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
+            destinationTag = intTag
+        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
+                  let parsed = UInt64(stringTag) {
+            destinationTag = parsed
+        } else {
+            destinationTag = nil
+        }
         tx = try Self.decodeTx(meta: meta, container: container)
+    }
+
+    /// Split a `?dt=12345` or `|12345` suffix off an XRP target address.
+    /// Returns the bare r-address plus the parsed tag (or `nil`). Defensive —
+    /// no probe today returns a suffix, but the silent-misroute failure mode
+    /// is severe enough to absorb the ~20 lines of decoder.
+    private static func extractTagSuffix(from address: String) -> (address: String, tag: UInt64?) {
+        // `?dt=` form: `rXyz?dt=12345`
+        if let q = address.firstIndex(of: "?") {
+            let suffix = address[address.index(after: q)...]
+            // Accept `dt=` (most likely) or any parameter set whose first
+            // key is `dt`. Anything else falls through to "no tag".
+            if suffix.hasPrefix("dt=") {
+                let tagPart = suffix.dropFirst(3)
+                if let tag = UInt64(tagPart) {
+                    return (String(address[..<q]), tag)
+                }
+            }
+        }
+        // `|` form: `rXyz|12345`
+        if let pipe = address.firstIndex(of: "|") {
+            let suffix = address[address.index(after: pipe)...]
+            if let tag = UInt64(suffix) {
+                return (String(address[..<pipe]), tag)
+            }
+        }
+        return (address, nil)
     }
 
     private static func decodeTx(
@@ -172,6 +237,18 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             // pre-built PTB) — deferred to the consolidated signing PR.
             let base64 = try container.decode(String.self, forKey: .tx)
             return .sui(base64: base64)
+        case "XRP", "RIPPLE":
+            // XRP source: deposit-only flow modelled on Cardano. NEAR Intents
+            // allocates a per-route ephemeral r-address at `targetAddress` —
+            // Vultisig builds a plain XRP Payment to that address for
+            // `sellAmount` via the existing `RippleHelper`. SwapKit's docs
+            // explicitly reject X-addresses and don't document a
+            // `destinationTag` field, but the three-source defensive
+            // resolution (top-level field → meta → suffix on targetAddress)
+            // makes a future Chainflip-style shared-vault flip non-breaking.
+            // Accept `XRP` (canonical) and `RIPPLE` (defensive — SwapKit has
+            // form for switching between asset names mid-route).
+            return .rippleDepositOnly
         case "TRON":
             // TRON source: SwapKit returns a TronWeb-shaped object with
             // `{txID, raw_data {...}, raw_data_hex, visible?}`. We model the
@@ -228,6 +305,12 @@ enum SwapKitTx: Hashable {
     /// `rawDataHex`. The `raw_data_hex` is the canonical input to WalletCore
     /// Tron signing; the rest is kept verbatim for the verify screen.
     case tron(SwapKitTronTx)
+    /// XRP source — deposit-only flow. SwapKit hands us an ephemeral r-address
+    /// at `targetAddress` and (optionally) a `destinationTag`; Vultisig
+    /// builds a plain XRP Payment to that address for `sellAmount` via the
+    /// existing `RippleHelper`. No transaction body to sign — same model as
+    /// `.cardano`.
+    case rippleDepositOnly
     case unsupported(txType: String, raw: SwapKitRawJSON)
 }
 
@@ -297,6 +380,39 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
     let priceImpact: Double?
     let affiliate: String?
     let affiliateFee: String?
+    /// Optional XRP destination tag surfaced via the meta block (second of
+    /// three resolution sources — see `SwapKitSwapResponse.resolvedDestinationTag`).
+    let destinationTag: UInt64?
+
+    private enum CodingKeys: String, CodingKey {
+        case txType
+        case approvalAddress
+        case isFastQuote
+        case isRefreshed
+        case priceImpact
+        case affiliate
+        case affiliateFee
+        case destinationTag
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        txType = try container.decode(String.self, forKey: .txType)
+        approvalAddress = try container.decodeIfPresent(String.self, forKey: .approvalAddress)
+        isFastQuote = try container.decodeIfPresent(Bool.self, forKey: .isFastQuote)
+        isRefreshed = try container.decodeIfPresent(Bool.self, forKey: .isRefreshed)
+        priceImpact = try container.decodeIfPresent(Double.self, forKey: .priceImpact)
+        affiliate = try container.decodeIfPresent(String.self, forKey: .affiliate)
+        affiliateFee = try container.decodeIfPresent(String.self, forKey: .affiliateFee)
+        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
+            destinationTag = intTag
+        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
+                  let parsed = UInt64(stringTag) {
+            destinationTag = parsed
+        } else {
+            destinationTag = nil
+        }
+    }
 }
 
 struct SwapKitWarning: Decodable, Hashable {

@@ -78,10 +78,14 @@ struct KeysignMessageFactory {
                     // SwapKit-built CBOR. Hash item 0 of the envelope with
                     // Blake2b-256 — that's the Cardano signing digest.
                     messages += try SwapKitCardanoSigner.preSigningHashes(payload: swapKitPayload)
-                case "TON", "CARDANO":
+                case "TON", "CARDANO", "XRP":
                     // Fall through to the existing per-chain helper below
                     // (deposit-only flows: the SwapKit builder already
                     // pointed `toAddress` / `toAmount` at the deposit).
+                    // XRP: builder also stringified the destination tag
+                    // into `keysignPayload.memo` — `RippleHelper` parses
+                    // numeric memos and attaches `destinationTag` on the
+                    // `RippleOperationPayment` automatically.
                     break
                 case "EVM", "SOLANA":
                     // EVM and Solana ride `SwapPayload.generic` — reaching

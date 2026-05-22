@@ -153,7 +153,14 @@ extension Coin {
         case .zcash:
             return [.mayachain]
         case .ripple:
-            return [.thorchain]
+            // Tier 1 L1 source — `.swapkit` enables XRP↔EVM / XRP↔SOL routes
+            // via NEAR Intents. Deposit-only flow: SwapKit returns a per-route
+            // NEAR-allocated r-address and Vultisig builds a plain Payment
+            // through the existing `RippleHelper`. Destination-tag plumbing
+            // is defensive — NEAR's ephemeral deposit pattern doesn't need
+            // tags, but a future Chainflip shared-vault flip would silently
+            // misroute funds without it.
+            return [.thorchain, .swapkit]
         case .tron:
             return [.thorchain, .swapkit]
         case .ton, .cardano, .sui:

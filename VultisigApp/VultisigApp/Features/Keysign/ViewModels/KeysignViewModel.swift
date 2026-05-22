@@ -606,7 +606,11 @@ class KeysignViewModel: ObservableObject {
                         pubKeyHex: vault.pubKeyEdDSA
                     )
                     signedTransactions.append(tx)
-                case "TON", "CARDANO":
+                case "TON", "CARDANO", "XRP":
+                    // Deposit-only flows fall through to the per-chain helper
+                    // at the bottom of this method — the SwapKit builder
+                    // already pointed `toAddress` / `toAmount` (and memo
+                    // for XRP destination tag) at the deposit.
                     break
                 case "EVM", "SOLANA":
                     throw SwapKitError.unsupportedTxType(payload.txType)
