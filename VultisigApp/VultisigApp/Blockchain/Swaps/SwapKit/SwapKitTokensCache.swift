@@ -94,6 +94,17 @@ final class SwapKitTokensCache: DestinationTokenProvider {
         snapshot = Snapshot(buckets: buckets, fetchedAt: fetchedAt)
     }
 
+    /// Drop the cached snapshot + in-flight task. Next `tokens(for:)` call
+    /// refetches against the proxy regardless of TTL. Exposed for the
+    /// Settings → Advanced "Clear SwapKit tokens cache" debug action so
+    /// testers can pick up upstream catalog changes without waiting for
+    /// the 5-minute TTL or app relaunch.
+    func clearCache() {
+        snapshot = nil
+        inFlight?.cancel()
+        inFlight = nil
+    }
+
     // MARK: - Fan-out + merge
 
     private static func fetchAll(

@@ -836,6 +836,8 @@
 "settings" = "설정";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
+"settingsAdvancedClear" = "지우기";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";

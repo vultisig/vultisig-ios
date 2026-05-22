@@ -848,6 +848,8 @@
 "settings" = "Configuración";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
+"settingsAdvancedClear" = "Borrar";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";
