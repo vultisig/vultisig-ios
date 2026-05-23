@@ -38,7 +38,8 @@ struct SwapKitService {
         fromCoin: Coin,
         toCoin: Coin,
         amount: Decimal,
-        slippagePercent: Double? = nil
+        slippagePercent: Double? = nil,
+        affiliateFeeBps: Int
     ) async throws -> SwapKitRoute? {
         // Opt-in feature flag (Settings → Advanced → "SwapKit"). When the
         // flag is off, short-circuit even if `Coin+Swaps.swapProviders`
@@ -75,7 +76,8 @@ struct SwapKitService {
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
             destinationAddress: toCoin.address.isEmpty ? nil : toCoin.address,
             slippage: slippagePercent,
-            providers: nil
+            providers: nil,
+            affiliateFee: affiliateFeeBps
         )
 
         do {

@@ -202,7 +202,8 @@ struct SwapService {
                 service: SwapKitService.shared,
                 amount: amount,
                 fromCoin: fromCoin,
-                toCoin: toCoin
+                toCoin: toCoin,
+                vultTierDiscount: vultTierDiscount
             )
         }
     }
@@ -358,7 +359,8 @@ private extension SwapService {
         service: SwapKitService,
         amount: Decimal,
         fromCoin: Coin,
-        toCoin: Coin
+        toCoin: Coin,
+        vultTierDiscount: Int
     ) async throws -> SwapQuote {
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
         // doesn't enable. Fails open if the cache can't be loaded so we don't
@@ -368,10 +370,18 @@ private extension SwapService {
         guard fromEnabled, toEnabled else {
             throw SwapKitError.providerNotEnabled
         }
+        // Mirror Kyber's `vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount`
+        // shape via `max(0, ...)`, plus a defensive upper clamp at the
+        // documented SwapKit ceiling (10% = 1000 bps). The `min` is
+        // unreachable today because `vultTierDiscount` is bounded
+        // server-side, but the API allows up to 1000 and the clamp guards
+        // against any future loosening.
+        let affiliateBps = max(0, min(1000, 50 - vultTierDiscount))
         guard let route = try await service.fetchBestRoute(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            amount: amount
+            amount: amount,
+            affiliateFeeBps: affiliateBps
         ) else {
             throw SwapKitError.routeFiltered
         }
