@@ -780,6 +780,19 @@ private extension BlockChainService {
             } catch {
                 return nil
             }
+        case .swapkit(let response, _, _):
+            guard fromCoin.isNativeToken, case let .evm(tx) = response.tx else { return nil }
+            do {
+                let amountInCoin = fromCoin.raw(for: fromAmount)
+                return try await service.estimateGasLimitForSwap(
+                    senderAddress: fromCoin.address,
+                    toAddress: tx.to,
+                    value: amountInCoin,
+                    data: tx.data
+                )
+            } catch {
+                return nil
+            }
         case .none:
             return nil
         }

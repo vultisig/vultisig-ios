@@ -45,6 +45,23 @@ struct SwapVerifyScreen: View {
             }
         }
         .withBanner(text: $retryBannerText, style: .error)
+        // Surface build-side failures so the user doesn't see "nothing
+        // happens" after entering the FastVault password. `buildSwapKeysignPayload`
+        // catches errors into `verifyViewModel.error`; without this binding
+        // the catch becomes silent.
+        .alert(
+            "error".localized,
+            isPresented: Binding(
+                get: { verifyViewModel.error != nil },
+                set: { isShown in if !isShown { verifyViewModel.error = nil } }
+            ),
+            actions: {
+                Button("ok".localized, role: .cancel) {}
+            },
+            message: {
+                Text(verifyViewModel.error?.localizedDescription ?? "")
+            }
+        )
         .swapRefreshTick {
             Task {
                 await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)

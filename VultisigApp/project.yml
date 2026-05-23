@@ -53,7 +53,12 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    revision: 9d2ee6358a9895cb408e792f4e48af03ec6b31cf
+    # Pinned to the main revision that merged the SwapKitSwapPayload proto
+    # (commondata #86, merged 2026-05-23). `SwapKitSwapPayload` is `oneof`
+    # entry 26 on `KeysignPayload` — carries pre-built tx bytes for non-EVM
+    # SwapKit routes (BTC PSBT, TON, ADA CBOR, TRON, SUI PTB, DOGE/BCH/DASH
+    # PSBT legacy P2PKH, ZEC Sapling).
+    revision: dc4b8edc5e30946bd59efdb76ab1f41d0b7c3e6b
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19
@@ -210,6 +215,22 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+          # Exclude the fixture JSONs from the generic-sources scan; they're
+          # picked up explicitly below as a folder reference so they land at
+          # `__fixtures__/*.json` inside the bundle. Without this exclude,
+          # XcodeGen treats every `.json` under the tree as a flattened
+          # resource and collides with `ChainHelperTests.testChainHelpers`,
+          # which enumerates every top-level JSON in the bundle root.
+          - "Swap/SwapKit/__fixtures__/**"
+      # Static fixture JSONs bundled with the test target as a *folder
+      # reference* (blue folder in Xcode) so they land at
+      # `__fixtures__/*.json` inside the bundle instead of flattening into
+      # the resource root. Flattening would collide with
+      # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
+      # JSON and decodes it as `[ChainHelperTestCase]`.
+      - path: VultisigAppTests/Swap/SwapKit/__fixtures__
+        type: folder
+        buildPhase: resources
 
     settings:
       base:

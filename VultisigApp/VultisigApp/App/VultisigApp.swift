@@ -45,6 +45,15 @@ struct VultisigApp: App {
             exit(0) // Exit after printing version
         }
 #endif
+        // Register every swap-tracking provider with the shared registry so
+        // the tx-history viewmodel and the native status poller can route by
+        // `providerKind`. New providers register here.
+        SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+
+        // Register every destination-token provider with the shared registry
+        // so the swap coin picker can aggregate destination tokens from
+        // every source. New providers register here.
+        DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
     }
     var body: some Scene {
         WindowGroup {
@@ -78,7 +87,8 @@ struct VultisigApp: App {
             CirclePosition.self,
             StoredPendingTransaction.self,
             VaultSettings.self,
-            TransactionHistoryItem.self
+            TransactionHistoryItem.self,
+            SwapTrackingMetadata.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -94,7 +104,33 @@ struct VultisigApp: App {
 
             return modelContainer
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Schema-breaking change in the swap-tracking refactor. Existing
+            // tx-history rows from earlier builds of this branch carry the
+            // old 10-column `swapKit*` shape and won't load against the new
+            // relationship-based schema. Wipe the on-disk store and retry —
+            // testers reinstall anyway, this is the belt-and-suspenders path
+            // so the app at least launches cleanly on first relaunch after
+            // upgrade rather than crashing on a schema-mismatch error.
+            if let storeURL = modelConfiguration.url as URL? {
+                try? FileManager.default.removeItem(at: storeURL)
+                // SwiftData writes -shm / -wal companions alongside the
+                // SQLite store; drop them too so the retry sees a clean slate.
+                let shm = storeURL.appendingPathExtension("shm")
+                let wal = storeURL.appendingPathExtension("wal")
+                try? FileManager.default.removeItem(at: shm)
+                try? FileManager.default.removeItem(at: wal)
+            }
+            do {
+                let modelContainer = try ModelContainer(
+                    for: schema,
+                    migrationPlan: MigrationPlan.self,
+                    configurations: [modelConfiguration]
+                )
+                Storage.shared.modelContext = modelContainer.mainContext
+                return modelContainer
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 
@@ -160,8 +196,15 @@ extension VultisigApp {
                 case .active:
                     continueLogin()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
+                    Task { @MainActor in
+                        SwapTrackingRegistry.shared.setActiveOnAll(true)
+                        await SwapTrackingRegistry.shared.resumeAllInFlight()
+                    }
                 case .background:
                     resetLogin()
+                    Task { @MainActor in
+                        SwapTrackingRegistry.shared.setActiveOnAll(false)
+                    }
                 default:
                     break
                 }
@@ -189,6 +232,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    await SwapTrackingRegistry.shared.resumeAllInFlight()
                 }
             }
     }
@@ -227,6 +274,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    await SwapTrackingRegistry.shared.resumeAllInFlight()
                 }
             }
     }

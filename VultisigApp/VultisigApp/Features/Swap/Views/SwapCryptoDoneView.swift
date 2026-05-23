@@ -19,6 +19,7 @@ struct SwapCryptoDoneView: View {
 
     @State var showFees: Bool = false
     @StateObject private var statusViewModel: TransactionStatusViewModel
+    @ObservedObject private var swapKitTracker = SwapKitTrackingService.shared
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
@@ -62,8 +63,13 @@ struct SwapCryptoDoneView: View {
             buttons
         }
         .onAppear {
-            // Start polling for transaction status
-            statusViewModel.startPolling()
+            // SwapKit-routed swaps drive their status off `/track` exclusively
+            // — the native per-chain poller would race the cross-chain leg and
+            // surface a premature "successful" once the source tx confirms.
+            // For every other route the native poller is still the source.
+            if !isSwapKitRouted {
+                statusViewModel.startPolling()
+            }
 
             // Record approve to transaction history (if applicable)
             if let approveHash {
@@ -97,6 +103,8 @@ struct SwapCryptoDoneView: View {
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
                 provider: transaction.quote.displayName
             )
+
+            attachSwapKitTrackingIfNeeded()
         }
         .onDisappear {
             // Stop polling when view disappears
@@ -104,15 +112,101 @@ struct SwapCryptoDoneView: View {
         }
     }
 
+    /// Wires SwapKit-routed swaps into the `/track` polling service. No-op
+    /// for THORChain/Maya/1inch/Kyber/LiFi routes — those already have their
+    /// own status sources.
+    ///
+    /// Observes `SwapKitTrackingService.shared` directly via `@ObservedObject`
+    /// (the concrete type is required for the property wrapper). A future
+    /// done-screen that handles multiple providers can look up the owning
+    /// service via `SwapTrackingRegistry.shared.service(for:)` instead.
+    private func attachSwapKitTrackingIfNeeded() {
+        guard case let .swapkit(response, _, _) = transaction.quote else { return }
+        guard let chainId = SwapKitChainIdentifier.chainId(for: transaction.fromCoin.chain) else {
+            // No chainId mapping for the source chain — `/track` would 400.
+            // Skip polling; the explorer link remains as the fallback.
+            return
+        }
+        TransactionHistoryRecorder.shared.attachSwapTracking(
+            txHash: hash,
+            pubKeyECDSA: vault.pubKeyECDSA,
+            providerKind: SwapKitTrackingService.providerKind,
+            swapId: response.swapId,
+            routeId: response.routeId,
+            broadcastHash: hash,
+            sourceChainId: chainId,
+            subProvider: response.subProvider
+        )
+        // Start polling immediately so the row updates live.
+        let inFlight = (try? TransactionHistoryStorage.shared.fetchInFlightSwapTracking(providerKind: SwapKitTrackingService.providerKind)) ?? []
+        if let row = inFlight.first(where: { $0.txHash == hash && $0.pubKeyECDSA == vault.pubKeyECDSA }) {
+            SwapKitTrackingService.shared.start(tx: row)
+        }
+    }
+
     var cards: some View {
         VStack(spacing: 24) {
-            TransactionStatusHeaderView(status: statusViewModel.status)
+            TransactionStatusHeaderView(status: displayedStatus)
                 .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
                 fromToCards
                 summary
             }
+        }
+    }
+
+    /// `true` when this swap was routed through SwapKit. The native chain
+    /// poller is skipped for these — `/track` is the source of truth.
+    private var isSwapKitRouted: Bool {
+        if case .swapkit = transaction.quote { return true }
+        return false
+    }
+
+    /// Status surfaced on the done-screen header. For SwapKit-routed swaps
+    /// this is derived from `/track`; for every other route it's the native
+    /// per-chain poller's view of the world.
+    private var displayedStatus: TransactionStatus {
+        guard isSwapKitRouted else { return statusViewModel.status }
+        return SwapCryptoDoneView.mapSwapKitStatus(
+            swapKitTracker.uiStatusByTxHash[hash],
+            estimatedTime: statusViewModel.status.broadcastedEstimatedTime
+        )
+    }
+
+    /// Pure mapping from a SwapKit `/track` UI status to the done-screen's
+    /// `TransactionStatus`. Extracted to a `static` so unit tests can pin the
+    /// table without standing up a view.
+    ///
+    /// - `nil` is the pre-attach frame (the view body renders once before
+    ///   `onAppear` wires up `/track` and seeds the cache) — show the
+    ///   "Broadcasted" copy with the chain's estimated time, same as a
+    ///   freshly-broadcast non-SwapKit swap.
+    /// - `.pending` is the source-chain phase (`/track` reports
+    ///   `not_started/starting/broadcasted/mempool/inbound`) — show the
+    ///   "Pending" copy so users see real progress beyond "Broadcasted"
+    ///   while the source-chain RPC catches up.
+    /// - `.swapping` is the cross-chain leg (`/track` reports
+    ///   `outbound/swapping`) — also show "Pending" until the destination
+    ///   tx lands.
+    /// - `.unknownPendingExtended` is the tracker-outage sentinel — keep
+    ///   "Pending" rather than flipping to a terminal failure frame; the
+    ///   user can still hit the SwapKit-tracker deep link for the truth.
+    static func mapSwapKitStatus(
+        _ ui: SwapTrackingUiStatus?,
+        estimatedTime: String
+    ) -> TransactionStatus {
+        switch ui {
+        case .none:
+            return .broadcasted(estimatedTime: estimatedTime)
+        case .pending, .swapping, .unknownPendingExtended:
+            return .pending
+        case .completed:
+            return .confirmed
+        case .refunded:
+            return .failed(reason: "swapKitStatusRefundedReason".localized)
+        case .failed:
+            return .failed(reason: "swapKitStatusFailedReason".localized)
         }
     }
 

@@ -527,14 +527,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .zcash,
                 .mantle,
                 .hyperliquid,
-                .tron:
+                .tron,
+                .cardano,
+                .sui,
+                .ton:
             return true
         case .polygonV2,
-            .cardano,
-            .sui,
             .polkadot,
             .dydx,
-            .ton,
             .osmosis,
             .terra,
             .terraClassic,

@@ -196,7 +196,7 @@ private extension SecurityScannerTransactionFactory {
     func createEVMSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
         switch transaction.quote {
         case .oneinch(let quote, _), .lifi(let quote, _, _):
-            try buildSwapSecurityScannerTransaction(
+            return try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,
                 to: quote.tx.to,
@@ -205,12 +205,24 @@ private extension SecurityScannerTransactionFactory {
                 isApprovalRequired: transaction.isApproveRequired
             )
         case .kyberswap(let quote, _):
-            try buildSwapSecurityScannerTransaction(
+            return try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,
                 to: quote.tx.to,
                 amount: quote.tx.value,
                 data: quote.tx.data,
+                isApprovalRequired: transaction.isApproveRequired
+            )
+        case .swapkit(let response, _, _):
+            guard case let .evm(tx) = response.tx else {
+                throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
+            }
+            return try buildSwapSecurityScannerTransaction(
+                srcToken: transaction.fromCoin,
+                from: tx.from,
+                to: tx.to,
+                amount: tx.value,
+                data: tx.data,
                 isApprovalRequired: transaction.isApproveRequired
             )
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:

@@ -74,6 +74,8 @@ enum SwapCryptoLogic {
             return thorchainFee
         case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
+        case let .swapkit(_, fee, _):
+            return fee ?? 0
         case nil:
             return .zero
         }
@@ -91,6 +93,9 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
+        case let .swapkit(response, _, _):
+            // SwapKit returns human-units decimal strings, not raw base units.
+            return Decimal(string: response.expectedBuyAmount) ?? .zero
         }
     }
 

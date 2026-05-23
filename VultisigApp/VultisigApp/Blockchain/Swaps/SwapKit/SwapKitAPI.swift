@@ -1,0 +1,121 @@
+//
+//  SwapKitAPI.swift
+//  VultisigApp
+//
+//  TargetType definitions for the SwapKit V3 REST surface, routed through
+//  the Vultisig backend proxy (`api.vultisig.com/swapkit/`). The proxy
+//  attaches the SwapKit partner API key server-side — iOS does not see or
+//  ship the key. Quote + Build are separate calls (`POST /v3/quote` then
+//  `POST /v3/swap`) and tracking lives off the proxy root (`POST /track`,
+//  not under `/v3`).
+//
+
+import Foundation
+
+enum SwapKitAPI {
+    case quote(SwapKitQuoteRequest)
+    case swap(SwapKitSwapRequest)
+    case track(SwapKitTrackRequest)
+    case providers
+    /// `GET /tokens?provider=<NAME>` — per-provider token list. Mounted off
+    /// the bare proxy root (not under `/v3/`), same shape as `/track`.
+    case tokens(provider: String)
+}
+
+extension SwapKitAPI: TargetType {
+    var baseURL: URL {
+        switch self {
+        case .quote, .swap:
+            // V3 surface: `/v3/quote`, `/v3/swap`. Base URL is
+            // `.../swapkit/v3`; the path adds the leaf only.
+            return SwapKitConfig.baseURL
+        case .track, .providers, .tokens:
+            // Bare-host endpoints — SwapKit's `/track`, `/providers`, and
+            // `/tokens` live at the host root, not under `/v3`. Hitting
+            // `.../swapkit/v3/providers` returns 404 from the proxy.
+            return SwapKitConfig.trackBaseURL
+        }
+    }
+
+    var path: String {
+        switch self {
+        case .quote:
+            return "/quote"
+        case .swap:
+            return "/swap"
+        case .track:
+            return "/track"
+        case .providers:
+            return "/providers"
+        case .tokens:
+            return "/tokens"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .providers, .tokens:
+            return .get
+        case .quote, .swap, .track:
+            return .post
+        }
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .quote(let request):
+            return .requestCodable(request, .jsonEncoding)
+        case .swap(let request):
+            return .requestCodable(request, .jsonEncoding)
+        case .track(let request):
+            return .requestCodable(request, .jsonEncoding)
+        case .providers:
+            return .requestPlain
+        case .tokens(let provider):
+            return .requestParameters(["provider": provider], .urlEncoding)
+        }
+    }
+
+    var headers: [String: String]? {
+        // The proxy attaches `x-api-key` server-side. iOS only sends the
+        // `Referer` so the partner dashboard can attribute volume by client.
+        return [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Referer": SwapKitConfig.referer
+        ]
+    }
+
+    var timeoutInterval: TimeInterval {
+        SwapKitConfig.timeoutInterval
+    }
+}
+
+// MARK: - Request payloads
+
+struct SwapKitQuoteRequest: Encodable {
+    let sellAsset: String
+    let buyAsset: String
+    let sellAmount: String
+    let sourceAddress: String?
+    let destinationAddress: String?
+    let slippage: Double?
+    let providers: [String]?
+    /// Affiliate fee override in basis points (0–1000). Omitting falls back
+    /// to the API key's configured default (currently 50 bps via the
+    /// Vultisig proxy). Sent explicitly so tier-discounted users get their
+    /// reduced rate rather than the proxy default.
+    let affiliateFee: Int?
+}
+
+struct SwapKitSwapRequest: Encodable {
+    let routeId: String
+    let sourceAddress: String
+    let destinationAddress: String
+    let overrideSlippage: Bool?
+}
+
+struct SwapKitTrackRequest: Encodable {
+    let hash: String
+    let chainId: String
+}

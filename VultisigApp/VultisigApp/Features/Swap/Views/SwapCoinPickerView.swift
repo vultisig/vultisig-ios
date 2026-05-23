@@ -12,6 +12,11 @@ struct SwapCoinPickerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
     @State var selectedChain: Chain?
+    /// When `true`, expand the picker with SwapKit `/tokens` entries on top
+    /// of the curated + 1inch + Jupiter lists, gated by the SwapKit feature
+    /// flag. Source-side picker is `false` so its behaviour stays identical
+    /// to Phase 1 (the user can only swap from coins they hold).
+    let isDestination: Bool
 
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -29,13 +34,21 @@ struct SwapCoinPickerView: View {
         vault: Vault,
         showSheet: Binding<Bool>,
         selectedCoin: Binding<Coin>,
-        selectedChain: Chain?
+        selectedChain: Chain?,
+        isDestination: Bool = false
     ) {
         self.vault = vault
         self._showSheet = showSheet
         self._selectedCoin = selectedCoin
         self.selectedChain = selectedChain
-        self._viewModel = StateObject(wrappedValue: .init(vault: vault, selectedCoin: selectedCoin.wrappedValue))
+        self.isDestination = isDestination
+        self._viewModel = StateObject(
+            wrappedValue: .init(
+                vault: vault,
+                selectedCoin: selectedCoin.wrappedValue,
+                isDestination: isDestination
+            )
+        )
     }
 
     var body: some View {
@@ -251,6 +264,7 @@ struct SwapCoinPickerView: View {
         vault: Vault.example,
         showSheet: .constant(true),
         selectedCoin: .constant(Coin.example),
-        selectedChain: Chain.example
+        selectedChain: Chain.example,
+        isDestination: false
     )
 }

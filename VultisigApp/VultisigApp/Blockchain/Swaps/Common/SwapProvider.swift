@@ -15,6 +15,7 @@ enum SwapProvider: Equatable {
     case oneinch(Chain)
     case kyberswap(Chain)
     case lifi
+    case swapkit
 
     var streamingInterval: Int {
         switch self {

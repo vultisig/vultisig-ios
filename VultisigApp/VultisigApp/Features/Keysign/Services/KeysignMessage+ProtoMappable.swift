@@ -261,7 +261,7 @@ extension SwapPayload {
                         swapFeeTokenContract: ""
                     )
                 ),
-                provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
+                provider: SwapProviderId.from(rawValue: value.provider)
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(
@@ -283,6 +283,20 @@ extension SwapPayload {
                     )
                 ),
                 provider: .kyberSwap
+            ))
+        case .swapkitSwapPayload(let value):
+            self = .swapkit(SwapKitSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                txType: value.txType,
+                txPayload: value.txPayload,
+                targetAddress: value.targetAddress,
+                inboundAddress: value.hasInboundAddress ? value.inboundAddress : nil,
+                memo: value.hasMemo ? value.memo : nil,
+                subProvider: value.subProvider,
+                swapID: value.swapID
             ))
         }
     }
@@ -340,6 +354,24 @@ extension SwapPayload {
                     }
                 }
                 $0.provider = payload.provider.rawValue
+            })
+        case .swapkit(let payload):
+            return .swapkitSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.txType = payload.txType
+                $0.txPayload = payload.txPayload
+                $0.targetAddress = payload.targetAddress
+                if let inboundAddress = payload.inboundAddress {
+                    $0.inboundAddress = inboundAddress
+                }
+                if let memo = payload.memo {
+                    $0.memo = memo
+                }
+                $0.subProvider = payload.subProvider
+                $0.swapID = payload.swapID
             })
         }
     }

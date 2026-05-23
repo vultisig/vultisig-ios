@@ -14,12 +14,18 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchainStagenet(THORChainSwapPayload)
     case mayachain(THORChainSwapPayload)
     case generic(GenericSwapPayload)
+    /// SwapKit non-EVM-shaped routes (BTC PSBT today; TRON/TON/SUI/Cardano
+    /// in later phases). EVM and Solana SwapKit swaps still ride `.generic`
+    /// since their wire shape matches `OneInchSwapPayload` 1:1.
+    case swapkit(SwapKitSwapPayload)
 
     var fromCoin: Coin {
         switch self {
         case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.fromCoin
         case .generic(let payload):
+            return payload.fromCoin
+        case .swapkit(let payload):
             return payload.fromCoin
         }
     }
@@ -30,6 +36,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.toCoin
         case .generic(let payload):
             return payload.toCoin
+        case .swapkit(let payload):
+            return payload.toCoin
         }
     }
 
@@ -38,6 +46,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.fromAmount
         case .generic(let payload):
+            return payload.fromAmount
+        case .swapkit(let payload):
             return payload.fromAmount
         }
     }
@@ -48,6 +58,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.toAmountDecimal
         case .generic(let payload):
             return payload.toAmountDecimal
+        case .swapkit(let payload):
+            return payload.toAmountDecimal
         }
     }
 
@@ -57,6 +69,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.routerAddress
         case .generic(let payload):
             return payload.quote.tx.to
+        case .swapkit(let payload):
+            return payload.targetAddress
         }
     }
 
@@ -64,7 +78,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .mayachain(let payload):
             return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
-        case .generic, .thorchain, .thorchainChainnet, .thorchainStagenet:
+        case .generic, .thorchain, .thorchainChainnet, .thorchainStagenet, .swapkit:
             return false
         }
     }
@@ -80,14 +94,11 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         case .mayachain:
             return "Maya Protocol"
         case .generic(let payload):
-            switch payload.provider {
-            case .oneInch:
-                return "1Inch"
-            case .lifi:
-                return "LI.FI"
-            case .kyberSwap:
-                return "KyberSwap"
-            }
+            return payload.provider.name
+        case .swapkit(let payload):
+            // Sub-provider tag preserves the verify-screen "via Chainflip" /
+            // "via NEAR Intents" / "via Garden" affordance.
+            return payload.subProvider.isEmpty ? "SwapKit" : "SwapKit (\(payload.subProvider))"
         }
     }
 }

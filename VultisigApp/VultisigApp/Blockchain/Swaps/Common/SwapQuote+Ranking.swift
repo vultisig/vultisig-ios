@@ -39,6 +39,14 @@ extension SwapQuote {
             let amount = toCoin.decimal(for: raw)
             let fee = amount * (integratorFee ?? 0)
             return amount - fee
+
+        case .swapkit(let response, _, _):
+            // SwapKit's `expectedBuyAmount` is already a decimal string in
+            // human units (not raw base units) — same wire choice the
+            // aggregator made in its docs. Convert directly without applying
+            // `toCoin.decimal`.
+            guard let amount = Decimal(string: response.expectedBuyAmount), amount > 0 else { return nil }
+            return amount
         }
     }
 }
