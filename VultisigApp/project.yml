@@ -53,12 +53,12 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Temporary: pinned to the head of the SwapKitSwapPayload proto branch.
-    # Adds `SwapKitSwapPayload` (oneof entry 26 on `KeysignPayload`) for non-
-    # EVM-shaped SwapKit routes — BTC PSBT lands here in Phase 2; TRON/TON/
-    # SUI/Cardano land in later phases. Flip to `revision: <merge-sha>` after
-    # the branch merges.
-    branch: feat/swapkit-swap-payload
+    # Pinned to the main revision that merged the SwapKitSwapPayload proto
+    # (commondata #86, merged 2026-05-23). `SwapKitSwapPayload` is `oneof`
+    # entry 26 on `KeysignPayload` — carries pre-built tx bytes for non-EVM
+    # SwapKit routes (BTC PSBT, TON, ADA CBOR, TRON, SUI PTB, DOGE/BCH/DASH
+    # PSBT legacy P2PKH, ZEC Sapling).
+    revision: dc4b8edc5e30946bd59efdb76ab1f41d0b7c3e6b
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19
