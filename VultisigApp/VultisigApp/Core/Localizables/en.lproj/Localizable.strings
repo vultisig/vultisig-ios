@@ -945,7 +945,9 @@
 "swapKitErrorRouteFiltered" = "All routes were filtered out for this pair";
 "swapKitErrorSwapRouteNotFound" = "Selected route has expired";
 "swapKitErrorUnableToBuildTransaction" = "This route is currently unavailable, try a different provider";
+"swapKitErrorUnsupportedShieldedTransaction" = "Vultisig cannot sign shielded Zcash transactions";
 "swapKitErrorUnsupportedTxType" = "SwapKit txType %@ is not yet supported on iOS";
+"swapKitErrorUnsupportedZcashVersion" = "Unsupported Zcash transaction version (version %1$@, group %2$@) — only Sapling v4 is signable";
 "swapKitStatusFailedReason" = "Swap failed on the SwapKit tracker";
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
 "swapKitViewOnTracker" = "View on SwapKit Tracker";

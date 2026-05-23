@@ -130,6 +130,38 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         XCTAssertTrue(Chain.ton.isSwapAvailable)
     }
 
+    // MARK: - Spot checks: Tier 1 L1 sources (DOGE / BCH / LTC / DASH / ZEC / XRP)
+    //
+    // These light up alongside the Tier 1 L1 sources PR — DOGE/BCH/DASH/ZEC
+    // get new per-chain SwapKit signers, LTC ships flag-flip-ready, XRP
+    // rides a deposit-only flow through the existing RippleHelper. Standalone
+    // tests so a regression of any individual chain's `isSwapAvailable` flag
+    // surfaces with an obvious name in CI failure logs.
+
+    func testDogeSwapAvailable() {
+        XCTAssertTrue(Chain.dogecoin.isSwapAvailable)
+    }
+
+    func testBchSwapAvailable() {
+        XCTAssertTrue(Chain.bitcoinCash.isSwapAvailable)
+    }
+
+    func testLitecoinSwapAvailable() {
+        XCTAssertTrue(Chain.litecoin.isSwapAvailable)
+    }
+
+    func testDashSwapAvailable() {
+        XCTAssertTrue(Chain.dash.isSwapAvailable)
+    }
+
+    func testZcashSwapAvailable() {
+        XCTAssertTrue(Chain.zcash.isSwapAvailable)
+    }
+
+    func testRippleSwapAvailable() {
+        XCTAssertTrue(Chain.ripple.isSwapAvailable)
+    }
+
     // MARK: - Spot checks: chains that must stay disabled
     //
     // Guards against an accidental broad enable (e.g. a refactor that

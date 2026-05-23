@@ -82,6 +82,42 @@ final class SwapKitQuoteDecodingTests: XCTestCase {
         XCTAssertNotNil(Data(base64Encoded: base64))
     }
 
+    /// PSBT shape with an unknown source chain. Phase 1 routed every
+    /// unknown PSBT chain into the BTC/LTC segwit signer as a default
+    /// fall-through — dangerous because routing a (say) Decred or
+    /// Komodo PSBT into the BIP-143 segwit signer would either
+    /// silently misdecode or produce an invalid signature. The decoder
+    /// now uses an explicit allowlist (BTC/LTC/DOGE/BCH/DASH/ZEC) and
+    /// surfaces unknown chains through the typed `.unsupported`
+    /// case with `txType: "PSBT/<chain>"` so the keysign dispatcher
+    /// throws `unsupportedTxType` rather than silently signing.
+    func testUnknownPSBTChainFallsThroughToUnsupported() throws {
+        let json = #"""
+        {
+          "swapId": "00000000-0000-0000-0000-000000000000",
+          "routeId": "00000000-0000-0000-0000-000000000000",
+          "providers": ["NEAR"],
+          "sellAsset": "DCR.DCR",
+          "buyAsset": "ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "sellAmount": "1",
+          "expectedBuyAmount": "10",
+          "expectedBuyAmountMaxSlippage": "9.9",
+          "sourceAddress": "DcXyz",
+          "destinationAddress": "0x0000000000000000000000000000000000000000",
+          "targetAddress": "DcAbc",
+          "meta": { "txType": "PSBT" },
+          "tx": "cHNidP8BAHcBAAAAAQ==",
+          "fees": []
+        }
+        """#
+        let response = try JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
+        guard case .unsupported(let txType, _) = response.tx else {
+            return XCTFail("expected .unsupported for unknown PSBT chain, got \(response.tx)")
+        }
+        XCTAssertEqual(txType, "PSBT/DCR",
+                       "Unknown PSBT chain must surface as txType=PSBT/<chain> (no default fall-through to .psbt)")
+    }
+
     /// Synthesizes a fictional unknown `tx_type` to lock the decoder's
     /// fall-through behaviour. TRON used to live here as a Phase 1 sentinel;
     /// Phase 3 promoted it to a typed `.tron` case (see

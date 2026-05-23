@@ -43,7 +43,14 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             self = .insufficientBalance
         case "insufficientAllowance":
             self = .insufficientAllowance
-        case "unableToBuildTransaction":
+        case "unableToBuildTransaction", "failedToRetrieveBalance":
+            // SwapKit's NEAR-Intents proxy collapses upstream UTXO-indexer
+            // failures into `failedToRetrieveBalance`. Surfacing the raw
+            // string leaks an implementation detail and reads as "your
+            // balance lookup failed" — but the user-facing meaning is the
+            // same as `unableToBuildTransaction`: this route is currently
+            // unavailable, try another provider. Map the two together so
+            // both ride the friendlier "route currently unavailable" copy.
             self = .unableToBuildTransaction
         case "swapRouteNotFound":
             self = .swapRouteNotFound

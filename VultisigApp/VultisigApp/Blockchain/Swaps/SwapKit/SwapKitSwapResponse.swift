@@ -29,6 +29,13 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     let approvalTx: SwapKitApprovalTx?
     let fees: [SwapKitFee]
     let warnings: [SwapKitWarning]?
+    /// Optional top-level destination-tag field. Defensive: SwapKit's docs
+    /// don't list this for XRP routes today (NEAR allocates a per-route
+    /// ephemeral r-address, so no tag is needed), but the silent-misroute
+    /// failure mode for XRP-to-shared-vault transfers is severe enough that
+    /// we accept a tag from three sources at decode time and pick the first
+    /// non-nil via `resolvedDestinationTag`.
+    let destinationTag: UInt64?
 
     /// Some chains (Cardano) return responses without a `tx` field at all —
     /// see `SwapKitTx.cardano`. The `Hashable` synthesis still works because
@@ -40,6 +47,25 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// only, so this string is unambiguous.
     var subProvider: String {
         providers.first ?? "SwapKit"
+    }
+
+    /// XRP destination-tag resolution. Precedence: top-level field beats
+    /// `meta.destinationTag` beats the `?dt=` / `|` suffix on `targetAddress`.
+    /// Returns `nil` if no source surfaces one — the cosigning peer then
+    /// builds a tag-less Payment, which is the correct behaviour for NEAR-
+    /// allocated ephemeral deposit addresses.
+    var resolvedDestinationTag: UInt64? {
+        if let tag = destinationTag { return tag }
+        if let tag = meta.destinationTag { return tag }
+        return Self.extractTagSuffix(from: targetAddress).tag
+    }
+
+    /// XRP target-address stripped of any `?dt=…` or `|…` destination-tag
+    /// suffix. For non-XRP responses (no suffix present), returns
+    /// `targetAddress` verbatim. Defensive — every probe today returns a
+    /// bare r-address.
+    var resolvedTargetAddress: String {
+        Self.extractTagSuffix(from: targetAddress).address
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -60,6 +86,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         case approvalTx
         case fees
         case warnings
+        case destinationTag
     }
 
     init(from decoder: Decoder) throws {
@@ -84,11 +111,102 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         // and leave `inboundFee` returning nil at quote time.
         fees = try container.decodeIfPresent([SwapKitFee].self, forKey: .fees) ?? []
         warnings = try container.decodeIfPresent([SwapKitWarning].self, forKey: .warnings)
-        tx = try Self.decodeTx(meta: meta, container: container)
+        // SwapKit may surface a numeric `destinationTag` (rare) or a string-
+        // wrapped one (defensive — `meta.affiliateFee` arrives as a string
+        // even though it's numeric semantically, so accept both shapes).
+        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
+            destinationTag = intTag
+        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
+                  let parsed = UInt64(stringTag) {
+            destinationTag = parsed
+        } else {
+            destinationTag = nil
+        }
+        tx = try Self.decodeTx(meta: meta, sellAsset: sellAsset, container: container)
+    }
+
+    /// Discriminate the PSBT shape by source chain. SwapKit's wire surface
+    /// is the same uniform base64 PSBT for every UTXO chain, but the inner
+    /// unsigned-tx body differs (segwit BIP-144 for BTC/LTC, legacy
+    /// pre-segwit for DOGE/BCH/DASH, Sapling-v4 for ZEC). The decoder picks
+    /// the right `SwapKitTx` case from the `sellAsset` prefix so the
+    /// keysign dispatcher can route directly to the per-chain signer.
+    /// Asset-prefix matching is case-insensitive to absorb any future
+    /// `DOGE.DOGE` vs `Doge.doge` drift in upstream catalogs.
+    ///
+    /// Chain dispatch uses an explicit allowlist (no default fall-through
+    /// into `SwapKitBTCSigner`). Routing an unknown chain's PSBT into the
+    /// BIP-143 segwit signer would either produce an invalid signature
+    /// (if the body shape matches close enough to decode) or crash on a
+    /// parse error — both worse than a typed "txType not supported" error
+    /// at quote time. Unknown chains land on `.unsupported` so the keysign
+    /// dispatcher surfaces `unsupportedTxType` with the chain prefix
+    /// instead of silently signing.
+    private static func psbtCase(forSellAsset sellAsset: String, base64: String) -> SwapKitTx {
+        let chain = sellAsset.uppercased().split(separator: ".").first.map(String.init) ?? ""
+        switch chain {
+        case "BTC", "LTC":
+            // LTC reuses the BTC segwit signer (its addresses are P2WPKH /
+            // P2SH-P2WPKH — `SwapKitBTCSigner.classifyScript` accepts both).
+            return .psbt(base64: base64)
+        case "DOGE":
+            return .dogecoinPsbt(base64: base64)
+        case "BCH":
+            return .bitcoinCashPsbt(base64: base64)
+        case "DASH":
+            return .dashPsbt(base64: base64)
+        case "ZEC":
+            return .zcashPsbt(base64: base64)
+        default:
+            // Unknown chain over the PSBT wire. Don't guess — surface
+            // through the raw-JSON passthrough so the keysign dispatcher
+            // can throw `unsupportedTxType("PSBT/<chain>")` rather than
+            // silently misroute into the segwit signer.
+            let raw = SwapKitRawJSON(jsonValue: .string(base64))
+            return .unsupported(txType: "PSBT/\(chain.isEmpty ? "unknown" : chain)", raw: raw)
+        }
+    }
+
+    /// Split a `?dt=12345` (or `?dt=12345&other=foo`) or `|12345` suffix
+    /// off an XRP target address. Returns the bare r-address plus the
+    /// parsed tag (or `nil`). Defensive — no probe today returns a suffix,
+    /// but the silent-misroute failure mode is severe enough to absorb
+    /// the decoder.
+    ///
+    /// Query parsing handles arbitrary parameter order
+    /// (`?dt=N`, `?dt=N&memo=foo`, `?memo=foo&dt=N`). Whichever key/value
+    /// pair parses as `dt=<UInt64>` wins; everything else is dropped.
+    private static func extractTagSuffix(from address: String) -> (address: String, tag: UInt64?) {
+        // `?…` form: walk the query parameters and pick the first `dt=`
+        // that parses as a UInt64. Real-world XRP URIs usually have a
+        // single `dt=N`, but accepting the full `key=val&key=val` shape
+        // means a future flip to `?memo=...&dt=...` doesn't silently
+        // drop the tag.
+        if let q = address.firstIndex(of: "?") {
+            let bare = String(address[..<q])
+            let query = address[address.index(after: q)...]
+            for pair in query.split(separator: "&", omittingEmptySubsequences: true) {
+                let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+                guard parts.count == 2, parts[0] == "dt" else { continue }
+                if let tag = UInt64(parts[1]) {
+                    return (bare, tag)
+                }
+            }
+            return (bare, nil)
+        }
+        // `|` form: `rXyz|12345`
+        if let pipe = address.firstIndex(of: "|") {
+            let suffix = address[address.index(after: pipe)...]
+            if let tag = UInt64(suffix) {
+                return (String(address[..<pipe]), tag)
+            }
+        }
+        return (address, nil)
     }
 
     private static func decodeTx(
         meta: SwapKitSwapResponseMeta,
+        sellAsset: String,
         container: KeyedDecodingContainer<CodingKeys>
     ) throws -> SwapKitTx {
         let txType = meta.txType.uppercased()
@@ -105,13 +223,16 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             let base64 = try container.decode(String.self, forKey: .tx)
             return .solana(base64: base64)
         case "PSBT":
-            // Bitcoin source: SwapKit returns the unsigned PSBT as a single
+            // UTXO source: SwapKit returns the unsigned PSBT as a single
             // base64 string in `tx` (~480 chars, magic prefix `cHNidP8B...`).
-            // No nested object — `tx` is the bare string, mirroring the
-            // Solana shape. The keysign-side dispatcher base64-decodes into
-            // the proto `tx_payload` bytes field for cross-device transit.
+            // Same wire shape across every UTXO chain — only the inner
+            // unsigned-tx body differs (segwit P2WPKH for BTC/LTC, legacy
+            // P2PKH for DOGE/BCH/DASH, Sapling-v4 for ZEC). Discriminate on
+            // the source chain at decode time so the keysign dispatcher
+            // routes to the right signer without grovelling around the PSBT
+            // body bytes.
             let base64 = try container.decode(String.self, forKey: .tx)
-            return .psbt(base64: base64)
+            return psbtCase(forSellAsset: sellAsset, base64: base64)
         case "TON":
             // TON source: SwapKit returns `tx` as a single-element array of
             // `{address, amount}` objects. `amount` is raw nano-TON (1e9 =
@@ -172,6 +293,18 @@ struct SwapKitSwapResponse: Decodable, Hashable {
             // pre-built PTB) — deferred to the consolidated signing PR.
             let base64 = try container.decode(String.self, forKey: .tx)
             return .sui(base64: base64)
+        case "XRP", "RIPPLE":
+            // XRP source: deposit-only flow modelled on Cardano. NEAR Intents
+            // allocates a per-route ephemeral r-address at `targetAddress` —
+            // Vultisig builds a plain XRP Payment to that address for
+            // `sellAmount` via the existing `RippleHelper`. SwapKit's docs
+            // explicitly reject X-addresses and don't document a
+            // `destinationTag` field, but the three-source defensive
+            // resolution (top-level field → meta → suffix on targetAddress)
+            // makes a future Chainflip-style shared-vault flip non-breaking.
+            // Accept `XRP` (canonical) and `RIPPLE` (defensive — SwapKit has
+            // form for switching between asset names mid-route).
+            return .rippleDepositOnly
         case "TRON":
             // TRON source: SwapKit returns a TronWeb-shaped object with
             // `{txID, raw_data {...}, raw_data_hex, visible?}`. We model the
@@ -228,6 +361,28 @@ enum SwapKitTx: Hashable {
     /// `rawDataHex`. The `raw_data_hex` is the canonical input to WalletCore
     /// Tron signing; the rest is kept verbatim for the verify screen.
     case tron(SwapKitTronTx)
+    /// XRP source — deposit-only flow. SwapKit hands us an ephemeral r-address
+    /// at `targetAddress` and (optionally) a `destinationTag`; Vultisig
+    /// builds a plain XRP Payment to that address for `sellAmount` via the
+    /// existing `RippleHelper`. No transaction body to sign — same model as
+    /// `.cardano`.
+    case rippleDepositOnly
+    /// DOGE source — legacy P2PKH PSBT. Same `meta.txType: "PSBT"` wire as
+    /// BTC, but inputs are P2PKH (DOGE has no segwit). Signed via WalletCore
+    /// `CoinType.dogecoin` + frozen `BitcoinTransactionPlan` (no replanner
+    /// — preserves the broadcast tx_id NEAR Intents tracks the route by).
+    case dogecoinPsbt(base64: String)
+    /// BCH source — legacy P2PKH PSBT. Same structure as DOGE; BCH adds
+    /// SIGHASH_FORKID natively via `BitcoinScript.hashTypeForCoin(.bitcoinCash)`.
+    case bitcoinCashPsbt(base64: String)
+    /// DASH source — legacy P2PKH PSBT (DASH has no segwit). Same structure
+    /// as DOGE/BCH; signed via `CoinType.dash`.
+    case dashPsbt(base64: String)
+    /// ZEC source — Sapling-v4 transparent PSBT. Inputs are P2PKH; the
+    /// unsigned-tx body carries `nVersionGroupId` + `expiryHeight` + zeroed
+    /// shielded fields. Signed via `CoinType.zcash` with the Sapling
+    /// branchID (`0x76b809bb` LE) for ZIP-243 sighash.
+    case zcashPsbt(base64: String)
     case unsupported(txType: String, raw: SwapKitRawJSON)
 }
 
@@ -297,6 +452,39 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
     let priceImpact: Double?
     let affiliate: String?
     let affiliateFee: String?
+    /// Optional XRP destination tag surfaced via the meta block (second of
+    /// three resolution sources — see `SwapKitSwapResponse.resolvedDestinationTag`).
+    let destinationTag: UInt64?
+
+    private enum CodingKeys: String, CodingKey {
+        case txType
+        case approvalAddress
+        case isFastQuote
+        case isRefreshed
+        case priceImpact
+        case affiliate
+        case affiliateFee
+        case destinationTag
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        txType = try container.decode(String.self, forKey: .txType)
+        approvalAddress = try container.decodeIfPresent(String.self, forKey: .approvalAddress)
+        isFastQuote = try container.decodeIfPresent(Bool.self, forKey: .isFastQuote)
+        isRefreshed = try container.decodeIfPresent(Bool.self, forKey: .isRefreshed)
+        priceImpact = try container.decodeIfPresent(Double.self, forKey: .priceImpact)
+        affiliate = try container.decodeIfPresent(String.self, forKey: .affiliate)
+        affiliateFee = try container.decodeIfPresent(String.self, forKey: .affiliateFee)
+        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
+            destinationTag = intTag
+        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
+                  let parsed = UInt64(stringTag) {
+            destinationTag = parsed
+        } else {
+            destinationTag = nil
+        }
+    }
 }
 
 struct SwapKitWarning: Decodable, Hashable {
@@ -322,6 +510,15 @@ struct SwapKitRawJSON: Decodable, Hashable {
         } else {
             data = Data("{}".utf8)
         }
+    }
+
+    /// Build a raw-JSON passthrough from an in-memory `SwapKitJSONValue` —
+    /// used by the decoder when synthesising an `.unsupported` case for a
+    /// PSBT-chain we don't know how to dispatch. Re-encoding through
+    /// `JSONEncoder` keeps the wire shape consistent with the
+    /// `Decodable` init path.
+    init(jsonValue: SwapKitJSONValue) {
+        data = (try? JSONEncoder().encode(jsonValue)) ?? Data("{}".utf8)
     }
 }
 

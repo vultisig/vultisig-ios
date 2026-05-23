@@ -582,6 +582,34 @@ class KeysignViewModel: ObservableObject {
                         pubKeyHex: keysignPayload.coin.hexPublicKey
                     )
                     signedTransactions.append(tx)
+                case "PSBT_DOGE":
+                    let tx = try SwapKitDogeSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_BCH":
+                    let tx = try SwapKitBCHSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_DASH":
+                    let tx = try SwapKitDashSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_ZEC":
+                    let tx = try SwapKitZcashSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
                 case "SUI":
                     let tx = try SwapKitSuiSigner.compileSignedTransaction(
                         payload: payload,
@@ -606,7 +634,11 @@ class KeysignViewModel: ObservableObject {
                         pubKeyHex: vault.pubKeyEdDSA
                     )
                     signedTransactions.append(tx)
-                case "TON", "CARDANO":
+                case "TON", "CARDANO", "XRP":
+                    // Deposit-only flows fall through to the per-chain helper
+                    // at the bottom of this method — the SwapKit builder
+                    // already pointed `toAddress` / `toAmount` (and memo
+                    // for XRP destination tag) at the deposit.
                     break
                 case "EVM", "SOLANA":
                     throw SwapKitError.unsupportedTxType(payload.txType)

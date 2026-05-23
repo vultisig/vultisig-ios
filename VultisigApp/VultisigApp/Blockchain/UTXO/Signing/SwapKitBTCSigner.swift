@@ -13,6 +13,11 @@
 //  return single-script-type PSBTs whose inputs are owned by the user's
 //  source address — every input is `is_ours = true`.
 //
+//  PSBT framing primitives (`PSBTCursor`, `readMap`, byte-cursor helpers)
+//  live in `SwapKitPSBTParser` so DOGE / BCH / DASH / ZEC signers share the
+//  same wire-level decoder. The BTC unsigned-tx body parser stays here —
+//  it's BIP-144-shaped, distinct from ZEC's Sapling-v4 body.
+//
 
 import Foundation
 import OSLog
@@ -25,6 +30,7 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
     case truncated
     case invalidMagic
     case missingUnsignedTx
+    case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingWitnessUtxo(inputIndex: Int)
     case underlying(BitcoinPsbtSignerError)
@@ -39,6 +45,8 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
             return "SwapKit BTC PSBT magic bytes are invalid"
         case .missingUnsignedTx:
             return "SwapKit BTC PSBT is missing the unsigned-tx global record"
+        case .malformedPSBT(let reason):
+            return "SwapKit BTC PSBT is malformed: \(reason)"
         case .unsupportedScript(let detail):
             return "SwapKit BTC PSBT script not supported: \(detail)"
         case .missingWitnessUtxo(let i):
@@ -91,22 +99,12 @@ enum SwapKitBTCSigner {
     /// puts the user's UTXOs in the PSBT inputs, so the assumption holds for
     /// every observed provider (NEAR Intents, Garden, Flashnet).
     static func decodeToSignBitcoin(psbtBytes: Data) throws -> SignBitcoin {
-        guard !psbtBytes.isEmpty else { throw SwapKitBTCSignerError.missingPSBT }
-        var cursor = PSBTCursor(data: psbtBytes)
-
-        try cursor.expectMagic()
-
-        let globals = try cursor.readMap()
-        guard let txBytes = globals[Data([0x00])] else {
-            throw SwapKitBTCSignerError.missingUnsignedTx
-        }
-        let parsedTx = try parseUnsignedTx(txBytes)
+        let (framing, parsedTx) = try parseEnvelope(psbtBytes: psbtBytes)
 
         var inputs: [BitcoinInput] = []
         for (index, txin) in parsedTx.inputs.enumerated() {
-            let inputMap = try cursor.readMap()
             let input = try makeBitcoinInput(
-                inputMap: inputMap,
+                inputMap: framing.inputMaps[index],
                 index: index,
                 txInput: txin
             )
@@ -115,9 +113,6 @@ enum SwapKitBTCSigner {
 
         var outputs: [BitcoinOutput] = []
         for txout in parsedTx.outputs {
-            // Per-output maps are still parsed (forward-compat / spec
-            // compliance) even though we don't read any per-output fields.
-            _ = try cursor.readMap()
             outputs.append(BitcoinOutput(
                 amount: txout.amount,
                 address: "",
@@ -133,6 +128,61 @@ enum SwapKitBTCSigner {
             inputs: inputs,
             outputs: outputs
         )
+    }
+
+    /// Parses PSBT framing + the BIP-144 unsigned-tx body. Wraps the shared
+    /// `SwapKitPSBTParser` errors into BTC-specific cases so call sites
+    /// surface typed errors as before the refactor.
+    private static func parseEnvelope(psbtBytes: Data) throws -> (ParsedPSBT, ParsedTx) {
+        // Two-phase parse: read the framing header + globals to extract the
+        // unsigned-tx bytes, count inputs/outputs from the body, then drain
+        // the input/output maps. This lets the BTC-specific body parser
+        // drive how many maps to read off the cursor.
+        let framingPrefix: (cursor: PSBTCursor, globals: [Data: Data], unsignedTxBytes: Data)
+        do {
+            framingPrefix = try SwapKitPSBTParser.parseFraming(psbtBytes: psbtBytes)
+        } catch let err as SwapKitPSBTParserError {
+            throw mapParserError(err)
+        }
+        let parsedTx: ParsedTx
+        do {
+            parsedTx = try parseUnsignedTx(framingPrefix.unsignedTxBytes)
+        } catch let err as SwapKitPSBTParserError {
+            throw mapParserError(err)
+        }
+        var cursor = framingPrefix.cursor
+        var inputMaps: [[Data: Data]] = []
+        for _ in 0..<parsedTx.inputs.count {
+            do {
+                inputMaps.append(try cursor.readMap())
+            } catch let err as SwapKitPSBTParserError {
+                throw mapParserError(err)
+            }
+        }
+        var outputMaps: [[Data: Data]] = []
+        for _ in 0..<parsedTx.outputs.count {
+            do {
+                outputMaps.append(try cursor.readMap())
+            } catch let err as SwapKitPSBTParserError {
+                throw mapParserError(err)
+            }
+        }
+        let framing = ParsedPSBT(
+            globals: framingPrefix.globals,
+            unsignedTxBytes: framingPrefix.unsignedTxBytes,
+            inputMaps: inputMaps,
+            outputMaps: outputMaps
+        )
+        return (framing, parsedTx)
+    }
+
+    private static func mapParserError(_ err: SwapKitPSBTParserError) -> SwapKitBTCSignerError {
+        switch err {
+        case .missingPSBT: return .missingPSBT
+        case .truncated: return .truncated
+        case .invalidMagic: return .invalidMagic
+        case .malformed(let reason): return .malformedPSBT(reason: reason)
+        }
     }
 
     // MARK: - Per-input materialization
@@ -160,7 +210,15 @@ enum SwapKitBTCSigner {
             guard bytes.count == 4 else {
                 throw SwapKitBTCSignerError.unsupportedScript("sighash-type record has \(bytes.count) bytes, expected 4")
             }
-            sighashType = bytes.withUnsafeBytes { $0.load(as: UInt32.self).littleEndian }
+            // Assemble byte-by-byte to avoid `withUnsafeBytes.load(as:)`'s
+            // natural-alignment requirement (same foot-gun the PSBT cursor
+            // avoids). Adversarial / corrupted PSBTs could otherwise
+            // exploit a misaligned 4-byte slice into a parent Data.
+            let base = bytes.startIndex
+            sighashType = UInt32(bytes[base])
+                | (UInt32(bytes[base + 1]) << 8)
+                | (UInt32(bytes[base + 2]) << 16)
+                | (UInt32(bytes[base + 3]) << 24)
         } else {
             sighashType = 0
         }
@@ -220,19 +278,25 @@ enum SwapKitBTCSigner {
         inputIndex: Int
     ) throws -> (amount: Int64, scriptPubKey: Data) {
         var c = PSBTCursor(data: data)
-        let amountUnsigned = try c.readUInt64LE()
-        let amount = Int64(bitPattern: amountUnsigned)
-        let scriptLen = try c.readCompactSize()
-        let script = try c.readBytes(Int(scriptLen))
+        let amountUnsigned: UInt64
+        let scriptLen: UInt64
+        let script: Data
+        do {
+            amountUnsigned = try c.readUInt64LE()
+            scriptLen = try c.readCompactSize()
+            script = try c.readBytes(Int(scriptLen))
+        } catch let err as SwapKitPSBTParserError {
+            throw mapParserError(err)
+        }
         guard c.isAtEnd else {
             throw SwapKitBTCSignerError.unsupportedScript(
                 "input #\(inputIndex) WITNESS_UTXO has trailing bytes"
             )
         }
-        return (amount, script)
+        return (Int64(bitPattern: amountUnsigned), script)
     }
 
-    // MARK: - Unsigned-tx parser
+    // MARK: - Unsigned-tx parser (BIP-144 segwit body)
 
     private struct ParsedTxInput {
         let prevTxId: String
@@ -284,82 +348,5 @@ enum SwapKitBTCSigner {
         }
         let locktime = try c.readUInt32LE()
         return ParsedTx(version: version, locktime: locktime, inputs: inputs, outputs: outputs)
-    }
-}
-
-// MARK: - PSBT byte cursor (BIP-174 wire helpers)
-
-private struct PSBTCursor {
-    let data: Data
-    var offset: Int = 0
-
-    init(data: Data) { self.data = data }
-
-    var isAtEnd: Bool { offset >= data.count }
-
-    mutating func expectMagic() throws {
-        // BIP-174 magic: 4-byte ASCII 'psbt' (0x70 0x73 0x62 0x74) followed
-        // by a single separator byte 0xff. Total 5 bytes. After this the
-        // global key-value records start — the first byte we read in
-        // `readMap()` is the length of the first key (typically 0x01 for
-        // PSBT_GLOBAL_UNSIGNED_TX).
-        let magic: [UInt8] = [0x70, 0x73, 0x62, 0x74, 0xff]
-        guard data.count >= magic.count else { throw SwapKitBTCSignerError.invalidMagic }
-        for i in 0..<magic.count where data[data.startIndex + i] != magic[i] {
-            throw SwapKitBTCSignerError.invalidMagic
-        }
-        offset = magic.count
-    }
-
-    mutating func readMap() throws -> [Data: Data] {
-        var map: [Data: Data] = [:]
-        while true {
-            let keyLen = try readCompactSize()
-            if keyLen == 0 { return map } // 0x00 terminator
-            let key = try readBytes(Int(keyLen))
-            let valLen = try readCompactSize()
-            let val = try readBytes(Int(valLen))
-            map[key] = val
-        }
-    }
-
-    mutating func readCompactSize() throws -> UInt64 {
-        let head = try readByte()
-        switch head {
-        case 0xff: return try readUInt64LE()
-        case 0xfe: return UInt64(try readUInt32LE())
-        case 0xfd: return UInt64(try readUInt16LE())
-        default: return UInt64(head)
-        }
-    }
-
-    mutating func readByte() throws -> UInt8 {
-        guard offset < data.count else { throw SwapKitBTCSignerError.truncated }
-        let b = data[data.startIndex + offset]
-        offset += 1
-        return b
-    }
-
-    mutating func readBytes(_ count: Int) throws -> Data {
-        guard count >= 0, offset + count <= data.count else {
-            throw SwapKitBTCSignerError.truncated
-        }
-        let start = data.startIndex + offset
-        let slice = data[start..<(start + count)]
-        offset += count
-        return Data(slice)
-    }
-
-    mutating func readUInt16LE() throws -> UInt16 {
-        let b = try readBytes(2)
-        return b.withUnsafeBytes { $0.load(as: UInt16.self).littleEndian }
-    }
-    mutating func readUInt32LE() throws -> UInt32 {
-        let b = try readBytes(4)
-        return b.withUnsafeBytes { $0.load(as: UInt32.self).littleEndian }
-    }
-    mutating func readUInt64LE() throws -> UInt64 {
-        let b = try readBytes(8)
-        return b.withUnsafeBytes { $0.load(as: UInt64.self).littleEndian }
     }
 }

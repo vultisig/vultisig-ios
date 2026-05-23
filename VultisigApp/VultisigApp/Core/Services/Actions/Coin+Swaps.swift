@@ -71,8 +71,15 @@ extension Coin {
 
     private var naturalSwapProviders: [SwapProvider] {
         switch chain {
-        case .mayaChain, .dash, .kujira:
+        case .mayaChain, .kujira:
             return [.mayachain]
+        case .dash:
+            // Tier 1 L1 source — `.swapkit` enables DASH↔EVM / DASH↔SOL routes
+            // via NEAR Intents. Wire shape mirrors DOGE (legacy P2PKH PSBT,
+            // no segwit); signed through `SwapKitDashSigner` riding
+            // WalletCore's `CoinType.dash` end-to-end. MayaChain stays as
+            // a provider — both rank against each other per quote.
+            return [.mayachain, .swapkit]
         case .ethereum:
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
@@ -140,7 +147,27 @@ extension Coin {
             // PSBT and we sign it through the same UTXO helper path
             // THORChain BTC swaps already use.
             return [.thorchain, .mayachain, .swapkit]
-        case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
+        case .dogecoin:
+            // Tier 1 L1 source — `.swapkit` enables DOGE↔EVM / DOGE↔SOL routes
+            // via NEAR Intents. Wire shape matches BTC (`meta.txType: "PSBT"`)
+            // but inputs are legacy P2PKH; signed through `SwapKitDogeSigner`
+            // riding WalletCore's `CoinType.dogecoin` end-to-end.
+            return [.thorchain, .swapkit]
+        case .bitcoinCash:
+            // Tier 1 L1 source — same shape as DOGE (legacy P2PKH PSBT).
+            // BCH adds SIGHASH_FORKID natively via WalletCore.
+            return [.thorchain, .swapkit]
+        case .litecoin:
+            // Tier 1 L1 source — flag-flip-ready. LTC reuses the existing
+            // `SwapKitBTCSigner` (segwit-compatible — LTC addresses are
+            // P2WPKH / P2SH-P2WPKH). No-op today because
+            // `SwapKitProviderCache.chainEnabled(.litecoin)` returns false
+            // until upstream lists `"litecoin"` in `/v3/providers.enabledChainIds`.
+            // Despite this, `/v3/quote` serves LTC routes via NEAR — the gate
+            // is overly conservative. Shipping the flip pre-emptively so the
+            // gate flip is the only diff when upstream lights up.
+            return [.thorchain, .swapkit]
+        case .gaiaChain:
             return [.thorchain]
         case .solana:
             // Phase 1 chain — `.swapkit` enables EVM↔Solana and Solana↔EVM
@@ -151,9 +178,21 @@ extension Coin {
         case .cronosChain:
             return [.lifi]
         case .zcash:
-            return [.mayachain]
+            // Tier 1 L1 source — `.swapkit` enables ZEC↔EVM / ZEC↔SOL routes
+            // via NEAR Intents. Transparent-only by hard MPC constraint
+            // (Vultisig can't manage shielded keys). Sapling-v4 PSBT signed
+            // through `SwapKitZcashSigner` with ZIP-243 sighash via
+            // WalletCore `CoinType.zcash`.
+            return [.mayachain, .swapkit]
         case .ripple:
-            return [.thorchain]
+            // Tier 1 L1 source — `.swapkit` enables XRP↔EVM / XRP↔SOL routes
+            // via NEAR Intents. Deposit-only flow: SwapKit returns a per-route
+            // NEAR-allocated r-address and Vultisig builds a plain Payment
+            // through the existing `RippleHelper`. Destination-tag plumbing
+            // is defensive — NEAR's ephemeral deposit pattern doesn't need
+            // tags, but a future Chainflip shared-vault flip would silently
+            // misroute funds without it.
+            return [.thorchain, .swapkit]
         case .tron:
             return [.thorchain, .swapkit]
         case .ton, .cardano, .sui:
