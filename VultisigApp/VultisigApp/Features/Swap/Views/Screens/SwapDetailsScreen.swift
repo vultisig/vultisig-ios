@@ -57,7 +57,8 @@ struct SwapDetailsScreen: View {
                 vault: vault,
                 showSheet: $vm.showFromCoinSelector,
                 selectedCoin: $vm.fromCoin,
-                selectedChain: vm.fromChain
+                selectedChain: vm.fromChain,
+                isDestination: false
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -66,7 +67,8 @@ struct SwapDetailsScreen: View {
                 vault: vault,
                 showSheet: $vm.showToCoinSelector,
                 selectedCoin: $vm.toCoin,
-                selectedChain: vm.toChain
+                selectedChain: vm.toChain,
+                isDestination: true
             )
             .environmentObject(coinSelectionViewModel)
         }

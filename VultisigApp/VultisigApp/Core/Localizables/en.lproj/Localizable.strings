@@ -856,8 +856,10 @@
 "setPasswordHintSubtitle" = "This will be shown in case you forget your password.";
 "setPasswordHintTitle" = "Add an optional hint";
 "settings" = "Settings";
+"settingsAdvancedClear" = "Clear";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Share";
 "shareOf" = "share %d of %d";

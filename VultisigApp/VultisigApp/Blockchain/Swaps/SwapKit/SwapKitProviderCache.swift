@@ -132,4 +132,45 @@ enum SwapKitChainIDMapper {
         default: return ""
         }
     }
+
+    /// Reverse map for the per-token `chain` field in `/tokens` responses
+    /// (uppercase ticker-style key, e.g. `"ETH"`, `"BSC"`, `"NEAR"`, `"BTC"`).
+    /// Returns `nil` for chains Vultisig has no wallet support for — those
+    /// tokens can't be receive destinations so they're dropped at decode.
+    /// Note: SwapKit's per-token `chain` is unique per Vultisig chain (Base
+    /// ETH appears as `"BASE"`, OP ETH as `"OP"`, not as `"ETH"`), so the
+    /// reverse map is many-to-one only for legacy aliases (e.g. `"POL"` and
+    /// `"MATIC"` both reaching `.polygon`).
+    static func chain(forSwapKitChain swapKitChain: String) -> Chain? {
+        switch swapKitChain.uppercased() {
+        case "ETH": return .ethereum
+        case "BSC", "BNB": return .bscChain
+        case "AVAX": return .avalanche
+        case "ARB": return .arbitrum
+        case "OP": return .optimism
+        case "BASE": return .base
+        case "POL", "MATIC", "POLYGON": return .polygon
+        case "SOL": return .solana
+        case "BTC": return .bitcoin
+        case "BCH": return .bitcoinCash
+        case "LTC": return .litecoin
+        case "DOGE": return .dogecoin
+        case "DASH": return .dash
+        case "ZEC": return .zcash
+        case "TRON", "TRX": return .tron
+        case "TON": return .ton
+        case "ADA": return .cardano
+        case "SUI": return .sui
+        case "XRP": return .ripple
+        case "ATOM": return .gaiaChain
+        case "KUJI": return .kujira
+        // Chains SwapKit lists tokens on but Vultisig doesn't hold wallets
+        // for — caller drops the token. Enumerated for grep-discoverability
+        // rather than relying on the default arm.
+        case "BERA", "MONAD", "GNO", "STRK", "XLAYER", "OKB", "DOT", "NEAR":
+            return nil
+        default:
+            return nil
+        }
+    }
 }

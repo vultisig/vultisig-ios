@@ -1,0 +1,368 @@
+{
+  "provider": "NEAR",
+  "name": "NEAR",
+  "timestamp": "2026-05-10T10:23:55.542Z",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "keywords": [],
+  "count": 25,
+  "tokens": [
+    {
+      "chain": "GNO",
+      "chainId": "100",
+      "ticker": "xDAI",
+      "identifier": "GNO.xDAI",
+      "symbol": "xDAI",
+      "name": "XDAI",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/gno.xdai.png",
+      "extensions": {
+        "providerId": "nep141:gnosis.omft.near"
+      },
+      "coingeckoId": "xdai"
+    },
+    {
+      "chain": "GNO",
+      "address": "0x9c58bacc331c9aa871afd802db6379a98e80cedb",
+      "chainId": "100",
+      "ticker": "GNO",
+      "identifier": "GNO.GNO-0x9c58bacc331c9aa871afd802db6379a98e80cedb",
+      "symbol": "GNO-0x9c58bacc331c9aa871afd802db6379a98e80cedb",
+      "name": "GNO",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/gno.gno-0x9c58bacc331c9aa871afd802db6379a98e80cedb.png",
+      "extensions": {
+        "providerId": "nep141:gnosis-0x9c58bacc331c9aa871afd802db6379a98e80cedb.omft.near"
+      }
+    },
+    {
+      "chain": "ARB",
+      "chainId": "42161",
+      "ticker": "ETH",
+      "identifier": "ARB.ETH",
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/arb.eth.png",
+      "extensions": {
+        "providerId": "nep141:arb.omft.near"
+      },
+      "coingeckoId": "ethereum"
+    },
+    {
+      "chain": "ARB",
+      "address": "0x912ce59144191c1204e64559fe8253a0e49e6548",
+      "chainId": "42161",
+      "ticker": "ARB",
+      "identifier": "ARB.ARB-0x912ce59144191c1204e64559fe8253a0e49e6548",
+      "symbol": "ARB-0x912ce59144191c1204e64559fe8253a0e49e6548",
+      "name": "Arbitrum",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/arb.arb-0x912ce59144191c1204e64559fe8253a0e49e6548.png",
+      "extensions": {
+        "providerId": "nep141:arb-0x912ce59144191c1204e64559fe8253a0e49e6548.omft.near"
+      },
+      "coingeckoId": "arbitrum"
+    },
+    {
+      "chain": "MONAD",
+      "chainId": "143",
+      "ticker": "MON",
+      "identifier": "MONAD.MON",
+      "symbol": "MON",
+      "name": "Monad",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/monad.mon.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:143_11111111111111111111"
+      },
+      "coingeckoId": "monad"
+    },
+    {
+      "chain": "MONAD",
+      "address": "0xe7cd86e13ac4309349f30b3435a9d337750fc82d",
+      "chainId": "143",
+      "ticker": "USDT0",
+      "identifier": "MONAD.USDT0-0xe7cd86e13ac4309349f30b3435a9d337750fc82d",
+      "symbol": "USDT0-0xe7cd86e13ac4309349f30b3435a9d337750fc82d",
+      "name": "USDT0",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/monad.usdt0-0xe7cd86e13ac4309349f30b3435a9d337750fc82d.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:143_4EJiJxSALvGoTZbnc8K7Ft9533et"
+      },
+      "coingeckoId": "usdt0"
+    },
+    {
+      "chain": "BSC",
+      "chainId": "56",
+      "ticker": "BNB",
+      "identifier": "BSC.BNB",
+      "symbol": "BNB",
+      "name": "BNB",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/bsc.bnb.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:56_11111111111111111111"
+      },
+      "coingeckoId": "binancecoin"
+    },
+    {
+      "chain": "BSC",
+      "address": "0x000ae314e2a2172a039b26378814c252734f556a",
+      "chainId": "56",
+      "ticker": "ASTER",
+      "identifier": "BSC.ASTER-0x000ae314e2a2172a039b26378814c252734f556a",
+      "symbol": "ASTER-0x000ae314e2a2172a039b26378814c252734f556a",
+      "name": "Aster",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/bsc.aster-0x000ae314e2a2172a039b26378814c252734f556a.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:56_12zbnsg6xndDVj25QyL82YMPudb"
+      },
+      "coingeckoId": "aster-2"
+    },
+    {
+      "chain": "AVAX",
+      "chainId": "43114",
+      "ticker": "AVAX",
+      "identifier": "AVAX.AVAX",
+      "symbol": "AVAX",
+      "name": "Avalanche",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/avax.avax.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:43114_11111111111111111111"
+      },
+      "coingeckoId": "avalanche-2"
+    },
+    {
+      "chain": "AVAX",
+      "address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+      "chainId": "43114",
+      "ticker": "USDT",
+      "identifier": "AVAX.USDT-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+      "symbol": "USDT-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+      "name": "Tether",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/avax.usdt-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:43114_372BeH7ENZieCaabwkbWkBiTTgXp"
+      },
+      "coingeckoId": "tether"
+    },
+    {
+      "chain": "TON",
+      "chainId": "ton",
+      "ticker": "TON",
+      "identifier": "TON.TON",
+      "symbol": "TON",
+      "name": "Toncoin",
+      "decimals": 9,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/ton.ton.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:1117_"
+      },
+      "coingeckoId": "the-open-network"
+    },
+    {
+      "chain": "TON",
+      "address": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+      "chainId": "ton",
+      "ticker": "USDT",
+      "identifier": "TON.USDT-EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+      "symbol": "USDT-EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+      "name": "USDT",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/ton.usdt-eqcxe6mutqjkfngfarotkot1lzbdiix1kcixrv7nw2id_sds.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:1117_3tsdfyziyc7EJbP2aULWSKU4toBaAcN4FdTgfm5W1mC4ouR"
+      }
+    },
+    {
+      "chain": "BASE",
+      "chainId": "8453",
+      "ticker": "ETH",
+      "identifier": "BASE.ETH",
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/base.eth.png",
+      "extensions": {
+        "providerId": "nep141:base.omft.near"
+      },
+      "coingeckoId": "ethereum"
+    },
+    {
+      "chain": "BASE",
+      "address": "0x4200000000000000000000000000000000000006",
+      "chainId": "8453",
+      "ticker": "WETH",
+      "identifier": "BASE.WETH-0x4200000000000000000000000000000000000006",
+      "symbol": "WETH-0x4200000000000000000000000000000000000006",
+      "name": "L2 Standard Bridged WETH (Base)",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/base.weth-0x4200000000000000000000000000000000000006.png",
+      "extensions": {
+        "providerId": "nep141:base-0x4200000000000000000000000000000000000006.omft.near"
+      },
+      "coingeckoId": "l2-standard-bridged-weth-base"
+    },
+    {
+      "chain": "OP",
+      "chainId": "10",
+      "ticker": "ETH",
+      "identifier": "OP.ETH",
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/op.eth.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:10_11111111111111111111"
+      },
+      "coingeckoId": "ethereum"
+    },
+    {
+      "chain": "OP",
+      "address": "0x4200000000000000000000000000000000000042",
+      "chainId": "10",
+      "ticker": "OP",
+      "identifier": "OP.OP-0x4200000000000000000000000000000000000042",
+      "symbol": "OP-0x4200000000000000000000000000000000000042",
+      "name": "OP",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/op.op-0x4200000000000000000000000000000000000042.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:10_vLAiSt9KfUGKpw5cD3vsSyNYBo7"
+      }
+    },
+    {
+      "chain": "BCH",
+      "chainId": "bitcoincash",
+      "ticker": "BCH",
+      "identifier": "BCH.BCH",
+      "symbol": "BCH",
+      "name": "Bitcoin Cash",
+      "decimals": 8,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/bch.bch.png",
+      "extensions": {
+        "providerId": "nep141:bch.omft.near"
+      },
+      "coingeckoId": "bitcoin-cash"
+    },
+    {
+      "chain": "DASH",
+      "chainId": "dash",
+      "ticker": "DASH",
+      "identifier": "DASH.DASH",
+      "symbol": "DASH",
+      "name": "DASH",
+      "decimals": 8,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/dash.dash.png",
+      "extensions": {
+        "providerId": "nep141:dash.omft.near"
+      }
+    },
+    {
+      "chain": "BERA",
+      "chainId": "80094",
+      "ticker": "BERA",
+      "identifier": "BERA.BERA",
+      "symbol": "BERA",
+      "name": "Berachain",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/bera.bera.png",
+      "extensions": {
+        "providerId": "nep141:bera.omft.near"
+      },
+      "coingeckoId": "berachain-bera"
+    },
+    {
+      "chain": "BERA",
+      "address": "0x779ded0c9e1022225f8e0630b35a9b54be713736",
+      "chainId": "80094",
+      "ticker": "USDT0",
+      "identifier": "BERA.USDT0-0x779ded0c9e1022225f8e0630b35a9b54be713736",
+      "symbol": "USDT0-0x779ded0c9e1022225f8e0630b35a9b54be713736",
+      "name": "USDT0",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/bera.usdt0-0x779ded0c9e1022225f8e0630b35a9b54be713736.png",
+      "extensions": {
+        "providerId": "nep141:bera-0x779ded0c9e1022225f8e0630b35a9b54be713736.omft.near"
+      }
+    },
+    {
+      "chain": "TRON",
+      "chainId": "728126428",
+      "ticker": "TRX",
+      "identifier": "TRON.TRX",
+      "symbol": "TRX",
+      "name": "TRON",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/tron.trx.png",
+      "extensions": {
+        "providerId": "nep141:tron.omft.near"
+      },
+      "coingeckoId": "tron"
+    },
+    {
+      "chain": "TRON",
+      "address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+      "chainId": "728126428",
+      "ticker": "USDT",
+      "identifier": "TRON.USDT-TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+      "symbol": "USDT-TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+      "name": "USDT",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/tron.usdt-tr7nhqjekqxgtci8q8zy4pl8otszgjlj6t.png",
+      "extensions": {
+        "providerId": "nep141:tron-d28a265909efecdcee7c5028585214ea0b96f015.omft.near"
+      }
+    },
+    {
+      "chain": "LTC",
+      "chainId": "litecoin",
+      "ticker": "LTC",
+      "identifier": "LTC.LTC",
+      "symbol": "LTC",
+      "name": "Litecoin",
+      "decimals": 8,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/ltc.ltc.png",
+      "extensions": {
+        "providerId": "nep141:ltc.omft.near"
+      },
+      "coingeckoId": "litecoin"
+    },
+    {
+      "chain": "STRK",
+      "chainId": "0x534e5f4d41494e",
+      "ticker": "STRK",
+      "identifier": "STRK.STRK",
+      "symbol": "STRK",
+      "name": "Starknet",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/strk.strk.png",
+      "extensions": {
+        "providerId": "nep141:starknet.omft.near"
+      },
+      "coingeckoId": "starknet"
+    },
+    {
+      "chain": "XLAYER",
+      "chainId": "196",
+      "ticker": "OKB",
+      "identifier": "XLAYER.OKB",
+      "symbol": "OKB",
+      "name": "OKB",
+      "decimals": 18,
+      "logoURI": "https://storage.googleapis.com/token-list-swapkit/images/xlayer.okb.png",
+      "extensions": {
+        "providerId": "nep245:v2_1.omni.hot.tg:196_11111111111111111111"
+      },
+      "coingeckoId": "okb"
+    }
+  ]
+}

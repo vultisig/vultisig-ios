@@ -846,8 +846,10 @@
 "setPasswordHintSubtitle" = "Questo verrà mostrato nel caso in cui dimentichi la tua password.";
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
 "settings" = "Impostazioni";
+"settingsAdvancedClear" = "Cancella";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartilhar";
 "shareOf" = "Condividi %d di %d";

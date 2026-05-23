@@ -87,6 +87,14 @@ struct SettingsAdvancedView: View {
                 ],
                 selection: $settingsViewModel.forcedSwapProvider
             )
+
+            SettingActionCell(
+                title: "settingsAdvancedSwapKitClearTokensCache".localized,
+                icon: "arrow.clockwise",
+                buttonLabel: "settingsAdvancedClear".localized
+            ) {
+                SwapKitTokensCache.shared.clearCache()
+            }
         }
     }
 }

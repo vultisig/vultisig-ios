@@ -49,6 +49,11 @@ struct VultisigApp: App {
         // the tx-history viewmodel and the native status poller can route by
         // `providerKind`. New providers register here.
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+
+        // Register every destination-token provider with the shared registry
+        // so the swap coin picker can aggregate destination tokens from
+        // every source. New providers register here.
+        DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
     }
     var body: some Scene {
         WindowGroup {
