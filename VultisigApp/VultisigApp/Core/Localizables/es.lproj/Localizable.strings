@@ -275,7 +275,6 @@
 "enable" = "Permitir";
 "enableAll" = "Activar todas";
 "enableBiometricsFastSigning" = "Habilitar la firma rápida de biometría";
-"enableDKLS" = "Habilitar DKLS";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
 "enablePushNotifications" = "Activar notificaciones push";
 "enableThorchain" = "Activar THORChain";

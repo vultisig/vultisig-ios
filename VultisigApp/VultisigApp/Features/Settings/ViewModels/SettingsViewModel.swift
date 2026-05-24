@@ -27,9 +27,6 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    @AppStorage("isDKLSEnabled") var isDKLSEnabled: Bool = false
-    @AppStorage("allowSwap") var allowSwap: Bool = false
-    @AppStorage("BuyEnabled") var buyEnabled: Bool = false
     @AppStorage("sepolia") var enableSepolia: Bool = false
     @AppStorage("thorchainChainnet") var enableThorchainChainnet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false

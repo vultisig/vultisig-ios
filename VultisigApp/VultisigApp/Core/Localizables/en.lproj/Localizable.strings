@@ -281,7 +281,6 @@
 "enable" = "Enable";
 "enableAll" = "Enable all";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
-"enableDKLS" = "Enable DKLS";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "enablePushNotifications" = "Enable push notifications";
 "enableThorchain" = "Enable THORChain";
