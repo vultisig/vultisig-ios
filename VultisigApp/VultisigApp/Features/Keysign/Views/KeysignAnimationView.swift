@@ -23,6 +23,9 @@ struct KeysignAnimationView: View {
             animationVM?.view()
         }
         .ignoresSafeArea()
+        .readSize { size in
+            animationVMInstance?.numberProperty(fromPath: "posXcircles")?.value = Float(size.width / 2)
+        }
         .onChange(of: connected) { _, newValue in
             animationVMInstance?.booleanProperty(fromPath: "Connected")?.value = newValue
         }
