@@ -674,6 +674,7 @@
 "qbtcClaimCtaPartial" = "Claim %1$d of %2$d";
 "qbtcClaimDescription" = "QBTC is a quantum-resistant version of BTC. Your existing BTC UTXOs are eligible to be claimed as QBTC at a 1:1 ratio. Select which UTXOs to claim below.";
 "qbtcClaimDescriptionEmphasis" = "quantum-resistant";
+"qbtcClaimDisabledFromAdvanced" = "QBTC Claim is disabled on this device. Enable it in Settings → Advanced and try again.";
 "qbtcClaimEligibleHeader" = "Eligible UTXOs";
 "qbtcClaimEmptyPassword" = "Please enter your Fast Vault password to continue.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Invalid Bitcoin public key on the vault's BTC coin.";
@@ -859,6 +860,7 @@
 "settingsAdvancedClear" = "Clear";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Share";

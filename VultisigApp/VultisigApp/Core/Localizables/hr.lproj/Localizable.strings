@@ -666,6 +666,7 @@
 "qbtcClaimCtaPartial" = "Polaži %1$d od %2$d";
 "qbtcClaimDescription" = "QBTC je kvantno-otporna verzija BTC-a. Vaši postojeći BTC UTXO-i mogu se polagati kao QBTC u omjeru 1:1. Odaberite UTXO-e za polaganje ispod.";
 "qbtcClaimDescriptionEmphasis" = "kvantno-otporna";
+"qbtcClaimDisabledFromAdvanced" = "QBTC Claim je onemogućen na ovom uređaju. Omogući ga u Postavke → Napredno i pokušaj ponovno.";
 "qbtcClaimEligibleHeader" = "Prihvatljivi UTXO-i";
 "qbtcClaimEmptyPassword" = "Unesi svoju Fast Vault lozinku za nastavak.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Nevažeći Bitcoin javni ključ na BTC coinu vaulta.";
@@ -849,6 +850,7 @@
 "settingsAdvancedClear" = "Očisti";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Podijeli";

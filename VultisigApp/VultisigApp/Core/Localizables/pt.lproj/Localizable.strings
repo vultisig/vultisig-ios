@@ -666,6 +666,7 @@
 "qbtcClaimCtaPartial" = "Reivindicar %1$d de %2$d";
 "qbtcClaimDescription" = "QBTC é uma versão resistente à computação quântica do BTC. Os seus UTXOs de BTC existentes podem ser reivindicados como QBTC numa proporção 1:1. Selecione abaixo quais UTXOs reivindicar.";
 "qbtcClaimDescriptionEmphasis" = "resistente à computação quântica";
+"qbtcClaimDisabledFromAdvanced" = "QBTC Claim está desativado neste dispositivo. Ative em Definições → Avançado e tente novamente.";
 "qbtcClaimEligibleHeader" = "UTXOs elegíveis";
 "qbtcClaimEmptyPassword" = "Insira a senha do seu Fast Vault para continuar.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Chave pública Bitcoin inválida na moeda BTC do vault.";
@@ -849,6 +850,7 @@
 "settingsAdvancedClear" = "Limpar";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Limpar cache de tokens do SwapKit";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartilhar";

@@ -666,6 +666,7 @@
 "qbtcClaimCtaPartial" = "%1$d von %2$d beanspruchen";
 "qbtcClaimDescription" = "QBTC ist eine quantensichere Version von BTC. Ihre vorhandenen BTC-UTXOs können im Verhältnis 1:1 als QBTC beansprucht werden. Wählen Sie unten die zu beanspruchenden UTXOs aus.";
 "qbtcClaimDescriptionEmphasis" = "quantensicher";
+"qbtcClaimDisabledFromAdvanced" = "QBTC Claim ist auf diesem Gerät deaktiviert. Aktiviere es unter Einstellungen → Erweitert und versuche es erneut.";
 "qbtcClaimEligibleHeader" = "Berechtigte UTXOs";
 "qbtcClaimEmptyPassword" = "Bitte gib dein Fast Vault-Passwort ein, um fortzufahren.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "Ungültiger Bitcoin-Public-Key auf der BTC-Coin des Vaults.";
@@ -849,6 +850,7 @@
 "settingsAdvancedClear" = "Leeren";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Teilen";
