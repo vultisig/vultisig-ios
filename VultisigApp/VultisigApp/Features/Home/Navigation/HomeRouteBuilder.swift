@@ -47,7 +47,15 @@ struct HomeRouteBuilder {
                 coinType: coinType
             )
         case .qbtcClaim(let vault):
-            QBTCClaimScreen(vault: vault)
+            // Defense-in-depth: every upstream entry to `.qbtcClaim` is
+            // already gated by `QBTCConfig.isFeatureEnabled`. Guarding here
+            // too means any future caller that wires a new entry point
+            // without remembering the flag still can't surface the flow.
+            if QBTCConfig.isFeatureEnabled {
+                QBTCClaimScreen(vault: vault)
+            } else {
+                EmptyView()
+            }
         }
     }
 }

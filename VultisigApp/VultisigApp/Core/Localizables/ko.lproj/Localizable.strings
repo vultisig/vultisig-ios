@@ -666,6 +666,7 @@
 "pushNotifications" = "푸시 알림";
 "pushNotificationsDescription" = "서명이 필요하거나 기기가 액세스를 요청할 때 알림을 받으세요.";
 "qbtcClaimCancelled" = "청구가 취소됨";
+"qbtcClaimDisabledFromAdvanced" = "이 기기에서는 QBTC Claim이 비활성화되어 있습니다. 설정 → 고급에서 활성화한 후 다시 시도하세요.";
 "qbtcClaimEmptyPassword" = "계속하려면 Fast Vault 비밀번호를 입력하세요.";
 "qbtcClaimErrorInvalidBtcPublicKey" = "vault의 BTC 코인에 잘못된 Bitcoin 공개 키가 있습니다.";
 "qbtcClaimErrorProofHashMismatch" = "프루프 서비스가 로컬 계산과 일치하지 않는 해시를 반환했습니다; 청구를 중단합니다.";
@@ -837,6 +838,7 @@
 "settingsAdvancedClear" = "지우기";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "공유";

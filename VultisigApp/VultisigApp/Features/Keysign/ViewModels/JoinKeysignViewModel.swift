@@ -227,6 +227,11 @@ class JoinKeysignViewModel: ObservableObject {
         // message hash itself. Skip the standard factory so it doesn't
         // fail trying to build sighashes from a body that isn't there.
         if keysignPayload.isQbtcClaim {
+            guard QBTCConfig.isFeatureEnabled else {
+                self.errorMsg = "qbtcClaimDisabledFromAdvanced".localized
+                self.status = .FailedToStart
+                return
+            }
             return
         }
         do {
@@ -313,6 +318,11 @@ class JoinKeysignViewModel: ObservableObject {
             // round-suffixed derivation of a base session. The peer
             // derives the claimer's QBTC address from its own vault.
             if let payload = self.keysignPayload, payload.isQbtcClaim {
+                guard QBTCConfig.isFeatureEnabled else {
+                    self.errorMsg = "qbtcClaimDisabledFromAdvanced".localized
+                    self.status = .FailedToStart
+                    return
+                }
                 let session = KeysignSessionInfo(
                     sessionId: keysignMsg.sessionID,
                     encryptionKeyHex: keysignMsg.encryptionKeyHex,
