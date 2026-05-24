@@ -61,13 +61,19 @@ enum SwapKitConfig {
         "MAYACHAIN_STREAMING"
     ]
 
-    /// Advanced-settings opt-in flag (Settings → Advanced → "SwapKit"). When
+    /// Advanced-settings flag (Settings → Advanced → "SwapKit"). When
     /// `false`, SwapKit is dropped from every coin's `swapProviders` list
     /// and `SwapKitService.fetchBestRoute` short-circuits to `nil`. The key
     /// is the same `@AppStorage` value `SettingsViewModel.swapkitEnabled`
     /// writes to, so the toggle and this read share one source of truth.
-    /// Default `false` — opt-in while we smoke-test in production.
+    /// Default `true` — users can opt out via Settings → Advanced.
     static var isFeatureEnabled: Bool {
-        UserDefaults.standard.bool(forKey: "swapkitEnabled")
+        // `bool(forKey:)` returns false when the key is absent, so we check
+        // for the object directly to distinguish "never set" (default on)
+        // from "explicitly set to false".
+        guard let stored = UserDefaults.standard.object(forKey: "swapkitEnabled") as? Bool else {
+            return true
+        }
+        return stored
     }
 }
