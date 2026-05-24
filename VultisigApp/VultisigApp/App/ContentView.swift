@@ -57,7 +57,19 @@ struct ContentView: View {
             .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
             .navigationDestination(for: TransactionHistoryRoute.self) { router.transactionHistoryRouter.build($0) }
-            .navigationDestination(for: QBTCClaimRoute.self) { router.qbtcClaimRouter.build($0) }
+            .navigationDestination(for: QBTCClaimRoute.self) { route in
+                // Defense-in-depth — `QBTCClaimRoute` subroutes (pair /
+                // keysign / done) are only pushed from `QBTCClaimScreen`
+                // and its children, which themselves require the QBTC
+                // feature flag. Guarding here too prevents any future
+                // code path from rendering a QBTC sub-screen behind the
+                // flag's back.
+                if QBTCConfig.isFeatureEnabled {
+                    router.qbtcClaimRouter.build(route)
+                } else {
+                    EmptyView()
+                }
+            }
         }
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)

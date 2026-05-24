@@ -54,16 +54,22 @@ struct ChainDetailScreen: View {
     /// QBTC promo banner is visible on the BTC chain detail screen when
     /// the vault's BTC address has at least one claimable UTXO. This is
     /// now independent of whether the QBTC chain is already enabled on
-    /// the vault — the eligibility checker drives both branches.
+    /// the vault — the eligibility checker drives both branches. Hidden
+    /// entirely when `QBTCConfig.isFeatureEnabled` is `false`.
     private var showsQbtcBanner: Bool {
-        nativeCoin.chain == .bitcoin && qbtcEligibility.hasClaimableUtxos
+        QBTCConfig.isFeatureEnabled
+            && nativeCoin.chain == .bitcoin
+            && qbtcEligibility.hasClaimableUtxos
     }
 
     /// QBTC chain detail's Claim button mirrors the same predicate: only
     /// show it when there's actually something to claim. Hides the
     /// 96pt reserved padding too so the list flows full-bleed otherwise.
+    /// Hidden entirely when `QBTCConfig.isFeatureEnabled` is `false`.
     private var showsQbtcClaimButton: Bool {
-        nativeCoin.chain == .qbtc && qbtcEligibility.hasClaimableUtxos
+        QBTCConfig.isFeatureEnabled
+            && nativeCoin.chain == .qbtc
+            && qbtcEligibility.hasClaimableUtxos
     }
 
     /// Bottom clearance for the Claim button. macOS / iPadOS / iOS<26
@@ -338,8 +344,12 @@ private extension ChainDetailScreen {
 
     /// Kicks the QBTC eligibility check on entry / pull-to-refresh for
     /// both `.bitcoin` and `.qbtc` chain detail screens. No-ops on other
-    /// chains so we don't fire network calls speculatively.
+    /// chains so we don't fire network calls speculatively. Also no-ops
+    /// when the QBTC feature flag is off — flag-off users shouldn't burn
+    /// network budget on the eligibility check since the banner / button
+    /// it drives are hidden anyway.
     func refreshQbtcEligibility() {
+        guard QBTCConfig.isFeatureEnabled else { return }
         guard nativeCoin.chain == .bitcoin || nativeCoin.chain == .qbtc else { return }
         let btcCoin: Coin?
         if nativeCoin.chain == .bitcoin {
@@ -433,6 +443,7 @@ private extension ChainDetailScreen {
     }
 
     func handleQuantumKeygenCompleted(note: Notification) {
+        guard QBTCConfig.isFeatureEnabled else { return }
         guard pendingQbtcAddAfterKeygen else { return }
         let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
         guard completedPubKey == vault.pubKeyECDSA else { return }

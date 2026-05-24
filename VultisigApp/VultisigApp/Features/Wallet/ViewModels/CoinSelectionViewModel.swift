@@ -58,6 +58,11 @@ class CoinSelectionViewModel: ObservableObject {
 
     func requiresQuantumKeygen(for asset: CoinMeta, vault: Vault) -> Bool {
         guard asset.chain.signingKeyType == .MLDSA else { return false }
+        // Defense-in-depth: with QBTC gated out of `filteredChains`, MLDSA
+        // assets cannot reach this code path with the flag off. Guarding
+        // here too means a future code path that hands an MLDSA asset
+        // straight to the keygen prompt still respects the feature flag.
+        guard QBTCConfig.isFeatureEnabled else { return false }
         return vault.publicKeyMLDSA44 == nil || vault.publicKeyMLDSA44?.isEmpty == true
     }
 
@@ -84,6 +89,11 @@ class CoinSelectionViewModel: ObservableObject {
                 return enableThorchainChainnet
             }
             if asset.chain.signingKeyType == .MLDSA {
+                // QBTC is the only MLDSA chain today. The feature flag gates
+                // visibility in addition to MLDSA-key presence so flag-off
+                // users never see QBTC in the picker. When MLDSA is later
+                // used for non-QBTC chains, narrow this guard to `.qbtc`.
+                guard QBTCConfig.isFeatureEnabled else { return false }
                 return hasMLDSAKey || showMldsaChainsWithoutKey
             }
             return true

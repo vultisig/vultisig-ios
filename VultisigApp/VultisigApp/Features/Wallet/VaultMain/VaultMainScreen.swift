@@ -339,6 +339,11 @@ struct VaultMainScreen: View {
     }
 
     func handleQuantumKeygenCompleted(note: Notification) {
+        // Defense-in-depth: with the chain picker gated upstream, the
+        // pending quantum-chain asset cannot be set with the flag off.
+        // Guarding here too means any future code path that posts the
+        // `qbtcQuantumKeygenCompleted` notification still respects the flag.
+        guard QBTCConfig.isFeatureEnabled else { return }
         guard let pendingAsset = pendingQuantumChainAsset else { return }
         let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
         guard completedPubKey == vault.pubKeyECDSA else { return }
