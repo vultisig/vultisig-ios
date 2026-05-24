@@ -506,20 +506,20 @@ struct SwapCryptoDoneView: View {
         ClipboardManager.copyToClipboard(explorerLink)
     }
 }
-
-#Preview {
-    Screen {
-        SwapCryptoDoneView(
-            transaction: SwapTransaction.example,
-            vault: Vault.example,
-            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-            progressLink: nil,
-            sendSummaryViewModel: SendSummaryViewModel(),
-            showAlert: .constant(false),
-            alertTitle: .constant("")
-        )
-        .environmentObject(AppViewModel())
-    }
-    .screenBackground(.gradient)
-}
+//
+//#Preview {
+//    Screen {
+//        SwapCryptoDoneView(
+//            transaction: SwapTransaction.example,
+//            vault: Vault.example,
+//            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+//            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+//            progressLink: nil,
+//            sendSummaryViewModel: SendSummaryViewModel(),
+//            showAlert: .constant(false),
+//            alertTitle: .constant("")
+//        )
+//        .environmentObject(AppViewModel())
+//    }
+//    .screenBackground(.gradient)
+//}
