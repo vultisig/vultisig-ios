@@ -16,6 +16,13 @@ class VaultDetailViewModel: ObservableObject {
 
     private let logic = VaultDetailLogic()
     private var updateBalanceTask: Task<Void, Never>?
+    // Identity tracker for the vault `chains` was last sorted against. Used to
+    // re-seed `chains` synchronously when `updateBalance(vault:)` is called
+    // against a different vault than the cached list belongs to — the
+    // vault-switch case. Without this, the `chains.isEmpty` guard below skips
+    // the synchronous seed and the user sees the previous vault's chain list
+    // until the async refresh lands (~250ms debounce + network round trip).
+    private var chainsVaultPubKeyECDSA: String?
 
     @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
 
@@ -28,12 +35,17 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     func updateBalance(vault: Vault) {
-        // Seed `chains` synchronously on first call so the list isn't blank
-        // through the debounce + fetch window. Subsequent refreshes leave the
-        // existing order in place until the async sort below replaces it —
-        // avoids the visible "stale-then-fresh" double reorder (#4337).
-        if chains.isEmpty {
+        // Seed `chains` synchronously when the cached list is empty (first
+        // call) OR when the cached list was sorted against a different vault
+        // than the one we're now refreshing — the vault-switch case. The
+        // same-vault refresh path (post-swap, balance cascade) still skips
+        // the seed, leaving the existing order in place until the async sort
+        // below replaces it. That preserves the fix for the "stale-then-fresh"
+        // double reorder while ensuring the list flips instantly on a vault
+        // identity flip instead of waiting on the debounce + fetch window.
+        if chains.isEmpty || chainsVaultPubKeyECDSA != vault.pubKeyECDSA {
             chains = logic.sortedChains(vault: vault)
+            chainsVaultPubKeyECDSA = vault.pubKeyECDSA
         }
 
         updateBalanceTask?.cancel()
@@ -43,13 +55,14 @@ class VaultDetailViewModel: ObservableObject {
             // throttledOnAppear, pull-to-refresh). Post-swap they can stack
             // 2–3 deep within a second; without this sleep each call kicks
             // off a full price + per-coin balance refresh and the resulting
-            // reorders are visible as flicker (#4337).
+            // reorders are visible as flicker.
             try? await Task.sleep(for: .milliseconds(250))
             guard !Task.isCancelled, let self else { return }
             let updated = await self.logic.updateBalance(vault: vault)
             if !Task.isCancelled {
                 await MainActor.run {
                     self.chains = updated
+                    self.chainsVaultPubKeyECDSA = vault.pubKeyECDSA
                 }
             }
         }
@@ -57,6 +70,7 @@ class VaultDetailViewModel: ObservableObject {
 
     func groupChains(vault: Vault) {
         chains = logic.sortedChains(vault: vault)
+        chainsVaultPubKeyECDSA = vault.pubKeyECDSA
     }
 
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
