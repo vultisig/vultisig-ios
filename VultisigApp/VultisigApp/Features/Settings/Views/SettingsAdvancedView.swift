@@ -73,6 +73,12 @@ struct SettingsAdvancedView: View {
                 isEnabled: $settingsViewModel.swapkitEnabled
             )
 
+            SettingToggleCell(
+                title: "settingsAdvancedQBTCClaimToggle".localized,
+                icon: "lock.shield",
+                isEnabled: $settingsViewModel.qbtcEnabled
+            )
+
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",
