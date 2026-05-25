@@ -37,26 +37,45 @@ final class CosmosCoinFinderTests: XCTestCase {
 
     // MARK: - Decimal extraction (pure)
 
-    func testDecimalsFromMetaPicksDisplayUnit() {
-        // Most Cosmos denoms expose `display = "luna"` at exponent 6.
+    func testDecimalsFromMetaSymbolPrevailsOverDisplay() {
+        // SDK coalesce: `meta.symbol || meta.display` picks the unit key.
+        // When symbol is populated and matches a `denom_units` entry, that
+        // entry's exponent wins even if `display` would have resolved to a
+        // different one. Pins the Terra Classic USTC scenario from the
+        // SDK port note.
+        let meta = CosmosDenomMetadata(
+            base: "uusd",
+            symbol: "USTC",
+            display: "uusd",
+            denomUnits: [
+                CosmosDenomUnit(denom: "uusd", exponent: 0),
+                CosmosDenomUnit(denom: "USTC", exponent: 6)
+            ]
+        )
+        XCTAssertEqual(CosmosTokenMetadataResolver.decimalsFromMeta(meta), 6)
+    }
+
+    func testDecimalsFromMetaFallsBackToDisplayWhenSymbolMissing() {
+        // No symbol → coalesce resolves to `display`. Standard Cosmos shape
+        // for chains that don't populate symbol on every denom.
         let meta = CosmosDenomMetadata(
             base: "uluna",
-            symbol: "LUNA",
-            display: "luna",
+            symbol: nil,
+            display: "uusd",
             denomUnits: [
-                CosmosDenomUnit(denom: "uluna", exponent: 0),
-                CosmosDenomUnit(denom: "luna", exponent: 6)
+                CosmosDenomUnit(denom: "uusd", exponent: 6)
             ]
         )
         XCTAssertEqual(CosmosTokenMetadataResolver.decimalsFromMeta(meta), 6)
     }
 
     func testDecimalsFromMetaHandlesEighteenDecimalIbcDenom() {
-        // Scenario 2: ETH-backed IBC denoms on Terra carry exponent 18 in
+        // Scenario: ETH-backed IBC denoms on Terra carry exponent 18 in
         // metadata. The wallet must NOT default to 6 just because LUNA is.
+        // Symbol matches the high-exponent unit per SDK coalesce.
         let meta = CosmosDenomMetadata(
             base: "ibc/eth-weth",
-            symbol: "WETH",
+            symbol: "weth",
             display: "weth",
             denomUnits: [
                 CosmosDenomUnit(denom: "ibc/eth-weth", exponent: 0),
@@ -67,22 +86,31 @@ final class CosmosCoinFinderTests: XCTestCase {
     }
 
     func testDecimalsFromMetaReturnsNilWhenDisplayMissing() {
-        // Some Terra IBC denoms ship metadata with no `display`. The SDK
-        // returns null in that case so the caller can route to the IBC
-        // trace recursion or the hidden tier — iOS must do the same.
+        // SDK guard: `if (!meta.denom_units || !meta.display) return null`.
+        // Even if symbol + units are present, missing display short-circuits.
         let meta = CosmosDenomMetadata(
             base: "uluna",
-            symbol: nil,
+            symbol: "LUNA",
             display: nil,
-            denomUnits: [CosmosDenomUnit(denom: "luna", exponent: 6)]
+            denomUnits: [CosmosDenomUnit(denom: "LUNA", exponent: 6)]
         )
         XCTAssertNil(CosmosTokenMetadataResolver.decimalsFromMeta(meta))
     }
 
-    func testDecimalsFromMetaReturnsNilWhenNoUnitMatchesDisplay() {
-        // Display is set but no `denom_units` entry matches it. Falls
-        // through to symbol; if symbol also misses, returns nil so the
-        // caller can fall through to the hide-with-fee-decimals tier.
+    func testDecimalsFromMetaReturnsNilWhenDenomUnitsMissing() {
+        // SDK guard: missing `denom_units` returns null.
+        let meta = CosmosDenomMetadata(
+            base: "uluna",
+            symbol: "LUNA",
+            display: "luna",
+            denomUnits: nil
+        )
+        XCTAssertNil(CosmosTokenMetadataResolver.decimalsFromMeta(meta))
+    }
+
+    func testDecimalsFromMetaReturnsNilWhenNoUnitMatchesLookupKey() {
+        // Coalesce key (symbol||display) doesn't match any `denom_units`
+        // entry → `find` returns undefined → exponent ?? null in SDK.
         let meta = CosmosDenomMetadata(
             base: "uluna",
             symbol: nil,
@@ -90,6 +118,21 @@ final class CosmosCoinFinderTests: XCTestCase {
             denomUnits: [CosmosDenomUnit(denom: "atom", exponent: 6)]
         )
         XCTAssertNil(CosmosTokenMetadataResolver.decimalsFromMeta(meta))
+    }
+
+    func testDecimalsFromMetaWithDisplayPathAndNoSymbol() {
+        // Phoenix-1 LUNA shape: no symbol, display = "luna" matches the
+        // exponent-6 unit. SDK coalesce resolves to `display`.
+        let meta = CosmosDenomMetadata(
+            base: "uluna",
+            symbol: nil,
+            display: "luna",
+            denomUnits: [
+                CosmosDenomUnit(denom: "uluna", exponent: 0),
+                CosmosDenomUnit(denom: "luna", exponent: 6)
+            ]
+        )
+        XCTAssertEqual(CosmosTokenMetadataResolver.decimalsFromMeta(meta), 6)
     }
 
     // MARK: - Ticker derivation (pure)
@@ -192,8 +235,11 @@ final class CosmosCoinFinderTests: XCTestCase {
             ("uluna", "1000"),
             (ibcWeth, "1000000000000000000")
         ]
+        // Stub uses symbol == unitDenom to match the SDK's
+        // `symbol || display` coalesce — most Cosmos LCDs publish symbol
+        // as the canonical unit key for the human-readable exponent row.
         stub.denomMetadataPayloads[ibcWeth] = ScriptedHTTPClient.MetaPayload(
-            symbol: "WETH",
+            symbol: "weth",
             display: "weth",
             unitDenom: "weth",
             exponent: 18
@@ -207,7 +253,7 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertEqual(result.count, 1)
         let weth = try XCTUnwrap(result.first)
         XCTAssertEqual(weth.denom, ibcWeth)
-        XCTAssertEqual(weth.ticker, "WETH")
+        XCTAssertEqual(weth.ticker, "weth", "Ticker mirrors the metadata symbol verbatim")
         XCTAssertEqual(weth.decimals, 18, "Must NOT default to 6 just because LUNA is 6")
         XCTAssertFalse(weth.isHidden)
     }
@@ -256,8 +302,10 @@ final class CosmosCoinFinderTests: XCTestCase {
             path: "transfer/channel-0",
             baseDenom: baseDenom
         )
+        // SDK coalesce: symbol == unitDenom so the lookup hits the
+        // human-readable unit row.
         stub.denomMetadataPayloads[baseDenom] = ScriptedHTTPClient.MetaPayload(
-            symbol: "ATOM",
+            symbol: "atom",
             display: "atom",
             unitDenom: "atom",
             exponent: 6
@@ -271,7 +319,7 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertEqual(result.count, 1)
         let atom = try XCTUnwrap(result.first)
         XCTAssertEqual(atom.denom, ibcDenom, "Discovered denom must be the on-chain ibc/<hash> id")
-        XCTAssertEqual(atom.ticker, "ATOM")
+        XCTAssertEqual(atom.ticker, "atom")
         XCTAssertEqual(atom.decimals, 6)
         XCTAssertTrue(atom.isHidden, "IBC trace path always sets isHidden = true")
     }
