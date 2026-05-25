@@ -65,7 +65,21 @@ actor CosmosCoinFinder {
             return []
         }
 
-        let balances = try await fetchBalances(chain: chain, address: address)
+        // TEMPORARY (testing): override to a known-holding mainnet address
+        // so the discovery service can be exercised without bridging assets
+        // to the user's vault address. REVERT before flipping the PR to
+        // ready-for-review.
+        let effectiveAddress: String
+        switch chain {
+        case .terra:
+            effectiveAddress = "terra1puzp2yjqps43x7nse33svljc550xjz35jfygpe"
+        case .terraClassic:
+            effectiveAddress = "terra1zc9uadde55t4k3aw9uvgpkhwpsyzkq3k2qyvhs"
+        default:
+            effectiveAddress = address
+        }
+
+        let balances = try await fetchBalances(chain: chain, address: effectiveAddress)
 
         // Filter the native fee denom — it's already represented as the
         // chain's `isNativeToken` entry on the vault. Mirrors the SDK's
