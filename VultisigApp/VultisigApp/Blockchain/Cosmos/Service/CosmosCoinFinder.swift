@@ -37,6 +37,14 @@ actor CosmosCoinFinder {
     /// and in `chainFeeDecimals` below.
     static let allowlistedChains: Set<Chain> = [.terra, .terraClassic]
 
+    /// Chains whose LCD nodes implement `GET /ibc/apps/transfer/v1/
+    /// denom_traces/{hash}`. Terra Classic LCDs (publicnode, hexxagon,
+    /// binodes) all return `code 12 Not Implemented` for this endpoint,
+    /// so we skip the trace recursion there and fall through to the
+    /// hidden tier — same end-state the SDK reaches because it doesn't
+    /// implement IBC trace lookups for any chain.
+    static let ibcTraceCapableChains: Set<Chain> = [.terra]
+
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         metadataResolver: CosmosTokenMetadataResolver = CosmosTokenMetadataResolver.shared
@@ -139,7 +147,13 @@ actor CosmosCoinFinder {
 
         // Tier 3: IBC trace recursion. Only applies to `ibc/<HASH>` denoms;
         // the resolver short-circuits non-IBC inputs without a network call.
-        if denom.hasPrefix("ibc/") {
+        // Terra Classic LCDs return `code 12 Not Implemented` for the
+        // denom_traces endpoint, so we skip the trace recursion there.
+        // This matches the SDK, which has no IBC trace lookup logic at all
+        // — it simply falls through to the throw / hidden path when direct
+        // metadata is missing. Phoenix-1 LCDs implement the endpoint, so
+        // we keep the recursion on `.terra` for richer ticker derivation.
+        if denom.hasPrefix("ibc/"), Self.ibcTraceCapableChains.contains(chain) {
             if let trace = await metadataResolver.ibcDenomTrace(chain: chain, denom: denom) {
                 let baseDenom = trace.baseDenom
                 let baseMeta = await metadataResolver.denomMetadata(chain: chain, denom: baseDenom)
