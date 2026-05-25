@@ -4,10 +4,9 @@
 //
 //  Pins the vault-integration contract for Terra / TerraClassic bank-denom
 //  discovery. Sibling to `CosmosCoinFinderTests` (which pins the resolver
-//  itself); this file covers the wiring inside `CoinService` — visible
-//  denoms land in `Vault.coins`, `isHidden` denoms land in `Vault.hiddenTokens`,
-//  and re-running discovery on the same address is a no-op rather than a
-//  duplicate-insert.
+//  itself); this file covers the wiring inside `CoinService` — every
+//  discovered denom auto-adds via `insertVisibleDiscoveredToken`
+//  regardless of `isHidden`, with idempotency on repeat refresh.
 //
 //  The duplicate-insert hazard is the sRUJI / wallet-list-flicker pathology
 //  fixed in PR #4342 — without per-refresh idempotency, every chain-detail
@@ -93,92 +92,16 @@ final class CosmosDiscoveryIntegrationTests: XCTestCase {
         XCTAssertEqual(vault.hiddenTokens.count, 1)
     }
 
-    // MARK: - Hidden-discovery: `isHidden` → `HiddenToken` shim
-
-    func testHiddenDiscoveryInsertsHiddenTokenAndNotVisibleCoin() throws {
-        // `isHidden = true` denoms (factory tokens without metadata, IBC
-        // assets whose trace recursion failed) must land in `hiddenTokens`
-        // — reachable through Manage Tokens — and NOT in `vault.coins`.
-        let vault = TestStore.makeVault()
-        let opaqueFactory = CoinMeta(
-            chain: .terra,
-            ticker: "xyz",
-            logo: "",
-            decimals: 6,
-            priceProviderId: "",
-            contractAddress: "factory/terra1minter/uxyz",
-            isNativeToken: false
-        )
-
-        CoinService.insertHiddenDiscoveredToken(meta: opaqueFactory, into: vault)
-
-        XCTAssertEqual(vault.hiddenTokens.count, 1)
-        XCTAssertTrue(vault.coins.isEmpty, "isHidden discovery must not pollute Vault.coins")
-        let hidden = try XCTUnwrap(vault.hiddenTokens.first)
-        XCTAssertEqual(hidden.chain, Chain.terra.rawValue)
-        XCTAssertEqual(hidden.ticker, "xyz")
-        XCTAssertEqual(hidden.contractAddress, "factory/terra1minter/uxyz")
-    }
-
-    func testHiddenDiscoveryIsIdempotent() throws {
-        // Discovery runs per chain-detail refresh; refreshes fan out 2-6×
-        // post-swap. Inserting the same `isHidden` denom twice must yield
-        // ONE `HiddenToken` row, not two — same regression class as the
-        // sRUJI fix on the visible path.
-        let vault = TestStore.makeVault()
-        let opaqueFactory = CoinMeta(
-            chain: .terra,
-            ticker: "xyz",
-            logo: "",
-            decimals: 6,
-            priceProviderId: "",
-            contractAddress: "factory/terra1minter/uxyz",
-            isNativeToken: false
-        )
-
-        CoinService.insertHiddenDiscoveredToken(meta: opaqueFactory, into: vault)
-        CoinService.insertHiddenDiscoveredToken(meta: opaqueFactory, into: vault)
-
-        XCTAssertEqual(vault.hiddenTokens.count, 1, "Second discovery pass must NOT duplicate the HiddenToken row")
-    }
-
-    func testHiddenDiscoveryNoOpsWhenCoinAlreadyVisible() throws {
-        // If the user manually added a denom that discovery later flags as
-        // `isHidden`, the discovery must NOT shadow it with a `HiddenToken`
-        // — the user's visible coin wins.
-        let vault = TestStore.makeVault()
-        let meta = CoinMeta(
-            chain: .terra,
-            ticker: "TPT",
-            logo: "terra-poker-token",
-            decimals: 6,
-            priceProviderId: "tpt",
-            contractAddress: "terra13j2k5rfkg0qhk58vz63cze0uze4hwswlrfnm0fa4rnyggjyfrcnqcrs5z2",
-            isNativeToken: false
-        )
-        let userAdded = Coin(asset: meta, address: "terra1abc", hexPublicKey: "deadbeef")
-        Storage.shared.insert([userAdded])
-        vault.coins.append(userAdded)
-
-        CoinService.insertHiddenDiscoveredToken(meta: meta, into: vault)
-
-        XCTAssertEqual(vault.coins.count, 1)
-        XCTAssertTrue(vault.hiddenTokens.isEmpty, "Existing visible coin must NOT be shadowed by a HiddenToken row")
-    }
-
     // MARK: - Full routing layer: `applyCosmosDiscoveredTokens`
 
-    func testApplyRoutesVisibleAndHiddenInOnePass() throws {
-        // Drives the routing seam end-to-end without an actor or LCD round
-        // trip. A pre-built `[DiscoveredCosmosDenom]` carrying one visible
-        // (TokensStore-curated USTC) and one hidden (factory denom) entry
-        // must land in `hiddenTokens` for the factory denom and skip the
-        // visible row (here we pre-seed the visible coin so the routing
-        // de-dupes rather than hitting CoinFactory).
+    func testApplyRoutesEveryDenomToVisibleInsertion() throws {
+        // Every discovered denom — `isHidden` or not — routes to
+        // `insertVisibleDiscoveredToken`. No `HiddenToken` branch.
+        // Pre-seed both pre-existing visible coins so the dedupe check
+        // makes the test independent of `CoinFactory.create` (which
+        // requires real key material we can't conjure here).
         let vault = TestStore.makeVault()
 
-        // Pre-seed the curated USTC so the visible branch dedupes (we
-        // can't exercise `CoinFactory.create` without real key material).
         let ustcMeta = CoinMeta(
             chain: .terraClassic,
             ticker: "USTC",
@@ -192,8 +115,21 @@ final class CosmosDiscoveryIntegrationTests: XCTestCase {
         Storage.shared.insert([preexistingUstc])
         vault.coins.append(preexistingUstc)
 
-        // Native fee coin so `applyCosmosDiscoveredTokens` has a real
-        // `Coin` to lift the chain off.
+        // Pre-seed the formerly-hidden factory denom too so the routing
+        // dedupes via `vault.coin(for:)` instead of attempting `addToChain`.
+        let factoryMeta = CoinMeta(
+            chain: .terraClassic,
+            ticker: "xyz",
+            logo: "",
+            decimals: 6,
+            priceProviderId: "",
+            contractAddress: "factory/terra1minter/uxyz",
+            isNativeToken: false
+        )
+        let preexistingFactory = Coin(asset: factoryMeta, address: "terra1classic", hexPublicKey: "deadbeef")
+        Storage.shared.insert([preexistingFactory])
+        vault.coins.append(preexistingFactory)
+
         let lunc = CoinMeta(
             chain: .terraClassic,
             ticker: "LUNC",
@@ -228,22 +164,17 @@ final class CosmosDiscoveryIntegrationTests: XCTestCase {
 
         CoinService.applyCosmosDiscoveredTokens(discovered: discovered, nativeToken: nativeCoin, to: vault)
 
-        // USTC was already visible — no duplicate row.
-        let ustcRows = vault.coins.filter { $0.ticker == "USTC" }
-        XCTAssertEqual(ustcRows.count, 1, "Visible USTC must remain a single row across discovery")
-
-        // Factory denom landed as a HiddenToken, not as a visible coin.
-        XCTAssertEqual(vault.hiddenTokens.count, 1)
-        XCTAssertEqual(vault.hiddenTokens.first?.ticker, "xyz")
-        XCTAssertFalse(
-            vault.coins.contains(where: { $0.ticker == "xyz" }),
-            "Hidden denom must NOT appear in Vault.coins"
-        )
+        // Both pre-existing coins survive — no duplicates from the
+        // discovery routing. `isHidden` no longer routes to `hiddenTokens`.
+        XCTAssertEqual(vault.coins.filter { $0.ticker == "USTC" }.count, 1)
+        XCTAssertEqual(vault.coins.filter { $0.ticker == "xyz" }.count, 1)
+        XCTAssertTrue(vault.hiddenTokens.isEmpty, "Discovery must NOT route any denom to hiddenTokens")
 
         // Second pass — idempotency on the full routing layer.
         CoinService.applyCosmosDiscoveredTokens(discovered: discovered, nativeToken: nativeCoin, to: vault)
         XCTAssertEqual(vault.coins.filter { $0.ticker == "USTC" }.count, 1)
-        XCTAssertEqual(vault.hiddenTokens.count, 1, "Second discovery pass must NOT duplicate hidden rows")
+        XCTAssertEqual(vault.coins.filter { $0.ticker == "xyz" }.count, 1)
+        XCTAssertTrue(vault.hiddenTokens.isEmpty)
     }
 
     func testApplySkipsNativeTickerEvenWhenSurfacedByResolver() throws {

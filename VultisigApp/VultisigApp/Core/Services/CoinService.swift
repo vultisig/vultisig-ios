@@ -353,17 +353,16 @@ struct CoinService {
         }
     }
 
-    /// Cosmos-specific discovery path: one `discoverBankDenoms` call, two
-    /// destinations. Visible denoms (`!isHidden`) flow through `addToChain`
-    /// like every other discovery path. Hidden denoms (`isHidden = true`,
-    /// factory / IBC fallback / metadata-less) become `HiddenToken` rows
-    /// that are reachable through Manage Tokens without polluting the
-    /// chain-detail visible-coin list.
+    /// Cosmos-specific discovery path: one `discoverBankDenoms` call, every
+    /// result auto-adds via `addToChain`. The SDK's `isHidden` flag is read
+    /// but does NOT route opaque denoms to `HiddenToken` anymore — users
+    /// should see what their address actually holds without a separate
+    /// Manage-Tokens step. Decimal fidelity on metadata-less fallbacks is a
+    /// known trade-off (the chain's fee-coin decimals are used).
     ///
     /// Idempotency is load-bearing here. Discovery runs per chain-detail
-    /// refresh; refreshes fan out 2-6× post-swap. Both branches dedupe on
-    /// existing rows — visible via `vault.coin(for:)`, hidden via the
-    /// `matches` check the existing user-deselect path already uses.
+    /// refresh; refreshes fan out 2-6× post-swap. `insertVisibleDiscoveredToken`
+    /// dedupes on `vault.coin(for:)`.
     static func addCosmosDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         let discovered: [DiscoveredCosmosDenom]
         do {
@@ -380,10 +379,11 @@ struct CoinService {
     }
 
     /// Pure routing layer: given a pre-resolved `[DiscoveredCosmosDenom]`,
-    /// fan each entry into `insertVisibleDiscoveredToken` or
-    /// `insertHiddenDiscoveredToken`. Factored out so the idempotency /
-    /// refresh-preserves regressions can drive it without an actor + LCD
-    /// round-trip.
+    /// fan each entry into `insertVisibleDiscoveredToken`. The `isHidden`
+    /// flag from the SDK is intentionally not gated on — every held denom
+    /// auto-adds so users don't have to enable opaque tokens manually.
+    /// Factored out so the idempotency / refresh-preserves regressions can
+    /// drive it without an actor + LCD round-trip.
     static func applyCosmosDiscoveredTokens(
         discovered: [DiscoveredCosmosDenom],
         nativeToken: Coin,
@@ -399,11 +399,7 @@ struct CoinService {
                 continue
             }
 
-            if denom.isHidden {
-                insertHiddenDiscoveredToken(meta: token, into: vault)
-            } else {
-                insertVisibleDiscoveredToken(meta: token, into: vault)
-            }
+            insertVisibleDiscoveredToken(meta: token, into: vault)
         }
     }
 
@@ -425,24 +421,6 @@ struct CoinService {
         } catch {
             logger.warning("Error adding discovered Cosmos token \(meta.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
-    }
-
-    /// Hidden-discovery branch. Idempotent — skips if a real coin already
-    /// shadows the denom OR if `hiddenTokens` already carries it.
-    static func insertHiddenDiscoveredToken(meta: CoinMeta, into vault: Vault) {
-        if vault.coin(for: meta) != nil {
-            return
-        }
-        if vault.hiddenTokens.contains(where: { $0.matches(meta) }) {
-            return
-        }
-        let hiddenToken = HiddenToken(
-            chain: meta.chain,
-            ticker: meta.ticker,
-            contractAddress: meta.contractAddress
-        )
-        vault.hiddenTokens.append(hiddenToken)
-        Storage.shared.insert([hiddenToken])
     }
 
     // MARK: - Helper Functions
