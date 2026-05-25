@@ -115,7 +115,7 @@ final class TransactionStatusPoller: ObservableObject {
                 }
             }
 
-            await self?.cleanupTask(txHash: txHash, token: token)
+            self?.cleanupTask(txHash: txHash, token: token)
         }
         activeTasks[txHash] = task
     }
