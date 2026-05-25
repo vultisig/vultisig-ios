@@ -17,7 +17,12 @@ struct TronTransactionStatusResponse: Codable {
     let resMessage: String?  // Error message (present on failure)
 
     struct TronReceipt: Codable {
-        let result: String?  // Only present on failure: "FAILED", "OUT_OF_ENERGY", etc.
+        // Present on both success and failure per Tron protocol.
+        // Values: "SUCCESS" (committed), "FAILED", "REVERT", "OUT_OF_ENERGY",
+        // "OUT_OF_TIME", "BANDWIDTH_ERROR", "ACCOUNT_FREEZED" (failure modes).
+        // Empty string also possible when a contract executes without explicit code.
+        // See sdk#545 + https://developers.tron.network/reference/gettransactioninfobyid
+        let result: String?
         let net_fee: Int?
         let energy_fee: Int?
         let energy_usage_total: Int64?
