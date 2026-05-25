@@ -1,6 +1,9 @@
+import BigInt
 import Foundation
 import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-details-screen")
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router
@@ -12,6 +15,14 @@ struct FunctionCallDetailsScreen: View {
     @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
+
+    // C-2a foundation — screen owns active coin / gas / fast-vault flag.
+    // Sub-models still read/write `tx.coin` during the transitional period;
+    // `.onChange(of: tx.coin)` dual-writes `selectedCoin` so the new shape
+    // shadows the legacy form-state until C-2b → C-2e migrate per sub-model.
+    @State private var selectedCoin: Coin = .example
+    @State private var gas: BigInt = .zero
+    @State private var isFastVault: Bool = false
 
     @State var fnCallInstance: FunctionCallInstance?
     let defaultCoin: Coin
@@ -60,9 +71,18 @@ struct FunctionCallDetailsScreen: View {
                 await loadGasInfo()
             }
         }
-        .onChange(of: tx.coin) {
+        .onChange(of: selectedCoin) {
             Task {
                 await loadGasInfo()
+            }
+        }
+        // Transitional shim (C-2a): sub-models still mutate `tx.coin` from
+        // dropdowns. Mirror those writes into the screen-owned
+        // `selectedCoin` so the new state shadows the legacy form-state
+        // until C-2b → C-2e migrate each sub-model to a `@Binding<Coin>`.
+        .onChange(of: tx.coin) {
+            if selectedCoin != tx.coin {
+                selectedCoin = tx.coin
             }
         }
         .onChange(of: selectedFunctionMemoType) {
@@ -251,6 +271,8 @@ private extension FunctionCallDetailsScreen {
         setupForm()
         tx.vault = vault
         tx.coin = defaultCoin
+        selectedCoin = defaultCoin
+        isFastVault = vault.isFastVault
     }
 
     func setupForm() {
@@ -297,6 +319,18 @@ private extension FunctionCallDetailsScreen {
     }
 
     func loadGasInfo() async {
-        await functionCallViewModel.loadGasInfoForSending(tx: tx)
+        // C-2a: screen-owned `selectedCoin` drives the chain-specific fetch.
+        // `tx.coin` is dual-written from `selectedCoin` to keep un-migrated
+        // sub-models in sync until C-2b → C-2e migrate each one.
+        if tx.coin != selectedCoin {
+            tx.coin = selectedCoin
+        }
+        do {
+            let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: tx)
+            gas = chainSpecific.gas
+            tx.gas = chainSpecific.gas
+        } catch {
+            logger.error("failed to fetch chain-specific data: \(error.localizedDescription, privacy: .public)")
+        }
     }
 }
