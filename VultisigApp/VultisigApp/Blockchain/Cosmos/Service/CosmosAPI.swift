@@ -22,6 +22,8 @@ struct CosmosAPI: TargetType {
         case broadcastTransaction(body: Data)
         case wasmTokenBalance(contractAddress: String, base64Payload: String)
         case ibcDenomTrace(hash: String)
+        case denomMetadata(denom: String)
+        case allDenomsMetadata
         case latestBlock
     }
 
@@ -43,6 +45,15 @@ struct CosmosAPI: TargetType {
             return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
         case .ibcDenomTrace(let hash):
             return "/ibc/apps/transfer/v1/denom_traces/\(hash)"
+        case .denomMetadata(let denom):
+            // Denom strings can contain `/` (factory/..., ibc/HASH) which the
+            // URL parser would otherwise treat as path separators. Percent-
+            // encode them so the LCD receives the denom as a single segment.
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            let encoded = denom.addingPercentEncoding(withAllowedCharacters: allowed) ?? denom
+            return "/cosmos/bank/v1beta1/denoms_metadata/\(encoded)"
+        case .allDenomsMetadata:
+            return "/cosmos/bank/v1beta1/denoms_metadata"
         case .latestBlock:
             return "/cosmos/base/tendermint/v1beta1/blocks/latest"
         }
@@ -63,6 +74,12 @@ struct CosmosAPI: TargetType {
             // Signed Cosmos transactions arrive pre-serialized from the
             // keysign layer; pass the bytes through unchanged.
             return .requestData(body)
+        case .allDenomsMetadata:
+            // Mirrors the SDK fallback list-fetch URL:
+            // `?pagination.limit=1000`. The 1000 cap matches the SDK and is
+            // large enough to enumerate every registered bank denom on Terra
+            // / TerraClassic without paging.
+            return .requestParameters(["pagination.limit": 1000], .urlEncoding)
         default:
             return .requestPlain
         }

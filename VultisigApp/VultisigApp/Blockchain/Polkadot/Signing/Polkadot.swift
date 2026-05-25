@@ -57,21 +57,21 @@ enum PolkadotHelper {
 
             // After Asset Hub update, even native DOT transfers use assetTransfer
             // with assetID 0 and feeAssetID 0 for native DOT
-            // When asset_id is 0, WalletCore encodes it as TransferAllowDeath (Balances.transfer)
-            // So we need Balances pallet call indices, not Assets pallet
-            // For Asset Hub, Balances pallet is typically module 10, method 0 (transfer_allow_death)
+            // WalletCore respects custom callIndices when provided, so we pin them explicitly.
+            // For Asset Hub, Balances pallet is module 10, method 3 (transfer_keep_alive)
             $0.balanceCall.assetTransfer = PolkadotBalance.AssetTransfer.with {
                 // ZERO ASSET ID AND FEE ASSET ID ARE FOR DOT (native token)
                 $0.assetID = 0
                 $0.feeAssetID = 0
                 $0.toAddress = toAddress.description
                 $0.value = keysignPayload.toAmount.magnitude.serialize()
-                // Set call indices for Asset Hub Balances.transfer_allow_death
-                // Module 10 (Balances), Method 0 (transfer_allow_death)
+                // Set call indices for Asset Hub Balances.transfer_keep_alive
+                // Module 10 (Balances), Method 3 (transfer_keep_alive)
+                // Aligns with SDK (sdk#548) - avoids account reaping on existential deposit edge cases
                 $0.callIndices = PolkadotCallIndices.with {
                     $0.custom = PolkadotCustomCallIndices.with {
                         $0.moduleIndex = 10  // Balances pallet on Asset Hub
-                        $0.methodIndex = 0   // transfer_allow_death method
+                        $0.methodIndex = 3   // transfer_keep_alive method
                     }
                 }
             }

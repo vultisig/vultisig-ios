@@ -53,6 +53,7 @@ enum TestStore {
         let schema = Schema([
             Vault.self,
             Coin.self,
+            HiddenToken.self,
             DefiPositions.self,
             BondPosition.self,
             StakePosition.self,
