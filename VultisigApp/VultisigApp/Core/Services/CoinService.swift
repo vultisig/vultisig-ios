@@ -236,6 +236,18 @@ struct CoinService {
             default:
                 tokens = []
             }
+        case .Cosmos where CosmosCoinFinder.allowlistedChains.contains(nativeCoin.chain):
+            // Terra + TerraClassic auto-discover held bank denoms via the
+            // Cosmos finder. Hidden-by-default denoms are surfaced separately
+            // through `addDiscoveredHiddenTokens` so they don't pollute the
+            // visible coin list — only `!isHidden` discoveries land here.
+            let discovered = try await CosmosCoinFinder.shared.discoverBankDenoms(
+                chain: nativeCoin.chain,
+                address: address
+            )
+            tokens = discovered
+                .filter { !$0.isHidden }
+                .map { $0.toCoinMeta(chain: nativeCoin.chain) }
         default:
             tokens = []
         }
@@ -294,6 +306,16 @@ struct CoinService {
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         migrateOldContractAddresses(vault: vault)
 
+        // Cosmos chains with bank-denom discovery take a different path so
+        // visible + hidden denoms come out of a single `discoverBankDenoms`
+        // call. Fanning out two calls would double the LCD round-trip count
+        // per refresh (refreshes are 2-6× post-swap per the wallet-list-flicker
+        // investigation) for no functional benefit.
+        if CosmosCoinFinder.allowlistedChains.contains(nativeToken.chain) {
+            await addCosmosDiscoveredTokens(nativeToken: nativeToken, to: vault)
+            return
+        }
+
         do {
             let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
 
@@ -328,6 +350,76 @@ struct CoinService {
             }
         } catch {
             logger.warning("Error fetching discovered tokens for \(nativeToken.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Cosmos-specific discovery path: one `discoverBankDenoms` call, every
+    /// result auto-adds via `addToChain`. The SDK's `isHidden` flag is read
+    /// but does NOT route opaque denoms to `HiddenToken` anymore — users
+    /// should see what their address actually holds without a separate
+    /// Manage-Tokens step. Decimal fidelity on metadata-less fallbacks is a
+    /// known trade-off (the chain's fee-coin decimals are used).
+    ///
+    /// Idempotency is load-bearing here. Discovery runs per chain-detail
+    /// refresh; refreshes fan out 2-6× post-swap. `insertVisibleDiscoveredToken`
+    /// dedupes on `vault.coin(for:)`.
+    static func addCosmosDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
+        let discovered: [DiscoveredCosmosDenom]
+        do {
+            discovered = try await CosmosCoinFinder.shared.discoverBankDenoms(
+                chain: nativeToken.chain,
+                address: nativeToken.address
+            )
+        } catch {
+            logger.warning("Error discovering Cosmos denoms for \(nativeToken.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return
+        }
+
+        applyCosmosDiscoveredTokens(discovered: discovered, nativeToken: nativeToken, to: vault)
+    }
+
+    /// Pure routing layer: given a pre-resolved `[DiscoveredCosmosDenom]`,
+    /// fan each entry into `insertVisibleDiscoveredToken`. The `isHidden`
+    /// flag from the SDK is intentionally not gated on — every held denom
+    /// auto-adds so users don't have to enable opaque tokens manually.
+    /// Factored out so the idempotency / refresh-preserves regressions can
+    /// drive it without an actor + LCD round-trip.
+    static func applyCosmosDiscoveredTokens(
+        discovered: [DiscoveredCosmosDenom],
+        nativeToken: Coin,
+        to vault: Vault
+    ) {
+        for denom in discovered {
+            let token = denom.toCoinMeta(chain: nativeToken.chain)
+
+            // Same native-ticker skip as the generic path — defensive in
+            // case the fee-denom filter ever misses a corner case (e.g. a
+            // future chain ships its native denom under a non-`uluna` id).
+            if token.ticker.caseInsensitiveCompare(nativeToken.ticker) == .orderedSame {
+                continue
+            }
+
+            insertVisibleDiscoveredToken(meta: token, into: vault)
+        }
+    }
+
+    /// Visible-discovery branch. Skips when the user previously hid this
+    /// asset OR when an equivalent coin already exists. Visible Cosmos
+    /// discoveries come from either a curated `TokensStore` entry (vetted)
+    /// or a metadata-resolved denom (vetted by chain), so the generic-path
+    /// spam-logo heuristic isn't applied — `isHidden = true` is the SDK's
+    /// gate for opaque denoms and supersedes the empty-logo check.
+    static func insertVisibleDiscoveredToken(meta: CoinMeta, into vault: Vault) {
+        if isTokenHidden(meta, vault: vault) {
+            return
+        }
+        if vault.coin(for: meta) != nil {
+            return
+        }
+        do {
+            _ = try addToChain(asset: meta, to: vault, priceProviderId: meta.priceProviderId)
+        } catch {
+            logger.warning("Error adding discovered Cosmos token \(meta.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
