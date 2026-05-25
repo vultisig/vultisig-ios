@@ -324,6 +324,130 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertTrue(atom.isHidden, "IBC trace path always sets isHidden = true")
     }
 
+    // MARK: - Terra Classic IBC trace gap
+
+    func testTerraClassicIbcDenomSkipsTraceEndpointAndLandsHidden() async throws {
+        // Terra Classic LCDs (publicnode, hexxagon, binodes) all return
+        // `code 12 Not Implemented` for /ibc/apps/transfer/v1/denom_traces.
+        // Mirroring the SDK (which has no IBC trace lookup for any chain),
+        // we skip the trace endpoint on Classic and fall through to the
+        // hidden tier with a derived ticker.
+        let ibcHash = "CLASSICHASH"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            (ibcDenom, "999")
+        ]
+        // Configure trace payload that would resolve to ATOM if the trace
+        // endpoint were called — the test asserts we DON'T call it.
+        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
+            path: "transfer/channel-0",
+            baseDenom: "uatom"
+        )
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1)
+        let hidden = try XCTUnwrap(result.first)
+        XCTAssertEqual(hidden.denom, ibcDenom)
+        XCTAssertTrue(hidden.isHidden)
+        XCTAssertEqual(hidden.decimals, 6, "Hidden tier uses chain fee-coin decimals")
+        XCTAssertEqual(
+            stub.ibcTraceCallCount,
+            0,
+            "Terra Classic must NOT hit /ibc/apps/transfer/v1/denom_traces"
+        )
+    }
+
+    func testTerraPhoenix1IbcDenomStillUsesTraceEndpoint() async throws {
+        // Phoenix-1 LCDs implement the denom_traces endpoint, so the
+        // recursion is still wired up there — no regression vs. the
+        // pre-Classic-fix behaviour.
+        let ibcHash = "PHOENIXHASH"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let baseDenom = "uatom"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [(ibcDenom, "1")]
+        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
+            path: "transfer/channel-0",
+            baseDenom: baseDenom
+        )
+        stub.denomMetadataPayloads[baseDenom] = ScriptedHTTPClient.MetaPayload(
+            symbol: "atom",
+            display: "atom",
+            unitDenom: "atom",
+            exponent: 6
+        )
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(chain: .terra, address: "terra1abc")
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(stub.ibcTraceCallCount, 1, "Phoenix-1 must hit the trace endpoint")
+        let atom = try XCTUnwrap(result.first)
+        XCTAssertEqual(atom.ticker, "atom")
+        XCTAssertTrue(atom.isHidden, "IBC trace path always marks the discovered denom hidden")
+    }
+
+    func testIbcTraceCacheCoalescesConcurrentLookupsOnPhoenix() async {
+        // Cache contract on the IBC trace path: two concurrent lookups for
+        // the same denom share one HTTP round-trip, matching the metadata
+        // resolver's Task-cell coalescing.
+        let stub = ScriptedHTTPClient()
+        let ibcHash = "DEADBEEF"
+        let ibcDenom = "ibc/\(ibcHash)"
+        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
+            path: "transfer/channel-0",
+            baseDenom: "uatom"
+        )
+        let resolver = makeIsolatedResolver(client: stub)
+
+        async let first = resolver.ibcDenomTrace(chain: .terra, denom: ibcDenom)
+        async let second = resolver.ibcDenomTrace(chain: .terra, denom: ibcDenom)
+        let (a, b) = await (first, second)
+
+        XCTAssertEqual(a?.baseDenom, "uatom")
+        XCTAssertEqual(b?.baseDenom, "uatom")
+        XCTAssertEqual(
+            stub.ibcTraceCallCount,
+            1,
+            "Concurrent in-flight trace lookups must share one round-trip"
+        )
+    }
+
+    func testIbcTraceCacheEvictsEntryOnNetworkError() async {
+        // Transient LCD failure on the trace path must NOT poison the
+        // cache for 24h. After a failed call, the next call retries.
+        let stub = ScriptedHTTPClient()
+        let ibcHash = "DEADBEEF"
+        let ibcDenom = "ibc/\(ibcHash)"
+        stub.shouldFailAllRequests = true
+        let resolver = makeIsolatedResolver(client: stub)
+
+        let first = await resolver.ibcDenomTrace(chain: .terra, denom: ibcDenom)
+        XCTAssertNil(first, "First call returns nil because the LCD is failing")
+
+        // LCD comes back: cache must have been evicted so the retry hits.
+        stub.shouldFailAllRequests = false
+        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
+            path: "transfer/channel-0",
+            baseDenom: "uatom"
+        )
+        let second = await resolver.ibcDenomTrace(chain: .terra, denom: ibcDenom)
+        XCTAssertEqual(second?.baseDenom, "uatom", "Cache eviction must let the retry succeed")
+    }
+
     // MARK: - Cache contract
 
     func testMetadataCacheCoalescesConcurrentLookupsForSameDenom() async {
