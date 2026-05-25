@@ -275,7 +275,6 @@
 "enable" = "启用";
 "enableAll" = "全部启用";
 "enableBiometricsFastSigning" = "启用生物识别快速签名";
-"enableDKLS" = "启用 DKLS";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
 "enableThorchain" = "启用 THORChain";

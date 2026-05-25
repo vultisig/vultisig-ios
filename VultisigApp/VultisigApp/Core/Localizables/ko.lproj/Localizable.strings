@@ -280,7 +280,6 @@
 "enable" = "활성화";
 "enableAll" = "모두 활성화";
 "enableBiometricsFastSigning" = "생체인식 빠른 서명 활성화";
-"enableDKLS" = "DKLS 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
 "enablePushNotifications" = "푸시 알림 활성화";
 "enableThorchain" = "THORChain 활성화";

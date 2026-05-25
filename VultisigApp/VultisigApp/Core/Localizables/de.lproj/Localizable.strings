@@ -275,7 +275,6 @@
 "enable" = "Aktivieren";
 "enableAll" = "Alle aktivieren";
 "enableBiometricsFastSigning" = "Aktivieren Sie die Biometrie schnelles Signieren";
-"enableDKLS" = "DKLS aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
 "enableThorchain" = "THORChain aktivieren";

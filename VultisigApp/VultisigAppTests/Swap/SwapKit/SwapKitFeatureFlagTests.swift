@@ -2,10 +2,10 @@
 //  SwapKitFeatureFlagTests.swift
 //  VultisigAppTests
 //
-//  Locks the opt-in behaviour for SwapKit: the integration is off by
-//  default; flipping the `swapkitEnabled` UserDefaults key (the same key
-//  `SettingsViewModel.swapkitEnabled` writes to via `@AppStorage`) lights
-//  it up. `Coin+Swaps.swapProviders` is the single point of gating.
+//  Locks the opt-out behaviour for SwapKit: the integration is on by
+//  default; the `swapkitEnabled` UserDefaults key (the same key
+//  `SettingsViewModel.swapkitEnabled` writes to via `@AppStorage`) can
+//  turn it off. `Coin+Swaps.swapProviders` is the single point of gating.
 //
 
 import XCTest
@@ -40,11 +40,11 @@ final class SwapKitFeatureFlagTests: XCTestCase {
 
     // MARK: - isFeatureEnabled
 
-    func testFeatureFlagDefaultsToOff() {
+    func testFeatureFlagDefaultsToOn() {
         UserDefaults.standard.removeObject(forKey: flagKey)
-        XCTAssertFalse(
+        XCTAssertTrue(
             SwapKitConfig.isFeatureEnabled,
-            "SwapKit must be opt-in — default off while we smoke-test in production"
+            "SwapKit must be on by default — users can opt out via Settings → Advanced"
         )
     }
 

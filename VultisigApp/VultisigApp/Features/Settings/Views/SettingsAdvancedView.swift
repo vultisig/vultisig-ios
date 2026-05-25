@@ -20,18 +20,6 @@ struct SettingsAdvancedView: View {
     var content: some View {
         VStack {
             SettingToggleCell(
-                title: "enableDKLS",
-                icon: "timelapse",
-                isEnabled: $settingsViewModel.isDKLSEnabled
-            )
-
-            SettingToggleCell(
-                title: "Swap",
-                icon: "arrow.2.squarepath",
-                isEnabled: $settingsViewModel.allowSwap
-            )
-
-            SettingToggleCell(
                 title: "ETH Testnet(Sepolia)",
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.enableSepolia
@@ -41,12 +29,6 @@ struct SettingsAdvancedView: View {
                 title: "THORChain Stagenet",
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.enableThorchainChainnet
-            )
-
-            SettingToggleCell(
-                title: "Buy",
-                icon: "creditcard",
-                isEnabled: $settingsViewModel.buyEnabled
             )
 
             SettingToggleCell(

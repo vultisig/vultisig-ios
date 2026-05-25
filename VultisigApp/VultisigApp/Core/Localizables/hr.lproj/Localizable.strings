@@ -275,7 +275,6 @@
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
 "enableBiometricsFastSigning" = "Omogući biometriju brzo potpisivanje";
-"enableDKLS" = "Omogući DKLS";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
 "enableThorchain" = "Omogući THORChain";

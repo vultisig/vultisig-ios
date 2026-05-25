@@ -40,15 +40,7 @@ extension Chain {
         }
         actions.append(.send) // always include send
 
-        let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
-        // when hasBuyEnabledSet has not been set , set it to true
-        if hasBuyEnabledSet == nil {
-            UserDefaults.standard.set(true, forKey: "BuyEnabled")
-        }
-        let enableBuy = UserDefaults.standard.bool(forKey: "BuyEnabled")
-        if enableBuy {
-            actions.append(.buy)
-        }
+        actions.append(.buy)
         let enableSell = UserDefaults.standard.bool(forKey: "SellEnabled")
         if enableSell {
             actions.append(.sell)
