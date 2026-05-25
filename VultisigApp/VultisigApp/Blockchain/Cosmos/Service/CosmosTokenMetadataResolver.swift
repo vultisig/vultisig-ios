@@ -149,26 +149,22 @@ actor CosmosTokenMetadataResolver {
 
     // MARK: - Decoders (pure)
 
-    /// Pick the `denom_units` entry whose `denom` matches `display` (or,
-    /// failing that, `symbol`) and return its `exponent`. The SDK's
-    /// `decimalsFromMeta` does the same — see `cosmos.ts:18-24`. Returns
-    /// `nil` when the metadata is missing the disambiguators; the caller
-    /// then falls through to the next tier (IBC trace, factory derivation,
-    /// or hide-with-fee-decimals fallback).
+    /// Mirrors the SDK's `decimalsFromMeta` byte-for-byte — see
+    /// `vultisig-sdk/packages/core/chain/coin/token/metadata/resolvers/
+    /// cosmos.ts` (the `decimalsFromMeta` helper). The SDK guards on both
+    /// `denom_units` and `display`, then does a single `meta.symbol ||
+    /// meta.display` coalesce to pick the lookup key. iOS used to deviate
+    /// (display-first lookup with `exponent > 0`, symbol as fallback) which
+    /// broke when a chain populated `symbol` to a different key than
+    /// `display` — most Terra IBC denoms publish `symbol` as the canonical
+    /// disambiguator. Mirroring the SDK keeps Terra discovery consistent
+    /// across iOS / Windows / agent.
     static func decimalsFromMeta(_ meta: CosmosDenomMetadata) -> Int? {
         guard let denomUnits = meta.denomUnits, let display = meta.display else {
             return nil
         }
-        // The display unit's exponent must be > 0 — a `denom_units` entry
-        // with exponent 0 is the base unit, not the human-readable unit.
-        if let unit = denomUnits.first(where: { $0.denom == display }), unit.exponent > 0 {
-            return unit.exponent
-        }
-        if let symbol = meta.symbol,
-           let unit = denomUnits.first(where: { $0.denom == symbol }) {
-            return unit.exponent
-        }
-        return nil
+        let lookupKey = meta.symbol ?? display
+        return denomUnits.first(where: { $0.denom == lookupKey })?.exponent
     }
 
     /// Derive a human-readable ticker for a denom, preferring SDK-source
