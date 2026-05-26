@@ -5,10 +5,12 @@
 //  Pins the `.swap` action surfacing in `Chain.defaultActions`. After
 //  `Coin+ChainAction.swift` was refactored to derive swap presence from
 //  `Chain.isSwapAvailable` instead of the hand-maintained
-//  `CoinAction.swapChains` array, four chains changed user-visible
-//  behavior: polygonV2 lost `.swap`; cardano / sui / ton gained it. These
-//  explicit asserts guard against a silent regression of that flip, plus
-//  one already-consistent chain on each side as a sanity axis.
+//  `CoinAction.swapChains` array, three chains gained `.swap`:
+//  cardano / sui / ton (they were missing from the stale `swapChains`
+//  list). polygonV2 — also stale in the old list — was kept on by
+//  flipping `Chain.isSwapAvailable` to include it as the canonical truth.
+//  These explicit asserts guard against a silent regression of that flip,
+//  plus one already-consistent chain on each side as a sanity axis.
 //
 //  `defaultActions` runs through `Array<CoinAction>.filtered`, which strips
 //  `.swap` when `SwapFeatureGate.canSwap()` returns false (locale-gated:
@@ -34,10 +36,10 @@ final class ChainDefaultActionsTests: XCTestCase {
 
     // MARK: - Behavior changes pinned by the swapChains -> isSwapAvailable refactor
 
-    func testPolygonV2DoesNotShowSwap() {
-        XCTAssertFalse(
+    func testPolygonV2ShowsSwap() {
+        XCTAssertTrue(
             Chain.polygonV2.defaultActions.contains(.swap),
-            "polygonV2 was stale in the old swapChains list; isSwapAvailable=false is canonical."
+            "polygonV2 was stale in the old swapChains list; isSwapAvailable=true is canonical."
         )
     }
 
