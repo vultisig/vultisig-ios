@@ -2,9 +2,16 @@
 //  SendDoneScreen.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 13/08/2025.
+//  Send-flow entry point onto the unified `DoneScreen`. Builds the
+//  `TransactionDonePayload` from the live `SendTransaction` + tx hash
+//  and uses the default token / detail / bottom-bar slots (coin
+//  display, hash row + secondary disclosure, single "Done" CTA).
+//
+//  Status header is driven by `ChainPollerStatusSource`, the same
+//  per-chain RPC poller every other Send/Swap/QBTC flow uses.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SendDoneScreen: View {
@@ -14,20 +21,76 @@ struct SendDoneScreen: View {
     let tx: SendTransaction?
     let keysignPayload: KeysignPayload?
 
+    @State private var showAlert = false
+
+    @Query private var vaults: [Vault]
+    @Query private var addressBookItems: [AddressBookItem]
+
+    @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
+    @StateObject private var statusSource: ChainPollerStatusSource
+
+    init(
+        vault: Vault,
+        hash: String,
+        chain: Chain,
+        tx: SendTransaction?,
+        keysignPayload: KeysignPayload?
+    ) {
+        self.vault = vault
+        self.hash = hash
+        self.chain = chain
+        self.tx = tx
+        self.keysignPayload = keysignPayload
+
+        _statusSource = StateObject(wrappedValue: ChainPollerStatusSource(
+            txHash: hash,
+            chain: chain,
+            coinTicker: tx?.coin.ticker,
+            amount: tx.map { "\($0.amount) \($0.coin.ticker)" },
+            toAddress: tx?.toAddress,
+            pubKeyECDSA: vault.pubKeyECDSA
+        ))
+    }
+
     var body: some View {
         Screen {
-            SendCryptoDoneView(
-                vault: vault,
-                hash: hash,
-                approveHash: nil,
-                chain: chain,
-                sendTransaction: tx,
-                swapTransaction: nil,
-                isSend: true,
-                keysignPayload: keysignPayload
-            )
+            ZStack {
+                Background()
+                if let tx {
+                    DoneScreen(
+                        input: payload(for: tx),
+                        statusSource: statusSource,
+                        showAlert: $showAlert
+                    )
+                }
+            }
+            .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
         }
         .screenTitle("done".localized)
         .screenBackButtonHidden()
+    }
+
+    private func payload(for tx: SendTransaction) -> TransactionDonePayload {
+        TransactionDonePayload(
+            coin: tx.coin,
+            amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
+            amountFiat: tx.amountInFiat,
+            hash: hash,
+            explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash),
+            memo: tx.memo,
+            isSend: true,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            toAlias: SendAddressResolver.resolveAlias(
+                address: tx.toAddress,
+                coinMeta: tx.coin.toCoinMeta(),
+                ensLabel: tx.toAddressLabel,
+                vaults: vaults,
+                addressBookItems: addressBookItems
+            ),
+            fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx)),
+            keysignPayload: keysignPayload,
+            pubKeyECDSA: vault.pubKeyECDSA
+        )
     }
 }

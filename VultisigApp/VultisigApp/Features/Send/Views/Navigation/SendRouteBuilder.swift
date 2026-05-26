@@ -60,7 +60,7 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildTransactionDetailsScreen(input: SendCryptoContent) -> some View {
+    func buildTransactionDetailsScreen(input: TransactionDonePayload) -> some View {
         SendCryptoSecondaryDoneView(input: input)
     }
 

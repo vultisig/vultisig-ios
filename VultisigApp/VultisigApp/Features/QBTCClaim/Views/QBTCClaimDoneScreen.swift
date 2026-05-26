@@ -2,12 +2,13 @@
 //  QBTCClaimDoneScreen.swift
 //  VultisigApp
 //
-//  Router-managed success screen for the QBTC claim flow. Reuses the
-//  Send done-content primitive (`SendCryptoDoneContentView`) with the
-//  `.claim` verb so the layout — status header, tx-hash row with
-//  explorer link, transaction-details route, and "Done" CTA — matches
-//  the Send/Swap done experience exactly. Used by both the initiator
-//  and (post-tx-hash propagation) the co-signer device.
+//  QBTC-claim entry point onto the unified `DoneScreen`. Uses the
+//  default token / detail / bottom-bar slots — claim looks identical
+//  to Send except for the localized verb (`.claim` swaps "Transaction"
+//  copy for "Claim" copy on the status header). Live status polling
+//  works out of the box because the QBTC chain is already wired
+//  through `ChainStatusConfig.config(for: .qbtc)`. Used by both the
+//  initiator and (post-tx-hash propagation) the co-signer device.
 //
 
 import SwiftUI
@@ -19,14 +20,31 @@ struct QBTCClaimDoneScreen: View {
     let qbtcCoin: Coin
 
     @State private var showAlert: Bool = false
+    @StateObject private var statusSource: ChainPollerStatusSource
+
+    init(result: QBTCClaimRunResult, vault: Vault, btcCoin: Coin, qbtcCoin: Coin) {
+        self.result = result
+        self.vault = vault
+        self.btcCoin = btcCoin
+        self.qbtcCoin = qbtcCoin
+
+        _statusSource = StateObject(wrappedValue: ChainPollerStatusSource(
+            txHash: result.txHashHex,
+            chain: .qbtc,
+            coinTicker: qbtcCoin.ticker,
+            amount: QBTCClaimAmountFormatter.formatQbtc(sats: result.totalSatsClaimed),
+            toAddress: qbtcCoin.address,
+            pubKeyECDSA: vault.pubKeyECDSA
+        ))
+    }
 
     var body: some View {
         Screen {
             ZStack {
                 Background()
-                SendCryptoDoneContentView(
-                    input: content,
-                    verb: .claim,
+                DoneScreen(
+                    input: payload,
+                    statusSource: statusSource,
                     showAlert: $showAlert
                 )
             }
@@ -36,8 +54,8 @@ struct QBTCClaimDoneScreen: View {
         .screenBackButtonHidden()
     }
 
-    private var content: SendCryptoContent {
-        SendCryptoContent(
+    private var payload: TransactionDonePayload {
+        TransactionDonePayload(
             coin: qbtcCoin,
             amountCrypto: QBTCClaimAmountFormatter.formatQbtc(sats: result.totalSatsClaimed),
             amountFiat: "",
@@ -49,7 +67,8 @@ struct QBTCClaimDoneScreen: View {
             toAddress: qbtcCoin.address,
             fee: FeeDisplay(crypto: "", fiat: ""),
             keysignPayload: nil,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            verb: .claim
         )
     }
 }
