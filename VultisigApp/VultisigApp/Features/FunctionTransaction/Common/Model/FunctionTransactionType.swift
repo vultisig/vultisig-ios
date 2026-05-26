@@ -18,6 +18,9 @@ enum FunctionTransactionType: Hashable {
     case addLP(position: LPPosition)
     case removeLP(position: LPPosition)
     case cosmosDelegate(coin: CoinMeta)
+    case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
+    case cosmosRedelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
+    case cosmosWithdrawRewards(coin: CoinMeta, validators: [CosmosWithdrawRewardsCandidate])
 
     var coins: [CoinMeta] {
         switch self {
@@ -41,6 +44,24 @@ enum FunctionTransactionType: Hashable {
             return [position.coin1, position.coin2]
         case .cosmosDelegate(let coin):
             return [coin]
+        case .cosmosUndelegate(let coin, _, _, _):
+            return [coin]
+        case .cosmosRedelegate(let coin, _, _, _):
+            return [coin]
+        case .cosmosWithdrawRewards(let coin, _):
+            return [coin]
         }
     }
+}
+
+/// Sendable, Hashable value-type describing a single validator the user
+/// has pending rewards with. Carried through the `FunctionTransactionType`
+/// enum into the `CosmosWithdrawRewardsTransactionViewModel` so the
+/// claim sheet can render the per-validator checklist without re-querying
+/// the LCD.
+struct CosmosWithdrawRewardsCandidate: Hashable, Sendable {
+    let validatorAddress: String
+    let validatorMoniker: String
+    /// Pending reward amount in the chain's bond denom, human-decimal.
+    let pendingReward: Decimal
 }

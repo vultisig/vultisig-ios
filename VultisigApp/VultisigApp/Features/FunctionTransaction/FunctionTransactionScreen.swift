@@ -146,6 +146,43 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .cosmosUndelegate(let coin, let valAddr, let valMoniker, let staked):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosUndelegateTransactionScreen(
+                        viewModel: CosmosUndelegateTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            validatorAddress: valAddr,
+                            validatorMoniker: valMoniker,
+                            stakedBalance: staked
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .cosmosRedelegate(let coin, let valAddr, let valMoniker, let staked):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosRedelegateTransactionScreen(
+                        viewModel: CosmosRedelegateTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            validatorSrcAddress: valAddr,
+                            validatorSrcMoniker: valMoniker,
+                            stakedBalance: staked
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .cosmosWithdrawRewards(let coin, let validators):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosWithdrawRewardsTransactionScreen(
+                        viewModel: CosmosWithdrawRewardsTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            candidates: validators
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
