@@ -46,7 +46,7 @@ struct CosmosUndelegateTransactionScreen: View {
                         amount: $viewModel.amountField.value,
                         error: $viewModel.amountField.error,
                         ticker: viewModel.coin.ticker,
-                        type: .button,
+                        type: .slider,
                         availableAmount: viewModel.stakedBalance,
                         decimals: viewModel.coin.decimals,
                         percentage: $percentageSelected
