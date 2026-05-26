@@ -46,12 +46,7 @@ struct DefiChainMainScreen: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
-                // Terra / TerraClassic render their own Figma-aligned hero banner
-                // inside `CosmosStakeDefiView`; skip the generic balance card here
-                // to avoid showing two banners stacked.
-                if chain != .terra && chain != .terraClassic {
-                    DefiChainBalanceView(vault: vault, chain: chain)
-                }
+                DefiChainBalanceView(vault: vault, chain: chain)
                 positionsSegmentedControlView
                 selectedPositionView
             }
