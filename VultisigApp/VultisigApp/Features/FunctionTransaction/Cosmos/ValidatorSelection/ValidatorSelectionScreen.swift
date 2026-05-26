@@ -18,8 +18,11 @@ struct ValidatorSelectionScreen: View {
     @Binding var isPresented: Bool
     @Binding var selectedValidator: CosmosValidator?
     let chainTicker: String
-    @StateObject var viewModel: ValidatorSelectionViewModel
-    @State private var pickedAddress: String?
+    @StateObject private var viewModel: ValidatorSelectionViewModel
+    /// Persist the entire picked validator (not just the address). Resolving
+    /// against `filteredValidators` at confirm time would silently no-op if
+    /// the user typed a search term that filters the picked row out.
+    @State private var pickedValidator: CosmosValidator?
 
     init(
         isPresented: Binding<Bool>,
@@ -50,7 +53,7 @@ struct ValidatorSelectionScreen: View {
                     } else if !viewModel.filteredValidators.isEmpty {
                         list
                     } else {
-                        ErrorMessage(text: "cosmosStakingNoValidatorsFound")
+                        ErrorMessage(text: "cosmosStakingNoValidatorsFound".localized)
                             .padding(.top, 48)
                     }
                 }
@@ -61,8 +64,8 @@ struct ValidatorSelectionScreen: View {
                 ) {
                     confirmSelection()
                 }
-                .disabled(pickedAddress == nil)
-                .opacity(pickedAddress == nil ? 0.5 : 1)
+                .disabled(pickedValidator == nil)
+                .opacity(pickedValidator == nil ? 0.5 : 1)
                 .padding(.top, 8)
             }
         }
@@ -79,7 +82,7 @@ struct ValidatorSelectionScreen: View {
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
         .onLoad {
-            pickedAddress = selectedValidator?.operatorAddress
+            pickedValidator = selectedValidator
             Task { await viewModel.load() }
         }
     }
@@ -90,9 +93,9 @@ struct ValidatorSelectionScreen: View {
                 ValidatorCard(
                     validator: validator,
                     chainTicker: chainTicker,
-                    isSelected: pickedAddress == validator.operatorAddress
+                    isSelected: pickedValidator?.operatorAddress == validator.operatorAddress
                 ) {
-                    pickedAddress = validator.operatorAddress
+                    pickedValidator = validator
                 }
             }
         }
@@ -100,10 +103,8 @@ struct ValidatorSelectionScreen: View {
     }
 
     private func confirmSelection() {
-        guard let pickedAddress,
-              let validator = viewModel.filteredValidators.first(where: { $0.operatorAddress == pickedAddress })
-        else { return }
-        selectedValidator = validator
+        guard let pickedValidator else { return }
+        selectedValidator = pickedValidator
         isPresented = false
     }
 
@@ -111,7 +112,7 @@ struct ValidatorSelectionScreen: View {
         VStack(spacing: 16) {
             SpinningLineLoader()
                 .scaleEffect(1.2)
-            Text(NSLocalizedString("loading", comment: ""))
+            Text("loading".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
         }
