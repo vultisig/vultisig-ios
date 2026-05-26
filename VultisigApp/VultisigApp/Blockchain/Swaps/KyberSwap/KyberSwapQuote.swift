@@ -31,18 +31,12 @@ struct KyberSwapQuote: Codable, Hashable {
         return data.amountOut
     }
 
-    func gasForChain(_ chain: Chain) -> Int64 {
-        let baseGas = Int64(data.gas) ?? 600000
-        let gasMultiplierTimes10: Int64
-
-        switch chain {
-        case .ethereum, .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
-            gasMultiplierTimes10 = 20
-        default:
-            gasMultiplierTimes10 = 16
-        }
-
-        return (baseGas * gasMultiplierTimes10) / 10
+    /// Returns the gas-limit estimate from KyberSwap's `routeSummary.gas`.
+    /// KyberSwap pre-buffers this value to absorb pool-state shifts; no
+    /// additional client-side multiplier is applied. Matches the SDK /
+    /// Windows extension and Android KyberSwap mappings.
+    var gas: Int64 {
+        return Int64(data.gas) ?? Int64(EVMHelper.defaultETHSwapGasUnit)
     }
 
     var tx: Transaction {
