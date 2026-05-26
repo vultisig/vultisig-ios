@@ -2,90 +2,88 @@
 //  FunctionCallUnstake.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 24/10/24.
+//  TON unstake memo sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns `amount` + `nodeAddress`
+//  directly. The matching `UnstakeFormView` is co-located in this
+//  file.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
-    @Published var amount: Decimal = 1
-    @Published var nodeAddress: String = ""
+@Observable
+@MainActor
+final class FunctionCallUnstake {
+    var amount: Decimal = 1
+    var nodeAddress: String = ""
+    var addressError: String?
+    var customErrorMessage: String?
 
-    // Internal
-    @Published var amountValid: Bool = true
-    @Published var nodeAddressValid: Bool = false
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    init() {}
 
-    var addressFields: [String: String] {
-        get {
-            let fields = ["nodeAddress": nodeAddress]
-            return fields
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
-            }
-        }
+    var isTheFormValid: Bool {
+        amount > 0 && FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
     }
 
-    private var cancellables = Set<AnyCancellable>()
-
-    required init() {
-    }
-
-    func initialize() {
-        setupValidation()
-    }
-
-    private func setupValidation() {
-        Publishers.CombineLatest($amountValid, $nodeAddressValid)
-            .map { $0 && $1 }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        nodeAddress = addressResult.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return "w"
+        "w"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", self.nodeAddress)
-        dict.set("memo", self.toString())
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack {
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
-                )
-            )
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: nodeAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
+
+struct UnstakeFormView: View {
+    @Bindable var model: FunctionCallUnstake
+    let coin: Coin
+
+    var body: some View {
+        VStack {
+            AddressTextField(
+                address: $model.nodeAddress,
+                label: "nodeAddress".localized,
+                coin: coin,
+                error: $model.addressError
+            ) { result in
+                model.handle(addressResult: result)
+            }
 
             StyledFloatingPointField(
-                label: NSLocalizedString("amount", comment: ""),
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
-                value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
-                ),
-                isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
-                ))
-        }.onAppear {
-            self.initialize()
-        })
+                label: "amount".localized,
+                placeholder: "enterAmount".localized,
+                value: $model.amount,
+                isValid: .constant(true)
+            )
+        }
     }
 }

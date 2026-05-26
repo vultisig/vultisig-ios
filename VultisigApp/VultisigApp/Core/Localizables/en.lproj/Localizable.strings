@@ -237,6 +237,7 @@
 "deleteFolder" = "Delete Folder";
 "deleteVault" = "Delete your vault permanently";
 "deleteVaultTitle" = "Delete Vault";
+"destinationAddress" = "Destination Address";
 "device" = "device";
 "deviceBackupDescription" = "Store the vault share of this device.";
 "deviceBackupTitle" = "Device Backup";
@@ -972,6 +973,7 @@
 "thisVaultOnly" = "This Vault Only";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainAddress" = "THORChain Address";
 "thorChainNotEnabledForLP" = "THORChain is not enabled on this vault. Please enable THORChain to use this feature.";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";

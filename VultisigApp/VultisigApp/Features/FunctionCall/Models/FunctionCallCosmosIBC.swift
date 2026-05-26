@@ -2,190 +2,182 @@
 //  FunctionCallCosmosIBC.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
+//  IBC transfer sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns destination address + chain +
+//  amount + optional memo directly. The matching `CosmosIBCFormView`
+//  is co-located in this file.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-/**
- 
- 1) KUJIRA - FUNCTION: “IBC SEND”
- 
+/*
+
+ 1) KUJIRA - FUNCTION: "IBC SEND"
+
  UI Elements:
- •    Dropdown: Select destination chain (IBC compatible)
- •    Address Field:
- •    Prefilled with the user’s destination chain address :: TODO
- •    Allow manual override
- •    Amount Field: Enter amount to send
- •    Memo Field (Optional): Enter memo if needed
- 
+ • Dropdown: Select destination chain (IBC compatible)
+ • Address Field: prefilled with the user's destination chain address (manual override allowed)
+ • Amount Field: Enter amount to send
+ • Memo Field (Optional)
+
  Action:
  → Perform IBC transfer from KUJIRA to the selected destination chain.
- 
- */
+*/
 
-class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
-    @Published var amount: Decimal = 0.0
-    @Published var destinationAddress: String = ""
-    @Published var fnCall: String = ""
+@Observable
+@MainActor
+final class FunctionCallCosmosIBC {
+    var amount: Decimal = 0.0
+    var destinationAddress: String = ""
+    var fnCall: String = ""
 
-    @Published var amountValid: Bool = false
-    @Published var fnCallValid: Bool = true
+    var chains: [IdentifiableString] = []
+    var selectedChain: IdentifiableString
+    var selectedChainObject: Chain?
 
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    var addressError: String?
+    var customErrorMessage: String?
 
-    @Published var chains: [IdentifiableString] = []
-    @Published var chainValid: Bool = false
-    @Published var selectedChain: IdentifiableString = .init(value: NSLocalizedString("selectDestinationChain", comment: ""))
+    @ObservationIgnored private let chainPlaceholder: String
+    @ObservationIgnored private let vault: Vault
+    @ObservationIgnored private let sourceChain: Chain
+    @ObservationIgnored private let sourceTicker: String
 
-    @Published var selectedChainObject: Chain? = nil
-
-    private var tx: FunctionCallForm
-    private var vault: Vault
-
-    var addressFields: [String: String] {
-        get {
-            let fields = ["destinationAddress": destinationAddress]
-            return fields
-        }
-        set {
-            if let value = newValue["destinationAddress"] {
-                destinationAddress = value
-            }
-        }
-    }
-
-    private var cancellables = Set<AnyCancellable>()
-
-    required init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        let placeholder = "selectDestinationChain".localized
+        self.chainPlaceholder = placeholder
         self.vault = vault
-        self.amount = tx.coin.balanceDecimal
-    }
+        self.sourceChain = coin.chain
+        self.sourceTicker = coin.ticker
+        self.selectedChain = .init(value: placeholder)
+        self.amount = coin.balanceDecimal
 
-    func initialize() {
-        setupValidation()
         loadChains()
-        getChainAddress()
     }
 
     private func loadChains() {
-        let cosmosChains: [Chain] = tx.coin.chain.ibcTo.map { $0.destinationChain }
-
+        let cosmosChains: [Chain] = sourceChain.ibcTo.map { $0.destinationChain }
         for chain in cosmosChains {
-            // Disable IBC for LVN and Kujira
-            if tx.coin.ticker == TokensStore.Token.kujiraLVN.ticker, tx.coin.chain == .kujira { continue }
+            if sourceTicker == TokensStore.Token.kujiraLVN.ticker, sourceChain == .kujira { continue }
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
     }
 
-    private func getChainAddress() {
-        if selectedChainObject != nil {
-            let chainAddress = self.vault.coins.first { $0.chain == selectedChainObject && $0.isNativeToken }
-            if let chainAddress = chainAddress {
-                self.destinationAddress = chainAddress.address
-            } else {
-                self.destinationAddress = ""
-            }
+    func updateDestinationAddress() {
+        guard let selectedChainObject else {
+            destinationAddress = ""
+            return
         }
-
+        if let chainCoin = vault.coins.first(where: { $0.chain == selectedChainObject && $0.isNativeToken }) {
+            destinationAddress = chainCoin.address
+        } else {
+            destinationAddress = ""
+        }
     }
 
-    var balance: String {
-        let balance = tx.coin.balanceDecimal.description
-        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, tx.coin.ticker.uppercased())
+    func balance(for coin: Coin) -> String {
+        let balance = coin.balanceDecimal.description
+        return String(format: "balanceInParentheses".localized, balance, coin.ticker.uppercased())
     }
 
-    private func setupValidation() {
-        Publishers.CombineLatest($amountValid, $chainValid)
-            .map { $0 && $1 }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    var isChainSelected: Bool {
+        selectedChain.value.lowercased() != chainPlaceholder.lowercased()
+    }
+
+    var isTheFormValid: Bool {
+        isChainSelected && amount > 0
+    }
+
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        destinationAddress = addressResult.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        var memo = "\(self.selectedChainObject?.name ?? ""):\(self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? ""):\(self.destinationAddress)"
-        if fnCall.isEmpty == false {
-            memo += ":\(self.fnCall)"
+        var memo = "\(selectedChainObject?.name ?? ""):\(sourceChain.ibcChannel(to: selectedChainObject) ?? ""):\(destinationAddress)"
+        if !fnCall.isEmpty {
+            memo += ":\(fnCall)"
         }
         return memo
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("destinationChain", self.selectedChainObject?.name ?? "")
-        dict.set("destinationChannel", self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? "")
-        dict.set("destinationAddress", self.destinationAddress)
-        dict.set("memo", self.toString())
+        dict.set("destinationChain", selectedChainObject?.name ?? "")
+        dict.set("destinationChannel", sourceChain.ibcChannel(to: selectedChainObject) ?? "")
+        dict.set("destinationAddress", destinationAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack {
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: destinationAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .ibcTransfer,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
 
+struct CosmosIBCFormView: View {
+    @Bindable var model: FunctionCallCosmosIBC
+    @Binding var selectedCoin: Coin
+
+    var body: some View {
+        VStack {
             GenericSelectorDropDown(
-                items: .constant(chains),
-                selected: Binding(
-                    get: { self.selectedChain },
-                    set: { self.selectedChain = $0 }
-                ),
+                items: .constant(model.chains),
+                selected: $model.selectedChain,
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    self.selectedChain = asset
-                    self.chainValid = asset.value.lowercased() != NSLocalizedString("selectDestinationChain", comment: "").lowercased()
-
-                    let chainInfos = asset.value.split(separator: " ")
-                    let chainName = chainInfos[0]
-
-                    self.selectedChainObject = Chain(name: chainName.description)
-
-                    self.getChainAddress()
+                    model.selectedChain = asset
+                    let parts = asset.value.split(separator: " ")
+                    if let chainName = parts.first {
+                        model.selectedChainObject = Chain(name: String(chainName))
+                    }
+                    model.updateDestinationAddress()
                 }
             )
 
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "destinationAddress",
-                isAddressValid: .constant(true),
-                chain: self.selectedChainObject
-            ).id(self.selectedChainObject?.name ?? UUID().uuidString)
+            AddressTextField(
+                address: $model.destinationAddress,
+                label: "destinationAddress".localized,
+                coin: selectedCoin,
+                error: $model.addressError
+            ) { result in
+                model.handle(addressResult: result)
+            }
+            .id(model.selectedChainObject?.name ?? UUID().uuidString)
 
             StyledFloatingPointField(
-                label: "\(NSLocalizedString("amount", comment: "")) \(self.balance)",
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
-                value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
-                ),
-                isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
-                )
-            )
-            StyledTextField(
-                placeholder: NSLocalizedString("memoLabel", comment: ""),
-                text: Binding(
-                    get: { self.fnCall },
-                    set: { self.fnCall = $0 }
-                ),
-                maxLengthSize: Int.max,
-                isValid: Binding(
-                    get: { self.fnCallValid },
-                    set: { self.fnCallValid = $0 }
-                ),
-                isOptional: true
+                label: "\("amount".localized) \(model.balance(for: selectedCoin))",
+                placeholder: "enterAmount".localized,
+                value: $model.amount,
+                isValid: .constant(true)
             )
 
-        }.onAppear {
-            self.initialize()
-        })
+            StyledTextField(
+                placeholder: "memoLabel".localized,
+                text: $model.fnCall,
+                maxLengthSize: Int.max,
+                isValid: .constant(true),
+                isOptional: true
+            )
+        }
     }
 }

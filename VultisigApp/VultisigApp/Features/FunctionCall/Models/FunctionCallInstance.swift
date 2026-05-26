@@ -5,7 +5,7 @@
 //  Created by Enrique Souza Soares on 15/05/24.
 //
 
-import Combine
+import BigInt
 import Foundation
 import SwiftUI
 import VultisigCommonData
@@ -27,41 +27,7 @@ enum FunctionCallInstance {
     case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
-    var view: AnyView {
-        switch self {
-        case .rebond(let memo):
-            return memo.getView()
-        case .bondMaya(let memo):
-            return memo.getView()
-        case .unbondMaya(let memo):
-            return memo.getView()
-        case .leave(let memo):
-            return memo.getView()
-        case .custom(let memo):
-            return memo.getView()
-        case .vote(let memo):
-            return memo.getView()
-        case .stake(let memo):
-            return memo.getView()
-        case .unstake(let memo):
-            return memo.getView()
-        case .cosmosIBC(let memo):
-            return memo.getView()
-        case .merge(let memo):
-            return memo.getView()
-        case .unmerge(let memo):
-            return memo.getView()
-        case .theSwitch(let memo):
-            return memo.getView()
-        case .addThorLP(let memo):
-            return memo.getView()
-        case .securedAsset(let memo):
-            return memo.getView()
-        case .withdrawSecuredAsset(let memo):
-            return memo.getView()
-        }
-    }
-
+    @MainActor
     var description: String {
         switch self {
         case .rebond(let memo):
@@ -97,6 +63,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     var amount: Decimal {
         switch self {
         case .rebond:
@@ -132,6 +99,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     var toAddress: String? {
         switch self {
         case .stake(let memo):
@@ -160,6 +128,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .rebond(let memo):
@@ -195,6 +164,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     func getTransactionType() -> VSTransactionType {
         switch self {
         case .vote:
@@ -210,6 +180,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     var isTheFormValid: Bool {
         switch self {
         case .rebond(let memo):
@@ -245,6 +216,7 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     var customErrorMessage: String? {
         switch self {
         case .rebond(let memo):
@@ -260,30 +232,32 @@ enum FunctionCallInstance {
         }
     }
 
+    @MainActor
     static func getDefault(for coin: Coin, tx: FunctionCallForm, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
-                return .custom(FunctionCallCustom(tx: tx, vault: vault))
+                return .custom(FunctionCallCustom(coin: coin, vault: vault))
             }
-            return .rebond(FunctionCallReBond(tx: tx, vault: vault))
+            return .rebond(FunctionCallReBond())
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:
             return .vote(FunctionCallVote())
         case .ton:
-            return .stake(FunctionCallStake(tx: tx))
+            return .stake(FunctionCallStake(initialAmount: coin.balanceDecimal))
         case .gaiaChain:
-            return .theSwitch(FunctionCallCosmosSwitch(tx: tx, vault: vault))
+            return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
         case .kujira:
-            return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, vault: vault))
+            return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
         default:
-            return .custom(FunctionCallCustom(tx: tx, vault: vault))
+            return .custom(FunctionCallCustom(coin: coin, vault: vault))
         }
     }
 
+    @MainActor
     var wasmContractPayload: WasmExecuteContractPayload? {
         switch self {
         case .securedAsset:
@@ -291,6 +265,49 @@ enum FunctionCallInstance {
         case .withdrawSecuredAsset:
             return nil // Withdraw secured assets don't use WASM contracts
         default:
+            return nil
+        }
+    }
+
+    /// Build the immutable `SendTransaction` for the active sub-model.
+    /// PR2 wires the 12 migrated sub-models through their typed
+    /// `toSendTransaction(coin:vault:gas:isFastVault:)` methods. The 3
+    /// heavy sub-models still rely on the legacy `tx`-mutation path
+    /// driven by the caller (`FunctionCallDetailsScreen.button`) and
+    /// return `nil` here so the screen can fall through to it.
+    @MainActor
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction? {
+        switch self {
+        case .rebond(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .bondMaya(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .unbondMaya(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .leave(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .custom(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .vote(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .stake(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .unstake(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .cosmosIBC(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .merge(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .unmerge(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .theSwitch(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .addThorLP, .securedAsset, .withdrawSecuredAsset:
             return nil
         }
     }

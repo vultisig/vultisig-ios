@@ -235,6 +235,7 @@
 "deleteFolder" = "Eliminar carpeta";
 "deleteVault" = "Eliminar tu caja fuerte permanentemente";
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
+"destinationAddress" = "Dirección de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Almacene la parte de la bóveda de este dispositivo.";
 "deviceBackupTitle" = "Copia de seguridad del dispositivo";
@@ -962,6 +963,7 @@
 "thisVaultOnly" = "Solo esta bóveda";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainAddress" = "Dirección de THORChain";
 "thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";

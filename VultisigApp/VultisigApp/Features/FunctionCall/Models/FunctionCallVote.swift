@@ -2,81 +2,87 @@
 //  FunctionCallVote.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 24/05/24.
+//  DyDx vote memo sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns its `selectedMemo` and
+//  `proposalID` fields directly and emits the immutable
+//  `SendTransaction` via `toSendTransaction(...)`. The matching
+//  `VoteFormView` is co-located in this file.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
+import VultisigCommonData
 import WalletCore
 
-class FunctionCallVote: FunctionCallAddressable, ObservableObject {
-    @Published var isTheFormValid: Bool = true
-    @Published var customErrorMessage: String? = nil
-    @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
-    @Published var proposalID: Int = 0
+@Observable
+@MainActor
+final class FunctionCallVote {
+    var selectedMemo: TW_Cosmos_Proto_Message.VoteOption = .unspecified
+    var proposalID: Int = 0
+    var customErrorMessage: String?
 
-    private var cancellables = Set<AnyCancellable>()
+    init() {}
 
-    var addressFields: [String: String] {
-        get { [:] }
-        set { _ = newValue }
+    var isTheFormValid: Bool {
+        selectedMemo.rawValue >= 0 && proposalID > 0
     }
 
-    required init() {
-        self.selectedMemo = .unspecified
-        setupValidation()
-    }
-
-    private func setupValidation() {
-        $selectedMemo
-            .combineLatest($proposalID)
-            .map { memo, proposalID in
-                memo.rawValue >= 0 && proposalID > 0
-            }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-    }
+    var amount: Decimal { .zero }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
+        "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("VoteDescription", selectedMemo.description)
         dict.set("ProposalId", "\(proposalID)")
-        dict.set("memo", self.toString())
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack {
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        SendTransaction.empty(coin: coin, vault: vault).copy(
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .vote,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
+
+struct VoteFormView: View {
+    @Bindable var model: FunctionCallVote
+    let coin: Coin
+
+    var body: some View {
+        VStack {
             GenericSelectorDropDown(
                 items: .constant(TW_Cosmos_Proto_Message.VoteOption.allCases),
-                selected: Binding(
-                    get: { self.selectedMemo },
-                    set: { self.selectedMemo = $0 }
-                ),
+                selected: $model.selectedMemo,
                 descriptionProvider: { $0.description },
                 onSelect: { memo in
-                    self.selectedMemo = memo
+                    model.selectedMemo = memo
                 }
             )
 
             StyledIntegerField(
-                placeholder: NSLocalizedString("proposalID", comment: "Proposal ID placeholder"),
-                value: Binding(
-                    get: { self.proposalID },
-                    set: { self.proposalID = $0 }
-                ),
+                placeholder: "proposalID".localized,
+                value: $model.proposalID,
                 format: .number,
                 isValid: .constant(true)
             )
-        })
+        }
     }
 }
