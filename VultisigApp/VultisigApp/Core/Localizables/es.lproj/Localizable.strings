@@ -221,6 +221,7 @@
 "cosmosStakingClaimRewardsSelectValidators" = "Selecciona validadores para reclamar";
 "cosmosStakingClaimRewardsTitle" = "Reclamar recompensas";
 "cosmosStakingClaimRewardsTotalRewards" = "Recompensas totales";
+"cosmosStakingDelegateNewValidator" = "Delegar a un nuevo validador";
 "cosmosStakingDelegateStubSubtitle" = "Gana recompensas de staking delegando a un validador. El desbloqueo toma 21 días.";
 "cosmosStakingDelegateTitle" = "Stake %@";
 "cosmosStakingErrorInvalidPublicKey" = "Clave pública secp256k1 comprimida no válida para staking";
@@ -239,7 +240,10 @@
 "cosmosStakingRedelegateSource" = "Del validador";
 "cosmosStakingRedelegateTitle" = "Redelegar %@";
 "cosmosStakingSelectValidator" = "Seleccionar validador";
+"cosmosStakingStakedRowAmount" = "Staked: %@ %@";
 "cosmosStakingTotalStaked" = "Total en stake %@";
+"cosmosStakingUnbondingFooterDays" = "Bloqueo de desvinculación de %d días";
+"cosmosStakingUnbondingFooterUnlock" = "Desbloqueo %@";
 "cosmosStakingUnbondingLockNotice" = "Bloqueo de %d días — se desbloquea el %@";
 "cosmosStakingUndelegateTitle" = "Retirar %@";
 "cosmosStakingValidatorActive" = "Activo";

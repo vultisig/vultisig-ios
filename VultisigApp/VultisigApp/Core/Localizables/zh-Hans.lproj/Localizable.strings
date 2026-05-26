@@ -221,6 +221,7 @@
 "cosmosStakingClaimRewardsSelectValidators" = "选择要领取奖励的验证者";
 "cosmosStakingClaimRewardsTitle" = "领取奖励";
 "cosmosStakingClaimRewardsTotalRewards" = "总奖励";
+"cosmosStakingDelegateNewValidator" = "委托给新验证人";
 "cosmosStakingDelegateStubSubtitle" = "通过委托给验证人赚取质押奖励。解绑需要 21 天。";
 "cosmosStakingDelegateTitle" = "质押 %@";
 "cosmosStakingErrorInvalidPublicKey" = "用于质押的压缩 secp256k1 公钥无效";
@@ -239,7 +240,10 @@
 "cosmosStakingRedelegateSource" = "源验证者";
 "cosmosStakingRedelegateTitle" = "重新委托 %@";
 "cosmosStakingSelectValidator" = "选择验证人";
+"cosmosStakingStakedRowAmount" = "已质押: %@ %@";
 "cosmosStakingTotalStaked" = "总质押 %@";
+"cosmosStakingUnbondingFooterDays" = "%d 天解绑锁定";
+"cosmosStakingUnbondingFooterUnlock" = "解锁 %@";
 "cosmosStakingUnbondingLockNotice" = "%d 天锁定 — 将于 %@ 解锁";
 "cosmosStakingUndelegateTitle" = "取消质押 %@";
 "cosmosStakingValidatorActive" = "活跃";

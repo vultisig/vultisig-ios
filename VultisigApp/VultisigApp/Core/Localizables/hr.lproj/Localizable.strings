@@ -221,6 +221,7 @@
 "cosmosStakingClaimRewardsSelectValidators" = "Odaberi validatore za preuzimanje";
 "cosmosStakingClaimRewardsTitle" = "Preuzmi nagrade";
 "cosmosStakingClaimRewardsTotalRewards" = "Ukupne nagrade";
+"cosmosStakingDelegateNewValidator" = "Delegiraj na novi validator";
 "cosmosStakingDelegateStubSubtitle" = "Zaradite nagrade za staking delegiranjem validatoru. Odjava traje 21 dan.";
 "cosmosStakingDelegateTitle" = "Stake %@";
 "cosmosStakingErrorInvalidPublicKey" = "Nevažeći komprimirani secp256k1 javni ključ za staking";
@@ -239,7 +240,10 @@
 "cosmosStakingRedelegateSource" = "Od validatora";
 "cosmosStakingRedelegateTitle" = "Redelegiraj %@";
 "cosmosStakingSelectValidator" = "Odaberite validatora";
+"cosmosStakingStakedRowAmount" = "Stakeano: %@ %@";
 "cosmosStakingTotalStaked" = "Ukupno stake-ano %@";
+"cosmosStakingUnbondingFooterDays" = "Zaključavanje odvezivanja od %d dana";
+"cosmosStakingUnbondingFooterUnlock" = "Otključava se %@";
 "cosmosStakingUnbondingLockNotice" = "Zaključavanje od %d dana — otključava se %@";
 "cosmosStakingUndelegateTitle" = "Povući %@";
 "cosmosStakingValidatorActive" = "Aktivan";

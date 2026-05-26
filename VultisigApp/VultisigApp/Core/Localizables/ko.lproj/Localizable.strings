@@ -223,6 +223,7 @@
 "cosmosStakingClaimRewardsSelectValidators" = "청구할 검증자 선택";
 "cosmosStakingClaimRewardsTitle" = "보상 청구";
 "cosmosStakingClaimRewardsTotalRewards" = "총 보상";
+"cosmosStakingDelegateNewValidator" = "새 검증인에게 위임";
 "cosmosStakingDelegateStubSubtitle" = "검증인에게 위임하여 스테이킹 보상을 받으세요. 언본딩에는 21일이 소요됩니다.";
 "cosmosStakingDelegateTitle" = "%@ 스테이킹";
 "cosmosStakingInsufficientGas" = "%@ 가스 부족 — 더 적은 검증자로부터 청구하세요";
@@ -234,7 +235,10 @@
 "cosmosStakingRedelegateSource" = "원 검증자";
 "cosmosStakingRedelegateTitle" = "%@ 재위임";
 "cosmosStakingSelectValidator" = "검증인 선택";
+"cosmosStakingStakedRowAmount" = "스테이킹: %@ %@";
 "cosmosStakingTotalStaked" = "총 스테이킹 %@";
+"cosmosStakingUnbondingFooterDays" = "%d일 언본딩 락";
+"cosmosStakingUnbondingFooterUnlock" = "잠금 해제 %@";
 "cosmosStakingUnbondingLockNotice" = "%d일 잠금 — %@에 해제";
 "cosmosStakingUndelegateTitle" = "%@ 언스테이킹";
 "cosmosStakingValidatorActive" = "활성";

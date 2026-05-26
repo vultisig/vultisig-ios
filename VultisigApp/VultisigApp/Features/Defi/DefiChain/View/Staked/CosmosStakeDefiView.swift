@@ -3,13 +3,12 @@
 //  VultisigApp
 //
 //  LUNA / LUNC stake segment of the DeFi chain tab. Renders an empty
-//  state (Figma `75718:98358`) when no delegations exist, or a populated
-//  layout (Figma `75718:98399`) with:
+//  state when no delegations exist, or a populated layout with:
 //
-//    - "Total Staked %@" summary card
-//    - One card per active delegation with Delegate / Undelegate /
-//      Redelegate / Claim action buttons
-//    - 21-day unbonding-lock notice + per-validator unbonding entries
+//    - Hero banner with the chain name + fiat total + decorative rings
+//    - "Total Staked %@" summary card with a "Delegate to New Validator" CTA
+//    - Per-validator card with Unstake / Move (redelegate) / Stake actions
+//    - 21-day unbonding lock footer + per-validator unbonding entries
 //      when present
 //
 //  Action buttons hand off to the shared
@@ -21,33 +20,59 @@ import SwiftUI
 
 struct CosmosStakeDefiView: View {
     let coin: Coin
+    let totalFiat: String
     @ObservedObject var viewModel: CosmosStakeDefiViewModel
     var onDelegate: (Coin) -> Void
     var onUndelegate: (CosmosStakePositionRow) -> Void
     var onRedelegate: (CosmosStakePositionRow) -> Void
     var onClaim: ([CosmosStakePositionRow]) -> Void
 
+    private var heroBanner: some View {
+        TerraDefiBalanceBanner(
+            chainTitle: coin.chain.name,
+            totalFiat: totalFiat,
+            logo: coin.logo,
+            isLoading: viewModel.isLoading && viewModel.positions.isEmpty
+        )
+    }
+
     var body: some View {
-        Group {
-            if viewModel.isLoading && viewModel.positions.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 32)
-            } else if viewModel.positions.isEmpty {
-                emptyState
-            } else {
-                populatedState
+        VStack(spacing: 16) {
+            heroBanner
+
+            Group {
+                if viewModel.isLoading && viewModel.positions.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 32)
+                } else if viewModel.positions.isEmpty {
+                    emptyState
+                } else {
+                    populatedState
+                }
             }
         }
     }
 
     @ViewBuilder
     private var emptyState: some View {
-        ActionBannerView(
-            title: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
-            subtitle: "cosmosStakingDelegateStubSubtitle".localized,
-            buttonTitle: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
-            action: { onDelegate(coin) }
+        VStack(spacing: 12) {
+            Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
+            Text("noPositionsSelectedTitle".localized)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+            Text("noPositionsSelectedSubtitle".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 32)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Theme.colors.bgSurface1)
         )
     }
 
@@ -55,55 +80,89 @@ struct CosmosStakeDefiView: View {
     private var populatedState: some View {
         VStack(spacing: 16) {
             totalStakedCard
-            ForEach(viewModel.positions) { position in
-                positionCard(for: position)
-            }
-            if !viewModel.pendingUnbondings.isEmpty {
-                pendingUnbondingsSection
-            }
-            // Bottom delegate-CTA so the user can add to any validator
-            ActionBannerView(
-                title: "cosmosStakingActionDelegate".localized,
-                subtitle: "cosmosStakingDelegateStubSubtitle".localized,
-                buttonTitle: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
-                action: { onDelegate(coin) }
-            )
+            activeDelegationsCard
         }
     }
 
     @ViewBuilder
     private var totalStakedCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(String(format: "cosmosStakingTotalStaked".localized, coin.ticker))
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Text("\(formatAmount(viewModel.totalStaked)) \(coin.ticker)")
-                .font(Theme.fonts.priceTitle1)
-                .foregroundStyle(Theme.colors.textPrimary)
+        VStack(spacing: 16) {
             HStack(spacing: 12) {
-                let claimable = viewModel.positions.filter { $0.pendingReward > 0 }
-                if !claimable.isEmpty {
-                    PrimaryButton(
-                        title: "cosmosStakingActionClaim".localized,
-                        type: .secondary,
-                        size: .small
-                    ) {
-                        onClaim(claimable)
-                    }
+                AsyncImageView(
+                    logo: coin.logo,
+                    size: CGSize(width: 48, height: 48),
+                    ticker: coin.ticker,
+                    tokenChainLogo: nil
+                )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(String(format: "cosmosStakingTotalStaked".localized, coin.ticker))
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                    HiddenBalanceText("\(formatAmount(viewModel.totalStaked)) \(coin.ticker)")
+                        .font(Theme.fonts.priceTitle1)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    HiddenBalanceText(totalFiat)
+                        .font(Theme.fonts.priceCaption)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
-                Spacer()
+                Spacer(minLength: 8)
+            }
+
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+
+            PrimaryButton(
+                title: "cosmosStakingDelegateNewValidator".localized
+            ) {
+                onDelegate(coin)
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Theme.colors.bgSurface1)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.colors.border, lineWidth: 1)
+        )
     }
 
     @ViewBuilder
-    private func positionCard(for position: CosmosStakePositionRow) -> some View {
+    private var activeDelegationsCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("cosmosStakingActiveDelegations".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                Spacer()
+            }
+            ForEach(Array(viewModel.positions.enumerated()), id: \.element.id) { index, position in
+                positionRow(for: position)
+                if index < viewModel.positions.count - 1 {
+                    Separator(color: Theme.colors.borderLight, opacity: 1)
+                }
+            }
+            if !viewModel.pendingUnbondings.isEmpty {
+                Separator(color: Theme.colors.borderLight, opacity: 1)
+                unbondingFooter
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Theme.colors.bgSurface1)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.colors.border, lineWidth: 1)
+        )
+    }
+
+    @ViewBuilder
+    private func positionRow(for position: CosmosStakePositionRow) -> some View {
         VStack(spacing: 12) {
             HStack(spacing: 8) {
+                validatorAvatar(for: position)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(position.validatorMoniker.isEmpty
                          ? truncated(position.validatorAddress)
@@ -111,31 +170,32 @@ struct CosmosStakeDefiView: View {
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)
-                    Text(truncated(position.validatorAddress))
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 8)
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(formatAmount(position.stakedAmount)) \(coin.ticker)")
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    if position.pendingReward > 0 {
-                        Text("+\(formatAmount(position.pendingReward))")
+                    HStack {
+                        Text(truncated(position.validatorAddress))
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text("cosmosStakingValidatorActive".localized)
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.alertSuccess)
                     }
                 }
             }
-            HStack(spacing: 8) {
-                PrimaryButton(
-                    title: "cosmosStakingActionDelegate".localized,
-                    type: .secondary,
-                    size: .small
-                ) {
-                    onDelegate(coin)
+
+            HStack(alignment: .firstTextBaseline) {
+                HiddenBalanceText(String(format: "cosmosStakingStakedRowAmount".localized, formatAmount(position.stakedAmount), coin.ticker))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Spacer()
+                if position.pendingReward > 0 {
+                    HiddenBalanceText("+\(formatAmount(position.pendingReward)) \(coin.ticker)")
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.alertSuccess)
                 }
+            }
+
+            HStack(spacing: 8) {
                 PrimaryButton(
                     title: "cosmosStakingActionUndelegate".localized,
                     type: .secondary,
@@ -150,34 +210,53 @@ struct CosmosStakeDefiView: View {
                 ) {
                     onRedelegate(position)
                 }
+                PrimaryButton(
+                    title: "cosmosStakingActionDelegate".localized,
+                    size: .small
+                ) {
+                    onDelegate(coin)
+                }
+            }
+
+            if position.pendingReward > 0 {
+                PrimaryButton(
+                    title: "cosmosStakingActionClaim".localized,
+                    type: .secondary,
+                    size: .small
+                ) {
+                    onClaim([position])
+                }
             }
         }
-        .padding(16)
-        .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     @ViewBuilder
-    private var pendingUnbondingsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("cosmosStakingPendingUnbondings".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            ForEach(viewModel.pendingUnbondings, id: \.validatorAddress) { unbonding in
-                unbondingRow(for: unbonding)
-            }
+    private func validatorAvatar(for position: CosmosStakePositionRow) -> some View {
+        let source = position.validatorMoniker.isEmpty ? position.validatorAddress : position.validatorMoniker
+        let monogram = String(source.prefix(1)).uppercased()
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Theme.colors.primaryAccent3, Theme.colors.primaryAccent4],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            Text(monogram)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
+        .frame(width: 36, height: 36)
     }
 
     @ViewBuilder
-    private func unbondingRow(for unbonding: CosmosUnbondingDelegation) -> some View {
-        let totalBalance = unbonding.entries.reduce(into: Decimal(0)) { $0 += $1.balance }
-        let divisor = pow(Decimal(10), coin.decimals)
-        let displayAmount = totalBalance / divisor
-        let nextUnlock = unbonding.entries
+    private var unbondingFooter: some View {
+        let unbondingDays = (try? CosmosStakingConfig.unbondingDays(for: coin.chain)) ?? 21
+        let nextUnlock = viewModel.pendingUnbondings
+            .flatMap(\.entries)
             .filter { $0.completionTime > Date() }
-            .sorted { $0.completionTime < $1.completionTime }
-            .first?
+            .min(by: { $0.completionTime < $1.completionTime })?
             .completionTime
         let formatter: DateFormatter = {
             let dateFormatter = DateFormatter()
@@ -185,29 +264,17 @@ struct CosmosStakeDefiView: View {
             dateFormatter.timeStyle = .none
             return dateFormatter
         }()
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(truncated(unbonding.validatorAddress))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-                Text("\(formatAmount(displayAmount)) \(coin.ticker)")
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
+        HStack {
+            Text(String(format: "cosmosStakingUnbondingFooterDays".localized, unbondingDays))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+            Spacer()
             if let nextUnlock {
-                Text(String(
-                    format: "cosmosStakingUnbondingLockNotice".localized,
-                    (try? CosmosStakingConfig.unbondingDays(for: coin.chain)) ?? 21,
-                    formatter.string(from: nextUnlock)
-                ))
+                Text(String(format: "cosmosStakingUnbondingFooterUnlock".localized, formatter.string(from: nextUnlock)))
                     .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textSecondary)
             }
         }
-        .padding(12)
-        .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func truncated(_ address: String) -> String {
