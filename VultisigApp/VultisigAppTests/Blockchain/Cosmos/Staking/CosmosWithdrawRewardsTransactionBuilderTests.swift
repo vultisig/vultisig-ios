@@ -47,11 +47,17 @@ final class CosmosWithdrawRewardsTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(payload?.validators, validators)
     }
 
-    func testEmptyValidatorsProducesNilPayload() {
+    func testEmptyValidatorsStillExposesStakingPayload() {
+        // Empty input must keep `isStakingOperation` true downstream so the
+        // resolver surfaces the precise `noValidatorsToClaim` error — a nil
+        // payload would silently route the tx through the non-staking path.
         let builder = CosmosWithdrawRewardsTransactionBuilder(
             coin: Self.makeLunaCoin(),
             validatorAddresses: []
         )
-        XCTAssertNil(builder.cosmosStakingPayload)
+        let payload = builder.cosmosStakingPayload
+        XCTAssertEqual(payload?.opType, .withdrawRewards)
+        XCTAssertEqual(payload?.validators, [])
+        XCTAssertEqual(payload?.denom, "uluna")
     }
 }
