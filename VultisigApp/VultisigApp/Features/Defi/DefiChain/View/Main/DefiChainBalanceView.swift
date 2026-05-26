@@ -71,10 +71,35 @@ struct DefiChainBalanceView: View {
         }
     }
 
+    @ViewBuilder
     var imageView: some View {
-        Image(imageName)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+        switch chain {
+        case .terra, .terraClassic:
+            terraIconOverlay
+        default:
+            Image(imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        }
+    }
+
+    private var terraIconOverlay: some View {
+        ZStack {
+            Circle()
+                .stroke(Theme.colors.alertSuccess.opacity(0.25), lineWidth: 2)
+                .frame(width: 160, height: 160)
+
+            Circle()
+                .stroke(Theme.colors.alertSuccess.opacity(0.4), lineWidth: 4)
+                .frame(width: 120, height: 120)
+
+            Image("luna")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 70, height: 70)
+                .clipShape(Circle())
+        }
+        .offset(x: 40, y: 20)
     }
 
     var gradientStyle: some ShapeStyle {

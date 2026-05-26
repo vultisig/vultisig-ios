@@ -27,29 +27,16 @@ struct CosmosStakeDefiView: View {
     var onRedelegate: (CosmosStakePositionRow) -> Void
     var onClaim: ([CosmosStakePositionRow]) -> Void
 
-    private var heroBanner: some View {
-        TerraDefiBalanceBanner(
-            chainTitle: coin.chain.name,
-            totalFiat: totalFiat,
-            logo: coin.logo,
-            isLoading: viewModel.isLoading && viewModel.positions.isEmpty
-        )
-    }
-
     var body: some View {
-        VStack(spacing: 16) {
-            heroBanner
-
-            Group {
-                if viewModel.isLoading && viewModel.positions.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 32)
-                } else if viewModel.positions.isEmpty {
-                    emptyState
-                } else {
-                    populatedState
-                }
+        Group {
+            if viewModel.isLoading && viewModel.positions.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 32)
+            } else if viewModel.positions.isEmpty {
+                emptyState
+            } else {
+                populatedState
             }
         }
     }
