@@ -73,12 +73,8 @@ struct TssRelayAPI: TargetType {
         var result: [String: String] = ["Content-Type": "application/json"]
 
         switch endpoint {
-        case .uploadSetupMessage(_, _, let messageID, let additionalHeader),
-             .downloadSetupMessage(_, let messageID, let additionalHeader):
-            // self.messageID is applied first; additionalHeader overrides it when non-nil.
-            if let messageID {
-                result["message_id"] = messageID
-            }
+        case .uploadSetupMessage(_, _, _, let additionalHeader),
+             .downloadSetupMessage(_, _, let additionalHeader):
             if let additionalHeader {
                 result["message_id"] = additionalHeader
             }
