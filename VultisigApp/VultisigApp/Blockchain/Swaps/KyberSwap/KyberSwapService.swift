@@ -162,9 +162,10 @@ struct KyberSwapService {
             finalGas = BigInt(kyberGas)
         }
         buildResponse.data.gas = finalGas.description
-        let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
-        let minGasPrice = BigInt("1000000000")
-        let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue
+        // KyberSwap's routeSummary.gasPrice is the network's effective gas
+        // price as the aggregator sees it; use it verbatim. The fallback
+        // (1 gwei) only fires when the API returns an unparseable value.
+        let finalGasPrice = KyberSwapQuote.parseGasPriceWei(gasPrice)
 
         let fee = finalGas * finalGasPrice
 

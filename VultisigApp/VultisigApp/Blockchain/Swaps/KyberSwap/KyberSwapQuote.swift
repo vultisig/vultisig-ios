@@ -39,6 +39,18 @@ struct KyberSwapQuote: Codable, Hashable {
         return Int64(data.gas) ?? Int64(EVMHelper.defaultETHSwapGasUnit)
     }
 
+    /// Fallback gas price (1 gwei) applied only when the aggregator's
+    /// `routeSummary.gasPrice` is missing or unparseable.
+    static let fallbackGasPriceWei = BigInt("1000000000") ?? BigInt(0)
+
+    /// Parses a KyberSwap-returned `gasPrice` string into wei. The fallback
+    /// applies only when the input is unparseable; valid sub-gwei responses
+    /// flow through unchanged.
+    static func parseGasPriceWei(_ raw: String?) -> BigInt {
+        guard let raw, let parsed = BigInt(raw) else { return fallbackGasPriceWei }
+        return parsed
+    }
+
     var tx: Transaction {
 
         return Transaction(
