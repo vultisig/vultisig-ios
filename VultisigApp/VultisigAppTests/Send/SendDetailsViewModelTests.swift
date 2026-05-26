@@ -53,63 +53,42 @@ final class SendDetailsViewModelTests: XCTestCase {
     func testHydrateFromSeedPreservesPrefilledSendData() {
         let eth = SendFormFixture.makeETH()
         let vault = SendFormFixture.makeVault(coins: [eth])
-        let form = FunctionCallForm()
-        form.coin = eth
-        form.fromAddress = eth.address
-        form.toAddress = "0x1111111111111111111111111111111111111111"
-        form.toAddressLabel = "vitalik.eth"
-        form.lastResolvedAddress = form.toAddress
-        form.amount = "0.25"
-        form.amountInFiat = "500"
-        form.memo = "hello"
-        form.feeMode = .fast
-        form.gas = BigInt(30_000_000_000)
-        form.fee = BigInt(1_500_000_000_000_000)
-        form.customGasLimit = BigInt(50_000)
-
-        let seed = SendDetailsSeed.fromForm(form, vault: vault, hasPreselectedCoin: true)
+        let toAddress = "0x1111111111111111111111111111111111111111"
+        let seed = SendDetailsSeed(
+            coin: eth,
+            vault: vault,
+            hasPreselectedCoin: true,
+            fromAddress: eth.address,
+            toAddress: toAddress,
+            toAddressLabel: "vitalik.eth",
+            lastResolvedAddress: toAddress,
+            amount: "0.25",
+            amountInFiat: "500",
+            memo: "hello",
+            gas: BigInt(30_000_000_000),
+            fee: BigInt(1_500_000_000_000_000),
+            feeMode: .fast,
+            estimatedGasLimit: nil,
+            customGasLimit: BigInt(50_000),
+            customByteFee: nil,
+            sendMaxAmount: false,
+            isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:],
+            wasmContractPayload: nil
+        )
         let vm = SendFormFixture.make(coin: eth, vault: vault)
         vm.hydrate(from: seed)
 
-        XCTAssertEqual(vm.toAddress, form.toAddress)
+        XCTAssertEqual(vm.toAddress, toAddress)
         XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
-        XCTAssertEqual(vm.lastResolvedAddress, form.toAddress)
+        XCTAssertEqual(vm.lastResolvedAddress, toAddress)
         XCTAssertEqual(vm.amount, "0.25")
         XCTAssertEqual(vm.amountInFiat, "500")
         XCTAssertEqual(vm.memo, "hello")
         XCTAssertEqual(vm.feeMode, .fast)
         XCTAssertEqual(vm.gas, BigInt(30_000_000_000))
         XCTAssertEqual(vm.fee, BigInt(1_500_000_000_000_000))
-        XCTAssertEqual(vm.customGasLimit, BigInt(50_000))
-    }
-
-    func testDetailsSeedFromFormPreservesPrefilledSendData() {
-        let eth = SendFormFixture.makeETH()
-        let vault = SendFormFixture.makeVault(coins: [eth])
-        let form = FunctionCallForm()
-        form.coin = eth
-        form.fromAddress = eth.address
-        form.toAddress = "0x1111111111111111111111111111111111111111"
-        form.toAddressLabel = "vitalik.eth"
-        form.lastResolvedAddress = form.toAddress
-        form.amount = "0.25"
-        form.memo = "hello"
-        form.feeMode = .fast
-        form.customGasLimit = BigInt(50_000)
-
-        let seed = SendDetailsSeed.fromForm(form, vault: vault, hasPreselectedCoin: true)
-        let vm = SendFormFixture.make(coin: eth, vault: vault)
-        vm.hydrate(from: seed)
-
-        XCTAssertEqual(seed.coin, eth)
-        XCTAssertEqual(seed.vault, vault)
-        XCTAssertTrue(seed.hasPreselectedCoin)
-        XCTAssertEqual(vm.toAddress, form.toAddress)
-        XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
-        XCTAssertEqual(vm.lastResolvedAddress, form.toAddress)
-        XCTAssertEqual(vm.amount, "0.25")
-        XCTAssertEqual(vm.memo, "hello")
-        XCTAssertEqual(vm.feeMode, .fast)
         XCTAssertEqual(vm.customGasLimit, BigInt(50_000))
     }
 

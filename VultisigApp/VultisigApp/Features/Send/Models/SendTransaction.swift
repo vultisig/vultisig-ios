@@ -72,41 +72,8 @@ struct SendDetailsSeed: Hashable {
         )
     }
 
-    static func fromForm(
-        _ tx: FunctionCallForm,
-        coin: Coin? = nil,
-        vault: Vault,
-        hasPreselectedCoin: Bool
-    ) -> SendDetailsSeed {
-        let resolvedCoin = coin ?? tx.coin
-        return SendDetailsSeed(
-            coin: resolvedCoin,
-            vault: vault,
-            hasPreselectedCoin: hasPreselectedCoin,
-            fromAddress: tx.fromAddress.isEmpty ? resolvedCoin.address : tx.fromAddress,
-            toAddress: tx.toAddress,
-            toAddressLabel: tx.toAddressLabel,
-            lastResolvedAddress: tx.lastResolvedAddress,
-            amount: tx.amount,
-            amountInFiat: tx.amountInFiat,
-            memo: tx.memo,
-            gas: tx.gas,
-            fee: tx.fee,
-            feeMode: tx.feeMode,
-            estimatedGasLimit: tx.estematedGasLimit,
-            customGasLimit: tx.customGasLimit,
-            customByteFee: tx.customByteFee,
-            sendMaxAmount: tx.sendMaxAmount,
-            isStakingOperation: tx.isStakingOperation,
-            transactionType: tx.transactionType,
-            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
-            wasmContractPayload: tx.wasmContractPayload
-        )
-    }
-
-    /// Builds an empty seed prefilled with the deeplink/scanner fields that
-    /// previously lived on the shared `FunctionCallForm` instance. Used by
-    /// `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
+    /// Builds an empty seed prefilled with the deeplink/scanner fields used
+    /// by `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
     /// rides on the route value instead of mutating a long-lived form.
     static func fromAction(
         coin: Coin,
