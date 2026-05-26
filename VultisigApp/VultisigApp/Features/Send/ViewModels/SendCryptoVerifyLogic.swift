@@ -134,7 +134,7 @@ struct SendCryptoVerifyLogic {
         do {
             let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-            return try await interactor.buildKeysignPayload(
+            let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -143,6 +143,44 @@ struct SendCryptoVerifyLogic {
                 wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault
             )
+
+            // Cosmos staking branch — when the per-flow builder produced a
+            // `cosmosStakingPayload`, swap the base payload's `signData` for
+            // a freshly-resolved `.signDirect(...)` carrying the proto-encoded
+            // MsgDelegate / MsgUndelegate / MsgBeginRedelegate /
+            // MsgWithdrawDelegatorReward bytes. The SignDoc is the contract
+            // the peer device sees; everything else on `KeysignPayload`
+            // becomes descriptive (verify-summary) only.
+            if tx.cosmosStakingPayload != nil {
+                let signDirect = try CosmosStakingSignDataResolver.resolve(
+                    sendTransaction: tx,
+                    chainSpecific: chainSpecific
+                )
+                return KeysignPayload(
+                    coin: basePayload.coin,
+                    toAddress: basePayload.toAddress,
+                    toAmount: basePayload.toAmount,
+                    chainSpecific: basePayload.chainSpecific,
+                    utxos: basePayload.utxos,
+                    memo: basePayload.memo,
+                    swapPayload: basePayload.swapPayload,
+                    approvePayload: basePayload.approvePayload,
+                    vaultPubKeyECDSA: basePayload.vaultPubKeyECDSA,
+                    vaultLocalPartyID: basePayload.vaultLocalPartyID,
+                    libType: basePayload.libType,
+                    wasmExecuteContractPayload: basePayload.wasmExecuteContractPayload,
+                    tronTransferContractPayload: basePayload.tronTransferContractPayload,
+                    tronTriggerSmartContractPayload: basePayload.tronTriggerSmartContractPayload,
+                    tronTransferAssetContractPayload: basePayload.tronTransferAssetContractPayload,
+                    qbtcClaimPayload: basePayload.qbtcClaimPayload,
+                    isQbtcClaim: basePayload.isQbtcClaim,
+                    skipBroadcast: basePayload.skipBroadcast,
+                    signData: .signDirect(signDirect),
+                    dappMetadata: basePayload.dappMetadata
+                )
+            }
+
+            return basePayload
 
         } catch {
             // Handle UTXO-specific errors with more user-friendly messages
