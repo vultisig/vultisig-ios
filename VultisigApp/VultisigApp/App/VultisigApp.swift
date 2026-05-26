@@ -104,33 +104,12 @@ struct VultisigApp: App {
 
             return modelContainer
         } catch {
-            // Schema-breaking change in the swap-tracking refactor. Existing
-            // tx-history rows from earlier builds of this branch carry the
-            // old 10-column `swapKit*` shape and won't load against the new
-            // relationship-based schema. Wipe the on-disk store and retry —
-            // testers reinstall anyway, this is the belt-and-suspenders path
-            // so the app at least launches cleanly on first relaunch after
-            // upgrade rather than crashing on a schema-mismatch error.
-            if let storeURL = modelConfiguration.url as URL? {
-                try? FileManager.default.removeItem(at: storeURL)
-                // SwiftData writes -shm / -wal companions alongside the
-                // SQLite store; drop them too so the retry sees a clean slate.
-                let shm = storeURL.appendingPathExtension("shm")
-                let wal = storeURL.appendingPathExtension("wal")
-                try? FileManager.default.removeItem(at: shm)
-                try? FileManager.default.removeItem(at: wal)
-            }
-            do {
-                let modelContainer = try ModelContainer(
-                    for: schema,
-                    migrationPlan: MigrationPlan.self,
-                    configurations: [modelConfiguration]
-                )
-                Storage.shared.modelContext = modelContainer.mainContext
-                return modelContainer
-            } catch {
-                fatalError("Could not create ModelContainer: \(error)")
-            }
+            // NEVER wipe the store on migration failure — that destroys user
+            // vaults. SwiftData's lightweight migration handles all additive
+            // changes (new models, new optional relationships) automatically.
+            // If we ever need a destructive schema change, add an explicit
+            // SchemaMigrationPlan stage rather than silently nuking the DB.
+            fatalError("Could not create ModelContainer: \(error)")
         }
     }()
 
