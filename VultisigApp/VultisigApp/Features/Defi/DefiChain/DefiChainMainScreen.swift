@@ -16,6 +16,7 @@ struct DefiChainMainScreen: View {
     @StateObject var bondViewModel: DefiChainBondViewModel
     @StateObject var lpsViewModel: DefiChainLPsViewModel
     @StateObject var stakeViewModel: DefiChainStakeViewModel
+    @StateObject var cosmosStakeViewModel: CosmosStakeDefiViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -29,6 +30,7 @@ struct DefiChainMainScreen: View {
         self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: chain))
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
+        self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
     }
 
     private var nativeCoin: Coin? {
@@ -127,7 +129,7 @@ struct DefiChainMainScreen: View {
                 }
             case .stake:
                 if chain == .terra || chain == .terraClassic, let nativeCoin {
-                    cosmosDelegateStubView(coin: nativeCoin)
+                    cosmosStakeView(coin: nativeCoin)
                 } else {
                     DefiChainStakedView(
                         viewModel: stakeViewModel,
@@ -175,17 +177,44 @@ struct DefiChainMainScreen: View {
         )
     }
 
-    /// Stub entry-point for LUNA / LUNC delegate flow. PR5 replaces this
-    /// with the full `DefiChainStakedView` once `CosmosStakeInteractor` is
-    /// wired into `DefiInteractorResolver`. Today the user only sees the
-    /// "Stake LUNA / LUNC" CTA that routes into `CosmosDelegateTransactionScreen`.
-    private func cosmosDelegateStubView(coin: Coin) -> some View {
-        ActionBannerView(
-            title: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
-            subtitle: "cosmosStakingDelegateStubSubtitle".localized,
-            buttonTitle: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
-            action: {
+    /// LUNA / LUNC stake-segment renderer. Routes the four user-facing
+    /// actions through the shared `FunctionTransactionType.cosmos*`
+    /// cases — the function-call router takes it from there.
+    private func cosmosStakeView(coin: Coin) -> some View {
+        CosmosStakeDefiView(
+            coin: coin,
+            viewModel: cosmosStakeViewModel,
+            onDelegate: { coin in
                 onTransactionToPresent(.cosmosDelegate(coin: coin.toCoinMeta()))
+            },
+            onUndelegate: { position in
+                onTransactionToPresent(.cosmosUndelegate(
+                    coin: coin.toCoinMeta(),
+                    validatorAddress: position.validatorAddress,
+                    validatorMoniker: position.validatorMoniker,
+                    stakedAmount: position.stakedAmount
+                ))
+            },
+            onRedelegate: { position in
+                onTransactionToPresent(.cosmosRedelegate(
+                    coin: coin.toCoinMeta(),
+                    validatorAddress: position.validatorAddress,
+                    validatorMoniker: position.validatorMoniker,
+                    stakedAmount: position.stakedAmount
+                ))
+            },
+            onClaim: { rows in
+                let candidates = rows.map {
+                    CosmosWithdrawRewardsCandidate(
+                        validatorAddress: $0.validatorAddress,
+                        validatorMoniker: $0.validatorMoniker,
+                        pendingReward: $0.pendingReward
+                    )
+                }
+                onTransactionToPresent(.cosmosWithdrawRewards(
+                    coin: coin.toCoinMeta(),
+                    validators: candidates
+                ))
             }
         )
     }
@@ -335,7 +364,17 @@ private extension DefiChainMainScreen {
         async let bondRefresh: Void = bondViewModel.refresh()
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
+        async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh)
+    }
+
+    /// Conditional refresh for the cosmos staking VM — only fires when the
+    /// chain supports cosmos staking and the vault has the native coin
+    /// loaded. Quiet no-op otherwise so non-Terra chains don't pay the cost.
+    func refreshCosmosStakeIfNeeded() async {
+        guard CosmosStakingConfig.isStakingSupported(chain) else { return }
+        guard let nativeCoin else { return }
+        await cosmosStakeViewModel.refresh(address: nativeCoin.address, decimals: nativeCoin.decimals)
     }
 
     func update(vault: Vault) {
