@@ -181,8 +181,10 @@ struct DefiChainMainScreen: View {
     /// actions through the shared `FunctionTransactionType.cosmos*`
     /// cases — the function-call router takes it from there.
     private func cosmosStakeView(coin: Coin) -> some View {
-        CosmosStakeDefiView(
+        let fiatAmount = RateProvider.shared.fiatBalance(value: cosmosStakeViewModel.totalStaked, coin: coin)
+        return CosmosStakeDefiView(
             coin: coin,
+            totalFiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
             viewModel: cosmosStakeViewModel,
             onDelegate: { coin in
                 onTransactionToPresent(.cosmosDelegate(coin: coin.toCoinMeta()))
