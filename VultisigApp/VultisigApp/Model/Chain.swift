@@ -530,10 +530,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .tron,
                 .cardano,
                 .sui,
-                .ton:
+                .ton,
+                .polygonV2:
             return true
-        case .polygonV2,
-            .polkadot,
+        case .polkadot,
             .dydx,
             .osmosis,
             .terra,

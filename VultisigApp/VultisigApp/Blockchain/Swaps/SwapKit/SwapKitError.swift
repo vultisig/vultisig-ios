@@ -23,6 +23,14 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     case swapRouteNotFound
     case outputAmountDeviationTooHigh
     case noRoutesFound
+    /// Disambiguated form of `noRoutesFound` thrown when the cached
+    /// `/v3/providers` snapshot shows at least one non-filtered provider
+    /// enables both source and destination chains — meaning the pair is
+    /// structurally supported, so the 404 must be amount-related rather
+    /// than a pair-coverage gap. The view layer normalizes this to
+    /// `SwapCryptoLogic.Errors.swapAmountTooSmall` so users see the same
+    /// "Amount Too Small" tooltip the THORChain path already produces.
+    case amountBelowProviderMinimum
     case blackListAsset
     case invalidSourceAddress
     case invalidDestinationAddress
@@ -100,6 +108,14 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorOutputAmountDeviationTooHigh".localized
         case .noRoutesFound:
             return "swapKitErrorNoRoutesFound".localized
+        case .amountBelowProviderMinimum:
+            // Reuse the existing THORChain "amount too small" copy rather than
+            // introducing a SwapKit-specific key — the user-facing meaning is
+            // identical and the view layer normalizes this case to
+            // `SwapCryptoLogic.Errors.swapAmountTooSmall` anyway. This
+            // `errorDescription` is only the fallback used if a caller logs
+            // the localized message without going through the tooltip view.
+            return "swapErrorAmountTooSmallDescription".localized
         case .blackListAsset:
             return "swapKitErrorBlackListAsset".localized
         case .invalidSourceAddress:

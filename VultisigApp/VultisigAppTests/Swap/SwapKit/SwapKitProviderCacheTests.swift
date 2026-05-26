@@ -135,4 +135,149 @@ final class SwapKitProviderCacheTests: XCTestCase {
         XCTAssertTrue(near.enabledChainIds.contains("1"))
         XCTAssertTrue(near.enabledChainIds.contains("42161"))
     }
+
+    // MARK: - Pair predicate (used to disambiguate noRoutesFound)
+
+    /// BCH→ETH is the canonical below-min repro case: NEAR's `enabledChainIds`
+    /// includes both `bitcoincash` and `1` on the same provider entry, so the
+    /// pair is structurally supported. A `/v3/quote` 404 on this pair therefore
+    /// must be amount-driven, which is what the predicate signals.
+    func testIsPairSupported_bothChainsInOneProvider_returnsTrue() {
+        XCTAssertTrue(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .bitcoinCash,
+                toChain: .ethereum,
+                in: providers
+            )
+        )
+    }
+
+    /// Same provider must enable BOTH chains — union across providers is
+    /// intentionally not enough. Synthesise two narrow providers that each
+    /// cover one side of the pair and assert the predicate refuses to
+    /// classify the pair as supported.
+    func testIsPairSupported_chainsSplitAcrossProviders_returnsFalse() {
+        let split = [
+            SwapKitProvider(
+                name: "PROVIDER_A",
+                provider: "PROVIDER_A",
+                displayName: nil,
+                displayNameLong: nil,
+                count: 1,
+                enabledChainIds: [SwapKitChainIDMapper.swapKitChainId(for: .bitcoinCash)],
+                supportedChainIds: nil,
+                supportedActions: nil
+            ),
+            SwapKitProvider(
+                name: "PROVIDER_B",
+                provider: "PROVIDER_B",
+                displayName: nil,
+                displayNameLong: nil,
+                count: 1,
+                enabledChainIds: [SwapKitChainIDMapper.swapKitChainId(for: .ethereum)],
+                supportedChainIds: nil,
+                supportedActions: nil
+            )
+        ]
+        XCTAssertFalse(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .bitcoinCash,
+                toChain: .ethereum,
+                in: split
+            )
+        )
+    }
+
+    /// Filtered providers (THORChain / MayaChain) must not contribute to the
+    /// pair decision. Otherwise the disambiguation would mistakenly classify
+    /// pairs only routable through filtered providers as "supported", and
+    /// surface "amount too small" tooltips for pairs that have no SwapKit
+    /// route at any amount.
+    func testIsPairSupported_filteredProviderDoesNotCount() {
+        let synthetic = [
+            SwapKitProvider(
+                name: "MAYACHAIN",
+                provider: "MAYACHAIN",
+                displayName: nil,
+                displayNameLong: nil,
+                count: 1,
+                enabledChainIds: [
+                    SwapKitChainIDMapper.swapKitChainId(for: .bitcoinCash),
+                    SwapKitChainIDMapper.swapKitChainId(for: .ethereum)
+                ],
+                supportedChainIds: nil,
+                supportedActions: nil
+            )
+        ]
+        XCTAssertFalse(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .bitcoinCash,
+                toChain: .ethereum,
+                in: synthetic
+            )
+        )
+    }
+
+    /// A chain Vultisig has no SwapKit chain-id mapping for must short-circuit
+    /// to `false` — there's no way to verify support, so we don't claim it.
+    func testIsPairSupported_unmappedChainReturnsFalse() {
+        XCTAssertFalse(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .mantle,
+                toChain: .ethereum,
+                in: providers
+            )
+        )
+    }
+
+    /// Empty snapshot from the async path: the actor's `isPairSupported`
+    /// returns `true` as a fail-open default so error reclassification still
+    /// fires. The static predicate, used here as a stand-in for "the cache
+    /// had no providers to look at", reports `false` for any pair — fail-open
+    /// behaviour belongs to the async wrapper, not the pure predicate.
+    func testIsPairSupported_emptySnapshotStaticReturnsFalse() {
+        XCTAssertFalse(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .bitcoinCash,
+                toChain: .ethereum,
+                in: []
+            )
+        )
+    }
+
+    /// Async fail-open: when the cache has nothing in its snapshot AND the
+    /// HTTPClient refuses to fetch, the actor reports the pair as "could be
+    /// supported" so the reclassification path still triggers. The trade-off
+    /// is documented in the wiki plan: degrading to "amount too small" is
+    /// strictly better UX than today's "unexpected error" fallback.
+    func testIsPairSupported_emptySnapshotAsyncFailsOpen() async {
+        let cache = SwapKitProviderCache(httpClient: FailingHTTPClient())
+        let supported = await cache.isPairSupported(
+            fromChain: .bitcoinCash,
+            toChain: .ethereum
+        )
+        XCTAssertTrue(supported)
+    }
+}
+
+// MARK: - Test doubles
+
+/// Minimal `HTTPClientProtocol` that always throws — used to prove the cache's
+/// fail-open behaviour when there is neither a fresh snapshot nor a fetchable
+/// providers list.
+private final class FailingHTTPClient: HTTPClientProtocol, @unchecked Sendable {
+    private enum TestError: Error { case unavailable }
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        _ = target
+        await Task.yield()
+        throw TestError.unavailable
+    }
+
+    func request<T: Decodable>(_ target: TargetType, responseType: T.Type) async throws -> HTTPResponse<T> {
+        _ = target
+        _ = responseType
+        await Task.yield()
+        throw TestError.unavailable
+    }
 }

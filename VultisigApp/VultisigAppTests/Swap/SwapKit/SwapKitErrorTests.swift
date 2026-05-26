@@ -47,6 +47,26 @@ final class SwapKitErrorTests: XCTestCase {
         XCTAssertEqual(mapped, .unableToBuildTransaction)
     }
 
+    // MARK: - Reclassified disambiguation case
+
+    /// `.amountBelowProviderMinimum` is a synthetic case raised by
+    /// `SwapKitService.fetchBestRoute` after consulting the providers cache —
+    /// it must NEVER be produced by decoding the raw envelope. Decoding the
+    /// upstream `noRoutesFound` code must still land on `.noRoutesFound`.
+    func testAmountBelowProviderMinimumIsNotDecodedFromEnvelope() {
+        XCTAssertNotEqual(decode("noRoutesFound"), .amountBelowProviderMinimum)
+        XCTAssertNotEqual(decode("amountBelowProviderMinimum"), .amountBelowProviderMinimum)
+    }
+
+    /// The reclassified case reuses the existing THORChain `Amount Too Small`
+    /// localized string for its `errorDescription` so no new translation
+    /// cycle is required. The view layer normalizes the case to
+    /// `SwapCryptoLogic.Errors.swapAmountTooSmall` for the tooltip title.
+    func testAmountBelowProviderMinimumDescriptionReusesSwapAmountTooSmallString() {
+        let error: SwapKitError = .amountBelowProviderMinimum
+        XCTAssertEqual(error.errorDescription, "swapErrorAmountTooSmallDescription".localized)
+    }
+
     // MARK: - Generic fallback
 
     func testUnknownCodePreservesMessage() {
