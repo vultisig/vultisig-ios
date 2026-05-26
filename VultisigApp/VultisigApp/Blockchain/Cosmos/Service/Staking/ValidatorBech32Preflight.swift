@@ -35,13 +35,21 @@ enum ValidatorBech32Preflight {
         var errorDescription: String? {
             switch self {
             case .empty:
-                return "Validator address is empty"
+                return "validatorBech32ErrorEmpty".localized
             case .badEncoding:
-                return "Validator address is not valid bech32"
+                return "validatorBech32ErrorBadEncoding".localized
             case .wrongPrefix(let actual, let expected):
-                return "Validator address prefix '\(actual)' does not match expected '\(expected)'"
+                return String(
+                    format: "validatorBech32ErrorWrongPrefix".localized,
+                    actual,
+                    expected
+                )
             case .wrongPayloadLength(let actual, let expected):
-                return "Validator address payload is \(actual) bytes, expected \(expected)"
+                return String(
+                    format: "validatorBech32ErrorWrongPayloadLength".localized,
+                    actual,
+                    expected
+                )
             }
         }
     }

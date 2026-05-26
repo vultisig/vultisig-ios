@@ -24,25 +24,38 @@ import Foundation
 import OSLog
 
 enum CosmosStakingSignDataResolver {
+    /// Hard cap on validators in a single batched withdraw-rewards tx.
+    /// Mirrors the UI soft cap (`CosmosWithdrawRewardsTransactionViewModel.maxBatchSize`)
+    /// — enforced again here so the resolver cannot be bypassed by upstream
+    /// callers wiring payloads directly (Spec D-9 defense-in-depth).
+    static let maxBatchWithdrawValidators = 8
+
     enum Errors: Error, LocalizedError {
         case missingChainSpecific
         case invalidPublicKey
         case missingPayloadField(String)
         case validatorPreflightFailed(String)
         case noValidatorsToClaim
+        case tooManyValidatorsToClaim(max: Int, actual: Int)
 
         var errorDescription: String? {
             switch self {
             case .missingChainSpecific:
-                return "Missing Cosmos chain-specific account/sequence info for staking"
+                return "cosmosStakingErrorMissingChainSpecific".localized
             case .invalidPublicKey:
-                return "Invalid compressed secp256k1 public key for staking"
+                return "cosmosStakingErrorInvalidPublicKey".localized
             case .missingPayloadField(let field):
-                return "Cosmos staking payload missing required field: \(field)"
+                return String(format: "cosmosStakingErrorMissingPayloadField".localized, field)
             case .validatorPreflightFailed(let reason):
-                return "Validator address rejected by bech32 preflight: \(reason)"
+                return String(format: "cosmosStakingErrorValidatorPreflightFailed".localized, reason)
             case .noValidatorsToClaim:
-                return "Withdraw rewards requires at least one validator"
+                return "cosmosStakingErrorNoValidatorsToClaim".localized
+            case .tooManyValidatorsToClaim(let max, let actual):
+                return String(
+                    format: "cosmosStakingErrorTooManyValidatorsToClaim".localized,
+                    max,
+                    actual
+                )
             }
         }
     }
@@ -65,7 +78,13 @@ enum CosmosStakingSignDataResolver {
         guard case .Cosmos(let accountNumber, let sequence, _, _, _) = chainSpecific else {
             throw Errors.missingChainSpecific
         }
-        guard let pubKey = Data(hexString: sendTransaction.coin.hexPublicKey) else {
+        // Validate compressed secp256k1 shape (33 bytes, 0x02 / 0x03 prefix)
+        // *before* building AuthInfo — malformed keys would otherwise burn an
+        // MPC ceremony and be rejected on-chain after signing.
+        guard let pubKey = Data(hexString: sendTransaction.coin.hexPublicKey),
+              pubKey.count == 33,
+              pubKey.first == 0x02 || pubKey.first == 0x03
+        else {
             throw Errors.invalidPublicKey
         }
         let chain = sendTransaction.coin.chain
@@ -205,6 +224,15 @@ enum CosmosStakingSignDataResolver {
     ) throws -> [Data] {
         guard let validators = payload.validators, !validators.isEmpty else {
             throw Errors.noValidatorsToClaim
+        }
+        // Defense in depth — UI also enforces this, but the resolver must
+        // reject oversized batches even when called directly (e.g. tests,
+        // scripted payloads).
+        guard validators.count <= maxBatchWithdrawValidators else {
+            throw Errors.tooManyValidatorsToClaim(
+                max: maxBatchWithdrawValidators,
+                actual: validators.count
+            )
         }
         return try validators.map { validator in
             try preflight(validator: validator, chain: chain)

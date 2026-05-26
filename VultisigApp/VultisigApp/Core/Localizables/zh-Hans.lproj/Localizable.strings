@@ -223,6 +223,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "总奖励";
 "cosmosStakingDelegateStubSubtitle" = "通过委托给验证人赚取质押奖励。解绑需要 21 天。";
 "cosmosStakingDelegateTitle" = "质押 %@";
+"cosmosStakingErrorInvalidPublicKey" = "用于质押的压缩 secp256k1 公钥无效";
+"cosmosStakingErrorMissingChainSpecific" = "缺少质押所需的 Cosmos 链特定账户/序列信息";
+"cosmosStakingErrorMissingPayloadField" = "Cosmos 质押载荷缺少必需字段:%@";
+"cosmosStakingErrorNoValidatorsToClaim" = "领取奖励至少需要一个验证人";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "领取奖励最多支持 %d 个验证人,收到 %d 个";
+"cosmosStakingErrorUnsupportedChain" = "不支持 %@ 的 Cosmos 质押";
+"cosmosStakingErrorValidatorPreflightFailed" = "验证人地址被 bech32 预检拒绝:%@";
 "cosmosStakingInsufficientGas" = "%@ 不足以支付手续费 — 请减少验证者数量";
 "cosmosStakingNoDelegations" = "暂无活跃委托";
 "cosmosStakingNoValidatorsFound" = "未找到验证人";
@@ -1087,6 +1094,10 @@
 "utxoTooSmallError" = "可用的 UTXO 对于此交易来说太小。您钱包中的单个交易输出不符合最低要求。考虑先合并较小的金额";
 "validAddressDomainError" = "所选区块链的地址错误。尝试将链添加到您的保险库。";
 "validAddressError" = "请输入有效地址";
+"validatorBech32ErrorBadEncoding" = "验证人地址不是有效的 bech32";
+"validatorBech32ErrorEmpty" = "验证人地址为空";
+"validatorBech32ErrorWrongPayloadLength" = "验证人地址载荷为 %d 字节,期望 %d";
+"validatorBech32ErrorWrongPrefix" = "验证人地址前缀“%@”与期望的“%@”不匹配";
 "value" = "价值";
 "vault" = "保险库";
 "vaultAlreadyExists" = "保险库已存在";

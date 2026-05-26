@@ -114,7 +114,7 @@ enum CosmosStakingConfigError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .unsupportedChain(let chain):
-            return "Cosmos staking not supported for \(chain.name)"
+            return String(format: "cosmosStakingErrorUnsupportedChain".localized, chain.name)
         }
     }
 }

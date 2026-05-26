@@ -223,6 +223,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "Gesamtbelohnungen";
 "cosmosStakingDelegateStubSubtitle" = "Verdiene Staking-Belohnungen, indem du an einen Validator delegierst. Die Entbindung dauert 21 Tage.";
 "cosmosStakingDelegateTitle" = "%@ staken";
+"cosmosStakingErrorInvalidPublicKey" = "Ungültiger komprimierter secp256k1-Public-Key für Staking";
+"cosmosStakingErrorMissingChainSpecific" = "Fehlende Cosmos-Chain-spezifische Konto-/Sequenzinformationen für Staking";
+"cosmosStakingErrorMissingPayloadField" = "Cosmos-Staking-Payload fehlt erforderliches Feld: %@";
+"cosmosStakingErrorNoValidatorsToClaim" = "Belohnungsauszahlung erfordert mindestens einen Validator";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "Belohnungsauszahlung unterstützt maximal %d Validatoren, %d angegeben";
+"cosmosStakingErrorUnsupportedChain" = "Cosmos-Staking wird für %@ nicht unterstützt";
+"cosmosStakingErrorValidatorPreflightFailed" = "Validator-Adresse vom bech32-Preflight abgelehnt: %@";
 "cosmosStakingInsufficientGas" = "Nicht genug %@ für Gas — von weniger Validatoren einfordern";
 "cosmosStakingNoDelegations" = "Keine aktiven Delegationen";
 "cosmosStakingNoValidatorsFound" = "Keine Validatoren gefunden";
@@ -1086,6 +1093,10 @@
 "utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
 "validAddressDomainError" = "Falsche Adresse für die ausgewählte Blockchain. Versuchen Sie, die Chain zu Ihrem Tresor hinzuzufügen.";
 "validAddressError" = "Bitte gebe eine gültige Adresse ein.";
+"validatorBech32ErrorBadEncoding" = "Validator-Adresse ist kein gültiges bech32";
+"validatorBech32ErrorEmpty" = "Validator-Adresse ist leer";
+"validatorBech32ErrorWrongPayloadLength" = "Validator-Adressdaten sind %d Bytes, erwartet %d";
+"validatorBech32ErrorWrongPrefix" = "Validator-Adresspräfix '%@' stimmt nicht mit erwartetem '%@' überein";
 "value" = "Wert";
 "vault" = "Tresore";
 "vaultAlreadyExists" = "Tresor existiert bereits";

@@ -225,6 +225,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "Total rewards";
 "cosmosStakingDelegateStubSubtitle" = "Earn staking rewards by delegating to a validator. Unbonding takes 21 days.";
 "cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingErrorInvalidPublicKey" = "Invalid compressed secp256k1 public key for staking";
+"cosmosStakingErrorMissingChainSpecific" = "Missing Cosmos chain-specific account/sequence info for staking";
+"cosmosStakingErrorMissingPayloadField" = "Cosmos staking payload missing required field: %@";
+"cosmosStakingErrorNoValidatorsToClaim" = "Withdraw rewards requires at least one validator";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "Withdraw rewards supports at most %d validators, got %d";
+"cosmosStakingErrorUnsupportedChain" = "Cosmos staking not supported for %@";
+"cosmosStakingErrorValidatorPreflightFailed" = "Validator address rejected by bech32 preflight: %@";
 "cosmosStakingInsufficientGas" = "Insufficient %@ for gas — claim from fewer validators";
 "cosmosStakingNoDelegations" = "No active delegations";
 "cosmosStakingNoValidatorsFound" = "No validators found";
@@ -1102,6 +1109,10 @@
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
 "validAddressDomainError" = "Wrong address for selected blockchain. Try adding the chain to your vault.";
 "validAddressError" = "Please enter a valid address.";
+"validatorBech32ErrorBadEncoding" = "Validator address is not valid bech32";
+"validatorBech32ErrorEmpty" = "Validator address is empty";
+"validatorBech32ErrorWrongPayloadLength" = "Validator address payload is %d bytes, expected %d";
+"validatorBech32ErrorWrongPrefix" = "Validator address prefix '%@' does not match expected '%@'";
 "value" = "Value";
 "vault" = "Vault";
 "vaultAlreadyExists" = "Vault already exists";

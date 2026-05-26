@@ -223,6 +223,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "Recompensas totales";
 "cosmosStakingDelegateStubSubtitle" = "Gana recompensas de staking delegando a un validador. El desbloqueo toma 21 días.";
 "cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingErrorInvalidPublicKey" = "Clave pública secp256k1 comprimida no válida para staking";
+"cosmosStakingErrorMissingChainSpecific" = "Falta información de cuenta/secuencia específica de la cadena Cosmos para staking";
+"cosmosStakingErrorMissingPayloadField" = "Falta un campo requerido en el payload de staking de Cosmos: %@";
+"cosmosStakingErrorNoValidatorsToClaim" = "Reclamar recompensas requiere al menos un validador";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "Reclamar recompensas admite como máximo %d validadores, se recibieron %d";
+"cosmosStakingErrorUnsupportedChain" = "Staking de Cosmos no soportado para %@";
+"cosmosStakingErrorValidatorPreflightFailed" = "Dirección de validador rechazada por preflight bech32: %@";
 "cosmosStakingInsufficientGas" = "Insuficiente %@ para gas — reclama de menos validadores";
 "cosmosStakingNoDelegations" = "Sin delegaciones activas";
 "cosmosStakingNoValidatorsFound" = "No se encontraron validadores";
@@ -1086,6 +1093,10 @@
 "utxoTooSmallError" = "Los UTXOs disponibles son demasiado pequeños para esta transacción. Las salidas de transacción individuales en tu billetera no cumplen con los requisitos mínimos. Considera consolidar cantidades más pequeñas primero.";
 "validAddressDomainError" = "Dirección incorrecta para la cadena de bloques seleccionada. Intenta agregar la cadena a tu bóveda.";
 "validAddressError" = "Por favor ingresa una dirección válida.";
+"validatorBech32ErrorBadEncoding" = "La dirección del validador no es un bech32 válido";
+"validatorBech32ErrorEmpty" = "La dirección del validador está vacía";
+"validatorBech32ErrorWrongPayloadLength" = "La carga útil de la dirección del validador es de %d bytes, se esperaban %d";
+"validatorBech32ErrorWrongPrefix" = "El prefijo de la dirección del validador '%@' no coincide con el esperado '%@'";
 "value" = "Valor";
 "vault" = "Caja Fuerte";
 "vaultAlreadyExists" = "El almacén ya existe";

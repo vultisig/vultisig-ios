@@ -223,6 +223,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "Recompensas totais";
 "cosmosStakingDelegateStubSubtitle" = "Ganhe recompensas de staking delegando a um validador. O desbloqueio leva 21 dias.";
 "cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingErrorInvalidPublicKey" = "Chave pública secp256k1 comprimida inválida para staking";
+"cosmosStakingErrorMissingChainSpecific" = "Faltam informações de conta/sequência específicas da chain Cosmos para staking";
+"cosmosStakingErrorMissingPayloadField" = "Payload de staking Cosmos sem campo obrigatório: %@";
+"cosmosStakingErrorNoValidatorsToClaim" = "Reivindicar recompensas requer ao menos um validador";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "Reivindicar recompensas suporta no máximo %d validadores, recebidos %d";
+"cosmosStakingErrorUnsupportedChain" = "Staking Cosmos não suportado para %@";
+"cosmosStakingErrorValidatorPreflightFailed" = "Endereço de validador rejeitado pelo preflight bech32: %@";
 "cosmosStakingInsufficientGas" = "%@ insuficiente para gás — reivindique de menos validadores";
 "cosmosStakingNoDelegations" = "Sem delegações ativas";
 "cosmosStakingNoValidatorsFound" = "Nenhum validador encontrado";
@@ -1086,6 +1093,10 @@
 "utxoTooSmallError" = "UTXOs disponíveis são muito pequenos para esta transação. As saídas de transação individuais em sua carteira não atendem aos requisitos mínimos. Considere consolidar valores menores primeiro.";
 "validAddressDomainError" = "Endereço incorreto para o blockchain selecionado. Tente adicionar a rede ao seu cofre.";
 "validAddressError" = "Por favor, insira um endereço válido.";
+"validatorBech32ErrorBadEncoding" = "O endereço do validador não é bech32 válido";
+"validatorBech32ErrorEmpty" = "O endereço do validador está vazio";
+"validatorBech32ErrorWrongPayloadLength" = "O conteúdo do endereço do validador tem %d bytes, esperados %d";
+"validatorBech32ErrorWrongPrefix" = "O prefixo do endereço do validador '%@' não corresponde ao esperado '%@'";
 "value" = "Valor";
 "vault" = "Cofre";
 "vaultAlreadyExists" = "O cofre já existe";

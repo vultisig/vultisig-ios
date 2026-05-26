@@ -223,6 +223,13 @@
 "cosmosStakingClaimRewardsTotalRewards" = "Ukupne nagrade";
 "cosmosStakingDelegateStubSubtitle" = "Zaradite nagrade za staking delegiranjem validatoru. Odjava traje 21 dan.";
 "cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingErrorInvalidPublicKey" = "Nevažeći komprimirani secp256k1 javni ključ za staking";
+"cosmosStakingErrorMissingChainSpecific" = "Nedostaju Cosmos chain-specifične informacije računa/sekvence za staking";
+"cosmosStakingErrorMissingPayloadField" = "Cosmos staking payloadu nedostaje obavezno polje: %@";
+"cosmosStakingErrorNoValidatorsToClaim" = "Preuzimanje nagrada zahtijeva barem jednog validatora";
+"cosmosStakingErrorTooManyValidatorsToClaim" = "Preuzimanje nagrada podržava najviše %d validatora, dobiveno %d";
+"cosmosStakingErrorUnsupportedChain" = "Cosmos staking nije podržan za %@";
+"cosmosStakingErrorValidatorPreflightFailed" = "Adresa validatora odbijena bech32 preflightom: %@";
 "cosmosStakingInsufficientGas" = "Nedovoljno %@ za gas — preuzmi od manje validatora";
 "cosmosStakingNoDelegations" = "Nema aktivnih delegacija";
 "cosmosStakingNoValidatorsFound" = "Nije pronađen nijedan validator";
@@ -1086,6 +1093,10 @@
 "utxoTooSmallError" = "Dostupni UTXO-i su premali za ovu transakciju. Pojedinačni izlazi transakcije u vašem novčaniku ne zadovoljavaju minimalne zahtjeve. Razmislite o konsolidaciji manjih iznosa prvo.";
 "validAddressDomainError" = "Pogrešna adresa za odabrani blockchain. Pokušajte dodati lanac u svoj trezor.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
+"validatorBech32ErrorBadEncoding" = "Adresa validatora nije valjani bech32";
+"validatorBech32ErrorEmpty" = "Adresa validatora je prazna";
+"validatorBech32ErrorWrongPayloadLength" = "Sadržaj adrese validatora ima %d bajtova, očekivano %d";
+"validatorBech32ErrorWrongPrefix" = "Prefiks adrese validatora '%@' ne odgovara očekivanom '%@'";
 "value" = "Vrijednost";
 "vault" = "Sefovi";
 "vaultAlreadyExists" = "Spremište već postoji";
