@@ -116,7 +116,8 @@ final class FunctionCallCosmosSwitch {
         gas: BigInt,
         isFastVault: Bool
     ) -> SendTransaction {
-        SendTransaction.empty(coin: coin, vault: vault).copy(
+        _ = isFastVault
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
             toAddress: destinationAddress,
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),

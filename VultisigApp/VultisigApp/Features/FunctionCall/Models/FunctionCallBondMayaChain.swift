@@ -87,7 +87,8 @@ final class FunctionCallBondMayaChain {
         gas: BigInt,
         isFastVault: Bool
     ) -> SendTransaction {
-        SendTransaction.empty(coin: coin, vault: vault).copy(
+        _ = isFastVault
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),
             gas: gas,
