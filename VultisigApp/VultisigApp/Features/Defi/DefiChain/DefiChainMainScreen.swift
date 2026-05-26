@@ -126,23 +126,27 @@ struct DefiChainMainScreen: View {
                     )
                 }
             case .stake:
-                DefiChainStakedView(
-                    viewModel: stakeViewModel,
-                    onStake: { onStake(position: $0) },
-                    onUnstake: { onUnstake(position: $0) },
-                    onWithdraw: { position in
-                        guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
-                            return
-                        }
-                        onTransactionToPresent(.withdrawRewards(
-                            coin: position.coin,
-                            rewards: rewards,
-                            rewardsCoin: rewardsCoin
-                        ))
-                    },
-                    onTransfer: { onTransfer(position: $0) },
-                    emptyStateView: { emptyStateView }
-                )
+                if chain == .terra || chain == .terraClassic, let nativeCoin {
+                    cosmosDelegateStubView(coin: nativeCoin)
+                } else {
+                    DefiChainStakedView(
+                        viewModel: stakeViewModel,
+                        onStake: { onStake(position: $0) },
+                        onUnstake: { onUnstake(position: $0) },
+                        onWithdraw: { position in
+                            guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
+                                return
+                            }
+                            onTransactionToPresent(.withdrawRewards(
+                                coin: position.coin,
+                                rewards: rewards,
+                                rewardsCoin: rewardsCoin
+                            ))
+                        },
+                        onTransfer: { onTransfer(position: $0) },
+                        emptyStateView: { emptyStateView }
+                    )
+                }
             case .liquidityPool:
                 DefiChainLPsView(
                     vault: vault,
@@ -168,6 +172,21 @@ struct DefiChainMainScreen: View {
             subtitle: "noPositionsSelectedSubtitle".localized,
             buttonTitle: "managePositions".localized,
             action: { showPositionSelection.toggle() }
+        )
+    }
+
+    /// Stub entry-point for LUNA / LUNC delegate flow. PR5 replaces this
+    /// with the full `DefiChainStakedView` once `CosmosStakeInteractor` is
+    /// wired into `DefiInteractorResolver`. Today the user only sees the
+    /// "Stake LUNA / LUNC" CTA that routes into `CosmosDelegateTransactionScreen`.
+    private func cosmosDelegateStubView(coin: Coin) -> some View {
+        ActionBannerView(
+            title: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
+            subtitle: "cosmosStakingDelegateStubSubtitle".localized,
+            buttonTitle: String(format: "cosmosStakingDelegateTitle".localized, coin.ticker),
+            action: {
+                onTransactionToPresent(.cosmosDelegate(coin: coin.toCoinMeta()))
+            }
         )
     }
 

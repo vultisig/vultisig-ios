@@ -17,6 +17,7 @@ enum FunctionTransactionType: Hashable {
     case redeem(coin: CoinMeta, yCoin: CoinMeta)
     case addLP(position: LPPosition)
     case removeLP(position: LPPosition)
+    case cosmosDelegate(coin: CoinMeta)
 
     var coins: [CoinMeta] {
         switch self {
@@ -38,6 +39,8 @@ enum FunctionTransactionType: Hashable {
             return [position.coin1, position.coin2]
         case .removeLP(let position):
             return [position.coin1, position.coin2]
+        case .cosmosDelegate(let coin):
+            return [coin]
         }
     }
 }

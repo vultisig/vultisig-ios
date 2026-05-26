@@ -139,6 +139,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .cosmosDelegate(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosDelegateTransactionScreen(
+                        viewModel: CosmosDelegateTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
@@ -146,6 +153,19 @@ struct FunctionTransactionScreen: View {
 
     func onVerify(_ transactionBuilder: TransactionBuilder) {
         Task { @MainActor in
+            // Cosmos staking flows bypass the legacy `FunctionCallForm`
+            // round-trip — the SignDoc payload travels via
+            // `SendTransaction.cosmosStakingPayload`, which `fromForm(_:)`
+            // would drop. Skip directly to the immutable struct so the
+            // Verify → KeysignPayload resolver sees the staking intent.
+            if transactionBuilder.cosmosStakingPayload != nil {
+                isLoading = true
+                let immutableTx = transactionBuilder.buildSendTransaction(vault: vault)
+                isLoading = false
+                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                return
+            }
+
             isLoading = true
             let tx = transactionBuilder.buildTransaction()
 
