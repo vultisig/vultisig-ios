@@ -11,6 +11,7 @@
 //
 
 @testable import VultisigApp
+import CryptoKit
 import XCTest
 
 final class CosmosStakingHelperTests: XCTestCase {
@@ -362,6 +363,10 @@ final class CosmosStakingHelperTests: XCTestCase {
         )
         XCTAssertEqual(doc.hashHex.count, 64)
         XCTAssertEqual(doc.hashHex, doc.hashHex.lowercased())
+        let expected = SHA256.hash(data: doc.bytes)
+            .map { String(format: "%02x", $0) }
+            .joined()
+        XCTAssertEqual(doc.hashHex, expected)
     }
 
     func testSignDocIsDeterministic() {
