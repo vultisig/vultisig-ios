@@ -6,8 +6,10 @@
 //  Matches Figma `75918:74747` — `SearchTextField` + scrollable `LazyVStack`
 //  of `ValidatorCard`s with the selected-state stroke variant.
 //
-//  Sheet-presented; on tap the screen sets the parent's `selectedValidator`
-//  binding and dismisses itself via `isPresented`.
+//  Sheet-presented; tapping a row stages a local "picked" address (without
+//  dismissing) and the footer confirm button commits the selection to the
+//  parent's `selectedValidator` binding and dismisses the sheet. This
+//  two-tap pattern matches the desktop client's `ValidatorPickerSheet`.
 //
 
 import SwiftUI
@@ -17,6 +19,7 @@ struct ValidatorSelectionScreen: View {
     @Binding var selectedValidator: CosmosValidator?
     let chainTicker: String
     @StateObject var viewModel: ValidatorSelectionViewModel
+    @State private var pickedAddress: String?
 
     init(
         isPresented: Binding<Bool>,
@@ -52,6 +55,15 @@ struct ValidatorSelectionScreen: View {
                     }
                 }
                 .cornerRadius(12)
+
+                PrimaryButton(
+                    title: "cosmosStakingSelectValidator".localized
+                ) {
+                    confirmSelection()
+                }
+                .disabled(pickedAddress == nil)
+                .opacity(pickedAddress == nil ? 0.5 : 1)
+                .padding(.top, 8)
             }
         }
         .screenTitle("cosmosStakingSelectValidator".localized)
@@ -67,6 +79,7 @@ struct ValidatorSelectionScreen: View {
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
         .onLoad {
+            pickedAddress = selectedValidator?.operatorAddress
             Task { await viewModel.load() }
         }
     }
@@ -77,14 +90,21 @@ struct ValidatorSelectionScreen: View {
                 ValidatorCard(
                     validator: validator,
                     chainTicker: chainTicker,
-                    isSelected: selectedValidator?.operatorAddress == validator.operatorAddress
+                    isSelected: pickedAddress == validator.operatorAddress
                 ) {
-                    selectedValidator = validator
-                    isPresented = false
+                    pickedAddress = validator.operatorAddress
                 }
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private func confirmSelection() {
+        guard let pickedAddress,
+              let validator = viewModel.filteredValidators.first(where: { $0.operatorAddress == pickedAddress })
+        else { return }
+        selectedValidator = validator
+        isPresented = false
     }
 
     private var loadingView: some View {
