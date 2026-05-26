@@ -3,13 +3,14 @@
 //  VultisigApp
 //
 //  Validator-picker sheet for the LUNA / LUNC delegate / redelegate flows.
-//  Matches Figma `75918:74747` — `SearchTextField` + scrollable `LazyVStack`
-//  of `ValidatorCard`s with the selected-state stroke variant.
+//  `SearchTextField` + scrollable `LazyVStack` of `ValidatorCard`s with the
+//  selected-state stroke variant.
 //
 //  Sheet-presented; tapping a row stages a local "picked" address (without
-//  dismissing) and the footer confirm button commits the selection to the
-//  parent's `selectedValidator` binding and dismisses the sheet. This
-//  two-tap pattern matches the desktop client's `ValidatorPickerSheet`.
+//  dismissing) and the trailing toolbar confirm button commits the
+//  selection to the parent's `selectedValidator` binding and dismisses the
+//  sheet. This two-tap pattern matches the desktop client's
+//  `ValidatorPickerSheet`.
 //
 
 import SwiftUI
@@ -58,15 +59,6 @@ struct ValidatorSelectionScreen: View {
                     }
                 }
                 .cornerRadius(12)
-
-                PrimaryButton(
-                    title: "cosmosStakingSelectValidator".localized
-                ) {
-                    confirmSelection()
-                }
-                .disabled(pickedValidator == nil)
-                .opacity(pickedValidator == nil ? 0.5 : 1)
-                .padding(.top, 8)
             }
         }
         .screenTitle("cosmosStakingSelectValidator".localized)
@@ -76,6 +68,13 @@ struct ValidatorSelectionScreen: View {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()
                 }
+            }
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "check") {
+                    confirmSelection()
+                }
+                .disabled(pickedValidator == nil)
+                .opacity(pickedValidator == nil ? 0.5 : 1)
             }
         }
         .applySheetSize()
