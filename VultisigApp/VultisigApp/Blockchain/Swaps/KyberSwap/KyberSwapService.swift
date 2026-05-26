@@ -154,21 +154,18 @@ struct KyberSwapService {
         // Update gasPrice from route response
         buildResponse.data.gasPrice = gasPrice
 
-        guard let chainEnum = Chain.allCases.first(where: { (try? getChainName(for: $0)) == chain }) else {
-            throw KyberSwapError.apiError(code: -1, message: "Unknown chain: \(chain)", details: nil)
-        }
-        let calculatedGas = buildResponse.gasForChain(chainEnum)
-
+        let kyberGas = buildResponse.gas
         let finalGas: BigInt
-        if calculatedGas == 0 {
+        if kyberGas == 0 {
             finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit)
         } else {
-            finalGas = BigInt(calculatedGas)
+            finalGas = BigInt(kyberGas)
         }
         buildResponse.data.gas = finalGas.description
-        let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
-        let minGasPrice = BigInt("1000000000")
-        let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue
+        // KyberSwap's routeSummary.gasPrice is the network's effective gas
+        // price as the aggregator sees it; use it verbatim. The fallback
+        // (1 gwei) only fires when the API returns an unparseable value.
+        let finalGasPrice = KyberSwapQuote.parseGasPriceWei(gasPrice)
 
         let fee = finalGas * finalGasPrice
 
