@@ -228,6 +228,14 @@ struct SendTransaction: Hashable {
     /// full coin list at read time.
     let feeCoin: Coin
     let feeCoinSnapshot: SendCoinSnapshot
+
+    /// Cosmos-SDK x/staking + x/distribution operation intent. Non-nil only
+    /// for LUNA / LUNC delegate / undelegate / redelegate / claim flows;
+    /// populated by the per-flow `TransactionBuilder` and consumed by the
+    /// Verify → KeysignPayload bridge to produce the SignDoc bytes.
+    /// Local-only on iOS — does not round-trip through the proto-mappable
+    /// `KeysignMessage` bridge (same posture as `qbtcClaimPayload`).
+    let cosmosStakingPayload: CosmosStakingPayload?
 }
 
 extension SendTransaction {
@@ -251,7 +259,8 @@ extension SendTransaction {
             lhs.transactionType == rhs.transactionType &&
             lhs.memoFunctionDictionary == rhs.memoFunctionDictionary &&
             lhs.wasmContractPayload == rhs.wasmContractPayload &&
-            lhs.feeCoinSnapshot == rhs.feeCoinSnapshot
+            lhs.feeCoinSnapshot == rhs.feeCoinSnapshot &&
+            lhs.cosmosStakingPayload == rhs.cosmosStakingPayload
     }
 
     func hash(into hasher: inout Hasher) {
@@ -275,6 +284,7 @@ extension SendTransaction {
         hasher.combine(memoFunctionDictionary)
         hasher.combine(wasmContractPayload)
         hasher.combine(feeCoinSnapshot)
+        hasher.combine(cosmosStakingPayload)
     }
 }
 
@@ -299,7 +309,8 @@ extension SendTransaction {
         transactionType: VSTransactionType,
         memoFunctionDictionary: [String: String],
         wasmContractPayload: WasmExecuteContractPayload?,
-        feeCoin: Coin
+        feeCoin: Coin,
+        cosmosStakingPayload: CosmosStakingPayload? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -324,6 +335,7 @@ extension SendTransaction {
         self.wasmContractPayload = wasmContractPayload
         self.feeCoin = feeCoin
         self.feeCoinSnapshot = SendCoinSnapshot(coin: feeCoin)
+        self.cosmosStakingPayload = cosmosStakingPayload
     }
 }
 
@@ -390,7 +402,8 @@ extension SendTransaction {
         transactionType: VSTransactionType? = nil,
         memoFunctionDictionary: [String: String]? = nil,
         wasmContractPayload: SendTransactionUpdate<WasmExecuteContractPayload?>? = nil,
-        feeCoin: Coin? = nil
+        feeCoin: Coin? = nil,
+        cosmosStakingPayload: SendTransactionUpdate<CosmosStakingPayload?>? = nil
     ) -> SendTransaction {
         let resolvedVault = vault ?? self.vault
         let resolvedCoin = coin ?? self.coin
@@ -414,6 +427,10 @@ extension SendTransaction {
             guard let wasmContractPayload else { return self.wasmContractPayload }
             return wasmContractPayload.value
         }()
+        let resolvedCosmosStakingPayload: CosmosStakingPayload? = {
+            guard let cosmosStakingPayload else { return self.cosmosStakingPayload }
+            return cosmosStakingPayload.value
+        }()
         return SendTransaction(
             coin: resolvedCoin,
             vault: resolvedVault,
@@ -434,7 +451,8 @@ extension SendTransaction {
             transactionType: transactionType ?? self.transactionType,
             memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
             wasmContractPayload: resolvedWasmContractPayload,
-            feeCoin: feeCoin ?? self.feeCoin
+            feeCoin: feeCoin ?? self.feeCoin,
+            cosmosStakingPayload: resolvedCosmosStakingPayload
         )
     }
 
