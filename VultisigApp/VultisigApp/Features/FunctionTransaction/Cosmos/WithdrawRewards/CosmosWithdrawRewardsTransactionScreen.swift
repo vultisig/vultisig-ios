@@ -12,8 +12,16 @@
 import SwiftUI
 
 struct CosmosWithdrawRewardsTransactionScreen: View {
-    @StateObject var viewModel: CosmosWithdrawRewardsTransactionViewModel
-    var onVerify: (TransactionBuilder) -> Void
+    @StateObject private var viewModel: CosmosWithdrawRewardsTransactionViewModel
+    let onVerify: (TransactionBuilder) -> Void
+
+    init(
+        viewModel: CosmosWithdrawRewardsTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
 
     var body: some View {
         Screen {
@@ -85,7 +93,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
                 }
                 Spacer(minLength: 8)
                 Text(formatAmount(candidate.pendingReward))
-                    .font(Theme.fonts.bodySMedium)
+                    .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)
             }
@@ -129,7 +137,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
                 Text("\(formatAmount(viewModel.totalSelectedReward)) \(viewModel.coin.ticker)")
-                    .font(Theme.fonts.bodyMMedium)
+                    .font(Theme.fonts.priceBodyL)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             HStack {
@@ -138,7 +146,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
                 Text("\(formatAmount(viewModel.estimatedFee)) \(viewModel.coin.ticker)")
-                    .font(Theme.fonts.bodySMedium)
+                    .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
 

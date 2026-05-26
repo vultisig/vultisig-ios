@@ -61,11 +61,13 @@ final class CosmosWithdrawRewardsTransactionViewModel: ObservableObject {
     /// selected validator count, matching the SignDoc resolver's batch
     /// gas/fee multiplier.
     var estimatedFee: Decimal {
-        guard let entry = try? CosmosStakingConfig.entry(for: coin.chain) else {
+        guard !selectedValidators.isEmpty,
+              let entry = try? CosmosStakingConfig.entry(for: coin.chain)
+        else {
             return 0
         }
         let perMsg = Decimal(entry.feeAmount)
-        let count = Decimal(max(selectedValidators.count, 1))
+        let count = Decimal(selectedValidators.count)
         let divisor = pow(Decimal(10), coin.decimals)
         return (perMsg * count) / divisor
     }

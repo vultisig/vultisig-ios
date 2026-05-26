@@ -39,8 +39,12 @@ struct CosmosWithdrawRewardsTransactionBuilder: TransactionBuilder {
     /// the full list lives in `cosmosStakingPayload.validators`.
     var toAddress: String { validatorAddresses.first ?? "" }
 
+    /// Always return a staking payload — including for an empty validator
+    /// list — so `isStakingOperation` stays true downstream. The resolver
+    /// surfaces a precise `noValidatorsToClaim` error from there; returning
+    /// nil here would route the tx to the generic non-staking path and
+    /// hide the real reason it failed.
     var cosmosStakingPayload: CosmosStakingPayload? {
-        guard !validatorAddresses.isEmpty else { return nil }
         let denom = (try? CosmosStakingConfig.bondDenom(for: coin.chain)) ?? ""
         return CosmosStakingPayload.withdrawRewards(
             validators: validatorAddresses,
