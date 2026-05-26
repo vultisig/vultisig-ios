@@ -249,33 +249,12 @@ struct FunctionCallDetailsScreen: View {
                     return
                 }
 
-                // PR2: 12 migrated sub-models build the immutable
-                // SendTransaction directly via `toSendTransaction(...)`.
-                // The 3 heavy sub-models (AddThorLP, SecuredAsset,
-                // WithdrawSecuredAsset) still return nil here and fall
-                // through to the legacy `tx`-mutation path until PR3
-                // migrates them.
-                if let migratedTx = fnCallInstance.toSendTransaction(
+                let immutableTx = fnCallInstance.toSendTransaction(
                     coin: selectedCoin,
                     vault: vault,
                     gas: gas,
                     isFastVault: isFastVault
-                ) {
-                    router.navigate(to: FunctionCallRoute.verify(tx: migratedTx, vault: vault))
-                    return
-                }
-
-                tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
-                tx.memo = fnCallInstance.description
-                tx.memoFunctionDictionary = fnCallInstance.toDictionary()
-                tx.transactionType = fnCallInstance.getTransactionType()
-                tx.wasmContractPayload = fnCallInstance.wasmContractPayload
-
-                if let toAddress = fnCallInstance.toAddress {
-                    tx.toAddress = toAddress
-                }
-
-                let immutableTx = SendTransaction.fromForm(tx, vault: vault)
+                )
                 router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
             }
         }
@@ -332,14 +311,17 @@ private extension FunctionCallDetailsScreen {
     }
 
     func loadGasInfo() async {
-        // C-2a: screen-owned `selectedCoin` drives the chain-specific fetch.
-        // `tx.coin` is dual-written from `selectedCoin` to keep un-migrated
-        // sub-models in sync until C-2b → C-2e migrate each one.
+        // PR3: drive gas refresh through the immutable `SendTransaction`
+        // path. `tx.coin` is dual-written from `selectedCoin` to keep
+        // the legacy form-state in sync with the 3 heavy sub-models that
+        // still hold an internal `FunctionCallForm` scratchpad for their
+        // wasm payload / inbound-address logic.
         if tx.coin != selectedCoin {
             tx.coin = selectedCoin
         }
+        let probeTx = SendTransaction.empty(coin: selectedCoin, vault: vault)
         do {
-            let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: tx)
+            let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: probeTx)
             gas = chainSpecific.gas
             tx.gas = chainSpecific.gas
         } catch {

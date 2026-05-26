@@ -2,78 +2,77 @@
 //  FunctionCallAddThorLP.swift
 //  VultisigApp
 //
+//  THORChain LP add sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — drops `FunctionCallAddressable` and
+//  `getView() -> AnyView`, exposes `toSendTransaction(...)` at the
+//  navigation boundary, and co-locates the
+//  `AddThorLPFormView` partner in this file. Cross-mutator: writes the
+//  screen-owned `selectedCoin` from the paired-token-pool dropdown.
+//
+//  Holds an internal `FunctionCallForm tx` as a scratchpad for the
+//  inbound-address / ERC20-approve plumbing that depends on
+//  `tx.amountInRaw` + `tx.toAddress`. Treat the scratchpad as
+//  implementation detail of this sub-model — callers should go through
+//  `toSendTransaction(...)` rather than reading `tx` directly.
+//
 
-import SwiftUI
-import Foundation
+import BigInt
 import Combine
+import Foundation
 import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-add-thor-lp")
 
-// MARK: - Main ViewModel
+@Observable
+@MainActor
+final class FunctionCallAddThorLP {
+    var amount: Decimal = 0.0
+    var pairedAddress: String = ""
+    var selectedPool: IdentifiableString = .init(value: "")
+    var customErrorMessage: String?
 
-class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
-    // MARK: Published inputs / UI state
-    @Published var amount: Decimal = 0.0
-    @Published var pairedAddress: String = ""
-    @Published var selectedPool: IdentifiableString = .init(value: "")
+    var availablePools: [IdentifiableString] = []
+    var isLoadingPools: Bool = true
+    var loadError: String?
 
-    // Validation flags
-    @Published var amountValid: Bool = false
-    @Published var pairedAddressValid: Bool = true
-    @Published var poolValid: Bool = false
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    @ObservationIgnored private var poolNameMap: [String: String] = [:]
+    var pairedAssetBalance: String = ""
+    var selectedPoolBalance: String = ""
 
-    // Pools
-    @Published var availablePools: [IdentifiableString] = []
-    @Published var isLoadingPools: Bool = true
-    @Published var loadError: String? = nil
+    var isApprovalRequired: Bool = false
+    var approvePayload: ERC20ApprovePayload?
 
-    // Mapping display name -> full pool asset string
-    private var poolNameMap: [String: String] = [:]
-    @Published var pairedAssetBalance: String = ""
-    @Published var selectedPoolBalance: String = ""
+    var isEnablingThorchain: Bool = false
 
-    // ERC20 approval
-    @Published var isApprovalRequired: Bool = false
-    @Published var approvePayload: ERC20ApprovePayload?
+    /// Internal scratchpad — holds the inbound address + amountInRaw
+    /// for the ERC20 approval plumbing. Public only because
+    /// `FunctionCallInstance.toAddress` reads `tx.toAddress` for
+    /// downstream signing; not consumed by SwiftUI views.
+    let tx: FunctionCallForm
 
-    // Internals
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private let vault: Vault
+    @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
+    @ObservationIgnored var coinSelectionHandler: ((Coin) -> Void)?
 
-    // Domain models
-    var tx: FunctionCallForm
-    private var vault: Vault
-    var isThorchainEnabled: Bool {
-        vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
-    }
-    @Published var isEnablingThorchain: Bool = false
-
-    // MARK: Addressable conformance helpers
-    var addressFields: [String: String] {
-        get { ["pairedAddress": pairedAddress] }
-        set {
-            if let v = newValue["pairedAddress"] {
-                pairedAddress = v
-            }
-        }
-    }
-
-    // MARK: Init
-    required init(tx: FunctionCallForm, vault: Vault) {
+    init(tx: FunctionCallForm, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }
 
+    deinit {
+        loadingTasks.forEach { $0.cancel() }
+    }
+
+    var isThorchainEnabled: Bool {
+        vault.coins.contains { $0.chain == .thorChain && $0.isNativeToken }
+    }
+
     func initialize() {
-        cancellables.removeAll()
         prefillPairedAddress()
-        setupValidation()
         loadInitialState()
     }
 
-    @MainActor
     func enableThorchain() async {
         guard !isEnablingThorchain, !isThorchainEnabled else { return }
         guard let runeMeta = TokensStore.TokenSelectionAssets.first(where: {
@@ -96,152 +95,129 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
 
     private func loadInitialState() {
-        fetchInboundAddressAndSetupApproval()
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.fetchInboundAddressAndSetupApproval()
+        }
+        loadingTasks.append(task)
         loadPools()
     }
 
-    // MARK: - Inbound address + approval
+    private func fetchInboundAddressAndSetupApproval() async {
+        let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
 
-    private func fetchInboundAddressAndSetupApproval() {
-        Task {
-            let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+        if tx.coin.chain == .thorChain {
+            isApprovalRequired = false
+            approvePayload = nil
+            return
+        }
 
-            await MainActor.run {
-                if self.tx.coin.chain == .thorChain {
-                    // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
-                    // The toAddress will be set when pool is selected
-                    self.isApprovalRequired = false
-                    self.approvePayload = nil
-                    return
-                } else {
-                    // Normal send path: need inbound address for L1/EVM chains.
-                    let chainName = ThorchainService.getInboundChainName(for: self.tx.coin.chain)
-                    guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                        return
-                    }
+        let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+        guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+            return
+        }
 
-                    if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-                        return
-                    }
+        if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+            return
+        }
 
-                    let destinationAddress: String
-                    if self.tx.coin.shouldApprove {
-                        // ERC20 token (e.g., USDC) → approval to router
-                        destinationAddress = inbound.router ?? inbound.address
-                    } else {
-                        // Native token (e.g., ETH) → direct to inbound address
-                        destinationAddress = inbound.address
-                    }
+        let destinationAddress: String
+        if tx.coin.shouldApprove {
+            destinationAddress = inbound.router ?? inbound.address
+        } else {
+            destinationAddress = inbound.address
+        }
 
-                    self.tx.toAddress = destinationAddress
-
-                    // ERC20 approval only for non-RUNE ERC20 tokens
-                    self.isApprovalRequired = self.tx.coin.shouldApprove
-                    if self.isApprovalRequired {
-                        self.approvePayload = self.tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(
-                            amount: self.tx.amountInRaw,
-                            spender: self.tx.toAddress
-                        )
-                    }
-                }
-            }
+        tx.toAddress = destinationAddress
+        isApprovalRequired = tx.coin.shouldApprove
+        if isApprovalRequired {
+            approvePayload = tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(
+                amount: tx.amountInRaw,
+                spender: tx.toAddress
+            )
         }
     }
-
-    // MARK: - Pool loading
 
     func loadPools() {
         isLoadingPools = true
         loadError = nil
 
-        Task {
-            do {
-                let allPools = try await ThorchainService.shared.fetchLPPools()
-
-                var poolOptions: [IdentifiableString] = []
-                var nameMap: [String: String] = [:]
-                var isInThePool: Bool = false
-
-                if self.tx.coin.chain == .thorChain {
-                    for pool in allPools {
-                        let assetName = pool.asset
-                        let cleanName = ThorchainService.cleanPoolName(assetName)
-                        poolOptions.append(IdentifiableString(value: cleanName))
-                        nameMap[cleanName] = assetName
-
-                        if let lastPart = cleanName
-                            .uppercased()
-                            .split(separator: ".")
-                            .last {
-                            if tx.coin.ticker.uppercased() == String(lastPart) {
-                                isInThePool = true
-                            }
-                        }
-                    }
-                } else {
-                    let currentSwap = self.tx.coin.chain.swapAsset.uppercased()
-                    let filtered = allPools.filter { pool in
-                        let components = pool.asset
-                            .split(separator: ".")
-                            .map { String($0).uppercased() }
-                        return components.count >= 2 && components[0] == currentSwap
-                    }
-                    for pool in filtered {
-                        let assetName = pool.asset
-                        let cleanName = ThorchainService.cleanPoolName(assetName)
-                        poolOptions.append(IdentifiableString(value: cleanName))
-                        nameMap[cleanName] = assetName
-
-                        if let lastPart = cleanName
-                            .uppercased()
-                            .split(separator: ".")
-                            .last {
-                            if tx.coin.ticker.uppercased() == String(lastPart) {
-                                isInThePool = true
-                            }
-                        }
-                    }
-                }
-
-                if tx.coin.ticker.uppercased() != "RUNE" && !isInThePool {
-                    if let runeCoin = vault.runeCoin {
-                        tx.coin = runeCoin
-                    }
-                }
-
-                DispatchQueue.main.async {
-                    self.poolNameMap = nameMap
-                    self.availablePools = poolOptions
-                    self.isLoadingPools = false
-                    self.loadError = nil
-
-                    if self.tx.coin.chain != .thorChain && poolOptions.count == 1 {
-                        self.selectedPool = poolOptions[0]
-                        self.poolValid = true
-                    }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.availablePools = []
-                    self.isLoadingPools = false
-                    self.loadError = NSLocalizedString("failedToLoadPools", comment: "Failed to load pools error")
-                }
-            }
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.loadPoolsImpl()
         }
+        loadingTasks.append(task)
     }
 
-    // MARK: - Prefill logic
+    private func loadPoolsImpl() async {
+        do {
+            let allPools = try await ThorchainService.shared.fetchLPPools()
+
+            var poolOptions: [IdentifiableString] = []
+            var nameMap: [String: String] = [:]
+            var isInThePool: Bool = false
+
+            if tx.coin.chain == .thorChain {
+                for pool in allPools {
+                    let assetName = pool.asset
+                    let cleanName = ThorchainService.cleanPoolName(assetName)
+                    poolOptions.append(IdentifiableString(value: cleanName))
+                    nameMap[cleanName] = assetName
+
+                    if let lastPart = cleanName.uppercased().split(separator: ".").last,
+                       tx.coin.ticker.uppercased() == String(lastPart) {
+                        isInThePool = true
+                    }
+                }
+            } else {
+                let currentSwap = tx.coin.chain.swapAsset.uppercased()
+                let filtered = allPools.filter { pool in
+                    let components = pool.asset.split(separator: ".").map { String($0).uppercased() }
+                    return components.count >= 2 && components[0] == currentSwap
+                }
+                for pool in filtered {
+                    let assetName = pool.asset
+                    let cleanName = ThorchainService.cleanPoolName(assetName)
+                    poolOptions.append(IdentifiableString(value: cleanName))
+                    nameMap[cleanName] = assetName
+
+                    if let lastPart = cleanName.uppercased().split(separator: ".").last,
+                       tx.coin.ticker.uppercased() == String(lastPart) {
+                        isInThePool = true
+                    }
+                }
+            }
+
+            // RUNE-pin when source coin is non-RUNE and not in the
+            // selected pool — same intent as legacy initialize().
+            if tx.coin.ticker.uppercased() != "RUNE" && !isInThePool,
+               let runeCoin = vault.runeCoin {
+                tx.coin = runeCoin
+                coinSelectionHandler?(runeCoin)
+            }
+
+            self.poolNameMap = nameMap
+            self.availablePools = poolOptions
+            self.isLoadingPools = false
+            self.loadError = nil
+
+            if tx.coin.chain != .thorChain && poolOptions.count == 1 {
+                self.selectedPool = poolOptions[0]
+            }
+        } catch {
+            self.availablePools = []
+            self.isLoadingPools = false
+            self.loadError = "failedToLoadPools".localized
+        }
+    }
 
     private func prefillPairedAddress() {
         if tx.coin.chain == .thorChain {
             pairedAddress = ""
-            pairedAddressValid = false
         } else if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
             pairedAddress = thorCoin.address
-            pairedAddressValid = true
         } else {
             pairedAddress = ""
-            pairedAddressValid = false
         }
     }
 
@@ -249,7 +225,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         let components = poolName.split(separator: ".").map { String($0).uppercased() }
         guard components.count >= 2 else {
             pairedAddress = ""
-            pairedAddressValid = false
             pairedAssetBalance = ""
             return
         }
@@ -261,20 +236,18 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             $0.isNativeToken && $0.chain.swapAsset.uppercased() == chainPrefix
         }) else {
             pairedAddress = ""
-            pairedAddressValid = false
             pairedAssetBalance = ""
             return
         }
 
         pairedAddress = chainCoin.address
-        pairedAddressValid = true
 
         if let assetCoin = vault.coins.first(where: { $0.chain == chainCoin.chain && $0.ticker.uppercased() == assetTicker }) {
             let balance = assetCoin.balanceDecimal.formatForDisplay()
-            pairedAssetBalance = String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, assetCoin.ticker.uppercased())
+            pairedAssetBalance = String(format: "balanceInParentheses".localized, balance, assetCoin.ticker.uppercased())
         } else if assetTicker == chainPrefix {
             let balance = chainCoin.balanceDecimal.formatForDisplay()
-            pairedAssetBalance = String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, chainCoin.ticker.uppercased())
+            pairedAssetBalance = String(format: "balanceInParentheses".localized, balance, chainCoin.ticker.uppercased())
         } else {
             pairedAssetBalance = "( \(assetTicker) not found in vault )"
         }
@@ -282,7 +255,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
 
     func updateSelectedPoolBalance(_ poolName: String) {
         if tx.coin.chain == .thorChain {
-            selectedPoolBalance = balance  // RUNE
+            selectedPoolBalance = balance
             return
         }
 
@@ -294,81 +267,45 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
 
         let chainPrefix = components[0]
         let assetTicker = components[1]
-
-        // Todas as moedas da mesma chain
         let chainCoins = vault.coins.filter { $0.chain.swapAsset.uppercased() == chainPrefix }
 
-        // 1. Verifica se é token nativo com o mesmo ticker
         if let native = chainCoins.first(where: { $0.isNativeToken && $0.ticker.uppercased() == assetTicker }) {
             selectedPoolBalance = formatBalance(native.balanceDecimal, ticker: native.ticker)
             return
         }
-
-        // 2. Verifica se existe token com esse ticker
         if let token = chainCoins.first(where: { $0.ticker.uppercased() == assetTicker }) {
             selectedPoolBalance = formatBalance(token.balanceDecimal, ticker: token.ticker)
             return
         }
-
-        // 3. Não encontrou
         selectedPoolBalance = "( \(assetTicker) not found in vault )"
     }
 
     func updateSelectedCoin(from poolName: String) {
         let components = poolName.split(separator: ".").map { String($0).uppercased() }
         guard components.count >= 2 else { return }
-
         let chainPrefix = components[0]
         let assetTicker = components[1]
 
-        // Match correct coin in vault (native or token)
         if let coin = vault.coins.first(where: {
             $0.chain.swapAsset.uppercased() == chainPrefix &&
             $0.ticker.uppercased() == assetTicker
         }) {
             tx.coin = coin
+            coinSelectionHandler?(coin)
         }
     }
 
     private func formatBalance(_ balance: Decimal, ticker: String) -> String {
-        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance.formatForDisplay(), ticker.uppercased())
+        String(format: "balanceInParentheses".localized, balance.formatForDisplay(), ticker.uppercased())
     }
 
-    private func setupValidation() {
-        guard isThorchainEnabled else {
-            customErrorMessage = "thorChainNotEnabledForLP".localized
-            isTheFormValid = false
-            return
-        }
-
-        customErrorMessage = nil
-
-        // Recompute amount validity when amount or selectedPool changes
-        Publishers.CombineLatest($amount, $selectedPool)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] amount, _ in
-                guard let self = self else { return }
-                let currentBalance = self.tx.coin.balanceDecimal
-                self.amountValid = amount > 0 && amount <= currentBalance
-
-                if currentBalance < amount {
-                    self.amountValid = false
-                    self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
-                } else {
-                    self.customErrorMessage = nil
-                }
-            }
-            .store(in: &cancellables)
-
-        // Global form validity
-        Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
-            .map { $0 && $1 && $2 }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    var isTheFormValid: Bool {
+        guard isThorchainEnabled else { return false }
+        let currentBalance = tx.coin.balanceDecimal
+        let amountValid = amount > 0 && amount <= currentBalance
+        let poolValid = !selectedPool.value.isEmpty
+        return amountValid && poolValid
     }
-
-    // MARK: - Memo / Dictionary
 
     private var fullPoolName: String {
         poolNameMap[selectedPool.value] ?? selectedPool.value
@@ -401,21 +338,37 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
 
     var balance: String {
         let b = tx.coin.balanceDecimal.formatForDisplay()
-        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), b, tx.coin.ticker.uppercased())
+        return String(format: "balanceInParentheses".localized, b, tx.coin.ticker.uppercased())
     }
 
-    func getView() -> AnyView {
-        AnyView(FunctionCallAddThorLPView(model: self).onAppear {
-            self.initialize()
-        })
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        _ = isFastVault
+        // Refresh amountInRaw on tx so the approve-payload below uses
+        // the current amount (legacy did this implicitly via the
+        // shared `tx.amount` write at the screen's button.onTap).
+        tx.amount = amount.formatToDecimal(digits: coin.decimals)
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: tx.toAddress.isEmpty ? "" : tx.toAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems(),
+            wasmContractPayload: .set(nil)
+        )
     }
-
 }
 
 // MARK: - Views
 
-struct FunctionCallAddThorLPView: View {
-    @ObservedObject var model: FunctionCallAddThorLP
+struct AddThorLPFormView: View {
+    @Bindable var model: FunctionCallAddThorLP
+    @Binding var selectedCoin: Coin
 
     var body: some View {
         Group {
@@ -426,6 +379,12 @@ struct FunctionCallAddThorLPView: View {
             }
         }
         .withLoading(text: "enablingThorchain".localized, isLoading: $model.isEnablingThorchain)
+        .onAppear {
+            model.coinSelectionHandler = { coin in
+                selectedCoin = coin
+            }
+            model.initialize()
+        }
     }
 
     private var formView: some View {
@@ -441,26 +400,27 @@ struct FunctionCallAddThorLPView: View {
             }
 
             StyledFloatingPointField(
-                label: {
-                    // If adding RUNE (thorChain), show RUNE balance. Otherwise show the selected pool's asset balance.
-                    if model.tx.coin.chain == .thorChain {
-                        return "\(NSLocalizedString("amount", comment: "")) \(model.balance)"
-                    } else if !model.selectedPoolBalance.isEmpty {
-                        return "\(NSLocalizedString("amount", comment: "")) \(model.selectedPoolBalance)"
-                    } else {
-                        return "\(NSLocalizedString("amount", comment: "")) \(model.balance)"
-                    }
-                }(),
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
-                value: Binding(get: { model.amount }, set: { model.amount = $0 }),
-                isValid: Binding(get: { model.amountValid }, set: { model.amountValid = $0 })
+                label: amountLabel,
+                placeholder: "enterAmount".localized,
+                value: $model.amount,
+                isValid: .constant(true)
             )
         }
+    }
+
+    private var amountLabel: String {
+        if model.tx.coin.chain == .thorChain {
+            return "\("amount".localized) \(model.balance)"
+        }
+        if !model.selectedPoolBalance.isEmpty {
+            return "\("amount".localized) \(model.selectedPoolBalance)"
+        }
+        return "\("amount".localized) \(model.balance)"
     }
 }
 
 struct EnableThorchainCTASection: View {
-    @ObservedObject var model: FunctionCallAddThorLP
+    @Bindable var model: FunctionCallAddThorLP
 
     var body: some View {
         VStack(spacing: 16) {
@@ -486,7 +446,7 @@ struct EnableThorchainCTASection: View {
 }
 
 struct PoolSelectorSection: View {
-    @ObservedObject var model: FunctionCallAddThorLP
+    @Bindable var model: FunctionCallAddThorLP
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -502,9 +462,9 @@ struct PoolSelectorSection: View {
 
     private var loadingView: some View {
         HStack(spacing: 12) {
-            Text(NSLocalizedString("loadingPools", comment: ""))
+            Text("loadingPools".localized)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Spacer()
 
@@ -523,11 +483,11 @@ struct PoolSelectorSection: View {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(.orange)
+                    .foregroundStyle(.orange)
 
-                Text(model.loadError ?? NSLocalizedString("noPoolsAvailable", comment: ""))
+                Text(model.loadError ?? "noPoolsAvailable".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(2)
 
                 Spacer()
@@ -537,9 +497,9 @@ struct PoolSelectorSection: View {
                     model.isLoadingPools = true
                     model.loadPools()
                 } label: {
-                    Text(NSLocalizedString("retry", comment: ""))
+                    Text("retry".localized)
                         .font(.caption)
-                        .foregroundColor(Theme.colors.primaryAccent1)
+                        .foregroundStyle(Theme.colors.primaryAccent1)
                 }
             }
             .frame(minHeight: 48)
@@ -553,12 +513,11 @@ struct PoolSelectorSection: View {
     private var dropdownView: some View {
         GenericSelectorDropDown(
             items: .constant(model.availablePools),
-            selected: Binding(get: { model.selectedPool }, set: { model.selectedPool = $0 }),
+            selected: $model.selectedPool,
             mandatoryMessage: "*",
-            descriptionProvider: { $0.value.isEmpty ? NSLocalizedString("selectPool", comment: "") : $0.value },
+            descriptionProvider: { $0.value.isEmpty ? "selectPool".localized : $0.value },
             onSelect: { pool in
                 model.selectedPool = pool
-                model.poolValid = !pool.value.isEmpty
 
                 if !pool.value.isEmpty {
                     if model.tx.coin.chain == .thorChain {
@@ -569,7 +528,6 @@ struct PoolSelectorSection: View {
                     }
                 }
             }
-
         )
     }
 }
@@ -577,21 +535,21 @@ struct PoolSelectorSection: View {
 struct ApprovalInfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("erc20ApprovalRequired", comment: ""))
+            Text("erc20ApprovalRequired".localized)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
-            Text(NSLocalizedString("approvalRequiredMessageLP", comment: ""))
+            Text("approvalRequiredMessageLP".localized)
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("approvalTransaction", comment: ""))
+                Text("approvalTransaction".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.primaryAccent1)
-                Text(NSLocalizedString("addLiquidityTransaction", comment: ""))
+                    .foregroundStyle(Theme.colors.primaryAccent1)
+                Text("addLiquidityTransaction".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.primaryAccent1)
+                    .foregroundStyle(Theme.colors.primaryAccent1)
             }
             .padding(.leading, 16)
         }

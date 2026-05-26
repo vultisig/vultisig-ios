@@ -2,50 +2,73 @@
 //  FunctionCallWithdrawSecuredAsset.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 19/09/25.
+//  SECURE+ withdraw sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — drops `FunctionCallAddressable` and
+//  `getView() -> AnyView`. Holds an internal `tx: FunctionCallForm`
+//  scratchpad for the L1-chain-driven destination address + outbound
+//  fee plumbing. Cross-mutator: the secured-asset picker writes the
+//  screen-owned `selectedCoin` so the new asset's balance + chain
+//  inform gas refresh.
 //
 
-import SwiftUI
-import Foundation
+import BigInt
 import Combine
+import Foundation
 import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-withdraw-secured-asset")
 
-// MARK: - Main ViewModel
+@Observable
+@MainActor
+final class FunctionCallWithdrawSecuredAsset {
 
-class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObject {
+    static let initialItemForDropdownText: String = "selectSecuredAssetToWithdraw".localized
 
-    static let INITIAL_ITEM_FOR_DROPDOWN_TEXT: String = NSLocalizedString("selectSecuredAssetToWithdraw", comment: "")
+    var amount: Decimal = 0.0
+    var destinationAddress: String = ""
+    var selectedSecuredAsset: IdentifiableString
 
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
-    @Published var amount: Decimal = 0.0
-    @Published var destinationAddress: String = ""
-    @Published var selectedSecuredAsset: IdentifiableString = .init(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))
+    var availableSecuredAssets: [IdentifiableString] = []
+    var isLoadingAssets: Bool = true
+    var loadError: String?
+    var selectedSecuredAssetCoin: Coin?
+    var minimumWithdrawAmount: Decimal = 0
+    var customErrorMessage: String?
 
-    @Published var amountValid: Bool = false
-    @Published var destinationAddressValid: Bool = false
-    @Published var securedAssetValid: Bool = false
+    /// Internal scratchpad — see `FunctionCallAddThorLP`.
+    let tx: FunctionCallForm
 
-    @Published var availableSecuredAssets: [IdentifiableString] = []
-    @Published var isLoadingAssets: Bool = true
-    @Published var loadError: String? = nil
-    @Published var selectedSecuredAssetCoin: Coin? = nil  // Track the actual secured asset coin
-    @Published var minimumWithdrawAmount: Decimal = 0
-
-    /// Maps a dropdown item's id to the underlying secured asset coin in the vault.
-    private var securedAssetLookup: [UUID: Coin] = [:]
-    /// Set by `updateDestinationAddress` when the vault lacks the L1 native
-    /// coin; read by `updateErrorMessage` so destination issues take priority
-    /// over amount/fee complaints.
-    private var destinationError: String?
-
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var securedAssetLookup: [UUID: Coin] = [:]
+    @ObservationIgnored private var destinationError: String?
+    @ObservationIgnored private let vault: Vault
+    @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
+    @ObservationIgnored var coinSelectionHandler: ((Coin) -> Void)?
 
     private static let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
 
-    // MARK: - Coin helpers
+    init(tx: FunctionCallForm, vault: Vault) {
+        self.tx = tx
+        self.vault = vault
+        self.selectedSecuredAsset = .init(value: "selectSecuredAssetToWithdraw".localized)
+    }
+
+    deinit {
+        loadingTasks.forEach { $0.cancel() }
+    }
+
+    func initialize() {
+        prefillAddresses()
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.loadAvailableSecuredAssets()
+        }
+        loadingTasks.append(task)
+    }
+
+    private func prefillAddresses() {
+        destinationAddress = tx.coin.address
+    }
 
     private func nativeCoin(for chain: Chain) -> Coin? {
         vault.coins.first { $0.chain == chain && $0.isNativeToken }
@@ -55,8 +78,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         vault.coins.first { Self.thorChains.contains($0.chain) && $0.isNativeToken }
     }
 
-    /// Short symbol (e.g. "USDC") — `securedAssetSymbol` keeps the trailing
-    /// contract suffix for signing, which isn't what we want for labels.
     private func shortSymbol(for coin: Coin) -> String {
         THORChainHelper.securedAssetSymbol(coin: coin)
             .split(separator: "-")
@@ -64,46 +85,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             .map(String.init) ?? coin.ticker.uppercased()
     }
 
-    // Domain models
-    var tx: FunctionCallForm
-    private var vault: Vault
-
-    var addressFields: [String: String] {
-        get {
-            ["destinationAddress": destinationAddress]
-        }
-        set {
-            if let v = newValue["destinationAddress"] {
-                destinationAddress = v
-            }
-        }
-    }
-
-    required init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
-        self.vault = vault
-
-        // For withdraw, tx.coin will be set to the selected secured asset
-        // when user selects from dropdown. Don't set it to RUNE here.
-    }
-
-    func initialize() {
-        setupValidation()
-        prefillAddresses()
-        Task { @MainActor in
-            await loadAvailableSecuredAssets()
-        }
-    }
-
-    private func prefillAddresses() {
-        // For withdraw, prefill with the original coin's address as destination
-        destinationAddress = tx.coin.address
-        destinationAddressValid = !destinationAddress.isEmpty
-    }
-
-    // MARK: - Load Available Secured Assets
-
-    @MainActor
     func loadAvailableSecuredAssets() async {
         isLoadingAssets = true
         loadError = nil
@@ -112,46 +93,32 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             applyPicker(securedAssets: assets)
         } catch {
             logger.error("Failed to fetch THORChain balances: \(error.localizedDescription)")
-            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
+            setPickerEmpty(reason: "noSecuredAssets".localized)
         }
     }
 
-    /// Pulls live cosmos-bank balances from the user's THOR address, persists
-    /// any secured-asset denoms that aren't yet in the vault, and returns the
-    /// set of coins with a non-zero balance sorted for display.
-    ///
-    /// Secured-asset balances live as cosmos-bank denoms and aren't present in
-    /// `vault.coins` until explicitly enabled, so fetching from the network
-    /// ensures USDC / USDT / WBTC etc. show up on first use. `addIfNeeded`
-    /// skips the spam/hidden filters that `addDiscoveredTokens` would apply.
-    @MainActor
     private func fetchSecuredAssetCoins() async throws -> [Coin] {
         guard let thorNative else { return [] }
-
         let service = ThorchainServiceFactory.getService(for: thorNative.chain)
         let balances = try await service.fetchBalances(thorNative.address)
 
         var persisted: [Coin] = []
         for balance in balances where Self.isSecuredDenom(balance.denom) {
-            guard let coin = try persistSecuredAsset(balance: balance, chain: thorNative.chain) else {
-                continue
-            }
+            guard let coin = try persistSecuredAsset(balance: balance, chain: thorNative.chain) else { continue }
             coin.rawBalance = balance.amount
             persisted.append(coin)
         }
-
         return persisted
             .filter { $0.balanceDecimal > 0 }
             .sorted { displayName(for: $0) < displayName(for: $1) }
     }
 
-    @MainActor
     private func applyPicker(securedAssets: [Coin]) {
         guard !securedAssets.isEmpty else {
-            setPickerEmpty(reason: NSLocalizedString("noSecuredAssets", comment: ""))
+            setPickerEmpty(reason: "noSecuredAssets".localized)
             return
         }
-        var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+        var assetList = [IdentifiableString(value: "selectSecuredAssetToWithdraw".localized)]
         var lookup: [UUID: Coin] = [:]
         for coin in securedAssets {
             let item = IdentifiableString(value: displayName(for: coin))
@@ -171,7 +138,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         return lower.contains("-")
     }
 
-    @MainActor
     private func persistSecuredAsset(balance: CosmosBalance, chain: Chain) throws -> Coin? {
         let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
         let ticker = info.ticker.uppercased()
@@ -191,106 +157,76 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     private func setPickerEmpty(reason: String) {
-        availableSecuredAssets = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
+        availableSecuredAssets = [IdentifiableString(value: "selectSecuredAssetToWithdraw".localized)]
         securedAssetLookup = [:]
         loadError = reason
         isLoadingAssets = false
     }
 
-    /// Human-readable label for a secured asset (e.g. "ETH.USDC", "BTC.BTC").
     private func displayName(for coin: Coin) -> String {
         "\(THORChainHelper.securedAssetChain(coin: coin)).\(shortSymbol(for: coin))"
     }
 
-    // MARK: - Asset Selection
-
     func selectSecuredAsset(_ asset: IdentifiableString) {
         selectedSecuredAsset = asset
 
-        // Check if it's the placeholder option
-        if asset.value == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
-            securedAssetValid = false
+        if asset.value == Self.initialItemForDropdownText {
             destinationAddress = ""
-            destinationAddressValid = false
             selectedSecuredAssetCoin = nil
             return
         }
 
-        // Resolve the underlying secured asset coin via the stable id mapping so
-        // tokens that share a symbol across chains (e.g. USDC on ETH vs AVAX) stay
-        // addressable independently.
         guard let securedAssetCoin = securedAssetLookup[asset.id] else {
-            securedAssetValid = false
             selectedSecuredAssetCoin = nil
             return
         }
 
-        securedAssetValid = true
-
-        // Update the tx.coin to the selected secured asset for balance validation
         updateTxCoin(for: securedAssetCoin)
-
-        // Update destination address based on the L1 chain encoded in the denom
         updateDestinationAddress(for: securedAssetCoin)
 
-        Task { @MainActor in
-            await refreshOutboundFeeThreshold(for: securedAssetCoin)
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.refreshOutboundFeeThreshold(for: securedAssetCoin)
         }
+        loadingTasks.append(task)
     }
 
-    /// Queries the L1 chain's outbound_fee from THORChain's inbound_addresses and
-    /// converts it into the selected secured asset's units so we can reject
-    /// amounts THORChain would refuse with "not enough asset to pay for fees".
-    @MainActor
     private func refreshOutboundFeeThreshold(for securedAssetCoin: Coin) async {
         minimumWithdrawAmount = 0
 
         let l1ChainCode = THORChainHelper.securedAssetChain(coin: securedAssetCoin)
         guard let l1Chain = chain(forSwapAsset: l1ChainCode),
-              let native = nativeCoin(for: l1Chain) else {
-            return
-        }
+              let native = nativeCoin(for: l1Chain) else { return }
 
         let inboundChainName = ThorchainService.getInboundChainName(for: l1Chain)
         let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == inboundChainName.uppercased() }),
               let feeRaw = inbound.outbound_fee,
-              let feeBaseUnits = Decimal(string: feeRaw) else {
-            return
-        }
+              let feeBaseUnits = Decimal(string: feeRaw) else { return }
 
-        // outbound_fee is denominated in the L1 native asset at 8 decimals across
-        // all THORChain-supported chains.
         let feeNativeAmount = feeBaseUnits / pow(10, 8)
         let feeFiat = RateProvider.shared.fiatBalance(value: feeNativeAmount, coin: native)
         let unitFiat = RateProvider.shared.fiatBalance(value: 1, coin: securedAssetCoin)
 
-        guard feeFiat > 0, unitFiat > 0 else {
-            return
-        }
+        guard feeFiat > 0, unitFiat > 0 else { return }
 
-        // Small buffer so a price tick between check and broadcast doesn't flip
-        // the tx from accepted to "not enough asset to pay for fees".
         let buffer: Decimal = 1.2
         minimumWithdrawAmount = (feeFiat * buffer) / unitFiat
-        validateAmount()
+        updateErrorMessage()
     }
 
     private func updateDestinationAddress(for securedAssetCoin: Coin) {
-        // The L1 chain is encoded in the secured asset's denom (e.g. "eth-usdc-0x...").
         let l1Chain = THORChainHelper.securedAssetChain(coin: securedAssetCoin)
         let targetChain = chain(forSwapAsset: l1Chain)
 
         if let targetChain, let coin = nativeCoin(for: targetChain) {
             destinationAddress = coin.address
-            destinationAddressValid = true
             destinationError = nil
         } else {
             destinationAddress = ""
-            destinationAddressValid = false
             let chainName = targetChain?.name ?? l1Chain
             destinationError = String(
-                format: NSLocalizedString("withdrawSecuredAssetError", comment: ""),
+                format: "withdrawSecuredAssetError".localized,
                 shortSymbol(for: securedAssetCoin),
                 l1Chain,
                 chainName
@@ -299,80 +235,56 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         updateErrorMessage()
     }
 
-    /// Maps a THORChain swap-asset chain code (e.g. "ETH", "AVAX") to the local `Chain` enum.
     private func chain(forSwapAsset swapAsset: String) -> Chain? {
         Chain.allCases.first { $0.swapAsset.uppercased() == swapAsset.uppercased() }
     }
 
     private func updateTxCoin(for securedAssetCoin: Coin) {
         selectedSecuredAssetCoin = securedAssetCoin
-
-        // Ensure isNativeToken is false for secured assets so getTicker() routes
-        // through getNotNativeTicker() which handles secured assets correctly.
         securedAssetCoin.isNativeToken = false
-
         tx.coin = securedAssetCoin
+        coinSelectionHandler?(securedAssetCoin)
     }
 
-    private func setupValidation() {
-        $amount
-            .removeDuplicates()
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.validateAmount()
-            }
-            .store(in: &cancellables)
-
-        $destinationAddress
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] address in
-                self?.destinationAddressValid = !address.isEmpty && address.count > 10
-            }
-            .store(in: &cancellables)
-
-        Publishers.CombineLatest3($amountValid, $destinationAddressValid, $securedAssetValid)
-            .map { amountValid, destinationAddressValid, securedAssetValid in
-                return amountValid && destinationAddressValid && securedAssetValid
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-    }
-
-    private func validateAmount() {
-        amountValid = computeAmountValid()
-        updateErrorMessage()
-    }
-
-    private func computeAmountValid() -> Bool {
+    var isAmountValid: Bool {
         guard amount > 0, let secured = selectedSecuredAssetCoin else { return false }
         guard amount <= secured.balanceDecimal else { return false }
         if minimumWithdrawAmount > 0, amount < minimumWithdrawAmount { return false }
         return true
     }
 
-    /// Destination errors take priority over amount/fee errors — matches the
-    /// original behavior that suppressed amount messages while destination was
-    /// broken, but without scattering `customErrorMessage` writes across three
-    /// methods.
+    var isSecuredAssetValid: Bool {
+        selectedSecuredAsset.value != Self.initialItemForDropdownText && selectedSecuredAssetCoin != nil
+    }
+
+    var isDestinationAddressValid: Bool {
+        !destinationAddress.isEmpty && destinationAddress.count > 10
+    }
+
+    var isTheFormValid: Bool {
+        isAmountValid && isDestinationAddressValid && isSecuredAssetValid
+    }
+
+    func validateAmount() {
+        updateErrorMessage()
+    }
+
     private func updateErrorMessage() {
         customErrorMessage = destinationError ?? amountErrorMessage()
     }
 
     private func amountErrorMessage() -> String? {
-        guard destinationAddressValid else { return nil }
-        guard amount > 0 else {
-            return NSLocalizedString("enterValidAmount", comment: "")
-        }
+        guard isDestinationAddressValid else { return nil }
+        guard amount > 0 else { return "enterValidAmount".localized }
         guard let secured = selectedSecuredAssetCoin else {
-            return NSLocalizedString("selectSecuredAssetToSeeBalance", comment: "")
+            return "selectSecuredAssetToSeeBalance".localized
         }
         if amount > secured.balanceDecimal {
-            return NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+            return "insufficientBalanceForFunctions".localized
         }
         if minimumWithdrawAmount > 0, amount < minimumWithdrawAmount {
             return String(
-                format: NSLocalizedString("withdrawBelowOutboundFee", comment: ""),
+                format: "withdrawBelowOutboundFee".localized,
                 minimumWithdrawAmount.formatForDisplay(),
                 secured.ticker.uppercased()
             )
@@ -381,25 +293,22 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return "SECURE-:\(destinationAddress)"
+        "SECURE-:\(destinationAddress)"
     }
 
     var balance: String {
-        if selectedSecuredAsset.value.isEmpty || selectedSecuredAsset.value == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
-            return NSLocalizedString("selectAssetToSeeBalance", comment: "")
+        if selectedSecuredAsset.value.isEmpty || selectedSecuredAsset.value == Self.initialItemForDropdownText {
+            return "selectAssetToSeeBalance".localized
         }
-
-        // Use the selectedSecuredAssetCoin which contains the actual secured asset
         if let securedAsset = selectedSecuredAssetCoin {
             let b = securedAsset.balanceDecimal.formatForDisplay()
-            return String(format: NSLocalizedString("balanceInParentheses", comment: ""), b, selectedSecuredAsset.value)
-        } else {
-            return String(format: NSLocalizedString("balanceInParentheses", comment: ""), "0", selectedSecuredAsset.value)
+            return String(format: "balanceInParentheses".localized, b, selectedSecuredAsset.value)
         }
+        return String(format: "balanceInParentheses".localized, "0", selectedSecuredAsset.value)
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -410,31 +319,58 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(FunctionCallWithdrawSecuredAssetView(model: self).onAppear {
-            self.initialize()
-        })
+    func getAssetTicker() -> String {
+        selectedSecuredAsset.value.isEmpty ? Self.initialItemForDropdownText : selectedSecuredAsset.value
+    }
+
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        _ = isFastVault
+        tx.amount = amount.formatToDecimal(digits: coin.decimals)
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            // Withdraw is done via MsgDeposit on THORChain — toAddress
+            // intentionally empty (matches `FunctionCallInstance.toAddress`
+            // returning nil for `.withdrawSecuredAsset`).
+            toAddress: "",
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems(),
+            wasmContractPayload: .set(nil)
+        )
     }
 }
 
-// MARK: - SwiftUI Views
+// MARK: - Views
 
-struct FunctionCallWithdrawSecuredAssetView: View {
-    @ObservedObject var model: FunctionCallWithdrawSecuredAsset
+struct WithdrawSecuredAssetFormView: View {
+    @Bindable var model: FunctionCallWithdrawSecuredAsset
+    @Binding var selectedCoin: Coin
 
     var body: some View {
         VStack(spacing: 16) {
             SecuredAssetSelectorSection(model: model)
 
-            if model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
+            if model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.initialItemForDropdownText {
                 AmountInputSection(model: model)
             }
+        }
+        .onAppear {
+            model.coinSelectionHandler = { coin in
+                selectedCoin = coin
+            }
+            model.initialize()
         }
     }
 }
 
 struct SecuredAssetSelectorSection: View {
-    @ObservedObject var model: FunctionCallWithdrawSecuredAsset
+    @Bindable var model: FunctionCallWithdrawSecuredAsset
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -445,12 +381,11 @@ struct SecuredAssetSelectorSection: View {
             } else {
                 dropdownView
 
-                // Show error if coin for selected asset is not in vault
                 if let errorMessage = model.customErrorMessage,
-                   model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
+                   model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.initialItemForDropdownText {
                     Text(errorMessage)
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                         .padding(.top, 4)
                 }
             }
@@ -459,9 +394,9 @@ struct SecuredAssetSelectorSection: View {
 
     private var loadingView: some View {
         HStack(spacing: 12) {
-            Text(NSLocalizedString("loadingSecuredAssets", comment: ""))
+            Text("loadingSecuredAssets".localized)
                 .font(.body)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             Spacer()
 
@@ -480,11 +415,11 @@ struct SecuredAssetSelectorSection: View {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(.body)
-                    .foregroundColor(.orange)
+                    .foregroundStyle(.orange)
 
-                Text(model.loadError ?? NSLocalizedString("noSecuredAssetsAvailable", comment: ""))
+                Text(model.loadError ?? "noSecuredAssetsAvailable".localized)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .lineLimit(2)
 
                 Spacer()
@@ -492,9 +427,9 @@ struct SecuredAssetSelectorSection: View {
                 Button {
                     Task { await model.loadAvailableSecuredAssets() }
                 } label: {
-                    Text(NSLocalizedString("retry", comment: ""))
+                    Text("retry".localized)
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
             }
             .frame(minHeight: 48)
@@ -508,10 +443,7 @@ struct SecuredAssetSelectorSection: View {
     private var dropdownView: some View {
         GenericSelectorDropDown(
             items: .constant(model.availableSecuredAssets),
-            selected: Binding(
-                get: { model.selectedSecuredAsset },
-                set: { model.selectedSecuredAsset = $0 }
-            ),
+            selected: $model.selectedSecuredAsset,
             mandatoryMessage: "*",
             descriptionProvider: { $0.value },
             onSelect: { asset in
@@ -522,38 +454,29 @@ struct SecuredAssetSelectorSection: View {
 }
 
 struct AmountInputSection: View {
-    @ObservedObject var model: FunctionCallWithdrawSecuredAsset
+    @Bindable var model: FunctionCallWithdrawSecuredAsset
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             StyledFloatingPointField(
-                label: NSLocalizedString("amountToWithdraw", comment: ""),
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
-                value: Binding(
-                    get: { model.amount },
-                    set: { model.amount = $0 }
-                ),
-                isValid: Binding(
-                    get: { model.amountValid },
-                    set: { model.amountValid = $0 }
-                )
+                label: "amountToWithdraw".localized,
+                placeholder: "enterAmount".localized,
+                value: $model.amount,
+                isValid: .constant(true)
             )
+            .onChange(of: model.amount) {
+                model.validateAmount()
+            }
 
             Text(model.balance)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
             if let errorMessage = model.customErrorMessage {
                 Text(errorMessage)
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
             }
         }
-    }
-}
-
-extension FunctionCallWithdrawSecuredAsset {
-    func getAssetTicker() -> String {
-        return selectedSecuredAsset.value.isEmpty ? Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT : selectedSecuredAsset.value
     }
 }

@@ -270,18 +270,15 @@ enum FunctionCallInstance {
     }
 
     /// Build the immutable `SendTransaction` for the active sub-model.
-    /// PR2 wires the 12 migrated sub-models through their typed
-    /// `toSendTransaction(coin:vault:gas:isFastVault:)` methods. The 3
-    /// heavy sub-models still rely on the legacy `tx`-mutation path
-    /// driven by the caller (`FunctionCallDetailsScreen.button`) and
-    /// return `nil` here so the screen can fall through to it.
+    /// After PR3 (C-2e), every case dispatches through its typed
+    /// `toSendTransaction(coin:vault:gas:isFastVault:)` method.
     @MainActor
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
         gas: BigInt,
         isFastVault: Bool
-    ) -> SendTransaction? {
+    ) -> SendTransaction {
         switch self {
         case .rebond(let memo):
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
@@ -307,8 +304,12 @@ enum FunctionCallInstance {
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
         case .theSwitch(let memo):
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
-        case .addThorLP, .securedAsset, .withdrawSecuredAsset:
-            return nil
+        case .addThorLP(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .securedAsset(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+        case .withdrawSecuredAsset(let memo):
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
         }
     }
 }

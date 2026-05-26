@@ -4,10 +4,8 @@
 //
 //  Dispatch surface for `FunctionCallInstance` sub-models. Switches
 //  exhaustively over the enum to render the concrete per-sub-model
-//  `XxxFormView`. The 12 PR2-migrated sub-models bind to their typed
-//  `@Bindable` form views; the 3 heavy sub-models (AddThorLP,
-//  SecuredAsset, WithdrawSecuredAsset) still go through the legacy
-//  `AnyView` dispatch until PR3 migrates them.
+//  `XxxFormView`. After PR3 (C-2e), every sub-model has a typed form
+//  view — no more `AnyView` fallback.
 //
 
 import SwiftUI
@@ -43,14 +41,11 @@ struct FunctionCallContentView: View {
         case .theSwitch(let model):
             CosmosSwitchFormView(model: model, coin: selectedCoin)
         case .addThorLP(let model):
-            // PR3 (C-2e) migrates this sub-model. Until then, fall back
-            // to the legacy `AnyView` body so the LP add flow keeps
-            // working without the data-side rewrite landing.
-            model.getView()
+            AddThorLPFormView(model: model, selectedCoin: $selectedCoin)
         case .securedAsset(let model):
-            model.getView()
+            SecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         case .withdrawSecuredAsset(let model):
-            model.getView()
+            WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }
     }
 }

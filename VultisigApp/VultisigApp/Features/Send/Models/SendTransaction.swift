@@ -474,60 +474,6 @@ extension SendTransaction {
     }
 }
 
-// MARK: - FunctionCallForm boundary converter
-
-extension SendTransaction {
-    enum FormConversionError: Error, LocalizedError {
-        case missingVault
-
-        var errorDescription: String? {
-            switch self {
-            case .missingVault:
-                return "Cannot convert FunctionCallForm: vault unavailable. Either set tx.vault before converting, or pass a vault explicitly via fromForm(_:vault:)."
-            }
-        }
-    }
-
-    /// Converts a `FunctionCallForm` (the FunctionCall/Referral mutable
-    /// form-state class) into the immutable `SendTransaction` struct at the
-    /// navigation boundary. Resolves the vault via `tx.vault ??
-    /// AppViewModel.shared.selectedVault`. Throws if neither is available —
-    /// non-optional vault is decision 2 of the Send pilot.
-    static func fromForm(_ tx: FunctionCallForm) throws -> SendTransaction {
-        guard let vault = tx.txVault else {
-            throw FormConversionError.missingVault
-        }
-        return fromForm(tx, vault: vault)
-    }
-
-    /// Same as `fromForm(_:)` but with the vault supplied explicitly — use
-    /// this from contexts where the vault is already in hand (e.g., screens
-    /// that received it as a route param).
-    static func fromForm(_ tx: FunctionCallForm, vault: Vault) -> SendTransaction {
-        SendTransaction(
-            coin: tx.coin,
-            vault: vault,
-            fromAddress: tx.fromAddress,
-            toAddress: tx.toAddress,
-            toAddressLabel: tx.toAddressLabel,
-            amount: tx.amount,
-            amountInFiat: tx.amountInFiat,
-            memo: tx.memo,
-            gas: tx.gas,
-            fee: tx.fee,
-            feeMode: tx.feeMode,
-            estimatedGasLimit: tx.estematedGasLimit,
-            customGasLimit: tx.customGasLimit,
-            customByteFee: tx.customByteFee,
-            sendMaxAmount: tx.sendMaxAmount,
-            isStakingOperation: tx.isStakingOperation,
-            transactionType: tx.transactionType,
-            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
-            wasmContractPayload: tx.wasmContractPayload,
-            feeCoin: resolveFeeCoin(coin: tx.coin, vault: vault)
-        )
-    }
-}
 
 // MARK: - Convenience computed (delegates to SendCryptoLogic)
 
