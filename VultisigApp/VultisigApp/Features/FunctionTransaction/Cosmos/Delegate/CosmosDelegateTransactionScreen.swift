@@ -25,7 +25,7 @@ struct CosmosDelegateTransactionScreen: View {
         self.onVerify = onVerify
     }
 
-    @State private var focusedFieldBinding: FocusedField? = .none
+    @State private var focusedFieldBinding: FocusedField? = .amount
     @FocusState private var focusedField: FocusedField?
     @State private var percentageSelected: Double?
     @State private var showValidatorPicker: Bool = false
@@ -36,22 +36,6 @@ struct CosmosDelegateTransactionScreen: View {
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
-            FormExpandableSection(
-                title: "cosmosStakingValidatorPicker".localized,
-                isValid: viewModel.selectedValidator != nil,
-                value: viewModel.selectedValidator?.moniker ?? "",
-                showValue: viewModel.selectedValidator != nil,
-                focusedField: $focusedFieldBinding,
-                focusedFieldEquals: .validator
-            ) {
-                focusedFieldBinding = $0 ? .validator : .amount
-                if $0 {
-                    showValidatorPicker = true
-                }
-            } content: {
-                validatorButton
-            }
-
             FormExpandableSection(
                 title: viewModel.amountField.label ?? .empty,
                 isValid: viewModel.amountField.valid,
@@ -77,6 +61,22 @@ struct CosmosDelegateTransactionScreen: View {
                     gasReservationInfo
                 }
             }
+
+            FormExpandableSection(
+                title: "cosmosStakingValidatorPicker".localized,
+                isValid: viewModel.selectedValidator != nil,
+                value: viewModel.selectedValidator?.moniker ?? "",
+                showValue: viewModel.selectedValidator != nil,
+                focusedField: $focusedFieldBinding,
+                focusedFieldEquals: .validator
+            ) {
+                focusedFieldBinding = $0 ? .validator : .amount
+                if $0 {
+                    showValidatorPicker = true
+                }
+            } content: {
+                validatorButton
+            }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
             ValidatorSelectionScreen(
@@ -90,9 +90,6 @@ struct CosmosDelegateTransactionScreen: View {
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
-        }
-        .onChange(of: viewModel.selectedValidator) { _, _ in
-            focusedFieldBinding = .amount
         }
         .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
