@@ -89,10 +89,9 @@ final class DefiChainMainViewModel: ObservableObject {
             [.bond, .stake, .liquidityPool]
         case .terra, .terraClassic:
             // Stake-only segment for Cosmos-SDK staking on LUNA / LUNC.
-            // The polished position-card UI (Figma 75718:98399 populated /
-            // 75718:98358 empty) lands in a follow-up PR; today the stake
-            // segment renders a delegate-CTA stub via `DefiChainStakedView`'s
-            // empty-state fallback.
+            // Terra/LUNC stake routes to `CosmosStakeDefiView` (see
+            // `DefiChainMainScreen.cosmosStakeView`); the polished
+            // position-card UI lands in a follow-up.
             [.stake]
         default:
             []

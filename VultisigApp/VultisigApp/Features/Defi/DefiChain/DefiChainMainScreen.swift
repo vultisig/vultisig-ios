@@ -12,11 +12,11 @@ struct DefiChainMainScreen: View {
     @ObservedObject var vault: Vault
     let chain: Chain
 
-    @StateObject var viewModel: DefiChainMainViewModel
-    @StateObject var bondViewModel: DefiChainBondViewModel
-    @StateObject var lpsViewModel: DefiChainLPsViewModel
-    @StateObject var stakeViewModel: DefiChainStakeViewModel
-    @StateObject var cosmosStakeViewModel: CosmosStakeDefiViewModel
+    @StateObject private var viewModel: DefiChainMainViewModel
+    @StateObject private var bondViewModel: DefiChainBondViewModel
+    @StateObject private var lpsViewModel: DefiChainLPsViewModel
+    @StateObject private var stakeViewModel: DefiChainStakeViewModel
+    @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?

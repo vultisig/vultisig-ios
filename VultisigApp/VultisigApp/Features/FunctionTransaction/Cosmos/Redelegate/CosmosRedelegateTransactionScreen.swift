@@ -16,8 +16,16 @@ struct CosmosRedelegateTransactionScreen: View {
         case destination, amount
     }
 
-    @StateObject var viewModel: CosmosRedelegateTransactionViewModel
-    var onVerify: (TransactionBuilder) -> Void
+    @StateObject private var viewModel: CosmosRedelegateTransactionViewModel
+    let onVerify: (TransactionBuilder) -> Void
+
+    init(
+        viewModel: CosmosRedelegateTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
 
     @State private var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
