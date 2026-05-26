@@ -14,9 +14,6 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
-    /// Used by extensions that have already been migrated to HTTPClient
-    /// (ThorchainBroadcastTransactionService, ThorchainService+Yield+Prices).
-    /// The main-class URLSession call sites will migrate in follow-up sub-issues.
     let httpClient: HTTPClientProtocol = HTTPClient()
 
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()

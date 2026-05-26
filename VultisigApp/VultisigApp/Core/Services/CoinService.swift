@@ -511,6 +511,7 @@ struct CoinService {
             request.httpMethod = "HEAD"
             request.timeoutInterval = 5.0 // 5 second timeout
 
+            // swiftlint:disable:next no_raw_urlsession
             let (_, response) = try await URLSession.shared.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -525,6 +526,7 @@ struct CoinService {
                 getRequest.setValue("bytes=0-1023", forHTTPHeaderField: "Range") // Only request first 1KB
                 getRequest.timeoutInterval = 5.0
 
+                // swiftlint:disable:next no_raw_urlsession
                 let (_, getResponse) = try await URLSession.shared.data(for: getRequest)
                 guard let httpGetResponse = getResponse as? HTTPURLResponse else {
                     return true

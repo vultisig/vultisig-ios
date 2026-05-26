@@ -507,7 +507,7 @@ struct SwapCryptoDoneView: View {
     }
 }
 //
-//#Preview {
+// #Preview {
 //    Screen {
 //        SwapCryptoDoneView(
 //            transaction: SwapTransaction.example,
@@ -522,4 +522,4 @@ struct SwapCryptoDoneView: View {
 //        .environmentObject(AppViewModel())
 //    }
 //    .screenBackground(.gradient)
-//}
+// }
