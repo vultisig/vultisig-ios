@@ -1,22 +1,19 @@
 //
-//  CosmosDelegateTransactionBuilder.swift
+//  CosmosUndelegateTransactionBuilder.swift
 //  VultisigApp
 //
-//  Per-flow builder for LUNA / LUNC `MsgDelegate`. The builder is a pure
-//  value-type carrier; SignDoc bytes are produced lazily by
-//  `CosmosStakingSignDataResolver.resolve(...)` at Verify → KeysignPayload
-//  bridge time so the chain-specific account/sequence are always fresh.
-//
-//  Mirrors the shape of `BondMayaTransactionBuilder` — `memo = ""` (cosmos
-//  staking msgs carry no memo), `transactionType = .unspecified`, real
-//  payload travels via the `cosmosStakingPayload` accessor.
+//  Per-flow builder for LUNA / LUNC `MsgUndelegate`. Identical shape to the
+//  delegate builder — only the `cosmosStakingPayload.opType` distinguishes
+//  the two at SignDoc-encoding time. The cosmos x/staking unbonding period
+//  on both Terra chains is 21 days; the UI surfaces a "Unbonds %@" lock
+//  notice on the Verify screen via the staking payload.
 //
 
 import BigInt
 import Foundation
 import VultisigCommonData
 
-struct CosmosDelegateTransactionBuilder: TransactionBuilder {
+struct CosmosUndelegateTransactionBuilder: TransactionBuilder {
     let coin: Coin
     let amount: String
     let sendMaxAmount: Bool
@@ -30,9 +27,6 @@ struct CosmosDelegateTransactionBuilder: TransactionBuilder {
 
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
-    /// `toAddress` doubles as the verify-screen "destination" — for delegate
-    /// flows the operator (`terravaloper1…`) is what the user is sending
-    /// stake to.
     var toAddress: String { validatorAddress }
 
     var cosmosStakingPayload: CosmosStakingPayload? {
@@ -41,7 +35,7 @@ struct CosmosDelegateTransactionBuilder: TransactionBuilder {
             amount: amount,
             decimals: coin.decimals
         )
-        return CosmosStakingPayload.delegate(
+        return CosmosStakingPayload.undelegate(
             validator: validatorAddress,
             denom: denom,
             amount: baseAmount
