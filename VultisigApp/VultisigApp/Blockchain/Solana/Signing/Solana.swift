@@ -252,39 +252,22 @@ enum SolanaHelper {
 
     // MARK: - Raw Transaction Signing
 
+    // For dApp-supplied raw transactions we sign the message bytes directly
+    // instead of routing through SolanaSigningInput.rawMessage +
+    // TransactionCompiler. The round-trip through WalletCore's proto re-encoder
+    // is sensitive to WalletCore version differences between platforms — even
+    // a one-byte drift in the re-encoded message produces a different pre-image
+    // hash, which breaks Secure Vault co-signing (other party computes a
+    // different hash, the setup-message equality check throws, no TSS messages
+    // are ever emitted). For Solana, ed25519 signs the wire-format message
+    // verbatim, so extracting it directly is canonical and cross-platform safe.
+
     static func getPreSignedImageHashForRaw(base64Transaction: String) throws -> [String] {
         guard let txData = Data(base64Encoded: base64Transaction) else {
             throw HelperError.runtimeError("Invalid base64 transaction")
         }
-
-        // Decode the transaction using TransactionDecoder
-        let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: txData)
-        let decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
-
-        if decodedOutput.errorMessage.isNotEmpty {
-            throw HelperError.runtimeError(decodedOutput.errorMessage)
-        }
-
-        guard decodedOutput.hasTransaction else {
-            throw SolanaParsingError.invalidTransactionFormat
-        }
-
-        // Wrap in SolanaSigningInput with rawMessage
-        let input = SolanaSigningInput.with {
-            $0.rawMessage = decodedOutput.transaction
-        }
-
-        let inputData = try input.serializedData()
-
-        // Get pre-image hashes
-        let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
-
-        if !preSigningOutput.errorMessage.isEmpty {
-            throw HelperError.runtimeError(preSigningOutput.errorMessage)
-        }
-
-        return [preSigningOutput.data.hexString]
+        let messageBytes = try extractSolanaMessageBytes(from: txData).message
+        return [messageBytes.hexString]
     }
 
     static func signRawTransaction(
@@ -292,7 +275,6 @@ enum SolanaHelper {
         base64Transaction: String,
         signatures: [String: TssKeysignResponse]
     ) throws -> SignedTransactionResult {
-        // 1. Validate inputs
         guard let pubkeyData = Data(hexString: coinHexPubKey) else {
             throw HelperError.runtimeError("Invalid public key: \(coinHexPubKey)")
         }
@@ -303,62 +285,60 @@ enum SolanaHelper {
             throw HelperError.runtimeError("Invalid base64 transaction")
         }
 
-        // 2. Decode the transaction using TransactionDecoder
-        let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: txData)
-        let decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
+        let parsed = try extractSolanaMessageBytes(from: txData)
 
-        if decodedOutput.errorMessage.isNotEmpty {
-            throw HelperError.runtimeError(decodedOutput.errorMessage)
-        }
-
-        guard decodedOutput.hasTransaction else {
-            throw SolanaParsingError.invalidTransactionFormat
-        }
-
-        // 3. Wrap in SolanaSigningInput with rawMessage
-        let input = SolanaSigningInput.with {
-            $0.rawMessage = decodedOutput.transaction
-        }
-
-        let inputData = try input.serializedData()
-
-        // 4. Get pre-image hash
-        let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
-
-        if !preSigningOutput.errorMessage.isEmpty {
-            throw HelperError.runtimeError(preSigningOutput.errorMessage)
-        }
-
-        // 5. Get signature from MPC results
         let signatureProvider = SignatureProvider(signatures: signatures)
-        let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
+        let signature = signatureProvider.getSignature(preHash: parsed.message)
 
-        // 6. Verify signature
-        guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
+        guard publicKey.verify(signature: signature, message: parsed.message) else {
             throw HelperError.runtimeError("Signature verification failed")
         }
 
-        // 7. Compile with TransactionCompiler.compileWithSignatures
-        let allSignatures = DataVector()
-        let publicKeys = DataVector()
-        allSignatures.add(data: signature)
-        publicKeys.add(data: pubkeyData)
+        // Splice the signature into the original transaction at signer index 0
+        // (the dApp builds tx with the user as fee payer == first signer; any
+        // other signature slots stay as the dApp-provided placeholders).
+        var signedTx = txData
+        let sigRange = parsed.firstSignatureOffset..<(parsed.firstSignatureOffset + 64)
+        guard sigRange.upperBound <= signedTx.count else {
+            throw HelperError.runtimeError("Transaction too short to place signature")
+        }
+        signedTx.replaceSubrange(sigRange, with: signature)
 
-        let compiled = TransactionCompiler.compileWithSignatures(
-            coinType: .solana,
-            txInputData: inputData,
-            signatures: allSignatures,
-            publicKeys: publicKeys
-        )
-
-        // 8. Return SignedTransactionResult
-        let output = try SolanaSigningOutput(serializedBytes: compiled)
-
+        let encoded = signedTx.base64EncodedString()
         return SignedTransactionResult(
-            rawTransaction: output.encoded,
-            transactionHash: getHashFromRawTransaction(tx: output.encoded)
+            rawTransaction: encoded,
+            transactionHash: getHashFromRawTransaction(tx: encoded)
         )
+    }
+
+    /// Strip the `[shortvec(numSigs)][numSigs × 64-byte sig]` envelope and
+    /// return the underlying Solana message bytes plus the offset of the first
+    /// signature slot (for later splice-in).
+    private static func extractSolanaMessageBytes(from txData: Data) throws -> (firstSignatureOffset: Int, message: Data) {
+        var offset = 0
+        var numSigs = 0
+        var shift = 0
+        // Solana compact-u16 (shortvec) decode: 7 bits per byte, high bit = continuation.
+        while offset < txData.count {
+            let byte = txData[txData.startIndex + offset]
+            numSigs |= Int(byte & 0x7F) << shift
+            offset += 1
+            if (byte & 0x80) == 0 { break }
+            shift += 7
+            if shift > 14 {
+                throw HelperError.runtimeError("Invalid shortvec for signature count")
+            }
+        }
+        guard numSigs >= 1 else {
+            throw HelperError.runtimeError("Transaction declares no signatures")
+        }
+        let firstSignatureOffset = offset
+        let messageOffset = offset + numSigs * 64
+        guard messageOffset < txData.count else {
+            throw HelperError.runtimeError("Transaction too short for declared signature count (\(numSigs))")
+        }
+        let message = txData.subdata(in: (txData.startIndex + messageOffset)..<txData.endIndex)
+        return (firstSignatureOffset, message)
     }
 
     static func getHashFromRawTransaction(tx: String) -> String {

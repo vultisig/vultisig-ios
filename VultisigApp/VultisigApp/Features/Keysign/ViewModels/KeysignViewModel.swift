@@ -552,9 +552,19 @@ class KeysignViewModel: ObservableObject {
             case .generic(let payload):
                 switch keysignPayload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps()
-                    let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
-                    signedTransactions.append(transaction)
+                    // Mirror the pre-image branch: when the dApp supplied raw
+                    // bytes (signData.signSolana), build the signed tx from
+                    // those verbatim instead of reconstructing from the swap
+                    // quote (which rewrites the blockhash and would not match
+                    // the signature produced over the raw message).
+                    if keysignPayload.signSolana != nil {
+                        let transaction = try SolanaHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+                        signedTransactions.append(transaction)
+                    } else {
+                        let swaps = SolanaSwaps()
+                        let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                        signedTransactions.append(transaction)
+                    }
                 default:
                     let swaps = OneInchSwaps()
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
