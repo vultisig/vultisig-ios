@@ -209,6 +209,11 @@
 "continueThresholdOfTotal" = "继续 (%d/%d)";
 "copyAddress" = "复制地址";
 "correctAmountCheck" = "金额正确";
+"cosmosStakingDelegateStubSubtitle" = "通过委托给验证人赚取质押奖励。解绑需要 21 天。";
+"cosmosStakingDelegateTitle" = "质押 %@";
+"cosmosStakingNoValidatorsFound" = "未找到验证人";
+"cosmosStakingSelectValidator" = "选择验证人";
+"cosmosStakingValidatorPicker" = "验证人";
 "costs" = "成本";
 "createFolder" = "创建文件夹";
 "createQR" = "创建二维码";

@@ -209,6 +209,11 @@
 "continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
 "copyAddress" = "Kopiraj adresu";
 "correctAmountCheck" = "Iznos je točan";
+"cosmosStakingDelegateStubSubtitle" = "Zaradite nagrade za staking delegiranjem validatoru. Odjava traje 21 dan.";
+"cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingNoValidatorsFound" = "Nije pronađen nijedan validator";
+"cosmosStakingSelectValidator" = "Odaberite validatora";
+"cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Troškovi";
 "createFolder" = "Kreiraj mapu";
 "createQR" = "Stvori QR";

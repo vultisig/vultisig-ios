@@ -211,6 +211,11 @@
 "continueThresholdOfTotal" = "Continue (%d-of-%d)";
 "copyAddress" = "Copy address";
 "correctAmountCheck" = "The amount is correct";
+"cosmosStakingDelegateStubSubtitle" = "Earn staking rewards by delegating to a validator. Unbonding takes 21 days.";
+"cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingNoValidatorsFound" = "No validators found";
+"cosmosStakingSelectValidator" = "Select Validator";
+"cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Costs";
 "createFolder" = "Create Folder";
 "createQR" = "Create QR";

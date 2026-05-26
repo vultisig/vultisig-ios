@@ -209,6 +209,11 @@
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
 "copyAddress" = "Copiar dirección";
 "correctAmountCheck" = "La cantidad es correcta";
+"cosmosStakingDelegateStubSubtitle" = "Gana recompensas de staking delegando a un validador. El desbloqueo toma 21 días.";
+"cosmosStakingDelegateTitle" = "Stake %@";
+"cosmosStakingNoValidatorsFound" = "No se encontraron validadores";
+"cosmosStakingSelectValidator" = "Seleccionar validador";
+"cosmosStakingValidatorPicker" = "Validador";
 "costs" = "Costos";
 "createFolder" = "Crear carpeta";
 "createQR" = "Crear QR";

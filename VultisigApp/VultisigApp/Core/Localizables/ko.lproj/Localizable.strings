@@ -211,6 +211,11 @@
 "continueThresholdOfTotal" = "계속 (%d/%d)";
 "copyAddress" = "주소 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
+"cosmosStakingDelegateStubSubtitle" = "검증인에게 위임하여 스테이킹 보상을 받으세요. 언본딩에는 21일이 소요됩니다.";
+"cosmosStakingDelegateTitle" = "%@ 스테이킹";
+"cosmosStakingNoValidatorsFound" = "검증인을 찾을 수 없습니다";
+"cosmosStakingSelectValidator" = "검증인 선택";
+"cosmosStakingValidatorPicker" = "검증인";
 "costs" = "비용";
 "createFolder" = "폴더 생성";
 "createQR" = "QR 생성";

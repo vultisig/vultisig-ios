@@ -209,6 +209,11 @@
 "continueThresholdOfTotal" = "Weiter (%d-von-%d)";
 "copyAddress" = "Adresse kopieren";
 "correctAmountCheck" = "Die Menge ist korrekt";
+"cosmosStakingDelegateStubSubtitle" = "Verdiene Staking-Belohnungen, indem du an einen Validator delegierst. Die Entbindung dauert 21 Tage.";
+"cosmosStakingDelegateTitle" = "%@ staken";
+"cosmosStakingNoValidatorsFound" = "Keine Validatoren gefunden";
+"cosmosStakingSelectValidator" = "Validator auswählen";
+"cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Kosten";
 "createFolder" = "Ordner erstellen";
 "createQR" = "QR erstellen";
