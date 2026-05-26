@@ -4,10 +4,10 @@
 //
 //  SECURE+ mint sub-model. Form-VM rewrite per the FunctionCall
 //  sub-model rewrite workstream — drops `FunctionCallAddressable` and
-//  `getView() -> AnyView`. Holds an internal `tx: FunctionCallForm`
-//  scratchpad for the inbound-address / ERC20 approval plumbing.
-//  Cross-mutator per the addendum — its chain-dependent THORChain-vs-EVM
-//  branching reads the screen-owned coin via `@Binding`.
+//  `getView() -> AnyView`. Owns its own typed state: inbound-address +
+//  approve-payload plumbing live directly on the sub-model. Cross-mutator
+//  per the addendum — its chain-dependent THORChain-vs-EVM branching
+//  reads the screen-owned coin via `@Binding`.
 //
 
 import BigInt
@@ -24,19 +24,24 @@ final class FunctionCallSecuredAsset {
     var amount: Decimal = 0.0
     var thorAddress: String = ""
 
+    /// THORChain inbound (router for ERC20, vault address otherwise).
+    /// Set by `fetchInboundAddressAndSetupApproval()` once resolved.
+    var toAddress: String = ""
+
     var isApprovalRequired: Bool = false
     var approvePayload: ERC20ApprovePayload?
     var customErrorMessage: String?
 
-    /// Internal scratchpad — see `FunctionCallAddThorLP` for the
-    /// rationale.
-    let tx: FunctionCallForm
+    /// Source coin — owned by this sub-model so the inbound-address /
+    /// approve-payload logic can branch on chain + native-vs-token
+    /// without dipping into screen-owned state.
+    var coin: Coin
 
     @ObservationIgnored private let vault: Vault
     @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
 
-    init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        self.coin = coin
         self.vault = vault
     }
 
@@ -60,17 +65,21 @@ final class FunctionCallSecuredAsset {
         }
     }
 
+    private var amountInRaw: BigInt {
+        SendCryptoLogic.amountInRaw(coin: coin, amount: amount.formatToDecimal(digits: coin.decimals))
+    }
+
     private func fetchInboundAddressAndSetupApproval() async {
         let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
 
-        if tx.coin.chain == .thorChain {
-            tx.toAddress = tx.coin.address
+        if coin.chain == .thorChain {
+            toAddress = coin.address
             isApprovalRequired = false
             approvePayload = nil
             return
         }
 
-        let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+        let chainName = ThorchainService.getInboundChainName(for: coin.chain)
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             return
         }
@@ -81,7 +90,7 @@ final class FunctionCallSecuredAsset {
         }
 
         let destinationAddress: String
-        if tx.coin.shouldApprove {
+        if coin.shouldApprove {
             guard let router = inbound.router, !router.isEmpty else {
                 customErrorMessage = String(format: "routerNotAvailable".localized, inbound.chain)
                 isApprovalRequired = false
@@ -92,12 +101,12 @@ final class FunctionCallSecuredAsset {
             destinationAddress = inbound.address
         }
 
-        tx.toAddress = destinationAddress
-        isApprovalRequired = tx.coin.shouldApprove
+        toAddress = destinationAddress
+        isApprovalRequired = coin.shouldApprove
         if isApprovalRequired {
-            approvePayload = tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(
-                amount: tx.amountInRaw,
-                spender: tx.toAddress
+            approvePayload = toAddress.isEmpty ? nil : ERC20ApprovePayload(
+                amount: amountInRaw,
+                spender: toAddress
             )
         }
     }
@@ -111,14 +120,14 @@ final class FunctionCallSecuredAsset {
     }
 
     var isTheFormValid: Bool {
-        let amountValid = isAmountValid(against: tx.coin)
+        let amountValid = isAmountValid(against: coin)
         let thorValid = !thorAddress.isEmpty
         return amountValid && thorValid && !amount.isZero
     }
 
     private func updateErrorMessage(against coin: Coin? = nil) {
         var errors: [String] = []
-        let targetCoin = coin ?? tx.coin
+        let targetCoin = coin ?? self.coin
 
         if thorAddress.isEmpty {
             errors.append("thorAddressNotFound".localized)
@@ -145,8 +154,8 @@ final class FunctionCallSecuredAsset {
     }
 
     var balance: String {
-        let b = tx.coin.balanceDecimal.formatForDisplay()
-        return "( Balance: \(b) \(tx.coin.ticker.uppercased()) )"
+        let b = coin.balanceDecimal.formatForDisplay()
+        return "( Balance: \(b) \(coin.ticker.uppercased()) )"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -159,8 +168,8 @@ final class FunctionCallSecuredAsset {
     }
 
     func buildApprovePayload() -> ERC20ApprovePayload? {
-        guard isApprovalRequired, !tx.toAddress.isEmpty else { return nil }
-        return ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+        guard isApprovalRequired, !toAddress.isEmpty else { return nil }
+        return ERC20ApprovePayload(amount: amountInRaw, spender: toAddress)
     }
 
     func toSendTransaction(
@@ -170,9 +179,8 @@ final class FunctionCallSecuredAsset {
         isFastVault: Bool
     ) -> SendTransaction {
         _ = isFastVault
-        tx.amount = amount.formatToDecimal(digits: coin.decimals)
         return SendTransaction.empty(coin: coin, vault: vault).copy(
-            toAddress: tx.toAddress.isEmpty ? "" : tx.toAddress,
+            toAddress: toAddress.isEmpty ? "" : toAddress,
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),
             gas: gas,
@@ -192,7 +200,7 @@ struct SecuredAssetFormView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("mintSecuredAsset".localized)
                     .font(.headline)
-                Text(String(format: "targetAsset".localized, "\(model.tx.coin.chain.swapAsset)-\(model.tx.coin.ticker)"))
+                Text(String(format: "targetAsset".localized, "\(model.coin.chain.swapAsset)-\(model.coin.ticker)"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

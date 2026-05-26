@@ -7,7 +7,6 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "function-c
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router
-    @StateObject private var tx = FunctionCallForm()
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @ObservedObject var vault: Vault
 
@@ -16,10 +15,10 @@ struct FunctionCallDetailsScreen: View {
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
-    // C-2a foundation — screen owns active coin / gas / fast-vault flag.
-    // Sub-models still read/write `tx.coin` during the transitional period;
-    // `.onChange(of: tx.coin)` dual-writes `selectedCoin` so the new shape
-    // shadows the legacy form-state until C-2b → C-2e migrate per sub-model.
+    // Screen owns active coin / gas / fast-vault flag. After PR4 every
+    // sub-model accepts the current coin at construction and mutates
+    // it through `coinSelectionHandler` for the cross-mutators
+    // (AddThorLP pool dropdown, WithdrawSecuredAsset asset picker).
     @State private var selectedCoin: Coin = .example
     @State private var gas: BigInt = .zero
     @State private var isFastVault: Bool = false
@@ -74,15 +73,6 @@ struct FunctionCallDetailsScreen: View {
         .onChange(of: selectedCoin) {
             Task {
                 await loadGasInfo()
-            }
-        }
-        // Transitional shim (C-2a): sub-models still mutate `tx.coin` from
-        // dropdowns. Mirror those writes into the screen-owned
-        // `selectedCoin` so the new state shadows the legacy form-state
-        // until C-2b → C-2e migrate each sub-model to a `@Binding<Coin>`.
-        .onChange(of: tx.coin) {
-            if selectedCoin != tx.coin {
-                selectedCoin = tx.coin
             }
         }
         .onChange(of: selectedFunctionMemoType) {
@@ -158,11 +148,11 @@ struct FunctionCallDetailsScreen: View {
             case .theSwitch:
                 fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
             case .addThorLP:
-                fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
+                fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
             case .securedAsset:
-                fnCallInstance = .securedAsset(FunctionCallSecuredAsset(tx: tx, vault: vault))
+                fnCallInstance = .securedAsset(FunctionCallSecuredAsset(coin: selectedCoin, vault: vault))
             case .withdrawSecuredAsset:
-                fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(tx: tx, vault: vault))
+                fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
             }
         }
 #if os(iOS)
@@ -201,18 +191,13 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        // PR2: also writes `selectedCoin` so the new screen-owned coin
-        // state stays in sync with the legacy `tx.coin` reference until
-        // PR3 removes `tx`.
         if let runeCoin = vault.runeCoin {
-            tx.coin = runeCoin
             selectedCoin = runeCoin
         }
     }
 
     private func ensureTCYCoin() {
         if let tcyCoin = vault.tcyCoin {
-            tx.coin = tcyCoin
             selectedCoin = tcyCoin
         }
     }
@@ -230,15 +215,15 @@ struct FunctionCallDetailsScreen: View {
 
     var functionSelector: some View {
         FunctionCallSelectorDropdown(
-            items: .constant(FunctionCallType.getCases(for: tx.coin)),
-            selected: $selectedFunctionMemoType, coin: $tx.coin)
+            items: .constant(FunctionCallType.getCases(for: selectedCoin)),
+            selected: $selectedFunctionMemoType, coin: $selectedCoin)
     }
 
     var contractSelector: some View {
         FunctionCallContractSelectorDropDown(
             items: .constant(
-                FunctionCallContractType.getCases(for: tx.coin)),
-            selected: $selectedContractMemoType, coin: tx.coin)
+                FunctionCallContractType.getCases(for: selectedCoin)),
+            selected: $selectedContractMemoType, coin: selectedCoin)
     }
 
     var button: some View {
@@ -264,66 +249,24 @@ struct FunctionCallDetailsScreen: View {
 private extension FunctionCallDetailsScreen {
     func setData() {
         setupForm()
-        tx.vault = vault
-        tx.coin = defaultCoin
         selectedCoin = defaultCoin
         isFastVault = vault.isFastVault
     }
 
     func setupForm() {
-        var selectedFunctionMemoType: FunctionCallType?
-        var selectedContractMemoType: FunctionCallContractType?
-        var fnCallInstance: FunctionCallInstance?
-
-        // Temporarily disable onChange handler during setup
-        let dict = tx.memoFunctionDictionary
-        if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
-            if let actionStr = dict.get("action") {
-                let functionType: FunctionCallType
-
-                switch actionStr.lowercased() {
-                case "rebond":
-                    functionType = .rebond
-                    selectedFunctionMemoType = functionType
-                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
-
-                    let rebondInstance = FunctionCallReBond()
-                    rebondInstance.nodeAddress = nodeAddress
-                    if let newAddress = dict.get("newAddress") {
-                        rebondInstance.newAddress = newAddress
-                    }
-                    if let amountStr = dict.get("rebondAmount"), let amountDecimal = Decimal(string: amountStr) {
-                        rebondInstance.rebondAmount = amountDecimal
-                    }
-                    fnCallInstance = .rebond(rebondInstance)
-                default:
-                    break
-                }
-            }
-        }
-
-        self.selectedFunctionMemoType = selectedFunctionMemoType ?? FunctionCallType.getDefault(for: defaultCoin)
-        self.selectedContractMemoType = selectedContractMemoType ?? FunctionCallContractType.getDefault(for: defaultCoin)
-        self.fnCallInstance = fnCallInstance ?? FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, vault: vault)
+        self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
+        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
+        self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
         DispatchQueue.main.async {
             self.hasCompletedInitialSetup = true
         }
     }
 
     func loadGasInfo() async {
-        // PR3: drive gas refresh through the immutable `SendTransaction`
-        // path. `tx.coin` is dual-written from `selectedCoin` to keep
-        // the legacy form-state in sync with the 3 heavy sub-models that
-        // still hold an internal `FunctionCallForm` scratchpad for their
-        // wasm payload / inbound-address logic.
-        if tx.coin != selectedCoin {
-            tx.coin = selectedCoin
-        }
         let probeTx = SendTransaction.empty(coin: selectedCoin, vault: vault)
         do {
             let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: probeTx)
             gas = chainSpecific.gas
-            tx.gas = chainSpecific.gas
         } catch {
             logger.error("failed to fetch chain-specific data: \(error.localizedDescription, privacy: .public)")
         }

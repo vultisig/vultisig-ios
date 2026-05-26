@@ -9,11 +9,10 @@
 //  `AddThorLPFormView` partner in this file. Cross-mutator: writes the
 //  screen-owned `selectedCoin` from the paired-token-pool dropdown.
 //
-//  Holds an internal `FunctionCallForm tx` as a scratchpad for the
-//  inbound-address / ERC20-approve plumbing that depends on
-//  `tx.amountInRaw` + `tx.toAddress`. Treat the scratchpad as
-//  implementation detail of this sub-model — callers should go through
-//  `toSendTransaction(...)` rather than reading `tx` directly.
+//  Owns its own typed state: source coin, inbound-router address, and
+//  amount drive the ERC20 approve payload directly. No shared form
+//  scratchpad — callers go through `toSendTransaction(...)` /
+//  `buildApprovePayload()`.
 //
 
 import BigInt
@@ -45,18 +44,22 @@ final class FunctionCallAddThorLP {
 
     var isEnablingThorchain: Bool = false
 
-    /// Internal scratchpad — holds the inbound address + amountInRaw
-    /// for the ERC20 approval plumbing. Public only because
-    /// `FunctionCallInstance.toAddress` reads `tx.toAddress` for
-    /// downstream signing; not consumed by SwiftUI views.
-    let tx: FunctionCallForm
+    /// THORChain inbound address — router for ERC20, vault address
+    /// otherwise. Set by `fetchInboundAddressAndSetupApproval()` once
+    /// resolved. Read by `FunctionCallInstance.toAddress` for downstream
+    /// signing.
+    var toAddress: String = ""
+
+    /// Source coin — owned by this sub-model. Mutated when the
+    /// pool-dropdown selects a paired chain coin or RUNE-pin fires.
+    var coin: Coin
 
     @ObservationIgnored private let vault: Vault
     @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
     @ObservationIgnored var coinSelectionHandler: ((Coin) -> Void)?
 
-    init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        self.coin = coin
         self.vault = vault
     }
 
@@ -103,16 +106,20 @@ final class FunctionCallAddThorLP {
         loadPools()
     }
 
+    private var amountInRaw: BigInt {
+        SendCryptoLogic.amountInRaw(coin: coin, amount: amount.formatToDecimal(digits: coin.decimals))
+    }
+
     private func fetchInboundAddressAndSetupApproval() async {
         let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
 
-        if tx.coin.chain == .thorChain {
+        if coin.chain == .thorChain {
             isApprovalRequired = false
             approvePayload = nil
             return
         }
 
-        let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+        let chainName = ThorchainService.getInboundChainName(for: coin.chain)
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             return
         }
@@ -122,18 +129,18 @@ final class FunctionCallAddThorLP {
         }
 
         let destinationAddress: String
-        if tx.coin.shouldApprove {
+        if coin.shouldApprove {
             destinationAddress = inbound.router ?? inbound.address
         } else {
             destinationAddress = inbound.address
         }
 
-        tx.toAddress = destinationAddress
-        isApprovalRequired = tx.coin.shouldApprove
+        toAddress = destinationAddress
+        isApprovalRequired = coin.shouldApprove
         if isApprovalRequired {
-            approvePayload = tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(
-                amount: tx.amountInRaw,
-                spender: tx.toAddress
+            approvePayload = toAddress.isEmpty ? nil : ERC20ApprovePayload(
+                amount: amountInRaw,
+                spender: toAddress
             )
         }
     }
@@ -157,7 +164,7 @@ final class FunctionCallAddThorLP {
             var nameMap: [String: String] = [:]
             var isInThePool: Bool = false
 
-            if tx.coin.chain == .thorChain {
+            if coin.chain == .thorChain {
                 for pool in allPools {
                     let assetName = pool.asset
                     let cleanName = ThorchainService.cleanPoolName(assetName)
@@ -165,12 +172,12 @@ final class FunctionCallAddThorLP {
                     nameMap[cleanName] = assetName
 
                     if let lastPart = cleanName.uppercased().split(separator: ".").last,
-                       tx.coin.ticker.uppercased() == String(lastPart) {
+                       coin.ticker.uppercased() == String(lastPart) {
                         isInThePool = true
                     }
                 }
             } else {
-                let currentSwap = tx.coin.chain.swapAsset.uppercased()
+                let currentSwap = coin.chain.swapAsset.uppercased()
                 let filtered = allPools.filter { pool in
                     let components = pool.asset.split(separator: ".").map { String($0).uppercased() }
                     return components.count >= 2 && components[0] == currentSwap
@@ -182,7 +189,7 @@ final class FunctionCallAddThorLP {
                     nameMap[cleanName] = assetName
 
                     if let lastPart = cleanName.uppercased().split(separator: ".").last,
-                       tx.coin.ticker.uppercased() == String(lastPart) {
+                       coin.ticker.uppercased() == String(lastPart) {
                         isInThePool = true
                     }
                 }
@@ -190,9 +197,9 @@ final class FunctionCallAddThorLP {
 
             // RUNE-pin when source coin is non-RUNE and not in the
             // selected pool — same intent as legacy initialize().
-            if tx.coin.ticker.uppercased() != "RUNE" && !isInThePool,
+            if coin.ticker.uppercased() != "RUNE" && !isInThePool,
                let runeCoin = vault.runeCoin {
-                tx.coin = runeCoin
+                coin = runeCoin
                 coinSelectionHandler?(runeCoin)
             }
 
@@ -201,7 +208,7 @@ final class FunctionCallAddThorLP {
             self.isLoadingPools = false
             self.loadError = nil
 
-            if tx.coin.chain != .thorChain && poolOptions.count == 1 {
+            if coin.chain != .thorChain && poolOptions.count == 1 {
                 self.selectedPool = poolOptions[0]
             }
         } catch {
@@ -212,7 +219,7 @@ final class FunctionCallAddThorLP {
     }
 
     private func prefillPairedAddress() {
-        if tx.coin.chain == .thorChain {
+        if coin.chain == .thorChain {
             pairedAddress = ""
         } else if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
             pairedAddress = thorCoin.address
@@ -254,7 +261,7 @@ final class FunctionCallAddThorLP {
     }
 
     func updateSelectedPoolBalance(_ poolName: String) {
-        if tx.coin.chain == .thorChain {
+        if coin.chain == .thorChain {
             selectedPoolBalance = balance
             return
         }
@@ -286,12 +293,12 @@ final class FunctionCallAddThorLP {
         let chainPrefix = components[0]
         let assetTicker = components[1]
 
-        if let coin = vault.coins.first(where: {
+        if let match = vault.coins.first(where: {
             $0.chain.swapAsset.uppercased() == chainPrefix &&
             $0.ticker.uppercased() == assetTicker
         }) {
-            tx.coin = coin
-            coinSelectionHandler?(coin)
+            coin = match
+            coinSelectionHandler?(match)
         }
     }
 
@@ -301,7 +308,7 @@ final class FunctionCallAddThorLP {
 
     var isTheFormValid: Bool {
         guard isThorchainEnabled else { return false }
-        let currentBalance = tx.coin.balanceDecimal
+        let currentBalance = coin.balanceDecimal
         let amountValid = amount > 0 && amount <= currentBalance
         let poolValid = !selectedPool.value.isEmpty
         return amountValid && poolValid
@@ -330,15 +337,15 @@ final class FunctionCallAddThorLP {
     }
 
     func buildApprovePayload() -> ERC20ApprovePayload? {
-        guard isApprovalRequired, !tx.toAddress.isEmpty else {
+        guard isApprovalRequired, !toAddress.isEmpty else {
             return nil
         }
-        return ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+        return ERC20ApprovePayload(amount: amountInRaw, spender: toAddress)
     }
 
     var balance: String {
-        let b = tx.coin.balanceDecimal.formatForDisplay()
-        return String(format: "balanceInParentheses".localized, b, tx.coin.ticker.uppercased())
+        let b = coin.balanceDecimal.formatForDisplay()
+        return String(format: "balanceInParentheses".localized, b, coin.ticker.uppercased())
     }
 
     func toSendTransaction(
@@ -348,12 +355,8 @@ final class FunctionCallAddThorLP {
         isFastVault: Bool
     ) -> SendTransaction {
         _ = isFastVault
-        // Refresh amountInRaw on tx so the approve-payload below uses
-        // the current amount (legacy did this implicitly via the
-        // shared `tx.amount` write at the screen's button.onTap).
-        tx.amount = amount.formatToDecimal(digits: coin.decimals)
         return SendTransaction.empty(coin: coin, vault: vault).copy(
-            toAddress: tx.toAddress.isEmpty ? "" : tx.toAddress,
+            toAddress: toAddress.isEmpty ? "" : toAddress,
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),
             gas: gas,
@@ -409,7 +412,7 @@ struct AddThorLPFormView: View {
     }
 
     private var amountLabel: String {
-        if model.tx.coin.chain == .thorChain {
+        if model.coin.chain == .thorChain {
             return "\("amount".localized) \(model.balance)"
         }
         if !model.selectedPoolBalance.isEmpty {
@@ -520,7 +523,7 @@ struct PoolSelectorSection: View {
                 model.selectedPool = pool
 
                 if !pool.value.isEmpty {
-                    if model.tx.coin.chain == .thorChain {
+                    if model.coin.chain == .thorChain {
                         model.prefillPairedAddressForPool(pool.value)
                     } else {
                         model.updateSelectedCoin(from: pool.value)

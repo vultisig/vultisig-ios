@@ -21,10 +21,6 @@ final class FunctionCallContentViewTests: XCTestCase {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune, FunctionCallFixture.makeRUJI(), FunctionCallFixture.makeATOM(), FunctionCallFixture.makeKUJI()])
 
-        let form = FunctionCallForm()
-        form.coin = rune
-        form.vault = vault
-
         let migrated: [FunctionCallInstance] = [
             .rebond(FunctionCallReBond()),
             .bondMaya(FunctionCallBondMayaChain(assets: [])),
@@ -38,9 +34,9 @@ final class FunctionCallContentViewTests: XCTestCase {
             .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
             .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),
             .theSwitch(FunctionCallCosmosSwitch(coin: FunctionCallFixture.makeATOM(), vault: vault)),
-            .addThorLP(FunctionCallAddThorLP(tx: form, vault: vault)),
-            .securedAsset(FunctionCallSecuredAsset(tx: form, vault: vault)),
-            .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(tx: form, vault: vault))
+            .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault)),
+            .securedAsset(FunctionCallSecuredAsset(coin: rune, vault: vault)),
+            .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault))
         ]
 
         for instance in migrated {

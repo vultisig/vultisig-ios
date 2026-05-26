@@ -117,10 +117,10 @@ enum FunctionCallInstance {
         case .addThorLP(let memo):
             // For addThorLP, return the inbound address that was set by fetchInboundAddress()
             // This is essential for Bitcoin and other chains to know where to send funds
-            return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
+            return memo.toAddress.isEmpty ? nil : memo.toAddress
         case .securedAsset(let memo):
             // For secured assets (MINT), return the inbound address
-            return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
+            return memo.toAddress.isEmpty ? nil : memo.toAddress
         case .withdrawSecuredAsset:
             return nil // Withdraw is done via MsgDeposit on THORChain
         default:
@@ -233,7 +233,7 @@ enum FunctionCallInstance {
     }
 
     @MainActor
-    static func getDefault(for coin: Coin, tx: FunctionCallForm, vault: Vault) -> FunctionCallInstance {
+    static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
@@ -251,7 +251,7 @@ enum FunctionCallInstance {
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
+            return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
         default:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
         }

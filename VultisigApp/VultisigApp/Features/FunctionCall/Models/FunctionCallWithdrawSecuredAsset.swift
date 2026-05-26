@@ -4,11 +4,10 @@
 //
 //  SECURE+ withdraw sub-model. Form-VM rewrite per the FunctionCall
 //  sub-model rewrite workstream — drops `FunctionCallAddressable` and
-//  `getView() -> AnyView`. Holds an internal `tx: FunctionCallForm`
-//  scratchpad for the L1-chain-driven destination address + outbound
-//  fee plumbing. Cross-mutator: the secured-asset picker writes the
-//  screen-owned `selectedCoin` so the new asset's balance + chain
-//  inform gas refresh.
+//  `getView() -> AnyView`. Owns its own typed state (no shared form
+//  scratchpad). Cross-mutator: the secured-asset picker writes the
+//  screen-owned `selectedCoin` via `coinSelectionHandler` so the new
+//  asset's balance + chain inform gas refresh.
 //
 
 import BigInt
@@ -36,8 +35,9 @@ final class FunctionCallWithdrawSecuredAsset {
     var minimumWithdrawAmount: Decimal = 0
     var customErrorMessage: String?
 
-    /// Internal scratchpad — see `FunctionCallAddThorLP`.
-    let tx: FunctionCallForm
+    /// Current source coin — initially the screen's `selectedCoin`,
+    /// then overwritten when the secured-asset picker fires.
+    var coin: Coin
 
     @ObservationIgnored private var securedAssetLookup: [UUID: Coin] = [:]
     @ObservationIgnored private var destinationError: String?
@@ -47,8 +47,8 @@ final class FunctionCallWithdrawSecuredAsset {
 
     private static let thorChains: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
 
-    init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        self.coin = coin
         self.vault = vault
         self.selectedSecuredAsset = .init(value: "selectSecuredAssetToWithdraw".localized)
     }
@@ -67,7 +67,7 @@ final class FunctionCallWithdrawSecuredAsset {
     }
 
     private func prefillAddresses() {
-        destinationAddress = tx.coin.address
+        destinationAddress = coin.address
     }
 
     private func nativeCoin(for chain: Chain) -> Coin? {
@@ -242,7 +242,7 @@ final class FunctionCallWithdrawSecuredAsset {
     private func updateTxCoin(for securedAssetCoin: Coin) {
         selectedSecuredAssetCoin = securedAssetCoin
         securedAssetCoin.isNativeToken = false
-        tx.coin = securedAssetCoin
+        coin = securedAssetCoin
         coinSelectionHandler?(securedAssetCoin)
     }
 
@@ -330,7 +330,6 @@ final class FunctionCallWithdrawSecuredAsset {
         isFastVault: Bool
     ) -> SendTransaction {
         _ = isFastVault
-        tx.amount = amount.formatToDecimal(digits: coin.decimals)
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             // Withdraw is done via MsgDeposit on THORChain — toAddress
             // intentionally empty (matches `FunctionCallInstance.toAddress`
