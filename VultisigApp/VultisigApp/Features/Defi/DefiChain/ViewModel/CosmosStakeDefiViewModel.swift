@@ -72,12 +72,20 @@ final class CosmosStakeDefiViewModel: ObservableObject {
         let validators = await validatorsTask
         let chainApy = await chainApyTask
 
+        // Filter rewards to the chain's bond denom before summing — Terra
+        // Classic LCDs occasionally return reward entries in non-staking
+        // denoms (legacy stability-tax pool), and aggregating them as if
+        // they were `uluna` overstates the user's claimable native
+        // rewards. Mirrors `CosmosDelegationsView.tsx` reward filtering on
+        // Windows.
+        let bondDenom = (try? CosmosStakingConfig.bondDenom(for: chain)) ?? ""
         let rewardsByValidator = Dictionary(
             grouping: rewards.rewards,
             by: \.validatorAddress
         ).mapValues { entries in
             entries
                 .flatMap(\.reward)
+                .filter { $0.denom == bondDenom }
                 .reduce(into: Decimal(0)) { acc, coin in
                     acc += (Decimal(string: coin.amount) ?? 0)
                 }

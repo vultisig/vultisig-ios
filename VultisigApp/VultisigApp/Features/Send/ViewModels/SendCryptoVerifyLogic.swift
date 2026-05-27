@@ -45,14 +45,24 @@ struct SendCryptoVerifyLogic {
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-        let fee: BigInt
+        var fee: BigInt
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
             fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
 
         case .Cosmos, .THORChain:
+            // Cosmos batched-claim signs one msg per validator and the
+            // resolver scales gas + fee linearly. Mirror that scaling here
+            // so the Verify summary and the balance-validation check both
+            // reflect the real signed fee, not the single-msg base. Any
+            // other staking op is 1 msg → multiplier collapses to 1.
             fee = chainSpecific.fee
+            if let payload = tx.cosmosStakingPayload,
+               payload.opType == .withdrawRewards,
+               let count = payload.validators?.count, count > 1 {
+                fee *= BigInt(count)
+            }
 
         default:
             fee = chainSpecific.gas
