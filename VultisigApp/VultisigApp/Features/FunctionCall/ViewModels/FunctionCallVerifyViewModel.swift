@@ -33,6 +33,9 @@ class FunctionCallVerifyViewModel: ObservableObject {
     func createKeysignPayload(tx: SendTransaction) async throws -> KeysignPayload {
         let vault = tx.vault
         await MainActor.run { isLoading = true }
+        defer {
+            Task { @MainActor in isLoading = false }
+        }
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
@@ -95,8 +98,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 wasmExecuteContractPayload: tx.wasmContractPayload
             )
 
-            await MainActor.run { isLoading = false }
-
             // Cosmos staking branch — `buildTransfer` defaults `signData` to
             // nil, which downstream resolves to MsgSend. For delegate /
             // undelegate / redelegate / withdrawRewards we need a SignDoc
@@ -108,28 +109,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     sendTransaction: tx,
                     chainSpecific: chainSpecific
                 )
-                return KeysignPayload(
-                    coin: basePayload.coin,
-                    toAddress: basePayload.toAddress,
-                    toAmount: basePayload.toAmount,
-                    chainSpecific: basePayload.chainSpecific,
-                    utxos: basePayload.utxos,
-                    memo: basePayload.memo,
-                    swapPayload: basePayload.swapPayload,
-                    approvePayload: basePayload.approvePayload,
-                    vaultPubKeyECDSA: basePayload.vaultPubKeyECDSA,
-                    vaultLocalPartyID: basePayload.vaultLocalPartyID,
-                    libType: basePayload.libType,
-                    wasmExecuteContractPayload: basePayload.wasmExecuteContractPayload,
-                    tronTransferContractPayload: basePayload.tronTransferContractPayload,
-                    tronTriggerSmartContractPayload: basePayload.tronTriggerSmartContractPayload,
-                    tronTransferAssetContractPayload: basePayload.tronTransferAssetContractPayload,
-                    qbtcClaimPayload: basePayload.qbtcClaimPayload,
-                    isQbtcClaim: basePayload.isQbtcClaim,
-                    skipBroadcast: basePayload.skipBroadcast,
-                    signData: .signDirect(signDirect),
-                    dappMetadata: basePayload.dappMetadata
-                )
+                return basePayload.withSignData(.signDirect(signDirect))
             }
 
             return basePayload
@@ -153,7 +133,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
             default:
                 errorMessage = error.localizedDescription
             }
-            await MainActor.run { isLoading = false }
             throw HelperError.runtimeError(errorMessage)
         }
     }

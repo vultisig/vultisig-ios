@@ -250,7 +250,7 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
             PrimaryButton(
                 title: "cosmosStakingActionUndelegate".localized,
                 type: .secondary,
-                size: .small
+                size: .smallFixed
             ) {
                 onUndelegate(position)
             }
@@ -258,14 +258,14 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
             PrimaryButton(
                 title: "cosmosStakingActionRedelegate".localized,
                 type: .secondary,
-                size: .small
+                size: .smallFixed
             ) {
                 onRedelegate(position)
             }
             .disabled(isLocked)
             PrimaryButton(
                 title: "cosmosStakingActionDelegate".localized,
-                size: .small
+                size: .smallFixed
             ) {
                 onDelegate(coin)
             }
