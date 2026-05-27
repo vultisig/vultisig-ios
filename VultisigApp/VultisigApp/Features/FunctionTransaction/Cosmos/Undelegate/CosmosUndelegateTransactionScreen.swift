@@ -65,7 +65,10 @@ struct CosmosUndelegateTransactionScreen: View {
                 }
             }
         }
-        .onLoad { viewModel.onLoad() }
+        .onLoad {
+            viewModel.onLoad()
+            focusedFieldBinding = .amount
+        }
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)

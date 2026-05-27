@@ -77,7 +77,6 @@ struct ValidatorSelectionScreen: View {
                 ToolbarButton(image: "check", type: .confirmation) {
                     confirmSelection()
                 }
-                .disabled(pickedValidator == nil)
                 .supportsLiquidGlass { view, isSupported in
                     view.padding(.top, isSupported ? 0 : 16)
                 }
