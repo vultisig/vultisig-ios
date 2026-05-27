@@ -35,6 +35,13 @@ struct CosmosStakeDefiView: View {
         return formatter
     }()
 
+    private static let unlockDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.positions.isEmpty {
@@ -162,6 +169,9 @@ struct CosmosStakeDefiView: View {
             Separator(color: Theme.colors.borderLight, opacity: 1)
             nextAwardRow(for: position)
             actionButtons(for: position)
+            if let unlockDate = position.pendingUnbondingUnlockDate {
+                perRowUnlockFooter(unlockDate: unlockDate)
+            }
         }
     }
 
@@ -246,6 +256,8 @@ struct CosmosStakeDefiView: View {
     @ViewBuilder
     private func actionButtons(for position: CosmosStakePositionRow) -> some View {
         let isChurnedOut = position.validatorStatus == .churnedOut
+        let isUnbonding = position.pendingUnbondingUnlockDate != nil
+        let isLocked = isChurnedOut || isUnbonding
         HStack(spacing: 8) {
             PrimaryButton(
                 title: "cosmosStakingActionUndelegate".localized,
@@ -254,7 +266,7 @@ struct CosmosStakeDefiView: View {
             ) {
                 onUndelegate(position)
             }
-            .disabled(isChurnedOut)
+            .disabled(isLocked)
             PrimaryButton(
                 title: "cosmosStakingActionRedelegate".localized,
                 type: .secondary,
@@ -262,12 +274,26 @@ struct CosmosStakeDefiView: View {
             ) {
                 onRedelegate(position)
             }
+            .disabled(isLocked)
             PrimaryButton(
                 title: "cosmosStakingActionDelegate".localized,
                 size: .small
             ) {
                 onDelegate(coin)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func perRowUnlockFooter(unlockDate: Date) -> some View {
+        HStack {
+            Spacer()
+            Text(String(
+                format: "cosmosStakingUnbondingFooterUnlock".localized,
+                Self.unlockDateFormatter.string(from: unlockDate)
+            ))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 
@@ -284,20 +310,11 @@ struct CosmosStakeDefiView: View {
     private func validatorAvatar(for position: CosmosStakePositionRow) -> some View {
         let source = position.validatorMoniker.isEmpty ? position.validatorAddress : position.validatorMoniker
         let monogram = String(source.prefix(1)).uppercased()
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Theme.colors.primaryAccent3, Theme.colors.primaryAccent4],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            Text(monogram)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-        }
-        .frame(width: 36, height: 36)
+        KeybaseAvatarView(
+            identity: position.validatorIdentity,
+            monogram: monogram,
+            size: 36
+        )
     }
 
     @ViewBuilder
