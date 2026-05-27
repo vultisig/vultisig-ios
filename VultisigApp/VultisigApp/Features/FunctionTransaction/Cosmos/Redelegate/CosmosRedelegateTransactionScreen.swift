@@ -83,6 +83,7 @@ struct CosmosRedelegateTransactionScreen: View {
             viewModel.onLoad()
             if viewModel.cooldownBlockedMessage == nil {
                 focusedFieldBinding = .amount
+                percentageSelected = 100
             }
         }
         .onChange(of: percentageSelected) { _, newValue in

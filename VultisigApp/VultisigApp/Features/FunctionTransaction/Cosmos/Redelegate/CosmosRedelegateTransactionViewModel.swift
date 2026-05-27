@@ -68,6 +68,8 @@ final class CosmosRedelegateTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: stakedBalance))
+        amountField.value = stakedBalance.formatToDecimal(digits: coin.decimals)
+        isMaxAmount = true
         Task { await loadCooldown() }
     }
 
