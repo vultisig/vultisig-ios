@@ -29,6 +29,8 @@ struct DefiBalanceService {
             mayaChainTotalBalanceFiatDecimal(for: vault)
         case .tron:
             tronTotalBalanceFiatDecimal(for: vault)
+        case .terra, .terraClassic:
+            cosmosStakingTotalBalanceFiatDecimal(chain: chain, vault: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
@@ -57,6 +59,22 @@ private extension DefiBalanceService {
         let lpBalances = getLPBalances(for: vault, chain: .mayaChain)
         return bondsBalance + stakedBalances + lpBalances
     }
+    /// LUNA / LUNC delegations land on `coin.stakedBalance` via
+    /// `BalanceService.fetchStakedBalance(.terra/.terraClassic)`. Gate on the
+    /// per-vault opt-in (`defiPositions[chain].staking`) so a vault that hasn't
+    /// turned the staking position on doesn't have its delegated balance
+    /// silently rolled into the DeFi total — matches the empty-state semantic
+    /// in `CosmosStakeDefiView`.
+    func cosmosStakingTotalBalanceFiatDecimal(chain: Chain, vault: Vault) -> Decimal {
+        guard
+            let coin = vault.nativeCoin(for: chain),
+            let enabledPositions = vault.defiPositions.first(where: { $0.chain == chain }),
+            enabledPositions.staking.contains(coin.toCoinMeta())
+        else { return .zero }
+
+        return coin.fiat(decimal: coin.stakedBalanceDecimal)
+    }
+
     func tronTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
         // The user's Tron DeFi position is the frozen + unfreezing TRX, not the
         // wallet balance. `BalanceService.fetchStakedBalance` writes the total
