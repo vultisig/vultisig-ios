@@ -192,6 +192,7 @@
 "claim" = "Reclamar";
 "claimBroadcasted" = "Reclamación difundida";
 "claimFailed" = "Reclamación fallida";
+"claimFromValidators" = "Reclamar de %d validadores";
 "claimPending" = "Reclamación pendiente...";
 "claimSuccessful" = "Reclamación exitosa";
 "clearFilters" = "Borrar filtros";
@@ -200,6 +201,7 @@
 "coinPool" = "Pool de %@";
 "coinServiceChainNotEnabledForKeyImport" = "La cadena %@ no está habilitada para esta bóveda importada";
 "collectedRewards" = "Recompensas recolectadas";
+"commission" = "comisión";
 "compoundedCoin" = "%@ Compuesto";
 "congratsExclamation" = "¡Felicidades!";
 "congratsSummaryDescription" = "¡Todo listo! Mantienes el control de cada transacción.";
@@ -279,6 +281,7 @@
 "deleteFolder" = "Eliminar carpeta";
 "deleteVault" = "Eliminar tu caja fuerte permanentemente";
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
+"destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Almacene la parte de la bóveda de este dispositivo.";
 "deviceBackupTitle" = "Copia de seguridad del dispositivo";
@@ -920,6 +923,7 @@
 "slippage" = "Deslizamiento";
 "somethingsWrong" = "Algo está mal";
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
+"sourceValidator" = "Validador origen";
 "Spanish" = "Español";
 "stake" = "Hacer Staking";
 "Stake" = "Stake";
@@ -1101,6 +1105,7 @@
 "utxoTooSmallError" = "Los UTXOs disponibles son demasiado pequeños para esta transacción. Las salidas de transacción individuales en tu billetera no cumplen con los requisitos mínimos. Considera consolidar cantidades más pequeñas primero.";
 "validAddressDomainError" = "Dirección incorrecta para la cadena de bloques seleccionada. Intenta agregar la cadena a tu bóveda.";
 "validAddressError" = "Por favor ingresa una dirección válida.";
+"validator" = "Validador";
 "validatorBech32ErrorBadEncoding" = "La dirección del validador no es un bech32 válido";
 "validatorBech32ErrorEmpty" = "La dirección del validador está vacía";
 "validatorBech32ErrorWrongPayloadLength" = "La carga útil de la dirección del validador es de %d bytes, se esperaban %d";
@@ -1219,8 +1224,12 @@
 "youAreEnteringAnewEraHighlight" = "dejando atrás las viejas frases semilla.";
 "youAreInLocalMode" = "Estás en modo local";
 "youArePermanentlyDeletingVault" = "Estás eliminando permanentemente tu parte del almacén de esta aplicación";
+"youreClaiming" = "Estás reclamando";
+"youreMoving" = "Estás moviendo";
 "youreSending" = "Estás enviando";
+"youreStaking" = "Estás apostando";
 "youreSwapping" = "Estás intercambiando";
+"youreUnstaking" = "Estás retirando";
 "yourFriendsReferralCode" = "El código de referencia de tu amigo";
 "yourReferralCode" = "Tu código de referido";
 "yourSeedphrase" = "Tu frase semilla";

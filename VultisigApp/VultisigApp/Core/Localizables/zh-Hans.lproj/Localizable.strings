@@ -192,6 +192,7 @@
 "claim" = "领取";
 "claimBroadcasted" = "领取已广播";
 "claimFailed" = "领取失败";
+"claimFromValidators" = "从 %d 个验证人领取";
 "claimPending" = "领取处理中...";
 "claimSuccessful" = "领取成功";
 "clearFilters" = "清除筛选";
@@ -200,6 +201,7 @@
 "coinPool" = "%@ 池";
 "coinServiceChainNotEnabledForKeyImport" = "此导入的保险库未启用 %@ 链";
 "collectedRewards" = "已收集的奖励";
+"commission" = "佣金";
 "compoundedCoin" = "已复利 %@";
 "congratsExclamation" = "恭喜！";
 "congratsSummaryDescription" = "一切就绪！你始终掌控每笔交易。";
@@ -279,6 +281,7 @@
 "deleteFolder" = "删除文件夹";
 "deleteVault" = "永久删除您的保险库";
 "deleteVaultTitle" = "删除保险库";
+"destinationValidator" = "目标验证人";
 "device" = "设备";
 "deviceBackupDescription" = "存储此设备的保险库份额";
 "deviceBackupTitle" = "设备备份";
@@ -920,6 +923,7 @@
 "slippage" = "滑点";
 "somethingsWrong" = "有问题";
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
+"sourceValidator" = "来源验证人";
 "Spanish" = "西班牙语";
 "stake" = "质押";
 "Stake" = "质押";
@@ -1102,6 +1106,7 @@
 "utxoTooSmallError" = "可用的 UTXO 对于此交易来说太小。您钱包中的单个交易输出不符合最低要求。考虑先合并较小的金额";
 "validAddressDomainError" = "所选区块链的地址错误。尝试将链添加到您的保险库。";
 "validAddressError" = "请输入有效地址";
+"validator" = "验证人";
 "validatorBech32ErrorBadEncoding" = "验证人地址不是有效的 bech32";
 "validatorBech32ErrorEmpty" = "验证人地址为空";
 "validatorBech32ErrorWrongPayloadLength" = "验证人地址载荷为 %d 字节,期望 %d";
@@ -1220,8 +1225,12 @@
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";
 "youArePermanentlyDeletingVault" = "您正在从此应用中永久删除您的保险库份额";
+"youreClaiming" = "您正在领取";
+"youreMoving" = "您正在移动";
 "youreSending" = "您正在发送";
+"youreStaking" = "您正在质押";
 "youreSwapping" = "您正在交换";
+"youreUnstaking" = "您正在解除质押";
 "yourFriendsReferralCode" = "您朋友的推荐码";
 "yourReferralCode" = "您的推荐码";
 "yourSeedphrase" = "您的助记词";

@@ -192,6 +192,7 @@
 "claim" = "Preuzmi";
 "claimBroadcasted" = "Preuzimanje poslano";
 "claimFailed" = "Preuzimanje nije uspjelo";
+"claimFromValidators" = "Preuzmi od %d validatora";
 "claimPending" = "Preuzimanje u tijeku...";
 "claimSuccessful" = "Preuzimanje uspješno";
 "clearFilters" = "Očisti filtere";
@@ -200,6 +201,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Lanac %@ nije omogućen za ovaj uvezeni vault";
 "collectedRewards" = "Prikupljene nagrade";
+"commission" = "provizija";
 "compoundedCoin" = "%@ Složeno";
 "congratsExclamation" = "Čestitamo!";
 "congratsSummaryDescription" = "Sve je spremno! Vi kontrolirate svaku transakciju.";
@@ -279,6 +281,7 @@
 "deleteFolder" = "Izbriši mapu";
 "deleteVault" = "Trajno izbrišite vaš sef";
 "deleteVaultTitle" = "Izbriši sef";
+"destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
 "deviceBackupTitle" = "Sigurnosna kopija uređaja";
@@ -920,6 +923,7 @@
 "slippage" = "Skliznuće";
 "somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
+"sourceValidator" = "Izvorni validator";
 "Spanish" = "Španjolski";
 "stake" = "Uloži";
 "Stake" = "Ulog";
@@ -1101,6 +1105,7 @@
 "utxoTooSmallError" = "Dostupni UTXO-i su premali za ovu transakciju. Pojedinačni izlazi transakcije u vašem novčaniku ne zadovoljavaju minimalne zahtjeve. Razmislite o konsolidaciji manjih iznosa prvo.";
 "validAddressDomainError" = "Pogrešna adresa za odabrani blockchain. Pokušajte dodati lanac u svoj trezor.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
+"validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Adresa validatora nije valjani bech32";
 "validatorBech32ErrorEmpty" = "Adresa validatora je prazna";
 "validatorBech32ErrorWrongPayloadLength" = "Sadržaj adrese validatora ima %d bajtova, očekivano %d";
@@ -1219,8 +1224,12 @@
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
 "youArePermanentlyDeletingVault" = "Trajno brišete svoj dio trezora iz ove aplikacije";
+"youreClaiming" = "Preuzimate";
+"youreMoving" = "Premještate";
 "youreSending" = "Šalješ";
+"youreStaking" = "Stakate";
 "youreSwapping" = "Zamjenjuješ";
+"youreUnstaking" = "Povlačite ulog";
 "yourFriendsReferralCode" = "Kod vašeg prijatelja za upućivanje prijatelja";
 "yourReferralCode" = "Tvoj referalni kod";
 "yourSeedphrase" = "Vaša seed fraza";

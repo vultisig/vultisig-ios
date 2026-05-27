@@ -194,6 +194,7 @@
 "claim" = "수령";
 "claimBroadcasted" = "수령 브로드캐스트됨";
 "claimFailed" = "수령 실패";
+"claimFromValidators" = "%d명의 검증인으로부터 청구";
 "claimPending" = "수령 처리 중...";
 "claimSuccessful" = "수령 성공";
 "clearFilters" = "필터 초기화";
@@ -202,6 +203,7 @@
 "coinPool" = "%@ 풀";
 "coinServiceChainNotEnabledForKeyImport" = "이 가져온 볼트에서 %@ 체인이 활성화되어 있지 않습니다";
 "collectedRewards" = "수집된 보상";
+"commission" = "수수료";
 "compoundedCoin" = "복리 %@";
 "congratsExclamation" = "축하합니다!";
 "congratsSummaryDescription" = "모든 준비가 완료되었습니다! 모든 트랜잭션을 직접 제어합니다.";
@@ -273,6 +275,7 @@
 "deleteFolder" = "폴더 삭제";
 "deleteVault" = "볼트를 영구적으로 삭제";
 "deleteVaultTitle" = "볼트 삭제";
+"destinationValidator" = "도착 검증인";
 "device" = "기기";
 "deviceBackupDescription" = "이 기기의 볼트 공유를 저장합니다.";
 "deviceBackupTitle" = "기기 백업";
@@ -900,6 +903,7 @@
 "slippage" = "슬리피지";
 "somethingsWrong" = "문제가 발생했습니다";
 "somethingWentWrongTryAgain" = "오류가 발생했습니다. 다시 시도하세요.";
+"sourceValidator" = "출발 검증인";
 "Spanish" = "스페인어";
 "stake" = "스테이킹";
 "Stake" = "스테이킹";
@@ -1086,6 +1090,7 @@
 "utxoTooSmallError" = "사용 가능한 UTXO가 이 트랜잭션에 너무 작습니다. 지갑의 개별 트랜잭션 출력이 최소 요건을 충족하지 않습니다. 더 작은 금액을 먼저 통합하는 것을 고려하세요.";
 "validAddressDomainError" = "선택한 블록체인에 대한 잘못된 주소입니다. 볼트에 체인을 추가해 보세요.";
 "validAddressError" = "유효한 주소를 입력하세요.";
+"validator" = "검증인";
 "value" = "가치";
 "vault" = "볼트";
 "vaultAlreadyExists" = "볼트가 이미 존재합니다";
@@ -1200,8 +1205,12 @@
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";
 "youArePermanentlyDeletingVault" = "이 앱에서 볼트 공유를 영구적으로 삭제하고 있습니다";
+"youreClaiming" = "청구 중";
+"youreMoving" = "이동 중";
 "youreSending" = "전송 중입니다";
+"youreStaking" = "스테이킹 중";
 "youreSwapping" = "스왑 중입니다";
+"youreUnstaking" = "언스테이킹 중";
 "yourFriendsReferralCode" = "친구 추천 코드";
 "yourReferralCode" = "귀하의 추천 코드";
 "yourSeedphrase" = "귀하의 시드 문구";

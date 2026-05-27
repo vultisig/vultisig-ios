@@ -194,6 +194,7 @@
 "claim" = "Claim";
 "claimBroadcasted" = "Claim broadcasted";
 "claimFailed" = "Claim failed";
+"claimFromValidators" = "Claim from %d validators";
 "claimPending" = "Claim pending...";
 "claimSuccessful" = "Claim successful";
 "clearFilters" = "Clear filters";
@@ -202,6 +203,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Chain %@ is not enabled for this imported vault";
 "collectedRewards" = "Collected rewards";
+"commission" = "commission";
 "compoundedCoin" = "Compounded %@";
 "congratsExclamation" = "Congrats!";
 "congratsSummaryDescription" = "You're all set! You stay in control of every transaction.";
@@ -281,6 +283,7 @@
 "deleteFolder" = "Delete Folder";
 "deleteVault" = "Delete your vault permanently";
 "deleteVaultTitle" = "Delete Vault";
+"destinationValidator" = "Destination Validator";
 "device" = "device";
 "deviceBackupDescription" = "Store the vault share of this device.";
 "deviceBackupTitle" = "Device Backup";
@@ -929,6 +932,7 @@
 "slippage" = "Slippage";
 "somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
+"sourceValidator" = "Source Validator";
 "Spanish" = "Spanish";
 "stake" = "Stake";
 "Stake" = "Stake";
@@ -1116,6 +1120,7 @@
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
 "validAddressDomainError" = "Wrong address for selected blockchain. Try adding the chain to your vault.";
 "validAddressError" = "Please enter a valid address.";
+"validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Validator address is not valid bech32";
 "validatorBech32ErrorEmpty" = "Validator address is empty";
 "validatorBech32ErrorWrongPayloadLength" = "Validator address payload is %d bytes, expected %d";
@@ -1234,8 +1239,12 @@
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";
 "youArePermanentlyDeletingVault" = "You are permanently deleting your vault share from this app";
+"youreClaiming" = "You’re claiming";
+"youreMoving" = "You’re moving";
 "youreSending" = "You’re sending";
+"youreStaking" = "You’re staking";
 "youreSwapping" = "You’re swapping";
+"youreUnstaking" = "You’re unstaking";
 "yourFriendsReferralCode" = "Your Friend Referral Code";
 "yourReferralCode" = "Your Referral Code";
 "yourSeedphrase" = "Your seedphrase";

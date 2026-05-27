@@ -192,6 +192,7 @@
 "claim" = "Reivindicar";
 "claimBroadcasted" = "Reivindicação difundida";
 "claimFailed" = "Reivindicação falhou";
+"claimFromValidators" = "Reivindicar de %d validadores";
 "claimPending" = "Reivindicação pendente...";
 "claimSuccessful" = "Reivindicação bem-sucedida";
 "clearFilters" = "Limpar filtros";
@@ -200,6 +201,7 @@
 "coinPool" = "Pool de %@";
 "coinServiceChainNotEnabledForKeyImport" = "A chain %@ não está habilitada para este vault importado";
 "collectedRewards" = "Recompensas coletadas";
+"commission" = "comissão";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Parabéns!";
 "congratsSummaryDescription" = "Tudo pronto! Você mantém o controle de cada transação.";
@@ -279,6 +281,7 @@
 "deleteFolder" = "Excluir pasta";
 "deleteVault" = "Deletar seu cofre permanentemente";
 "deleteVaultTitle" = "Deletar Cofre";
+"destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Armazene a participação do Vault deste dispositivo.";
 "deviceBackupTitle" = "Backup de dispositivo";
@@ -920,6 +923,7 @@
 "slippage" = "Deslizamento";
 "somethingsWrong" = "Algo está errado";
 "somethingWentWrongTryAgain" = "Algo deu errado, por favor tente novamente.";
+"sourceValidator" = "Validador de origem";
 "Spanish" = "Espanhol";
 "stake" = "Stake";
 "Stake" = "Stake";
@@ -1101,6 +1105,7 @@
 "utxoTooSmallError" = "UTXOs disponíveis são muito pequenos para esta transação. As saídas de transação individuais em sua carteira não atendem aos requisitos mínimos. Considere consolidar valores menores primeiro.";
 "validAddressDomainError" = "Endereço incorreto para o blockchain selecionado. Tente adicionar a rede ao seu cofre.";
 "validAddressError" = "Por favor, insira um endereço válido.";
+"validator" = "Validador";
 "validatorBech32ErrorBadEncoding" = "O endereço do validador não é bech32 válido";
 "validatorBech32ErrorEmpty" = "O endereço do validador está vazio";
 "validatorBech32ErrorWrongPayloadLength" = "O conteúdo do endereço do validador tem %d bytes, esperados %d";
@@ -1219,8 +1224,12 @@
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "youAreInLocalMode" = "Você está no modo local";
 "youArePermanentlyDeletingVault" = "Você está excluindo permanentemente sua parte do cofre deste aplicativo";
+"youreClaiming" = "Você está reivindicando";
+"youreMoving" = "Você está movendo";
 "youreSending" = "Você está enviando";
+"youreStaking" = "Você está fazendo stake";
 "youreSwapping" = "Você está trocando";
+"youreUnstaking" = "Você está cancelando o stake";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";
 "yourReferralCode" = "Seu código de indicação";
 "yourSeedphrase" = "Sua frase semente";

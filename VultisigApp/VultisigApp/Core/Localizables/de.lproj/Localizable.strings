@@ -192,6 +192,7 @@
 "claim" = "Beanspruchen";
 "claimBroadcasted" = "Anspruch übertragen";
 "claimFailed" = "Anspruch fehlgeschlagen";
+"claimFromValidators" = "Von %d Validatoren beanspruchen";
 "claimPending" = "Anspruch ausstehend...";
 "claimSuccessful" = "Anspruch erfolgreich";
 "clearFilters" = "Filter löschen";
@@ -200,6 +201,7 @@
 "coinPool" = "%@-Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Chain %@ ist für diesen importierten Vault nicht aktiviert";
 "collectedRewards" = "Gesammelte Belohnungen";
+"commission" = "Provision";
 "compoundedCoin" = "%@ aufgezinst";
 "congratsExclamation" = "Glückwunsch!";
 "congratsSummaryDescription" = "Alles bereit! Du behältst die Kontrolle über jede Transaktion.";
@@ -279,6 +281,7 @@
 "deleteFolder" = "Ordner löschen";
 "deleteVault" = "Lösche deinen Tresor dauerhaft";
 "deleteVaultTitle" = "Tresor löschen";
+"destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
 "deviceBackupDescription" = "Speichern Sie die Gewölbeanteil dieses Geräts.";
 "deviceBackupTitle" = "Gerätesicherung";
@@ -920,6 +923,7 @@
 "slippage" = "Gleitverlust";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
+"sourceValidator" = "Quell-Validator";
 "Spanish" = "Spanisch";
 "stake" = "Staken";
 "Stake" = "Stake";
@@ -1101,6 +1105,7 @@
 "utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
 "validAddressDomainError" = "Falsche Adresse für die ausgewählte Blockchain. Versuchen Sie, die Chain zu Ihrem Tresor hinzuzufügen.";
 "validAddressError" = "Bitte gebe eine gültige Adresse ein.";
+"validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Validator-Adresse ist kein gültiges bech32";
 "validatorBech32ErrorEmpty" = "Validator-Adresse ist leer";
 "validatorBech32ErrorWrongPayloadLength" = "Validator-Adressdaten sind %d Bytes, erwartet %d";
@@ -1219,8 +1224,12 @@
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "youAreInLocalMode" = "Du bist im lokalen Modus";
 "youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresoranteil dauerhaft aus dieser App";
+"youreClaiming" = "Du beanspruchst";
+"youreMoving" = "Du verschiebst";
 "youreSending" = "Du sendest";
+"youreStaking" = "Du stakst";
 "youreSwapping" = "Du tauschst";
+"youreUnstaking" = "Du unstakst";
 "yourFriendsReferralCode" = "Ihr Freundesversuchscode";
 "yourReferralCode" = "Dein Empfehlungscode";
 "yourSeedphrase" = "Ihre Seed-Phrase";

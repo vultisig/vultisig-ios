@@ -192,6 +192,7 @@
 "claim" = "Riscatta";
 "claimBroadcasted" = "Riscatto trasmesso";
 "claimFailed" = "Riscatto non riuscito";
+"claimFromValidators" = "Reclama da %d validatori";
 "claimPending" = "Riscatto in attesa...";
 "claimSuccessful" = "Riscatto riuscito";
 "clearFilters" = "Cancella filtri";
@@ -200,6 +201,7 @@
 "coinPool" = "Pool %@";
 "coinServiceChainNotEnabledForKeyImport" = "La chain %@ non è abilitata per questo vault importato";
 "collectedRewards" = "Premi raccolti";
+"commission" = "commissione";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Congratulazioni!";
 "congratsSummaryDescription" = "Tutto pronto! Mantieni il controllo di ogni transazione.";
@@ -279,6 +281,7 @@
 "deleteFolder" = "Elimina cartella";
 "deleteVault" = "Elimina permanentemente la tua cassaforte";
 "deleteVaultTitle" = "Elimina Cassaforte";
+"destinationValidator" = "Validatore di destinazione";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Memorizza la condivisione Vault di questo dispositivo.";
 "deviceBackupTitle" = "Backup del dispositivo";
@@ -920,6 +923,7 @@
 "slippage" = "Slippage";
 "somethingsWrong" = "Qualcosa non va";
 "somethingWentWrongTryAgain" = "Qualcosa è andato storto, riprova.";
+"sourceValidator" = "Validatore di origine";
 "Spanish" = "Spagnolo";
 "stake" = "Stake";
 "Stake" = "Stake";
@@ -1101,6 +1105,7 @@
 "utxoTooSmallError" = "Gli UTXO disponibili sono troppo piccoli per questa transazione. Gli output di transazione individuali nel tuo portafoglio non soddisfano i requisiti minimi. Considera di consolidare prima gli importi più piccoli.";
 "validAddressDomainError" = "Indirizzo errato per la blockchain selezionata. Prova ad aggiungere la catena al tuo caveau.";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
+"validator" = "Validatore";
 "validatorBech32ErrorBadEncoding" = "L'indirizzo del validatore non è un bech32 valido";
 "validatorBech32ErrorEmpty" = "L'indirizzo del validatore è vuoto";
 "validatorBech32ErrorWrongPayloadLength" = "Il payload dell'indirizzo del validatore è %d byte, attesi %d";
@@ -1219,8 +1224,12 @@
 "youAreEnteringAnewEraHighlight" = "lasciando indietro le vecchie seed phrase.";
 "youAreInLocalMode" = "Sei in modalità locale";
 "youArePermanentlyDeletingVault" = "Stai eliminando definitivamente la tua parte del caveau da questa app";
+"youreClaiming" = "Stai reclamando";
+"youreMoving" = "Stai spostando";
 "youreSending" = "Stai inviando";
+"youreStaking" = "Stai mettendo in stake";
 "youreSwapping" = "Stai scambiando";
+"youreUnstaking" = "Stai annullando lo stake";
 "yourFriendsReferralCode" = "Il tuo codice di riferimento";
 "yourReferralCode" = "Il tuo codice referral";
 "yourSeedphrase" = "La tua seed phrase";
