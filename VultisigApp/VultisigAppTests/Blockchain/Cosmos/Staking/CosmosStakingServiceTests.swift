@@ -104,6 +104,18 @@ final class CosmosStakingServiceTests: XCTestCase {
         XCTAssertFalse(unbonded?.jailed ?? true)
     }
 
+    func testValidatorIdentityDecodesWhenPresentAndCollapsesEmptyToNil() throws {
+        // Validator A advertises a Keybase identity in the fixture; B + C
+        // omit the field. The decoder must preserve the value when
+        // present, default to nil when absent, and collapse the empty
+        // string to nil so the avatar lookup doesn't fire on garbage.
+        let response: CosmosValidatorListResponse = try loadFixture("validators")
+        let validators = response.toValidators()
+        XCTAssertEqual(validators[0].identity, "1234567890ABCDEF")
+        XCTAssertNil(validators[1].identity)
+        XCTAssertNil(validators[2].identity)
+    }
+
     // MARK: - Redelegations
 
     func testRedelegationsResponseFlattensAllEntriesAndDecodesDates() throws {
