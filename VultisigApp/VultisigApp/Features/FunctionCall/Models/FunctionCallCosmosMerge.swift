@@ -95,8 +95,15 @@ final class FunctionCallCosmosMerge {
         selectedToken.value.lowercased() != tokenPlaceholder.lowercased()
     }
 
-    var isTheFormValid: Bool {
-        isTokenSelected && amount > 0
+    /// Submit-time validity gate. Requires the active coin so the
+    /// amount-against-balance check rides in the same predicate the
+    /// Continue button reads. Merge cross-mutates the active coin via
+    /// the token dropdown, so the screen-side `selectedCoin` is the
+    /// correct source of truth for the balance bound.
+    func isFormValid(for coin: Coin) -> Bool {
+        isTokenSelected &&
+        amount > 0 &&
+        amount <= coin.balanceDecimal
     }
 
     var description: String {

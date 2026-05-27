@@ -37,11 +37,12 @@ final class FunctionCallUnstakeTests: XCTestCase {
         XCTAssertEqual(model.nodeAddress, "ton-test")
     }
 
-    /// Pin: legacy required `amountValid && nodeAddressValid`. We
-    /// expose `amount > 0` + multi-chain address validity.
+    /// Pin: validity requires amount > 0, amount <= coin.balanceDecimal,
+    /// and a multi-chain THOR/Maya/TON address. Empty address fails.
     func testFormValidityGatesOnAmountAndAddress() {
         let model = FunctionCallUnstake()
-        XCTAssertFalse(model.isTheFormValid)
+        let coin = FunctionCallFixture.makeTON()
+        XCTAssertFalse(model.isFormValid(for: coin))
         model.nodeAddress = "thor1abc"
         // amount is 1 by default; address must validate.
         XCTAssertEqual(model.amount, 1)

@@ -180,8 +180,14 @@ enum FunctionCallInstance {
         }
     }
 
+    /// Submit-time validity gate. Threads the active coin to every
+    /// sub-model so the amount-against-balance check is part of the
+    /// same predicate the Continue button reads — no no-arg path can
+    /// drift past `amount <= balance` again. Sub-models that don't
+    /// need the coin keep their existing `isTheFormValid` body and the
+    /// parameter just falls through.
     @MainActor
-    var isTheFormValid: Bool {
+    func isFormValid(for coin: Coin) -> Bool {
         switch self {
         case .rebond(let memo):
             return memo.isTheFormValid
@@ -196,17 +202,17 @@ enum FunctionCallInstance {
         case .vote(let memo):
             return memo.isTheFormValid
         case .stake(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
         case .unstake(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
         case .cosmosIBC(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
         case .merge(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
         case .unmerge(let memo):
             return memo.isTheFormValid
         case .theSwitch(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
         case .addThorLP(let memo):
             return memo.isTheFormValid
         case .securedAsset(let memo):

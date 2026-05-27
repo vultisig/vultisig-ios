@@ -86,8 +86,13 @@ final class FunctionCallCosmosIBC {
         selectedChain.value.lowercased() != chainPlaceholder.lowercased()
     }
 
-    var isTheFormValid: Bool {
-        isChainSelected && amount > 0
+    /// Submit-time validity gate. Requires the active coin so the
+    /// amount-against-balance check stays inside the same predicate the
+    /// screen reads.
+    func isFormValid(for coin: Coin) -> Bool {
+        isChainSelected &&
+        amount > 0 &&
+        amount <= coin.balanceDecimal
     }
 
     func handle(addressResult: AddressResult?) {

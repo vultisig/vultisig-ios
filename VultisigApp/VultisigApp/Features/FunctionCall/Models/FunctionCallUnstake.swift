@@ -22,8 +22,14 @@ final class FunctionCallUnstake {
 
     init() {}
 
-    var isTheFormValid: Bool {
-        amount > 0 && FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
+    /// Submit-time validity gate. The active coin must be passed in so
+    /// the amount-against-balance check rides in the same predicate the
+    /// Continue button reads — closing the no-arg drift hole the rest
+    /// of the FunctionCall sub-models had.
+    func isFormValid(for coin: Coin) -> Bool {
+        amount > 0 &&
+        amount <= coin.balanceDecimal &&
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
     }
 
     func handle(addressResult: AddressResult?) {

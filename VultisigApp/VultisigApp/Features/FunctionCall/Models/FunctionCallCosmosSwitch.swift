@@ -73,8 +73,13 @@ final class FunctionCallCosmosSwitch {
         }
     }
 
-    var isTheFormValid: Bool {
+    /// Submit-time validity gate. Requires the active coin so the
+    /// amount-against-balance check rides in the same predicate the
+    /// Continue button reads. The THOR address still goes through the
+    /// multi-chain THOR/Maya/TON validator the legacy code used.
+    func isFormValid(for coin: Coin) -> Bool {
         amount > 0 &&
+        amount <= coin.balanceDecimal &&
         !destinationAddress.isEmpty &&
         FunctionCallAddressValidation.isValidThorMayaTON(thorAddress)
     }

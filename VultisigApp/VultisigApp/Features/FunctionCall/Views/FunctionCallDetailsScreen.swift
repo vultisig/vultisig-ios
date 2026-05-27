@@ -229,7 +229,7 @@ struct FunctionCallDetailsScreen: View {
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
-                guard let fnCallInstance, fnCallInstance.isTheFormValid else {
+                guard let fnCallInstance, fnCallInstance.isFormValid(for: selectedCoin) else {
                     showInvalidFormAlert = true
                     return
                 }

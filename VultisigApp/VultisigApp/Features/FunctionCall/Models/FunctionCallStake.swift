@@ -45,20 +45,12 @@ final class FunctionCallStake {
         amount > 0 && amount <= coin.balanceDecimal
     }
 
-    func isTheFormValid(against coin: Coin) -> Bool {
+    /// Submit-time validity gate. The active coin must be passed in so
+    /// the amount-against-balance check is part of the same predicate
+    /// the screen reads — no separate no-arg shape can drift past it.
+    func isFormValid(for coin: Coin) -> Bool {
         isAmountValid(against: coin) &&
-        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress) &&
-        !amount.isZero
-    }
-
-    /// Form-validity entry that does not depend on a specific coin —
-    /// the screen wires `isTheFormValid` through `FunctionCallInstance`
-    /// without a coin parameter, so the address validity is the gate
-    /// at that layer; the per-coin amount check fires in
-    /// `validate(against:)` from the view-side `.onChange(of: amount)`.
-    var isTheFormValid: Bool {
-        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress) &&
-        amount > 0
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
     }
 
     func handle(addressResult: AddressResult?) {
