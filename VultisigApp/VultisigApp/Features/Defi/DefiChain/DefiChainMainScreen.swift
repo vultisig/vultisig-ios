@@ -128,7 +128,7 @@ struct DefiChainMainScreen: View {
                     )
                 }
             case .stake:
-                if chain == .terra || chain == .terraClassic, let nativeCoin {
+                if chain.isCosmosStakingChain, let nativeCoin {
                     cosmosStakeView(coin: nativeCoin)
                 } else {
                     DefiChainStakedView(
@@ -182,9 +182,14 @@ struct DefiChainMainScreen: View {
     /// cases — the function-call router takes it from there.
     private func cosmosStakeView(coin: Coin) -> some View {
         let fiatAmount = RateProvider.shared.fiatBalance(value: cosmosStakeViewModel.totalStaked, coin: coin)
+        let isPositionEnabled = vault.defiPositions
+            .first(where: { $0.chain == chain })?
+            .staking
+            .contains(where: { $0.ticker == coin.ticker }) ?? false
         return CosmosStakeDefiView(
             coin: coin,
             totalFiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            isPositionEnabled: isPositionEnabled,
             viewModel: cosmosStakeViewModel,
             onDelegate: { coin in
                 onTransactionToPresent(.cosmosDelegate(coin: coin.toCoinMeta()))
@@ -217,7 +222,8 @@ struct DefiChainMainScreen: View {
                     coin: coin.toCoinMeta(),
                     validators: candidates
                 ))
-            }
+            },
+            emptyStateView: { emptyStateView }
         )
     }
 

@@ -18,16 +18,8 @@
 
 import SwiftUI
 
-struct CosmosStakeDefiView: View {
-    let coin: Coin
-    let totalFiat: String
-    @ObservedObject var viewModel: CosmosStakeDefiViewModel
-    var onDelegate: (Coin) -> Void
-    var onUndelegate: (CosmosStakePositionRow) -> Void
-    var onRedelegate: (CosmosStakePositionRow) -> Void
-    var onClaim: ([CosmosStakePositionRow]) -> Void
-
-    private static let apyFormatter: NumberFormatter = {
+private enum CosmosStakeDefiFormatters {
+    static let apy: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.minimumFractionDigits = 2
@@ -35,21 +27,33 @@ struct CosmosStakeDefiView: View {
         return formatter
     }()
 
-    private static let unlockDateFormatter: DateFormatter = {
+    static let unlockDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
     }()
+}
+
+struct CosmosStakeDefiView<EmptyState: View>: View {
+    let coin: Coin
+    let totalFiat: String
+    let isPositionEnabled: Bool
+    @ObservedObject var viewModel: CosmosStakeDefiViewModel
+    var onDelegate: (Coin) -> Void
+    var onUndelegate: (CosmosStakePositionRow) -> Void
+    var onRedelegate: (CosmosStakePositionRow) -> Void
+    var onClaim: ([CosmosStakePositionRow]) -> Void
+    @ViewBuilder var emptyStateView: () -> EmptyState
 
     var body: some View {
         Group {
-            if viewModel.isLoading && viewModel.positions.isEmpty {
+            if !isPositionEnabled {
+                emptyStateView()
+            } else if viewModel.isLoading && viewModel.positions.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.top, 32)
-            } else if viewModel.positions.isEmpty {
-                emptyState
             } else {
                 populatedState
             }
@@ -57,32 +61,12 @@ struct CosmosStakeDefiView: View {
     }
 
     @ViewBuilder
-    private var emptyState: some View {
-        VStack(spacing: 12) {
-            Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
-            Text("noPositionsSelectedTitle".localized)
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text("noPositionsSelectedSubtitle".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 32)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Theme.colors.bgSurface1)
-        )
-    }
-
-    @ViewBuilder
     private var populatedState: some View {
         VStack(spacing: 16) {
             totalStakedCard
-            activeDelegationsCard
+            if !viewModel.positions.isEmpty {
+                activeDelegationsCard
+            }
         }
     }
 
@@ -294,7 +278,7 @@ struct CosmosStakeDefiView: View {
             Spacer()
             Text(String(
                 format: "cosmosStakingUnbondingFooterUnlock".localized,
-                Self.unlockDateFormatter.string(from: unlockDate)
+                CosmosStakeDefiFormatters.unlockDate.string(from: unlockDate)
             ))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
@@ -307,7 +291,7 @@ struct CosmosStakeDefiView: View {
 
     private func apyDisplay(for position: CosmosStakePositionRow) -> String? {
         guard let apyPercent = position.apyPercent else { return nil }
-        return Self.apyFormatter.string(from: NSDecimalNumber(decimal: apyPercent))
+        return CosmosStakeDefiFormatters.apy.string(from: NSDecimalNumber(decimal: apyPercent))
     }
 
     @ViewBuilder

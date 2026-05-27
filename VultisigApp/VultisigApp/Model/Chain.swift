@@ -548,6 +548,19 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
+    /// Cosmos-SDK native staking via delegate / undelegate / redelegate /
+    /// claim-rewards. Only the LUNA / LUNC chains today; other Cosmos
+    /// chains (gaia / kujira / osmosis / etc.) are out of scope for the
+    /// in-app staking UI.
+    var isCosmosStakingChain: Bool {
+        switch self {
+        case .terra, .terraClassic:
+            return true
+        default:
+            return false
+        }
+    }
+
     var type: ChainType {
         switch self {
         case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain:
