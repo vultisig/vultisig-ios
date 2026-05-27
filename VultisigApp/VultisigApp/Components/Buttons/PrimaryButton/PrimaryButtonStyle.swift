@@ -57,7 +57,7 @@ private extension PrimaryButtonStyle {
         case .medium:
             return EdgeInsets(top: 14, leading: 0, bottom: 14, trailing: 0)
         case .small:
-            return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+            return EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0)
         case .mini:
             return EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
         case .squared:
