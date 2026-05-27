@@ -204,6 +204,29 @@ struct CosmosValidator: Equatable {
     /// units). Sufficient for sort-by-power without pulling
     /// staking-pool totals. Future "% of pool" UX needs the pool fetch.
     let votingPower: Decimal
+    /// Keybase identity advertised in the validator description. When set,
+    /// resolves to a profile-picture URL via the Keybase user lookup; absent
+    /// or unresolved validators fall back to the deterministic monogram
+    /// avatar.
+    let identity: String?
+
+    init(
+        operatorAddress: String,
+        moniker: String,
+        commission: Decimal,
+        jailed: Bool,
+        status: Status,
+        votingPower: Decimal,
+        identity: String? = nil
+    ) {
+        self.operatorAddress = operatorAddress
+        self.moniker = moniker
+        self.commission = commission
+        self.jailed = jailed
+        self.status = status
+        self.votingPower = votingPower
+        self.identity = identity
+    }
 
     enum Status: String, Equatable, Codable {
         case bonded
@@ -235,6 +258,12 @@ struct CosmosValidatorListResponse: Decodable {
 
         struct WireDescription: Decodable {
             let moniker: String
+            /// Optional Keybase identity (16-hex string by convention). The
+            /// SDK / Windows resolve this through `keybase.io/_/api/1.0/user/
+            /// lookup.json?key_suffix=…&fields=pictures`. Many validators
+            /// omit it — keep the field optional so a missing `identity`
+            /// doesn't fail the entire validator-list decode.
+            let identity: String?
         }
 
         struct WireCommission: Decodable {
@@ -252,13 +281,16 @@ struct CosmosValidatorListResponse: Decodable {
 
     func toValidators() -> [CosmosValidator] {
         validators.map { wire in
-            CosmosValidator(
+            let identity = wire.description.identity
+                .flatMap { $0.isEmpty ? nil : $0 }
+            return CosmosValidator(
                 operatorAddress: wire.operatorAddress,
                 moniker: wire.description.moniker,
                 commission: Decimal(string: wire.commission.commissionRates.rate) ?? 0,
                 jailed: wire.jailed ?? false,
                 status: mapStatus(wire.status),
-                votingPower: Decimal(string: wire.tokens) ?? 0
+                votingPower: Decimal(string: wire.tokens) ?? 0,
+                identity: identity
             )
         }
     }

@@ -29,6 +29,22 @@ struct CosmosStakingAPI: TargetType {
         /// will need to page — surfaced via a follow-up.
         case bondedValidators
         case redelegations(address: String)
+        /// `/cosmos/mint/v1beta1/inflation` returns the chain's current
+        /// annualized inflation (`cosmos.Dec` string). LUNC's mint module is
+        /// disabled — the endpoint returns 501 / "method not implemented"
+        /// and the resolver collapses to a zero inflation, matching Windows.
+        case mintInflation
+        /// `/cosmos/staking/v1beta1/pool` returns the bonded/not-bonded
+        /// supply totals in base units. Used together with the bank supply
+        /// to derive `bondedRatio = bonded / totalSupply`.
+        case stakingPool
+        /// `/cosmos/bank/v1beta1/supply/by_denom?denom={denom}` — total
+        /// supply of the bond denom in base units. Pair with the staking
+        /// pool to derive `bondedRatio`.
+        case bankSupplyByDenom(denom: String)
+        /// `/cosmos/distribution/v1beta1/params` — community tax skim
+        /// applied before per-validator commission.
+        case distributionParams
     }
 
     var path: String {
@@ -43,6 +59,14 @@ struct CosmosStakingAPI: TargetType {
             return "/cosmos/staking/v1beta1/validators"
         case .redelegations(let address):
             return "/cosmos/staking/v1beta1/delegators/\(address)/redelegations"
+        case .mintInflation:
+            return "/cosmos/mint/v1beta1/inflation"
+        case .stakingPool:
+            return "/cosmos/staking/v1beta1/pool"
+        case .bankSupplyByDenom:
+            return "/cosmos/bank/v1beta1/supply/by_denom"
+        case .distributionParams:
+            return "/cosmos/distribution/v1beta1/params"
         }
     }
 
@@ -58,6 +82,8 @@ struct CosmosStakingAPI: TargetType {
                 ],
                 .urlEncoding
             )
+        case .bankSupplyByDenom(let denom):
+            return .requestParameters(["denom": denom], .urlEncoding)
         default:
             return .requestPlain
         }
