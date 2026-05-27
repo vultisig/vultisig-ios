@@ -5,7 +5,7 @@
       "jailed": false,
       "status": "BOND_STATUS_BONDED",
       "tokens": "50000000000000",
-      "description": { "moniker": "Validator A" },
+      "description": { "moniker": "Validator A", "identity": "1234567890ABCDEF" },
       "commission": { "commission_rates": { "rate": "0.050000000000000000" } }
     },
     {

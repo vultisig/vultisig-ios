@@ -49,20 +49,11 @@ struct ValidatorCard: View {
     }
 
     private var avatar: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Theme.colors.primaryAccent3, Theme.colors.primaryAccent4],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            Text(monogram)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-        }
-        .frame(width: 36, height: 36)
+        KeybaseAvatarView(
+            identity: validator.identity,
+            monogram: monogram,
+            size: 36
+        )
     }
 
     @ViewBuilder
