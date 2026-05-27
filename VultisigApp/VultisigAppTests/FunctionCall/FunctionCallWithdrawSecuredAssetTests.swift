@@ -12,19 +12,11 @@ import XCTest
 @MainActor
 final class FunctionCallWithdrawSecuredAssetTests: XCTestCase {
 
-    private func makeForm(coin: Coin, vault: Vault) -> FunctionCallForm {
-        let form = FunctionCallForm()
-        form.coin = coin
-        form.vault = vault
-        return form
-    }
-
     /// Pin: legacy `toString()` returned `SECURE-:<destinationAddress>`.
     func testToStringMatchesLegacyMemo() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let form = makeForm(coin: rune, vault: vault)
-        let model = FunctionCallWithdrawSecuredAsset(tx: form, vault: vault)
+        let model = FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault)
         model.destinationAddress = "0xL1DestAddr"
         XCTAssertEqual(model.toString(), "SECURE-:0xL1DestAddr")
     }
@@ -32,8 +24,7 @@ final class FunctionCallWithdrawSecuredAssetTests: XCTestCase {
     func testToDictionaryIncludesOperationAndDestination() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let form = makeForm(coin: rune, vault: vault)
-        let model = FunctionCallWithdrawSecuredAsset(tx: form, vault: vault)
+        let model = FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault)
         model.destinationAddress = "0xL1DestAddr"
         let dict = model.toDictionary().allItems()
         XCTAssertEqual(dict["operation"], "withdraw")
@@ -44,8 +35,7 @@ final class FunctionCallWithdrawSecuredAssetTests: XCTestCase {
     func testInitialSelectedSecuredAssetIsPlaceholder() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let form = makeForm(coin: rune, vault: vault)
-        let model = FunctionCallWithdrawSecuredAsset(tx: form, vault: vault)
+        let model = FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault)
         XCTAssertEqual(model.selectedSecuredAsset.value, FunctionCallWithdrawSecuredAsset.initialItemForDropdownText)
     }
 }

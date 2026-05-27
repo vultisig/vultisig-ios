@@ -13,13 +13,6 @@ import XCTest
 @MainActor
 final class FunctionCallAddThorLPTests: XCTestCase {
 
-    private func makeForm(coin: Coin, vault: Vault) -> FunctionCallForm {
-        let form = FunctionCallForm()
-        form.coin = coin
-        form.vault = vault
-        return form
-    }
-
     /// Pin: legacy `toString()` returned the memo produced by
     /// `AddLPMemoData.memo` — keeps the pool-keyed `LP+` shape used
     /// downstream by the THORChain inbound router. The pairedAddress
@@ -27,8 +20,7 @@ final class FunctionCallAddThorLPTests: XCTestCase {
     func testToStringWithoutPairedAddress() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let form = makeForm(coin: rune, vault: vault)
-        let model = FunctionCallAddThorLP(tx: form, vault: vault)
+        let model = FunctionCallAddThorLP(coin: rune, vault: vault)
         model.selectedPool = IdentifiableString(value: "THOR.RUNE")
         // No pairedAddress — memo omits the trailing segment.
         XCTAssertFalse(model.toString().isEmpty)
@@ -37,8 +29,7 @@ final class FunctionCallAddThorLPTests: XCTestCase {
     func testToDictionaryIncludesPoolAndPairedAddress() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let form = makeForm(coin: rune, vault: vault)
-        let model = FunctionCallAddThorLP(tx: form, vault: vault)
+        let model = FunctionCallAddThorLP(coin: rune, vault: vault)
         model.selectedPool = IdentifiableString(value: "BTC.BTC")
         model.pairedAddress = "thor1paired"
         let dict = model.toDictionary().allItems()
@@ -50,8 +41,7 @@ final class FunctionCallAddThorLPTests: XCTestCase {
     func testFormValidityRequiresThorchainEnabled() {
         let btc = FunctionCallFixture.makeBTC()
         let vault = FunctionCallFixture.makeVault(coins: [btc]) // No RUNE
-        let form = makeForm(coin: btc, vault: vault)
-        let model = FunctionCallAddThorLP(tx: form, vault: vault)
+        let model = FunctionCallAddThorLP(coin: btc, vault: vault)
         XCTAssertFalse(model.isThorchainEnabled)
         XCTAssertFalse(model.isTheFormValid)
     }
