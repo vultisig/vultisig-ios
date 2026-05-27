@@ -165,7 +165,9 @@ struct CosmosStakeDefiView: View {
         VStack(spacing: 14) {
             validatorIdentityRow(for: position)
             stakedAmountRow(for: position)
-            apyRow(for: position)
+            if position.apyPercent != nil {
+                apyRow(for: position)
+            }
             Separator(color: Theme.colors.borderLight, opacity: 1)
             nextAwardRow(for: position)
             actionButtons(for: position)
@@ -216,26 +218,28 @@ struct CosmosStakeDefiView: View {
     private func stakedAmountRow(for position: CosmosStakePositionRow) -> some View {
         HStack(alignment: .firstTextBaseline) {
             HiddenBalanceText(String(format: "cosmosStakingStakedRowAmount".localized, formatAmount(position.stakedAmount), coin.ticker))
-                .font(Theme.fonts.title3)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
             HiddenBalanceText(fiatString(for: position.stakedAmount))
-                .font(Theme.fonts.title3)
+                .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 
     @ViewBuilder
     private func apyRow(for position: CosmosStakePositionRow) -> some View {
-        HStack(spacing: 4) {
-            Icon(named: "percent", color: Theme.colors.textTertiary, size: 16)
-            Text("cosmosStakingApy".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Spacer()
-            Text(apyDisplay(for: position))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.alertSuccess)
+        if let apyText = apyDisplay(for: position) {
+            HStack(spacing: 4) {
+                Icon(named: "percent", color: Theme.colors.textTertiary, size: 16)
+                Text("cosmosStakingApy".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                Spacer()
+                Text(apyText)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            }
         }
     }
 
@@ -301,9 +305,9 @@ struct CosmosStakeDefiView: View {
         RateProvider.shared.fiatBalanceString(value: amount, coin: coin)
     }
 
-    private func apyDisplay(for position: CosmosStakePositionRow) -> String {
-        guard let apyPercent = position.apyPercent else { return "—" }
-        return Self.apyFormatter.string(from: NSDecimalNumber(decimal: apyPercent)) ?? "—"
+    private func apyDisplay(for position: CosmosStakePositionRow) -> String? {
+        guard let apyPercent = position.apyPercent else { return nil }
+        return Self.apyFormatter.string(from: NSDecimalNumber(decimal: apyPercent))
     }
 
     @ViewBuilder
