@@ -70,11 +70,13 @@ struct ValidatorSelectionScreen: View {
                 }
             }
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "check") {
+                ToolbarButton(image: "check", type: .confirmation) {
                     confirmSelection()
                 }
                 .disabled(pickedValidator == nil)
-                .opacity(pickedValidator == nil ? 0.5 : 1)
+                .supportsLiquidGlass { view, isSupported in
+                    view.padding(.top, isSupported ? 0 : 16)
+                }
             }
         }
         .applySheetSize()
