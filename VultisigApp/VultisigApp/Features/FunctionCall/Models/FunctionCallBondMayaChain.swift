@@ -1,11 +1,14 @@
 //
-//  FunctionCallBond.swift
+//  FunctionCallBondMayaChain.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
+//  Maya BOND memo sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns selectedAsset / fee /
+//  nodeAddress directly. The matching `BondMayaFormView` is co-located
+//  in this file.
 //
 
-import Combine
+import BigInt
 import Foundation
 import SwiftUI
 
@@ -14,124 +17,118 @@ struct IdentifiableString: Identifiable, Equatable {
     let value: String
 }
 
-class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject {
-    @Published var amount: Decimal = 1
-    @Published var nodeAddress: String = ""
-    @Published var fee: Int64 = .zero
+@Observable
+@MainActor
+final class FunctionCallBondMayaChain {
+    var amount: Decimal = 1
+    var nodeAddress: String = ""
+    var fee: Int64 = .zero
+    var selectedAsset: IdentifiableString
+    var assets: [IdentifiableString] = []
+    var addressError: String?
+    var customErrorMessage: String?
 
-    // Internal
-    @Published var nodeAddressValid: Bool = false
-    @Published var feeValid: Bool = true
-    @Published var assetValid: Bool = false
+    @ObservationIgnored private let assetPlaceholder = "assetLabel".localized
 
-    @Published var selectedAsset: IdentifiableString = .init(value: NSLocalizedString("assetLabel", comment: ""))
-
-    @Published var assets: [IdentifiableString] = []
-
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
-
-    var addressFields: [String: String] {
-        get {
-            let fields = ["nodeAddress": nodeAddress]
-            return fields
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
+    init(assets: [IdentifiableString]?) {
+        self.selectedAsset = .init(value: "assetLabel".localized)
+        if let assets {
+            self.assets = assets
+        } else {
+            Task { @MainActor [weak self] in
+                let response = await Self.loadAssets()
+                self?.assets = response
             }
         }
     }
 
-    private var cancellables = Set<AnyCancellable>()
-
-    required init(assets: [IdentifiableString]?) {
-        if assets != nil {
-            self.assets = assets ?? []
-        }
-    }
-
-    func initialize() {
-        setupValidation()
-
-        if assets.isEmpty {
-            DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets {[weak self] assetsResponse in
-                    self?.assets = assetsResponse.map {
-                        IdentifiableString(value: $0)
-                    }
-                }
+    private static func loadAssets() async -> [IdentifiableString] {
+        await withCheckedContinuation { continuation in
+            MayachainService.shared.getDepositAssets { assetsResponse in
+                continuation.resume(returning: assetsResponse.map { IdentifiableString(value: $0) })
             }
         }
     }
 
-    private func setupValidation() {
-        Publishers.CombineLatest3($nodeAddressValid, $feeValid, $assetValid)
-            .map { $0 && $1 && $2  }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    var isAssetSelected: Bool {
+        selectedAsset.value.lowercased() != assetPlaceholder.lowercased()
+    }
+
+    var isTheFormValid: Bool {
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress) &&
+        isAssetSelected
+    }
+
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        nodeAddress = addressResult.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        let memo =
-        "BOND:\(self.selectedAsset.value):\(self.fee):\(self.nodeAddress)"
-        return memo
+        "BOND:\(selectedAsset.value):\(fee):\(nodeAddress)"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("asset", self.selectedAsset.value)
-        dict.set("LPUNITS", "\(self.fee)")
-        dict.set("nodeAddress", self.nodeAddress)
-        dict.set("memo", self.toString())
+        dict.set("asset", selectedAsset.value)
+        dict.set("LPUNITS", "\(fee)")
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(
-            VStack {
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        _ = isFastVault
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
 
-                GenericSelectorDropDown(
-                    items: .constant(assets),
-                    selected: Binding(
-                        get: { self.selectedAsset },
-                        set: { self.selectedAsset = $0 }
-                    ),
-                    mandatoryMessage: "*",
-                    descriptionProvider: { $0.value },
-                    onSelect: { asset in
-                        self.selectedAsset = asset
-                        self.assetValid = asset.value.lowercased() != NSLocalizedString("assetLabel", comment: "").lowercased()
-                    }
-                )
+struct BondMayaFormView: View {
+    @Bindable var model: FunctionCallBondMayaChain
+    let coin: Coin
 
-                StyledIntegerField(
-                    placeholder: NSLocalizedString("lpUnitsLabel", comment: ""),
-                    value: Binding(
-                        get: { self.fee },
-                        set: { self.fee = $0 }
-                    ),
-                    format: .number,
-                    isValid: Binding(
-                        get: { self.feeValid },
-                        set: { self.feeValid = $0 }
-                    )
-                )
+    var body: some View {
+        VStack {
+            GenericSelectorDropDown(
+                items: .constant(model.assets),
+                selected: $model.selectedAsset,
+                mandatoryMessage: "*",
+                descriptionProvider: { $0.value },
+                onSelect: { asset in
+                    model.selectedAsset = asset
+                }
+            )
 
-                FunctionCallAddressTextField(
-                    memo: self,
-                    addressKey: "nodeAddress",
-                    isAddressValid: Binding(
-                        get: { self.nodeAddressValid },
-                        set: { self.nodeAddressValid = $0 }
-                    )
-                )
-            }.onAppear {
-                self.initialize()
-            })
+            StyledIntegerField(
+                placeholder: "lpUnitsLabel".localized,
+                value: $model.fee,
+                format: .number,
+                isValid: .constant(true)
+            )
+
+            AddressTextField(
+                address: $model.nodeAddress,
+                label: "nodeAddress".localized,
+                coin: coin,
+                error: $model.addressError
+            ) { result in
+                model.handle(addressResult: result)
+            }
+        }
     }
 }

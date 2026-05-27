@@ -2,225 +2,177 @@
 //  FunctionCallCustom.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 24/05/24.
+//  Custom memo sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns token selection, amount, and
+//  free-form memo directly. The matching `CustomFormView` is
+//  co-located in this file. Cross-mutator: writes the screen-owned
+//  `selectedCoin` through a `@Binding<Coin>` when the user picks a
+//  different token from the dropdown.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+@Observable
+@MainActor
+final class FunctionCallCustom {
+    var amount: Decimal = 0.0
+    var custom: String = ""
 
-    @Published var amount: Decimal = 0.0
-    @Published var custom: String = ""
+    var tokens: [IdentifiableString] = []
+    var selectedToken: IdentifiableString
+    var balanceLabel: String
+    var customErrorMessage: String?
 
-    // Token selection
-    @Published var tokens: [IdentifiableString] = []
-    @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("selectToken", comment: "Select Token placeholder"))
-    @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "Amount label when no token selected")
+    @ObservationIgnored private let placeholder: String
+    @ObservationIgnored private let vault: Vault
 
-    // Internal
-    @Published var amountValid: Bool = false
-    @Published var customValid: Bool = false
-
-    @ObservedObject var tx: FunctionCallForm
-    private var vault: Vault
-
-    private var cancellables = Set<AnyCancellable>()
-
-    var addressFields: [String: String] {
-        get { [:] }
-        set { _ = newValue }
-    }
-
-    required init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        let initialPlaceholder = "selectToken".localized
+        self.placeholder = initialPlaceholder
         self.vault = vault
+        self.selectedToken = .init(value: initialPlaceholder)
+        self.balanceLabel = "amountSelectToken".localized
+
+        loadTokens(for: coin.chain)
+        preSelectToken(matching: coin)
     }
 
-    func initialize() {
-        setupValidation()
-        loadTokens()
-        preSelectToken()
-    }
-
-    private func loadTokens() {
-        // Load tokens based on the transaction's chain
-        switch tx.coin.chain {
+    private func loadTokens(for chain: Chain) {
+        switch chain {
         case .thorChain:
-            // Load THORChain tokens from vault: RUNE, RUJI, TCY
-            let thorchainCoins = vault.coins.filter { $0.chain == .thorChain }
-
-            for coin in thorchainCoins {
+            let chainCoins = vault.coins.filter { $0.chain == .thorChain }
+            for coin in chainCoins {
                 let ticker = coin.ticker.uppercased()
-                // Add RUNE (native), RUJI, and TCY
                 if ticker == "RUNE" || ticker == "RUJI" || ticker == "TCY" {
                     tokens.append(.init(value: ticker))
                 }
             }
-
-            // If no tokens found, at least add RUNE
             if tokens.isEmpty {
                 tokens.append(.init(value: "RUNE"))
             }
-
         case .mayaChain:
-            // Load MayaChain tokens from vault: CACAO, MAYA, AZTEC
-            let mayaChainCoins = vault.coins.filter { $0.chain == .mayaChain }
-
-            for coin in mayaChainCoins {
+            let chainCoins = vault.coins.filter { $0.chain == .mayaChain }
+            for coin in chainCoins {
                 let ticker = coin.ticker.uppercased()
-                // Add CACAO (native), MAYA, and AZTEC
                 if ticker == "CACAO" || ticker == "MAYA" || ticker == "AZTEC" {
                     tokens.append(.init(value: ticker))
                 }
             }
-
-            // If no tokens found, at least add CACAO
             if tokens.isEmpty {
                 tokens.append(.init(value: "CACAO"))
             }
-
         default:
             break
         }
     }
 
-    private func preSelectToken() {
-        // Pre-select the current transaction coin if it's in the list
-        let currentTicker = tx.coin.ticker.uppercased()
+    private func preSelectToken(matching coin: Coin) {
+        let currentTicker = coin.ticker.uppercased()
         if let match = tokens.first(where: { $0.value == currentTicker }) {
             selectedToken = match
-            tokenValid = true
             updateBalanceLabel()
         }
     }
 
-    var selectedVaultCoin: Coin? {
-        let ticker = selectedToken.value.lowercased()
+    var isTokenSelected: Bool {
+        selectedToken.value.lowercased() != placeholder.lowercased()
+    }
 
+    func selectedVaultCoin() -> Coin? {
+        let ticker = selectedToken.value.lowercased()
         for coin in vault.coins {
-            // Check THORChain for RUNE, RUJI, TCY
             if coin.chain == .thorChain && coin.ticker.lowercased() == ticker {
                 return coin
             }
-            // Check MayaChain for CACAO, MAYA, AZTEC
             if coin.chain == .mayaChain && coin.ticker.lowercased() == ticker {
                 return coin
             }
         }
-
         return nil
     }
 
     func updateBalanceLabel() {
-        if let coin = selectedVaultCoin {
+        if let coin = selectedVaultCoin() {
             let balance = coin.balanceDecimal.formatForDisplay()
-            balanceLabel = String(format: NSLocalizedString("amountBalance", comment: "Amount with balance"), balance, coin.ticker.uppercased())
+            balanceLabel = String(format: "amountBalance".localized, balance, coin.ticker.uppercased())
         } else {
-            balanceLabel = NSLocalizedString("amountSelectToken", comment: "Amount label when no token selected")
+            balanceLabel = "amountSelectToken".localized
         }
     }
 
-    private func setupValidation() {
-        Publishers.CombineLatest3($amountValid, $customValid, $tokenValid)
-            .map { $0 && $1 && $2 }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    var isTheFormValid: Bool {
+        isTokenSelected && !custom.isEmpty
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return self.custom
+        custom
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("memo", self.toString())
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(FunctionCallCustomView(viewModel: self).onAppear {
-            self.initialize()
-        })
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        _ = isFastVault
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
     }
 }
 
-private struct FunctionCallCustomView: View {
-    @ObservedObject var viewModel: FunctionCallCustom
+struct CustomFormView: View {
+    @Bindable var model: FunctionCallCustom
+    @Binding var selectedCoin: Coin
 
     var body: some View {
         VStack {
-            // Token selection dropdown
             GenericSelectorDropDown(
-                items: Binding(
-                    get: { viewModel.tokens },
-                    set: { viewModel.tokens = $0 }
-                ),
-                selected: Binding(
-                    get: { viewModel.selectedToken },
-                    set: { viewModel.selectedToken = $0 }
-                ),
+                items: $model.tokens,
+                selected: $model.selectedToken,
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { token in
-                    viewModel.selectedToken = token
-                    viewModel.tokenValid = token.value.lowercased() != NSLocalizedString("selectToken", comment: "").lowercased()
-
-                    if let coin = viewModel.selectedVaultCoin {
-                        withAnimation {
-                            viewModel.updateBalanceLabel()
-
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                viewModel.tx.coin = coin
-                                viewModel.objectWillChange.send()
-                            }
-                        }
+                    model.selectedToken = token
+                    if let coin = model.selectedVaultCoin() {
+                        model.updateBalanceLabel()
+                        selectedCoin = coin
                     } else {
-                        viewModel.balanceLabel = NSLocalizedString("amountSelectToken", comment: "")
-                        viewModel.objectWillChange.send()
+                        model.balanceLabel = "amountSelectToken".localized
                     }
                 }
             )
 
             StyledFloatingPointField(
-                label: viewModel.balanceLabel,
-                placeholder: viewModel.balanceLabel,
-                value: Binding(
-                    get: { viewModel.amount },
-                    set: {
-                        viewModel.amount = $0
-                        DispatchQueue.main.async {
-                            viewModel.objectWillChange.send()
-                        }
-                    }
-                ),
-                isValid: Binding(
-                    get: { viewModel.amountValid },
-                    set: { viewModel.amountValid = $0 }
-                ),
+                label: model.balanceLabel,
+                placeholder: model.balanceLabel,
+                value: $model.amount,
+                isValid: .constant(true),
                 isOptional: true
             )
-            .id("field-\(viewModel.selectedToken.value)")
+            .id("field-\(model.selectedToken.value)")
 
             StyledTextField(
-                placeholder: NSLocalizedString("customMemo", comment: "Custom Memo placeholder"),
-                text: Binding(
-                    get: { viewModel.custom },
-                    set: { viewModel.custom = $0 }
-                ),
+                placeholder: "customMemo".localized,
+                text: $model.custom,
                 maxLengthSize: Int.max,
-                isValid: Binding(
-                    get: { viewModel.customValid },
-                    set: { viewModel.customValid = $0 }
-                )
+                isValid: .constant(true)
             )
         }
     }

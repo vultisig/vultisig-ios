@@ -235,6 +235,7 @@
 "deleteFolder" = "删除文件夹";
 "deleteVault" = "永久删除您的保险库";
 "deleteVaultTitle" = "删除保险库";
+"destinationAddress" = "目标地址";
 "device" = "设备";
 "deviceBackupDescription" = "存储此设备的保险库份额";
 "deviceBackupTitle" = "设备备份";
@@ -962,6 +963,7 @@
 "thisVaultOnly" = "仅此保险库";
 "thorAddressAutoFilled" = "THORChain 地址 (自动填充)";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
+"thorchainAddress" = "THORChain 地址";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";

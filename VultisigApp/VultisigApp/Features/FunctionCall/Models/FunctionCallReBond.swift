@@ -2,126 +2,72 @@
 //  FunctionCallReBond.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 26/09/25.
+//  THORChain REBOND sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns two address fields + an
+//  optional rebond amount directly. The RUNE-pin that previously
+//  lived inside `initialize()` is hoisted to
+//  `FunctionCallDetailsScreen.setData()` so the sub-model becomes a
+//  pure value-reader. The matching `ReBondFormView` is co-located.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
-    @Published var rebondAmount: Decimal = 0.0  // Amount to rebond (goes in memo only)
-    @Published var nodeAddress: String = ""
-    @Published var newAddress: String = ""
+@Observable
+@MainActor
+final class FunctionCallReBond {
+    var rebondAmount: Decimal = 0.0
+    var nodeAddress: String = ""
+    var newAddress: String = ""
+    var nodeAddressError: String?
+    var newAddressError: String?
+    var customErrorMessage: String?
 
-    // Internal
-    @Published var rebondAmountValid: Bool = true  // Optional field, defaults to all
-    @Published var nodeAddressValid: Bool = false
-    @Published var newAddressValid: Bool = false
+    init() {}
 
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    /// REBOND transactions burn zero RUNE — the amount is only encoded
+    /// in the memo, not in the on-chain transfer. Matches the legacy
+    /// `FunctionCallInstance.amount` switch for `.rebond`.
+    var amount: Decimal { .zero }
 
-    private var tx: FunctionCallForm
-    private var vault: Vault
+    func balance(for coin: Coin) -> String {
+        let balance = coin.balanceDecimal.formatForDisplay()
+        return "( Balance: \(balance) \(coin.ticker.uppercased()) )"
+    }
 
-    var addressFields: [String: String] {
-        get {
-            return [
-                "nodeAddress": nodeAddress,
-                "newAddress": newAddress
-            ]
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
-            }
-            if let value = newValue["newAddress"] {
-                newAddress = value
-            }
+    func validate(against coin: Coin) {
+        if coin.chain != .thorChain || !coin.isNativeToken {
+            customErrorMessage = "rebondRequiresRune".localized
+        } else {
+            customErrorMessage = nil
         }
     }
 
-    private var cancellables = Set<AnyCancellable>()
-
-    required init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
-        self.vault = vault
+    var isTheFormValid: Bool {
+        rebondAmount >= 0 &&
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress) &&
+        FunctionCallAddressValidation.isValidThorMayaTON(newAddress)
     }
 
-    func initialize() {
-        // Ensure RUNE token is selected for REBOND operations on THORChain
-        DispatchQueue.main.async {
-            if let runeCoin = self.vault.runeCoin {
-                self.tx.coin = runeCoin
-            }
-        }
-        setupValidation()
-        validateRuneToken()
+    func handle(nodeAddressResult: AddressResult?) {
+        guard let result = nodeAddressResult else { return }
+        nodeAddress = result.address
     }
 
-    // IMPORTANT: For REBOND, the actual transaction amount must be 0
-    // The rebondAmount is only used in the memo
-    var amount: Decimal {
-        return 0  // REBOND transactions must send 0 RUNE
-    }
-
-    var balance: String {
-        let balance = tx.coin.balanceDecimal.formatForDisplay()
-
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
-    }
-
-    private func setupValidation() {
-        // Combine validators
-        Publishers.CombineLatest3($rebondAmountValid, $nodeAddressValid, $newAddressValid)
-            .map { amountValid, nodeValid, newValid in
-                // Check all validations
-                let basicValid = amountValid && nodeValid && newValid
-
-                // Clear error if validation passes
-                if basicValid {
-                    self.customErrorMessage = nil
-                }
-
-                return basicValid
-            }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-
-        // Watch for rebond amount changes - just validate it's a positive number or 0
-        $rebondAmount
-            .sink { [weak self] newAmount in
-                guard let self = self else { return }
-                // Rebond amount of 0 is valid (means transfer all)
-                // Any positive amount is also valid
-                self.rebondAmountValid = newAmount >= 0
-                if self.rebondAmountValid && self.nodeAddressValid && self.newAddressValid {
-                    self.customErrorMessage = nil
-                }
-            }
-            .store(in: &cancellables)
-    }
-
-    private func validateRuneToken() {
-        // Ensure we're using RUNE for rebond operations
-        if tx.coin.chain != .thorChain || !tx.coin.isNativeToken {
-            customErrorMessage = NSLocalizedString("rebondRequiresRune", comment: "Error when not using RUNE for Rebond")
-            isTheFormValid = false
-        }
+    func handle(newAddressResult: AddressResult?) {
+        guard let result = newAddressResult else { return }
+        newAddress = result.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        var memo = "REBOND:\(self.nodeAddress):\(self.newAddress)"
-        // Amount is optional - if zero or equal to full bond, it will transfer all
-        if self.rebondAmount > 0 {
-            // Convert decimal amount to smallest unit (assuming 8 decimals for RUNE)
-            // Use NSDecimalNumber for precise decimal scaling, then convert to Int64
-            let amountInSmallestUnit = NSDecimalNumber(decimal: self.rebondAmount)
+        var memo = "REBOND:\(nodeAddress):\(newAddress)"
+        if rebondAmount > 0 {
+            let amountInSmallestUnit = NSDecimalNumber(decimal: rebondAmount)
                 .multiplying(byPowerOf10: 8)
                 .int64Value
             memo += ":\(amountInSmallestUnit)"
@@ -131,72 +77,78 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", self.nodeAddress)
-        dict.set("newAddress", self.newAddress)
-        if self.rebondAmount > 0 {
-            dict.set("rebondAmount", "\(self.rebondAmount)")
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("newAddress", newAddress)
+        if rebondAmount > 0 {
+            dict.set("rebondAmount", "\(rebondAmount)")
         }
-        dict.set("memo", self.toString())
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack {
-            // Node Address field
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
-                )
-            )
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt,
+        isFastVault: Bool
+    ) -> SendTransaction {
+        _ = isFastVault
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
 
-            // New Address field (required)
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "newAddress",
-                isAddressValid: Binding(
-                    get: { self.newAddressValid },
-                    set: { self.newAddressValid = $0 }
-                )
-            )
+struct ReBondFormView: View {
+    @Bindable var model: FunctionCallReBond
+    let coin: Coin
 
-            // Rebond Amount field (optional - if empty, transfers all bonded RUNE)
-            // Note: This amount goes in the memo only, not in the transaction
+    var body: some View {
+        VStack {
+            AddressTextField(
+                address: $model.nodeAddress,
+                label: "nodeAddress".localized,
+                coin: coin,
+                error: $model.nodeAddressError
+            ) { result in
+                model.handle(nodeAddressResult: result)
+            }
+
+            AddressTextField(
+                address: $model.newAddress,
+                label: "newAddress".localized,
+                coin: coin,
+                error: $model.newAddressError
+            ) { result in
+                model.handle(newAddressResult: result)
+            }
+
             StyledFloatingPointField(
                 label: "rebondAmount".localized,
                 placeholder: "rebondAmountPlaceholder".localized,
-                value: Binding(
-                    get: { self.rebondAmount },
-                    set: { newValue in
-                        self.rebondAmount = newValue
-                        self.rebondAmountValid = newValue >= 0
-                    }
-                ),
-                isValid: Binding(
-                    get: { self.rebondAmountValid },
-                    set: { self.rebondAmountValid = $0 }
-                ),
+                value: $model.rebondAmount,
+                isValid: .constant(true),
                 isOptional: true
             )
 
-            // Info message about transaction amount
             Text("rebondNote".localized)
                 .font(.caption)
-                .foregroundColor(.orange)
+                .foregroundStyle(.orange)
                 .padding(.horizontal)
 
-            // Show error message if any
-            if let errorMessage = self.customErrorMessage {
+            if let errorMessage = model.customErrorMessage {
                 Text(errorMessage)
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
                     .padding(.horizontal)
             }
-
-        }.onAppear {
-            self.initialize()
-        })
+        }
+        .onAppear {
+            model.validate(against: coin)
+        }
     }
 }

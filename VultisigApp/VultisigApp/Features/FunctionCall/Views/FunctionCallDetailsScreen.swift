@@ -50,8 +50,8 @@ struct FunctionCallDetailsScreen: View {
                     VStack(spacing: 16) {
                         contractSelector
                         functionSelector
-                        if let fnView = fnCallInstance?.view {
-                            fnView
+                        if let instance = fnCallInstance {
+                            FunctionCallContentView(instance: instance, selectedCoin: $selectedCoin)
                         }
                     }
                 }
@@ -91,22 +91,22 @@ struct FunctionCallDetailsScreen: View {
             let currentNodeAddress = extractNodeAddress(from: fnInstance)
             switch selectedFunctionMemoType {
             case .rebond:
-                // Ensure RUNE token is selected for REBOND operations on THORChain
+                // Ensure RUNE token is selected for REBOND operations on THORChain.
+                // Hoisted here per the FunctionCall sub-model rewrite —
+                // ReBond is a pure value-reader, the screen owns the
+                // RUNE-pin so the sub-model can drop its init-time write.
                 ensureRuneCoin()
-                let rebondInstance = FunctionCallReBond(tx: tx, vault: vault)
+                let rebondInstance = FunctionCallReBond()
 
                 if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                     rebondInstance.nodeAddress = nodeAddress
-                    rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                 }
 
                 fnCallInstance = .rebond(rebondInstance)
             case .bondMaya:
                 DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets {assetsResponse in
-                        let assets = assetsResponse.map {
-                            IdentifiableString(value: $0)
-                        }
+                    MayachainService.shared.getDepositAssets { assetsResponse in
+                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
                         DispatchQueue.main.async {
                             fnCallInstance = .bondMaya(
                                 FunctionCallBondMayaChain(assets: assets)
@@ -117,14 +117,12 @@ struct FunctionCallDetailsScreen: View {
 
             case .unbondMaya:
                 DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets {assetsResponse in
-                        let assets = assetsResponse.map {
-                            IdentifiableString(value: $0)
-                        }
+                    MayachainService.shared.getDepositAssets { assetsResponse in
+                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
                         DispatchQueue.main.async {
                             fnCallInstance = .unbondMaya(
-                                FunctionCallUnbondMayaChain(
-                                    assets: assets))
+                                FunctionCallUnbondMayaChain(assets: assets)
+                            )
                         }
                     }
                 }
@@ -132,36 +130,33 @@ struct FunctionCallDetailsScreen: View {
             case .leave:
                 // Ensure RUNE token is selected for LEAVE operations on THORChain
                 ensureRuneCoin()
-                let leaveInstance = FunctionCallLeave(tx: tx, vault: vault)
+                let leaveInstance = FunctionCallLeave()
 
                 if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                     leaveInstance.nodeAddress = nodeAddress
-                    leaveInstance.addressFields["nodeAddress"] = nodeAddress
-
-                    leaveInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                 }
 
                 fnCallInstance = .leave(leaveInstance)
             case .custom:
-                fnCallInstance = .custom(FunctionCallCustom(tx: tx, vault: vault))
+                fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
             case .vote:
                 fnCallInstance = .vote(FunctionCallVote())
             case .stake:
-                fnCallInstance = .stake(FunctionCallStake(tx: tx))
+                fnCallInstance = .stake(FunctionCallStake(initialAmount: selectedCoin.balanceDecimal))
 
             case .unstake:
                 fnCallInstance = .unstake(FunctionCallUnstake())
 
             case .cosmosIBC:
-                fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, vault: vault))
+                fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
             case .merge:
                 // Ensure RUNE token is selected for MERGE operations on THORChain
                 ensureRuneCoin()
-                fnCallInstance = .merge(FunctionCallCosmosMerge(tx: tx, vault: vault))
+                fnCallInstance = .merge(FunctionCallCosmosMerge(coin: selectedCoin, vault: vault))
             case .unmerge:
-                fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, vault: vault))
+                fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
             case .theSwitch:
-                fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, vault: vault))
+                fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
             case .addThorLP:
                 fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
             case .securedAsset:
@@ -205,15 +200,20 @@ struct FunctionCallDetailsScreen: View {
     }
 
     private func ensureRuneCoin() {
-        // Ensure RUNE token is selected for operations on THORChain
+        // Ensure RUNE token is selected for operations on THORChain.
+        // PR2: also writes `selectedCoin` so the new screen-owned coin
+        // state stays in sync with the legacy `tx.coin` reference until
+        // PR3 removes `tx`.
         if let runeCoin = vault.runeCoin {
             tx.coin = runeCoin
+            selectedCoin = runeCoin
         }
     }
 
     private func ensureTCYCoin() {
         if let tcyCoin = vault.tcyCoin {
             tx.coin = tcyCoin
+            selectedCoin = tcyCoin
         }
     }
 
@@ -244,23 +244,39 @@ struct FunctionCallDetailsScreen: View {
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
-                if let fnCallInstance, fnCallInstance.isTheFormValid {
-                    tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
-                    tx.memo = fnCallInstance.description
-                    tx.memoFunctionDictionary = fnCallInstance.toDictionary()
-                    tx.transactionType = fnCallInstance.getTransactionType()
-                    tx.wasmContractPayload = fnCallInstance.wasmContractPayload
-
-                    if let toAddress = fnCallInstance.toAddress {
-                        tx.toAddress = toAddress
-                    }
-
-                    let immutableTx = SendTransaction.fromForm(tx, vault: vault)
-                    router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
-
-                } else {
+                guard let fnCallInstance, fnCallInstance.isTheFormValid else {
                     showInvalidFormAlert = true
+                    return
                 }
+
+                // PR2: 12 migrated sub-models build the immutable
+                // SendTransaction directly via `toSendTransaction(...)`.
+                // The 3 heavy sub-models (AddThorLP, SecuredAsset,
+                // WithdrawSecuredAsset) still return nil here and fall
+                // through to the legacy `tx`-mutation path until PR3
+                // migrates them.
+                if let migratedTx = fnCallInstance.toSendTransaction(
+                    coin: selectedCoin,
+                    vault: vault,
+                    gas: gas,
+                    isFastVault: isFastVault
+                ) {
+                    router.navigate(to: FunctionCallRoute.verify(tx: migratedTx, vault: vault))
+                    return
+                }
+
+                tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
+                tx.memo = fnCallInstance.description
+                tx.memoFunctionDictionary = fnCallInstance.toDictionary()
+                tx.transactionType = fnCallInstance.getTransactionType()
+                tx.wasmContractPayload = fnCallInstance.wasmContractPayload
+
+                if let toAddress = fnCallInstance.toAddress {
+                    tx.toAddress = toAddress
+                }
+
+                let immutableTx = SendTransaction.fromForm(tx, vault: vault)
+                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
             }
         }
     }
@@ -292,16 +308,13 @@ private extension FunctionCallDetailsScreen {
                     selectedFunctionMemoType = functionType
                     selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
 
-                    let rebondInstance = FunctionCallReBond(tx: tx, vault: vault)
+                    let rebondInstance = FunctionCallReBond()
                     rebondInstance.nodeAddress = nodeAddress
-                    rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let newAddress = dict.get("newAddress") {
                         rebondInstance.newAddress = newAddress
-                        rebondInstance.newAddressValid = Self.validateNodeAddress(newAddress)
                     }
                     if let amountStr = dict.get("rebondAmount"), let amountDecimal = Decimal(string: amountStr) {
                         rebondInstance.rebondAmount = amountDecimal
-                        rebondInstance.rebondAmountValid = true
                     }
                     fnCallInstance = .rebond(rebondInstance)
                 default:
