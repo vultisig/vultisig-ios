@@ -60,9 +60,10 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
 
     func testErc20SourceFeeScalesByNativeDecimalsNotSellTokenDecimals() throws {
         // Regression: the inbound fee asset is the source chain's NATIVE coin (ETH.ETH, 18dp) even
-        // when the SELL token is an ERC-20 (USDC, 6dp). Scaling by the sell token's decimals would
-        // under-count the native-ETH fee by 10^12 (98_846_611 instead of the real wei). The native
-        // ETH source for this same fixture is pinned in testEvmInboundFeeParsedAsWei.
+        // when the SELL token is an ERC-20 (USDC, 6dp). Scaling by the sell token's 6 decimals
+        // instead of ETH's 18 (a 10^12 factor) would round the fee down to BigInt(99) — the
+        // round-up of 0.000098846611703085 × 10^6 — instead of the real 98_846_611_703_085 wei.
+        // The native ETH source for this same fixture is pinned in testEvmInboundFeeParsedAsWei.
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
             from: "v3-erc20-erc20-swap"
