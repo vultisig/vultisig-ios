@@ -199,7 +199,15 @@ extension SwapKitService {
         else {
             return nil
         }
-        let raw = fromCoin.raw(for: amount)
+        // The inbound fee is denominated in the source chain's NATIVE gas coin (e.g. "ETH.ETH",
+        // "SOL.SOL"), never the sell token. Scaling by `fromCoin.decimals` under-counts the fee
+        // for an ERC-20 / SPL token source (e.g. USDC's 6 vs ETH's 18 — off by 10^12), which reads
+        // as dust on the Network Fee row and weakens the gas-coin balance check. Scale by the
+        // chain's native decimals — identical to `fromCoin.decimals` on a native-source route.
+        var scaled = amount * pow(Decimal(10), nativeDecimals(for: fromCoin.chain))
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .up)
+        let raw = BigInt(rounded.description) ?? .zero
         return raw == .zero ? nil : raw
     }
 }
@@ -247,6 +255,20 @@ private extension SwapKitService {
         case .thorChain, .thorChainChainnet, .thorChainStagenet: return "THOR"
         case .mayaChain: return "MAYA"
         default: return fallback
+        }
+    }
+
+    /// Native gas-coin decimals for a SwapKit source chain. The inbound fee is always denominated
+    /// in the source chain's native coin, so it must be scaled by these — not the sell token's
+    /// decimals (which differ for an ERC-20 / SPL token source). Equal to the source coin's own
+    /// decimals on a native-source route.
+    func nativeDecimals(for chain: Chain) -> Int {
+        switch chain {
+        case .solana, .sui, .ton: return 9
+        case .tron, .cardano, .ripple, .gaiaChain: return 6
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash: return 8
+        // EVM chains (ETH / BASE / OP / ARB / AVAX / BSC / POL).
+        default: return 18
         }
     }
 }
