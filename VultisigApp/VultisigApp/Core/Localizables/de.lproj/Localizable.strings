@@ -210,8 +210,8 @@
 "copyAddress" = "Adresse kopieren";
 "correctAmountCheck" = "Die Menge ist korrekt";
 "cosmosStakingActionClaim" = "Einfordern";
-"cosmosStakingActionDelegate" = "Delegieren";
-"cosmosStakingActionRedelegate" = "Neudelegieren";
+"cosmosStakingActionDelegate" = "Einsatz";
+"cosmosStakingActionRedelegate" = "Bewegen";
 "cosmosStakingActionUndelegate" = "Entstaken";
 "cosmosStakingActiveDelegations" = "Aktive Delegationen";
 "cosmosStakingApy" = "APY";

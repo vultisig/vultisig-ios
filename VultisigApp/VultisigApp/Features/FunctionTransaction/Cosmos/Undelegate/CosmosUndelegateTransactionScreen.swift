@@ -37,8 +37,6 @@ struct CosmosUndelegateTransactionScreen: View {
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
-            validatorSummary
-
             FormExpandableSection(
                 title: viewModel.amountField.label ?? .empty,
                 isValid: viewModel.amountField.valid,
@@ -49,20 +47,16 @@ struct CosmosUndelegateTransactionScreen: View {
             ) {
                 focusedFieldBinding = $0 ? .amount : nil
             } content: {
-                VStack(spacing: 12) {
-                    AmountTextField(
-                        amount: $viewModel.amountField.value,
-                        error: $viewModel.amountField.error,
-                        ticker: viewModel.coin.ticker,
-                        type: .slider,
-                        availableAmount: viewModel.stakedBalance,
-                        decimals: viewModel.coin.decimals,
-                        percentage: $percentageSelected
-                    )
-                    .focused($focusedField, equals: .amount)
-
-                    unbondingLockNotice
-                }
+                AmountTextField(
+                    amount: $viewModel.amountField.value,
+                    error: $viewModel.amountField.error,
+                    ticker: viewModel.coin.ticker,
+                    type: .slider,
+                    availableAmount: viewModel.stakedBalance,
+                    decimals: viewModel.coin.decimals,
+                    percentage: $percentageSelected
+                )
+                .focused($focusedField, equals: .amount)
             }
         }
         .onLoad {
@@ -80,50 +74,8 @@ struct CosmosUndelegateTransactionScreen: View {
         }
     }
 
-    @ViewBuilder
-    private var validatorSummary: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("cosmosStakingValidatorPicker".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            HStack(spacing: 8) {
-                Text(viewModel.validatorMoniker.isEmpty
-                     ? truncated(viewModel.validatorAddress)
-                     : viewModel.validatorMoniker)
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-
-    @ViewBuilder
-    private var unbondingLockNotice: some View {
-        if let message = viewModel.unbondingLockMessage {
-            HStack(spacing: 8) {
-                Icon(named: "info", color: Theme.colors.textTertiary, size: 14)
-                Text(message)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-            }
-            .padding(12)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(8)
-        }
-    }
-
     private func onContinue() {
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
         onVerify(transactionBuilder)
-    }
-
-    private func truncated(_ address: String) -> String {
-        guard address.count > 14 else { return address }
-        return address.prefix(8) + "…" + address.suffix(4)
     }
 }

@@ -210,8 +210,8 @@
 "copyAddress" = "Kopiraj adresu";
 "correctAmountCheck" = "Iznos je točan";
 "cosmosStakingActionClaim" = "Preuzmi";
-"cosmosStakingActionDelegate" = "Delegiraj";
-"cosmosStakingActionRedelegate" = "Redelegiraj";
+"cosmosStakingActionDelegate" = "Ulog";
+"cosmosStakingActionRedelegate" = "Potez";
 "cosmosStakingActionUndelegate" = "Skidanje stake-a";
 "cosmosStakingActiveDelegations" = "Aktivne Delegacije";
 "cosmosStakingApy" = "APY";

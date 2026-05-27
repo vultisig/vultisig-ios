@@ -2,11 +2,10 @@
 //  CosmosRedelegateTransactionScreen.swift
 //  VultisigApp
 //
-//  Redelegate input form for LUNA / LUNC. Source validator read-only,
-//  destination via the shared `ValidatorSelectionScreen` (source
-//  excluded). If the source is under a 21-day redelegation cooldown,
-//  the cooldown notice replaces the amount section and Continue is
-//  disabled.
+//  Redelegate input form for LUNA / LUNC. Amount first, then destination
+//  picker via the shared `ValidatorSelectionScreen` (source excluded).
+//  If the source is under a 21-day redelegation cooldown, the cooldown
+//  notice replaces the form and Continue is disabled.
 //
 
 import SwiftUI
@@ -38,27 +37,9 @@ struct CosmosRedelegateTransactionScreen: View {
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
-            sourceSummary
-
             if let cooldownMessage = viewModel.cooldownBlockedMessage {
                 cooldownNotice(message: cooldownMessage)
             } else {
-                FormExpandableSection(
-                    title: "cosmosStakingRedelegateDestination".localized,
-                    isValid: viewModel.selectedDstValidator != nil,
-                    value: viewModel.selectedDstValidator?.moniker ?? "",
-                    showValue: viewModel.selectedDstValidator != nil,
-                    focusedField: $focusedFieldBinding,
-                    focusedFieldEquals: .destination
-                ) {
-                    focusedFieldBinding = $0 ? .destination : .amount
-                    if $0 {
-                        showValidatorPicker = true
-                    }
-                } content: {
-                    destinationButton
-                }
-
                 FormExpandableSection(
                     title: viewModel.amountField.label ?? .empty,
                     isValid: viewModel.amountField.valid,
@@ -79,6 +60,22 @@ struct CosmosRedelegateTransactionScreen: View {
                         percentage: $percentageSelected
                     )
                     .focused($focusedField, equals: .amount)
+                }
+
+                FormExpandableSection(
+                    title: "cosmosStakingRedelegateDestination".localized,
+                    isValid: viewModel.selectedDstValidator != nil,
+                    value: viewModel.selectedDstValidator?.moniker ?? "",
+                    showValue: viewModel.selectedDstValidator != nil,
+                    focusedField: $focusedFieldBinding,
+                    focusedFieldEquals: .destination
+                ) {
+                    focusedFieldBinding = $0 ? .destination : .amount
+                    if $0 {
+                        showValidatorPicker = true
+                    }
+                } content: {
+                    destinationButton
                 }
             }
         }
@@ -108,27 +105,6 @@ struct CosmosRedelegateTransactionScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
-        }
-    }
-
-    @ViewBuilder
-    private var sourceSummary: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("cosmosStakingRedelegateSource".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            HStack(spacing: 8) {
-                Text(viewModel.validatorSrcMoniker.isEmpty
-                     ? truncated(viewModel.validatorSrcAddress)
-                     : viewModel.validatorSrcMoniker)
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 

@@ -210,8 +210,8 @@
 "copyAddress" = "复制地址";
 "correctAmountCheck" = "金额正确";
 "cosmosStakingActionClaim" = "领取";
-"cosmosStakingActionDelegate" = "委托";
-"cosmosStakingActionRedelegate" = "重新委托";
+"cosmosStakingActionDelegate" = "赌注";
+"cosmosStakingActionRedelegate" = "移动";
 "cosmosStakingActionUndelegate" = "取消质押";
 "cosmosStakingActiveDelegations" = "当前委托";
 "cosmosStakingApy" = "APY";

@@ -212,8 +212,8 @@
 "copyAddress" = "Copy address";
 "correctAmountCheck" = "The amount is correct";
 "cosmosStakingActionClaim" = "Claim";
-"cosmosStakingActionDelegate" = "Delegate";
-"cosmosStakingActionRedelegate" = "Redelegate";
+"cosmosStakingActionDelegate" = "Stake";
+"cosmosStakingActionRedelegate" = "Move";
 "cosmosStakingActionUndelegate" = "Unstake";
 "cosmosStakingActiveDelegations" = "Active Delegations";
 "cosmosStakingApy" = "APY";

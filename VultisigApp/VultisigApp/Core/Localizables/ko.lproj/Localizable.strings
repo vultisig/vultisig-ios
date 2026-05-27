@@ -212,8 +212,8 @@
 "copyAddress" = "주소 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
 "cosmosStakingActionClaim" = "청구";
-"cosmosStakingActionDelegate" = "위임";
-"cosmosStakingActionRedelegate" = "재위임";
+"cosmosStakingActionDelegate" = "말뚝";
+"cosmosStakingActionRedelegate" = "이동하다";
 "cosmosStakingActionUndelegate" = "언스테이킹";
 "cosmosStakingActiveDelegations" = "활성 위임";
 "cosmosStakingApy" = "APY";
