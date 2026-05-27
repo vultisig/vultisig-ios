@@ -92,6 +92,9 @@ struct CosmosDelegateTransactionScreen: View {
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
         }
+        .onChange(of: viewModel.selectedValidator) { _, _ in
+            focusedFieldBinding = .amount
+        }
         .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
