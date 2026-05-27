@@ -145,16 +145,6 @@ final class SwapDetailsViewModel {
         fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
-    // MARK: - Picker helpers
-
-    func pickerFromCoinsForChain() -> [Coin] {
-        SwapCryptoLogic.pickerFromCoins(fromCoins: fromCoins, selected: fromCoin, fromChain: fromChain)
-    }
-
-    func pickerToCoinsForChain() -> [Coin] {
-        SwapCryptoLogic.pickerToCoins(toCoins: toCoins, selected: toCoin, toChain: toChain)
-    }
-
     func handleFromChainUpdate(vault: Vault) {
         guard
             let fromChain,
