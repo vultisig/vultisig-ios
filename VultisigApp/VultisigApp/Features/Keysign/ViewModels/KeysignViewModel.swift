@@ -910,19 +910,21 @@ class KeysignViewModel: ObservableObject {
     }
 
     func customMessageSignature() -> String {
-        guard let sig = signatures.first?.value else { return .empty }
-        let result: Result<Data, Error>
         switch keysignType {
+        case .ECDSA:
+            guard let sig = signatures.first?.value else { return .empty }
+            switch sig.getSignatureWithRecoveryID() {
+            case .success(let data): return data.hexString
+            case .failure: return .empty
+            }
         case .EdDSA:
-            result = sig.getSignature()
-        case .ECDSA, .MLDSA:
-            result = sig.getSignatureWithRecoveryID()
-        }
-        switch result {
-        case .success(let data):
-            return data.hexString
-        case .failure:
-            return .empty
+            guard let sig = signatures.first?.value else { return .empty }
+            switch sig.getSignature() {
+            case .success(let data): return data.hexString
+            case .failure: return .empty
+            }
+        case .MLDSA:
+            return dilithiumSignatures.first?.value.signature ?? .empty
         }
     }
 
