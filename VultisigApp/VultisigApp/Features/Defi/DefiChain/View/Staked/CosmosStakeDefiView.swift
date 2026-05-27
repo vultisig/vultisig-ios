@@ -274,7 +274,11 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
 
     @ViewBuilder
     private func perRowUnlockFooter(unlockDate: Date) -> some View {
+        let unbondingDays = (try? CosmosStakingConfig.unbondingDays(for: coin.chain)) ?? 21
         HStack {
+            Text(String(format: "cosmosStakingUnbondingFooterDays".localized, unbondingDays))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
             Text(String(
                 format: "cosmosStakingUnbondingFooterUnlock".localized,

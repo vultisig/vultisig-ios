@@ -239,7 +239,6 @@
 "cosmosStakingNoValidatorsFound" = "Nessun validatore trovato";
 "cosmosStakingPendingUnbondings" = "Unbonding in sospeso";
 "cosmosStakingRedelegateCooldownBlocked" = "Impossibile redelegare da questo validatore fino a %@";
-"cosmosStakingRedelegateDestination" = "Al validatore";
 "cosmosStakingRedelegateSource" = "Dal validatore";
 "cosmosStakingRedelegateTitle" = "Redelega %@";
 "cosmosStakingSelectValidator" = "Seleziona validatore";

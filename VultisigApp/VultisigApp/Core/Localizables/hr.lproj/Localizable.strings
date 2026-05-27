@@ -239,7 +239,6 @@
 "cosmosStakingNoValidatorsFound" = "Nije pronađen nijedan validator";
 "cosmosStakingPendingUnbondings" = "Razdvajanja na čekanju";
 "cosmosStakingRedelegateCooldownBlocked" = "Redelegacija s ovog validatora nije moguća do %@";
-"cosmosStakingRedelegateDestination" = "Na validatora";
 "cosmosStakingRedelegateSource" = "Od validatora";
 "cosmosStakingRedelegateTitle" = "Redelegiraj %@";
 "cosmosStakingSelectValidator" = "Odaberite validatora";

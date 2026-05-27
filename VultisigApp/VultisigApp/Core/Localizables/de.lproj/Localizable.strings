@@ -239,7 +239,6 @@
 "cosmosStakingNoValidatorsFound" = "Keine Validatoren gefunden";
 "cosmosStakingPendingUnbondings" = "Ausstehende Entbindungen";
 "cosmosStakingRedelegateCooldownBlocked" = "Neudelegation von diesem Validator bis %@ nicht möglich";
-"cosmosStakingRedelegateDestination" = "An Validator";
 "cosmosStakingRedelegateSource" = "Von Validator";
 "cosmosStakingRedelegateTitle" = "Neudelegieren %@";
 "cosmosStakingSelectValidator" = "Validator auswählen";

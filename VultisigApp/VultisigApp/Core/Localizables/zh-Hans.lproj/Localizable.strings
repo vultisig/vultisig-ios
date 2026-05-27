@@ -239,7 +239,6 @@
 "cosmosStakingNoValidatorsFound" = "未找到验证人";
 "cosmosStakingPendingUnbondings" = "解绑中";
 "cosmosStakingRedelegateCooldownBlocked" = "直到 %@ 之前无法从该验证者重新委托";
-"cosmosStakingRedelegateDestination" = "目标验证者";
 "cosmosStakingRedelegateSource" = "源验证者";
 "cosmosStakingRedelegateTitle" = "重新委托 %@";
 "cosmosStakingSelectValidator" = "选择验证人";

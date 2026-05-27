@@ -63,7 +63,7 @@ struct CosmosRedelegateTransactionScreen: View {
                 }
 
                 FormPickerSection(
-                    title: "cosmosStakingRedelegateDestination".localized,
+                    title: "validator".localized,
                     isValid: viewModel.selectedDstValidator != nil,
                     onTap: { showValidatorPicker = true },
                     valueView: { selectedDestinationPreview }
