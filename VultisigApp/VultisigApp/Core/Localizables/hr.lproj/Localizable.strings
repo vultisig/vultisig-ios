@@ -232,6 +232,7 @@
 "cosmosStakingErrorUnsupportedChain" = "Cosmos staking nije podržan za %@";
 "cosmosStakingErrorValidatorPreflightFailed" = "Adresa validatora odbijena bech32 preflightom: %@";
 "cosmosStakingInsufficientGas" = "Nedovoljno %@ za gas — preuzmi od manje validatora";
+"cosmosStakingNextAward" = "Sljedeća nagrada";
 "cosmosStakingNoDelegations" = "Nema aktivnih delegacija";
 "cosmosStakingNoValidatorsFound" = "Nije pronađen nijedan validator";
 "cosmosStakingPendingUnbondings" = "Razdvajanja na čekanju";
@@ -247,6 +248,7 @@
 "cosmosStakingUnbondingLockNotice" = "Zaključavanje od %d dana — otključava se %@";
 "cosmosStakingUndelegateTitle" = "Povući %@";
 "cosmosStakingValidatorActive" = "Aktivan";
+"cosmosStakingValidatorChurnedOut" = "Isključen";
 "cosmosStakingValidatorJailed" = "Zatvoren";
 "cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Troškovi";

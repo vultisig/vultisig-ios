@@ -232,6 +232,7 @@
 "cosmosStakingErrorUnsupportedChain" = "Staking Cosmos não suportado para %@";
 "cosmosStakingErrorValidatorPreflightFailed" = "Endereço de validador rejeitado pelo preflight bech32: %@";
 "cosmosStakingInsufficientGas" = "%@ insuficiente para gás — reivindique de menos validadores";
+"cosmosStakingNextAward" = "Próxima recompensa";
 "cosmosStakingNoDelegations" = "Sem delegações ativas";
 "cosmosStakingNoValidatorsFound" = "Nenhum validador encontrado";
 "cosmosStakingPendingUnbondings" = "Unbondings pendentes";
@@ -247,6 +248,7 @@
 "cosmosStakingUnbondingLockNotice" = "Bloqueio de %d dias — desbloqueia em %@";
 "cosmosStakingUndelegateTitle" = "Cancelar stake %@";
 "cosmosStakingValidatorActive" = "Ativo";
+"cosmosStakingValidatorChurnedOut" = "Excluído";
 "cosmosStakingValidatorJailed" = "Suspenso";
 "cosmosStakingValidatorPicker" = "Validador";
 "costs" = "Custos";
