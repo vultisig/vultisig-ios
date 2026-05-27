@@ -118,36 +118,16 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
 
     var body: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
-            Button {
-                isExpanded.toggle()
-                onExpand(isExpanded)
-            } label: {
-                HStack(spacing: 12) {
-                    Text(title)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
-
-                    if isValid && !isExpanded {
-                        HStack(spacing: 12) {
-                            valueView()
-                                .showIf(showValue)
-                            Spacer()
-                            HStack {
-                                Image(systemName: "checkmark.circle")
-                                    .foregroundColor(Theme.colors.alertSuccess)
-                                Image(systemName: "pencil")
-                                    .foregroundColor(Theme.colors.textPrimary)
-                            }
-                        }
-                    } else {
-                        Spacer()
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+            FormSectionHeader(
+                title: title,
+                showValue: showValue,
+                indicator: isValid && !isExpanded ? .editable : .hidden,
+                action: {
+                    isExpanded.toggle()
+                    onExpand(isExpanded)
+                },
+                valueView: valueView
+            )
         } content: {
             GradientListSeparator()
             content()

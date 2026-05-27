@@ -12,7 +12,7 @@ import SwiftUI
 
 struct CosmosRedelegateTransactionScreen: View {
     enum FocusedField {
-        case destination, amount
+        case amount
     }
 
     @StateObject private var viewModel: CosmosRedelegateTransactionViewModel
@@ -48,7 +48,7 @@ struct CosmosRedelegateTransactionScreen: View {
                     focusedField: $focusedFieldBinding,
                     focusedFieldEquals: .amount
                 ) {
-                    focusedFieldBinding = $0 ? .amount : .destination
+                    focusedFieldBinding = $0 ? .amount : nil
                 } content: {
                     AmountTextField(
                         amount: $viewModel.amountField.value,
@@ -62,20 +62,12 @@ struct CosmosRedelegateTransactionScreen: View {
                     .focused($focusedField, equals: .amount)
                 }
 
-                FormExpandableSection(
+                FormPickerSection(
                     title: "cosmosStakingRedelegateDestination".localized,
-                    isValid: viewModel.selectedDstValidator != nil,
-                    value: viewModel.selectedDstValidator?.moniker ?? "",
                     showValue: viewModel.selectedDstValidator != nil,
-                    focusedField: $focusedFieldBinding,
-                    focusedFieldEquals: .destination
+                    onTap: { showValidatorPicker = true }
                 ) {
-                    focusedFieldBinding = $0 ? .destination : .amount
-                    if $0 {
-                        showValidatorPicker = true
-                    }
-                } content: {
-                    destinationButton
+                    selectedDestinationPreview
                 }
             }
         }
@@ -109,31 +101,31 @@ struct CosmosRedelegateTransactionScreen: View {
     }
 
     @ViewBuilder
-    private var destinationButton: some View {
-        Button {
-            showValidatorPicker = true
-        } label: {
+    private var selectedDestinationPreview: some View {
+        if let validator = viewModel.selectedDstValidator {
+            let display = validator.moniker.isEmpty
+                ? truncated(validator.operatorAddress)
+                : validator.moniker
             HStack(spacing: 8) {
-                if let validator = viewModel.selectedDstValidator {
-                    Text(validator.moniker.isEmpty
-                         ? truncated(validator.operatorAddress)
-                         : validator.moniker)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                } else {
-                    Text("cosmosStakingSelectValidator".localized)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-                Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+                KeybaseAvatarView(
+                    identity: validator.identity,
+                    monogram: String(display.prefix(1)).uppercased(),
+                    size: 20
+                )
+                Text(display)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+        } else {
+            EmptyView()
         }
-        .buttonStyle(.plain)
+    }
+
+    private func truncated(_ address: String) -> String {
+        guard address.count > 14 else { return address }
+        return address.prefix(8) + "…" + address.suffix(4)
     }
 
     private func cooldownNotice(message: String) -> some View {
@@ -151,22 +143,11 @@ struct CosmosRedelegateTransactionScreen: View {
     }
 
     private func onContinue() {
-        switch focusedFieldBinding {
-        case .destination:
+        guard viewModel.selectedDstValidator != nil else {
             showValidatorPicker = true
-        case .amount, .none:
-            guard viewModel.selectedDstValidator != nil else {
-                focusedFieldBinding = .destination
-                showValidatorPicker = true
-                return
-            }
-            guard let transactionBuilder = viewModel.transactionBuilder else { return }
-            onVerify(transactionBuilder)
+            return
         }
-    }
-
-    private func truncated(_ address: String) -> String {
-        guard address.count > 14 else { return address }
-        return address.prefix(8) + "…" + address.suffix(4)
+        guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        onVerify(transactionBuilder)
     }
 }
