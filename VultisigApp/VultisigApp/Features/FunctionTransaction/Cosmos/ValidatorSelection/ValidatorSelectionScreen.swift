@@ -42,6 +42,10 @@ struct ValidatorSelectionScreen: View {
     }
 
     var body: some View {
+        content.sheetContainer()
+    }
+
+    private var content: some View {
         Screen {
             VStack(spacing: 8) {
                 SearchTextField(value: $viewModel.searchText)
@@ -79,7 +83,6 @@ struct ValidatorSelectionScreen: View {
                 }
             }
         }
-        .applySheetSize()
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
         .onLoad {
