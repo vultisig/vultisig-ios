@@ -1122,8 +1122,6 @@
 "validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Validator address is not valid bech32";
 "validatorBech32ErrorEmpty" = "Validator address is empty";
-"validatorBech32ErrorWrongPayloadLength" = "Validator address payload is %d bytes, expected %d";
-"validatorBech32ErrorWrongPrefix" = "Validator address prefix '%@' does not match expected '%@'";
 "value" = "Value";
 "vault" = "Vault";
 "vaultAlreadyExists" = "Vault already exists";

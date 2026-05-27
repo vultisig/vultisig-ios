@@ -1107,8 +1107,6 @@
 "validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Adresa validatora nije valjani bech32";
 "validatorBech32ErrorEmpty" = "Adresa validatora je prazna";
-"validatorBech32ErrorWrongPayloadLength" = "Sadržaj adrese validatora ima %d bajtova, očekivano %d";
-"validatorBech32ErrorWrongPrefix" = "Prefiks adrese validatora '%@' ne odgovara očekivanom '%@'";
 "value" = "Vrijednost";
 "vault" = "Sefovi";
 "vaultAlreadyExists" = "Spremište već postoji";

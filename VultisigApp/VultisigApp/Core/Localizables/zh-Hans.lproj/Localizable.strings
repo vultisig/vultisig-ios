@@ -1108,8 +1108,6 @@
 "validator" = "验证人";
 "validatorBech32ErrorBadEncoding" = "验证人地址不是有效的 bech32";
 "validatorBech32ErrorEmpty" = "验证人地址为空";
-"validatorBech32ErrorWrongPayloadLength" = "验证人地址载荷为 %d 字节,期望 %d";
-"validatorBech32ErrorWrongPrefix" = "验证人地址前缀“%@”与期望的“%@”不匹配";
 "value" = "价值";
 "vault" = "保险库";
 "vaultAlreadyExists" = "保险库已存在";

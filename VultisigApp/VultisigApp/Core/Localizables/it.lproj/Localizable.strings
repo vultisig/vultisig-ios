@@ -1107,8 +1107,6 @@
 "validator" = "Validatore";
 "validatorBech32ErrorBadEncoding" = "L'indirizzo del validatore non è un bech32 valido";
 "validatorBech32ErrorEmpty" = "L'indirizzo del validatore è vuoto";
-"validatorBech32ErrorWrongPayloadLength" = "Il payload dell'indirizzo del validatore è %d byte, attesi %d";
-"validatorBech32ErrorWrongPrefix" = "Il prefisso dell'indirizzo del validatore '%@' non corrisponde a quello atteso '%@'";
 "value" = "Valore";
 "vault" = "Cassaforte";
 "vaultAlreadyExists" = "Il caveau esiste già";

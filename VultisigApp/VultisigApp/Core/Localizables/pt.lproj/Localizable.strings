@@ -1107,8 +1107,6 @@
 "validator" = "Validador";
 "validatorBech32ErrorBadEncoding" = "O endereço do validador não é bech32 válido";
 "validatorBech32ErrorEmpty" = "O endereço do validador está vazio";
-"validatorBech32ErrorWrongPayloadLength" = "O conteúdo do endereço do validador tem %d bytes, esperados %d";
-"validatorBech32ErrorWrongPrefix" = "O prefixo do endereço do validador '%@' não corresponde ao esperado '%@'";
 "value" = "Valor";
 "vault" = "Cofre";
 "vaultAlreadyExists" = "O cofre já existe";

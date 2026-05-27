@@ -2,10 +2,10 @@
 //  ValidatorBech32PreflightTests.swift
 //  VultisigAppTests
 //
-//  Mirrors the agent-app `requireValoper(...)` guard at
-//  `vultiagent-app/src/services/cosmosTx.ts:1110-1140`. Every test case
-//  exists to fail loud before the MPC ceremony spends a signing round on
-//  a tx the chain will reject.
+//  Black-box behavioral spec for `ValidatorBech32Preflight.validate(_:for:)`.
+//  Tests assert acceptance / rejection only — the preflight wraps
+//  WalletCore's bech32 + 20-byte Cosmos address validation, so we don't
+//  pin internal error discriminants.
 //
 
 @testable import VultisigApp
@@ -22,9 +22,7 @@ final class ValidatorBech32PreflightTests: XCTestCase {
     }
 
     func testGarbageStringIsRejected() {
-        XCTAssertThrowsError(try ValidatorBech32Preflight.validate("not bech32 at all!!", for: .terra)) { error in
-            XCTAssertEqual(error as? ValidatorBech32Preflight.ValidatorBech32Error, .badEncoding)
-        }
+        XCTAssertThrowsError(try ValidatorBech32Preflight.validate("not bech32 at all!!", for: .terra))
     }
 
     func testStringWithoutSeparatorIsRejected() {
@@ -45,30 +43,14 @@ final class ValidatorBech32PreflightTests: XCTestCase {
         // operator address. The valoper form is what x/staking expects;
         // accidentally using the account form would burn an MPC ceremony.
         let address = makeAddress(hrp: "terra", payloadLength: 20)
-        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra)) { error in
-            guard case .wrongPrefix(let actual, let expected) =
-                    error as? ValidatorBech32Preflight.ValidatorBech32Error else {
-                XCTFail("Expected wrongPrefix, got \(error)")
-                return
-            }
-            XCTAssertEqual(actual, "terra")
-            XCTAssertEqual(expected, "terravaloper")
-        }
+        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra))
     }
 
     func testCosmoshubValoperRejectedOnTerraChain() {
         // Cosmoshub valoper would pass a generic "cosmos" prefix check —
         // the per-chain HRP guard is the only thing that catches it.
         let address = makeAddress(hrp: "cosmosvaloper", payloadLength: 20)
-        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra)) { error in
-            guard case .wrongPrefix(let actual, let expected) =
-                    error as? ValidatorBech32Preflight.ValidatorBech32Error else {
-                XCTFail("Expected wrongPrefix, got \(error)")
-                return
-            }
-            XCTAssertEqual(actual, "cosmosvaloper")
-            XCTAssertEqual(expected, "terravaloper")
-        }
+        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra))
     }
 
     // MARK: - Payload length
@@ -76,18 +58,10 @@ final class ValidatorBech32PreflightTests: XCTestCase {
     func testThirtyTwoByteConsensusPayloadIsRejected() {
         // *valconspub1… consensus pubkeys are 32 bytes wrapped in the same
         // bech32 envelope. The HRP differs in production, but a malicious
-        // submitter could spoof the valoper HRP — the payload-length guard
-        // catches that.
+        // submitter could spoof the valoper HRP — WalletCore's
+        // 20-byte Cosmos-address guard catches that.
         let address = makeAddress(hrp: "terravaloper", payloadLength: 32)
-        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra)) { error in
-            guard case .wrongPayloadLength(let actual, let expected) =
-                    error as? ValidatorBech32Preflight.ValidatorBech32Error else {
-                XCTFail("Expected wrongPayloadLength, got \(error)")
-                return
-            }
-            XCTAssertEqual(actual, 32)
-            XCTAssertEqual(expected, 20)
-        }
+        XCTAssertThrowsError(try ValidatorBech32Preflight.validate(address, for: .terra))
     }
 
     // MARK: - Happy path
@@ -102,16 +76,6 @@ final class ValidatorBech32PreflightTests: XCTestCase {
         // the same address.
         let address = makeAddress(hrp: "terravaloper", payloadLength: 20)
         XCTAssertNoThrow(try ValidatorBech32Preflight.validate(address, for: .terraClassic))
-    }
-
-    // MARK: - Decode primitive (covers the bech32 routine itself)
-
-    func testRoundTripDecodeProducesOriginalHrpAndPayload() throws {
-        let payload = Data((0..<20).map { _ in UInt8.random(in: 0...255) })
-        let address = encodeBech32(hrp: "terravaloper", payload: Array(payload))
-        let decoded = try ValidatorBech32Preflight.decode(address)
-        XCTAssertEqual(decoded.hrp, "terravaloper")
-        XCTAssertEqual(decoded.payload, Array(payload))
     }
 
     func testFlippedChecksumByteIsRejected() {
@@ -140,8 +104,8 @@ final class ValidatorBech32PreflightTests: XCTestCase {
     }
 
     /// Test-only bech32 encoder used to assemble inputs. The production
-    /// code only ever decodes, so this round-trip helper lives in the test
-    /// target — keeps the prod surface narrower.
+    /// code only validates via WalletCore, so this round-trip helper lives
+    /// in the test target — keeps the prod surface narrower.
     private func encodeBech32(hrp: String, payload: [UInt8]) -> String {
         let charset = Array("qpzry9x8gf2tvdw0s3jn54khce6mua7l")
         let data5Bit = convertBits(payload, from: 8, to: 5, pad: true)

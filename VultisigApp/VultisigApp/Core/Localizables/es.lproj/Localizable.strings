@@ -1107,8 +1107,6 @@
 "validator" = "Validador";
 "validatorBech32ErrorBadEncoding" = "La dirección del validador no es un bech32 válido";
 "validatorBech32ErrorEmpty" = "La dirección del validador está vacía";
-"validatorBech32ErrorWrongPayloadLength" = "La carga útil de la dirección del validador es de %d bytes, se esperaban %d";
-"validatorBech32ErrorWrongPrefix" = "El prefijo de la dirección del validador '%@' no coincide con el esperado '%@'";
 "value" = "Valor";
 "vault" = "Caja Fuerte";
 "vaultAlreadyExists" = "El almacén ya existe";

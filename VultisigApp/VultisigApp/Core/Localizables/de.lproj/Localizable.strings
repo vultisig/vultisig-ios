@@ -1107,8 +1107,6 @@
 "validator" = "Validator";
 "validatorBech32ErrorBadEncoding" = "Validator-Adresse ist kein gültiges bech32";
 "validatorBech32ErrorEmpty" = "Validator-Adresse ist leer";
-"validatorBech32ErrorWrongPayloadLength" = "Validator-Adressdaten sind %d Bytes, erwartet %d";
-"validatorBech32ErrorWrongPrefix" = "Validator-Adresspräfix '%@' stimmt nicht mit erwartetem '%@' überein";
 "value" = "Wert";
 "vault" = "Tresore";
 "vaultAlreadyExists" = "Tresor existiert bereits";
