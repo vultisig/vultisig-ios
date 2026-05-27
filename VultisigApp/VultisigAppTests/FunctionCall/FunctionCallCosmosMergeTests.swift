@@ -48,4 +48,16 @@ final class FunctionCallCosmosMergeTests: XCTestCase {
         // For native source, amount initializes to 0.0 per legacy.
         XCTAssertEqual(model.amount, 0.0)
     }
+
+    /// Pin: amount > coin.balanceDecimal must fail the submit-time gate.
+    /// Closes the latent over-balance hole — the no-arg `var
+    /// isTheFormValid` only checked `isTokenSelected && amount > 0`.
+    func testFormValidityRejectsAmountOverBalance() {
+        let rune = FunctionCallFixture.makeRUNE(rawBalance: "1000000000")
+        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let model = FunctionCallCosmosMerge(coin: rune, vault: vault)
+        model.selectedToken = IdentifiableString(value: "THOR.RUJI")
+        model.amount = rune.balanceDecimal + 1
+        XCTAssertFalse(model.isFormValid(for: rune))
+    }
 }

@@ -61,4 +61,15 @@ final class FunctionCallUnstakeTests: XCTestCase {
         XCTAssertEqual(tx.toAddress, "ton-validator")
         XCTAssertEqual(tx.transactionType, .unspecified)
     }
+
+    /// Pin: amount > coin.balanceDecimal must fail the submit-time gate.
+    /// Closes the latent over-balance hole the no-arg `var isTheFormValid`
+    /// left for user-edited amounts.
+    func testFormValidityRejectsAmountOverBalance() {
+        let model = FunctionCallUnstake()
+        let coin = FunctionCallFixture.makeTON(rawBalance: "1000000000") // 1 TON
+        model.nodeAddress = FunctionCallFixture.thorAddress
+        model.amount = coin.balanceDecimal + 1
+        XCTAssertFalse(model.isFormValid(for: coin))
+    }
 }
