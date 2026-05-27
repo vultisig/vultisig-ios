@@ -11,7 +11,7 @@ import SwiftUI
 
 struct CosmosDelegateTransactionScreen: View {
     enum FocusedField {
-        case amount
+        case validator, amount
     }
 
     @StateObject private var viewModel: CosmosDelegateTransactionViewModel
@@ -44,7 +44,7 @@ struct CosmosDelegateTransactionScreen: View {
                 focusedField: $focusedFieldBinding,
                 focusedFieldEquals: .amount
             ) {
-                focusedFieldBinding = $0 ? .amount : nil
+                focusedFieldBinding = $0 ? .amount : .validator
             } content: {
                 VStack(spacing: 12) {
                     AmountTextField(
@@ -62,7 +62,21 @@ struct CosmosDelegateTransactionScreen: View {
                 }
             }
 
-            validatorPicker
+            FormExpandableSection(
+                title: "cosmosStakingValidatorPicker".localized,
+                isValid: viewModel.selectedValidator != nil,
+                value: viewModel.selectedValidator?.moniker ?? "",
+                showValue: viewModel.selectedValidator != nil,
+                focusedField: $focusedFieldBinding,
+                focusedFieldEquals: .validator
+            ) {
+                focusedFieldBinding = $0 ? .validator : .amount
+                if $0 {
+                    showValidatorPicker = true
+                }
+            } content: {
+                validatorButton
+            }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
             ValidatorSelectionScreen(
@@ -88,36 +102,31 @@ struct CosmosDelegateTransactionScreen: View {
     }
 
     @ViewBuilder
-    private var validatorPicker: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("cosmosStakingValidatorPicker".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Button {
-                showValidatorPicker = true
-            } label: {
-                HStack(spacing: 8) {
-                    if let validator = viewModel.selectedValidator {
-                        Text(validator.moniker.isEmpty
-                             ? truncated(validator.operatorAddress)
-                             : validator.moniker)
-                            .font(Theme.fonts.bodyMMedium)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    } else {
-                        Text("cosmosStakingSelectValidator".localized)
-                            .font(Theme.fonts.bodyMMedium)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    }
-                    Spacer()
-                    Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+    private var validatorButton: some View {
+        Button {
+            showValidatorPicker = true
+        } label: {
+            HStack(spacing: 8) {
+                if let validator = viewModel.selectedValidator {
+                    Text(validator.moniker.isEmpty
+                         ? truncated(validator.operatorAddress)
+                         : validator.moniker)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                } else {
+                    Text("cosmosStakingSelectValidator".localized)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(Theme.colors.bgSurface1)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                Spacer()
+                Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(Theme.colors.bgSurface1)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -137,12 +146,18 @@ struct CosmosDelegateTransactionScreen: View {
     }
 
     private func onContinue() {
-        guard viewModel.selectedValidator != nil else {
+        switch focusedFieldBinding {
+        case .validator:
             showValidatorPicker = true
-            return
+        case .amount, .none:
+            guard viewModel.selectedValidator != nil else {
+                focusedFieldBinding = .validator
+                showValidatorPicker = true
+                return
+            }
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
         }
-        guard let transactionBuilder = viewModel.transactionBuilder else { return }
-        onVerify(transactionBuilder)
     }
 
     private func truncated(_ address: String) -> String {
