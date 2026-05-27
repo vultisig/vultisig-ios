@@ -35,6 +35,27 @@ struct DefiBalanceService {
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
     }
+
+    /// Number of DeFi positions with a non-zero balance for `chain`. Mirrors
+    /// `positionsWithBalanceCount` on Windows (`useDefiChainPortfolios`):
+    /// - THORChain / MayaChain: enabled bond + stake + LP positions with amount > 0.
+    /// - Tron: `1` if any TRX is staked (frozen + unfreezing), else `0`.
+    /// - Terra / TerraClassic: number of native delegations on the vault.
+    /// Other DeFi chains fall back to the count of coins with a non-zero DeFi balance.
+    func defiPositionCount(for chain: Chain, vault: Vault) -> Int {
+        switch chain {
+        case .thorChain:
+            thorChainPositionCount(for: vault)
+        case .mayaChain:
+            mayaChainPositionCount(for: vault)
+        case .tron:
+            tronPositionCount(for: vault)
+        case .terra, .terraClassic:
+            cosmosStakingPositionCount(chain: chain, vault: vault)
+        default:
+            defaultPositionCount(chain: chain, for: vault)
+        }
+    }
 }
 
 private extension DefiBalanceService {
@@ -137,5 +158,61 @@ private extension DefiBalanceService {
             return coin.fiat(decimal: position.amount)
         }
         .reduce(Decimal.zero, +)
+    }
+
+    // MARK: - Position counts
+
+    func thorChainPositionCount(for vault: Vault) -> Int {
+        thorMayaPositionCount(for: vault, chain: .thorChain)
+    }
+
+    func mayaChainPositionCount(for vault: Vault) -> Int {
+        thorMayaPositionCount(for: vault, chain: .mayaChain)
+    }
+
+    func thorMayaPositionCount(for vault: Vault, chain: Chain) -> Int {
+        guard
+            let coin = vault.nativeCoin(for: chain),
+            let enabledPositions = vault.defiPositions.first(where: { $0.chain == chain })
+        else { return 0 }
+
+        let coinMeta = coin.toCoinMeta()
+
+        let bondCount = enabledPositions.bonds.contains(coinMeta)
+            ? vault.bondPositions
+                .filter { $0.node.coin == coinMeta && $0.amount > 0 }
+                .count
+            : 0
+
+        let stakeCount = vault.stakePositions
+            .filter { enabledPositions.staking.contains($0.coin) && $0.amount > 0 }
+            .count
+
+        let lpCount = vault.lpPositions
+            .filter { $0.coin1.chain == chain && enabledPositions.lps.contains($0.coin2) && $0.coin1Amount > 0 }
+            .count
+
+        return bondCount + stakeCount + lpCount
+    }
+
+    func tronPositionCount(for vault: Vault) -> Int {
+        guard let trx = vault.nativeCoin(for: .tron) else { return 0 }
+        return trx.stakedBalanceDecimal > 0 ? 1 : 0
+    }
+
+    func cosmosStakingPositionCount(chain: Chain, vault: Vault) -> Int {
+        guard
+            let coin = vault.nativeCoin(for: chain),
+            let enabledPositions = vault.defiPositions.first(where: { $0.chain == chain }),
+            enabledPositions.staking.contains(coin.toCoinMeta())
+        else { return 0 }
+
+        return vault.stakePositions.filter { $0.coin.chain == chain }.count
+    }
+
+    func defaultPositionCount(chain: Chain, for vault: Vault) -> Int {
+        vault.coins
+            .filter { $0.chain == chain && $0.defiBalanceInFiatDecimal > 0 }
+            .count
     }
 }

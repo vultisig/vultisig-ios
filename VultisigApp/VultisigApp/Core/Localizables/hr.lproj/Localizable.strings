@@ -271,6 +271,8 @@
 "dappRequestFrom" = "Zahtjev od";
 "date" = "Datum";
 "decimalAmountError" = "Iznos mora biti decimalan.";
+"defiChainNoPositions" = "Nema pronađenih pozicija";
+"defiChainPositionsCount" = "%d pozicija";
 "defiPortfolio" = "DeFi Portfelj";
 "defiRefreshFailed" = "Nije moguće osvježiti pozicije. Povuci za ponovni pokušaj.";
 "delete" = "Izbriši";

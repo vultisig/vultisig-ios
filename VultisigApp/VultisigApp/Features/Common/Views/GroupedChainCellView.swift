@@ -12,6 +12,11 @@ struct GroupedChainCellView: View {
     let vault: Vault
     let fiatBalance: String
     let cryptoBalance: String
+    /// When provided, replaces the default `N assets` / `cryptoBalance` subtitle.
+    /// Used by DeFi rows to render `"%d positions"` / "No positions found" instead
+    /// of wallet asset counts. The override is rendered with the small caption font
+    /// (matching multi-asset spacing).
+    var trailingSubtitleOverride: String?
     var onCopy: (() -> Void)?
 
     @State private var trailingSubtitle: String = ""
@@ -84,6 +89,9 @@ struct GroupedChainCellView: View {
         .onChange(of: fiatBalance) { _, _ in
             updateTexts()
         }
+        .onChange(of: trailingSubtitleOverride) { _, _ in
+            updateTexts()
+        }
         .onChange(of: homeViewModel.hideVaultBalance) { _, _ in
             updateTexts()
         }
@@ -102,6 +110,14 @@ private extension GroupedChainCellView {
     }
 
     func updateTrailingSubtitle() {
+        if let override = trailingSubtitleOverride {
+            withAnimation(.interpolatingSpring) {
+                self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : override
+                self.trailingSubtitleFont = Theme.fonts.caption12
+            }
+            return
+        }
+
         let count = chainCoins.count
         let showPrice = count > 1
         let trailingSubtitle = showPrice ? "\(count) \("assets".localized)" : cryptoBalance

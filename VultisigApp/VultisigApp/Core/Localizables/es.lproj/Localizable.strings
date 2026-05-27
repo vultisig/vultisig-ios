@@ -271,6 +271,8 @@
 "dappRequestFrom" = "Solicitud de";
 "date" = "Fecha";
 "decimalAmountError" = "El monto debe ser decimal.";
+"defiChainNoPositions" = "No se encontraron posiciones";
+"defiChainPositionsCount" = "%d posiciones";
 "defiPortfolio" = "Portafolio DeFi";
 "defiRefreshFailed" = "No se pudieron actualizar las posiciones. Desliza para reintentar.";
 "delete" = "Eliminar";

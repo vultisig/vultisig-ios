@@ -271,6 +271,8 @@
 "dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
 "decimalAmountError" = "Der Betrag muss eine Dezimalzahl sein.";
+"defiChainNoPositions" = "Keine Positionen gefunden";
+"defiChainPositionsCount" = "%d Positionen";
 "defiPortfolio" = "DeFi Portfolio";
 "defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";
 "delete" = "Löschen";

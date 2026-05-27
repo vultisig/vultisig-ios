@@ -271,6 +271,8 @@
 "dappRequestFrom" = "请求来自";
 "date" = "日期";
 "decimalAmountError" = "金额必须为小数。";
+"defiChainNoPositions" = "未找到任何持仓";
+"defiChainPositionsCount" = "%d 个持仓";
 "defiPortfolio" = "DeFi 投资组合";
 "defiRefreshFailed" = "无法刷新仓位。下拉重试。";
 "delete" = "删除";
