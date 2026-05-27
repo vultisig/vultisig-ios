@@ -13,19 +13,19 @@ import SwiftUI
 
 struct FormPickerSection<ValueView: View>: View {
     let title: String
-    let showValue: Bool
+    let isValid: Bool
     let onTap: () -> Void
     let valueView: () -> ValueView
 
     init(
         title: String,
         value: String,
-        showValue: Bool,
+        isValid: Bool,
         onTap: @escaping () -> Void
     ) where ValueView == AnyView {
         self.init(
             title: title,
-            showValue: showValue,
+            isValid: isValid,
             onTap: onTap,
             valueView: {
                 AnyView(Text(value)
@@ -39,12 +39,12 @@ struct FormPickerSection<ValueView: View>: View {
 
     init(
         title: String,
-        showValue: Bool,
+        isValid: Bool,
         onTap: @escaping () -> Void,
         @ViewBuilder valueView: @escaping () -> ValueView
     ) {
         self.title = title
-        self.showValue = showValue
+        self.isValid = isValid
         self.onTap = onTap
         self.valueView = valueView
     }
@@ -53,8 +53,8 @@ struct FormPickerSection<ValueView: View>: View {
         SendFormExpandableSection(isExpanded: false) {
             FormSectionHeader(
                 title: title,
-                showValue: showValue,
-                indicator: .picker,
+                showValue: isValid,
+                indicator: isValid ? .editable : .picker,
                 action: onTap,
                 valueView: valueView
             )
