@@ -83,8 +83,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 )
             }
 
-            await MainActor.run { isLoading = false }
-            return try await keysignPayloadFactory.buildTransfer(
+            let basePayload = try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -95,6 +94,45 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 vault: vault,
                 wasmExecuteContractPayload: tx.wasmContractPayload
             )
+
+            await MainActor.run { isLoading = false }
+
+            // Cosmos staking branch — `buildTransfer` defaults `signData` to
+            // nil, which downstream resolves to MsgSend. For delegate /
+            // undelegate / redelegate / withdrawRewards we need a SignDoc
+            // carrying the proto-encoded Cosmos staking message instead, or
+            // the chain rejects with a bech32-prefix mismatch on the
+            // validator address. Mirrors `SendCryptoVerifyLogic`.
+            if tx.cosmosStakingPayload != nil {
+                let signDirect = try CosmosStakingSignDataResolver.resolve(
+                    sendTransaction: tx,
+                    chainSpecific: chainSpecific
+                )
+                return KeysignPayload(
+                    coin: basePayload.coin,
+                    toAddress: basePayload.toAddress,
+                    toAmount: basePayload.toAmount,
+                    chainSpecific: basePayload.chainSpecific,
+                    utxos: basePayload.utxos,
+                    memo: basePayload.memo,
+                    swapPayload: basePayload.swapPayload,
+                    approvePayload: basePayload.approvePayload,
+                    vaultPubKeyECDSA: basePayload.vaultPubKeyECDSA,
+                    vaultLocalPartyID: basePayload.vaultLocalPartyID,
+                    libType: basePayload.libType,
+                    wasmExecuteContractPayload: basePayload.wasmExecuteContractPayload,
+                    tronTransferContractPayload: basePayload.tronTransferContractPayload,
+                    tronTriggerSmartContractPayload: basePayload.tronTriggerSmartContractPayload,
+                    tronTransferAssetContractPayload: basePayload.tronTransferAssetContractPayload,
+                    qbtcClaimPayload: basePayload.qbtcClaimPayload,
+                    isQbtcClaim: basePayload.isQbtcClaim,
+                    skipBroadcast: basePayload.skipBroadcast,
+                    signData: .signDirect(signDirect),
+                    dappMetadata: basePayload.dappMetadata
+                )
+            }
+
+            return basePayload
         } catch {
             let errorMessage: String
             switch error {
