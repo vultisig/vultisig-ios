@@ -57,8 +57,6 @@ struct CosmosDelegateTransactionScreen: View {
                         percentage: $percentageSelected
                     )
                     .focused($focusedField, equals: .amount)
-
-                    gasReservationInfo
                 }
             }
 
@@ -127,22 +125,6 @@ struct CosmosDelegateTransactionScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
-    }
-
-    @ViewBuilder
-    private var gasReservationInfo: some View {
-        if let message = viewModel.gasReservationMessage {
-            HStack(spacing: 8) {
-                Icon(named: "info", color: Theme.colors.textTertiary, size: 14)
-                Text(message)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-            }
-            .padding(12)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(8)
-        }
     }
 
     private func onContinue() {

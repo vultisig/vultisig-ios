@@ -767,7 +767,6 @@
 "requestToBond" = "본드 요청";
 "resendNotification" = "알림 재전송";
 "resendNotificationIn" = "%@ 후 알림 재전송";
-"reservesForGas" = "가스를 위해 %@ %@ 예약";
 "reshare" = "재공유";
 "reshareLabelDisclaimer" = "모든 재공유 작업에는 항상 기기 임계값이 필요합니다.";
 "reshareLabelSubtitle" = "재공유는 볼트의 기기 수를 새로 고치고, 확장하거나 줄이는 데 사용할 수 있습니다.";

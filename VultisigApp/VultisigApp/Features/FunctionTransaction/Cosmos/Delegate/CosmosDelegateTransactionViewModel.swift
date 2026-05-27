@@ -53,18 +53,6 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
         return remaining > 0 ? remaining : 0
     }
 
-    /// Gas-reservation message shown inline under the amount field — mirrors
-    /// the `StakeTransactionViewModel.gasReservationMessage` pattern for
-    /// CACAO.
-    var gasReservationMessage: String? {
-        guard feeReservation > 0 else { return nil }
-        return String(
-            format: "reservesForGas".localized,
-            feeReservation.formatted(),
-            coin.ticker
-        )
-    }
-
     private var feeReservation: Decimal {
         guard let entry = try? CosmosStakingConfig.entry(for: coin.chain) else {
             return 0

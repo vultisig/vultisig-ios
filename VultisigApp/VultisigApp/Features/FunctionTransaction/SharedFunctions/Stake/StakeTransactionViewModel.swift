@@ -39,17 +39,6 @@ final class StakeTransactionViewModel: ObservableObject, Form {
         return coin.balanceDecimal
     }
 
-    /// Gas reservation message for CACAO
-    var gasReservationMessage: String? {
-        if coin.ticker.uppercased() == "CACAO" {
-            let reserved = coin.balanceDecimal - maxStakeableAmount
-            if reserved > 0 {
-                return String(format: "reservesForGas".localized, reserved.formatted(), "CACAO")
-            }
-        }
-        return nil
-    }
-
     init(coin: Coin, vault: Vault, isAutocompound: Bool) {
         self.coin = coin
         self.vault = vault
