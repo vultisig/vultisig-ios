@@ -27,6 +27,14 @@ struct CosmosStakeDefiView: View {
     var onRedelegate: (CosmosStakePositionRow) -> Void
     var onClaim: ([CosmosStakePositionRow]) -> Void
 
+    private static let apyFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .percent
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.positions.isEmpty {
@@ -147,74 +155,129 @@ struct CosmosStakeDefiView: View {
 
     @ViewBuilder
     private func positionRow(for position: CosmosStakePositionRow) -> some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 8) {
-                validatorAvatar(for: position)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(position.validatorMoniker.isEmpty
-                         ? truncated(position.validatorAddress)
-                         : position.validatorMoniker)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .lineLimit(1)
-                    HStack {
-                        Text(truncated(position.validatorAddress))
-                            .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                            .lineLimit(1)
-                        Spacer(minLength: 8)
-                        Text("cosmosStakingValidatorActive".localized)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.alertSuccess)
-                    }
-                }
-            }
+        VStack(spacing: 14) {
+            validatorIdentityRow(for: position)
+            stakedAmountRow(for: position)
+            apyRow(for: position)
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+            nextAwardRow(for: position)
+            actionButtons(for: position)
+        }
+    }
 
-            HStack(alignment: .firstTextBaseline) {
-                HiddenBalanceText(String(format: "cosmosStakingStakedRowAmount".localized, formatAmount(position.stakedAmount), coin.ticker))
+    @ViewBuilder
+    private func validatorIdentityRow(for position: CosmosStakePositionRow) -> some View {
+        HStack(spacing: 8) {
+            validatorAvatar(for: position)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(position.validatorMoniker.isEmpty
+                     ? truncated(position.validatorAddress)
+                     : position.validatorMoniker)
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-                if position.pendingReward > 0 {
-                    HiddenBalanceText("+\(formatAmount(position.pendingReward)) \(coin.ticker)")
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.alertSuccess)
-                }
-            }
-
-            HStack(spacing: 8) {
-                PrimaryButton(
-                    title: "cosmosStakingActionUndelegate".localized,
-                    type: .secondary,
-                    size: .small
-                ) {
-                    onUndelegate(position)
-                }
-                PrimaryButton(
-                    title: "cosmosStakingActionRedelegate".localized,
-                    type: .secondary,
-                    size: .small
-                ) {
-                    onRedelegate(position)
-                }
-                PrimaryButton(
-                    title: "cosmosStakingActionDelegate".localized,
-                    size: .small
-                ) {
-                    onDelegate(coin)
-                }
-            }
-
-            if position.pendingReward > 0 {
-                PrimaryButton(
-                    title: "cosmosStakingActionClaim".localized,
-                    type: .secondary,
-                    size: .small
-                ) {
-                    onClaim([position])
+                    .lineLimit(1)
+                HStack {
+                    Text(truncated(position.validatorAddress))
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .lineLimit(1)
+                    Spacer(minLength: 8)
+                    statusBadge(for: position)
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func statusBadge(for position: CosmosStakePositionRow) -> some View {
+        switch position.validatorStatus {
+        case .active:
+            Text("cosmosStakingValidatorActive".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.alertSuccess)
+        case .churnedOut:
+            Text("cosmosStakingValidatorChurnedOut".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.alertWarning)
+        }
+    }
+
+    @ViewBuilder
+    private func stakedAmountRow(for position: CosmosStakePositionRow) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            HiddenBalanceText(String(format: "cosmosStakingStakedRowAmount".localized, formatAmount(position.stakedAmount), coin.ticker))
+                .font(Theme.fonts.title3)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Spacer()
+            HiddenBalanceText(fiatString(for: position.stakedAmount))
+                .font(Theme.fonts.title3)
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
+    }
+
+    @ViewBuilder
+    private func apyRow(for position: CosmosStakePositionRow) -> some View {
+        HStack(spacing: 4) {
+            Icon(named: "percent", color: Theme.colors.textTertiary, size: 16)
+            Text("cosmosStakingApy".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            Text(apyDisplay(for: position))
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.alertSuccess)
+        }
+    }
+
+    @ViewBuilder
+    private func nextAwardRow(for position: CosmosStakePositionRow) -> some View {
+        HStack(spacing: 4) {
+            Icon(named: "trophy", color: Theme.colors.textTertiary, size: 16)
+            Text("cosmosStakingNextAward".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            HiddenBalanceText("\(formatAmount(position.pendingReward)) \(coin.ticker)")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private func actionButtons(for position: CosmosStakePositionRow) -> some View {
+        let isChurnedOut = position.validatorStatus == .churnedOut
+        HStack(spacing: 8) {
+            PrimaryButton(
+                title: "cosmosStakingActionUndelegate".localized,
+                type: .secondary,
+                size: .small
+            ) {
+                onUndelegate(position)
+            }
+            .disabled(isChurnedOut)
+            PrimaryButton(
+                title: "cosmosStakingActionRedelegate".localized,
+                type: .secondary,
+                size: .small
+            ) {
+                onRedelegate(position)
+            }
+            PrimaryButton(
+                title: "cosmosStakingActionDelegate".localized,
+                size: .small
+            ) {
+                onDelegate(coin)
+            }
+        }
+    }
+
+    private func fiatString(for amount: Decimal) -> String {
+        RateProvider.shared.fiatBalanceString(value: amount, coin: coin)
+    }
+
+    private func apyDisplay(for position: CosmosStakePositionRow) -> String {
+        guard let apyPercent = position.apyPercent else { return "—" }
+        return Self.apyFormatter.string(from: NSDecimalNumber(decimal: apyPercent)) ?? "—"
     }
 
     @ViewBuilder
