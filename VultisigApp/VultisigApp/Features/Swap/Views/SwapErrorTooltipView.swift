@@ -56,6 +56,9 @@ struct SwapErrorTooltipView: View {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorTitle
         }
+        if let normalized = normalizedSwapKitError {
+            return normalized.errorTitle
+        }
         return SwapCryptoLogic.Errors.unexpectedError.errorTitle
     }
 
@@ -63,7 +66,25 @@ struct SwapErrorTooltipView: View {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorDescription ?? error.localizedDescription
         }
+        if let normalized = normalizedSwapKitError {
+            return normalized.errorDescription ?? error.localizedDescription
+        }
         return error.localizedDescription
+    }
+
+    /// Map terminal SwapKit error cases onto the swap-flow's user-facing
+    /// error vocabulary so the tooltip shows a domain-appropriate title and
+    /// description instead of the generic "Unexpected Error" fallback. Only
+    /// covers cases that have a clear `SwapCryptoLogic.Errors` equivalent —
+    /// everything else flows through `error.localizedDescription` as before.
+    private var normalizedSwapKitError: SwapCryptoLogic.Errors? {
+        guard let swapKitError = error as? SwapKitError else { return nil }
+        switch swapKitError {
+        case .amountBelowProviderMinimum:
+            return .swapAmountTooSmall
+        default:
+            return nil
+        }
     }
 }
 
