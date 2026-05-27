@@ -86,13 +86,25 @@ final class FunctionCallCosmosIBC {
         selectedChain.value.lowercased() != chainPlaceholder.lowercased()
     }
 
+    /// Cosmos-chain destination-address error, evaluated against the
+    /// user-picked destination chain (the address that the receiver
+    /// resolves to after the IBC hop). Falls back to multi-chain
+    /// THOR/Maya/TON when no chain is selected — matches the
+    /// `FunctionCallAddressValidation.errorForCosmos` contract.
+    var destinationAddressError: String? {
+        FunctionCallAddressValidation.errorForCosmos(destinationAddress, chain: selectedChainObject)
+    }
+
     /// Submit-time validity gate. Requires the active coin so the
     /// amount-against-balance check stays inside the same predicate the
-    /// screen reads.
+    /// screen reads. Destination address must be a syntactically valid
+    /// Cosmos address for the chosen destination chain.
     func isFormValid(for coin: Coin) -> Bool {
         isChainSelected &&
         amount > 0 &&
-        amount <= coin.balanceDecimal
+        amount <= coin.balanceDecimal &&
+        !destinationAddress.isEmpty &&
+        destinationAddressError == nil
     }
 
     func handle(addressResult: AddressResult?) {

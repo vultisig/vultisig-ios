@@ -73,14 +73,24 @@ final class FunctionCallCosmosSwitch {
         }
     }
 
+    /// Cosmos-chain destination-address error, evaluated against the
+    /// active source-coin chain (the destination address lives on the
+    /// same chain as the user's source coin in the SWITCH flow — the
+    /// THOR vault's inbound address on GAIA).
+    func destinationAddressError(for coin: Coin) -> String? {
+        FunctionCallAddressValidation.errorForCosmos(destinationAddress, chain: coin.chain)
+    }
+
     /// Submit-time validity gate. Requires the active coin so the
     /// amount-against-balance check rides in the same predicate the
-    /// Continue button reads. The THOR address still goes through the
-    /// multi-chain THOR/Maya/TON validator the legacy code used.
+    /// Continue button reads. Destination address must be a syntactically
+    /// valid Cosmos address for the source-coin chain; THOR address
+    /// still goes through the multi-chain THOR/Maya/TON validator.
     func isFormValid(for coin: Coin) -> Bool {
         amount > 0 &&
         amount <= coin.balanceDecimal &&
         !destinationAddress.isEmpty &&
+        destinationAddressError(for: coin) == nil &&
         FunctionCallAddressValidation.isValidThorMayaTON(thorAddress)
     }
 
