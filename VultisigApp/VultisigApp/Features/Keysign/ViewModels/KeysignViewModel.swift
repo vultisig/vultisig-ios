@@ -910,11 +910,18 @@ class KeysignViewModel: ObservableObject {
     }
 
     func customMessageSignature() -> String {
-        // currently keysign for custom message is using ETH , and the signature should be get signature with recoveryid
-        switch signatures.first?.value.getSignatureWithRecoveryID() {
-        case .success(let sig):
-            return sig.hexString
-        case .none, .failure:
+        guard let sig = signatures.first?.value else { return .empty }
+        let result: Result<Data, Error>
+        switch keysignType {
+        case .EdDSA:
+            result = sig.getSignature()
+        case .ECDSA, .MLDSA:
+            result = sig.getSignatureWithRecoveryID()
+        }
+        switch result {
+        case .success(let data):
+            return data.hexString
+        case .failure:
             return .empty
         }
     }
