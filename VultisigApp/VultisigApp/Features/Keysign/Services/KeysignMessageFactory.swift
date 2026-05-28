@@ -43,21 +43,7 @@ struct KeysignMessageFactory {
             case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
-                    // dApp Solana swaps (e.g. via the browser extension) carry
-                    // the fully-formed transaction in signData.signSolana. Sign
-                    // those raw bytes directly to stay byte-identical with the
-                    // extension/SDK, which prioritises signSolana over the swap
-                    // payload. Reconstructing from the swap quote here rewrites
-                    // the blockhash and produces a different pre-image hash,
-                    // breaking Secure Vault co-signing. The swap payload still
-                    // drives the swap display; it just must not drive signing
-                    // when raw bytes are present.
-                    if payload.signSolana != nil {
-                        messages = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
-                    } else {
-                        let swaps = SolanaSwaps()
-                        messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
-                    }
+                    messages = try SolanaHelper.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
                     let swaps = OneInchSwaps()
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)

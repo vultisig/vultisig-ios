@@ -250,6 +250,29 @@ enum SolanaHelper {
         return result
     }
 
+    // When a dApp swap carries both a swap quote and raw signSolana bytes, the raw
+    // bytes take priority — they already contain the correct blockhash.
+    static func getPreSignedImageHash(
+        swapPayload: GenericSwapPayload,
+        keysignPayload: KeysignPayload
+    ) throws -> [String] {
+        if keysignPayload.signSolana != nil {
+            return try getPreSignedImageHash(keysignPayload: keysignPayload)
+        }
+        return try SolanaSwaps().getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: keysignPayload)
+    }
+
+    static func getSignedTransaction(
+        swapPayload: GenericSwapPayload,
+        keysignPayload: KeysignPayload,
+        signatures: [String: TssKeysignResponse]
+    ) throws -> SignedTransactionResult {
+        if keysignPayload.signSolana != nil {
+            return try getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+        }
+        return try SolanaSwaps().getSignedTransaction(swapPayload: swapPayload, keysignPayload: keysignPayload, signatures: signatures)
+    }
+
     // MARK: - Raw Transaction Signing
 
     // For dApp-supplied raw transactions we sign the message bytes directly
