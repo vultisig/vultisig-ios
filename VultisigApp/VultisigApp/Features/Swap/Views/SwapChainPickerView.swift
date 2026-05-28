@@ -34,20 +34,7 @@ struct SwapChainPickerView: View {
     }
 
     var body: some View {
-        container
-    }
-
-    var container: some View {
-#if os(iOS)
-        NavigationStack {
-            content
-        }
-#else
-        content
-            .presentationSizingFitted()
-            .applySheetSize()
-            .transaction { $0.disablesAnimations = true }
-#endif
+        content.sheetContainer()
     }
 
     var content: some View {

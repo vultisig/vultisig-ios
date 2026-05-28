@@ -1,0 +1,19 @@
+{
+  "redelegation_responses": [
+    {
+      "redelegation": {
+        "delegator_address": "terra1delegator00000000000000000000000000ab",
+        "validator_src_address": "terravaloper1srcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcs",
+        "validator_dst_address": "terravaloper1dstdstdstdstdstdstdstdstdstdstdstdsts"
+      },
+      "entries": [
+        {
+          "redelegation_entry": {
+            "completion_time": "2026-06-14T08:30:00Z"
+          },
+          "balance": "100000"
+        }
+      ]
+    }
+  ]
+}

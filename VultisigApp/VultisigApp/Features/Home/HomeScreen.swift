@@ -509,7 +509,7 @@ extension HomeScreen {
 
     fileprivate func onVaultLoaded(vault: Vault) {
         Task { @MainActor in
-            await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
+             VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
         }
         transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
     }

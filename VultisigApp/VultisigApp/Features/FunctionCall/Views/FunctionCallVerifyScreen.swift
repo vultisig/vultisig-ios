@@ -25,6 +25,8 @@ struct FunctionCallVerifyScreen: View {
             VStack(spacing: 0) {
                 if isForReferral {
                     ReferralSendOverviewView(transaction: transaction)
+                } else if transaction.cosmosStakingPayload != nil {
+                    stakingSummary
                 } else {
                     summary
                 }
@@ -64,6 +66,16 @@ struct FunctionCallVerifyScreen: View {
                 depositVerifyViewModel.showSecurityScannerSheet = false
             }
         }
+    }
+
+    var stakingSummary: some View {
+        CosmosStakingVerifySummaryView(
+            transaction: transaction,
+            vault: vault,
+            feeCrypto: transaction.gasInReadable,
+            feeFiat: depositViewModel.feesInReadable(tx: transaction, vault: vault),
+            securityScannerState: $depositVerifyViewModel.securityScannerState
+        )
     }
 
     var summary: some View {

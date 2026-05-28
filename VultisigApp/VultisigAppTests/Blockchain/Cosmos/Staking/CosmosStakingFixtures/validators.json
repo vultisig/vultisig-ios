@@ -1,0 +1,27 @@
+{
+  "validators": [
+    {
+      "operator_address": "terravaloper1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "jailed": false,
+      "status": "BOND_STATUS_BONDED",
+      "tokens": "50000000000000",
+      "description": { "moniker": "Validator A", "identity": "1234567890ABCDEF" },
+      "commission": { "commission_rates": { "rate": "0.050000000000000000" } }
+    },
+    {
+      "operator_address": "terravaloper1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "jailed": true,
+      "status": "BOND_STATUS_BONDED",
+      "tokens": "10000000000000",
+      "description": { "moniker": "Validator B (Jailed)" },
+      "commission": { "commission_rates": { "rate": "0.100000000000000000" } }
+    },
+    {
+      "operator_address": "terravaloper1ccccccccccccccccccccccccccccccccccc",
+      "status": "BOND_STATUS_UNBONDED",
+      "tokens": "0",
+      "description": { "moniker": "Validator C (Unbonded)" },
+      "commission": { "commission_rates": { "rate": "0.020000000000000000" } }
+    }
+  ]
+}

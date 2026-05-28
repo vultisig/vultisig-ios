@@ -16,7 +16,7 @@ enum RpcServiceError: LocalizedError {
 }
 
 class RpcService {
-
+    // swiftlint:disable:next no_raw_urlsession
     private let session = URLSession.shared
 
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
@@ -49,6 +49,7 @@ class RpcService {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
 
         do {
+            // swiftlint:disable:next no_raw_urlsession
             let (data, _) = try await URLSession.shared.data(for: request)
 
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {

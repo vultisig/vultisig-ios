@@ -54,9 +54,9 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .cardano: true,
         .sui: true,
         .ton: true,
+        .polygonV2: true,
 
         // Swap-disabled
-        .polygonV2: false,
         .polkadot: false,
         .dydx: false,
         .osmosis: false,
@@ -167,8 +167,8 @@ final class ChainSwapAvailabilityTests: XCTestCase {
     // Guards against an accidental broad enable (e.g. a refactor that
     // collapses both groups into the `true` branch).
 
-    func testPolygonV2SwapDisabled() {
-        XCTAssertFalse(Chain.polygonV2.isSwapAvailable)
+    func testPolygonV2SwapEnabled() {
+        XCTAssertTrue(Chain.polygonV2.isSwapAvailable)
     }
 
     func testPolkadotSwapDisabled() {
