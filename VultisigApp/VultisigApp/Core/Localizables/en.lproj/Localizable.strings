@@ -554,6 +554,7 @@
 "messageDeposit" = "%@ message deposit";
 "messageToSign" = "Message to sign";
 "messageVote" = "%@ message vote";
+"method" = "Method";
 "migrate" = "Migrate";
 "migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";
 "migrateVault" = "Migrate GG20 vault to DKLS";
@@ -920,6 +921,7 @@
 "showBalance" = "Show balance";
 "showHint" = "Show hint";
 "sign" = "Sign";
+"signature" = "Signature";
 "signCustomMessage" = "Sign custom message";
 "signer" = "Signer";
 "signFasterThanEverBefore" = "Sign faster than ever before";

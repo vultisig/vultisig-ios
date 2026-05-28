@@ -113,27 +113,42 @@ final class StaticStatusSource: TransactionDoneStatusSource {
 final class AnyTransactionDoneStatusSourceBox: TransactionDoneStatusSource {
     @Published private(set) var status: TransactionStatus
 
-    private let box: any TransactionDoneStatusSource
+    private let startBox: () -> Void
+    private let stopBox: () -> Void
+    private let currentStatus: () -> TransactionStatus
+    private let observe: (@escaping () -> Void) -> Task<Void, Never>
     private var observationTask: Task<Void, Never>?
 
     init<Source: TransactionDoneStatusSource>(source: Source) {
-        self.box = source
         self.status = source.status
-        let publisher = source.objectWillChange
-        observationTask = Task { [weak self] in
-            for await _ in publisher.values {
-                guard let self else { return }
-                await MainActor.run {
-                    self.status = source.status
+        self.startBox = { source.start() }
+        self.stopBox = { source.stop() }
+        self.currentStatus = { source.status }
+        self.observe = { onChange in
+            Task { @MainActor in
+                for await _ in source.objectWillChange.values {
+                    onChange()
                 }
             }
         }
     }
 
-    func start() { box.start() }
+    func start() {
+        bindIfNeeded()
+        startBox()
+    }
+
     func stop() {
         observationTask?.cancel()
         observationTask = nil
-        box.stop()
+        stopBox()
+    }
+
+    private func bindIfNeeded() {
+        guard observationTask == nil else { return }
+        observationTask = observe { [weak self] in
+            guard let self else { return }
+            self.status = self.currentStatus()
+        }
     }
 }

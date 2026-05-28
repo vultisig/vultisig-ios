@@ -136,7 +136,7 @@ struct SwapDoneSummaryCard: View {
 
     private var chevronIcon: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(Theme.colors.textButtonDisabled)
+            .foregroundStyle(Theme.colors.textButtonDisabled)
             .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
@@ -154,7 +154,7 @@ struct SwapDoneSummaryCard: View {
     private var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
-            .foregroundColor(Theme.colors.bgPrimary)
+            .foregroundStyle(Theme.colors.bgPrimary)
     }
 
     // MARK: - Summary card
@@ -179,7 +179,7 @@ struct SwapDoneSummaryCard: View {
                     separator
                     totalFees(transaction)
                 }
-                otherFees(transaction)
+                otherFees(transaction, expanded: transaction.showTotalFees ? showFees : true)
             } else if let networkFee = fields.cosignerNetworkFee {
                 separator
                 getCell(title: "networkFee", value: networkFee)
@@ -214,18 +214,18 @@ struct SwapDoneSummaryCard: View {
     private var chevron: some View {
         Image(systemName: "chevron.up")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
 
-    private func otherFees(_ transaction: SwapTransaction) -> some View {
+    private func otherFees(_ transaction: SwapTransaction, expanded: Bool) -> some View {
         HStack {
             Rectangle()
                 .frame(width: 1)
-                .foregroundColor(Theme.colors.primaryAccent4)
+                .foregroundStyle(Theme.colors.primaryAccent4)
             expandableFees(transaction)
         }
-        .frame(maxHeight: showFees ? nil : 0)
+        .frame(maxHeight: expanded ? nil : 0)
         .clipped()
     }
 
@@ -264,11 +264,11 @@ struct SwapDoneSummaryCard: View {
             VStack(spacing: 4) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 Text((description ?? "").formatToFiat(includeCurrencySymbol: true))
                     .font(Theme.fonts.caption10)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
         }
         .frame(height: 130)
@@ -290,15 +290,15 @@ struct SwapDoneSummaryCard: View {
         showCopyButton: Bool = false
     ) -> some View {
         HStack {
-            Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+            Text(title.localized)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             Text(value)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
 
             if let bracketValue {
@@ -307,7 +307,7 @@ struct SwapDoneSummaryCard: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)
@@ -319,7 +319,7 @@ struct SwapDoneSummaryCard: View {
                     ClipboardManager.copyToClipboard(ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: value))
                 } label: {
                     Image(systemName: "doc.on.clipboard")
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodySMedium)
                 }
             }

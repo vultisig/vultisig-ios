@@ -46,7 +46,7 @@ struct KeysignSignedMessageDoneView: View {
             }
 
             getGeneralCell(
-                title: "Method",
+                titleKey: "method",
                 description: viewModel.customMessagePayload?.method ?? "",
                 isVerticalStacked: true
             )
@@ -54,13 +54,13 @@ struct KeysignSignedMessageDoneView: View {
             Separator()
             if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
                 getGeneralCell(
-                    title: "Transaction Details",
+                    titleKey: "transactionDetails",
                     description: decodedMessage,
                     isVerticalStacked: true
                 )
             } else {
                 getGeneralCell(
-                    title: "Message",
+                    titleKey: "message",
                     description: viewModel.customMessagePayload?.message ?? "",
                     isVerticalStacked: true
                 )
@@ -69,7 +69,7 @@ struct KeysignSignedMessageDoneView: View {
                !tokenDisplay.isEmpty {
                 Separator()
                 getGeneralCell(
-                    title: "amount",
+                    titleKey: "amount",
                     description: tokenDisplay,
                     isVerticalStacked: true,
                     isWarning: viewModel.decodedTokenIsUnlimited
@@ -104,7 +104,7 @@ struct KeysignSignedMessageDoneView: View {
             }
             Separator()
             getGeneralCell(
-                title: "Signature",
+                titleKey: "signature",
                 description: viewModel.customMessageSignature(),
                 isVerticalStacked: true
             )
@@ -117,7 +117,7 @@ struct KeysignSignedMessageDoneView: View {
         if let title = viewModel.decodedFunctionName {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }
@@ -133,7 +133,7 @@ struct KeysignSignedMessageDoneView: View {
     }
 
     private func getGeneralCell(
-        title: String,
+        titleKey: String,
         description: String,
         isVerticalStacked: Bool = false,
         isWarning: Bool = false
@@ -142,13 +142,13 @@ struct KeysignSignedMessageDoneView: View {
         return ZStack {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString(title, comment: ""))
+                    Text(titleKey.localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
 
                     HStack(spacing: 6) {
                         Text(description)
-                            .foregroundColor(textColor)
+                            .foregroundStyle(textColor)
                             .font(Theme.fonts.bodySMedium)
                         if isWarning {
                             Icon(named: "triangle-alert", color: textColor, size: 14)
@@ -158,11 +158,11 @@ struct KeysignSignedMessageDoneView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 HStack {
-                    Text(NSLocalizedString(title, comment: ""))
-                        .foregroundColor(Theme.colors.textTertiary)
+                    Text(titleKey.localized)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     Text(description)
-                        .foregroundColor(textColor)
+                        .foregroundStyle(textColor)
                     if isWarning {
                         Icon(named: "triangle-alert", color: textColor, size: 14)
                     }

@@ -544,9 +544,11 @@
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "Merge" = "Zusammenführen";
+"message" = "Nachricht";
 "messageDeposit" = "%@ Nachrichteneinzahlung";
 "messageToSign" = "Zu signierende Nachricht";
 "messageVote" = "%@ Nachrichtenabstimmung";
+"method" = "Methode";
 "migrate" = "Migrieren";
 "migratePasswordDescription" = "Gib dein Passwort ein, um deinen Serveranteil zu entsperren und das Upgrade zu starten";
 "migrateVault" = "Migrieren Sie das GG20 -Tresor in DKLS";
@@ -911,6 +913,7 @@
 "showBalance" = "Guthaben anzeigen";
 "showHint" = "Hinweis anzeigen";
 "sign" = "Unterschreiben";
+"signature" = "Signatur";
 "signCustomMessage" = "Benutzerdefinierte Nachricht signieren";
 "signer" = "Unterzeichner";
 "signFasterThanEverBefore" = "Schneller als je zuvor signieren";
