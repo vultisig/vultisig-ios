@@ -58,6 +58,8 @@ private extension PrimaryButtonStyle {
             return EdgeInsets(top: 14, leading: 0, bottom: 14, trailing: 0)
         case .small:
             return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+        case .smallFixed:
+            return EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0)
         case .mini:
             return EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
         case .squared:
@@ -67,7 +69,7 @@ private extension PrimaryButtonStyle {
 
     func font(for size: ButtonSize) -> Font {
         switch size {
-        case .medium, .small: return Theme.fonts.buttonRegularSemibold
+        case .medium, .small, .smallFixed: return Theme.fonts.buttonRegularSemibold
         case .mini: return Theme.fonts.caption12
         case .squared: return Theme.fonts.buttonSSemibold
         }
@@ -75,7 +77,7 @@ private extension PrimaryButtonStyle {
 
     func cornerRadius(for size: ButtonSize) -> CGFloat {
         switch size {
-        case .medium, .small, .mini: 99
+        case .medium, .small, .smallFixed, .mini: 99
         case .squared: 12
         }
     }

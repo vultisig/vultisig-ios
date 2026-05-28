@@ -161,20 +161,6 @@ enum SwapCryptoLogic {
         return coin
     }
 
-    // MARK: - Picker helpers
-
-    static func pickerFromCoins(fromCoins: [Coin], selected: Coin, fromChain: Chain?) -> [Coin] {
-        fromCoins
-            .filter { $0.chain == fromChain }
-            .sorted { Int($0.chain == selected.chain) > Int($1.chain == selected.chain) }
-    }
-
-    static func pickerToCoins(toCoins: [Coin], selected: Coin, toChain: Chain?) -> [Coin] {
-        toCoins
-            .filter { $0.chain == toChain }
-            .sorted { Int($0.chain == selected.chain) > Int($1.chain == selected.chain) }
-    }
-
     // MARK: - Display: amounts
 
     static func fromFiatAmount(fromCoin: Coin, fromAmount: String) -> String {

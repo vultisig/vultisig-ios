@@ -2065,6 +2065,26 @@ class TokensStore {
         isNativeToken: true
     )
 
+    static let luna: CoinMeta = CoinMeta(
+        chain: .terra,
+        ticker: "LUNA",
+        logo: "luna",
+        decimals: 6,
+        priceProviderId: "terra-luna-2",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
+    static let lunc: CoinMeta = CoinMeta(
+        chain: .terraClassic,
+        ticker: "LUNC",
+        logo: "lunc",
+        decimals: 6,
+        priceProviderId: "terra-luna",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
     static let tcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "TCY",

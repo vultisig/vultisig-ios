@@ -92,6 +92,41 @@ actor SwapKitProviderCache {
         return Self.chainEnabled(chain, in: providers)
     }
 
+    /// Synchronous variant for tests + offline computation. Returns `true`
+    /// iff at least one non-filtered provider entry's `enabledChainIds`
+    /// contains BOTH the source and destination chain ids. The intersection
+    /// requirement on the same provider entry — rather than a union across
+    /// providers — narrows the false-positive surface when re-classifying
+    /// `noRoutesFound` errors as below-minimum amounts: a provider that
+    /// enables both chains is far more likely to actually route between
+    /// them than two providers that each only handle one side.
+    nonisolated static func pairEnabled(
+        fromChain: Chain,
+        toChain: Chain,
+        in providers: [SwapKitProvider]
+    ) -> Bool {
+        let fromId = SwapKitChainIDMapper.swapKitChainId(for: fromChain)
+        let toId = SwapKitChainIDMapper.swapKitChainId(for: toChain)
+        guard !fromId.isEmpty, !toId.isEmpty else { return false }
+        return providers.contains { provider in
+            guard !SwapKitConfig.filteredProviders.contains(provider.provider.uppercased()) else {
+                return false
+            }
+            return provider.enabledChainIds.contains(fromId)
+                && provider.enabledChainIds.contains(toId)
+        }
+    }
+
+    /// Async variant — refreshes the cache and returns whether the (from, to)
+    /// chain pair has at least one non-filtered provider that enables both
+    /// chains. Returns `true` when the providers list can't be loaded
+    /// (fail-open, mirroring `isEnabled(chain:)`) — the caller treats this
+    /// as "could plausibly be supported" when re-classifying error codes.
+    func isPairSupported(fromChain: Chain, toChain: Chain, now: Date = Date()) async -> Bool {
+        guard let providers = await providers(now: now) else { return true }
+        return Self.pairEnabled(fromChain: fromChain, toChain: toChain, in: providers)
+    }
+
     /// Replace the snapshot — exposed for tests so they don't have to stand
     /// up a fake HTTPClient.
     func setSnapshot(_ snapshot: SwapKitProvidersSnapshot) {

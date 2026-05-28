@@ -16,8 +16,7 @@ struct DefiChainCellView: View {
     private let service = DefiBalanceService()
 
     @State var balanceFiat: String = ""
-
-    private var nativeCoin: Coin? { vault.nativeCoin(for: chain) }
+    @State var positionsSubtitle: String = ""
 
     private var defiBalance: Decimal {
         vault.coins(for: chain).totalDefiBalanceInFiatDecimal
@@ -28,7 +27,8 @@ struct DefiChainCellView: View {
             chain: chain,
             vault: vault,
             fiatBalance: balanceFiat,
-            cryptoBalance: nativeCoin?.defiBalanceStringWithTicker ?? ""
+            cryptoBalance: "",
+            trailingSubtitleOverride: positionsSubtitle
         )
         .buttonStyle(.plain)
         .onAppear { updateBalance() }
@@ -39,6 +39,10 @@ struct DefiChainCellView: View {
 
     func updateBalance() {
         balanceFiat = service.totalBalanceInFiatString(for: chain, vault: vault)
+        let count = service.defiPositionCount(for: chain, vault: vault)
+        positionsSubtitle = count > 0
+            ? String(format: "defiChainPositionsCount".localized, count)
+            : "defiChainNoPositions".localized
     }
 }
 

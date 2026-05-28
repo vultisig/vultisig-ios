@@ -37,6 +37,10 @@ struct DefiPositionsService {
             [
                 TokensStore.cacao
             ]
+        case .terra:
+            [TokensStore.luna]
+        case .terraClassic:
+            [TokensStore.lunc]
         default:
             []
         }

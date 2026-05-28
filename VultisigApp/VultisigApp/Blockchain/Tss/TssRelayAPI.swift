@@ -75,8 +75,7 @@ struct TssRelayAPI: TargetType {
         switch endpoint {
         case .uploadSetupMessage(_, _, let messageID, let additionalHeader),
              .downloadSetupMessage(_, let messageID, let additionalHeader):
-            // self.messageID is applied first; additionalHeader overrides it when non-nil.
-            if let messageID {
+            if let messageID, messageID != KeygenMessageId.rootECDSA && messageID != KeygenMessageId.rootEdDSA {
                 result["message_id"] = messageID
             }
             if let additionalHeader {
