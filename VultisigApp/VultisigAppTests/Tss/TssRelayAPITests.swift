@@ -16,14 +16,18 @@ final class TssRelayAPITests: XCTestCase {
 
     // MARK: - uploadSetupMessage
 
-    func testUploadSetupMessage_additionalHeaderSet_usesAdditionalHeader() {
-        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: "ignored", additionalHeader: "extra"))
-        XCTAssertEqual(sut.headers?["message_id"], "extra")
+    func testUploadSetupMessage_nonKeygenMessageID_setsMessageIDHeader() {
+        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: "msg-123", additionalHeader: nil))
+        XCTAssertEqual(sut.headers?["message_id"], "msg-123")
     }
 
-    func testUploadSetupMessage_onlyMessageIDSet_noMessageIDHeader() {
-        // messageID is intentionally ignored for uploadSetupMessage; only additionalHeader counts.
-        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: "msg-123", additionalHeader: nil))
+    func testUploadSetupMessage_keygenECDSAMessageID_noMessageIDHeader() {
+        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: KeygenMessageId.rootECDSA, additionalHeader: nil))
+        XCTAssertNil(sut.headers?["message_id"])
+    }
+
+    func testUploadSetupMessage_keygenEdDSAMessageID_noMessageIDHeader() {
+        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: KeygenMessageId.rootEdDSA, additionalHeader: nil))
         XCTAssertNil(sut.headers?["message_id"])
     }
 
@@ -32,21 +36,35 @@ final class TssRelayAPITests: XCTestCase {
         XCTAssertNil(sut.headers?["message_id"])
     }
 
+    func testUploadSetupMessage_additionalHeaderSet_usesAdditionalHeader() {
+        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: nil, additionalHeader: "extra"))
+        XCTAssertEqual(sut.headers?["message_id"], "extra")
+    }
+
     func testUploadSetupMessage_bothSet_additionalHeaderWins() {
         let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: "msg-123", additionalHeader: "extra"))
         XCTAssertEqual(sut.headers?["message_id"], "extra")
     }
 
-    // MARK: - downloadSetupMessage
-
-    func testDownloadSetupMessage_additionalHeaderSet_usesAdditionalHeader() {
-        let sut = api(.downloadSetupMessage(sessionID: "s", messageID: "ignored", additionalHeader: "extra"))
+    func testUploadSetupMessage_keygenMessageIDWithAdditionalHeader_additionalHeaderWins() {
+        let sut = api(.uploadSetupMessage(sessionID: "s", body: Data(), messageID: KeygenMessageId.rootECDSA, additionalHeader: "extra"))
         XCTAssertEqual(sut.headers?["message_id"], "extra")
     }
 
-    func testDownloadSetupMessage_onlyMessageIDSet_noMessageIDHeader() {
-        // messageID is intentionally ignored for downloadSetupMessage; only additionalHeader counts.
+    // MARK: - downloadSetupMessage
+
+    func testDownloadSetupMessage_nonKeygenMessageID_setsMessageIDHeader() {
         let sut = api(.downloadSetupMessage(sessionID: "s", messageID: "msg-123", additionalHeader: nil))
+        XCTAssertEqual(sut.headers?["message_id"], "msg-123")
+    }
+
+    func testDownloadSetupMessage_keygenECDSAMessageID_noMessageIDHeader() {
+        let sut = api(.downloadSetupMessage(sessionID: "s", messageID: KeygenMessageId.rootECDSA, additionalHeader: nil))
+        XCTAssertNil(sut.headers?["message_id"])
+    }
+
+    func testDownloadSetupMessage_keygenEdDSAMessageID_noMessageIDHeader() {
+        let sut = api(.downloadSetupMessage(sessionID: "s", messageID: KeygenMessageId.rootEdDSA, additionalHeader: nil))
         XCTAssertNil(sut.headers?["message_id"])
     }
 
@@ -55,8 +73,18 @@ final class TssRelayAPITests: XCTestCase {
         XCTAssertNil(sut.headers?["message_id"])
     }
 
+    func testDownloadSetupMessage_additionalHeaderSet_usesAdditionalHeader() {
+        let sut = api(.downloadSetupMessage(sessionID: "s", messageID: nil, additionalHeader: "extra"))
+        XCTAssertEqual(sut.headers?["message_id"], "extra")
+    }
+
     func testDownloadSetupMessage_bothSet_additionalHeaderWins() {
         let sut = api(.downloadSetupMessage(sessionID: "s", messageID: "msg-123", additionalHeader: "extra"))
+        XCTAssertEqual(sut.headers?["message_id"], "extra")
+    }
+
+    func testDownloadSetupMessage_keygenMessageIDWithAdditionalHeader_additionalHeaderWins() {
+        let sut = api(.downloadSetupMessage(sessionID: "s", messageID: KeygenMessageId.rootECDSA, additionalHeader: "extra"))
         XCTAssertEqual(sut.headers?["message_id"], "extra")
     }
 

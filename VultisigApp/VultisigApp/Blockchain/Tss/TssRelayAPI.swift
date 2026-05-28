@@ -73,8 +73,11 @@ struct TssRelayAPI: TargetType {
         var result: [String: String] = ["Content-Type": "application/json"]
 
         switch endpoint {
-        case .uploadSetupMessage(_, _, _, let additionalHeader),
-             .downloadSetupMessage(_, _, let additionalHeader):
+        case .uploadSetupMessage(_, _, let messageID, let additionalHeader),
+             .downloadSetupMessage(_, let messageID, let additionalHeader):
+            if let messageID, messageID != KeygenMessageId.rootECDSA && messageID != KeygenMessageId.rootEdDSA {
+                result["message_id"] = messageID
+            }
             if let additionalHeader {
                 result["message_id"] = additionalHeader
             }
