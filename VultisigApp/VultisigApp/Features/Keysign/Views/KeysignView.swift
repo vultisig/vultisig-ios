@@ -29,7 +29,6 @@ struct KeysignView: View {
     var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
 
-    @State var showAlert = false
     @State var showDoneText = false
     @State var showError = false
 
@@ -88,8 +87,6 @@ struct KeysignView: View {
                 keysignVaultMismatchErrorView
                     .padding(.horizontal, 16)
             }
-
-            PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
         .onLoad {
             Task {
@@ -120,7 +117,7 @@ struct KeysignView: View {
     }
 
     var forJoinKeysign: some View {
-        JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
+        JoinKeysignDoneView(vault: vault, viewModel: viewModel)
             .onAppear {
                 globalStateViewModel.showKeysignDoneView = true
             }

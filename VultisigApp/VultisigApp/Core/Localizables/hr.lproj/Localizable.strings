@@ -546,6 +546,8 @@
 "Merge" = "Spoji";
 "message" = "Poruka";
 "messageDeposit" = "%@ depozit poruke";
+"messageSigned" = "Poruka potpisana";
+"messageSignFailed" = "Potpisivanje neuspjelo";
 "messageToSign" = "Poruka za potpisivanje";
 "messageVote" = "%@ glas poruke";
 "method" = "Metoda";

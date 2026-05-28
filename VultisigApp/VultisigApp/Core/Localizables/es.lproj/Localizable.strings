@@ -546,6 +546,8 @@
 "Merge" = "Fusionar";
 "message" = "Mensaje";
 "messageDeposit" = "%@ depósito de mensaje";
+"messageSigned" = "Mensaje firmado";
+"messageSignFailed" = "Firma de mensaje fallida";
 "messageToSign" = "Mensaje a firmar";
 "messageVote" = "%@ voto de mensaje";
 "method" = "Método";

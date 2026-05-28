@@ -111,8 +111,7 @@ struct SendCryptoSecondaryDoneView: View {
                 TransactionDoneHashRowView(
                     hash: input.hash,
                     explorerLink: input.explorerLink,
-                    showCopy: false,
-                    showAlert: .constant(false)
+                    showCopy: false
                 )
                 separator
             }

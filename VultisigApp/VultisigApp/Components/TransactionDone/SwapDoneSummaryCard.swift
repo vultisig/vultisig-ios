@@ -41,7 +41,7 @@ struct SwapDoneSummaryCard: View {
     }
 
     let fields: Fields
-    @Binding var showAlert: Bool
+    @Environment(\.notifyHashCopied) var notifyHashCopied
 
     @State private var showFees: Bool = false
 
@@ -59,8 +59,7 @@ struct SwapDoneSummaryCard: View {
         vault: Vault,
         sendSummaryViewModel: SendSummaryViewModel,
         hash: String,
-        approveHash: String?,
-        showAlert: Binding<Bool>
+        approveHash: String?
     ) -> SwapDoneSummaryCard {
         SwapDoneSummaryCard(
             fields: Fields(
@@ -78,8 +77,7 @@ struct SwapDoneSummaryCard: View {
                 toAddress: transaction.toCoin.address,
                 cosignerNetworkFee: nil,
                 transaction: transaction
-            ),
-            showAlert: showAlert
+            )
         )
     }
 
@@ -88,8 +86,7 @@ struct SwapDoneSummaryCard: View {
         vault: Vault,
         summaryViewModel: JoinKeysignSummaryViewModel,
         txHash: String,
-        networkFee: String,
-        showAlert: Binding<Bool>
+        networkFee: String
     ) -> SwapDoneSummaryCard {
         let fromCoin = summaryViewModel.getFromCoin(keysignPayload)
         let toCoin = summaryViewModel.getToCoin(keysignPayload)
@@ -109,8 +106,7 @@ struct SwapDoneSummaryCard: View {
                 toAddress: toCoin?.address ?? keysignPayload.toAddress,
                 cosignerNetworkFee: networkFee,
                 transaction: nil
-            ),
-            showAlert: showAlert
+            )
         )
     }
 
@@ -315,7 +311,7 @@ struct SwapDoneSummaryCard: View {
 
             if showCopyButton {
                 Button {
-                    showAlert = true
+                    notifyHashCopied()
                     ClipboardManager.copyToClipboard(ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: value))
                 } label: {
                     Image(systemName: "doc.on.clipboard")

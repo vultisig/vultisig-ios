@@ -19,7 +19,6 @@ struct QBTCClaimDoneScreen: View {
     let btcCoin: Coin
     let qbtcCoin: Coin
 
-    @State private var showAlert: Bool = false
     @StateObject private var statusSource: ChainPollerStatusSource
 
     init(result: QBTCClaimRunResult, vault: Vault, btcCoin: Coin, qbtcCoin: Coin) {
@@ -39,19 +38,7 @@ struct QBTCClaimDoneScreen: View {
     }
 
     var body: some View {
-        Screen {
-            ZStack {
-                Background()
-                DoneScreen(
-                    input: payload,
-                    statusSource: statusSource,
-                    showAlert: $showAlert
-                )
-            }
-            .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
-        }
-        .screenTitle("done".localized)
-        .screenBackButtonHidden()
+        DoneScreen(input: payload, statusSource: statusSource)
     }
 
     private var payload: TransactionDonePayload {

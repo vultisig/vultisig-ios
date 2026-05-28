@@ -2,16 +2,18 @@
 //  JoinKeysignDoneView.swift
 //  VultisigApp
 //
-//  Cosigner-side "done" surface inside `KeysignView`. Dispatches
-//  among three branches:
-//  - dApp custom-message signing → `KeysignSignedMessageDoneView`
-//    (its own done flow — not a tx broadcast).
-//  - Swap → unified `DoneScreen` + `SwapDoneSummaryCard.cosigner`,
-//    with a `StaticStatusSource` (the peer has no broadcast-side
-//    identity to drive a live poller).
-//  - Send (default) → unified `DoneScreen` with the default slots,
-//    built from the `KeysignPayload` exactly like the initiator
-//    builds it from `SendTransaction`.
+//  Cosigner-side "done" surface inside `KeysignView`. Three branches,
+//  all of which render the unified `DoneScreen` as their root:
+//
+//  - dApp custom-message signing → `DoneScreen` with the
+//    `SignedMessageDoneTokenContent` token slot. Uses the `.sign`
+//    verb so the header reads "Message signed" (no chain status to
+//    poll).
+//  - Swap → `DoneScreen` + `SwapDoneSummaryCard.cosigner` token slot
+//    + custom Track / Done bottom bar.
+//  - Send (default) → `DoneScreen` with the default slots, built from
+//    the `KeysignPayload` exactly like the initiator builds it from
+//    `SendTransaction`.
 //
 
 import SwiftData
@@ -20,7 +22,6 @@ import SwiftUI
 struct JoinKeysignDoneView: View {
     let vault: Vault
     @ObservedObject var viewModel: KeysignViewModel
-    @Binding var showAlert: Bool
 
     @Query private var vaults: [Vault]
     @Query private var addressBookItems: [AddressBookItem]
@@ -32,16 +33,13 @@ struct JoinKeysignDoneView: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
-        VStack(spacing: 32) {
-            content
-        }
-        .redacted(reason: viewModel.showRedacted ? .placeholder : [])
+        content.redacted(reason: viewModel.showRedacted ? .placeholder : [])
     }
 
     @ViewBuilder
     private var content: some View {
         if viewModel.customMessagePayload != nil {
-            KeysignSignedMessageDoneView(viewModel: viewModel)
+            signedMessageBranch
         } else if let keysignPayload = viewModel.keysignPayload,
                   keysignPayload.swapPayload != nil,
                   !isLPOperation(memo: keysignPayload.memo) {
@@ -87,8 +85,7 @@ struct JoinKeysignDoneView: View {
                 pubKeyECDSA: vault.pubKeyECDSA,
                 dappMetadata: viewModel.dappMetadata
             ),
-            statusSource: statusSource,
-            showAlert: $showAlert
+            statusSource: statusSource
         )
     }
 
@@ -112,15 +109,13 @@ struct JoinKeysignDoneView: View {
                 dappMetadata: viewModel.dappMetadata
             ),
             statusSource: statusSource,
-            showAlert: $showAlert,
             tokenContent: {
                 SwapDoneSummaryCard.cosigner(
                     keysignPayload: keysignPayload,
                     vault: vault,
                     summaryViewModel: summaryViewModel,
                     txHash: viewModel.txid,
-                    networkFee: viewModel.getCalculatedNetworkFee().feeCrypto,
-                    showAlert: $showAlert
+                    networkFee: viewModel.getCalculatedNetworkFee().feeCrypto
                 )
             },
             detailContent: {
@@ -128,19 +123,51 @@ struct JoinKeysignDoneView: View {
             },
             bottomBarContent: {
                 HStack(spacing: 8) {
-                    if let progressLink = viewModel.getSwapProgressURL(txid: viewModel.txid) {
-                        PrimaryButton(title: "track", type: .secondary) {
-                            openTrackLink(progressLink: progressLink, fallbackTxid: viewModel.txid)
-                        }
-                    } else {
-                        PrimaryButton(title: "track", type: .secondary) {
-                            openTrackLink(progressLink: nil, fallbackTxid: viewModel.txid)
-                        }
+                    PrimaryButton(title: "track", type: .secondary) {
+                        openTrackLink(
+                            progressLink: viewModel.getSwapProgressURL(txid: viewModel.txid),
+                            fallbackTxid: viewModel.txid
+                        )
                     }
                     PrimaryButton(title: "done") {
                         appViewModel.restart()
                     }
                 }
+            }
+        )
+    }
+
+    /// Synthesizes a `TransactionDonePayload` that drives `DoneScreen`'s
+    /// chrome (status header reads "Message signed"; hash/fee/amount
+    /// rows are unused — the token slot below renders the real
+    /// signed-message detail).
+    @ViewBuilder
+    private var signedMessageBranch: some View {
+        DoneScreen(
+            input: TransactionDonePayload(
+                coin: .example,
+                amountCrypto: "",
+                amountFiat: "",
+                hash: "",
+                explorerLink: "",
+                memo: "",
+                isSend: false,
+                fromAddress: "",
+                toAddress: "",
+                fee: FeeDisplay(crypto: "", fiat: ""),
+                keysignPayload: nil,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                verb: .sign
+            ),
+            statusSource: statusSource,
+            tokenContent: {
+                SignedMessageDoneTokenContent(viewModel: viewModel)
+            },
+            detailContent: {
+                EmptyView()
+            },
+            bottomBarContent: {
+                DoneDefaultBottomBar()
             }
         )
     }
@@ -158,9 +185,6 @@ struct JoinKeysignDoneView: View {
 }
 
 #Preview {
-    ZStack {
-        Background()
-        JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false))
-    }
-    .environmentObject(AppViewModel())
+    JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel())
+        .environmentObject(AppViewModel())
 }

@@ -546,6 +546,8 @@
 "Merge" = "合并";
 "message" = "消息";
 "messageDeposit" = "%@ 消息存款";
+"messageSigned" = "消息已签名";
+"messageSignFailed" = "消息签名失败";
 "messageToSign" = "要签名的消息";
 "messageVote" = "%@ 消息投票";
 "method" = "方法";

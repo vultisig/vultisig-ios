@@ -544,6 +544,8 @@
 "Merge" = "병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
+"messageSigned" = "메시지 서명됨";
+"messageSignFailed" = "메시지 서명 실패";
 "messageToSign" = "서명할 메시지";
 "messageVote" = "%@ 메시지 투표";
 "method" = "메서드";

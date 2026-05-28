@@ -552,6 +552,8 @@
 "Merge" = "Merge";
 "message" = "Message";
 "messageDeposit" = "%@ message deposit";
+"messageSigned" = "Message signed";
+"messageSignFailed" = "Message sign failed";
 "messageToSign" = "Message to sign";
 "messageVote" = "%@ message vote";
 "method" = "Method";

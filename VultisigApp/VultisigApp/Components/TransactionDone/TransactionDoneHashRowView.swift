@@ -11,11 +11,11 @@ import SwiftUI
 
 struct TransactionDoneHashRowView: View {
     @Environment(\.openURL) var openURL
+    @Environment(\.notifyHashCopied) var notifyHashCopied
 
     let hash: String
     let explorerLink: String
     let showCopy: Bool
-    @Binding var showAlert: Bool
 
     var body: some View {
         HStack(spacing: 32) {
@@ -76,7 +76,7 @@ struct TransactionDoneHashRowView: View {
     }
 
     func copyHash() {
-        showAlert = true
+        notifyHashCopied()
         ClipboardManager.copyToClipboard(explorerLink)
     }
 }
@@ -85,7 +85,6 @@ struct TransactionDoneHashRowView: View {
     TransactionDoneHashRowView(
         hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
         explorerLink: "https://thorchain.net/tx/294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
-        showCopy: true,
-        showAlert: .constant(false)
+        showCopy: true
     )
 }

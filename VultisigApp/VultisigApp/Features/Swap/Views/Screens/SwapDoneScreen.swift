@@ -31,7 +31,6 @@ struct SwapDoneScreen: View {
     let transaction: SwapTransaction
     let progressLink: String?
 
-    @State private var showAlert = false
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
     @StateObject private var statusSourceBox: AnyTransactionDoneStatusSourceBox
 
@@ -62,49 +61,39 @@ struct SwapDoneScreen: View {
     }
 
     var body: some View {
-        Screen {
-            ZStack {
-                Background()
-                DoneScreen(
-                    input: payload,
-                    statusSource: statusSourceBox,
-                    showAlert: $showAlert,
-                    tokenContent: {
-                        SwapDoneSummaryCard.initiator(
-                            transaction: transaction,
-                            vault: vault,
-                            sendSummaryViewModel: sendSummaryViewModel,
-                            hash: hash,
-                            approveHash: approveHash,
-                            showAlert: $showAlert
-                        )
-                    },
-                    detailContent: {
-                        // Swap intentionally swaps the secondary disclosure
-                        // out — the from/to/fees card above already covers
-                        // the detail surface.
-                        EmptyView()
-                    },
-                    bottomBarContent: {
-                        HStack(spacing: 8) {
-                            if let link = progressLink, !link.isEmpty {
-                                PrimaryButton(title: "track", type: .secondary) {
-                                    if let url = URL(string: link) {
-                                        openURL(url)
-                                    }
-                                }
-                            }
-                            PrimaryButton(title: "done") {
-                                appViewModel.restart()
+        DoneScreen(
+            input: payload,
+            statusSource: statusSourceBox,
+            tokenContent: {
+                SwapDoneSummaryCard.initiator(
+                    transaction: transaction,
+                    vault: vault,
+                    sendSummaryViewModel: sendSummaryViewModel,
+                    hash: hash,
+                    approveHash: approveHash
+                )
+            },
+            detailContent: {
+                // Swap intentionally swaps the secondary disclosure
+                // out — the from/to/fees card above already covers
+                // the detail surface.
+                EmptyView()
+            },
+            bottomBarContent: {
+                HStack(spacing: 8) {
+                    if let link = progressLink, !link.isEmpty {
+                        PrimaryButton(title: "track", type: .secondary) {
+                            if let url = URL(string: link) {
+                                openURL(url)
                             }
                         }
                     }
-                )
+                    PrimaryButton(title: "done") {
+                        appViewModel.restart()
+                    }
+                }
             }
-            .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
-        }
-        .screenTitle("done".localized)
-        .screenBackButtonHidden()
+        )
         .onAppear {
             recordTxHistory()
         }

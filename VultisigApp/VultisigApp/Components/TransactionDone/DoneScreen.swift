@@ -2,20 +2,25 @@
 //  DoneScreen.swift
 //  VultisigApp
 //
-//  Slot-API entry point that mirrors Android's `TxDoneScaffold`.
-//  Composes the status header (built-in from the status source) with
-//  a flow-specific `tokenContent` (hero card — coin display for
-//  Send/QBTC/cosigner, from/to swap cards for Swap), a flow-specific
-//  `detailContent` (hash row + "Transaction details" disclosure by
-//  default, omitted by Swap which surfaces the same info inside its
-//  summary card), and a `bottomBarContent` slot (default: a single
-//  "Done" button; Swap supplies "Track" + "Done").
+//  Screen-rooted entry point for every "done" surface in the app —
+//  Send / Swap / QBTC claim / cosigner-Send / cosigner-Swap / signed
+//  message. Mirrors Android's `TxDoneScaffold`. Composes the status
+//  header (built-in from the status source) with three flow-supplied
+//  slots:
 //
-//  This is the SINGLE shared surface for the Send / Swap / QBTC claim
-//  / keysign-cosigner "done" experience. Each upstream flow constructs
-//  a `TransactionDonePayload` and a concrete
-//  `TransactionDoneStatusSource`, hands them in, and supplies any
-//  non-default slots.
+//    - `tokenContent`  — hero card. Default = coin display.
+//    - `detailContent` — hash row + "Transaction details" disclosure
+//                        by default; Swap supplies `EmptyView()` since
+//                        the summary card above covers it.
+//    - `bottomBar`     — default = single "Done" CTA; Swap supplies
+//                        "Track" + "Done".
+//
+//  Owns the `hashCopied` toast state internally and routes it via the
+//  `notifyHashCopied` environment callback — slot consumers (the hash
+//  row, the swap summary card) call `notifyHashCopied()` when the user
+//  copies a hash and the popup fires on this screen. Wraps everything
+//  in `Screen { … }.screenTitle("done").screenBackButtonHidden()` so
+//  consumers don't redo the chrome.
 //
 
 import SwiftUI
@@ -27,7 +32,6 @@ struct DoneScreen<
     BottomBar: View
 >: View {
     let input: TransactionDonePayload
-    @Binding var showAlert: Bool
 
     @ObservedObject var statusSource: StatusSource
 
@@ -35,23 +39,33 @@ struct DoneScreen<
     let detailContent: () -> DetailContent
     let bottomBarContent: () -> BottomBar
 
+    @State private var showAlert = false
+
     init(
         input: TransactionDonePayload,
         statusSource: StatusSource,
-        showAlert: Binding<Bool>,
         @ViewBuilder tokenContent: @escaping () -> TokenContent,
         @ViewBuilder detailContent: @escaping () -> DetailContent,
         @ViewBuilder bottomBarContent: @escaping () -> BottomBar
     ) {
         self.input = input
         self.statusSource = statusSource
-        self._showAlert = showAlert
         self.tokenContent = tokenContent
         self.detailContent = detailContent
         self.bottomBarContent = bottomBarContent
     }
 
     var body: some View {
+        Screen {
+            content
+                .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
+        }
+        .screenTitle("done".localized)
+        .screenBackButtonHidden()
+        .environment(\.notifyHashCopied) { showAlert = true }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 8) {
@@ -85,18 +99,16 @@ extension DoneScreen where TokenContent == DoneTokenContent,
     /// up the default slot content (coin display + hash row + Done CTA).
     init(
         input: TransactionDonePayload,
-        statusSource: StatusSource,
-        showAlert: Binding<Bool>
+        statusSource: StatusSource
     ) {
         self.init(
             input: input,
             statusSource: statusSource,
-            showAlert: showAlert,
             tokenContent: {
                 DoneTokenContent(input: input)
             },
             detailContent: {
-                DoneDetailContent(input: input, showAlert: showAlert)
+                DoneDetailContent(input: input)
             },
             bottomBarContent: {
                 DoneDefaultBottomBar()
@@ -157,7 +169,6 @@ struct DoneTokenContent: View {
 /// disclosure that routes into `SendCryptoSecondaryDoneView`.
 struct DoneDetailContent: View {
     let input: TransactionDonePayload
-    @Binding var showAlert: Bool
 
     @Environment(\.router) var router
 
@@ -167,8 +178,7 @@ struct DoneDetailContent: View {
                 TransactionDoneHashRowView(
                     hash: input.hash,
                     explorerLink: input.explorerLink,
-                    showCopy: true,
-                    showAlert: $showAlert
+                    showCopy: true
                 )
                 Separator()
                     .opacity(0.8)
@@ -194,7 +204,7 @@ struct DoneDetailContent: View {
             router.navigate(to: SendRoute.transactionDetails(input: input))
         } label: {
             HStack {
-                Text(NSLocalizedString("transactionDetails", comment: ""))
+                Text("transactionDetails".localized)
                 Spacer()
                 Image(systemName: "chevron.right")
             }
@@ -212,5 +222,22 @@ struct DoneDefaultBottomBar: View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
+    }
+}
+
+// MARK: - Hash-copied alert environment
+
+private struct NotifyHashCopiedKey: EnvironmentKey {
+    static let defaultValue: () -> Void = { }
+}
+
+extension EnvironmentValues {
+    /// Called by slot subviews (hash row, swap summary card) when the
+    /// user copies a tx hash. `DoneScreen` flips its internal toast
+    /// state when this fires; default no-op means previews and
+    /// detached usages stay silent.
+    var notifyHashCopied: () -> Void {
+        get { self[NotifyHashCopiedKey.self] }
+        set { self[NotifyHashCopiedKey.self] = newValue }
     }
 }

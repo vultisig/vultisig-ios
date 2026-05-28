@@ -21,8 +21,6 @@ struct SendDoneScreen: View {
     let tx: SendTransaction?
     let keysignPayload: KeysignPayload?
 
-    @State private var showAlert = false
-
     @Query private var vaults: [Vault]
     @Query private var addressBookItems: [AddressBookItem]
 
@@ -53,21 +51,9 @@ struct SendDoneScreen: View {
     }
 
     var body: some View {
-        Screen {
-            ZStack {
-                Background()
-                if let tx {
-                    DoneScreen(
-                        input: payload(for: tx),
-                        statusSource: statusSource,
-                        showAlert: $showAlert
-                    )
-                }
-            }
-            .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
+        if let tx {
+            DoneScreen(input: payload(for: tx), statusSource: statusSource)
         }
-        .screenTitle("done".localized)
-        .screenBackButtonHidden()
     }
 
     private func payload(for tx: SendTransaction) -> TransactionDonePayload {
