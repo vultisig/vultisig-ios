@@ -27,7 +27,6 @@ struct JoinKeysignDoneView: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     private let summaryViewModel = JoinKeysignSummaryViewModel()
-    @StateObject private var statusSource = StaticStatusSource(status: .confirmed)
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
@@ -85,7 +84,11 @@ struct JoinKeysignDoneView: View {
                 pubKeyECDSA: vault.pubKeyECDSA,
                 dappMetadata: viewModel.dappMetadata
             ),
-            statusSource: statusSource
+            statusService: DoneStatusServiceFactory.cosigner(
+                keysignPayload: keysignPayload,
+                txHash: viewModel.txid,
+                vault: vault
+            )
         )
     }
 
@@ -108,7 +111,11 @@ struct JoinKeysignDoneView: View {
                 pubKeyECDSA: vault.pubKeyECDSA,
                 dappMetadata: viewModel.dappMetadata
             ),
-            statusSource: statusSource,
+            statusService: DoneStatusServiceFactory.cosigner(
+                keysignPayload: keysignPayload,
+                txHash: viewModel.txid,
+                vault: vault
+            ),
             tokenContent: {
                 SwapDoneSummaryCard.cosigner(
                     keysignPayload: keysignPayload,
@@ -159,7 +166,7 @@ struct JoinKeysignDoneView: View {
                 pubKeyECDSA: vault.pubKeyECDSA,
                 verb: .sign
             ),
-            statusSource: statusSource,
+            statusService: DoneStatusServiceFactory.signedMessage(),
             tokenContent: {
                 SignedMessageDoneTokenContent(viewModel: viewModel)
             },

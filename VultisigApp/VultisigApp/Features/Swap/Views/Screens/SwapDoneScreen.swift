@@ -32,38 +32,18 @@ struct SwapDoneScreen: View {
     let progressLink: String?
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var statusSourceBox: AnyTransactionDoneStatusSourceBox
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
 
-    init(
-        vault: Vault,
-        hash: String,
-        approveHash: String?,
-        chain: Chain,
-        transaction: SwapTransaction,
-        progressLink: String?
-    ) {
-        self.vault = vault
-        self.hash = hash
-        self.approveHash = approveHash
-        self.chain = chain
-        self.transaction = transaction
-        self.progressLink = progressLink
-
-        let source: any TransactionDoneStatusSource = Self.makeStatusSource(
-            transaction: transaction,
-            txHash: hash,
-            vault: vault
-        )
-        _statusSourceBox = StateObject(wrappedValue: AnyTransactionDoneStatusSourceBox(source: source))
-    }
-
     var body: some View {
         DoneScreen(
             input: payload,
-            statusSource: statusSourceBox,
+            statusService: DoneStatusServiceFactory.swap(
+                txHash: hash,
+                transaction: transaction,
+                vault: vault
+            ),
             tokenContent: {
                 SwapDoneSummaryCard.initiator(
                     transaction: transaction,
@@ -112,28 +92,6 @@ struct SwapDoneScreen: View {
             toAddress: transaction.toCoin.address,
             fee: FeeDisplay(crypto: transaction.totalFeeString, fiat: ""),
             keysignPayload: nil,
-            pubKeyECDSA: vault.pubKeyECDSA
-        )
-    }
-
-    private static func makeStatusSource(
-        transaction: SwapTransaction,
-        txHash: String,
-        vault: Vault
-    ) -> any TransactionDoneStatusSource {
-        if case .swapkit = transaction.quote {
-            return SwapKitStatusSource(
-                transaction: transaction,
-                txHash: txHash,
-                pubKeyECDSA: vault.pubKeyECDSA
-            )
-        }
-        return ChainPollerStatusSource(
-            txHash: txHash,
-            chain: transaction.fromCoin.chain,
-            coinTicker: transaction.fromCoin.ticker,
-            amount: "\(transaction.fromAmount) \(transaction.fromCoin.ticker)",
-            toAddress: transaction.toCoin.address,
             pubKeyECDSA: vault.pubKeyECDSA
         )
     }

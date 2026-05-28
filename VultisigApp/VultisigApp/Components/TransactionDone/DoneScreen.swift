@@ -26,14 +26,13 @@
 import SwiftUI
 
 struct DoneScreen<
-    StatusSource: TransactionDoneStatusSource,
     TokenContent: View,
     DetailContent: View,
     BottomBar: View
 >: View {
     let input: TransactionDonePayload
 
-    @ObservedObject var statusSource: StatusSource
+    @StateObject private var statusService: DoneStatusService
 
     let tokenContent: () -> TokenContent
     let detailContent: () -> DetailContent
@@ -41,15 +40,20 @@ struct DoneScreen<
 
     @State private var showAlert = false
 
+    /// Construct via `DoneStatusServiceFactory`. The
+    /// `statusService` autoclosure is evaluated lazily by `@StateObject`
+    /// the first time the view appears — subsequent re-renders re-call
+    /// the autoclosure but SwiftUI retains the original instance, so the
+    /// polling task stays alive across body refreshes.
     init(
         input: TransactionDonePayload,
-        statusSource: StatusSource,
+        statusService: @autoclosure @escaping () -> DoneStatusService,
         @ViewBuilder tokenContent: @escaping () -> TokenContent,
         @ViewBuilder detailContent: @escaping () -> DetailContent,
         @ViewBuilder bottomBarContent: @escaping () -> BottomBar
     ) {
         self.input = input
-        self.statusSource = statusSource
+        _statusService = StateObject(wrappedValue: statusService())
         self.tokenContent = tokenContent
         self.detailContent = detailContent
         self.bottomBarContent = bottomBarContent
@@ -69,7 +73,7 @@ struct DoneScreen<
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 8) {
-                    TransactionStatusHeaderView(status: statusSource.status, verb: input.verb)
+                    TransactionStatusHeaderView(status: statusService.status, verb: input.verb)
                         .frame(minHeight: 150, maxHeight: 200)
                         .padding(.bottom, 36)
 
@@ -83,10 +87,10 @@ struct DoneScreen<
             bottomBarContent()
         }
         .onAppear {
-            statusSource.start()
+            statusService.start()
             TransactionHistoryRecording.record(payload: input)
         }
-        .onDisappear { statusSource.stop() }
+        .onDisappear { statusService.stop() }
     }
 }
 
@@ -99,11 +103,11 @@ extension DoneScreen where TokenContent == DoneTokenContent,
     /// up the default slot content (coin display + hash row + Done CTA).
     init(
         input: TransactionDonePayload,
-        statusSource: StatusSource
+        statusService: @autoclosure @escaping () -> DoneStatusService
     ) {
         self.init(
             input: input,
-            statusSource: statusSource,
+            statusService: statusService(),
             tokenContent: {
                 DoneTokenContent(input: input)
             },

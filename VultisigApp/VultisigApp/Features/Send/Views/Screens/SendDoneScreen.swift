@@ -25,34 +25,18 @@ struct SendDoneScreen: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var statusSource: ChainPollerStatusSource
-
-    init(
-        vault: Vault,
-        hash: String,
-        chain: Chain,
-        tx: SendTransaction?,
-        keysignPayload: KeysignPayload?
-    ) {
-        self.vault = vault
-        self.hash = hash
-        self.chain = chain
-        self.tx = tx
-        self.keysignPayload = keysignPayload
-
-        _statusSource = StateObject(wrappedValue: ChainPollerStatusSource(
-            txHash: hash,
-            chain: chain,
-            coinTicker: tx?.coin.ticker,
-            amount: tx.map { "\($0.amount) \($0.coin.ticker)" },
-            toAddress: tx?.toAddress,
-            pubKeyECDSA: vault.pubKeyECDSA
-        ))
-    }
 
     var body: some View {
         if let tx {
-            DoneScreen(input: payload(for: tx), statusSource: statusSource)
+            DoneScreen(
+                input: payload(for: tx),
+                statusService: DoneStatusServiceFactory.send(
+                    txHash: hash,
+                    chain: chain,
+                    tx: tx,
+                    vault: vault
+                )
+            )
         }
     }
 

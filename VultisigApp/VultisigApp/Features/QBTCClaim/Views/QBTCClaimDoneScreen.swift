@@ -19,26 +19,15 @@ struct QBTCClaimDoneScreen: View {
     let btcCoin: Coin
     let qbtcCoin: Coin
 
-    @StateObject private var statusSource: ChainPollerStatusSource
-
-    init(result: QBTCClaimRunResult, vault: Vault, btcCoin: Coin, qbtcCoin: Coin) {
-        self.result = result
-        self.vault = vault
-        self.btcCoin = btcCoin
-        self.qbtcCoin = qbtcCoin
-
-        _statusSource = StateObject(wrappedValue: ChainPollerStatusSource(
-            txHash: result.txHashHex,
-            chain: .qbtc,
-            coinTicker: qbtcCoin.ticker,
-            amount: QBTCClaimAmountFormatter.formatQbtc(sats: result.totalSatsClaimed),
-            toAddress: qbtcCoin.address,
-            pubKeyECDSA: vault.pubKeyECDSA
-        ))
-    }
-
     var body: some View {
-        DoneScreen(input: payload, statusSource: statusSource)
+        DoneScreen(
+            input: payload,
+            statusService: DoneStatusServiceFactory.qbtcClaim(
+                result: result,
+                qbtcCoin: qbtcCoin,
+                vault: vault
+            )
+        )
     }
 
     private var payload: TransactionDonePayload {
