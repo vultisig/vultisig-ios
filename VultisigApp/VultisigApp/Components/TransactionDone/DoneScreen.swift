@@ -5,8 +5,8 @@
 //  Screen-rooted entry point for every "done" surface in the app —
 //  Send / Swap / QBTC claim / cosigner-Send / cosigner-Swap / signed
 //  message. Mirrors Android's `TxDoneScaffold`. Composes the status
-//  header (built-in from the status source) with three flow-supplied
-//  slots:
+//  header (driven by the injected `DoneStatusService`) with three
+//  flow-supplied slots:
 //
 //    - `tokenContent`  — hero card. Default = coin display.
 //    - `detailContent` — hash row + "Transaction details" disclosure

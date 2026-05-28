@@ -3,9 +3,10 @@
 //  VultisigApp
 //
 //  `tokenContent` slot rendered by `DoneScreen` on the custom-message
-//  cosigner path. Lifted from the deleted `KeysignSignedMessageDoneView`
-//  so the dApp-signing done flow uses the same `DoneScreen` chrome
-//  (Screen + status header + bottom bar) as Send / Swap / QBTC.
+//  cosigner path. The dApp-signing done flow uses the same `DoneScreen`
+//  chrome (Screen + status header + bottom bar) as Send / Swap / QBTC;
+//  this view supplies the per-flow body (method / message / amount /
+//  function disclosure / signature stacked cells).
 //
 //  Renders, top-down:
 //    - Decoded function name (when available).

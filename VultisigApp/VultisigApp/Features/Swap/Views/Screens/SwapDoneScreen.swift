@@ -8,11 +8,11 @@
 //    expandable fees + tx hash + approve hash)
 //  - custom bottom-bar: "Track" + "Done" when a progress link exists
 //
-//  Status comes from `SwapKitStatusSource` for SwapKit-routed swaps
-//  (so the cross-chain `/track` drives the header instead of the
-//  source-chain RPC poller, which would surface a premature
-//  "successful" once the source tx confirms) and
-//  `ChainPollerStatusSource` for THORChain/Maya/1inch/Kyber/LiFi.
+//  Status comes from `SwapKitPoller` for SwapKit-routed swaps (so the
+//  cross-chain `/track` drives the header instead of the source-chain
+//  RPC poller, which would surface a premature "successful" once the
+//  source tx confirms) and `ChainPoller` for THORChain/Maya/1inch/
+//  Kyber/LiFi — wired via `DoneStatusServiceFactory.swap`.
 //
 //  Audit (Mediator.shared.stop): the pre-refactor screen kicked off a
 //  5-second-delayed `Mediator.shared.stop()` here. Confirmed redundant

@@ -7,8 +7,9 @@
 //  and uses the default token / detail / bottom-bar slots (coin
 //  display, hash row + secondary disclosure, single "Done" CTA).
 //
-//  Status header is driven by `ChainPollerStatusSource`, the same
-//  per-chain RPC poller every other Send/Swap/QBTC flow uses.
+//  Status header is driven by `ChainPoller` (the per-chain RPC poller
+//  every other Send/QBTC/non-SwapKit-swap flow uses), wired via
+//  `DoneStatusServiceFactory.send`.
 //
 
 import SwiftData

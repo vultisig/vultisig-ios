@@ -10,8 +10,9 @@
 //  Two static factories — `initiator(...)` (full `SwapTransaction` in
 //  hand) and `cosigner(...)` (only the SwapKit fields lifted off
 //  `KeysignPayload.swapPayload(.swapkit)`) — both build the attach
-//  closure the underlying tracker needs. The cosigner path is the gap
-//  the previous `StaticStatusSource` left unfilled.
+//  closure the underlying tracker needs. The cosigner path closes the
+//  pre-refactor gap where the peer device received no live status at
+//  all on swap-finished.
 //
 
 import Foundation

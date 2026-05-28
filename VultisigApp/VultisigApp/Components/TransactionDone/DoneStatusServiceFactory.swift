@@ -2,8 +2,8 @@
 //  DoneStatusServiceFactory.swift
 //  VultisigApp
 //
-//  Single dispatch site that picks the right `TransactionStatusPoller`
-//  for each done-screen entry point. One factory method per flow:
+//  Single dispatch site that picks the right `DoneStatusPoller` for
+//  each done-screen entry point. One factory method per flow:
 //
 //    - `send(...)`         — Send initiator + cosigner Send (RPC poll)
 //    - `swap(...)`         — Swap initiator (SwapKit `/track` or RPC)
