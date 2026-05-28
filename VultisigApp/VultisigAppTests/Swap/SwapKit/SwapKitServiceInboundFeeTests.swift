@@ -58,6 +58,22 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
         XCTAssertEqual(fee, BigInt(13_373_500))
     }
 
+    func testErc20SourceFeeScalesByNativeDecimalsNotSellTokenDecimals() throws {
+        // Regression: the inbound fee asset is the source chain's NATIVE coin (ETH.ETH, 18dp) even
+        // when the SELL token is an ERC-20 (USDC, 6dp). Scaling by the sell token's 6 decimals
+        // instead of ETH's 18 (a 10^12 factor) would round the fee down to BigInt(99) — the
+        // round-up of 0.000098846611703085 × 10^6 — instead of the real 98_846_611_703_085 wei.
+        // The native ETH source for this same fixture is pinned in testEvmInboundFeeParsedAsWei.
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-erc20-erc20-swap"
+        )
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let fee = service.inboundFee(from: response, fromCoin: usdc)
+        // Must scale by ETH's 18 native decimals, NOT USDC's 6.
+        XCTAssertEqual(fee, BigInt("98846611703085"))
+    }
+
     func testWrongChainPrefixDoesNotMatch() throws {
         // If we hand the fee parser a coin whose chain doesn't appear in
         // `fees[]`, the parser returns nil rather than picking the wrong
@@ -73,8 +89,8 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int) -> Coin {
-        let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: true)
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool = true) -> Coin {
+        let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
         return Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
     }
 }
