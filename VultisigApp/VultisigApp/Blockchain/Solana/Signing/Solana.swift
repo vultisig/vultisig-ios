@@ -244,8 +244,13 @@ enum SolanaHelper {
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
 
-        let result = SignedTransactionResult(rawTransaction: output.encoded,
-                                             transactionHash: getHashFromRawTransaction(tx: output.encoded))
+        guard let txData = Data(base64Encoded: output.encoded) else {
+            throw HelperError.runtimeError("Failed to decode signed Solana transaction")
+        }
+        let result = SignedTransactionResult(
+            rawTransaction: output.encoded,
+            transactionHash: try getHashFromRawTransaction(txData: txData)
+        )
 
         return result
     }
@@ -330,7 +335,7 @@ enum SolanaHelper {
         let encoded = signedTx.base64EncodedString()
         return SignedTransactionResult(
             rawTransaction: encoded,
-            transactionHash: getHashFromRawTransaction(tx: encoded)
+            transactionHash: try getHashFromRawTransaction(txData: signedTx)
         )
     }
 
@@ -364,9 +369,14 @@ enum SolanaHelper {
         return (firstSignatureOffset, message)
     }
 
-    static func getHashFromRawTransaction(tx: String) -> String {
-        let sig =  Data(tx.prefix(64).utf8)
-        return sig.base64EncodedString()
+    static func getHashFromRawTransaction(txData: Data) throws -> String {
+        let parsed = try extractSolanaMessageBytes(from: txData)
+        let sigEnd = parsed.firstSignatureOffset + 64
+        guard sigEnd <= txData.count else {
+            throw HelperError.runtimeError("Transaction too short to extract signature")
+        }
+        let sigBytes = txData.subdata(in: (txData.startIndex + parsed.firstSignatureOffset)..<(txData.startIndex + sigEnd))
+        return Base58.encodeNoCheck(data: sigBytes)
     }
 
     static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
