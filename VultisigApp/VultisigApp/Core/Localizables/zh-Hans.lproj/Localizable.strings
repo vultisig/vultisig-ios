@@ -544,9 +544,13 @@
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "Merge" = "合并";
+"message" = "消息";
 "messageDeposit" = "%@ 消息存款";
+"messageSigned" = "消息已签名";
+"messageSignFailed" = "消息签名失败";
 "messageToSign" = "要签名的消息";
 "messageVote" = "%@ 消息投票";
+"method" = "方法";
 "migrate" = "迁移";
 "migratePasswordDescription" = "输入您的密码以解锁服务器份额并开始升级";
 "migrateVault" = "将 GG20 保险库迁移到 DKLS";
@@ -911,6 +915,7 @@
 "showBalance" = "显示余额";
 "showHint" = "显示提示";
 "sign" = "签名";
+"signature" = "签名";
 "signCustomMessage" = "签署自定义消息";
 "signer" = "签名者";
 "signFasterThanEverBefore" = "比以往任何时候都更快地签名";

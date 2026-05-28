@@ -11,5 +11,5 @@ enum SendRoute: Hashable {
     case pairing(vault: Vault, tx: SendTransaction, retrySignal: SendRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal)
     case done(vault: Vault, hash: String, chain: Chain, tx: SendTransaction?, keysignPayload: KeysignPayload?)
-    case transactionDetails(input: SendCryptoContent)
+    case transactionDetails(input: TransactionDonePayload)
 }

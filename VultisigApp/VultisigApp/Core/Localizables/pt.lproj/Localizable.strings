@@ -544,9 +544,13 @@
 "memo" = "Memorando";
 "memoLabel" = "Memo";
 "Merge" = "Fundir";
+"message" = "Mensagem";
 "messageDeposit" = "%@ depósito de mensagem";
+"messageSigned" = "Mensagem assinada";
+"messageSignFailed" = "Falha ao assinar mensagem";
 "messageToSign" = "Mensagem a assinar";
 "messageVote" = "%@ voto de mensagem";
+"method" = "Método";
 "migrate" = "Migrar";
 "migratePasswordDescription" = "Digite sua senha para desbloquear sua Parte do Servidor e iniciar a atualização";
 "migrateVault" = "Migrar GG20 Vault para DKLS";
@@ -911,6 +915,7 @@
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar dica";
 "sign" = "Assinar";
+"signature" = "Assinatura";
 "signCustomMessage" = "Assinar mensagem personalizada";
 "signer" = "Assinante";
 "signFasterThanEverBefore" = "Assine mais rápido do que nunca";

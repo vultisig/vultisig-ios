@@ -544,9 +544,13 @@
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "Merge" = "Unisci";
+"message" = "Messaggio";
 "messageDeposit" = "%@ deposito messaggio";
+"messageSigned" = "Messaggio firmato";
+"messageSignFailed" = "Firma del messaggio non riuscita";
 "messageToSign" = "Messaggio da firmare";
 "messageVote" = "%@ voto messaggio";
+"method" = "Metodo";
 "migrate" = "Migrare";
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
 "migrateVault" = "Migrare GG20 Vault su DKLS";
@@ -911,6 +915,7 @@
 "showBalance" = "Mostra saldo";
 "showHint" = "Mostra suggerimento";
 "sign" = "Firma";
+"signature" = "Firma";
 "signCustomMessage" = "Firma messaggio personalizzato";
 "signer" = "Firmatario";
 "signFasterThanEverBefore" = "Firma più velocemente che mai";

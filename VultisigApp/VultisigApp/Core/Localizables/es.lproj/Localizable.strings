@@ -544,9 +544,13 @@
 "memo" = "Memorándum";
 "memoLabel" = "Memo";
 "Merge" = "Fusionar";
+"message" = "Mensaje";
 "messageDeposit" = "%@ depósito de mensaje";
+"messageSigned" = "Mensaje firmado";
+"messageSignFailed" = "Firma de mensaje fallida";
 "messageToSign" = "Mensaje a firmar";
 "messageVote" = "%@ voto de mensaje";
+"method" = "Método";
 "migrate" = "Migrar";
 "migratePasswordDescription" = "Introduce tu contraseña para desbloquear tu Parte del Servidor y comenzar la actualización";
 "migrateVault" = "Migra la bóveda GG20 a DKLS";
@@ -911,6 +915,7 @@
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar pista";
 "sign" = "Firmar";
+"signature" = "Firma";
 "signCustomMessage" = "Firmar mensaje personalizado";
 "signer" = "Firmante";
 "signFasterThanEverBefore" = "Firma más rápido que nunca";

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SendCryptoSecondaryDoneView: View {
     @Environment(\.router) var router
-    let input: SendCryptoContent
+    let input: TransactionDonePayload
 
     @State private var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
@@ -22,7 +22,7 @@ struct SendCryptoSecondaryDoneView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
 
-    init(input: SendCryptoContent) {
+    init(input: TransactionDonePayload) {
         self.input = input
         _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
             txHash: input.hash,
@@ -95,7 +95,7 @@ struct SendCryptoSecondaryDoneView: View {
     }
 
     var header: some View {
-        SendCryptoDoneHeaderView(
+        TransactionDoneHeaderView(
             coin: input.coin,
             cryptoAmount: input.amountCrypto,
             fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
@@ -108,11 +108,10 @@ struct SendCryptoSecondaryDoneView: View {
     var summary: some View {
         VStack(spacing: 18) {
             Group {
-                SendCryptoTransactionHashRowView(
+                TransactionDoneHashRowView(
                     hash: input.hash,
                     explorerLink: input.explorerLink,
-                    showCopy: false,
-                    showAlert: .constant(false)
+                    showCopy: false
                 )
                 separator
             }
