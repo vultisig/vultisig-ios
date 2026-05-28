@@ -180,7 +180,7 @@ struct CosmosIBCFormView: View {
             ) { result in
                 model.handle(addressResult: result)
             }
-            .id(model.selectedChainObject?.name ?? UUID().uuidString)
+            .id(model.selectedChainObject?.name ?? "ibc-destination-address-field")
 
             StyledFloatingPointField(
                 label: "\("amount".localized) \(model.balance(for: selectedCoin))",

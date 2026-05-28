@@ -65,7 +65,6 @@ final class FunctionCallVote {
 
 struct VoteFormView: View {
     @Bindable var model: FunctionCallVote
-    let coin: Coin
 
     var body: some View {
         VStack {

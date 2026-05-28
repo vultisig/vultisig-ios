@@ -122,7 +122,7 @@ final class FunctionCallSecuredAsset {
     var isTheFormValid: Bool {
         let amountValid = isAmountValid(against: coin)
         let thorValid = !thorAddress.isEmpty
-        return amountValid && thorValid && !amount.isZero
+        return amountValid && thorValid
     }
 
     private func updateErrorMessage(against coin: Coin? = nil) {

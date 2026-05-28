@@ -16,7 +16,6 @@
 //
 
 import BigInt
-import Combine
 import Foundation
 import OSLog
 import SwiftUI
@@ -98,6 +97,12 @@ final class FunctionCallAddThorLP {
     }
 
     private func loadInitialState() {
+        // Cancel and clear any in-flight tasks before kicking off a new
+        // round. `initialize()` can re-enter (e.g. after enabling THORChain
+        // mid-flow); without this, `loadingTasks` would grow unbounded.
+        loadingTasks.forEach { $0.cancel() }
+        loadingTasks.removeAll()
+
         let task = Task { @MainActor [weak self] in
             guard let self else { return }
             await self.fetchInboundAddressAndSetupApproval()
@@ -256,7 +261,7 @@ final class FunctionCallAddThorLP {
             let balance = chainCoin.balanceDecimal.formatForDisplay()
             pairedAssetBalance = String(format: "balanceInParentheses".localized, balance, chainCoin.ticker.uppercased())
         } else {
-            pairedAssetBalance = "( \(assetTicker) not found in vault )"
+            pairedAssetBalance = String(format: "assetNotFoundInVault".localized, assetTicker)
         }
     }
 
@@ -284,7 +289,7 @@ final class FunctionCallAddThorLP {
             selectedPoolBalance = formatBalance(token.balanceDecimal, ticker: token.ticker)
             return
         }
-        selectedPoolBalance = "( \(assetTicker) not found in vault )"
+        selectedPoolBalance = String(format: "assetNotFoundInVault".localized, assetTicker)
     }
 
     func updateSelectedCoin(from poolName: String) {
