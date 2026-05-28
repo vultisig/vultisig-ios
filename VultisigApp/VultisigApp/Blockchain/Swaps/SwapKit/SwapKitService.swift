@@ -92,6 +92,21 @@ struct SwapKitService {
             return best
         } catch HTTPError.statusCode(_, let data) {
             if let error = SwapKitError.from(httpData: data) {
+                // SwapKit collapses "amount below provider minimum" and
+                // "pair not supported" into a single byte-identical 404
+                // `noRoutesFound` envelope. Cross-check the cached
+                // `/v3/providers` snapshot: if a non-filtered provider
+                // enables both chains, the pair IS structurally supported
+                // and the failure must be amount-related — re-classify so
+                // the view layer can show "Amount Too Small" instead of
+                // the misleading "No routes available for this pair".
+                if case .noRoutesFound = error,
+                   await providerCache.isPairSupported(
+                       fromChain: fromCoin.chain,
+                       toChain: toCoin.chain
+                   ) {
+                    throw SwapKitError.amountBelowProviderMinimum
+                }
                 throw error
             }
             throw SwapKitError.generic(message: "SwapKit /v3/quote request failed")
@@ -199,7 +214,15 @@ extension SwapKitService {
         else {
             return nil
         }
-        let raw = fromCoin.raw(for: amount)
+        // The inbound fee is denominated in the source chain's NATIVE gas coin (e.g. "ETH.ETH",
+        // "SOL.SOL"), never the sell token. Scaling by `fromCoin.decimals` under-counts the fee
+        // for an ERC-20 / SPL token source (e.g. USDC's 6 vs ETH's 18 — off by 10^12), which reads
+        // as dust on the Network Fee row and weakens the gas-coin balance check. Scale by the
+        // native coin's decimals — identical to `fromCoin.decimals` on a native-source route.
+        var scaled = amount * pow(Decimal(10), nativeDecimals(for: fromCoin))
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .up)
+        let raw = BigInt(rounded.description) ?? .zero
         return raw == .zero ? nil : raw
     }
 }
@@ -248,5 +271,20 @@ private extension SwapKitService {
         case .mayaChain: return "MAYA"
         default: return fallback
         }
+    }
+
+    /// Decimals to scale the inbound fee by. The fee is always denominated in the source chain's
+    /// native gas coin, so a native-source coin already carries the right decimals; for an ERC-20 /
+    /// SPL token source we look up the chain's native coin (whose decimals differ from the token's)
+    /// rather than hardcoding a per-chain table. Falls back to the source coin's own decimals if the
+    /// native coin isn't in the curated store.
+    func nativeDecimals(for coin: Coin) -> Int {
+        if coin.isNativeToken {
+            return coin.decimals
+        }
+        let nativeCoin = TokensStore.TokenSelectionAssets.first {
+            $0.chain == coin.chain && $0.isNativeToken
+        }
+        return nativeCoin?.decimals ?? coin.decimals
     }
 }

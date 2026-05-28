@@ -530,10 +530,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .tron,
                 .cardano,
                 .sui,
-                .ton:
+                .ton,
+                .polygonV2:
             return true
-        case .polygonV2,
-            .polkadot,
+        case .polkadot,
             .dydx,
             .osmosis,
             .terra,
@@ -544,6 +544,19 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .sei,
             .qbtc,
             .bittensor:
+            return false
+        }
+    }
+
+    /// Cosmos-SDK native staking via delegate / undelegate / redelegate /
+    /// claim-rewards. Only the LUNA / LUNC chains today; other Cosmos
+    /// chains (gaia / kujira / osmosis / etc.) are out of scope for the
+    /// in-app staking UI.
+    var isCosmosStakingChain: Bool {
+        switch self {
+        case .terra, .terraClassic:
+            return true
+        default:
             return false
         }
     }

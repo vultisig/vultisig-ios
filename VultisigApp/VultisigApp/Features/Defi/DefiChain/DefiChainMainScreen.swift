@@ -12,10 +12,11 @@ struct DefiChainMainScreen: View {
     @ObservedObject var vault: Vault
     let chain: Chain
 
-    @StateObject var viewModel: DefiChainMainViewModel
-    @StateObject var bondViewModel: DefiChainBondViewModel
-    @StateObject var lpsViewModel: DefiChainLPsViewModel
-    @StateObject var stakeViewModel: DefiChainStakeViewModel
+    @StateObject private var viewModel: DefiChainMainViewModel
+    @StateObject private var bondViewModel: DefiChainBondViewModel
+    @StateObject private var lpsViewModel: DefiChainLPsViewModel
+    @StateObject private var stakeViewModel: DefiChainStakeViewModel
+    @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -29,6 +30,7 @@ struct DefiChainMainScreen: View {
         self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: chain))
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
+        self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
     }
 
     private var nativeCoin: Coin? {
@@ -126,23 +128,27 @@ struct DefiChainMainScreen: View {
                     )
                 }
             case .stake:
-                DefiChainStakedView(
-                    viewModel: stakeViewModel,
-                    onStake: { onStake(position: $0) },
-                    onUnstake: { onUnstake(position: $0) },
-                    onWithdraw: { position in
-                        guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
-                            return
-                        }
-                        onTransactionToPresent(.withdrawRewards(
-                            coin: position.coin,
-                            rewards: rewards,
-                            rewardsCoin: rewardsCoin
-                        ))
-                    },
-                    onTransfer: { onTransfer(position: $0) },
-                    emptyStateView: { emptyStateView }
-                )
+                if chain.isCosmosStakingChain, let nativeCoin {
+                    cosmosStakeView(coin: nativeCoin)
+                } else {
+                    DefiChainStakedView(
+                        viewModel: stakeViewModel,
+                        onStake: { onStake(position: $0) },
+                        onUnstake: { onUnstake(position: $0) },
+                        onWithdraw: { position in
+                            guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
+                                return
+                            }
+                            onTransactionToPresent(.withdrawRewards(
+                                coin: position.coin,
+                                rewards: rewards,
+                                rewardsCoin: rewardsCoin
+                            ))
+                        },
+                        onTransfer: { onTransfer(position: $0) },
+                        emptyStateView: { emptyStateView }
+                    )
+                }
             case .liquidityPool:
                 DefiChainLPsView(
                     vault: vault,
@@ -168,6 +174,56 @@ struct DefiChainMainScreen: View {
             subtitle: "noPositionsSelectedSubtitle".localized,
             buttonTitle: "managePositions".localized,
             action: { showPositionSelection.toggle() }
+        )
+    }
+
+    /// LUNA / LUNC stake-segment renderer. Routes the four user-facing
+    /// actions through the shared `FunctionTransactionType.cosmos*`
+    /// cases — the function-call router takes it from there.
+    private func cosmosStakeView(coin: Coin) -> some View {
+        let fiatAmount = RateProvider.shared.fiatBalance(value: cosmosStakeViewModel.totalStaked, coin: coin)
+        let isPositionEnabled = vault.defiPositions
+            .first(where: { $0.chain == chain })?
+            .staking
+            .contains(where: { $0.ticker == coin.ticker }) ?? false
+        return CosmosStakeDefiView(
+            coin: coin,
+            totalFiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            isPositionEnabled: isPositionEnabled,
+            viewModel: cosmosStakeViewModel,
+            onDelegate: { coin in
+                onTransactionToPresent(.cosmosDelegate(coin: coin.toCoinMeta()))
+            },
+            onUndelegate: { position in
+                onTransactionToPresent(.cosmosUndelegate(
+                    coin: coin.toCoinMeta(),
+                    validatorAddress: position.validatorAddress,
+                    validatorMoniker: position.validatorMoniker,
+                    stakedAmount: position.stakedAmount
+                ))
+            },
+            onRedelegate: { position in
+                onTransactionToPresent(.cosmosRedelegate(
+                    coin: coin.toCoinMeta(),
+                    validatorAddress: position.validatorAddress,
+                    validatorMoniker: position.validatorMoniker,
+                    stakedAmount: position.stakedAmount
+                ))
+            },
+            onClaim: { rows in
+                let candidates = rows.map {
+                    CosmosWithdrawRewardsCandidate(
+                        validatorAddress: $0.validatorAddress,
+                        validatorMoniker: $0.validatorMoniker,
+                        pendingReward: $0.pendingReward
+                    )
+                }
+                onTransactionToPresent(.cosmosWithdrawRewards(
+                    coin: coin.toCoinMeta(),
+                    validators: candidates
+                ))
+            },
+            emptyStateView: { emptyStateView }
         )
     }
 
@@ -316,7 +372,17 @@ private extension DefiChainMainScreen {
         async let bondRefresh: Void = bondViewModel.refresh()
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh)
+        async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh)
+    }
+
+    /// Conditional refresh for the cosmos staking VM — only fires when the
+    /// chain supports cosmos staking and the vault has the native coin
+    /// loaded. Quiet no-op otherwise so non-Terra chains don't pay the cost.
+    func refreshCosmosStakeIfNeeded() async {
+        guard CosmosStakingConfig.isStakingSupported(chain) else { return }
+        guard let nativeCoin else { return }
+        await cosmosStakeViewModel.refresh(address: nativeCoin.address, decimals: nativeCoin.decimals)
     }
 
     func update(vault: Vault) {
