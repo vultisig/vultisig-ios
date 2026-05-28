@@ -127,6 +127,12 @@ final class AnyTransactionDoneStatusSourceBox: TransactionDoneStatusSource {
         self.observe = { onChange in
             Task { @MainActor in
                 for await _ in source.objectWillChange.values {
+                    // `objectWillChange` fires *before* the `@Published`
+                    // setter commits, so reading `source.status` from
+                    // inside `onChange()` would observe the pre-mutation
+                    // value and lag by one tick. Yield to the runloop so
+                    // the next read sees the committed status.
+                    await Task.yield()
                     onChange()
                 }
             }
