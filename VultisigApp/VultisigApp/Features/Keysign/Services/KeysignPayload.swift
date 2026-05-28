@@ -84,6 +84,36 @@ struct KeysignPayload: Codable, Hashable {
         self.dappMetadata = dappMetadata
     }
 
+    /// Returns a copy of the payload with `signData` swapped. Used by the
+    /// Cosmos staking branch in Verify-time keysign-payload assembly so a
+    /// payload built without a SignDoc (the default `buildTransfer` shape)
+    /// can be re-emitted carrying the proto-encoded staking msg without
+    /// duplicating the 18-field memberwise init at every call site.
+    func withSignData(_ signData: SignData) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: toAmount,
+            chainSpecific: chainSpecific,
+            utxos: utxos,
+            memo: memo,
+            swapPayload: swapPayload,
+            approvePayload: approvePayload,
+            vaultPubKeyECDSA: vaultPubKeyECDSA,
+            vaultLocalPartyID: vaultLocalPartyID,
+            libType: libType,
+            wasmExecuteContractPayload: wasmExecuteContractPayload,
+            tronTransferContractPayload: tronTransferContractPayload,
+            tronTriggerSmartContractPayload: tronTriggerSmartContractPayload,
+            tronTransferAssetContractPayload: tronTransferAssetContractPayload,
+            qbtcClaimPayload: qbtcClaimPayload,
+            isQbtcClaim: isQbtcClaim,
+            skipBroadcast: skipBroadcast,
+            signData: signData,
+            dappMetadata: dappMetadata
+        )
+    }
+
     var signAmino: SignAmino? {
         guard case let .signAmino(amino) = signData else {
             return nil

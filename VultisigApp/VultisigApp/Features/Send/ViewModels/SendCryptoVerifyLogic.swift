@@ -45,14 +45,24 @@ struct SendCryptoVerifyLogic {
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-        let fee: BigInt
+        var fee: BigInt
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
             fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
 
         case .Cosmos, .THORChain:
+            // Cosmos batched-claim signs one msg per validator and the
+            // resolver scales gas + fee linearly. Mirror that scaling here
+            // so the Verify summary and the balance-validation check both
+            // reflect the real signed fee, not the single-msg base. Any
+            // other staking op is 1 msg → multiplier collapses to 1.
             fee = chainSpecific.fee
+            if let payload = tx.cosmosStakingPayload,
+               payload.opType == .withdrawRewards,
+               let count = payload.validators?.count, count > 1 {
+                fee *= BigInt(count)
+            }
 
         default:
             fee = chainSpecific.gas
@@ -134,7 +144,7 @@ struct SendCryptoVerifyLogic {
         do {
             let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-            return try await interactor.buildKeysignPayload(
+            let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -143,6 +153,23 @@ struct SendCryptoVerifyLogic {
                 wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault
             )
+
+            // Cosmos staking branch — when the per-flow builder produced a
+            // `cosmosStakingPayload`, swap the base payload's `signData` for
+            // a freshly-resolved `.signDirect(...)` carrying the proto-encoded
+            // MsgDelegate / MsgUndelegate / MsgBeginRedelegate /
+            // MsgWithdrawDelegatorReward bytes. The SignDoc is the contract
+            // the peer device sees; everything else on `KeysignPayload`
+            // becomes descriptive (verify-summary) only.
+            if tx.cosmosStakingPayload != nil {
+                let signDirect = try CosmosStakingSignDataResolver.resolve(
+                    sendTransaction: tx,
+                    chainSpecific: chainSpecific
+                )
+                return basePayload.withSignData(.signDirect(signDirect))
+            }
+
+            return basePayload
 
         } catch {
             // Handle UTXO-specific errors with more user-friendly messages

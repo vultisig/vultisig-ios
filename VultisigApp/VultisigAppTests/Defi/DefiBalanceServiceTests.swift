@@ -121,4 +121,78 @@ final class DefiBalanceServiceTests: XCTestCase {
         coin.stakedBalance = stakedBalance
         return coin
     }
+
+    // MARK: - Position counts (Windows parity)
+
+    func testPositionCountZeroForEmptyVault() {
+        XCTAssertEqual(service.defiPositionCount(for: .thorChain, vault: vault), 0)
+        XCTAssertEqual(service.defiPositionCount(for: .mayaChain, vault: vault), 0)
+        XCTAssertEqual(service.defiPositionCount(for: .tron, vault: vault), 0)
+        XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 0)
+        XCTAssertEqual(service.defiPositionCount(for: .terraClassic, vault: vault), 0)
+    }
+
+    func testThorchainPositionCountSumsEnabledBondAndStakePositions() throws {
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
+        let rune = Coin(asset: runeMeta, address: "thor1abc", hexPublicKey: "")
+        vault.coins = [rune]
+        vault.defiPositions = [
+            DefiPositions(chain: .thorChain, bonds: [runeMeta], staking: [tcyMeta], lps: [])
+        ]
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 3),
+            StakePositionData(coin: runeMeta, type: .stake, amount: 7)
+        ], for: vault)
+
+        let count = service.defiPositionCount(for: .thorChain, vault: vault)
+        XCTAssertEqual(count, 1, "Only the TCY stake is enabled; the RUNE stake is not in `staking`.")
+    }
+
+    func testThorchainPositionCountZeroWhenChainNotEnabled() {
+        XCTAssertEqual(service.defiPositionCount(for: .thorChain, vault: vault), 0)
+    }
+
+    func testTronPositionCountOneWhenAnyTrxFrozen() {
+        let trx = makeTronCoin(rawBalance: "0", stakedBalance: "1")
+        vault.coins = [trx]
+        XCTAssertEqual(service.defiPositionCount(for: .tron, vault: vault), 1)
+    }
+
+    func testTronPositionCountZeroWhenNoFrozenTrx() {
+        let trx = makeTronCoin(rawBalance: "100000000", stakedBalance: "0")
+        vault.coins = [trx]
+        XCTAssertEqual(service.defiPositionCount(for: .tron, vault: vault), 0)
+    }
+
+    func testTerraPositionCountMatchesStakePositionsForChain() throws {
+        let lunaMeta = CoinMeta.make(chain: .terra, ticker: "LUNA")
+        let luna = Coin(asset: lunaMeta, address: "terra1abc", hexPublicKey: "")
+        vault.coins = [luna]
+        vault.defiPositions = [
+            DefiPositions(chain: .terra, bonds: [], staking: [lunaMeta], lps: [])
+        ]
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: lunaMeta, type: .stake, amount: 1)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 1)
+    }
+
+    func testTerraPositionCountZeroWhenStakingNotEnabled() throws {
+        let lunaMeta = CoinMeta.make(chain: .terra, ticker: "LUNA")
+        let luna = Coin(asset: lunaMeta, address: "terra1abc", hexPublicKey: "")
+        vault.coins = [luna]
+        vault.defiPositions = [
+            DefiPositions(chain: .terra, bonds: [], staking: [], lps: [])
+        ]
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: lunaMeta, type: .stake, amount: 1)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 0)
+    }
 }

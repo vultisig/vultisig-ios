@@ -1,0 +1,19 @@
+{
+  "rewards": [
+    {
+      "validator_address": "terravaloper1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "reward": [
+        { "denom": "uluna", "amount": "123456.789000000000000000" }
+      ]
+    },
+    {
+      "validator_address": "terravaloper1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reward": [
+        { "denom": "uluna", "amount": "55000.000000000000000000" }
+      ]
+    }
+  ],
+  "total": [
+    { "denom": "uluna", "amount": "178456.789000000000000000" }
+  ]
+}
