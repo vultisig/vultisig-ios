@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Vermögenswert";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
 "assets" = "Vermögenswerte";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
@@ -412,6 +413,8 @@
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
 "foregroundNotificationSend" = "Senden %@";
 "foregroundNotificationSwap" = "Tausch %@ → %@";
+"formInvalid" = "Formular ungültig";
+"formInvalidDefaultMessage" = "Das Formular ist ungültig. Bitte korrigieren Sie die mit einem roten Stern markierten Felder.";
 "forwardTonAmount" = "Weitergeleiteter TON-Betrag";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";

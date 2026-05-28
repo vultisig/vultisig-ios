@@ -51,6 +51,10 @@ final class FunctionCallLeaveTests: XCTestCase {
         XCTAssertFalse(model.isTheFormValid)
         model.nodeAddress = ""
         XCTAssertFalse(model.isTheFormValid)
+        // Garbage address must keep the gate closed — `isValidThorMayaTON`
+        // runs real bech32 / TON validation under the hood.
+        model.nodeAddress = "not-an-address"
+        XCTAssertFalse(model.isTheFormValid)
     }
 
     func testHandleAddressResultWritesNodeAddress() {

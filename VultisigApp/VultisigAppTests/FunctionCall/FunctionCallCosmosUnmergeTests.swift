@@ -27,7 +27,10 @@ final class FunctionCallCosmosUnmergeTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), coin])
         let model = FunctionCallCosmosUnmerge(coin: coin, vault: vault)
         model.selectedToken = IdentifiableString(value: "THOR.RUJI")
-        model.amount = 0.00000001 // 1 raw share
+        // 0.000000014 * 1e8 = 1.4 raw shares — exercises the fractional
+        // path and pins that `%.0f` rounds 1.4 → 1 (not the 1-raw-share
+        // exact case, which never exercises rounding at all).
+        model.amount = 0.000000014
         XCTAssertEqual(model.toString(), "unmerge:thor.ruji:1")
     }
 

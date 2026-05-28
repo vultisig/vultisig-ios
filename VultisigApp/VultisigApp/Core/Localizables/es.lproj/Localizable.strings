@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Activo";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ no encontrado en el vault )";
 "assets" = "Activos";
 "atLeastOneDevice" = "Al menos un dispositivo";
 "atLeastOneDeviceSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
@@ -412,6 +413,8 @@
 "foregroundNotificationGeneric" = "Transacción pendiente de aprobación";
 "foregroundNotificationSend" = "Enviar %@";
 "foregroundNotificationSwap" = "Intercambiar %@ → %@";
+"formInvalid" = "Formulario no válido";
+"formInvalidDefaultMessage" = "El formulario no es válido. Por favor, corrija los campos marcados con una estrella roja.";
 "forwardTonAmount" = "Monto de TON Reenviado";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";

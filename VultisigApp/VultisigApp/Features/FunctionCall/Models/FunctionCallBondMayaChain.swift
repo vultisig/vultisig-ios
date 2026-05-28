@@ -29,17 +29,22 @@ final class FunctionCallBondMayaChain {
     var customErrorMessage: String?
 
     @ObservationIgnored private let assetPlaceholder = "assetLabel".localized
+    @ObservationIgnored private var loadingTask: Task<Void, Never>?
 
     init(assets: [IdentifiableString]?) {
         self.selectedAsset = .init(value: "assetLabel".localized)
         if let assets {
             self.assets = assets
         } else {
-            Task { @MainActor [weak self] in
+            loadingTask = Task { @MainActor [weak self] in
                 let response = await Self.loadAssets()
                 self?.assets = response
             }
         }
+    }
+
+    deinit {
+        loadingTask?.cancel()
     }
 
     private static func loadAssets() async -> [IdentifiableString] {

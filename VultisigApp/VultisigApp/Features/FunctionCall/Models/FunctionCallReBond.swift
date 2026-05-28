@@ -33,7 +33,7 @@ final class FunctionCallReBond {
 
     func balance(for coin: Coin) -> String {
         let balance = coin.balanceDecimal.formatForDisplay()
-        return "( Balance: \(balance) \(coin.ticker.uppercased()) )"
+        return String(format: "balanceInParentheses".localized, balance, coin.ticker.uppercased())
     }
 
     func validate(against coin: Coin) {

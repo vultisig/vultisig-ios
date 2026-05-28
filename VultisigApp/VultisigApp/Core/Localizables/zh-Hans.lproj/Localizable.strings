@@ -52,6 +52,7 @@
 "apy" = "年化收益率";
 "asset" = "资产";
 "assetLabel" = "资产";
+"assetNotFoundInVault" = "( %@ 在保险库中未找到 )";
 "assets" = "资产";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
@@ -412,6 +413,8 @@
 "foregroundNotificationGeneric" = "交易待审批";
 "foregroundNotificationSend" = "发送 %@";
 "foregroundNotificationSwap" = "兑换 %@ → %@";
+"formInvalid" = "表单无效";
+"formInvalidDefaultMessage" = "表单无效。请修复标有红色星号的字段。";
 "forwardTonAmount" = "转发 TON 数量";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
 "foundActiveChainsSubtitleHighlight" = "%d分钟";

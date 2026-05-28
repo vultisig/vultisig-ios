@@ -12,8 +12,7 @@ struct FunctionTransactionScreen: View {
     let vault: Vault
     let transactionType: FunctionTransactionType
 
-    @State private var preparedTx: SendTransaction?
-    @State var isLoading: Bool = false
+    @State private var isLoading: Bool = false
 
     private let blockchainService = BlockChainService.shared
 
@@ -216,7 +215,6 @@ struct FunctionTransactionScreen: View {
                 // navigating so the user sees the verify screen even when
                 // the upstream chain-specific endpoint is briefly down.
             }
-            preparedTx = sendTx
             router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }

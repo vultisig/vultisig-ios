@@ -58,6 +58,7 @@
 "apy" = "APY";
 "asset" = "Asset";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ not found in vault )";
 "assets" = "Assets";
 "asymmetricDeposit" = "Asymmetric Deposit";
 "asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
@@ -418,6 +419,8 @@
 "foregroundNotificationGeneric" = "Transaction pending approval";
 "foregroundNotificationSend" = "Send %@";
 "foregroundNotificationSwap" = "Swap %@ → %@";
+"formInvalid" = "Form Invalid";
+"formInvalidDefaultMessage" = "The form is not valid. Please fix the fields marked with a red star.";
 "forwardTonAmount" = "Forward TON Amount";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";

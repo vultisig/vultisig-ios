@@ -176,13 +176,7 @@ final class FunctionCallCosmosUnmerge {
     }
 
     var isTheFormValid: Bool {
-        let valid = isTokenSelected && isAmountValid && !amount.isZero
-        if valid {
-            customErrorMessage = nil
-        } else if amount > 0 && amount > availableBalance {
-            customErrorMessage = "insufficientBalanceForFunctions".localized
-        }
-        return valid
+        isTokenSelected && isAmountValid && !amount.isZero
     }
 
     func validateAmount() {

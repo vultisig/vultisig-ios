@@ -181,11 +181,11 @@ struct FunctionCallDetailsScreen: View {
 
     var invalidFormAlert: Alert {
         Alert(
-            title: Text("Form Invalid"),
+            title: Text("formInvalid".localized),
             message: Text(
-                fnCallInstance?.customErrorMessage ?? "The form is not valid. Please fix the fields marked with a red star."
+                fnCallInstance?.customErrorMessage ?? "formInvalidDefaultMessage".localized
             ),
-            dismissButton: .default(Text("OK"))
+            dismissButton: .default(Text("ok".localized))
         )
     }
 

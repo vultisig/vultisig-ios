@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Risorsa";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ non trovato nel vault )";
 "assets" = "Asset";
 "atLeastOneDevice" = "Almeno un dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
@@ -412,6 +413,8 @@
 "foregroundNotificationGeneric" = "Transazione in attesa di approvazione";
 "foregroundNotificationSend" = "Invia %@";
 "foregroundNotificationSwap" = "Scambia %@ → %@";
+"formInvalid" = "Modulo non valido";
+"formInvalidDefaultMessage" = "Il modulo non è valido. Per favore, correggi i campi contrassegnati con una stella rossa.";
 "forwardTonAmount" = "Importo TON Inoltrato";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";

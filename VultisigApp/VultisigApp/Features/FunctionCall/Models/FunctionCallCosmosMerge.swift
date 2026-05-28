@@ -103,7 +103,8 @@ final class FunctionCallCosmosMerge {
     func isFormValid(for coin: Coin) -> Bool {
         isTokenSelected &&
         amount > 0 &&
-        amount <= coin.balanceDecimal
+        amount <= coin.balanceDecimal &&
+        !destinationAddress.isEmpty
     }
 
     var description: String {

@@ -69,6 +69,10 @@ final class FunctionCallCosmosSwitch {
                 logger.warning("Chain is halted or paused. Cannot proceed with switch.")
                 return
             }
+            // Preserve user edits: only prefill when the field is still empty.
+            // If the user started typing before the async prefill resolved,
+            // their input wins.
+            guard destinationAddress.isEmpty else { return }
             destinationAddress = match.address
         }
     }
