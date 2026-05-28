@@ -36,6 +36,39 @@ struct SwapDoneScreen: View {
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
 
+    init(
+        vault: Vault,
+        hash: String,
+        approveHash: String?,
+        chain: Chain,
+        transaction: SwapTransaction,
+        progressLink: String?
+    ) {
+        self.vault = vault
+        self.hash = hash
+        self.approveHash = approveHash
+        self.chain = chain
+        self.transaction = transaction
+        self.progressLink = progressLink
+
+        // Persist tx-history rows *before* the SwiftUI body's appear
+        // chain fires. The inner `DoneScreen.onAppear` runs
+        // `statusService.start()` → `SwapKitPoller.attach()` →
+        // `attachSwapTracking()`, and the storage layer's
+        // `attachSwapTracking` no-ops when the parent
+        // `TransactionHistoryItem` doesn't yet exist. Running
+        // `recordTxHistory` from `.onAppear` (outer) racks up after the
+        // inner appear, so the attach call missed and the `/track`
+        // poll never started. `storage.save` short-circuits on
+        // `exists(txHash:pubKeyECDSA:)`, so repeated re-inits are safe.
+        Self.recordTxHistory(
+            hash: hash,
+            approveHash: approveHash,
+            transaction: transaction,
+            vault: vault
+        )
+    }
+
     var body: some View {
         DoneScreen(
             input: payload,
@@ -74,9 +107,6 @@ struct SwapDoneScreen: View {
                 }
             }
         )
-        .onAppear {
-            recordTxHistory()
-        }
     }
 
     private var payload: TransactionDonePayload {
@@ -96,13 +126,26 @@ struct SwapDoneScreen: View {
         )
     }
 
-    private func recordTxHistory() {
+    /// Called from `init` so the `TransactionHistoryItem` row exists by
+    /// the time `DoneScreen.onAppear` triggers
+    /// `SwapKitPoller.attach()` → `attachSwapTracking()`. `static` to
+    /// avoid needing `self.sendSummaryViewModel` (which doesn't exist
+    /// until SwiftUI sets up the `@StateObject`).
+    private static func recordTxHistory(
+        hash: String,
+        approveHash: String?,
+        transaction: SwapTransaction,
+        vault: Vault
+    ) {
+        let fromAmount = "\(transaction.fromAmount.formatForDisplay()) \(transaction.fromCoin.ticker)"
+        let toAmount = "\(transaction.toAmountDecimal.formatForDisplay()) \(transaction.toCoin.ticker)"
+
         if let approveHash {
             TransactionHistoryRecorder.shared.recordApprove(
                 txHash: approveHash,
                 pubKeyECDSA: vault.pubKeyECDSA,
                 coin: transaction.fromCoin,
-                amountCrypto: sendSummaryViewModel.getFromAmount(transaction),
+                amountCrypto: fromAmount,
                 spender: transaction.router ?? "",
                 chain: transaction.fromCoin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: approveHash)
@@ -114,9 +157,9 @@ struct SwapDoneScreen: View {
             pubKeyECDSA: vault.pubKeyECDSA,
             fromCoin: transaction.fromCoin,
             toCoin: transaction.toCoin,
-            fromAmountCrypto: sendSummaryViewModel.getFromAmount(transaction),
+            fromAmountCrypto: fromAmount,
             fromAmountFiat: transaction.fromFiatAmount,
-            toAmountCrypto: sendSummaryViewModel.getToAmount(transaction),
+            toAmountCrypto: toAmount,
             toAmountFiat: transaction.toFiatAmount,
             fromAddress: transaction.fromCoin.address,
             toAddress: transaction.toCoin.address,
