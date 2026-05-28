@@ -179,10 +179,11 @@ enum SolanaHelper {
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         // Handle SignSolana (raw transactions)
         if let signSolana = keysignPayload.signSolana {
+            guard signSolana.rawTransactions.count == 1 else {
+                throw HelperError.runtimeError("signSolana with multiple raw transactions is not supported")
+            }
             let hexPubKey = keysignPayload.coin.hexPublicKey
 
-            // For multiple transactions, return the first one
-            // TODO: Handle multiple transactions properly if needed
             guard let firstTx = signSolana.rawTransactions.first else {
                 throw HelperError.runtimeError("No transactions to sign")
             }
