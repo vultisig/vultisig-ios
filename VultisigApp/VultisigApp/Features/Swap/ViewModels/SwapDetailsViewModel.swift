@@ -411,7 +411,11 @@ private extension SwapDetailsViewModel {
                 throw balanceError
             }
         } catch {
-            guard (error as? URLError)?.code != .cancelled else { return }
+            // Ignore cancellation from a superseding amount edit — surfacing it
+            // would overwrite the next fetch's state with a stale error.
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                return
+            }
             self.error = error
         }
     }
@@ -438,6 +442,13 @@ private extension SwapDetailsViewModel {
                 vault: vault
             )
         } catch {
+            // A superseding amount edit cancels the in-flight task; cancellation
+            // must not surface as a fee error — it was previously mapped to the
+            // misleading `insufficientGas`, which is what users saw while typing.
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                return
+            }
+
             logger.warning("Update fees error: \(error.localizedDescription)")
 
             switch error {
