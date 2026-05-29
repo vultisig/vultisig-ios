@@ -137,7 +137,8 @@ extension UnstakeMetadata {
         let legacyUnlock = try container.decodeIfPresent(TimeInterval.self, forKey: .unstakeAvailableDate) ?? 0
         let now = Date().timeIntervalSince1970
         let secondsRemaining = max(0, legacyUnlock - now)
-        let blocksRemaining = Int64(secondsRemaining / Self.blockTimeSeconds)
+        // Round up: flooring could let a migrated row unlock up to one block (~6s) early.
+        let blocksRemaining = Int64(ceil(secondsRemaining / Self.blockTimeSeconds))
 
         self.lastDepositHeight = 0
         self.maturityBlocks = blocksRemaining
