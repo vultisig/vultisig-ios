@@ -333,6 +333,10 @@ extension SwapDetailsViewModel {
 
 private extension SwapDetailsViewModel {
 
+    // Single source of truth for the quote-fetch debounce. The amount field
+    // reports keystrokes immediately, so all debounce timing lives here.
+    static let quoteDebounce: Duration = .milliseconds(300)
+
     func fetchQuotes(vault: Vault, referredCode: String) {
         updateQuoteTask?.cancel()
 
@@ -351,12 +355,18 @@ private extension SwapDetailsViewModel {
             return
         }
 
+        // Leading-edge feedback: show the skeleton immediately on keystroke,
+        // before the debounce sleep, so input is acknowledged at once. A
+        // superseding keystroke cancels this task before its `defer` is armed
+        // (the cancel guard returns first), so the flags stay true for the new
+        // task and aren't stranded; the winning task's `defer` clears them.
+        isLoadingQuotes = true
+        isLoadingFees = true
+
         updateQuoteTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 200_000_000)
+            try? await Task.sleep(for: Self.quoteDebounce)
             guard !Task.isCancelled else { return }
 
-            self?.isLoadingQuotes = true
-            self?.isLoadingFees = true
             defer {
                 self?.isLoadingQuotes = false
                 self?.isLoadingFees = false
