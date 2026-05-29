@@ -355,22 +355,21 @@ private extension SwapDetailsViewModel {
             return
         }
 
-        // Leading-edge feedback: show the skeleton immediately on keystroke,
-        // before the debounce sleep, so input is acknowledged at once. A
-        // superseding keystroke cancels this task before its `defer` is armed
-        // (the cancel guard returns first), so the flags stay true for the new
-        // task and aren't stranded; the winning task's `defer` clears them.
+        // Leading-edge feedback: clear the previous quote's outputs and show the
+        // skeleton immediately on keystroke, before the debounce sleep, so a
+        // stale to-amount / fee can't show through while the new quote loads.
+        // The loading flags are cleared only by the winning (non-cancelled) task.
+        quote = nil
+        gas = .zero
+        thorchainFee = .zero
+        vultDiscountBps = 0
+        referralDiscountBps = 0
         isLoadingQuotes = true
         isLoadingFees = true
 
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(for: Self.quoteDebounce)
-            guard !Task.isCancelled else { return }
-
-            defer {
-                self?.isLoadingQuotes = false
-                self?.isLoadingFees = false
-            }
+            guard !Task.isCancelled, let self else { return }
 
             // Sequential, not parallel: `updateFees` reads `self.quote`, so
             // running them concurrently raced — fees could see the `quote = nil`
@@ -379,9 +378,18 @@ private extension SwapDetailsViewModel {
             // Skip `updateFees` if `updateQuotes` already failed: with `quote`
             // still nil, `updateFees` would throw and overwrite the real error
             // (`swapAmountTooSmall`, `sameAsset`, etc.) with `insufficientGas`.
-            await self?.updateQuotes(vault: vault, referredCode: referredCode)
-            guard let self, self.error == nil, self.quote != nil else { return }
-            await self.updateFees(vault: vault)
+            await self.updateQuotes(vault: vault, referredCode: referredCode)
+            if self.error == nil, self.quote != nil {
+                await self.updateFees(vault: vault)
+            }
+
+            // Only the winning task clears the loading state. A superseded task
+            // that resumed after being cancelled must leave the skeleton up for
+            // its successor — otherwise clearing the flag unmasks the in-between
+            // reset values and the previous quote flashes through.
+            guard !Task.isCancelled else { return }
+            self.isLoadingQuotes = false
+            self.isLoadingFees = false
         }
     }
 
@@ -401,6 +409,9 @@ private extension SwapDetailsViewModel {
                 vault: vault,
                 referredCode: referredCode
             )
+            // A superseding edit cancelled this fetch — don't write its stale
+            // quote over the state the new fetch is about to populate.
+            guard !Task.isCancelled else { return }
             if let result {
                 quote = result.quote
                 vultDiscountBps = result.vultDiscountBps
@@ -434,13 +445,17 @@ private extension SwapDetailsViewModel {
                 fromAmount: amountDecimal,
                 quote: quote
             )
-            gas = chainSpecific.gas
-            thorchainFee = try await interactor.computeThorchainFee(
+            guard !Task.isCancelled else { return }
+            let computedFee = try await interactor.computeThorchainFee(
                 chainSpecific: chainSpecific,
                 fromCoin: fromCoin,
                 fromAmount: amountDecimal,
                 vault: vault
             )
+            // A superseding edit cancelled this fetch — don't write stale fees.
+            guard !Task.isCancelled else { return }
+            gas = chainSpecific.gas
+            thorchainFee = computedFee
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation
             // must not surface as a fee error — it was previously mapped to the
