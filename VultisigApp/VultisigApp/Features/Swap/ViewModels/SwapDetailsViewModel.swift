@@ -364,6 +364,7 @@ private extension SwapDetailsViewModel {
         thorchainFee = .zero
         vultDiscountBps = 0
         referralDiscountBps = 0
+        error = nil
         isLoadingQuotes = true
         isLoadingFees = true
 
