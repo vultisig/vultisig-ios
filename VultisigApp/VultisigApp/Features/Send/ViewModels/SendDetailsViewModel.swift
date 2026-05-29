@@ -457,7 +457,11 @@ final class SendDetailsViewModel {
                     feeMode: self.feeMode,
                     fromAddress: self.fromAddress
                 )))
-                guard !Task.isCancelled else { return }
+                // Skip the refine write if the user moved off Max in the
+                // meantime — a manual amount edit flips `sendMaxAmount` via
+                // `convertToFiat` without cancelling this task, so guard on it
+                // too or we'd clobber their input.
+                guard !Task.isCancelled, self.sendMaxAmount else { return }
                 let refined = SendCryptoLogic.computeMaxAmount(coin: self.coin, fee: result.fee)
                 self.amount = refined
                 self.convertToFiat(newValue: refined, setMaxValue: true)
