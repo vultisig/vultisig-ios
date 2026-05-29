@@ -37,7 +37,7 @@ final class FunctionCallCosmosIBC {
     var selectedChain: IdentifiableString
     var selectedChainObject: Chain?
 
-    var addressError: String?
+    var destinationAddressError: String?
     var customErrorMessage: String?
 
     @ObservationIgnored private let chainPlaceholder: String
@@ -86,12 +86,14 @@ final class FunctionCallCosmosIBC {
         selectedChain.value.lowercased() != chainPlaceholder.lowercased()
     }
 
-    /// Cosmos-chain destination-address error, evaluated against the
-    /// user-picked destination chain (the address that the receiver
-    /// resolves to after the IBC hop). Falls back to multi-chain
+    /// Cosmos-chain destination-address validation error, evaluated
+    /// against the user-picked destination chain (the address the
+    /// receiver resolves to after the IBC hop). Falls back to multi-chain
     /// THOR/Maya/TON when no chain is selected — matches the
-    /// `FunctionCallAddressValidation.errorForCosmos` contract.
-    var destinationAddressError: String? {
+    /// `FunctionCallAddressValidation.errorForCosmos` contract. Kept
+    /// distinct from the stored `destinationAddressError` slot that the
+    /// `AddressTextField` binds, mirroring `FunctionCallCosmosSwitch`.
+    var destinationAddressValidationError: String? {
         FunctionCallAddressValidation.errorForCosmos(destinationAddress, chain: selectedChainObject)
     }
 
@@ -104,7 +106,7 @@ final class FunctionCallCosmosIBC {
         amount > 0 &&
         amount <= coin.balanceDecimal &&
         !destinationAddress.isEmpty &&
-        destinationAddressError == nil
+        destinationAddressValidationError == nil
     }
 
     func handle(addressResult: AddressResult?) {
@@ -136,10 +138,8 @@ final class FunctionCallCosmosIBC {
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
-        _ = isFastVault
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             toAddress: destinationAddress,
             amount: amount.formatToDecimal(digits: coin.decimals),
@@ -176,7 +176,7 @@ struct CosmosIBCFormView: View {
                 address: $model.destinationAddress,
                 label: "destinationAddress".localized,
                 coin: selectedCoin,
-                error: $model.addressError
+                error: $model.destinationAddressError
             ) { result in
                 model.handle(addressResult: result)
             }

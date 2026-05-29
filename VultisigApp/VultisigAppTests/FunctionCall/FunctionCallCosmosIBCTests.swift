@@ -69,7 +69,7 @@ final class FunctionCallCosmosIBCTests: XCTestCase {
         let model = FunctionCallCosmosIBC(coin: kuji, vault: vault)
         model.selectedChainObject = .gaiaChain
         model.destinationAddress = "cosmos1abc"
-        let tx = model.toSendTransaction(coin: kuji, vault: vault, gas: 0, isFastVault: false)
+        let tx = model.toSendTransaction(coin: kuji, vault: vault, gas: 0)
         XCTAssertEqual(tx.transactionType, .ibcTransfer)
         XCTAssertEqual(tx.toAddress, "cosmos1abc")
     }
@@ -102,6 +102,6 @@ final class FunctionCallCosmosIBCTests: XCTestCase {
         model.destinationAddress = "thor1abc" // wrong chain prefix for GAIA destination
         model.amount = 0.001
         XCTAssertFalse(model.isFormValid(for: kuji))
-        XCTAssertNotNil(model.destinationAddressError)
+        XCTAssertNotNil(model.destinationAddressValidationError)
     }
 }

@@ -49,10 +49,8 @@ final class FunctionCallVote {
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
-        _ = isFastVault
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),

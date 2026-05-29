@@ -35,7 +35,7 @@ final class FunctionCallCosmosMergeTests: XCTestCase {
         let model = FunctionCallCosmosMerge(coin: rune, vault: vault)
         model.selectedToken = IdentifiableString(value: "THOR.KUJI")
         model.destinationAddress = "thor1mergeaddress"
-        let tx = model.toSendTransaction(coin: rune, vault: vault, gas: 0, isFastVault: false)
+        let tx = model.toSendTransaction(coin: rune, vault: vault, gas: 0)
         XCTAssertEqual(tx.transactionType, .thorMerge)
         XCTAssertEqual(tx.toAddress, "thor1mergeaddress")
         XCTAssertEqual(tx.memo, "merge:THOR.KUJI")

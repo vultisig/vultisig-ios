@@ -102,8 +102,16 @@ final class FunctionCallCustom {
         }
     }
 
-    var isTheFormValid: Bool {
-        isTokenSelected && !custom.isEmpty
+    /// Submit-time validity gate. Requires the active coin so the
+    /// optional amount stays within balance — the no-arg `isTheFormValid`
+    /// only checked token + memo and let an over-balance amount through.
+    /// Amount is optional (memo-only custom calls send zero), so zero is
+    /// accepted; any positive amount must not exceed the coin balance.
+    func isFormValid(for coin: Coin) -> Bool {
+        isTokenSelected &&
+        !custom.isEmpty &&
+        amount >= 0 &&
+        amount <= coin.balanceDecimal
     }
 
     var description: String {
@@ -123,10 +131,8 @@ final class FunctionCallCustom {
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
-        _ = isFastVault
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             amount: amount.formatToDecimal(digits: coin.decimals),
             memo: toString(),

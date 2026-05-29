@@ -55,7 +55,7 @@ final class FunctionCallStakeTests: XCTestCase {
         model.nodeAddress = "ton-stake"
         let coin = FunctionCallFixture.makeTON()
         let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 25, isFastVault: false)
+        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 25)
         XCTAssertEqual(tx.memo, "d")
         XCTAssertEqual(tx.toAddress, "ton-stake")
     }

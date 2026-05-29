@@ -69,7 +69,7 @@ final class FunctionCallUnstakeTests: XCTestCase {
         let coin = FunctionCallFixture.makeTON()
         let vault = FunctionCallFixture.makeVault(coins: [coin])
 
-        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 50, isFastVault: false)
+        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 50)
 
         XCTAssertEqual(tx.memo, "w")
         XCTAssertEqual(tx.toAddress, "ton-validator")

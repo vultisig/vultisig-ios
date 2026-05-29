@@ -15,13 +15,12 @@ struct FunctionCallDetailsScreen: View {
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
-    // Screen owns active coin / gas / fast-vault flag. After PR4 every
-    // sub-model accepts the current coin at construction and mutates
-    // it through `coinSelectionHandler` for the cross-mutators
-    // (AddThorLP pool dropdown, WithdrawSecuredAsset asset picker).
+    // Screen owns active coin / gas. After PR4 every sub-model accepts
+    // the current coin at construction and mutates it through
+    // `coinSelectionHandler` for the cross-mutators (AddThorLP pool
+    // dropdown, WithdrawSecuredAsset asset picker).
     @State private var selectedCoin: Coin = .example
     @State private var gas: BigInt = .zero
-    @State private var isFastVault: Bool = false
 
     @State var fnCallInstance: FunctionCallInstance?
     let defaultCoin: Coin
@@ -237,8 +236,7 @@ struct FunctionCallDetailsScreen: View {
                 let immutableTx = fnCallInstance.toSendTransaction(
                     coin: selectedCoin,
                     vault: vault,
-                    gas: gas,
-                    isFastVault: isFastVault
+                    gas: gas
                 )
                 router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
             }
@@ -250,7 +248,6 @@ private extension FunctionCallDetailsScreen {
     func setData() {
         setupForm()
         selectedCoin = defaultCoin
-        isFastVault = vault.isFastVault
     }
 
     func setupForm() {

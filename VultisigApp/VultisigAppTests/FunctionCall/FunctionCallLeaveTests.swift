@@ -78,7 +78,7 @@ final class FunctionCallLeaveTests: XCTestCase {
         let coin = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [coin])
 
-        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 100, isFastVault: false)
+        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 100)
 
         XCTAssertEqual(tx.memo, "LEAVE:thor1abc")
         XCTAssertEqual(tx.coin.ticker, "RUNE")
@@ -94,7 +94,7 @@ final class FunctionCallLeaveTests: XCTestCase {
         let coin = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [coin])
 
-        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 0, isFastVault: false)
+        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 0)
 
         XCTAssertEqual(model.amount, .zero)
         XCTAssertEqual(tx.amount, "0")

@@ -189,16 +189,22 @@ enum FunctionCallInstance {
     @MainActor
     func isFormValid(for coin: Coin) -> Bool {
         switch self {
+        // No coin-balance guard: REBOND burns zero RUNE — the optional
+        // rebond amount is memo-only, never an on-chain transfer.
         case .rebond(let memo):
             return memo.isTheFormValid
+        // No user-editable amount field — BOND sends a fixed amount.
         case .bondMaya(let memo):
             return memo.isTheFormValid
+        // No user-editable amount field — UNBOND sends a fixed dust amount.
         case .unbondMaya(let memo):
             return memo.isTheFormValid
+        // No amount: LEAVE burns zero RUNE, unbonds via the memo alone.
         case .leave(let memo):
             return memo.isTheFormValid
         case .custom(let memo):
-            return memo.isTheFormValid
+            return memo.isFormValid(for: coin)
+        // No amount: vote transactions carry zero value.
         case .vote(let memo):
             return memo.isTheFormValid
         case .stake(let memo):
@@ -209,14 +215,21 @@ enum FunctionCallInstance {
             return memo.isFormValid(for: coin)
         case .merge(let memo):
             return memo.isFormValid(for: coin)
+        // Amount is a share quantity validated against the merged-position
+        // balance (`availableBalance`), not the coin balance.
         case .unmerge(let memo):
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isFormValid(for: coin)
+        // Balance is checked internally against the sub-model's owned coin
+        // (mutated by the pool dropdown), not the passed-in coin.
         case .addThorLP(let memo):
             return memo.isTheFormValid
+        // Balance is checked internally against the sub-model's owned coin.
         case .securedAsset(let memo):
             return memo.isTheFormValid
+        // Amount is validated against the selected secured-asset balance,
+        // not the coin balance.
         case .withdrawSecuredAsset(let memo):
             return memo.isTheFormValid
         }
@@ -277,45 +290,44 @@ enum FunctionCallInstance {
 
     /// Build the immutable `SendTransaction` for the active sub-model.
     /// After PR3 (C-2e), every case dispatches through its typed
-    /// `toSendTransaction(coin:vault:gas:isFastVault:)` method.
+    /// `toSendTransaction(coin:vault:gas:)` method.
     @MainActor
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
         switch self {
         case .rebond(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .bondMaya(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .unbondMaya(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .leave(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .custom(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .vote(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .stake(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .unstake(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .cosmosIBC(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .merge(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .unmerge(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .theSwitch(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .addThorLP(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .securedAsset(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .withdrawSecuredAsset(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas, isFastVault: isFastVault)
+            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         }
     }
 }

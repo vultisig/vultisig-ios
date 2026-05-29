@@ -326,10 +326,8 @@ final class FunctionCallWithdrawSecuredAsset {
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
-        _ = isFastVault
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             // Withdraw is done via MsgDeposit on THORChain — toAddress
             // intentionally empty (matches `FunctionCallInstance.toAddress`

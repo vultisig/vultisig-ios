@@ -58,7 +58,7 @@ final class FunctionCallVoteTests: XCTestCase {
         let dyDxCoin = FunctionCallFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
         let vault = FunctionCallFixture.makeVault(coins: [dyDxCoin])
 
-        let tx = model.toSendTransaction(coin: dyDxCoin, vault: vault, gas: 0, isFastVault: false)
+        let tx = model.toSendTransaction(coin: dyDxCoin, vault: vault, gas: 0)
 
         XCTAssertEqual(tx.memo, "DYDX_VOTE:Yes:42")
         XCTAssertEqual(tx.transactionType, .vote)

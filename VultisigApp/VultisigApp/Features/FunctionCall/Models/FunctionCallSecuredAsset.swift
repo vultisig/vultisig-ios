@@ -175,10 +175,8 @@ final class FunctionCallSecuredAsset {
     func toSendTransaction(
         coin: Coin,
         vault: Vault,
-        gas: BigInt,
-        isFastVault: Bool
+        gas: BigInt
     ) -> SendTransaction {
-        _ = isFastVault
         return SendTransaction.empty(coin: coin, vault: vault).copy(
             toAddress: toAddress.isEmpty ? "" : toAddress,
             amount: amount.formatToDecimal(digits: coin.decimals),

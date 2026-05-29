@@ -54,7 +54,7 @@ final class FunctionCallCosmosUnmergeTests: XCTestCase {
         model.selectedToken = IdentifiableString(value: "THOR.RUJI")
         model.destinationAddress = "thor1mergecontract"
         model.amount = 1
-        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 0, isFastVault: false)
+        let tx = model.toSendTransaction(coin: coin, vault: vault, gas: 0)
         XCTAssertEqual(tx.transactionType, .thorUnmerge)
     }
 }
