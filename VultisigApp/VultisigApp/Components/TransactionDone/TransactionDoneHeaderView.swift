@@ -1,13 +1,15 @@
 //
-//  SendCryptoDoneHeaderView.swift
+//  TransactionDoneHeaderView.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 08/08/2025.
+//  Status header for the unified done surface — renders the Rive
+//  status animation, the dApp request banner (if any), and the
+//  default coin display (or a Blockaid-resolved hero override).
 //
 
 import SwiftUI
 
-struct SendCryptoDoneHeaderView: View {
+struct TransactionDoneHeaderView: View {
     let coin: Coin?
     let cryptoAmount: String
     let fiatAmount: String

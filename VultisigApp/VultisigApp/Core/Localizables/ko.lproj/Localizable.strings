@@ -544,8 +544,11 @@
 "Merge" = "병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
+"messageSigned" = "메시지 서명됨";
+"messageSignFailed" = "메시지 서명 실패";
 "messageToSign" = "서명할 메시지";
 "messageVote" = "%@ 메시지 투표";
+"method" = "메서드";
 "migrate" = "마이그레이션";
 "migratePasswordDescription" = "비밀번호를 입력하여 서버 공유를 잠금 해제하고 업그레이드를 시작하세요";
 "migrateVault" = "GG20 볼트를 DKLS로 마이그레이션";
@@ -891,6 +894,7 @@
 "showBalance" = "잔액 표시";
 "showHint" = "힌트 표시";
 "sign" = "서명";
+"signature" = "서명";
 "signCustomMessage" = "커스텀 메시지 서명";
 "signer" = "서명자";
 "signFasterThanEverBefore" = "그 어느 때보다 빠르게 서명하세요";

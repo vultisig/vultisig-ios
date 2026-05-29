@@ -14,11 +14,17 @@ import Foundation
 enum TransactionActionVerb: Hashable {
     case send
     case claim
+    /// Custom-message signing flow — the dApp asked the user to sign
+    /// a message, not broadcast a transaction. There's no chain status
+    /// to poll, so all four states resolve to the same "Message signed"
+    /// copy.
+    case sign
 
     var broadcastedKey: String {
         switch self {
         case .send: return "transactionBroadcasted"
         case .claim: return "claimBroadcasted"
+        case .sign: return "messageSigned"
         }
     }
 
@@ -26,6 +32,7 @@ enum TransactionActionVerb: Hashable {
         switch self {
         case .send: return "transactionPending"
         case .claim: return "claimPending"
+        case .sign: return "messageSigned"
         }
     }
 
@@ -33,6 +40,7 @@ enum TransactionActionVerb: Hashable {
         switch self {
         case .send: return "transactionSuccessful"
         case .claim: return "claimSuccessful"
+        case .sign: return "messageSigned"
         }
     }
 
@@ -40,6 +48,7 @@ enum TransactionActionVerb: Hashable {
         switch self {
         case .send: return "transactionFailed"
         case .claim: return "claimFailed"
+        case .sign: return "messageSignFailed"
         }
     }
 }

@@ -544,9 +544,13 @@
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "Merge" = "Spoji";
+"message" = "Poruka";
 "messageDeposit" = "%@ depozit poruke";
+"messageSigned" = "Poruka potpisana";
+"messageSignFailed" = "Potpisivanje neuspjelo";
 "messageToSign" = "Poruka za potpisivanje";
 "messageVote" = "%@ glas poruke";
+"method" = "Metoda";
 "migrate" = "Migrirati";
 "migratePasswordDescription" = "Unesite svoju lozinku za otključavanje server dijela i pokretanje nadogradnje";
 "migrateVault" = "Migrirajte trezor GG20 u DKLS";
@@ -911,6 +915,7 @@
 "showBalance" = "Prikaži saldo";
 "showHint" = "Prikaži hint";
 "sign" = "Potpiši";
+"signature" = "Potpis";
 "signCustomMessage" = "Potpiši prilagođenu poruku";
 "signer" = "Potpisnik";
 "signFasterThanEverBefore" = "Potpiši brže nego ikad prije";

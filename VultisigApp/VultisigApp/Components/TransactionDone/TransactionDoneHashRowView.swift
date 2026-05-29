@@ -1,19 +1,21 @@
 //
-//  SendCryptoTransactionHashRowView.swift
+//  TransactionDoneHashRowView.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 28/07/2025.
+//  Tx-hash row used by every "done" surface (Send / Swap / QBTC /
+//  cosigner). Renders the truncated hash, the optional copy button,
+//  and the explorer-link button.
 //
 
 import SwiftUI
 
-struct SendCryptoTransactionHashRowView: View {
+struct TransactionDoneHashRowView: View {
     @Environment(\.openURL) var openURL
+    @Environment(\.notifyHashCopied) var notifyHashCopied
 
     let hash: String
     let explorerLink: String
     let showCopy: Bool
-    @Binding var showAlert: Bool
 
     var body: some View {
         HStack(spacing: 32) {
@@ -74,16 +76,15 @@ struct SendCryptoTransactionHashRowView: View {
     }
 
     func copyHash() {
-        showAlert = true
+        notifyHashCopied()
         ClipboardManager.copyToClipboard(explorerLink)
     }
 }
 
 #Preview {
-    SendCryptoTransactionHashRowView(
+    TransactionDoneHashRowView(
         hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
         explorerLink: "https://thorchain.net/tx/294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
-        showCopy: true,
-        showAlert: .constant(false)
+        showCopy: true
     )
 }
