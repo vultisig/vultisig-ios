@@ -205,6 +205,10 @@ struct SwapDetailsScreen: View {
     var summary: some View {
         SwapDetailsSummary(detailsViewModel: detailsViewModel)
             .redacted(reason: detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            // Crossfade the fees between their loading skeleton and the resolved
+            // values instead of snapping when a quote lands or refreshes.
+            .animation(.easeInOut(duration: 0.25), value: detailsViewModel.isLoadingQuotes)
+            .animation(.easeInOut(duration: 0.25), value: detailsViewModel.totalFeeString)
     }
 
     @ViewBuilder

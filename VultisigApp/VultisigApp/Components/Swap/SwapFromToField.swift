@@ -123,6 +123,10 @@ struct SwapFromToField: View {
             .disabled(title=="to")
         }
         .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+        // Crossfade the to-amount between its loading skeleton and the resolved
+        // value instead of snapping when a quote lands or refreshes.
+        .animation(.easeInOut(duration: 0.25), value: detailsViewModel.isLoadingQuotes)
+        .animation(.easeInOut(duration: 0.25), value: amount)
     }
 
     var fiatBalance: some View {
@@ -132,6 +136,8 @@ struct SwapFromToField: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
             .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            .animation(.easeInOut(duration: 0.25), value: detailsViewModel.isLoadingQuotes)
+            .animation(.easeInOut(duration: 0.25), value: fiatAmount)
     }
 
     private func isFiatVisible() -> Bool {
