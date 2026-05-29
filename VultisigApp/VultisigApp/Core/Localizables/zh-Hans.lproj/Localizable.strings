@@ -126,6 +126,7 @@
 "buyVultBannerTitle" = "购买 $VULT";
 "cacaoPool" = "Cacao 池";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";
+"cacaoUnstakeMaturityUnknownMessage" = "无法验证存款到期状态，请稍后重试。";
 "cancel" = "取消";
 "canLoseFundsPrompt" = "我知道我可能会失去资金";
 "cardanoOutputBelowMinAda" = "ADA 不足以支付网络费用和 Cardano 的最低 UTXO 要求（每个输出约 1.4 ADA）。请先向此保险库转入更多 ADA。";
