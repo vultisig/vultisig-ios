@@ -98,13 +98,10 @@ struct SendDetailsAmountTab: View {
 
     @ViewBuilder
     var percentageButtons: some View {
-        let isDisabled = viewModel.isLoading || viewModel.isCalculatingFee
         PercentageButtonsStack(selectedPercentage: $percentage)
-            .opacity(isDisabled ? 0.5 : 1.0)
-            .disabled(isDisabled)
             .onChange(of: percentage) { _, newValue in
                 guard let newValue else { return }
-                Task { await viewModel.setMaxAmount(percentage: newValue) }
+                viewModel.setMaxAmount(percentage: newValue)
             }
     }
 

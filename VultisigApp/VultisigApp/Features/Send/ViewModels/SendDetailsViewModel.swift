@@ -101,6 +101,10 @@ final class SendDetailsViewModel {
     // MARK: - Cancellation
     @ObservationIgnored private var addressResolutionTask: Task<Void, Never>?
 
+    /// Background fee refine for the native-coin Max path. Exposed so the UI
+    /// (and tests) can observe / await the optimistic-fill → refine settle.
+    @ObservationIgnored private(set) var feeRefineTask: Task<Void, Never>?
+
     // MARK: - Init
 
     init(
@@ -401,42 +405,79 @@ final class SendDetailsViewModel {
 
     // MARK: - Max amount
 
-    /// Per-chain max-amount calculation. Delegates the on-chain fetch to
-    /// `interactor.fetchGasAndFee`; max-amount math sits in `SendCryptoLogic`.
-    /// Non-native sources see their gas paid in the chain's native sibling,
-    /// so the deductible fee here is `.zero` for ERC20 / SPL / etc.
-    func setMaxAmount(percentage: Double = 100) async {
+    /// Fill the amount from a percentage preset (25 / 50 / 75 / Max).
+    ///
+    /// The displayed amount fills **synchronously** from `coin.balanceDecimal`
+    /// in every case so the field updates instantly like manual entry — no
+    /// blocking `isLoading`, no awaited fetch on the hot path. Only the
+    /// native-coin Max case needs a real fee (you can't drain the wallet and
+    /// still pay gas), so it fills optimistically with the full balance and
+    /// then refines to `balance − fee` in the background (Option B). Partials
+    /// and non-native sends never reserve a fee — the Verify screen owns the
+    /// precise fee validation before signing.
+    func setMaxAmount(percentage: Double = 100) {
+        cancelFeeRefine()
         errorMessage = ""
-        isLoading = true
-        defer { isLoading = false }
-
-        let maxFee: BigInt
-        do {
-            let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
-                coin: coin,
-                toAddress: toAddress.isEmpty ? coin.address : toAddress,
-                amount: .zero,
-                memo: memo.isEmpty ? nil : memo,
-                sendMaxAmount: percentage == 100,
-                isDeposit: isDeposit,
-                transactionType: transactionType,
-                gasLimit: gasLimit,
-                feeMode: feeMode,
-                fromAddress: fromAddress
-            )))
-            maxFee = coin.isNativeToken ? result.fee : .zero
-        } catch {
-            logger.error("setMaxAmount failed: \(error.localizedDescription, privacy: .public)")
-            errorMessage = error.localizedDescription
-            return
-        }
 
         sendMaxAmount = percentage == 100
-        let maxAmount = SendCryptoLogic.computeMaxAmount(coin: coin, fee: maxFee)
-        amount = percentage == 100
-            ? maxAmount
-            : SendCryptoLogic.applyPercentage(maxAmount: maxAmount, percentage: percentage, coinDecimals: coin.decimals)
+
+        // Optimistic / instant fill: full balance minus zero fee, scaled by %.
+        let fullBalance = SendCryptoLogic.computeMaxAmount(coin: coin, fee: .zero)
+        amount = sendMaxAmount
+            ? fullBalance
+            : SendCryptoLogic.applyPercentage(maxAmount: fullBalance, percentage: percentage, coinDecimals: coin.decimals)
         convertToFiat(newValue: amount, setMaxValue: sendMaxAmount)
+
+        // Only native-coin Max needs the fee subtracted; refine in the
+        // background without blocking the field or the preset buttons.
+        guard coin.isNativeToken, sendMaxAmount else { return }
+        startFeeRefine()
+    }
+
+    /// Background refine for the native-coin Max path. Re-fetches the real
+    /// max-send fee and settles `amount` to `balance − fee`. Guarded so a
+    /// stale refine can't clobber a newer fill (another preset tap, manual
+    /// edit) — the task is cancelled at the top of `setMaxAmount`, and we
+    /// re-check cancellation after the await before writing.
+    private func startFeeRefine() {
+        isCalculatingFee = true
+        feeRefineTask = Task { [weak self] in
+            guard let self else { return }
+            defer { self.isCalculatingFee = false }
+            do {
+                let result = try await self.interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
+                    coin: self.coin,
+                    toAddress: self.toAddress.isEmpty ? self.coin.address : self.toAddress,
+                    amount: .zero,
+                    memo: self.memo.isEmpty ? nil : self.memo,
+                    sendMaxAmount: true,
+                    isDeposit: self.isDeposit,
+                    transactionType: self.transactionType,
+                    gasLimit: self.gasLimit,
+                    feeMode: self.feeMode,
+                    fromAddress: self.fromAddress
+                )))
+                guard !Task.isCancelled else { return }
+                let refined = SendCryptoLogic.computeMaxAmount(coin: self.coin, fee: result.fee)
+                self.amount = refined
+                self.convertToFiat(newValue: refined, setMaxValue: true)
+            } catch is CancellationError {
+                return
+            } catch {
+                // Keep the optimistic full-balance value rather than wiping the
+                // field; the Verify screen recomputes and validates the real
+                // fee before signing.
+                guard !Task.isCancelled else { return }
+                self.logger.error("setMaxAmount fee refine failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    /// Cancel any in-flight native-Max fee refine and clear the indicator.
+    private func cancelFeeRefine() {
+        feeRefineTask?.cancel()
+        feeRefineTask = nil
+        isCalculatingFee = false
     }
 
     // MARK: - Fee / gas refresh
