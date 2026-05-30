@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Imovina";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
 "assets" = "Imovine";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
@@ -281,6 +282,7 @@
 "deleteFolder" = "Izbriši mapu";
 "deleteVault" = "Trajno izbrišite vaš sef";
 "deleteVaultTitle" = "Izbriši sef";
+"destinationAddress" = "Odredišna adresa";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
@@ -412,6 +414,8 @@
 "foregroundNotificationGeneric" = "Transakcija čeka odobrenje";
 "foregroundNotificationSend" = "Pošalji %@";
 "foregroundNotificationSwap" = "Zamijeni %@ → %@";
+"formInvalid" = "Obrazac nije valjan";
+"formInvalidDefaultMessage" = "Obrazac nije valjan. Molimo ispravite polja označena crvenom zvjezdicom.";
 "forwardTonAmount" = "Iznos prosljeđenog TON-a";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
 "foundActiveChainsSubtitleHighlight" = "%d minuta";
@@ -1015,6 +1019,7 @@
 "thisVaultOnly" = "Samo ovaj trezor";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainAddress" = "THORChain adresa";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";

@@ -12,9 +12,9 @@ struct FunctionTransactionScreen: View {
     let vault: Vault
     let transactionType: FunctionTransactionType
 
-    @StateObject private var functionCallViewModel = FunctionCallViewModel()
-    @State private var sendTx: FunctionCallForm?
-    @State var isLoading: Bool = false
+    @State private var isLoading: Bool = false
+
+    private let blockchainService = BlockChainService.shared
 
     @Environment(\.dismiss) var dismiss
 
@@ -204,14 +204,18 @@ struct FunctionTransactionScreen: View {
             }
 
             isLoading = true
-            let tx = transactionBuilder.buildTransaction()
+            defer { isLoading = false }
 
-            await functionCallViewModel.loadGasInfoForSending(tx: tx)
-
-            sendTx = tx
-            isLoading = false
-            let immutableTx = SendTransaction.fromForm(tx, vault: vault)
-            router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+            var sendTx = transactionBuilder.buildSendTransaction(vault: vault)
+            do {
+                let chainSpecific = try await blockchainService.fetchSpecific(tx: sendTx)
+                sendTx = sendTx.copy(gas: chainSpecific.gas)
+            } catch {
+                // Non-fatal: gas will be re-fetched during Verify. Keep
+                // navigating so the user sees the verify screen even when
+                // the upstream chain-specific endpoint is briefly down.
+            }
+            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }
 

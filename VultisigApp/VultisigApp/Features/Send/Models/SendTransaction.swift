@@ -72,41 +72,8 @@ struct SendDetailsSeed: Hashable {
         )
     }
 
-    static func fromForm(
-        _ tx: FunctionCallForm,
-        coin: Coin? = nil,
-        vault: Vault,
-        hasPreselectedCoin: Bool
-    ) -> SendDetailsSeed {
-        let resolvedCoin = coin ?? tx.coin
-        return SendDetailsSeed(
-            coin: resolvedCoin,
-            vault: vault,
-            hasPreselectedCoin: hasPreselectedCoin,
-            fromAddress: tx.fromAddress.isEmpty ? resolvedCoin.address : tx.fromAddress,
-            toAddress: tx.toAddress,
-            toAddressLabel: tx.toAddressLabel,
-            lastResolvedAddress: tx.lastResolvedAddress,
-            amount: tx.amount,
-            amountInFiat: tx.amountInFiat,
-            memo: tx.memo,
-            gas: tx.gas,
-            fee: tx.fee,
-            feeMode: tx.feeMode,
-            estimatedGasLimit: tx.estematedGasLimit,
-            customGasLimit: tx.customGasLimit,
-            customByteFee: tx.customByteFee,
-            sendMaxAmount: tx.sendMaxAmount,
-            isStakingOperation: tx.isStakingOperation,
-            transactionType: tx.transactionType,
-            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
-            wasmContractPayload: tx.wasmContractPayload
-        )
-    }
-
-    /// Builds an empty seed prefilled with the deeplink/scanner fields that
-    /// previously lived on the shared `FunctionCallForm` instance. Used by
-    /// `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
+    /// Builds an empty seed prefilled with the deeplink/scanner fields used
+    /// by `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
     /// rides on the route value instead of mutating a long-lived form.
     static func fromAction(
         coin: Coin,
@@ -492,60 +459,6 @@ extension SendTransaction {
     }
 }
 
-// MARK: - FunctionCallForm boundary converter
-
-extension SendTransaction {
-    enum FormConversionError: Error, LocalizedError {
-        case missingVault
-
-        var errorDescription: String? {
-            switch self {
-            case .missingVault:
-                return "Cannot convert FunctionCallForm: vault unavailable. Either set tx.vault before converting, or pass a vault explicitly via fromForm(_:vault:)."
-            }
-        }
-    }
-
-    /// Converts a `FunctionCallForm` (the FunctionCall/Referral mutable
-    /// form-state class) into the immutable `SendTransaction` struct at the
-    /// navigation boundary. Resolves the vault via `tx.vault ??
-    /// AppViewModel.shared.selectedVault`. Throws if neither is available —
-    /// non-optional vault is decision 2 of the Send pilot.
-    static func fromForm(_ tx: FunctionCallForm) throws -> SendTransaction {
-        guard let vault = tx.txVault else {
-            throw FormConversionError.missingVault
-        }
-        return fromForm(tx, vault: vault)
-    }
-
-    /// Same as `fromForm(_:)` but with the vault supplied explicitly — use
-    /// this from contexts where the vault is already in hand (e.g., screens
-    /// that received it as a route param).
-    static func fromForm(_ tx: FunctionCallForm, vault: Vault) -> SendTransaction {
-        SendTransaction(
-            coin: tx.coin,
-            vault: vault,
-            fromAddress: tx.fromAddress,
-            toAddress: tx.toAddress,
-            toAddressLabel: tx.toAddressLabel,
-            amount: tx.amount,
-            amountInFiat: tx.amountInFiat,
-            memo: tx.memo,
-            gas: tx.gas,
-            fee: tx.fee,
-            feeMode: tx.feeMode,
-            estimatedGasLimit: tx.estematedGasLimit,
-            customGasLimit: tx.customGasLimit,
-            customByteFee: tx.customByteFee,
-            sendMaxAmount: tx.sendMaxAmount,
-            isStakingOperation: tx.isStakingOperation,
-            transactionType: tx.transactionType,
-            memoFunctionDictionary: tx.memoFunctionDictionary.allItems(),
-            wasmContractPayload: tx.wasmContractPayload,
-            feeCoin: resolveFeeCoin(coin: tx.coin, vault: vault)
-        )
-    }
-}
 
 // MARK: - Convenience computed (delegates to SendCryptoLogic)
 

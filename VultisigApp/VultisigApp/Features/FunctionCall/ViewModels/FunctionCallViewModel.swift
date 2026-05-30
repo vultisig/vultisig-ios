@@ -31,19 +31,6 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func loadGasInfoForSending(tx: FunctionCallForm) async {
-        do {
-            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-            tx.gas = chainSpecific.gas
-        } catch {
-            print("error fetching data: \(error.localizedDescription)")
-        }
-    }
-
-    func validateAddress(tx: FunctionCallForm, address: String) {
-        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
-    }
-
     func stopMediator() {
         self.mediator.stop()
         logger.info("mediator server stopped.")
@@ -69,15 +56,4 @@ class FunctionCallViewModel: ObservableObject {
         return dict
     }
 
-    func setRujiToken(to tx: FunctionCallForm, vault: Vault) {
-        let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
-        guard let rujiToken else { return }
-        tx.coin = rujiToken
-    }
-
-    func setTcyToken(to tx: FunctionCallForm, vault: Vault) {
-        let tcyToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
-        guard let tcyToken else { return }
-        tx.coin = tcyToken
-    }
 }
