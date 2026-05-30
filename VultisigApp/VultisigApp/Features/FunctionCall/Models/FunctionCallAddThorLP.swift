@@ -120,7 +120,10 @@ final class FunctionCallAddThorLP {
 
         // RUNE-side LP adds deposit to the THORChain network itself
         // (MsgDeposit), so there is no source-chain inbound to resolve.
+        // Clear any destination a prior source-coin may have resolved so a
+        // stale non-RUNE inbound/router is never reused.
         if coin.chain == .thorChain {
+            toAddress = ""
             isApprovalRequired = false
             approvePayload = nil
             customErrorMessage = nil
@@ -218,10 +221,17 @@ final class FunctionCallAddThorLP {
 
             // RUNE-pin when source coin is non-RUNE and not in the
             // selected pool — same intent as legacy initialize().
+            // This swaps the source chain to THORChain, so any inbound that
+            // the concurrent fetch resolved for the original coin is now
+            // stale; clear it so it can't leak into the transaction.
             if coin.ticker.uppercased() != "RUNE" && !isInThePool,
                let runeCoin = vault.runeCoin {
                 coin = runeCoin
                 coinSelectionHandler?(runeCoin)
+                toAddress = ""
+                isApprovalRequired = false
+                approvePayload = nil
+                customErrorMessage = nil
             }
 
             self.poolNameMap = nameMap
