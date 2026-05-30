@@ -95,7 +95,7 @@ struct SendDetailsAmountTextField: View {
         SendCryptoAmountTextField(
             amount: $viewModel.amount,
             onChange: { viewModel.convertToFiat(newValue: $0) },
-            onMaxPressed: { Task { await viewModel.setMaxAmount() } }
+            onMaxPressed: { viewModel.setMaxAmount() }
         )
         .focused($focusedField, equals: .amount)
         .onChange(of: viewModel.coin) { _, _ in
