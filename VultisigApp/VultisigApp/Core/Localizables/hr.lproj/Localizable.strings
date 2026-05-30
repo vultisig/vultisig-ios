@@ -126,6 +126,7 @@
 "buyVultBannerTitle" = "Kupi $VULT";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
+"cacaoUnstakeMaturityUnknownMessage" = "Nije moguće provjeriti zrelost depozita. Pokušajte ponovno kasnije.";
 "cancel" = "Otkaži";
 "canLoseFundsPrompt" = "Svjestan sam da mogu izgubiti sredstva";
 "cardanoOutputBelowMinAda" = "Nema dovoljno ADA za pokrivanje mrežne naknade i Cardanovog minimalnog UTXO zahtjeva (~1,4 ADA po izlazu). Najprije pošalji više ADA u ovaj vault.";

@@ -27,40 +27,30 @@ struct MayaChainStakeInteractor: StakeInteractor {
             return []
         }
 
-        guard
-            let health = try? await mayaChainAPIService.getHealth(shouldCache: false),
-            let mimir = try? await mayaChainAPIService.getMimir()
-        else {
-            logger.error("Could not fetch health and mimir for Maya chain")
-            return []
-        }
-
+        let position: MayaCacaoPoolPosition
         do {
-            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacao.address)
-            let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
-            let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
-            let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
-
-            let unstakeMetadata = calculateUnstakeMetadata(
-                currentHeight: health.lastMayaNode.height,
-                lastDepositHeight: position.lastDepositHeight,
-                maturityBlocks: mimir.cacaoPoolDepositMaturityBlocks
-            )
-
-            return [
-                StakePositionData(
-                    coin: cacao.meta,
-                    type: .stake,
-                    amount: stakedAmount,
-                    availableToUnstake: availableToUnstake,
-                    apr: aprData?.apr ?? 0,
-                    unstakeMetadata: unstakeMetadata
-                )
-            ]
+            position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacao.address)
         } catch {
-            logger.error("Error fetching Maya CACAO staking details: \(error.localizedDescription, privacy: .private)")
+            logger.error("Error fetching Maya CACAO staking position: \(error.localizedDescription, privacy: .private)")
             return []
         }
+
+        let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
+        let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
+        let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
+
+        let unstakeMetadata = await unstakeMetadata(for: position)
+
+        return [
+            StakePositionData(
+                coin: cacao.meta,
+                type: .stake,
+                amount: stakedAmount,
+                availableToUnstake: availableToUnstake,
+                apr: aprData?.apr ?? 0,
+                unstakeMetadata: unstakeMetadata
+            )
+        ]
     }
 }
 
@@ -78,20 +68,24 @@ private extension MayaChainStakeInteractor {
         vault.defiPositions.first { $0.chain == .mayaChain }?.staking ?? []
     }
 
-    func calculateUnstakeMetadata(
-        currentHeight: Int64,
-        lastDepositHeight: Int64,
-        maturityBlocks: Int64
-    ) -> UnstakeMetadata? {
-        let differenceBlocks = currentHeight - lastDepositHeight
-        guard differenceBlocks < maturityBlocks else { return nil }
+    /// Builds maturity metadata from raw block inputs read live from health (current height) and
+    /// mimir (maturity window). On a verification failure the position is surfaced as `.unknown`
+    /// rather than dropped — so the unstake CTA is gated with an explanation instead of silently
+    /// keeping a stale (possibly still-locked) row.
+    func unstakeMetadata(for position: MayaCacaoPoolPosition) async -> UnstakeMetadata {
+        guard
+            let health = try? await mayaChainAPIService.getHealth(shouldCache: false),
+            let mimir = try? await mayaChainAPIService.getMimir()
+        else {
+            logger.error("Could not verify Maya CACAO maturity (health/mimir unavailable)")
+            return .unknown
+        }
 
-        let blocksPerDay: Double = 14400
-        let blocksRemaining = maturityBlocks - differenceBlocks
-        let daysRemaining = Double(blocksRemaining) / blocksPerDay
-        let secondsRemaining = daysRemaining * 24 * 60 * 60
-        let unstakeAvailableDate = Date().addingTimeInterval(secondsRemaining)
-
-        return UnstakeMetadata(unstakeAvailableDate: unstakeAvailableDate.timeIntervalSince1970)
+        return UnstakeMetadata(
+            lastDepositHeight: position.lastDepositHeight,
+            maturityBlocks: mimir.cacaoPoolDepositMaturityBlocks,
+            snapshotHeight: health.lastMayaNode.height,
+            snapshotTimestamp: Date().timeIntervalSince1970
+        )
     }
 }

@@ -126,6 +126,7 @@
 "buyVultBannerTitle" = "Compra $VULT";
 "cacaoPool" = "Pool Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
+"cacaoUnstakeMaturityUnknownMessage" = "Impossibile verificare la maturità del deposito. Riprova più tardi.";
 "cancel" = "Annulla";
 "canLoseFundsPrompt" = "Sono consapevole che posso perdere fondi";
 "cardanoOutputBelowMinAda" = "ADA insufficienti per coprire la commissione di rete e il requisito minimo UTXO di Cardano (~1,4 ADA per output). Invia prima più ADA a questo vault.";
