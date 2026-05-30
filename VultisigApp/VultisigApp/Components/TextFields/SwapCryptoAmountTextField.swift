@@ -33,13 +33,12 @@ struct SwapCryptoAmountTextField: View {
     var field: some View {
         let customBiding = Binding<String>(
             get: { amount },
-            set: {
-                // Don't validate or convert here - just save what the user typed
-                amount = $0
-
-                DebounceHelper.shared.debounce(delay: 3) {
-                    Task { await onChange(amount) }
-                }
+            set: { newValue in
+                // Don't validate or convert here - just save what the user typed.
+                // Report every keystroke immediately; the quote-fetch path owns
+                // debounce timing, so the field stays a dumb input.
+                amount = newValue
+                Task { await onChange(newValue) }
             }
         )
 

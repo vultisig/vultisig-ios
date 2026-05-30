@@ -205,6 +205,13 @@ struct SwapDetailsScreen: View {
     var summary: some View {
         SwapDetailsSummary(detailsViewModel: detailsViewModel)
             .redacted(reason: detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            // Show the skeleton instantly when a fetch starts (nil animation on
+            // the entering edge); crossfade to the resolved values when they land.
+            .animation(
+                detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
+                value: detailsViewModel.isLoadingQuotes
+            )
+            .animation(.easeInOut(duration: 0.25), value: detailsViewModel.totalFeeString)
     }
 
     @ViewBuilder
