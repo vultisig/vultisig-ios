@@ -153,16 +153,6 @@ final class BlockChainService {
 
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
 
-    /// Entry point used by the FunctionCall flow (`FunctionCallForm` is its
-    /// mutable form-state class). Converts to the immutable struct and
-    /// dispatches to the unified `fetchSpecific(tx: SendTransaction)`. The
-    /// conversion resolves vault via `tx.txVault` (`tx.vault ??
-    /// AppViewModel.shared.selectedVault`); throws if neither is available.
-    func fetchSpecific(tx: FunctionCallForm) async throws -> BlockChainSpecific {
-        let converted = try SendTransaction.fromForm(tx)
-        return try await fetchSpecific(tx: converted)
-    }
-
     /// Unified entry point taking the new immutable `SendTransaction` struct.
     /// Dispatches to the cached chain-specific impls.
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {

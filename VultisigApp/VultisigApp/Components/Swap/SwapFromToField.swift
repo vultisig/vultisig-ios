@@ -123,6 +123,13 @@ struct SwapFromToField: View {
             .disabled(title=="to")
         }
         .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+        // Show the skeleton instantly when a fetch starts (nil animation on the
+        // entering edge); crossfade to the resolved value only when it lands.
+        .animation(
+            detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
+            value: detailsViewModel.isLoadingQuotes
+        )
+        .animation(.easeInOut(duration: 0.25), value: amount)
     }
 
     var fiatBalance: some View {
@@ -132,6 +139,11 @@ struct SwapFromToField: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
             .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            .animation(
+                detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
+                value: detailsViewModel.isLoadingQuotes
+            )
+            .animation(.easeInOut(duration: 0.25), value: fiatAmount)
     }
 
     private func isFiatVisible() -> Bool {

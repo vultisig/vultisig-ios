@@ -25,7 +25,7 @@ final class StakePosition {
 
     var canUnstake: Bool {
         let unstakeAmount = availableToUnstake ?? amount
-        return !unstakeAmount.isZero && (unstakeMetadata?.canUnstake ?? true)
+        return !unstakeAmount.isZero && (unstakeMetadata?.canUnstake() ?? true)
     }
 
     var unstakeMessage: String? {

@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Ativo";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ não encontrado no vault )";
 "assets" = "Ativos";
 "atLeastOneDevice" = "Pelo menos um dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
@@ -126,6 +127,7 @@
 "buyVultBannerTitle" = "Comprar $VULT";
 "cacaoPool" = "Pool de Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ até atingir a maturidade do depósito";
+"cacaoUnstakeMaturityUnknownMessage" = "Não foi possível verificar a maturidade do depósito. Tente novamente mais tarde.";
 "cancel" = "Cancelar";
 "canLoseFundsPrompt" = "Estou ciente de que posso perder fundos";
 "cardanoOutputBelowMinAda" = "ADA insuficiente para cobrir a taxa de rede e o requisito mínimo de UTXO da Cardano (~1,4 ADA por saída). Envie mais ADA para este vault primeiro.";
@@ -280,6 +282,7 @@
 "deleteFolder" = "Excluir pasta";
 "deleteVault" = "Deletar seu cofre permanentemente";
 "deleteVaultTitle" = "Deletar Cofre";
+"destinationAddress" = "Endereço de destino";
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Armazene a participação do Vault deste dispositivo.";
@@ -411,6 +414,8 @@
 "foregroundNotificationGeneric" = "Transação pendente de aprovação";
 "foregroundNotificationSend" = "Enviar %@";
 "foregroundNotificationSwap" = "Trocar %@ → %@";
+"formInvalid" = "Formulário inválido";
+"formInvalidDefaultMessage" = "O formulário não é válido. Por favor, corrija os campos marcados com uma estrela vermelha.";
 "forwardTonAmount" = "Quantia TON Encaminhada";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
@@ -1014,6 +1019,7 @@
 "thisVaultOnly" = "Apenas este cofre";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainAddress" = "Endereço THORChain";
 "thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "timeout" = "Tempo esgotado";

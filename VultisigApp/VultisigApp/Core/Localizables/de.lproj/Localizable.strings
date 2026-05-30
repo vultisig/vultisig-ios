@@ -52,6 +52,7 @@
 "apy" = "APY";
 "asset" = "Vermögenswert";
 "assetLabel" = "Asset";
+"assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
 "assets" = "Vermögenswerte";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
@@ -126,6 +127,7 @@
 "buyVultBannerTitle" = "$VULT kaufen";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";
+"cacaoUnstakeMaturityUnknownMessage" = "Einzahlungsreife konnte nicht überprüft werden. Bitte später erneut versuchen.";
 "cancel" = "Abbrechen";
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
 "cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
@@ -280,6 +282,7 @@
 "deleteFolder" = "Ordner löschen";
 "deleteVault" = "Lösche deinen Tresor dauerhaft";
 "deleteVaultTitle" = "Tresor löschen";
+"destinationAddress" = "Zieladresse";
 "destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
 "deviceBackupDescription" = "Speichern Sie die Gewölbeanteil dieses Geräts.";
@@ -411,6 +414,8 @@
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
 "foregroundNotificationSend" = "Senden %@";
 "foregroundNotificationSwap" = "Tausch %@ → %@";
+"formInvalid" = "Formular ungültig";
+"formInvalidDefaultMessage" = "Das Formular ist ungültig. Bitte korrigieren Sie die mit einem roten Stern markierten Felder.";
 "forwardTonAmount" = "Weitergeleiteter TON-Betrag";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";
@@ -1014,6 +1019,7 @@
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
+"thorchainAddress" = "THORChain-Adresse";
 "thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";

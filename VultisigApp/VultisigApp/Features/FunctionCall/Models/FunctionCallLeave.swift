@@ -2,92 +2,85 @@
 //  FunctionCallLeave.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
+//  THORChain LEAVE memo sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — drops `FunctionCallAddressable`
+//  conformance, owns its single `nodeAddress` field directly, and emits
+//  the immutable `SendTransaction` via `toSendTransaction(...)` at the
+//  navigation boundary. The matching `LeaveFormView` is co-located in
+//  this file.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
-    @Published var nodeAddress: String = ""
+@Observable
+@MainActor
+final class FunctionCallLeave {
+    var nodeAddress: String = ""
+    var addressError: String?
+    var customErrorMessage: String?
 
-    // Internal
-    @Published var nodeAddressValid: Bool = false
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    init() {}
 
-    var addressFields: [String: String] {
-        get {
-            return ["nodeAddress": nodeAddress]
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
-            }
-        }
+    var isTheFormValid: Bool {
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
     }
 
-    private var cancellables = Set<AnyCancellable>()
-    private var tx: FunctionCallForm?
-    private var vault: Vault?
-
-    required init() {
-    }
-
-    init(tx: FunctionCallForm, vault: Vault) {
-        self.tx = tx
-        self.vault = vault
-    }
-
-    func initialize() {
-        // Ensure RUNE token is selected for LEAVE operations on THORChain
-        DispatchQueue.main.async {
-            if let runeCoin = self.vault?.runeCoin {
-                self.tx?.coin = runeCoin
-            }
-        }
-        setupValidation()
-    }
-
-    private func setupValidation() {
-        $nodeAddressValid
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-
-        $nodeAddress
-            .map { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-            .assign(to: \.nodeAddressValid, on: self)
-            .store(in: &cancellables)
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        nodeAddress = addressResult.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return "LEAVE:\(self.nodeAddress)"
+        "LEAVE:\(nodeAddress)"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", self.nodeAddress)
-        dict.set("memo", self.toString())
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack {
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
-                )
-            )
-        }.onAppear {
-            self.initialize()
-        })
+    /// Amount emitted on the immutable `SendTransaction`. LEAVE
+    /// transactions burn zero RUNE — the validator unbonds via the memo
+    /// alone, no asset transfer is required.
+    var amount: Decimal { .zero }
+
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt
+    ) -> SendTransaction {
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
+
+struct LeaveFormView: View {
+    @Bindable var model: FunctionCallLeave
+    @Binding var selectedCoin: Coin
+
+    var body: some View {
+        VStack {
+            AddressTextField(
+                address: $model.nodeAddress,
+                label: "nodeAddress".localized,
+                coin: selectedCoin,
+                error: $model.addressError
+            ) { result in
+                model.handle(addressResult: result)
+            }
+        }
     }
 }

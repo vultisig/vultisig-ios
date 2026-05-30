@@ -2,82 +2,73 @@
 //  FunctionCallCosmosUnmerge.swift
 //  VultisigApp
 //
-//  Created on 2025/01/03.
+//  RUJI UNMERGE sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns token selection, share amount,
+//  available balance, and the derived contract address directly.
+//  Cross-mutator: writes `selectedCoin` through a `@Binding<Coin>` so
+//  the screen can refresh gas when the user picks a different merged
+//  token. Async tasks are tracked in `loadingTasks` and cancelled on
+//  deinit (no Combine cancellables under `@Observable`).
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
 import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-cosmos-unmerge")
 
-/**
- * THORCHAIN - FUNCTION: "EXECUTE CONTRACT - UNMERGE"
- *
- * UI Elements:
- * • Dropdown: Select token to unmerge
- * • Amount Field: Enter amount of shares to withdraw (displayed as RUJI amount)
- * • Display: Current balance info
- *
- * Action:
- * → Call the RUJI Merge smart contract to withdraw the specified amount
- */
+@Observable
+@MainActor
+final class FunctionCallCosmosUnmerge {
+    var amount: Decimal = 0.0
+    var destinationAddress: String = ""
 
-class FunctionCallCosmosUnmerge: ObservableObject {
-    @Published var amount: Decimal = 0.0  // User input amount
-    @Published var destinationAddress: String = ""
-    @Published var fnCall: String = ""
+    var tokens: [IdentifiableString] = []
+    var selectedToken: IdentifiableString
 
-    @Published var amountValid: Bool = false
-    @Published var fnCallValid: Bool = true
+    var balanceLabel: String
+    var sharePrice: Decimal = 0
+    var totalShares: String = "0"
+    var availableBalance: Decimal = 0.0
+    var isLoading: Bool = false
+    var customErrorMessage: String?
 
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
+    @ObservationIgnored private let tokenPlaceholder: String
+    @ObservationIgnored private let vault: Vault
+    @ObservationIgnored private let sourceTicker: String
+    @ObservationIgnored private let sourceIsNative: Bool
+    @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
 
-    @Published var tokens: [IdentifiableString] = []
-    @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("theUnmerge", comment: ""))
-
-    @Published var balanceLabel: String = NSLocalizedString("sharesLabel", comment: "")
-    @Published var sharePrice: Decimal = 0  // Price per share (not used for transaction)
-    @Published var totalShares: String = "0"  // Total shares owned
-    @Published var availableBalance: Decimal = 0.0  // Available balance for validation
-    @Published var isLoading: Bool = false
-
-    @ObservedObject var tx: FunctionCallForm
-
-    private var vault: Vault
-
-    private var cancellables = Set<AnyCancellable>()
-
-    required init(
-        tx: FunctionCallForm, vault: Vault
-    ) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        let placeholder = "theUnmerge".localized
+        self.tokenPlaceholder = placeholder
         self.vault = vault
-    }
+        self.sourceTicker = coin.ticker
+        self.sourceIsNative = coin.isNativeToken
+        self.selectedToken = .init(value: placeholder)
+        self.balanceLabel = "sharesLabel".localized
 
-    func initialize() {
-        setupValidation()
         loadStaticMergeTokens()
         preSelectToken()
 
-        Task { @MainActor in
-            await loadOnChainMergeTokens()
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.loadOnChainMergeTokens()
         }
+        loadingTasks.append(task)
+    }
+
+    deinit {
+        loadingTasks.forEach { $0.cancel() }
     }
 
     private func loadStaticMergeTokens() {
-        // Show every known kujira-migration token by default so the user can
-        // pick any asset they may hold a merged position in, even when the
-        // coin hasn't been added to the vault yet.
         tokens = ThorchainMergeTokens.tokensToMerge.map { tokenInfo in
             IdentifiableString(value: tokenInfo.denom.uppercased())
         }
     }
 
-    @MainActor
     private func loadOnChainMergeTokens() async {
         let thorAddress = vault.coins.first(where: { $0.chain == .thorChain })?.address ?? ""
         guard !thorAddress.isEmpty else { return }
@@ -97,40 +88,33 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
 
     private func preSelectToken() {
-        // Pre-select if we're already on a merged token
-        if !tx.coin.isNativeToken,
+        if !sourceIsNative,
            let match = ThorchainMergeTokens.tokensToMerge.first(where: {
-               $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
+               $0.denom.lowercased() == "thor.\(sourceTicker.lowercased())"
            }) {
             selectToken(.init(value: match.denom.uppercased()))
         } else if !tokens.isEmpty {
-            // If no pre-selection, select the first available token
             selectToken(tokens[0])
         }
     }
 
     func selectToken(_ token: IdentifiableString) {
         selectedToken = token
-        tokenValid = true
         destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
             $0.denom.lowercased() == token.value.lowercased()
         }?.wasmContractAddress ?? ""
-        tx.toAddress = destinationAddress
 
-        if let coin = selectedVaultCoin {
-            tx.coin = coin
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.fetchMergedBalance()
         }
-
-        Task {
-            await fetchMergedBalance()
-        }
+        loadingTasks.append(task)
     }
 
-    var selectedVaultCoin: Coin? {
+    func selectedVaultCoin() -> Coin? {
         let ticker = selectedToken.value
             .lowercased()
             .replacingOccurrences(of: "thor.", with: "")
-
         return vault.coins.first { coin in
             coin.chain == .thorChain &&
             !coin.isNativeToken &&
@@ -138,28 +122,19 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         }
     }
 
-    @MainActor
     func fetchMergedBalance() async {
-        // Prevent multiple concurrent requests
         if isLoading { return }
-
         isLoading = true
-        objectWillChange.send() // Force UI update
-        defer {
-            isLoading = false
-            objectWillChange.send() // Force UI update
-        }
+        defer { isLoading = false }
 
         do {
             let thorAddress = vault.coins.first(where: { $0.chain == .thorChain })?.address ?? ""
-
             guard !thorAddress.isEmpty else {
                 logger.error("No THORChain address found in vault")
-                balanceLabel = NSLocalizedString("noThorAddressFound", comment: "")
+                balanceLabel = "noThorAddressFound".localized
                 amount = 0
                 totalShares = "0"
                 sharePrice = 0
-                objectWillChange.send()
                 return
             }
 
@@ -171,169 +146,139 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             totalShares = rujiBalance.shares
             sharePrice = rujiBalance.price
 
-            // Store available balance for validation (shares converted to decimal)
             if let sharesRaw = Decimal(string: rujiBalance.shares) {
                 let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
                 availableBalance = sharesRaw / divisor.decimalValue
             }
 
-            // Reset user input amount when balance changes
             amount = 0.0
-
             updateBalanceLabel()
-            objectWillChange.send() // Force UI update after setting values
         } catch {
             logger.error("Error fetching merged balance: \(error.localizedDescription, privacy: .public)")
-            balanceLabel = NSLocalizedString("errorLoadingBalance", comment: "")
+            balanceLabel = "errorLoadingBalance".localized
             amount = 0
             availableBalance = 0
             totalShares = "0"
             sharePrice = 0
-            objectWillChange.send() // Force UI update on error
         }
     }
 
-    @MainActor
     private func updateBalanceLabel() {
-        balanceLabel = String(format: NSLocalizedString("sharesBalance", comment: ""), availableBalance.formatDecimalToLocale())
-        objectWillChange.send() // Force UI update
+        balanceLabel = String(format: "sharesBalance".localized, availableBalance.formatDecimalToLocale())
     }
 
-    private func setupValidation() {
-        // Validate amount with debounce like in FunctionCallStake
-        $amount
-            .removeDuplicates()
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.validateAmount()
-            }
-            .store(in: &cancellables)
-
-        // Validate selected token
-        $selectedToken
-            .sink { [weak self] token in
-                self?.tokenValid = token.value.lowercased() != NSLocalizedString("theUnmerge", comment: "").lowercased()
-            }
-            .store(in: &cancellables)
-
-        // Overall form validation
-        Publishers.CombineLatest3($amountValid, $tokenValid, $fnCallValid)
-            .map { $0 && $1 && $2 && !self.amount.isZero }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    var isTokenSelected: Bool {
+        selectedToken.value.lowercased() != tokenPlaceholder.lowercased()
     }
 
-    private func validateAmount() {
-        // Reset error message
+    var isAmountValid: Bool {
+        amount > 0 && amount <= availableBalance
+    }
+
+    var isTheFormValid: Bool {
+        isTokenSelected && isAmountValid && !amount.isZero
+    }
+
+    func validateAmount() {
         customErrorMessage = nil
-
-        // Check if amount is positive
         guard amount > 0 else {
-            amountValid = false
-            customErrorMessage = NSLocalizedString("enterValidAmount", comment: "")
+            customErrorMessage = "enterValidAmount".localized
             return
         }
-
-        // Check if amount doesn't exceed available balance
         guard amount <= availableBalance else {
-            amountValid = false
-            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+            customErrorMessage = "insufficientBalanceForFunctions".localized
             return
         }
-
-        // Amount is valid
-        amountValid = true
-        customErrorMessage = nil
-    }
-
-    func getView() -> AnyView {
-        return AnyView(UnmergeView(viewModel: self).onAppear {
-            self.initialize()
-        })
-    }
-
-    var formattedBalanceText: String {
-        return "\(availableBalance.formatDecimalToLocale()) shares"
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        // Convert decimal shares back to raw amount for memo
         let multiplier = NSDecimalNumber(decimal: pow(Decimal(10), 8))
         let rawShares = amount * multiplier.decimalValue
         let sharesStr = String(format: "%.0f", NSDecimalNumber(decimal: rawShares).doubleValue)
-        let memo = "unmerge:\(selectedToken.value.lowercased()):\(sharesStr)"
-        return memo
+        return "unmerge:\(selectedToken.value.lowercased()):\(sharesStr)"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("destinationAddress", self.destinationAddress)
-        dict.set("selectedToken", self.selectedToken.value)
-        dict.set("memo", self.toString())
+        dict.set("destinationAddress", destinationAddress)
+        dict.set("selectedToken", selectedToken.value)
+        dict.set("memo", toString())
         return dict
+    }
+
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt
+    ) -> SendTransaction {
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: destinationAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .thorUnmerge,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
     }
 }
 
-struct UnmergeView: View {
-    @ObservedObject var viewModel: FunctionCallCosmosUnmerge
+struct CosmosUnmergeFormView: View {
+    @Bindable var model: FunctionCallCosmosUnmerge
+    @Binding var selectedCoin: Coin
 
     var body: some View {
         VStack(spacing: 16) {
             GenericSelectorDropDown(
-                items: Binding(
-                    get: { viewModel.tokens },
-                    set: { viewModel.tokens = $0 }
-                ),
-                selected: Binding(
-                    get: { viewModel.selectedToken },
-                    set: { viewModel.selectedToken = $0 }
-                ),
+                items: $model.tokens,
+                selected: $model.selectedToken,
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    // Reset balance and user input before fetching new one
-                    viewModel.amount = 0
-                    viewModel.availableBalance = 0
-                    viewModel.totalShares = "0"
-                    viewModel.sharePrice = 0
-                    viewModel.balanceLabel = NSLocalizedString("loading", comment: "")
-                    viewModel.customErrorMessage = nil
-
-                    viewModel.selectToken(asset)
+                    model.amount = 0
+                    model.availableBalance = 0
+                    model.totalShares = "0"
+                    model.sharePrice = 0
+                    model.balanceLabel = "loading".localized
+                    model.customErrorMessage = nil
+                    model.selectToken(asset)
                 }
             )
 
-            if viewModel.isLoading {
+            if model.isLoading {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     StyledFloatingPointField(
-                        label: viewModel.balanceLabel,
-                        placeholder: NSLocalizedString("enterAmountToUnmerge", comment: ""),
-                        value: Binding(
-                            get: { viewModel.amount },
-                            set: {
-                                viewModel.amount = $0
-                                viewModel.objectWillChange.send()
-                            }
-                        ),
-                        isValid: Binding(
-                            get: { viewModel.amountValid },
-                            set: { viewModel.amountValid = $0 }
-                        )
+                        label: model.balanceLabel,
+                        placeholder: "enterAmountToUnmerge".localized,
+                        value: $model.amount,
+                        isValid: .constant(true)
                     )
+                    .onChange(of: model.amount) {
+                        model.validateAmount()
+                    }
 
-                    if let errorMessage = viewModel.customErrorMessage {
+                    if let errorMessage = model.customErrorMessage {
                         Text(errorMessage)
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red)
                     }
                 }
+            }
+        }
+        .onChange(of: model.selectedToken) {
+            if let coin = model.selectedVaultCoin() {
+                selectedCoin = coin
+            }
+        }
+        .onAppear {
+            if let coin = model.selectedVaultCoin() {
+                selectedCoin = coin
             }
         }
     }
