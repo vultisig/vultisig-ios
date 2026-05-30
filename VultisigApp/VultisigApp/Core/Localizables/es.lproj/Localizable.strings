@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "Usa una parte de bóveda para recuperar tu bóveda.";
 "importVaultShareTitle" = "Importar parte de bóveda";
 "importYourVaultShare" = "Importa tu parte del vault";
+"inboundAddressNotFound" = "%@ no es compatible actualmente con THORChain.";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "incorrectCodeTryAgain" = "Código incorrecto. Inténtalo de nuevo.";
 "incorrectPassword" = "Contraseña incorrecta";

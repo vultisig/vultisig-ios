@@ -37,6 +37,12 @@ final class FunctionCallSecuredAsset {
     /// without dipping into screen-owned state.
     var coin: Coin
 
+    /// Inbound-state error for non-RUNE source chains (halted/paused/missing
+    /// inbound, or unavailable approval router). Tracked separately from the
+    /// amount/address validation so the two never clobber each other; both
+    /// are folded into `customErrorMessage` by `updateErrorMessage()`.
+    @ObservationIgnored private var inboundStateError: String?
+
     @ObservationIgnored private let vault: Vault
     @ObservationIgnored private var loadingTasks: [Task<Void, Never>] = []
 
@@ -76,24 +82,33 @@ final class FunctionCallSecuredAsset {
             toAddress = coin.address
             isApprovalRequired = false
             approvePayload = nil
+            inboundStateError = nil
+            updateErrorMessage()
             return
         }
 
         let chainName = ThorchainService.getInboundChainName(for: coin.chain)
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+            inboundStateError = String(format: "inboundAddressNotFound".localized, chainName)
+            updateErrorMessage()
             return
         }
 
+        // A halted/paused source chain has no usable inbound vault; leave
+        // `toAddress` empty so the form blocks submission instead of signing
+        // with an empty destination (raw `Error_invalid_address` at sign time).
         if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-            customErrorMessage = String(format: "inboundPaused".localized, inbound.chain)
+            inboundStateError = String(format: "inboundPaused".localized, inbound.chain)
+            updateErrorMessage()
             return
         }
 
         let destinationAddress: String
         if coin.shouldApprove {
             guard let router = inbound.router, !router.isEmpty else {
-                customErrorMessage = String(format: "routerNotAvailable".localized, inbound.chain)
+                inboundStateError = String(format: "routerNotAvailable".localized, inbound.chain)
                 isApprovalRequired = false
+                updateErrorMessage()
                 return
             }
             destinationAddress = router
@@ -103,12 +118,14 @@ final class FunctionCallSecuredAsset {
 
         toAddress = destinationAddress
         isApprovalRequired = coin.shouldApprove
+        inboundStateError = nil
         if isApprovalRequired {
             approvePayload = toAddress.isEmpty ? nil : ERC20ApprovePayload(
                 amount: amountInRaw,
                 spender: toAddress
             )
         }
+        updateErrorMessage()
     }
 
     func isAmountValid(against coin: Coin) -> Bool {
@@ -122,13 +139,19 @@ final class FunctionCallSecuredAsset {
     var isTheFormValid: Bool {
         let amountValid = isAmountValid(against: coin)
         let thorValid = !thorAddress.isEmpty
-        return amountValid && thorValid
+        // For non-RUNE sources the mint is an on-chain transfer to the
+        // THORChain inbound vault; require a resolved, non-paused inbound.
+        let inboundValid = coin.chain == .thorChain || (!toAddress.isEmpty && inboundStateError == nil)
+        return amountValid && thorValid && inboundValid
     }
 
     private func updateErrorMessage(against coin: Coin? = nil) {
         var errors: [String] = []
         let targetCoin = coin ?? self.coin
 
+        if let inboundStateError {
+            errors.append(inboundStateError)
+        }
         if thorAddress.isEmpty {
             errors.append("thorAddressNotFound".localized)
         }

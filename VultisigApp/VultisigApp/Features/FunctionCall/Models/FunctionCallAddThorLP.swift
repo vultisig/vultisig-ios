@@ -118,30 +118,46 @@ final class FunctionCallAddThorLP {
     private func fetchInboundAddressAndSetupApproval() async {
         let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
 
+        // RUNE-side LP adds deposit to the THORChain network itself
+        // (MsgDeposit), so there is no source-chain inbound to resolve.
         if coin.chain == .thorChain {
             isApprovalRequired = false
             approvePayload = nil
+            customErrorMessage = nil
             return
         }
 
         let chainName = ThorchainService.getInboundChainName(for: coin.chain)
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+            customErrorMessage = String(format: "inboundAddressNotFound".localized, chainName)
             return
         }
 
+        // When THORChain has halted/paused the source chain it returns no
+        // usable inbound vault. Surface a localized reason and leave
+        // `toAddress` empty so `isTheFormValid` blocks submission — otherwise
+        // signing proceeds with an empty destination and wallet-core rejects
+        // it with the raw `Error_invalid_address` enum.
         if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+            customErrorMessage = String(format: "inboundPaused".localized, inbound.chain)
             return
         }
 
         let destinationAddress: String
         if coin.shouldApprove {
-            destinationAddress = inbound.router ?? inbound.address
+            guard let router = inbound.router, !router.isEmpty else {
+                customErrorMessage = String(format: "routerNotAvailable".localized, inbound.chain)
+                isApprovalRequired = false
+                return
+            }
+            destinationAddress = router
         } else {
             destinationAddress = inbound.address
         }
 
         toAddress = destinationAddress
         isApprovalRequired = coin.shouldApprove
+        customErrorMessage = nil
         if isApprovalRequired {
             approvePayload = toAddress.isEmpty ? nil : ERC20ApprovePayload(
                 amount: amountInRaw,
@@ -316,7 +332,10 @@ final class FunctionCallAddThorLP {
         let currentBalance = coin.balanceDecimal
         let amountValid = amount > 0 && amount <= currentBalance
         let poolValid = !selectedPool.value.isEmpty
-        return amountValid && poolValid
+        // Non-RUNE LP adds are an on-chain transfer to the THORChain inbound
+        // vault; block until that destination resolves and isn't halted.
+        let inboundValid = coin.chain == .thorChain || (!toAddress.isEmpty && customErrorMessage == nil)
+        return amountValid && poolValid && inboundValid
     }
 
     private var fullPoolName: String {
