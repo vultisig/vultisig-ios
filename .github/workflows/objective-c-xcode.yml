@@ -22,7 +22,10 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # No authenticated git operations in this job — don't persist the token.
+          persist-credentials: false
 
       - name: Install XcodeGen
         # Idempotent: skip `brew install` if xcodegen is already on the runner.
@@ -35,7 +38,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.2.app
 
       - name: Cache SwiftPM
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             VultisigApp/.build
@@ -45,7 +48,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Cache DerivedData (macOS)
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: VultisigApp/DerivedData
           # New cache per commit; restore the most recent one for the same
@@ -59,7 +62,9 @@ jobs:
         working-directory: VultisigApp
         run: |
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          # Pick the first non-test shared scheme (xcodebuild -scheme needs a
+          # scheme, not a build target). Fail fast if none is found.
+          default=$(echo $scheme_list | ruby -e "require 'json'; schemes = JSON.parse(STDIN.gets)['project']['schemes'] || []; app = schemes.find { |s| !s.end_with?('Tests') }; abort('No non-test scheme found in project') unless app; puts app")
           echo $default > default
           echo "Using default scheme: $default"
 
@@ -99,7 +104,10 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # No authenticated git operations in this job — don't persist the token.
+          persist-credentials: false
 
       - name: Install XcodeGen
         run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
@@ -111,7 +119,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.2.app
 
       - name: Cache SwiftPM
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             VultisigApp/.build
@@ -121,7 +129,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Cache DerivedData (iOS)
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: VultisigApp/DerivedData
           key: ${{ runner.os }}-dd-ios-${{ hashFiles('**/Package.resolved') }}-${{ github.sha }}
@@ -133,7 +141,9 @@ jobs:
         working-directory: VultisigApp
         run: |
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          # Pick the first non-test shared scheme (xcodebuild -scheme needs a
+          # scheme, not a build target). Fail fast if none is found.
+          default=$(echo $scheme_list | ruby -e "require 'json'; schemes = JSON.parse(STDIN.gets)['project']['schemes'] || []; app = schemes.find { |s| !s.end_with?('Tests') }; abort('No non-test scheme found in project') unless app; puts app")
           echo $default > default
           echo "Using default scheme: $default"
 
