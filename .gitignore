@@ -96,6 +96,8 @@ VultisigApp.app
 
 # Claude Code - ignore local settings
 .claude/settings.local.json
+# Agent worktree scratch space — never commit (gitlinks here break checkout).
+.claude/worktrees/
 
 # XcodeGen — project is generated from VultisigApp/project.yml.
 # Run `make generate` from the repo root after pulling project.yml changes.

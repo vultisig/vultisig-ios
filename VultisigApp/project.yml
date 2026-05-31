@@ -108,6 +108,9 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Development"
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
 
@@ -249,6 +252,9 @@ targets:
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp"
         BUNDLE_LOADER: "$(TEST_HOST)"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
         DEAD_CODE_STRIPPING: YES
@@ -281,6 +287,9 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: VultisigApp
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         DEAD_CODE_STRIPPING: YES
         SWIFT_EMIT_LOC_STRINGS: NO
 
