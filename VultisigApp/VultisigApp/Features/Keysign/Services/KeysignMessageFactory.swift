@@ -43,8 +43,7 @@ struct KeysignMessageFactory {
             case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps()
-                    messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
+                    messages = try SolanaHelper.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
                     let swaps = OneInchSwaps()
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
