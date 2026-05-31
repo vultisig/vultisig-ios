@@ -13,6 +13,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Scheme and project are fixed (defined in VultisigApp/project.yml), so there's
+# no need to discover them at runtime via `xcodebuild -list` (which can stall on
+# SPM resolution).
+env:
+  SCHEME: VultisigApp
+  PROJECT: VultisigApp.xcodeproj
+
 jobs:
   # ---------------------------------------------------------------------------
   # macOS: build + static analysis (native arm64 on the Apple-Silicon runner).
@@ -58,32 +65,18 @@ jobs:
             ${{ runner.os }}-dd-macos-${{ hashFiles('**/Package.resolved') }}-
             ${{ runner.os }}-dd-macos-
 
-      - name: Resolve scheme
-        working-directory: VultisigApp
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          # Pick the first non-test shared scheme (xcodebuild -scheme needs a
-          # scheme, not a build target). Fail fast if none is found.
-          default=$(echo $scheme_list | ruby -e "require 'json'; schemes = JSON.parse(STDIN.gets)['project']['schemes'] || []; app = schemes.find { |s| !s.end_with?('Tests') }; abort('No non-test scheme found in project') unless app; puts app")
-          echo $default > default
-          echo "Using default scheme: $default"
-
       - name: Build & analyze for macOS
         working-directory: VultisigApp
         run: |
-          scheme=$(cat default)
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-
           xcodebuild -version
           swift --version
 
-          echo "Building & analyzing for macOS - scheme: $scheme"
+          echo "Building & analyzing for macOS - scheme: $SCHEME"
           # Note: no `clean` — DerivedData is cached/restored for incremental reuse.
           # Native arm64 (ONLY_ACTIVE_ARCH) on the Apple-Silicon runner.
           xcodebuild build analyze \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
+            -scheme "$SCHEME" \
+            -project "$PROJECT" \
             -destination 'platform=macOS' \
             -derivedDataPath DerivedData \
             -skipMacroValidation \
@@ -137,27 +130,13 @@ jobs:
             ${{ runner.os }}-dd-ios-${{ hashFiles('**/Package.resolved') }}-
             ${{ runner.os }}-dd-ios-
 
-      - name: Resolve scheme
-        working-directory: VultisigApp
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          # Pick the first non-test shared scheme (xcodebuild -scheme needs a
-          # scheme, not a build target). Fail fast if none is found.
-          default=$(echo $scheme_list | ruby -e "require 'json'; schemes = JSON.parse(STDIN.gets)['project']['schemes'] || []; app = schemes.find { |s| !s.end_with?('Tests') }; abort('No non-test scheme found in project') unless app; puts app")
-          echo $default > default
-          echo "Using default scheme: $default"
-
       - name: Build, analyze & test for iOS
         working-directory: VultisigApp
         run: |
-          scheme=$(cat default)
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-
-          echo "Building, analyzing & testing for iOS - scheme: $scheme"
+          echo "Building, analyzing & testing for iOS - scheme: $SCHEME"
           xcodebuild build analyze test \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
+            -scheme "$SCHEME" \
+            -project "$PROJECT" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5' \
             -derivedDataPath DerivedData \
             -skipMacroValidation \
