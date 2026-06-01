@@ -21,6 +21,9 @@ struct SwapErrorTooltipView: View {
     // Margin between the bottom of the warning circle and the top of the
     // tooltip's arrow tip.
     private let tooltipGap: CGFloat = 6
+    // Fixed width so the tooltip wraps deterministically and its centered
+    // arrow tip stays anchored to the circle regardless of message length.
+    private let tooltipWidth: CGFloat = 240
 
     var body: some View {
         warningIcon
@@ -30,9 +33,10 @@ struct SwapErrorTooltipView: View {
                         title: errorTitle,
                         description: errorDescription,
                         arrowDirection: .up,
+                        maxWidth: tooltipWidth,
                         onDismiss: onDismissTooltip
                     )
-                    .fixedSize(horizontal: true, vertical: true)
+                    .frame(width: tooltipWidth)
                     .offset(y: circleSize + tooltipGap)
                     .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
                 }
@@ -42,7 +46,7 @@ struct SwapErrorTooltipView: View {
 
     var warningIcon: some View {
         Button {
-            showTooltip.toggle()
+            onDismissTooltip()
         } label: {
             Icon(named: "circle-warning", color: .white, size: circleIconSize)
                 .padding(circleIconPadding)
