@@ -396,6 +396,7 @@
 "fastLoaderTitle" = "연결할 Vultiserver를 찾는 중...";
 "fastModeTitle" = "빠름";
 "fastSetUp" = "빠른 설정";
+"fastSign" = "빠른 서명";
 "fastVaultRegistrationFailed" = "Vultiserver 등록에 실패했습니다. 다시 시도해 주세요.";
 "fastVaultSecureTextDescription" = "기기 1개만 필요\n빠른 작업을 위한 소액 자금 저장\nVultiserver가 즉시 공동 서명";
 "fee" = "수수료";
@@ -667,6 +668,7 @@
 "other" = "기타";
 "overview" = "개요";
 "pair" = "쌍";
+"paired" = "페어링됨";
 "part" = "공유";
 "partOf" = "%d/%d 공유";
 "password" = "비밀번호";
