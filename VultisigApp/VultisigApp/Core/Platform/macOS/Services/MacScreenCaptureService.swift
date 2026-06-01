@@ -158,7 +158,12 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
                 logger.debug("Crop rect empty for region \(region.debugDescription) — skipping frame")
                 return
             }
-            imageToScan = ciImage.cropped(to: cropRect)
+            // CIDetector is unreliable on images whose extent has a non-zero
+            // origin, so translate the cropped region back to (0, 0) before
+            // running QR detection.
+            imageToScan = ciImage
+                .cropped(to: cropRect)
+                .transformed(by: CGAffineTransform(translationX: -cropRect.origin.x, y: -cropRect.origin.y))
         }
 
         guard let features = qrDetector?.features(in: imageToScan) as? [CIQRCodeFeature] else { return }
