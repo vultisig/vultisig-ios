@@ -114,20 +114,30 @@ struct SwapFromToField: View {
 
     var fromToAmountField: some View {
         Group {
-            SwapCryptoAmountTextField(amount: $amount) { _ in
+            SwapCryptoAmountTextField(amount: $amount) { oldValue, newValue in
                 if title=="from" {
-                    detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+                    // A multi-character jump (paste, autofill, or clearing the
+                    // field to a value) is a discrete action — fetch immediately
+                    // instead of waiting out the keystroke debounce. Single-char
+                    // edits stay debounced for free typing.
+                    let immediate = abs(newValue.count - oldValue.count) > 1
+                    detailsViewModel.updateFromAmount(
+                        vault: vault,
+                        referredCode: referredViewModel.savedReferredCode,
+                        immediate: immediate
+                    )
                     detailsViewModel.showAllPercentageButtons = true
                 }
             }
             .disabled(title=="to")
         }
-        .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
-        // Show the skeleton instantly when a fetch starts (nil animation on the
-        // entering edge); crossfade to the resolved value only when it lands.
+        .redacted(reason: title == "to" && detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
+        // First-load only: show the skeleton instantly (nil animation on the
+        // entering edge). With a prior quote, the indicative/firm value stays
+        // visible (stale-while-revalidate) instead of blanking to a skeleton.
         .animation(
-            detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
-            value: detailsViewModel.isLoadingQuotes
+            detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
+            value: detailsViewModel.showsQuoteSkeleton
         )
         .animation(.easeInOut(duration: 0.25), value: amount)
     }
@@ -138,10 +148,10 @@ struct SwapFromToField: View {
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
-            .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            .redacted(reason: title == "to" && detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
             .animation(
-                detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
-                value: detailsViewModel.isLoadingQuotes
+                detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
+                value: detailsViewModel.showsQuoteSkeleton
             )
             .animation(.easeInOut(duration: 0.25), value: fiatAmount)
     }
