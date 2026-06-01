@@ -114,18 +114,23 @@ struct SwapDetailsScreen: View {
         ZStack {
             amountFields
 
-            if let error = detailsViewModel.error {
-                SwapErrorTooltipView(
-                    error: error,
-                    showTooltip: $showErrorTooltip,
-                    onDismissTooltip: {
-                        showErrorTooltip = false
-                        detailsViewModel.error = nil
-                    }
-                )
-            } else {
-                swapButton
+            ZStack {
+                if let error = detailsViewModel.error {
+                    SwapErrorTooltipView(
+                        error: error,
+                        showTooltip: $showErrorTooltip,
+                        onDismissTooltip: {
+                            showErrorTooltip = false
+                            detailsViewModel.error = nil
+                        }
+                    )
+                    .transition(.opacity)
+                } else {
+                    swapButton
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
 
             filler.offset(x: -28)
             filler.offset(x: 28)

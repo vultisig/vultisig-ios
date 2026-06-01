@@ -18,11 +18,9 @@ struct SwapErrorTooltipView: View {
         circleIconSize + circleIconPadding * 2
     }
 
-    #if os(macOS)
-        private let tooltipGap: CGFloat = 30 // Slightly more offset on macOS
-    #else
-        private let tooltipGap: CGFloat = 24
-    #endif
+    // Margin between the bottom of the warning circle and the top of the
+    // tooltip's arrow tip.
+    private let tooltipGap: CGFloat = 6
 
     var body: some View {
         warningIcon
