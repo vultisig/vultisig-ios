@@ -19,6 +19,13 @@ enum KeysignStatus {
     case KeysignFailed
     case KeysignRetryRequested
     case KeysignVaultMismatch
+    /// Neutral terminal state: the broadcast was interrupted (the in-flight
+    /// HTTP call was cancelled) and we could NOT positively confirm the tx
+    /// on-chain. The tx may already have landed, so we surface the
+    /// deterministic hash + explorer link instead of a hard failure and
+    /// avoid pushing the user toward a one-tap re-broadcast (double-spend
+    /// risk). Distinct from `.KeysignFailed`, which is a confirmed failure.
+    case KeysignBroadcastUnconfirmed
 }
 enum TssKeysignError: Error {
     case keysignFail
@@ -49,6 +56,11 @@ class KeysignViewModel: ObservableObject {
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
+
+    /// Injectable seam for the on-chain hash lookup so tests can supply a fake
+    /// that returns `.confirmed` / `.notFound` / throws. Defaults to the
+    /// production singleton so runtime behaviour is unchanged.
+    var transactionStatusChecker: TransactionStatusChecking = TransactionStatusService.shared
 
     /// Top-level timeout for a single keysign run (TSS exchange + broadcast).
     /// Underlying poll loops can stall without producing a terminal status —
@@ -728,7 +740,7 @@ class KeysignViewModel: ObservableObject {
         guard let keysignPayload else { return }
 
         guard !keysignPayload.skipBroadcast else {
-            print("Transaction not broadcasted, skipBroadcast is set to true")
+            logger.info("Transaction not broadcasted, skipBroadcast is set to true")
             self.txid = ""
             return
         }
@@ -739,6 +751,21 @@ class KeysignViewModel: ObservableObject {
             transactionType = try getSignedTransaction(keysignPayload: keysignPayload)
         } catch {
             return handleHelperError(err: error)
+        }
+
+        // Idempotency guard: if a prior attempt for this exact deterministic
+        // hash was already recorded (e.g. a previous broadcast that got
+        // cancelled mid-flight), short-circuit to success when the tx is on
+        // chain instead of broadcasting again. The deterministic hash is the
+        // same across attempts, so this protects every (re-)broadcast path from
+        // a double-spend. Gated on an existing record so first broadcasts pay no
+        // extra round-trip.
+        if hasPriorBroadcastAttempt(for: transactionType.transactionHash),
+           await isAlreadyOnChain(transactionType: transactionType) {
+            logger.info("idempotency guard: prior attempt for \(transactionType.transactionHash, privacy: .public) already on-chain — skipping re-broadcast")
+            await applyBroadcastSuccess(transactionType: transactionType)
+            savePendingTransaction()
+            return
         }
 
         do {
@@ -886,6 +913,19 @@ class KeysignViewModel: ObservableObject {
         savePendingTransaction()
     }
 
+    /// Whether a prior broadcast attempt for this deterministic hash was
+    /// already recorded. Used to gate the idempotency pre-broadcast check so it
+    /// only runs on retry paths, not on every first broadcast.
+    private func hasPriorBroadcastAttempt(for txHash: String) -> Bool {
+        guard !txHash.isEmpty else { return false }
+        do {
+            return try StoredPendingTransactionStorage.shared.get(txHash: txHash) != nil
+        } catch {
+            logger.warning("idempotency lookup failed for \(txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+    }
+
     private func savePendingTransaction() {
         guard let keysignPayload = keysignPayload,
               !txid.isEmpty,
@@ -928,6 +968,19 @@ class KeysignViewModel: ObservableObject {
     }
 
     func handleBroadcastError(error: Error, transactionType: SignedTransactionType) async {
+        // (A) A cancellation is NOT conclusive evidence the broadcast failed.
+        // SwiftUI tears down the `.task`-backed Task on view teardown / scene
+        // change, which cancels the in-flight broadcast HTTP call — the tx may
+        // already have reached the mempool/proxy. Classify it as non-conclusive
+        // and route into detached verification instead of declaring failure.
+        // It is deliberately NOT treated as a `RetryableBroadcastError`: an
+        // auto-re-broadcast of a tx that may have landed risks a double-spend.
+        if Self.isCancellation(error) {
+            logger.warning("broadcast interrupted by cancellation — verifying on-chain before declaring failure")
+            await handleCancelledBroadcast(transactionType: transactionType)
+            return
+        }
+
         if let retryable = error as? RetryableBroadcastError,
            broadcastRetryCount < Self.maxBroadcastRetries {
             broadcastRetryCount += 1
@@ -971,17 +1024,57 @@ class KeysignViewModel: ObservableObject {
         // hash so this works without per-chain string matching.
         if await isAlreadyOnChain(transactionType: transactionType) {
             logger.info("transaction already on-chain via peer broadcast — using hash \(transactionType.transactionHash, privacy: .public)")
-            setTxid(transactionType.transactionHash)
-            self.approveTxid = transactionType.approveTransactionHash
-            if let coin = keysignPayload?.coin, coin.chainType == .UTXO {
-                await BlockchairService.shared.clearUTXOCache(for: coin)
-            }
+            await applyBroadcastSuccess(transactionType: transactionType)
             return
         }
 
         logger.error("\(errMessage, privacy: .public)")
         self.keysignError = errMessage
         setStatus(.KeysignFailed)
+    }
+
+    /// True for a Swift Concurrency cancellation or a URL-layer cancellation,
+    /// including the `URLError.cancelled` that `HTTPClient` re-throws as a fresh
+    /// `CancellationError` and any cancellation wrapped in `HTTPError`.
+    static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if (error as? URLError)?.code == .cancelled { return true }
+        if case let HTTPError.networkError(underlying) = error {
+            return isCancellation(underlying)
+        }
+        return false
+    }
+
+    /// (B) + (C) Handles a broadcast that was interrupted by cancellation.
+    /// The hash lookup runs detached so it does NOT inherit the cancelled
+    /// parent context (otherwise `HTTPClient`'s `Task.checkCancellation()`
+    /// short-circuits every RPC before any network I/O). If verification
+    /// positively confirms the tx, treat it as a success exactly like a normal
+    /// broadcast. Otherwise fall back to a neutral "couldn't confirm" state —
+    /// never a hard failure with a raw `CancellationError` string.
+    private func handleCancelledBroadcast(transactionType: SignedTransactionType) async {
+        if await isAlreadyOnChain(transactionType: transactionType) {
+            logger.info("cancelled broadcast confirmed on-chain — using hash \(transactionType.transactionHash, privacy: .public)")
+            await applyBroadcastSuccess(transactionType: transactionType)
+            return
+        }
+
+        logger.warning("cancelled broadcast could not be confirmed on-chain — neutral unconfirmed state for hash \(transactionType.transactionHash, privacy: .public)")
+        setTxid(transactionType.transactionHash)
+        self.approveTxid = transactionType.approveTransactionHash
+        self.keysignError = "broadcastCouldNotConfirm".localized
+        setStatus(.KeysignBroadcastUnconfirmed)
+    }
+
+    /// Mirrors the normal successful-broadcast bookkeeping: sets the txid +
+    /// approve txid and clears the UTXO cache. Status is left to the caller's
+    /// existing `KeysignFinished` guard (set txid → done).
+    private func applyBroadcastSuccess(transactionType: SignedTransactionType) async {
+        setTxid(transactionType.transactionHash)
+        self.approveTxid = transactionType.approveTransactionHash
+        if let coin = keysignPayload?.coin, coin.chainType == .UTXO {
+            await BlockchairService.shared.clearUTXOCache(for: coin)
+        }
     }
 
     /// Best-effort check that the signed tx is already accepted on the chain
@@ -992,35 +1085,52 @@ class KeysignViewModel: ObservableObject {
     /// (Cosmos LCD index lag is the worst offender), and a single early miss
     /// would otherwise show the user a "failed" screen for a tx that's already
     /// landing.
+    ///
+    /// The lookup runs in a detached task so it does not inherit a cancelled
+    /// parent context: `HTTPClient.request` checks `Task.checkCancellation()`
+    /// as its first statement, so under a cancelled parent every RPC — and the
+    /// backoff `Task.sleep` — would throw immediately, defeating the safety
+    /// net. Value-type inputs (chain + hash) are captured before detaching to
+    /// keep the closure Sendable-clean.
     private func isAlreadyOnChain(transactionType: SignedTransactionType) async -> Bool {
         guard let chain = keysignPayload?.coin.chain else { return false }
         let hash = transactionType.transactionHash
         guard !hash.isEmpty else { return false }
 
-        let maxAttempts = 3
-        let backoff: Duration = .seconds(2)
+        let checker = transactionStatusChecker
+        let log = logger
 
-        for attempt in 1...maxAttempts {
-            do {
-                let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
-                switch result.status {
-                case .confirmed, .pending:
-                    return true
-                case .failed:
-                    return false
-                case .notFound:
-                    break
+        return await Task.detached {
+            let maxAttempts = 3
+            let backoff: Duration = .seconds(2)
+
+            for attempt in 1...maxAttempts {
+                do {
+                    let result = try await checker.checkTransactionStatus(txHash: hash, chain: chain)
+                    switch result.status {
+                    case .confirmed, .pending:
+                        return true
+                    case .failed:
+                        return false
+                    case .notFound:
+                        break
+                    }
+                } catch {
+                    log.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
-            } catch {
-                logger.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+
+                if attempt < maxAttempts {
+                    do {
+                        try await Task.sleep(for: backoff)
+                    } catch {
+                        log.warning("hash-verify backoff interrupted: \(error.localizedDescription, privacy: .public)")
+                        return false
+                    }
+                }
             }
 
-            if attempt < maxAttempts {
-                try? await Task.sleep(for: backoff)
-            }
-        }
-
-        return false
+            return false
+        }.value
     }
 
     func handleHelperError(err: Error) {

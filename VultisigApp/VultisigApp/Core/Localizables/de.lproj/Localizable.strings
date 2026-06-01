@@ -117,6 +117,8 @@
 "bondRune" = "RUNE binden";
 "bondToNode" = "An Knoten binden";
 "bridge" = "Brücke";
+"broadcastCouldNotConfirm" = "Wir konnten diese Transaktion nicht bestätigen. Sie wurde möglicherweise trotzdem ausgeführt — überprüfe den Explorer, bevor du es erneut versuchst.";
+"broadcastCouldNotConfirmTitle" = "Transaktion konnte nicht bestätigt werden";
 "broadcastRetryGeneric" = "Transaktionsdaten abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleBlockhash" = "Transaktion abgelaufen. Bitte erneut versuchen.";
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";

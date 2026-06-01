@@ -7,7 +7,14 @@
 
 import Foundation
 
-class TransactionStatusService {
+/// Seam for the transaction-status lookup so callers can be tested with a
+/// fake that returns `.confirmed` / `.notFound` / throws without touching the
+/// network. `TransactionStatusService.shared` is the production conformer.
+protocol TransactionStatusChecking: Sendable {
+    func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult
+}
+
+final class TransactionStatusService: TransactionStatusChecking, @unchecked Sendable {
     static let shared = TransactionStatusService()
 
     private let evmProvider = EVMTransactionStatusProvider()
