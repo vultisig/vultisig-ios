@@ -129,6 +129,56 @@ final class SwapQuoteRankingTests: XCTestCase {
         XCTAssertEqual(pick?.displayName, "LI.FI")
     }
 
+    // MARK: - Banded provider preference
+
+    func test_selectBestQuote_nearTieWithinBand_priorityWins_swapKitOverLifi() {
+        // SwapKit (priority 2) and LI.FI (priority 5) within 1% of each other on net output:
+        // LI.FI's raw output is slightly higher but still inside the band, so the
+        // higher-priority SwapKit quote wins instead of the raw maximum.
+        // SwapKit reports expectedBuyAmount in human units; LI.FI 0.03 ETH dstAmount in wei.
+        let swapKit: SwapQuote = .swapkit(makeSwapKitResponse(expectedBuyAmount: "0.0299"), fee: nil, subProvider: "Chainflip")
+        let lifi: SwapQuote = .lifi(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, integratorFee: nil) // 0.03
+
+        // best = LI.FI 0.03, floor = 0.0297, SwapKit 0.0299 is in band → SwapKit wins on priority.
+        let pick = SwapService.selectBestQuote(quotes: [lifi, swapKit], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "SwapKit (Chainflip)")
+    }
+
+    func test_selectBestQuote_priorityOrderingWithinBand_thorchainOverOneInch() {
+        // THORChain (priority 0) vs 1inch (priority 4) within 1%: 1inch's raw output is
+        // marginally higher but in band, so THORChain wins on priority.
+        let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2990000")) // 0.0299 ETH
+        let oneInch: SwapQuote = .oneinch(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil) // 0.03 ETH
+
+        // best = 1inch 0.03, floor = 0.0297, THORChain 0.0299 in band → THORChain wins.
+        let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "THORChain")
+    }
+
+    func test_selectBestQuote_exactBandBoundaryIsInclusive() {
+        // A quote exactly at best * 0.99 is included (>= floor) and, being higher priority,
+        // wins. best = 1inch 0.03 → floor = 0.0297. THORChain at exactly 0.0297 is in band.
+        let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2970000")) // 0.0297 ETH
+        let oneInch: SwapQuote = .oneinch(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil) // 0.03 ETH
+
+        let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "THORChain")
+    }
+
+    func test_selectBestQuote_justOutsideBand_betterRateWins() {
+        // THORChain just below the floor (best 0.03 → floor 0.0297; THORChain 0.0296) must
+        // NOT win on priority — only 1inch is in band, so the better rate wins.
+        let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2960000")) // 0.0296 ETH
+        let oneInch: SwapQuote = .oneinch(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil) // 0.03 ETH
+
+        let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "1Inch")
+    }
+
     // MARK: - Same-chain ERC20→ETH regression
 
     func test_sameChainErc20ToEth_aggregatorWinsOverThorchain() {
@@ -207,6 +257,40 @@ final class SwapQuoteRankingTests: XCTestCase {
             router: nil,
             maxStreamingQuantity: nil
         )
+    }
+
+    /// SwapKit responses are `Decodable`-only (custom `init(from:)`, no memberwise init), so
+    /// build the fixture from a minimal EVM-txType JSON payload. `expectedBuyAmount` is the
+    /// field `expectedNetToAmount` reads, in human units.
+    private func makeSwapKitResponse(expectedBuyAmount: String) -> SwapKitSwapResponse {
+        let json = """
+        {
+          "swapId": "swap-1",
+          "routeId": "route-1",
+          "providers": ["Chainflip"],
+          "sellAsset": "ETH.USDC",
+          "buyAsset": "ETH.ETH",
+          "sellAmount": "10",
+          "expectedBuyAmount": "\(expectedBuyAmount)",
+          "expectedBuyAmountMaxSlippage": "\(expectedBuyAmount)",
+          "sourceAddress": "0xfrom",
+          "destinationAddress": "0xto",
+          "targetAddress": "0xtarget",
+          "meta": { "txType": "EVM" },
+          "tx": {
+            "from": "0xfrom",
+            "to": "0xto",
+            "value": "0",
+            "data": "0x",
+            "gas": "200000",
+            "gasPrice": "20000000000"
+          },
+          "fees": []
+        }
+        """
+        // Test fixture: a decode failure here is a test bug, so force-unwrap is acceptable.
+        // swiftlint:disable:next force_try
+        return try! JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
     }
 
     private func makeEVMQuote(dstAmount: String, gas: Int64 = 200_000, gasPrice: String = "20000000000") -> EVMQuote {
