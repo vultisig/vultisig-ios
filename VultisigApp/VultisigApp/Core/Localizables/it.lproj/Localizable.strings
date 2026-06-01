@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "Usa una condivisione vault per recuperare il tuo vault.";
 "importVaultShareTitle" = "Importa condivisione vault";
 "importYourVaultShare" = "Importa la tua quota di vault";
+"inboundAddressNotFound" = "%@ non è attualmente supportato da THORChain.";
 "inboundPaused" = "Le azioni in entrata sono in pausa per %@. Riprova più tardi.";
 "incorrectCodeTryAgain" = "Codice errato. Riprova.";
 "incorrectPassword" = "Password errata";

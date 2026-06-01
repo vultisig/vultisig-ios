@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "Verwenden Sie einen Tresoranteil, um Ihren Tresor wiederherzustellen.";
 "importVaultShareTitle" = "Tresoranteil importieren";
 "importYourVaultShare" = "Importiere deinen Vault-Anteil";
+"inboundAddressNotFound" = "%@ wird derzeit von THORChain nicht unterstützt.";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "incorrectCodeTryAgain" = "Falscher Code. Versuche es erneut.";
 "incorrectPassword" = "Falsches Passwort";

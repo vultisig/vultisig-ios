@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "使用保险库共享来恢复您的保险库。";
 "importVaultShareTitle" = "导入保险库共享";
 "importYourVaultShare" = "导入您的保险库份额";
+"inboundAddressNotFound" = "THORChain 目前不支持 %@。";
 "inboundPaused" = "%@ 的入站操作已暂停。请稍后再试。";
 "incorrectCodeTryAgain" = "验证码错误。请重试。";
 "incorrectPassword" = "密码错误";
