@@ -34,16 +34,12 @@ class MacScreenCaptureService: ObservableObject {
     private var streamOutput: ScreenCaptureStreamOutput?
 
     func startCapture() async {
-        guard stream == nil else {
-            logger.debug("startCapture skipped — stream already running")
-            return
-        }
+        guard stream == nil else { return }
 
         detectedQRCode = nil
         isPermissionDenied = false
 
         do {
-            logger.info("Starting screen capture")
             let content = try await SCShareableContent.current
 
             let mainDisplayID = NSScreen.main?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
@@ -83,7 +79,6 @@ class MacScreenCaptureService: ObservableObject {
             try await newStream.startCapture()
 
             stream = newStream
-            logger.info("Screen capture started (display \(display.width)x\(display.height), excluded windows: \(excludedWindows.count))")
         } catch let error as SCStreamError where error.code == .userDeclined {
             logger.warning("Screen recording permission denied")
             isPermissionDenied = true
@@ -108,7 +103,6 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
     private let onQRCodeDetected: (String) -> Void
     private let ciContext = CIContext()
     private let qrDetector: CIDetector?
-    private var loggedFirstFrame = false
 
     init(
         scanRegion: ScanRegion,
@@ -137,11 +131,6 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
         let region = scanRegion.normalizedRect
         let extent = ciImage.extent
 
-        if !loggedFirstFrame {
-            loggedFirstFrame = true
-            logger.info("First capture frame \(Int(extent.width))x\(Int(extent.height)), scanRegion=\(region.debugDescription)")
-        }
-
         let imageToScan: CIImage
         if region.isEmpty {
             // Scan full frame when scan region is not yet set
@@ -154,10 +143,7 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
                 height: region.size.height * extent.height
             ).intersection(extent)
 
-            guard !cropRect.isEmpty else {
-                logger.debug("Crop rect empty for region \(region.debugDescription) — skipping frame")
-                return
-            }
+            guard !cropRect.isEmpty else { return }
             // CIDetector is unreliable on images whose extent has a non-zero
             // origin, so translate the cropped region back to (0, 0) before
             // running QR detection.
@@ -170,7 +156,6 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
 
         for feature in features {
             if let qrString = feature.messageString, !qrString.isEmpty {
-                logger.info("QR code detected in screen capture")
                 onQRCodeDetected(qrString)
                 return
             }
