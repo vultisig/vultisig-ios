@@ -231,31 +231,23 @@ struct SwapVerifyScreen: View {
         }
     }
 
-    @ViewBuilder
     var signButton: some View {
-        if vault.isFastVault {
-            Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
-                .font(Theme.fonts.bodySMedium)
-
-            LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                fastPasswordPresented = true
-            } longPressAction: {
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: signButtonDisabled,
+            singleSignTitle: "signTransaction",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
                 fastVaultPassword = .empty
                 onSignPress()
             }
-            .disabled(signButtonDisabled)
-            .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                FastVaultEnterPasswordView(
-                    password: $fastVaultPassword,
-                    vault: vault,
-                    onSubmit: { onSignPress() }
-                )
-            }
-        } else {
-            PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                onSignPress()
-            }.disabled(signButtonDisabled)
+        )
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { onSignPress() }
+            )
         }
     }
 

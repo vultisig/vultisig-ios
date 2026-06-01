@@ -82,10 +82,23 @@ struct SwapService {
         throw firstError ?? SwapError.routeUnavailable
     }
 
-    /// Pick the quote with the highest net output in `toCoin` units. Every provider in a
-    /// candidate set swaps to the same `toCoin`, so the destination amount is directly
-    /// comparable. Falls back to the first quote (priority order from `resolveAllProviders`)
-    /// when no quote produces a comparable amount.
+    /// Width of the priority band, as a fraction of the best net output. Quotes whose net
+    /// output lands within this band of the best are treated as effectively tied on rate, so
+    /// the higher-priority provider is preferred over a marginally larger raw output. 1%.
+    static let providerPreferenceBand: Decimal = 0.01
+
+    /// Pick the best quote across providers. The ranking metric is net output in `toCoin`
+    /// units (every provider in a candidate set swaps to the same `toCoin`, so the
+    /// destination amount is directly comparable). On top of that metric a banded
+    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (1%)
+    /// of the best net output, the highest-priority provider wins instead of the raw maximum.
+    /// This keeps near-tie routes on the more trusted/integrated provider without ever
+    /// trading away a materially better rate (anything outside the band loses on output).
+    /// Falls back to the first quote (priority order from `resolveAllProviders`) when no
+    /// quote produces a comparable amount.
+    ///
+    /// iOS is the cross-platform anchor for this rule; the canonical spec lives in
+    /// `vultisig-sdk` and other platforms mirror this implementation.
     static func selectBestQuote(
         quotes: [SwapQuote],
         toCoin: Coin
@@ -97,17 +110,51 @@ struct SwapService {
             return (quote, value)
         }
 
-        if let best = ranked.max(by: { $0.1 < $1.1 }) {
-            let summary = ranked
-                .map { "\($0.0.displayName ?? "?")=\($0.1)" }
-                .joined(separator: ", ")
-            let pickedName = best.0.displayName ?? "?"
-            logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] → \(pickedName, privacy: .public)")
-            return best.0
+        guard let best = ranked.max(by: { $0.1 < $1.1 }) else {
+            logger.warning("[swap-rank] no quote was rankable, returning first by priority")
+            return quotes.first
         }
 
-        logger.warning("[swap-rank] no quote was rankable, returning first by priority")
-        return quotes.first
+        // Quotes within the band of the best net output are treated as tied on rate; among
+        // those, prefer the higher-priority (lower index) provider. Tie-break inside the same
+        // priority by higher net output (defensive — a provider rarely appears twice).
+        let floor = best.1 * (1 - providerPreferenceBand)
+        let inBand = ranked.filter { $0.1 >= floor }
+        let picked = inBand.min { lhs, rhs in
+            let lhsPriority = priority(of: lhs.0)
+            let rhsPriority = priority(of: rhs.0)
+            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
+            return lhs.1 > rhs.1
+        } ?? best
+
+        let summary = ranked
+            .map { "\($0.0.displayName ?? "?")=\($0.1)" }
+            .joined(separator: ", ")
+        let inBandSummary = inBand
+            .map { "\($0.0.displayName ?? "?")=\($0.1)(p\(priority(of: $0.0)))" }
+            .joined(separator: ", ")
+        logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] best=\(best.0.displayName ?? "?", privacy: .public)=\(best.1, privacy: .public) floor=\(floor, privacy: .public) inBand=[\(inBandSummary, privacy: .public)] → \(picked.0.displayName ?? "?", privacy: .public)")
+        return picked.0
+    }
+
+    /// Provider preference order for the banded selection. Lower index = preferred. Keyed off
+    /// the enum case (not `displayName`, which can carry SwapKit sub-provider text). THORChain
+    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, LI.FI.
+    private static func priority(of quote: SwapQuote) -> Int {
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return 0
+        case .mayachain:
+            return 1
+        case .swapkit:
+            return 2
+        case .kyberswap:
+            return 3
+        case .oneinch:
+            return 4
+        case .lifi:
+            return 5
+        }
     }
 
     private func fetchQuoteForProvider(
