@@ -131,14 +131,10 @@ struct SwapFromToField: View {
             }
             .disabled(title=="to")
         }
-        .redacted(reason: title == "to" && detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
-        // First-load only: show the skeleton instantly (nil animation on the
-        // entering edge). With a prior quote, the indicative/firm value stays
-        // visible (stale-while-revalidate) instead of blanking to a skeleton.
-        .animation(
-            detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
-            value: detailsViewModel.showsQuoteSkeleton
-        )
+        // The "to" amount is never skeletoned: it always carries a value — the
+        // `~`-indicative estimate while the quote loads, replaced by the firm
+        // amount once it lands. Only the swap-details summary (provider, fees)
+        // shows the loading skeleton.
         .animation(.easeInOut(duration: 0.25), value: amount)
     }
 
@@ -148,11 +144,6 @@ struct SwapFromToField: View {
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
-            .redacted(reason: title == "to" && detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
-            .animation(
-                detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
-                value: detailsViewModel.showsQuoteSkeleton
-            )
             .animation(.easeInOut(duration: 0.25), value: fiatAmount)
     }
 
