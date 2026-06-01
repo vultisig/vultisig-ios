@@ -62,7 +62,7 @@ struct SigningCTAButtons: View {
             PrimaryButton(
                 title: "paired".localized,
                 leadingView: {
-                    Icon(named: "devices", color: Theme.colors.textPrimary, size: 20)
+                    Icon(named: "devices", color: pairedIconColor, size: 20)
                 },
                 type: .secondary,
                 size: .medium,
@@ -70,6 +70,13 @@ struct SigningCTAButtons: View {
             )
             .fixedSize(horizontal: true, vertical: false)
         }
+    }
+
+    /// Match the icon tint to the button title: the title dims to the disabled
+    /// token via the button style, but an explicitly-coloured `Icon` doesn't,
+    /// so drive it from the disabled state here.
+    private var pairedIconColor: Color {
+        isDisabled ? Theme.colors.textButtonDisabled : Theme.colors.textPrimary
     }
 
     private var singleSignButton: some View {
