@@ -399,6 +399,7 @@
 "fastLoaderTitle" = "Tražim FastVaultServer";
 "fastModeTitle" = "BRZO";
 "fastSetUp" = "Brza postavka";
+"fastSign" = "Brzo potpisivanje";
 "fastVaultRegistrationFailed" = "Registracija na Vultiserver nije uspjela. Molimo pokušajte ponovno.";
 "fastVaultSecureTextDescription" = "Potrebno je samo 1 uređaj\nPohrani manja sredstva za brze radnje\nVultiserver trenutno supotpisuje";
 "fee" = "Naknada";
@@ -670,6 +671,7 @@
 "other" = "Ostalo";
 "overview" = "Pregled";
 "pair" = "Upareni";
+"paired" = "Upareno";
 "part" = "Dio";
 "partOf" = "dio %d od %d";
 "password" = "Lozinka";

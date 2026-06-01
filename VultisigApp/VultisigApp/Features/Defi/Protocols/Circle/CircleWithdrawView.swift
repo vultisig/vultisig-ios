@@ -157,28 +157,17 @@ struct CircleWithdrawView: View {
         abs(percentage - Double(value)) < 1.0
     }
 
-    @ViewBuilder
     var withdrawButton: some View {
-        if vault.isFastVault {
-            VStack {
-                Text("holdForPairedSign".localized)
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: "circleWithdrawConfirm".localized) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    fastVaultPassword = ""
-                    Task { await handleWithdraw() }
-                }
-            }
-            .disabled(isButtonDisabled)
-        } else {
-            PrimaryButton(title: "circleWithdrawConfirm".localized) {
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: isButtonDisabled,
+            singleSignTitle: "circleWithdrawConfirm",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
+                fastVaultPassword = ""
                 Task { await handleWithdraw() }
             }
-            .disabled(isButtonDisabled)
-        }
+        )
     }
 
     var vaultEthBalance: Decimal {

@@ -103,6 +103,22 @@ enum SwapCryptoLogic {
         quote?.router
     }
 
+    /// Display-only indicative out-amount derived from the spot fiat prices the
+    /// app already holds: `fromAmount × (fromPrice / toPrice)`. Shown greyed with
+    /// a `~` prefix while the firm quote loads. NEVER feeds signing or validation
+    /// — only the firm `quote` does. Returns nil when either price is missing or
+    /// the input amount is non-positive, so the view can fall back to empty/0.
+    static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
+        let amount = fromAmount.toDecimal()
+        guard amount > 0 else { return nil }
+
+        let fromPrice = Decimal(fromCoin.price)
+        let toPrice = Decimal(toCoin.price)
+        guard fromPrice > 0, toPrice > 0 else { return nil }
+
+        return amount * (fromPrice / toPrice)
+    }
+
     static func inboundFeeDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal? {
         quote?.inboundFeeDecimal(toCoin: toCoin)
     }
