@@ -156,6 +156,45 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertTrue(SwapCryptoLogic.isAffiliate)
     }
 
+    // MARK: - getDefaultCoin (TokensStore fallback)
+
+    /// When the vault holds the Sui chain but not the native SUI coin,
+    /// `getDefaultCoin` falls back to `TokensStore.TokenSelectionAssets`. That
+    /// curated list places a bridged ETH-on-Sui token BEFORE native SUI, so the
+    /// old non-strict-weak `.sorted` comparator returned ETH. The fix must pick
+    /// native SUI deterministically.
+    func testGetDefaultCoinForSuiReturnsNativeSuiNotBridgedEth() throws {
+        let vault = makeVaultWithValidKeys()
+        let coin = try XCTUnwrap(SwapCryptoLogic.getDefaultCoin(for: .sui, vault: vault))
+        XCTAssertEqual(coin.chain, .sui)
+        XCTAssertEqual(coin.ticker, "SUI")
+        XCTAssertTrue(coin.isNativeToken)
+        XCTAssertNotEqual(coin.ticker, "ETH")
+    }
+
+    /// Sanity: the vault path still takes precedence — a vault that already
+    /// holds the native coin returns that exact coin, not a TokensStore lookup.
+    func testGetDefaultCoinPrefersNativeCoinFromVault() throws {
+        let sui = makeCoin(.sui, ticker: "SUI", decimals: 9, isNative: true)
+        let vault = makeVaultWithValidKeys(coins: [sui])
+        let coin = try XCTUnwrap(SwapCryptoLogic.getDefaultCoin(for: .sui, vault: vault))
+        XCTAssertTrue(coin.isNativeToken)
+        XCTAssertEqual(coin.ticker, "SUI")
+    }
+
+    private func makeVaultWithValidKeys(coins: [Coin] = []) -> Vault {
+        // A real 64-char hex key so CoinFactory can derive the Sui address in
+        // the TokensStore-fallback branch (placeholder keys would throw).
+        let pubKey = "feedf00dfeedf00dfeedf00dfeedf00dfeedf00dfeedf00dfeedf00dfeedf00d"
+        let vault = Vault(name: "test-vault")
+        vault.localPartyID = "test-device-123"
+        vault.pubKeyECDSA = pubKey
+        vault.pubKeyEdDSA = pubKey
+        vault.hexChainCode = String(repeating: "0", count: 64)
+        vault.coins = coins
+        return vault
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {

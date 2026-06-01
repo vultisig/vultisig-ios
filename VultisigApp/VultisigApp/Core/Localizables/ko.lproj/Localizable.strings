@@ -946,6 +946,7 @@
 "swapErrorAmountTooSmallTitle" = "금액이 너무 작음";
 "swapErrorInboundAddressDescription" = "인바운드 주소가 유효하지 않습니다. 다시 시도하세요.";
 "swapErrorInboundAddressTitle" = "유효하지 않은 주소";
+"swapErrorRouteUnavailableTitle" = "사용 가능한 경로 없음";
 "swapErrorInsufficientFundsDescription" = "스왑을 실행하기에 자금이 부족합니다. 지갑에 자금을 추가하세요.";
 "swapErrorInsufficientFundsTitle" = "자금 부족";
 "swapErrorInsufficientGasDescription" = "네트워크 수수료를 충당할 가스 토큰이 부족합니다. 지갑에 가스를 추가하세요.";

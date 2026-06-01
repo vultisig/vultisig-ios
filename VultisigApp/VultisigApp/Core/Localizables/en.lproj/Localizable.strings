@@ -981,6 +981,7 @@
 "swapErrorInsufficientFundsTitle" = "Insufficient Funds";
 "swapErrorInsufficientGasDescription" = "Not enough gas token to cover the network fee. Please add gas to your wallet.";
 "swapErrorInsufficientGasTitle" = "Insufficient Gas";
+"swapErrorRouteUnavailableTitle" = "No Route Available";
 "swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
 "swapErrorSameAssetTitle" = "Same Asset";
 "swapErrorUnexpectedDescription" = "An unexpected error occurred. Please try again.";

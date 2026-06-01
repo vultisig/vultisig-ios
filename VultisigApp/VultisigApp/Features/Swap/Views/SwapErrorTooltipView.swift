@@ -56,6 +56,9 @@ struct SwapErrorTooltipView: View {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorTitle
         }
+        if let swapError = error as? SwapError {
+            return title(for: swapError)
+        }
         if let normalized = normalizedSwapKitError {
             return normalized.errorTitle
         }
@@ -70,6 +73,21 @@ struct SwapErrorTooltipView: View {
             return normalized.errorDescription ?? error.localizedDescription
         }
         return error.localizedDescription
+    }
+
+    /// Domain-appropriate title for the swap-flow's `SwapError` cases. Without
+    /// this branch a `SwapError` (e.g. `.routeUnavailable` raised when SwapKit
+    /// reports no route for the pair) would fall through to the generic
+    /// "Unexpected Error" title even though its `errorDescription` is specific.
+    private func title(for swapError: SwapError) -> String {
+        switch swapError {
+        case .routeUnavailable, .noLiquidityPool:
+            return "swapErrorRouteUnavailableTitle".localized
+        case .swapAmountTooSmall, .lessThenMinSwapAmount:
+            return SwapCryptoLogic.Errors.swapAmountTooSmall.errorTitle
+        case .serverError:
+            return SwapCryptoLogic.Errors.unexpectedError.errorTitle
+        }
     }
 
     /// Map terminal SwapKit error cases onto the swap-flow's user-facing

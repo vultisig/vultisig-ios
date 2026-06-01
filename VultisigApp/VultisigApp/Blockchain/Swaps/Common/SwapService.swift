@@ -290,7 +290,12 @@ private extension SwapService {
         } catch let error as SwapError {
             throw error
         } catch {
-            throw SwapError.swapAmountTooSmall
+            // Amount-too-small conditions are caught explicitly above
+            // (empty/zero quote, below recommended minimum, "not enough asset
+            // to pay for fees"). Any remaining unmapped failure here is a
+            // transport/decoding/coverage issue, so surface it as
+            // route-unavailable rather than masquerading as "Amount Too Small".
+            throw SwapError.routeUnavailable
         }
     }
 

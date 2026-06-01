@@ -140,10 +140,14 @@ enum SwapCryptoLogic {
             return firstVaultCoin
         }
 
-        let coinMeta = TokensStore.TokenSelectionAssets
-            .filter { $0.chain == chain }
-            .sorted { $0.isNativeToken && !$1.isNativeToken }
-            .first
+        // Prefer the chain's native coin. The previous `.sorted` comparator
+        // (`$0.isNativeToken && !$1.isNativeToken`) is not a strict weak
+        // ordering and didn't reliably promote the native coin, so for chains
+        // whose curated list places a bridged token first (e.g. ETH-on-Sui
+        // before native SUI) `.first` returned the wrong default. Pick the
+        // native coin explicitly, falling back to the first coin of the chain.
+        let chainAssets = TokensStore.TokenSelectionAssets.filter { $0.chain == chain }
+        let coinMeta = chainAssets.first(where: { $0.isNativeToken }) ?? chainAssets.first
         let pubKey = vault.chainPublicKeys.first { $0.chain == chain }?.publicKeyHex
         let isDerived = pubKey != nil
         guard let coinMeta,

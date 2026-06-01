@@ -104,14 +104,15 @@ final class SwapKitServiceTests: XCTestCase {
         XCTAssertEqual(best.providers, ["NEAR"])
     }
 
-    // MARK: - noRoutesFound disambiguation
+    // MARK: - noRoutesFound surfacing
 
-    /// SwapKit's `/v3/quote` 404 envelope is byte-identical for "amount below
-    /// the provider's minimum" and "pair not supported". When the cached
-    /// providers snapshot reports the pair as structurally supported, the
-    /// service must re-classify so the view layer can surface "Amount Too
-    /// Small" instead of the misleading "No routes available for this pair".
-    func testFetchBestRoute_noRoutesFoundOnSupportedPair_reclassifiesToAmountBelowMinimum() async throws {
+    /// SwapKit's `/v3/quote` 404 `noRoutesFound` envelope carries no
+    /// minimum/amount metadata, so it must surface as `noRoutesFound`
+    /// ("No routes available for this pair") even when the cached providers
+    /// snapshot reports the pair as structurally supported. The previous
+    /// behaviour re-classified this to `amountBelowProviderMinimum` and showed
+    /// "Amount Too Small" for genuinely unroutable pairs (e.g. TRX→SUI).
+    func testFetchBestRoute_noRoutesFoundOnSupportedPair_keepsNoRoutesFound() async throws {
         let body = #"{"error":"noRoutesFound","message":"No routes found for BCH.BCH -> ETH.ETH","data":{"sellAsset":"BCH.BCH","buyAsset":"ETH.ETH"}}"#
         let data = try XCTUnwrap(body.data(using: .utf8))
         let client = NoRoutesHTTPClient(payload: data)
@@ -125,15 +126,14 @@ final class SwapKitServiceTests: XCTestCase {
                 amount: Decimal(string: "0.0115") ?? .zero,
                 affiliateFeeBps: 50
             )
-            XCTFail("Expected SwapKitError.amountBelowProviderMinimum")
+            XCTFail("Expected SwapKitError.noRoutesFound")
         } catch let error as SwapKitError {
-            XCTAssertEqual(error, .amountBelowProviderMinimum)
+            XCTAssertEqual(error, .noRoutesFound)
+            XCTAssertNotEqual(error, .amountBelowProviderMinimum)
         }
     }
 
-    /// Pair the cache reports as unsupported must keep the literal
-    /// `noRoutesFound` — the heuristic must not degrade the genuinely
-    /// unsupported-pair message.
+    /// Pair the cache reports as unsupported must also surface `noRoutesFound`.
     func testFetchBestRoute_noRoutesFoundOnUnsupportedPair_keepsNoRoutesFound() async throws {
         let body = #"{"error":"noRoutesFound","message":"No routes found","data":{}}"#
         let data = try XCTUnwrap(body.data(using: .utf8))
@@ -171,8 +171,35 @@ final class SwapKitServiceTests: XCTestCase {
         }
     }
 
-    /// Non-`noRoutesFound` SwapKit errors are surfaced verbatim — the
-    /// disambiguation must not accidentally swallow other documented codes.
+    /// Fail-open path: when the provider cache can't load (empty snapshot via
+    /// the actor's `nil` providers fallback), `noRoutesFound` must NOT degrade
+    /// into "Amount Too Small". An unroutable pair on an unavailable cache
+    /// surfaces `noRoutesFound`.
+    func testFetchBestRoute_noRoutesFoundWithUnavailableCache_keepsNoRoutesFound() async throws {
+        let body = #"{"error":"noRoutesFound","message":"No routes found"}"#
+        let data = try XCTUnwrap(body.data(using: .utf8))
+        let client = NoRoutesHTTPClient(payload: data)
+        // No snapshot set and the HTTP client always 404s, so the cache's
+        // `providers()` returns nil → `isPairSupported` would fail open to
+        // `true`. The service must not consult that heuristic any more.
+        let cache = SwapKitProviderCache(httpClient: client)
+        let service = SwapKitService(httpClient: client, providerCache: cache)
+
+        do {
+            _ = try await service.fetchBestRoute(
+                fromCoin: Self.makeNativeCoin(.tron, ticker: "TRX", decimals: 6),
+                toCoin: Self.makeNativeCoin(.sui, ticker: "SUI", decimals: 9),
+                amount: Decimal(string: "1") ?? .zero,
+                affiliateFeeBps: 50
+            )
+            XCTFail("Expected SwapKitError.noRoutesFound")
+        } catch let error as SwapKitError {
+            XCTAssertEqual(error, .noRoutesFound)
+            XCTAssertNotEqual(error, .amountBelowProviderMinimum)
+        }
+    }
+
+    /// Non-`noRoutesFound` SwapKit errors are surfaced verbatim.
     func testFetchBestRoute_otherErrorsPassThroughUnchanged() async throws {
         let body = #"{"error":"apiKeyInvalid","message":"API key invalid"}"#
         let data = try XCTUnwrap(body.data(using: .utf8))

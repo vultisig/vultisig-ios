@@ -92,21 +92,15 @@ struct SwapKitService {
             return best
         } catch HTTPError.statusCode(_, let data) {
             if let error = SwapKitError.from(httpData: data) {
-                // SwapKit collapses "amount below provider minimum" and
-                // "pair not supported" into a single byte-identical 404
-                // `noRoutesFound` envelope. Cross-check the cached
-                // `/v3/providers` snapshot: if a non-filtered provider
-                // enables both chains, the pair IS structurally supported
-                // and the failure must be amount-related — re-classify so
-                // the view layer can show "Amount Too Small" instead of
-                // the misleading "No routes available for this pair".
-                if case .noRoutesFound = error,
-                   await providerCache.isPairSupported(
-                       fromChain: fromCoin.chain,
-                       toChain: toCoin.chain
-                   ) {
-                    throw SwapKitError.amountBelowProviderMinimum
-                }
+                // SwapKit returns a 404 `noRoutesFound` envelope both when the
+                // amount is below a provider's minimum AND when the pair simply
+                // can't be routed. The envelope carries no minimum/amount
+                // metadata to tell the two apart, so we surface `noRoutesFound`
+                // ("No routes available for this pair") rather than guessing
+                // "Amount Too Small" from a coarse provider-coverage heuristic —
+                // that heuristic mislabelled genuinely unroutable pairs (e.g.
+                // TRX→SUI) as too-small for every amount, and failed open when
+                // the provider cache couldn't load.
                 throw error
             }
             throw SwapKitError.generic(message: "SwapKit /v3/quote request failed")
