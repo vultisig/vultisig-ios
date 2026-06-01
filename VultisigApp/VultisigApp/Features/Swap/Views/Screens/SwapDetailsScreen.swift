@@ -115,17 +115,23 @@ struct SwapDetailsScreen: View {
         ZStack {
             amountFields
 
-            if let error = detailsViewModel.error {
-                SwapErrorTooltipView(
-                    error: error,
-                    showTooltip: $showErrorTooltip,
-                    onDismissTooltip: {
-                        showErrorTooltip = false
-                    }
-                )
-            } else {
-                swapButton
+            ZStack {
+                if let error = detailsViewModel.error {
+                    SwapErrorTooltipView(
+                        error: error,
+                        showTooltip: $showErrorTooltip,
+                        onDismissTooltip: {
+                            showErrorTooltip = false
+                            detailsViewModel.error = nil
+                        }
+                    )
+                    .transition(.opacity)
+                } else {
+                    swapButton
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
 
             filler.offset(x: -28)
             filler.offset(x: 28)
@@ -161,8 +167,8 @@ struct SwapDetailsScreen: View {
             title: "to",
             vault: vault,
             coin: detailsViewModel.toCoin,
-            fiatAmount: detailsViewModel.toFiatAmount,
-            amount: .constant(detailsViewModel.toAmountDecimal.formatForDisplay()),
+            fiatAmount: detailsViewModel.toFiatAmountDisplay,
+            amount: .constant(detailsViewModel.toAmountDisplayString),
             selectedChain: $vm.toChain,
             showNetworkSelectSheet: $vm.showToChainSelector,
             showCoinSelectSheet: $vm.showToCoinSelector,
@@ -205,12 +211,13 @@ struct SwapDetailsScreen: View {
 
     var summary: some View {
         SwapDetailsSummary(detailsViewModel: detailsViewModel)
-            .redacted(reason: detailsViewModel.isLoadingQuotes ? .placeholder : [])
-            // Show the skeleton instantly when a fetch starts (nil animation on
-            // the entering edge); crossfade to the resolved values when they land.
+            .redacted(reason: detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
+            // First-load only: show the skeleton instantly (nil animation on the
+            // entering edge). On a refresh with a prior quote, stale-while-
+            // revalidate keeps the summary visible — no skeleton, no flicker.
             .animation(
-                detailsViewModel.isLoadingQuotes ? nil : .easeInOut(duration: 0.25),
-                value: detailsViewModel.isLoadingQuotes
+                detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
+                value: detailsViewModel.showsQuoteSkeleton
             )
             .animation(.easeInOut(duration: 0.25), value: detailsViewModel.totalFeeString)
     }
@@ -254,6 +261,11 @@ struct SwapDetailsScreen: View {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
+                    #if os(macOS)
+                    // Keep the error tooltip overlay above the later sibling
+                    // percentage buttons, which would otherwise paint on top.
+                    .zIndex(1)
+                    #endif
                 #if os(iOS)
                 summary
                 #else
@@ -331,15 +343,15 @@ extension SwapDetailsScreen {
         case 25:
             let amount = (detailsViewModel.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 50:
             let amount = (detailsViewModel.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 75:
             let amount = (detailsViewModel.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 100:
             let fromCoin = detailsViewModel.fromCoin
             if fromCoin.isNativeToken {
@@ -352,7 +364,7 @@ extension SwapDetailsScreen {
                 let amount = fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
                 detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             }
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         default:
             break
         }
