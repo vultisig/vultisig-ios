@@ -55,8 +55,23 @@ enum ThorchainMainnetAPI: TargetType {
              .poolLiquidityProvider, .swapQuote, .tcyStaker,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC.
+            // App-wide custom RPC override wins for the THORChain LCD host
+            // (balances / account / inbound addresses), which is the primary
+            // balance path. Falls back to the default host otherwise.
+            if let override = CustomRPCStore.shared.url(for: .thorChain),
+               let url = URL(string: override) {
+                return url
+            }
             return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
         case .networkStatus:
+            // App-wide custom RPC override wins for the THORChain RPC host. The
+            // LCD (`thorchain_api`), Midgard and the Vultisig GraphQL proxy are
+            // distinct hosts with no single-chain identity, so they keep their
+            // defaults.
+            if let override = CustomRPCStore.shared.url(for: .thorChain),
+               let url = URL(string: override) {
+                return url
+            }
             return URL(string: "https://gateway.liquify.com/chain/thorchain_rpc")!
         case .resolveTNS(_, let chain):
             let isStagenet = (chain == .thorChainChainnet || chain == .thorChainStagenet)

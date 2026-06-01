@@ -11,6 +11,12 @@ struct CosmosServiceConfig {
     /// REST host for this chain. All `/cosmos/*`, `/ibc/*`, `/cosmwasm/*`
     /// paths are appended to this by `CosmosAPI`.
     var baseURL: URL? {
+        // App-wide custom RPC override wins over the hardcoded default. Falls
+        // through to the default switch when no override is set for this chain.
+        if let override = CustomRPCStore.shared.url(for: chain),
+           let url = URL(string: override) {
+            return url
+        }
         switch chain {
         case .gaiaChain:
             return URL(string: "https://cosmos-rest.publicnode.com")

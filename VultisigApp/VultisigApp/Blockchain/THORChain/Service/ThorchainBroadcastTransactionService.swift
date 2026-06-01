@@ -13,7 +13,16 @@ import Foundation
 enum ThorchainBroadcastAPI: TargetType {
     case broadcast(body: Data)
 
-    var baseURL: URL { URL(string: "https://gateway.liquify.com/chain/thorchain_api")! }
+    var baseURL: URL {
+        // App-wide custom RPC override wins for the THORChain broadcast host,
+        // which shares the LCD host with the balance path. Falls back to the
+        // default host when no override is set.
+        if let override = CustomRPCStore.shared.url(for: .thorChain),
+           let url = URL(string: override) {
+            return url
+        }
+        return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
+    }
     var path: String { "/cosmos/tx/v1beta1/txs" }
     var method: HTTPMethod { .post }
     var task: HTTPTask {

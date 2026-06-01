@@ -129,6 +129,15 @@ struct EvmServiceConfig {
         guard let config = configurations[chain] else {
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }
-        return config
+        // App-wide custom RPC override wins over the hardcoded default. Returns
+        // the unmodified config when no override is set for this chain.
+        guard let override = CustomRPCStore.shared.url(for: chain) else {
+            return config
+        }
+        return EvmServiceConfig(
+            chain: config.chain,
+            rpcEndpoint: override,
+            tokenProvider: config.tokenProvider
+        )
     }
 }

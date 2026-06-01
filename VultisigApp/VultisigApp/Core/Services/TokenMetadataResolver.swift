@@ -97,7 +97,7 @@ actor TokenMetadataResolver {
     }
 
     private static let defaultFetcher: TokenMetadataFetcher = { chain, contractAddress in
-        guard let config = EvmServiceConfig.configurations[chain] else {
+        guard let config = try? EvmServiceConfig.getConfig(forChain: chain) else {
             throw TokenMetadataResolverError.unsupportedChain(chain)
         }
         let service = RpcEvmService(config.rpcEndpoint)

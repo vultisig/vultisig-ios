@@ -20,9 +20,25 @@ enum SolanaAPI: TargetType {
 
     private static let rpcBaseURL = URL(string: "https://api.vultisig.com")!
 
-    var baseURL: URL { Self.rpcBaseURL }
+    /// App-wide custom RPC override wins over the default Vultisig proxy. When a
+    /// Solana override is set the user supplies a full JSON-RPC endpoint, so the
+    /// `/solana/` proxy path is dropped (the override URL is the endpoint).
+    var baseURL: URL {
+        if let override = CustomRPCStore.shared.url(for: .solana),
+           let url = URL(string: override) {
+            return url
+        }
+        return Self.rpcBaseURL
+    }
 
-    var path: String { "/solana/" }
+    var path: String {
+        // The default Vultisig proxy nests Solana RPC under `/solana/`. A custom
+        // override is already a complete RPC endpoint, so no extra path.
+        if CustomRPCStore.shared.url(for: .solana) != nil {
+            return ""
+        }
+        return "/solana/"
+    }
 
     var method: HTTPMethod { .post }
 

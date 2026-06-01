@@ -80,6 +80,15 @@ enum EvmService {
     // MARK: - Configuration
 
     var rpcEndpoint: String {
+        // App-wide custom RPC override wins over the hardcoded default. No-op
+        // (byte-identical default path) when no override is set for this chain.
+        if let override = CustomRPCStore.shared.url(for: chain) {
+            return override
+        }
+        return defaultRpcEndpoint
+    }
+
+    private var defaultRpcEndpoint: String {
         switch self {
         case .ethereum:
             return Endpoint.ethServiceRpcService
