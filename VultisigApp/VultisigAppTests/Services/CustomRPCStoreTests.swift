@@ -10,7 +10,7 @@ import XCTest
 @MainActor
 final class CustomRPCStoreTests: XCTestCase {
 
-    private var token: TestContextToken!
+    private var token: TestContextToken?
     private let store = CustomRPCStore.shared
 
     override func setUp() async throws {
@@ -57,7 +57,7 @@ final class CustomRPCStoreTests: XCTestCase {
 
     func test_reloadFromStore_hydratesMirrorFromPersistedRows() throws {
         // Persist directly via the context, then prove reload populates the mirror.
-        let context = Storage.shared.modelContext!
+        let context = try XCTUnwrap(Storage.shared.modelContext)
         context.insert(CustomRPCOverride(chainRaw: Chain.ethereum.rawValue, url: "https://persisted.example"))
         try context.save()
 
@@ -65,13 +65,13 @@ final class CustomRPCStoreTests: XCTestCase {
         XCTAssertEqual(store.url(for: .ethereum), "https://persisted.example")
     }
 
-    func test_setIsIdempotentUpsert() {
+    func test_setIsIdempotentUpsert() throws {
         store.set("https://first.example", for: .ethereum)
         store.set("https://second.example", for: .ethereum)
         XCTAssertEqual(store.url(for: .ethereum), "https://second.example")
 
         // Exactly one persisted row for the chain after two sets.
-        let context = Storage.shared.modelContext!
+        let context = try XCTUnwrap(Storage.shared.modelContext)
         let chainRaw = Chain.ethereum.rawValue
         let descriptor = FetchDescriptor<CustomRPCOverride>(
             predicate: #Predicate { $0.chainRaw == chainRaw }

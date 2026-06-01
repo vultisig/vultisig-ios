@@ -16,9 +16,20 @@ final class CustomRPCDetailViewModel: ObservableObject {
 
     let chain: Chain
 
-    @Published var urlText: String = ""
+    @Published var urlText: String = "" {
+        didSet {
+            guard urlText != oldValue else { return }
+            // Clear stale health feedback when the endpoint changes so the
+            // displayed result always matches the current URL.
+            probeState = .idle
+        }
+    }
     @Published private(set) var hasOverride: Bool = false
     @Published private(set) var probeState: ProbeState = .idle
+
+    /// True while a probe request is in flight, used to disable the Test action
+    /// and prevent overlapping probes that could leave an unstable final status.
+    var isProbing: Bool { probeState == .testing }
 
     private let store: CustomRPCStore
     private let probe: RPCHealthProbe

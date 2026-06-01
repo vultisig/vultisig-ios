@@ -21,13 +21,18 @@ struct TierGate {
 
     /// Returns `true` when `vault`'s tier is at least `minimum`.
     ///
-    /// Uses the cached balance path to avoid a network hit when a gate is
-    /// evaluated on screen open. Returns `false` when the tier can't be resolved
-    /// (nil) or is below the minimum.
+    /// Prefers the cached balance path to avoid a network hit when the cache is
+    /// warm. On a cache miss (e.g. cold start) it falls back to a real network
+    /// fetch so entitled users aren't locked out until some unrelated flow
+    /// populates the cache. Returns `false` only when the tier truly can't be
+    /// resolved or is below the minimum.
     func isUnlocked(_ minimum: VultDiscountTier, for vault: Vault) async -> Bool {
-        guard let tier = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+        if let cached = await tierService.fetchDiscountTier(for: vault, cached: true) {
+            return cached >= minimum
+        }
+        guard let fetched = await tierService.fetchDiscountTier(for: vault, cached: false) else {
             return false
         }
-        return tier >= minimum
+        return fetched >= minimum
     }
 }

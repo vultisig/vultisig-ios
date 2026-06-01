@@ -19,8 +19,11 @@ struct SettingsAdvancedView: View {
             content
         }
         .screenTitle("advanced".localized)
-        .task {
-            guard let vault = appViewModel.selectedVault else { return }
+        .task(id: appViewModel.selectedVault?.pubKeyECDSA) {
+            guard let vault = appViewModel.selectedVault else {
+                isCustomRPCUnlocked = false
+                return
+            }
             isCustomRPCUnlocked = await TierGate().isUnlocked(.silver, for: vault)
         }
     }

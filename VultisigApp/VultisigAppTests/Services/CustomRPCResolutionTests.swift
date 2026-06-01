@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class CustomRPCResolutionTests: XCTestCase {
 
-    private var token: TestContextToken!
+    private var token: TestContextToken?
     private let store = CustomRPCStore.shared
 
     override func setUp() async throws {

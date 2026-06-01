@@ -19,6 +19,7 @@ import SwiftData
 /// mirror that the networking layer reads synchronously, and only the store's
 /// MainActor methods read/write these rows.
 @Model
+@MainActor
 final class CustomRPCOverride {
     @Attribute(.unique) var chainRaw: String
     var url: String

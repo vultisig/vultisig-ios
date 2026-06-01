@@ -20,24 +20,29 @@ enum SolanaAPI: TargetType {
 
     private static let rpcBaseURL = URL(string: "https://api.vultisig.com")!
 
-    /// App-wide custom RPC override wins over the default Vultisig proxy. When a
-    /// Solana override is set the user supplies a full JSON-RPC endpoint, so the
-    /// `/solana/` proxy path is dropped (the override URL is the endpoint).
-    var baseURL: URL {
-        if let override = CustomRPCStore.shared.url(for: .solana),
-           let url = URL(string: override) {
-            return url
+    /// The user's custom Solana RPC endpoint, but only when it's present AND a
+    /// well-formed URL. Resolving the decision here once keeps `baseURL` and
+    /// `path` from disagreeing: a non-empty-but-invalid override would otherwise
+    /// make `baseURL` fall back to the default host while `path` still dropped
+    /// `/solana/`, breaking routing.
+    private var overrideURL: URL? {
+        guard let override = CustomRPCStore.shared.url(for: .solana) else {
+            return nil
         }
-        return Self.rpcBaseURL
+        return URL(string: override)
+    }
+
+    /// App-wide custom RPC override wins over the default Vultisig proxy. When a
+    /// valid Solana override is set the user supplies a full JSON-RPC endpoint,
+    /// so the `/solana/` proxy path is dropped (the override URL is the endpoint).
+    var baseURL: URL {
+        overrideURL ?? Self.rpcBaseURL
     }
 
     var path: String {
-        // The default Vultisig proxy nests Solana RPC under `/solana/`. A custom
-        // override is already a complete RPC endpoint, so no extra path.
-        if CustomRPCStore.shared.url(for: .solana) != nil {
-            return ""
-        }
-        return "/solana/"
+        // The default Vultisig proxy nests Solana RPC under `/solana/`. A valid
+        // custom override is already a complete RPC endpoint, so no extra path.
+        overrideURL != nil ? "" : "/solana/"
     }
 
     var method: HTTPMethod { .post }

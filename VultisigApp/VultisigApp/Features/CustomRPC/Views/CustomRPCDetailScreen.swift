@@ -109,7 +109,7 @@ struct CustomRPCDetailScreen: View {
             PrimaryButton(title: "customRPCTest".localized, type: .secondary) {
                 Task { await viewModel.test() }
             }
-            .disabled(!viewModel.isURLValid)
+            .disabled(!viewModel.isURLValid || viewModel.isProbing)
 
             PrimaryButton(title: "save".localized) {
                 viewModel.save()
