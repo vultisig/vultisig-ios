@@ -101,7 +101,7 @@ struct MacAddressScannerView: View {
         .onChange(of: screenCaptureService.detectedQRCode) { _, newValue in
             guard let newValue = newValue, !newValue.isEmpty else { return }
             screenCaptureService.stopCapture()
-            cameraViewModel.detectedQRCode = newValue
+            handleScan(newValue)
         }
         .onChange(of: scannerMode) { _, newMode in
             handleModeChange(newMode)
