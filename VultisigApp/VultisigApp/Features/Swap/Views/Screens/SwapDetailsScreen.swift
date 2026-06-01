@@ -120,6 +120,7 @@ struct SwapDetailsScreen: View {
                     showTooltip: $showErrorTooltip,
                     onDismissTooltip: {
                         showErrorTooltip = false
+                        detailsViewModel.error = nil
                     }
                 )
             } else {
@@ -253,6 +254,11 @@ struct SwapDetailsScreen: View {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
+                    #if os(macOS)
+                    // Keep the error tooltip overlay above the later sibling
+                    // percentage buttons, which would otherwise paint on top.
+                    .zIndex(1)
+                    #endif
                 #if os(iOS)
                 summary
                 #else
