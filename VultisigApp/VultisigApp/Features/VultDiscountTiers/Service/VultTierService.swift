@@ -49,12 +49,9 @@ struct VultTierService {
     /// per-quote critical path.
     func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
         let vaultId = vault.pubKeyEdDSA
-        if let cached = await Self.sessionCache.tier(for: vaultId) {
-            return cached.value
+        return await Self.sessionCache.resolve(for: vaultId) {
+            await fetchDiscountTier(for: vault)
         }
-        let tier = await fetchDiscountTier(for: vault)
-        await Self.sessionCache.store(tier, for: vaultId)
-        return tier
     }
 
     /// Drops the session-cached resolved tier for a vault, forcing the next
@@ -124,7 +121,7 @@ struct VultTierService {
                 contractAddress: thorguardContractAddress,
                 walletAddress: ethCoin.address
             )
-            logger.debug("THORGuards balance is \(balance) for \(ethCoin.address, privacy: .public)")
+            logger.debug("THORGuards balance is \(balance) for \(ethCoin.address)")
             return balance > 0
         } catch {
             logger.error("Error fetching Thorguard balance: \(error.localizedDescription, privacy: .public)")
@@ -189,22 +186,43 @@ private extension VultTierService {
 /// Thread-safe, in-memory cache of resolved discount tiers keyed by vault id.
 /// `Box` lets us distinguish "not yet resolved" (no entry) from "resolved to
 /// nil" (entry holding nil) so a genuinely tier-less wallet isn't re-resolved.
+///
+/// Resolution is single-flight: concurrent callers for the same vault (e.g. the
+/// fire-and-forget warm-up on screen load racing the first debounced quote
+/// fetch) await one shared `Task` instead of each launching their own
+/// `fetchDiscountTier` — so the underlying Thorguard `eth_call` runs at most
+/// once per vault per session.
 actor SessionTierCache {
     struct Box {
         let value: VultDiscountTier?
     }
 
     private var tiers: [String: Box] = [:]
+    private var inFlight: [String: Task<VultDiscountTier?, Never>] = [:]
 
-    func tier(for vaultId: String) -> Box? {
-        tiers[vaultId]
-    }
-
-    func store(_ tier: VultDiscountTier?, for vaultId: String) {
-        tiers[vaultId] = Box(value: tier)
+    /// Returns the cached tier if resolved; otherwise runs `work` once, sharing
+    /// the in-flight `Task` with any concurrent caller for the same vault.
+    /// `work` must not capture `@Model` types — pass value-type inputs only.
+    func resolve(
+        for vaultId: String,
+        _ work: @Sendable @escaping () async -> VultDiscountTier?
+    ) async -> VultDiscountTier? {
+        if let box = tiers[vaultId] {
+            return box.value
+        }
+        if let task = inFlight[vaultId] {
+            return await task.value
+        }
+        let task = Task { await work() }
+        inFlight[vaultId] = task
+        let value = await task.value
+        tiers[vaultId] = Box(value: value)
+        inFlight[vaultId] = nil
+        return value
     }
 
     func clear(for vaultId: String) {
         tiers[vaultId] = nil
+        inFlight[vaultId] = nil
     }
 }
