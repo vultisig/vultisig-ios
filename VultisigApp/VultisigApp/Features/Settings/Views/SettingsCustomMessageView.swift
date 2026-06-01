@@ -195,33 +195,20 @@ struct SettingsCustomMessageView: View {
         .padding(.horizontal, 16)
     }
 
-    @ViewBuilder
     var signButton: some View {
-        VStack(spacing: 16) {
-            if vault.isFastVault {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    onSignPress()
-                }
-                .disabled(!signButtonEnabled)
-                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { onSignPress() }
-                    )
-                }
-            } else {
-                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    onSignPress()
-                }
-                .disabled(!signButtonEnabled)
-            }
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: !signButtonEnabled,
+            singleSignTitle: "signTransaction",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: { onSignPress() }
+        )
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { onSignPress() }
+            )
         }
         .padding(.horizontal, 16)
     }
