@@ -20,11 +20,13 @@ final class SwapDetailsViewModel {
     @ObservationIgnored private let interactor: SwapInteractor
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
-    // Identity of the coin pair the currently-held `quote` belongs to. Lets us
-    // keep a quote on screen across a refresh / amount edit (stale-while-
-    // revalidate) while still clearing it the moment the pair changes, so a
-    // quote from a different pair can never flash through.
+    // Identity of the coin pair + amount the currently-held `quote` belongs to.
+    // Stale-while-revalidate keeps a quote on screen only across a true silent
+    // refresh (same pair AND same amount, i.e. the periodic auto-refresh). Any
+    // pair OR amount change clears it so the "to" field falls back to the
+    // instant indicative estimate and the summary shows its loading skeleton.
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
+    @ObservationIgnored private var quotedAmount: String?
 
     // MARK: - Form fields (mutable while the user is editing)
 
@@ -414,6 +416,7 @@ private extension SwapDetailsViewModel {
         if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
             quote = nil
             quotedPair = nil
+            quotedAmount = nil
             gas = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
@@ -424,15 +427,17 @@ private extension SwapDetailsViewModel {
             return
         }
 
-        // Stale-while-revalidate: keep the previous quote + summary on screen
-        // while the new one loads, so a 59s auto-refresh or an edit on the same
-        // pair doesn't blank to a skeleton. We only blank the quote when it would
-        // otherwise be misleading: when the pair changed (a quote for a different
-        // pair must never show through). The first-load skeleton is then gated by
-        // `showsQuoteSkeleton` (isLoadingQuotes && quote == nil) in the view.
-        if quotedPair != currentPair {
+        // Stale-while-revalidate is for the silent periodic auto-refresh only:
+        // keep the previous quote + summary on screen when the pair AND amount
+        // are unchanged. On any pair or amount change, blank the quote so the
+        // "to" field falls back to the instant indicative estimate and the
+        // summary shows its loading skeleton (`showsQuoteSkeleton` =
+        // isLoadingQuotes && quote == nil) until the fresh quote lands.
+        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount
+        if !isSilentRefresh {
             quote = nil
             quotedPair = nil
+            quotedAmount = nil
             gas = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
@@ -492,6 +497,7 @@ private extension SwapDetailsViewModel {
             if let result {
                 quote = result.quote
                 quotedPair = currentPair
+                quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }

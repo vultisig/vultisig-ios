@@ -92,6 +92,29 @@ final class SwapDetailsViewModelTests: XCTestCase {
         await vm.waitForQuoteTask()
     }
 
+    func testAmountChangeClearsStaleQuoteAndShowsSkeleton() async {
+        let interactor = MockSwapInteractor(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
+        let vm = makeVM(interactor: interactor)
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+
+        // Land a firm quote first.
+        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        await vm.waitForQuoteTask()
+        XCTAssertNotNil(vm.quote)
+
+        // Editing the amount (same pair) is NOT a silent refresh: the prior
+        // quote belongs to the old amount, so it must clear immediately so the
+        // "to" field falls back to the indicative estimate and the summary
+        // shows its skeleton — stale-while-revalidate is for auto-refresh only.
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        XCTAssertNil(vm.quote, "Quote must clear on an amount change")
+        XCTAssertTrue(vm.showsQuoteSkeleton, "An amount change must show the skeleton, not the stale summary")
+        await vm.waitForQuoteTask()
+    }
+
     func testPairChangeClearsStaleQuoteAndShowsSkeleton() async {
         let interactor = MockSwapInteractor(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
         let vm = makeVM(interactor: interactor)
