@@ -46,6 +46,10 @@ struct MacAddressScannerView: View {
     @State private var scannerMode: ScannerMode = .camera
     @State private var showTooltip = false
     @State private var showImportOptions = false
+    @State private var importFileName: String?
+    @State private var importResult: Result<[URL], Error>?
+    @State private var importSelectedImage: NSImage?
+    @State private var importError: Error?
 
     @Environment(\.router) var router
 
@@ -70,7 +74,7 @@ struct MacAddressScannerView: View {
     var body: some View {
         ZStack(alignment: .top) {
             Background()
-                .showIf(scannerMode == .camera)
+                .showIf(scannerMode == .camera || showImportOptions)
             main
         }
         .overlay {
@@ -85,17 +89,27 @@ struct MacAddressScannerView: View {
             .padding(.trailing, 16)
             .padding(.top, 16)
         }
-        .crossPlatformToolbar {
-            CustomToolbarItem(placement: .center) {
-                FilledSegmentedControl(
-                    selection: $scannerMode,
-                    options: ScannerMode.allCases,
-                    size: .small
-                )
-                .frame(maxWidth: 220)
-            }
-            CustomToolbarItem(placement: .trailing) {
-                HelpButton(isPresented: $showTooltip)
+        .crossPlatformToolbar(
+            navigationTitle: showImportOptions ? "scanQRCode".localized : nil,
+            showsBackButton: !showImportOptions
+        ) {
+            if showImportOptions {
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "chevron-right", action: closeImportOptions)
+                        .rotationEffect(.radians(.pi))
+                }
+            } else {
+                CustomToolbarItem(placement: .center) {
+                    FilledSegmentedControl(
+                        selection: $scannerMode,
+                        options: ScannerMode.allCases,
+                        size: .small
+                    )
+                    .frame(maxWidth: 220)
+                }
+                CustomToolbarItem(placement: .trailing) {
+                    HelpButton(isPresented: $showTooltip)
+                }
             }
         }
         .onChange(of: screenCaptureService.detectedQRCode) { _, newValue in
@@ -243,11 +257,28 @@ struct MacAddressScannerView: View {
     }
 
     var importOption: some View {
-        GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
-            let result = AddressResult(address: address)
-            scannedResult = result
-            onParsedResult?(result)
-            goBack()
+        VStack(spacing: 32) {
+            Text("uploadFileWithQRCode".localized)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            FileQRCodeImporterMac(
+                fileName: importFileName,
+                resetData: resetImportData,
+                handleFileImport: handleFileImport,
+                selectedImage: importSelectedImage
+            )
+
+            Spacer()
+
+            PrimaryButton(title: "continue") {
+                handleImportContinue()
+            }
+            .disabled(importResult == nil)
+        }
+        .padding(40)
+        .withError(error: $importError, errorType: .warning) {
+            importError = nil
         }
     }
 
@@ -346,6 +377,50 @@ struct MacAddressScannerView: View {
         scannedResult = result
         onParsedResult?(result)
         goBack()
+    }
+
+    private func handleFileImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            setImportValues(urls)
+            importResult = result
+        case .failure(let error):
+            importError = error
+        }
+    }
+
+    private func setImportValues(_ urls: [URL]) {
+        guard let url = urls.first else { return }
+        guard url.startAccessingSecurityScopedResource() else { return }
+        defer { url.stopAccessingSecurityScopedResource() }
+
+        importFileName = url.lastPathComponent
+        if let image = NSImage(contentsOf: url) {
+            importSelectedImage = image
+        }
+    }
+
+    private func resetImportData() {
+        importFileName = nil
+        importSelectedImage = nil
+        importResult = nil
+    }
+
+    private func handleImportContinue() {
+        guard let importResult else { return }
+        do {
+            let qrData = try Utils.handleQrCodeFromImage(result: importResult)
+            guard let qrString = String(data: qrData, encoding: .utf8), !qrString.isEmpty else { return }
+            handleScan(qrString)
+        } catch {
+            importError = error
+        }
+    }
+
+    private func closeImportOptions() {
+        resetImportData()
+        showImportOptions = false
+        handleModeVisible()
     }
 
     private func handleModeChange(_ newMode: ScannerMode) {
