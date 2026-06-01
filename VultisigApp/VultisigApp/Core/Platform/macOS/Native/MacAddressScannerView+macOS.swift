@@ -40,13 +40,22 @@ struct MacAddressScannerView: View {
     @Binding var scannedResult: AddressResult?
     var onParsedResult: ((AddressResult?) -> Void)?
 
-    @State var showImportOptions: Bool = false
-    @State private var scannerMode: ScannerMode = .camera
-
-    @StateObject var scannerViewModel = MacAddressScannerViewModel()
+    @StateObject var cameraViewModel = MacCameraServiceViewModel()
     @StateObject var screenCaptureService = MacScreenCaptureService()
 
-    @Environment(\.dismiss) var dismiss
+    @State private var scannerMode: ScannerMode = .camera
+    @State private var showTooltip = false
+    @State private var showImportOptions = false
+
+    @Environment(\.router) var router
+
+    private let scanSize: CGFloat = 400
+
+    private let tooltipBullets = [
+        "scanQRCodeTooltipBullet1",
+        "scanQRCodeTooltipBullet2",
+        "scanQRCodeTooltipBullet3"
+    ]
 
     init(
         selectedVault: Vault?,
@@ -61,34 +70,61 @@ struct MacAddressScannerView: View {
     var body: some View {
         ZStack(alignment: .top) {
             Background()
-            content
+                .showIf(scannerMode == .camera)
+            main
         }
-        .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true) {
-            CustomToolbarItem(placement: .trailing) {
-                FilledSegmentedControl(selection: $scannerMode, options: ScannerMode.allCases)
-                    .frame(maxWidth: 200, maxHeight: 24)
+        .overlay {
+            if showTooltip {
+                tooltipDismissLayer
             }
         }
-        .onChange(of: scannerViewModel.detectedQRCode) { _, _ in
-            handleScan()
+        .overlay(alignment: .topTrailing) {
+            HelpTooltip(isPresented: $showTooltip, maxWidth: 360) {
+                tooltipContent
+            }
+            .padding(.trailing, 16)
+            .padding(.top, 16)
+        }
+        .crossPlatformToolbar {
+            CustomToolbarItem(placement: .center) {
+                FilledSegmentedControl(
+                    selection: $scannerMode,
+                    options: ScannerMode.allCases,
+                    size: .small
+                )
+                .frame(maxWidth: 220)
+            }
+            CustomToolbarItem(placement: .trailing) {
+                HelpButton(isPresented: $showTooltip)
+            }
         }
         .onChange(of: screenCaptureService.detectedQRCode) { _, newValue in
             guard let newValue = newValue, !newValue.isEmpty else { return }
             screenCaptureService.stopCapture()
-            scannerViewModel.detectedQRCode = newValue
+            cameraViewModel.detectedQRCode = newValue
         }
         .onChange(of: scannerMode) { _, newMode in
             handleModeChange(newMode)
         }
+        .onNavigationStackChange { isVisible in
+            if isVisible {
+                handleModeVisible()
+            } else {
+                handleModeHidden()
+            }
+        }
     }
 
-    var content: some View {
-        ZStack {
-            if showImportOptions {
-                importOption
-            } else {
-                scannerContent
-            }
+    @ViewBuilder
+    var main: some View {
+        if showImportOptions {
+            importOption
+        } else {
+            scannerContent
+                .onChange(of: cameraViewModel.detectedQRCode) { _, newValue in
+                    guard let newValue = newValue, !newValue.isEmpty else { return }
+                    handleScan(newValue)
+                }
         }
     }
 
@@ -96,32 +132,23 @@ struct MacAddressScannerView: View {
     var scannerContent: some View {
         switch scannerMode {
         case .camera:
-            camera
+            cameraView
         case .screen:
             screenCaptureView
         }
     }
 
-    var importOption: some View {
-        GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
-            goBack()
-            let result = AddressResult(address: address)
-            scannedResult = result
-            onParsedResult?(result)
-        }
-    }
-
-    var camera: some View {
+    var cameraView: some View {
         ZStack {
-            if scannerViewModel.showPlaceholderError {
+            if cameraViewModel.showPlaceholderError {
                 fallbackErrorView
             }
 
-            if !scannerViewModel.showCamera {
+            if !cameraViewModel.showCamera {
                 loader
-            } else if scannerViewModel.isCameraUnavailable {
+            } else if cameraViewModel.isCameraUnavailable {
                 errorView
-            } else if let session = scannerViewModel.getSession() {
+            } else if let session = cameraViewModel.getSession() {
                 getScanner(session)
             }
         }
@@ -141,31 +168,17 @@ struct MacAddressScannerView: View {
         }
     }
 
+    @ViewBuilder
     var screenPreviewView: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height) * 0.65
-
-            ZStack {
-                MacScreenCapturePreview(scanRegion: screenCaptureService.scanRegion)
-                    .frame(width: side, height: side)
-
-                ZStack {
-                    Theme.colors.bgPrimary
-
-                    RoundedRectangle(cornerRadius: 16)
-                        .frame(width: side, height: side)
-                        .blendMode(.destinationOut)
-                }
-                .compositingGroup()
-
-                Image("QRScannerOutline")
-                    .resizable()
-                    .frame(width: side, height: side)
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            .overlay(alignment: .bottom) {
+        ZStack {
+            MacScreenCapturePreview(scanRegion: screenCaptureService.scanRegion)
+                .ignoresSafeArea()
+            viewportOverlay
+            VStack {
+                Spacer()
                 uploadQRCodeButton
-                    .padding(40)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
             }
         }
     }
@@ -229,63 +242,155 @@ struct MacAddressScannerView: View {
         .padding(40)
     }
 
+    var importOption: some View {
+        GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
+            let result = AddressResult(address: address)
+            scannedResult = result
+            onParsedResult?(result)
+            goBack()
+        }
+    }
+
     var uploadQRCodeButton: some View {
-        PrimaryButton(title: "uploadQRCodeImage") {
+        PrimaryButton(title: "uploadQRCode") {
+            stopCamera()
+            screenCaptureService.stopCapture()
             showImportOptions = true
         }
+        .fixedSize()
     }
 
     var tryAgainButton: some View {
         PrimaryButton(title: "tryAgain", type: .secondary) {
-            scannerViewModel.setupSession()
+            cameraViewModel.setupSession()
+        }
+    }
+
+    var viewportOverlay: some View {
+        GeometryReader { proxy in
+            let rect = viewportRect(in: proxy)
+            ZStack {
+                Path { path in
+                    path.addRect(proxy.frame(in: .local))
+                    path.addRoundedRect(in: rect, cornerSize: CGSize(width: 24, height: 24))
+                }
+                .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
+
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
+                    .frame(width: rect.width, height: rect.height)
+                    .position(x: rect.midX, y: rect.midY)
+                    .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func viewportRect(in proxy: GeometryProxy) -> CGRect {
+        let maxSize = min(proxy.size.width, proxy.size.height) - 120
+        let size = min(scanSize, max(maxSize, 0))
+        let topOffset = max((proxy.size.height - size) / 2 - 30, 0)
+        return CGRect(
+            x: (proxy.size.width - size) / 2,
+            y: topOffset,
+            width: size,
+            height: size
+        )
+    }
+
+    private var tooltipDismissLayer: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.interpolatingSpring) {
+                    showTooltip = false
+                }
+            }
+    }
+
+    private var tooltipContent: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("scanQRCodeTooltipTitle".localized)
+                .font(Theme.fonts.bodySMedium)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("scanQRCodeTooltipSubtitle".localized)
+                    .font(Theme.fonts.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+                ForEach(tooltipBullets, id: \.self) { bullet in
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("•").font(Theme.fonts.footnote)
+                        Text(bullet.localized)
+                            .font(Theme.fonts.footnote)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
         }
     }
 
     private func getScanner(_ session: AVCaptureSession) -> some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             MacCameraPreview(session: session)
-                .onAppear {
-                    scannerViewModel.startSession()
-                }
-                .onDisappear {
-                    scannerViewModel.stopSession()
-                }
-
-            uploadQRCodeButton
-                .padding(40)
+            viewportOverlay
+            VStack {
+                Spacer()
+                uploadQRCodeButton
+                    .padding(.bottom, 40)
+            }
         }
+        .clipShape(Rectangle())
+    }
+
+    private func handleScan(_ qrCode: String) {
+        let result = AddressResult.fromURI(qrCode)
+        scannedResult = result
+        onParsedResult?(result)
+        goBack()
     }
 
     private func handleModeChange(_ newMode: ScannerMode) {
         switch newMode {
         case .camera:
             screenCaptureService.stopCapture()
-            scannerViewModel.setupSession()
-            scannerViewModel.startSession()
+            startCamera()
         case .screen:
-            scannerViewModel.stopSession()
+            stopCamera()
             Task {
                 await screenCaptureService.startCapture()
             }
         }
     }
 
-    private func handleScan() {
-        guard let detectedQRCode = scannerViewModel.detectedQRCode else {
-            return
+    private func handleModeVisible() {
+        switch scannerMode {
+        case .camera:
+            startCamera()
+        case .screen:
+            Task {
+                await screenCaptureService.startCapture()
+            }
         }
+    }
 
-        goBack()
-        let result = AddressResult.fromURI(detectedQRCode)
-        scannedResult = result
-        onParsedResult?(result)
+    private func handleModeHidden() {
+        stopCamera()
+        screenCaptureService.stopCapture()
+    }
+
+    private func startCamera() {
+        cameraViewModel.setupSession()
+        cameraViewModel.startSession()
+    }
+
+    private func stopCamera() {
+        cameraViewModel.stopSession()
+        cameraViewModel.resetData()
     }
 
     private func goBack() {
-        scannerViewModel.stopSession()
-        screenCaptureService.stopCapture()
+        handleModeHidden()
         showImportOptions = false
-        dismiss()
+        router.navigateBack()
     }
 }
 
