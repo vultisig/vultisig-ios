@@ -7,7 +7,10 @@
 
 import BigInt
 import Foundation
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "vult-tier-service")
 
 struct VultTierService {
     let vultTicker = "VULT"
@@ -15,6 +18,12 @@ struct VultTierService {
 
     @AppStorage("vult_balance_cache") private var cacheEntries: [CacheEntry] = []
     private static let cacheValidityDuration: TimeInterval = 3 * 60 // 3 minutes
+
+    /// Process-lifetime, per-wallet cache of the fully-resolved discount tier
+    /// (VULT balance result + Thorguard boost). The tier doesn't change during a
+    /// swap session, so once resolved it's read back without re-running the
+    /// Thorguard NFT `eth_call` on every quote fetch.
+    private static let sessionCache = SessionTierCache()
 
     func fetchDiscountTier(for vault: Vault, cached: Bool = false) async -> VultDiscountTier? {
         let balance = cached ? (getVultToken(for: vault)?.balanceDecimal ?? 0) : await fetchVultBalance(for: vault)
@@ -27,11 +36,31 @@ struct VultTierService {
             let hasThorguard = await checkThorguardBalance(for: vault)
             if hasThorguard {
                 tier = upgradeTier(tier)
-                print("Upgraded VULT Tier to ", tier?.name ?? "")
+                logger.info("Upgraded VULT Tier to \(tier?.name ?? "", privacy: .public)")
             }
         }
 
         return tier
+    }
+
+    /// Resolves the discount tier once per wallet for the session and caches the
+    /// fully-resolved value (post-Thorguard). Subsequent calls return the cached
+    /// tier without any network access, keeping the Thorguard `eth_call` off the
+    /// per-quote critical path.
+    func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
+        let vaultId = vault.pubKeyEdDSA
+        if let cached = await Self.sessionCache.tier(for: vaultId) {
+            return cached.value
+        }
+        let tier = await fetchDiscountTier(for: vault)
+        await Self.sessionCache.store(tier, for: vaultId)
+        return tier
+    }
+
+    /// Drops the session-cached resolved tier for a vault, forcing the next
+    /// `resolveTierForSession` to re-resolve from the network.
+    func clearSessionTier(for vault: Vault) async {
+        await Self.sessionCache.clear(for: vault.pubKeyEdDSA)
     }
 
     func getVultToken(for vault: Vault) -> Coin? {
@@ -51,11 +80,11 @@ struct VultTierService {
     /// Checks if we recently fetched the balance (within cache validity duration)
     func shouldFetchBalance(for vault: Vault) -> Bool {
         guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vault.pubKeyEdDSA }) else {
-            print("Getting $VULT balance from network")
+            logger.debug("Getting $VULT balance from network")
             return true
         }
         let shouldFetch = Date().timeIntervalSince(cacheEntry.lastFetchDate) >= Self.cacheValidityDuration
-        print("Getting $VULT balance from cache:", shouldFetch)
+        logger.debug("Getting $VULT balance from cache: \(shouldFetch)")
         return shouldFetch
     }
 
@@ -74,10 +103,10 @@ struct VultTierService {
     private func canUpgrade(_ tier: VultDiscountTier?) -> Bool {
         switch tier {
         case .bronze, .silver, .gold, .none:
-            print("Can upgrade VULT Tier, currently \(tier?.name ?? "")")
+            logger.debug("Can upgrade VULT Tier, currently \(tier?.name ?? "", privacy: .public)")
             return true
         case .platinum, .diamond, .ultimate:
-            print("Cannot upgrade VULT Tier, currently \(tier?.name ?? "")")
+            logger.debug("Cannot upgrade VULT Tier, currently \(tier?.name ?? "", privacy: .public)")
             return false
         }
     }
@@ -95,10 +124,10 @@ struct VultTierService {
                 contractAddress: thorguardContractAddress,
                 walletAddress: ethCoin.address
             )
-            print("THORGuards balance is \(balance) for \(ethCoin.address)")
+            logger.debug("THORGuards balance is \(balance) for \(ethCoin.address, privacy: .public)")
             return balance > 0
         } catch {
-            print("Error fetching Thorguard balance: \(error.localizedDescription)")
+            logger.error("Error fetching Thorguard balance: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -154,5 +183,28 @@ private extension VultTierService {
         let ethNativeToken = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.isNativeToken })
         guard let ethNativeToken else { return }
         try? await CoinService.addToChain(assets: [ethNativeToken], to: vault)
+    }
+}
+
+/// Thread-safe, in-memory cache of resolved discount tiers keyed by vault id.
+/// `Box` lets us distinguish "not yet resolved" (no entry) from "resolved to
+/// nil" (entry holding nil) so a genuinely tier-less wallet isn't re-resolved.
+actor SessionTierCache {
+    struct Box {
+        let value: VultDiscountTier?
+    }
+
+    private var tiers: [String: Box] = [:]
+
+    func tier(for vaultId: String) -> Box? {
+        tiers[vaultId]
+    }
+
+    func store(_ tier: VultDiscountTier?, for vaultId: String) {
+        tiers[vaultId] = Box(value: tier)
+    }
+
+    func clear(for vaultId: String) {
+        tiers[vaultId] = nil
     }
 }
