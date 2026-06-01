@@ -38,7 +38,27 @@ class SolanaService {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "solana-service")
     private let httpClient: HTTPClientProtocol = HTTPClient()
 
-    private init() {}
+    /// Resolves the Solana custom RPC override. Injected so the API values are
+    /// built from a dependency rather than a global reach-in; resolution happens
+    /// per request inside `api(_:)` so a runtime override change is picked up
+    /// live (the shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+    }
+
+    /// Builds a pure `SolanaAPI` value with the resolved host and proxy-path
+    /// decision baked in. A valid custom override supplies a complete JSON-RPC
+    /// endpoint, so the `/solana/` proxy path is dropped; otherwise the default
+    /// proxy host keeps it. Both halves are resolved together here so `baseURL`
+    /// and `path` cannot disagree. The `TargetType` never consults the resolver.
+    private func api(_ method: SolanaAPI.Method) -> SolanaAPI {
+        if let override = resolver.url(for: .solana), let url = URL(string: override) {
+            return SolanaAPI(baseURL: url, usesProxyPath: false, rpcMethod: method)
+        }
+        return SolanaAPI(baseURL: SolanaAPI.rpcBaseURL, usesProxyPath: true, rpcMethod: method)
+    }
 
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
@@ -53,7 +73,7 @@ class SolanaService {
 
     func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
         let response = try await httpClient.request(
-            SolanaAPI.sendTransaction(encodedTransaction: encodedTransaction),
+            api(.sendTransaction(encodedTransaction: encodedTransaction)),
             responseType: SolanaSendTransactionResponse.self
         )
 
@@ -78,7 +98,7 @@ class SolanaService {
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             let response = try await httpClient.request(
-                SolanaAPI.getBalance(address: address),
+                api(.getBalance(address: address)),
                 responseType: SolanaGetBalanceResponse.self
             )
             return response.data.result.value.description
@@ -96,7 +116,7 @@ class SolanaService {
 
     func fetchRecentPrioritizationFees() async throws -> UInt64 {
         let response = try await httpClient.request(
-            SolanaAPI.getRecentPrioritizationFees,
+            api(.getRecentPrioritizationFees),
             responseType: SolanaGetRecentPrioritizationFeesResponse.self
         )
 
@@ -119,7 +139,7 @@ class SolanaService {
 
     func fetchRecentBlockhash() async throws -> String? {
         let response = try await httpClient.request(
-            SolanaAPI.getLatestBlockhash,
+            api(.getLatestBlockhash),
             responseType: SolanaGetLatestBlockhashResponse.self
         )
         return response.data.result.value.blockhash
@@ -248,7 +268,7 @@ class SolanaService {
         }
 
         let response = try await httpClient.request(
-            SolanaAPI.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .mint(mintAddress)),
+            api(.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .mint(mintAddress))),
             responseType: SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]>.self
         )
 
@@ -280,7 +300,7 @@ class SolanaService {
         do {
             for program in programs {
                 let response = try await httpClient.request(
-                    SolanaAPI.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .programId(program)),
+                    api(.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .programId(program))),
                     responseType: SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]>.self
                 )
                 returnPrograms.append(contentsOf: response.data.result.value)
@@ -437,7 +457,7 @@ class SolanaService {
 
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
         let response = try await httpClient.request(
-            SolanaAPI.getAccountInfo(address: address),
+            api(.getAccountInfo(address: address)),
             responseType: SolanaGetAccountInfoResponse.self
         )
 

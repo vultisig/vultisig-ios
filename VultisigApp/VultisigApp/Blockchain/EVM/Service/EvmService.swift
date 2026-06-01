@@ -79,56 +79,12 @@ enum EvmService {
 
     // MARK: - Configuration
 
+    /// Resolves through `EvmServiceConfig.getConfig` — the single EVM custom-RPC
+    /// resolution point — so the override is read in exactly one place. Returns
+    /// the hardcoded default when no override is set for this chain.
     var rpcEndpoint: String {
-        // App-wide custom RPC override wins over the hardcoded default. No-op
-        // (byte-identical default path) when no override is set for this chain.
-        if let override = CustomRPCStore.shared.url(for: chain) {
-            return override
-        }
-        return defaultRpcEndpoint
-    }
-
-    private var defaultRpcEndpoint: String {
-        switch self {
-        case .ethereum:
-            return Endpoint.ethServiceRpcService
-        case .ethereumSepolia:
-            return Endpoint.ethSepoliaServiceRpcService
-        case .bscChain:
-            return Endpoint.bscServiceRpcService
-        case .avalanche:
-            return Endpoint.avalancheServiceRpcService
-        case .base:
-            return Endpoint.baseServiceRpcService
-        case .arbitrum:
-            return Endpoint.arbitrumOneServiceRpcService
-        case .polygon, .polygonV2:
-            return Endpoint.polygonServiceRpcService
-        case .optimism:
-            return Endpoint.optimismServiceRpcService
-        case .blast:
-            return Endpoint.blastServiceRpcService
-        case .cronosChain:
-            return Endpoint.cronosServiceRpcService
-        case .zksync:
-            return Endpoint.zksyncServiceRpcService
-        case .mantle:
-            return Endpoint.mantleServiceRpcService
-        case .hyperliquid:
-            return Endpoint.hyperliquidServiceRpcService
-        case .sei:
-            return Endpoint.seiServiceRpcService
-        case .tron:
-            return Endpoint.tronEvmServiceRpc
-        }
-    }
-
-    var tokenProvider: EvmServiceConfig.TokenProvider {
-        switch self {
-        case .ethereumSepolia:
-            return .sepolia
-        default:
-            return .standard
+        get throws {
+            try EvmServiceConfig.getConfig(forChain: chain).rpcEndpoint
         }
     }
 
@@ -136,11 +92,7 @@ enum EvmService {
 
     private var service: EvmServiceStruct {
         get throws {
-            let config = EvmServiceConfig(
-                chain: chain,
-                rpcEndpoint: rpcEndpoint,
-                tokenProvider: tokenProvider
-            )
+            let config = try EvmServiceConfig.getConfig(forChain: chain)
             return try EvmServiceStruct(config: config)
         }
     }

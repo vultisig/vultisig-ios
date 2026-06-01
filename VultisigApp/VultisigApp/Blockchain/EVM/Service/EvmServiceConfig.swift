@@ -125,13 +125,18 @@ struct EvmServiceConfig {
         )
     ]
 
-    static func getConfig(forChain chain: Chain) throws -> EvmServiceConfig {
+    /// The single resolution point for EVM custom RPC overrides. The resolver
+    /// is injected (defaulting to the shared store) so the produced config is a
+    /// pure value type and callers never reach into global state. Returns the
+    /// unmodified default config when no override is set for this chain.
+    static func getConfig(
+        forChain chain: Chain,
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
+    ) throws -> EvmServiceConfig {
         guard let config = configurations[chain] else {
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }
-        // App-wide custom RPC override wins over the hardcoded default. Returns
-        // the unmodified config when no override is set for this chain.
-        guard let override = CustomRPCStore.shared.url(for: chain) else {
+        guard let override = resolver.url(for: chain) else {
             return config
         }
         return EvmServiceConfig(

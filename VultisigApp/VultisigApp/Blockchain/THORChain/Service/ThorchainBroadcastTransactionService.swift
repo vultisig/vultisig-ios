@@ -7,30 +7,25 @@
 
 import Foundation
 
-/// TargetType for the THORChain mainnet broadcast endpoint.
-/// Stagenet / Chainnet equivalents will be introduced with their
-/// respective service migrations.
-enum ThorchainBroadcastAPI: TargetType {
-    case broadcast(body: Data)
+/// Pure `TargetType` for the THORChain mainnet broadcast endpoint. The
+/// override-eligible LCD host (shared with the balance path) is baked in at
+/// construction by `ThorchainService`; this value never consults global state.
+/// Stagenet / Chainnet equivalents will be introduced with their respective
+/// service migrations.
+struct ThorchainBroadcastAPI: TargetType {
+    let body: Data
+    /// The resolved THORChain LCD host (override-aware), baked in by the service.
+    let lcdHost: URL
 
-    var baseURL: URL {
-        // App-wide custom RPC override wins for the THORChain broadcast host,
-        // which shares the LCD host with the balance path. Falls back to the
-        // default host when no override is set.
-        if let override = CustomRPCStore.shared.url(for: .thorChain),
-           let url = URL(string: override) {
-            return url
-        }
-        return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
+    init(body: Data, lcdHost: URL = ThorchainMainnetAPI.defaultLCDHost) {
+        self.body = body
+        self.lcdHost = lcdHost
     }
+
+    var baseURL: URL { lcdHost }
     var path: String { "/cosmos/tx/v1beta1/txs" }
     var method: HTTPMethod { .post }
-    var task: HTTPTask {
-        switch self {
-        case .broadcast(let body):
-            return .requestData(body)
-        }
-    }
+    var task: HTTPTask { .requestData(body) }
     var headers: [String: String]? {
         ["Content-Type": "application/json"]
     }
@@ -44,7 +39,7 @@ extension ThorchainService {
         }
 
         do {
-            let raw = try await httpClient.request(ThorchainBroadcastAPI.broadcast(body: jsonData))
+            let raw = try await httpClient.request(ThorchainBroadcastAPI(body: jsonData, lcdHost: resolvedLCDHost))
             let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
             // code 0 = success; code 19 = already in mempool (idempotent success)
             if let code = response.txResponse?.code, code == 0 || code == 19 {

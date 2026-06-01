@@ -8,14 +8,27 @@ import Foundation
 struct CosmosServiceConfig {
     let chain: Chain
 
+    /// The resolved custom RPC override URL for this chain, baked in at
+    /// construction time by the factory. `nil` means no override is set and the
+    /// hardcoded default host is used.
+    let overrideURL: URL?
+
+    init(chain: Chain, resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.chain = chain
+        if let override = resolver.url(for: chain), let url = URL(string: override) {
+            self.overrideURL = url
+        } else {
+            self.overrideURL = nil
+        }
+    }
+
     /// REST host for this chain. All `/cosmos/*`, `/ibc/*`, `/cosmwasm/*`
     /// paths are appended to this by `CosmosAPI`.
     var baseURL: URL? {
         // App-wide custom RPC override wins over the hardcoded default. Falls
         // through to the default switch when no override is set for this chain.
-        if let override = CustomRPCStore.shared.url(for: chain),
-           let url = URL(string: override) {
-            return url
+        if let overrideURL {
+            return overrideURL
         }
         switch chain {
         case .gaiaChain:
@@ -52,10 +65,13 @@ struct CosmosServiceConfig {
         }
     }
 
-    static func getConfig(forChain chain: Chain) throws -> CosmosServiceConfig {
+    static func getConfig(
+        forChain chain: Chain,
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
+    ) throws -> CosmosServiceConfig {
         switch chain {
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
-            return CosmosServiceConfig(chain: chain)
+            return CosmosServiceConfig(chain: chain, resolver: resolver)
         default:
             throw CosmosServiceError.unsupportedChain
         }
