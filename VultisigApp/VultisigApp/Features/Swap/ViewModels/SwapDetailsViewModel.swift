@@ -20,6 +20,14 @@ final class SwapDetailsViewModel {
     @ObservationIgnored private let interactor: SwapInteractor
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
+    // Identity of the coin pair + amount the currently-held `quote` belongs to.
+    // Stale-while-revalidate keeps a quote on screen only across a true silent
+    // refresh (same pair AND same amount, i.e. the periodic auto-refresh). Any
+    // pair OR amount change clears it so the "to" field falls back to the
+    // instant indicative estimate and the summary shows its loading skeleton.
+    @ObservationIgnored private var quotedPair: SwapPairIdentity?
+    @ObservationIgnored private var quotedAmount: String?
+
     // MARK: - Form fields (mutable while the user is editing)
 
     var fromAmount: String = .empty
@@ -102,8 +110,11 @@ final class SwapDetailsViewModel {
         fetchQuotes(vault: vault, referredCode: referredCode)
     }
 
-    func updateFromAmount(vault: Vault, referredCode: String) {
-        fetchQuotes(vault: vault, referredCode: referredCode)
+    /// `immediate: true` skips the keystroke debounce — used for discrete actions
+    /// (percentage buttons, paste) that set a final value in one shot. Free typing
+    /// stays debounced.
+    func updateFromAmount(vault: Vault, referredCode: String, immediate: Bool = false) {
+        fetchQuotes(vault: vault, referredCode: referredCode, immediate: immediate)
     }
 
     func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
@@ -236,6 +247,39 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
+    /// Display-only indicative out-amount from spot prices. Used to fill the "to"
+    /// field instantly while the firm quote loads. Never read by validation or
+    /// `makeTransaction()`.
+    var toAmountIndicative: Decimal? {
+        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmount)
+    }
+
+    /// The string the "to" field renders. Firm value when a quote exists;
+    /// otherwise the greyed `~`-prefixed indicative; otherwise empty.
+    var toAmountDisplayString: String {
+        if quote != nil {
+            return toAmountDecimal.formatForDisplay()
+        }
+        if let indicative = toAmountIndicative {
+            return "~\(indicative.formatForDisplay())"
+        }
+        return .empty
+    }
+
+    /// True while showing the indicative (not the firm) out-amount, so the view
+    /// can grey it out. Display-only.
+    var isShowingIndicativeAmount: Bool {
+        quote == nil && toAmountIndicative != nil
+    }
+
+    /// Skeleton gate: the first-load skeleton shows only when a quote is being
+    /// fetched AND there's no previous quote to keep on screen
+    /// (stale-while-revalidate). Auto-refresh and edits with a prior quote keep
+    /// the existing summary visible instead of blanking to a skeleton.
+    var showsQuoteSkeleton: Bool {
+        isLoadingQuotes && quote == nil
+    }
+
     var router: String? {
         SwapCryptoLogic.router(quote: quote)
     }
@@ -258,6 +302,17 @@ extension SwapDetailsViewModel {
 
     var toFiatAmount: String {
         SwapCryptoLogic.toFiatAmount(toCoin: toCoin, quote: quote)
+    }
+
+    /// Fiat sub-label for the "to" field. Mirrors the displayed crypto amount:
+    /// firm quote's fiat when a quote exists, else the indicative amount's fiat
+    /// so the sub-label doesn't read $0 next to a `~` estimate. Display-only.
+    var toFiatAmountDisplay: String {
+        if quote != nil {
+            return toFiatAmount
+        }
+        guard let indicative = toAmountIndicative else { return toFiatAmount }
+        return toCoin.fiat(decimal: indicative).formatForDisplay()
     }
 
     var showGas: Bool {
@@ -348,7 +403,11 @@ private extension SwapDetailsViewModel {
     // reports keystrokes immediately, so all debounce timing lives here.
     static let quoteDebounce: Duration = .milliseconds(300)
 
-    func fetchQuotes(vault: Vault, referredCode: String) {
+    var currentPair: SwapPairIdentity {
+        SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
+    }
+
+    func fetchQuotes(vault: Vault, referredCode: String, immediate: Bool = false) {
         updateQuoteTask?.cancel()
 
         // Empty or non-positive amount: drop any leftover quote/fee/discount
@@ -356,6 +415,8 @@ private extension SwapDetailsViewModel {
         // a stale combination of new amount + old downstream values.
         if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
             quote = nil
+            quotedPair = nil
+            quotedAmount = nil
             gas = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
@@ -366,21 +427,30 @@ private extension SwapDetailsViewModel {
             return
         }
 
-        // Leading-edge feedback: clear the previous quote's outputs and show the
-        // skeleton immediately on keystroke, before the debounce sleep, so a
-        // stale to-amount / fee can't show through while the new quote loads.
-        // The loading flags are cleared only by the winning (non-cancelled) task.
-        quote = nil
-        gas = .zero
-        thorchainFee = .zero
-        vultDiscountBps = 0
-        referralDiscountBps = 0
+        // Stale-while-revalidate is for the silent periodic auto-refresh only:
+        // keep the previous quote + summary on screen when the pair AND amount
+        // are unchanged. On any pair or amount change, blank the quote so the
+        // "to" field falls back to the instant indicative estimate and the
+        // summary shows its loading skeleton (`showsQuoteSkeleton` =
+        // isLoadingQuotes && quote == nil) until the fresh quote lands.
+        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount
+        if !isSilentRefresh {
+            quote = nil
+            quotedPair = nil
+            quotedAmount = nil
+            gas = .zero
+            thorchainFee = .zero
+            vultDiscountBps = 0
+            referralDiscountBps = 0
+        }
         error = nil
         isLoadingQuotes = true
         isLoadingFees = true
 
         updateQuoteTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.quoteDebounce)
+            if !immediate {
+                try? await Task.sleep(for: Self.quoteDebounce)
+            }
             guard !Task.isCancelled, let self else { return }
 
             // Sequential, not parallel: `updateFees` reads `self.quote`, so
@@ -406,9 +476,9 @@ private extension SwapDetailsViewModel {
     }
 
     func updateQuotes(vault: Vault, referredCode: String) async {
-        quote = nil
-        vultDiscountBps = 0
-        referralDiscountBps = 0
+        // Don't clear `quote` here: stale-while-revalidate keeps the previous
+        // quote (and its summary) on screen until the fresh one lands. The pair
+        // change in `fetchQuotes` already cleared it when it would be misleading.
         error = nil
 
         guard !fromAmount.isEmpty else { return }
@@ -426,6 +496,8 @@ private extension SwapDetailsViewModel {
             guard !Task.isCancelled else { return }
             if let result {
                 quote = result.quote
+                quotedPair = currentPair
+                quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }
@@ -444,9 +516,9 @@ private extension SwapDetailsViewModel {
     }
 
     func updateFees(vault: Vault) async {
-        gas = .zero
-        thorchainFee = .zero
-
+        // Don't zero `gas`/`thorchainFee` up front: during a same-pair refresh the
+        // previous fee stays meaningful (stale-while-revalidate) and is replaced
+        // on success below. A pair change already zeroed them in `fetchQuotes`.
         let amountDecimal = fromAmount.toDecimal()
         guard !fromAmount.isEmpty, !amountDecimal.isZero else { return }
 
@@ -487,5 +559,28 @@ private extension SwapDetailsViewModel {
                 self.error = SwapCryptoLogic.Errors.insufficientGas
             }
         }
+    }
+}
+
+// MARK: - Pair identity
+
+/// Stable identity of a (from, to) coin pair, independent of the mutable `Coin`
+/// reference. Used to decide whether a held quote still belongs to the current
+/// pair so stale-while-revalidate never shows a quote from a different pair.
+struct SwapPairIdentity: Equatable {
+    let fromChain: Chain
+    let fromTicker: String
+    let fromContract: String
+    let toChain: Chain
+    let toTicker: String
+    let toContract: String
+
+    init(fromCoin: Coin, toCoin: Coin) {
+        fromChain = fromCoin.chain
+        fromTicker = fromCoin.ticker
+        fromContract = fromCoin.contractAddress
+        toChain = toCoin.chain
+        toTicker = toCoin.ticker
+        toContract = toCoin.contractAddress
     }
 }

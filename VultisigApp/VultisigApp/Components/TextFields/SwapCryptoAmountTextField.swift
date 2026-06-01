@@ -10,7 +10,7 @@ import SwiftUI
 struct SwapCryptoAmountTextField: View {
     @Binding var amount: String
 
-    var onChange: (String) async -> Void
+    var onChange: (_ oldValue: String, _ newValue: String) async -> Void
 
     @Environment(\.isEnabled) private var isEnabled
 
@@ -36,9 +36,12 @@ struct SwapCryptoAmountTextField: View {
             set: { newValue in
                 // Don't validate or convert here - just save what the user typed.
                 // Report every keystroke immediately; the quote-fetch path owns
-                // debounce timing, so the field stays a dumb input.
+                // debounce timing, so the field stays a dumb input. The old value
+                // is passed alongside so callers can tell a paste (multi-char
+                // jump) from free typing and skip the debounce for the former.
+                let oldValue = amount
                 amount = newValue
-                Task { await onChange(newValue) }
+                Task { await onChange(oldValue, newValue) }
             }
         )
 
@@ -60,7 +63,7 @@ struct SwapCryptoAmountTextField: View {
 #Preview {
     SwapCryptoAmountTextField(
         amount: .constant(.empty),
-        onChange: { _ in }
+        onChange: { _, _ in }
     )
     .environmentObject(SettingsViewModel())
 }
