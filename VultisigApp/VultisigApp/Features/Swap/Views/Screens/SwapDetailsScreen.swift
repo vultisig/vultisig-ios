@@ -114,17 +114,23 @@ struct SwapDetailsScreen: View {
         ZStack {
             amountFields
 
-            if let error = detailsViewModel.error {
-                SwapErrorTooltipView(
-                    error: error,
-                    showTooltip: $showErrorTooltip,
-                    onDismissTooltip: {
-                        showErrorTooltip = false
-                    }
-                )
-            } else {
-                swapButton
+            ZStack {
+                if let error = detailsViewModel.error {
+                    SwapErrorTooltipView(
+                        error: error,
+                        showTooltip: $showErrorTooltip,
+                        onDismissTooltip: {
+                            showErrorTooltip = false
+                            detailsViewModel.error = nil
+                        }
+                    )
+                    .transition(.opacity)
+                } else {
+                    swapButton
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
 
             filler.offset(x: -28)
             filler.offset(x: 28)
@@ -253,6 +259,11 @@ struct SwapDetailsScreen: View {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
+                    #if os(macOS)
+                    // Keep the error tooltip overlay above the later sibling
+                    // percentage buttons, which would otherwise paint on top.
+                    .zIndex(1)
+                    #endif
                 #if os(iOS)
                 summary
                 #else
