@@ -201,7 +201,10 @@ struct SettingsCustomMessageView: View {
             isDisabled: !signButtonEnabled,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },
-            onPairedSign: { onSignPress() }
+            onPairedSign: {
+                fastVaultPassword = .empty
+                onSignPress()
+            }
         )
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
