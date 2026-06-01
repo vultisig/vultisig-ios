@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "Use um compartilhamento de cofre para recuperar seu cofre.";
 "importVaultShareTitle" = "Importar compartilhamento de cofre";
 "importYourVaultShare" = "Importe sua parte do cofre";
+"inboundAddressNotFound" = "%@ não é atualmente suportado pela THORChain.";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "incorrectCodeTryAgain" = "Código incorreto. Tente novamente.";
 "incorrectPassword" = "Senha incorreta";

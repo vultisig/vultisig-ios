@@ -129,7 +129,18 @@ final class SwapDetailsViewModel {
         }
     }
 
+    /// The refresh countdown is meaningful only against a live quote. Until the
+    /// user enters an amount and a valid quote comes back, there's nothing to
+    /// refresh, so the counter stays hidden and parked.
+    var showRefreshCounter: Bool {
+        quote != nil
+    }
+
     func updateTimer(vault: Vault, referredCode: String) {
+        guard showRefreshCounter else {
+            timer = 59
+            return
+        }
         timer -= 1
         if timer < 1 {
             restartTimer(vault: vault, referredCode: referredCode)

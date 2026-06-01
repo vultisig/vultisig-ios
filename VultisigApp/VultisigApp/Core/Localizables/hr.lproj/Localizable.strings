@@ -451,6 +451,7 @@
 "importVaultShareSubtitle" = "Koristite dijeljenje trezora da oporavite svoj trezor.";
 "importVaultShareTitle" = "Uvezi dijeljenje trezora";
 "importYourVaultShare" = "Uvezi svoj dio trezora";
+"inboundAddressNotFound" = "%@ trenutačno nije podržan na THORChainu.";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "incorrectCodeTryAgain" = "Netočan kod. Pokušajte ponovo.";
 "incorrectPassword" = "Netočna lozinka";

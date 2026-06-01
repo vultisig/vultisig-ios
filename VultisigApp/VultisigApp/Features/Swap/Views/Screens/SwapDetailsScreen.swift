@@ -242,8 +242,11 @@ struct SwapDetailsScreen: View {
         }
     }
 
+    @ViewBuilder
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
+        if detailsViewModel.showRefreshCounter {
+            SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
+        }
     }
 
     var fields: some View {

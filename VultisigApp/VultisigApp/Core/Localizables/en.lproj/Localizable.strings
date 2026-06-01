@@ -457,6 +457,7 @@
 "importVaultShareSubtitle" = "Use a vault share to recover your vault.";
 "importVaultShareTitle" = "Import vault share";
 "importYourVaultShare" = "Import your vault share";
+"inboundAddressNotFound" = "%@ is not currently supported by THORChain.";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "incorrectCodeTryAgain" = "Incorrect code. Try again.";
 "incorrectPassword" = "Incorrect Password";
