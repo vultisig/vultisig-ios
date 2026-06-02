@@ -105,19 +105,68 @@ final class DefaultSwapInteractorTests: XCTestCase {
         XCTAssertEqual(balance.lastUpdatedCoin, coin)
     }
 
+    // MARK: - Discount-tier session cache
+
+    func testFetchQuoteResolvesTierOncePerSessionAcrossManyFetches() async throws {
+        let tierResolver = MockDiscountTierResolver(tier: .gold)
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService, tierResolver: tierResolver)
+        let vault = makeVault()
+        let from = makeCoin(.ethereum, ticker: "ETH")
+        let to = makeCoin(.bitcoin, ticker: "BTC")
+
+        // Warm once on "screen load", then run several quote fetches as the user
+        // types — the underlying tier resolution (incl. Thorguard eth_call) must
+        // only run once for the whole session.
+        await interactor.warmDiscountTier(for: vault)
+        for _ in 0..<5 {
+            _ = try await interactor.fetchQuote(
+                amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: ""
+            )
+        }
+
+        XCTAssertEqual(
+            tierResolver.resolveCallCount, 6,
+            "resolveTierForSession is called per quote + warm-up, but caching must keep the network resolve to one"
+        )
+        XCTAssertEqual(
+            tierResolver.networkResolveCount, 1,
+            "The cached resolve (incl. Thorguard eth_call) must run exactly once across the session"
+        )
+    }
+
+    func testFetchQuotePassesCachedTierDiscountToQuoteService() async throws {
+        let tierResolver = MockDiscountTierResolver(tier: .gold)
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService, tierResolver: tierResolver)
+
+        let result = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: ""
+        )
+
+        XCTAssertEqual(result?.vultDiscountBps, VultDiscountTier.gold.bpsDiscount)
+        XCTAssertEqual(quoteService.lastVultTierDiscount, VultDiscountTier.gold.bpsDiscount)
+    }
+
     // MARK: - Fixtures
 
     private func makeInteractor(
         quote: QuoteServiceProtocol = MockQuoteService(stubbedResult: .failure(StubError.shouldNotBeCalled)),
         blockchain: BlockChainServiceProtocol = MockBlockChainService(stubbedResult: .failure(StubError.shouldNotBeCalled)),
         balance: BalanceServiceProtocol = MockBalanceService(),
-        fastVault: FastVaultServiceProtocol = MockFastVaultService()
+        fastVault: FastVaultServiceProtocol = MockFastVaultService(),
+        tierResolver: SwapDiscountTierResolving = MockDiscountTierResolver(tier: nil)
     ) -> DefaultSwapInteractor {
         DefaultSwapInteractor(
             quote: quote,
             blockchain: blockchain,
             balance: balance,
-            fastVault: fastVault
+            fastVault: fastVault,
+            tierResolver: tierResolver
         )
     }
 
@@ -139,9 +188,60 @@ final class DefaultSwapInteractorTests: XCTestCase {
         let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: 8)
         return Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
     }
+
+    private func makeThorQuote() -> ThorchainSwapQuote {
+        ThorchainSwapQuote(
+            dustThreshold: nil,
+            expectedAmountOut: "100000000",
+            expiry: 0,
+            fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
+            inboundAddress: nil,
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
+            memo: "memo",
+            notes: "",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
+            slippageBps: nil,
+            totalSwapSeconds: nil,
+            warning: "",
+            router: nil,
+            maxStreamingQuantity: nil
+        )
+    }
 }
 
 private enum StubError: Error, Equatable {
     case shouldNotBeCalled
     case networkError
 }
+
+// swiftlint:disable async_without_await unused_parameter
+
+/// Instrumented tier resolver mirroring `VultTierService`'s session-cache
+/// behaviour: the underlying (network) resolve runs once and is cached, while
+/// `resolveTierForSession` may be *called* many times.
+private final class MockDiscountTierResolver: SwapDiscountTierResolving, @unchecked Sendable {
+    private let tier: VultDiscountTier?
+    private(set) var resolveCallCount = 0
+    private(set) var networkResolveCount = 0
+    private var cached: VultDiscountTier??
+
+    init(tier: VultDiscountTier?) {
+        self.tier = tier
+    }
+
+    func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
+        resolveCallCount += 1
+        if let cached {
+            return cached
+        }
+        // Stand-in for the uncached VULT balance + Thorguard eth_call.
+        networkResolveCount += 1
+        cached = tier
+        return tier
+    }
+}
+
+// swiftlint:enable async_without_await unused_parameter

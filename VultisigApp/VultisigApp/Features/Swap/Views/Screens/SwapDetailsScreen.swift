@@ -79,6 +79,7 @@ struct SwapDetailsScreen: View {
             // `load(...)` seeds `detailsViewModel.fromCoin/toCoin`; no manual
             // re-assignment afterwards or `onChange` would re-fire the quote fetch.
             detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
+            detailsViewModel.warmDiscountTier(vault: vault)
             setData()
         }
         .onDisappear {

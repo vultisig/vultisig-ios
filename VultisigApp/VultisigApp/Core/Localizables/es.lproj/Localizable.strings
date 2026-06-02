@@ -117,6 +117,8 @@
 "bondRune" = "Vincular RUNE";
 "bondToNode" = "Vincular al Nodo";
 "bridge" = "Puente";
+"broadcastCouldNotConfirm" = "No pudimos confirmar esta transacción. Es posible que se haya realizado de todos modos — revisa el explorador antes de volver a intentarlo.";
+"broadcastCouldNotConfirmTitle" = "No se pudo confirmar la transacción";
 "broadcastRetryGeneric" = "Datos de transacción expirados — detalles actualizados. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleBlockhash" = "Transacción expirada. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleNonce" = "Nonce de transacción desactualizado — detalles actualizados. Por favor, inténtalo de nuevo.";

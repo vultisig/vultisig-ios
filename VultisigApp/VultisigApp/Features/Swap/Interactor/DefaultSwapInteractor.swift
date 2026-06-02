@@ -14,13 +14,15 @@ struct DefaultSwapInteractor: SwapInteractor {
     let blockchain: BlockChainServiceProtocol
     let balance: BalanceServiceProtocol
     let fastVault: FastVaultServiceProtocol
+    let tierResolver: SwapDiscountTierResolving
 
     static var live: SwapInteractor {
         DefaultSwapInteractor(
             quote: SwapService.shared,
             blockchain: BlockChainService.shared,
             balance: BalanceService.shared,
-            fastVault: FastVaultService.shared
+            fastVault: FastVaultService.shared,
+            tierResolver: VultTierService()
         )
     }
 
@@ -36,7 +38,12 @@ struct DefaultSwapInteractor: SwapInteractor {
             throw SwapCryptoLogic.Errors.sameAsset
         }
 
-        let vultTier = await VultTierService().fetchDiscountTier(for: vault)
+        // Read the per-session cached tier. The first call resolves it once
+        // (VULT balance + Thorguard NFT eth_call) and caches it for the wallet;
+        // every later quote reads the cached value, keeping the Thorguard
+        // eth_call off the per-quote critical path. The screen warms this cache
+        // on load, so by the time quotes run it's usually already populated.
+        let vultTier = await tierResolver.resolveTierForSession(for: vault)
         let vultDiscountBps = vultTier?.bpsDiscount ?? 0
         let referralDiscountBps = referredCode.isEmpty
             ? 0
@@ -107,5 +114,9 @@ struct DefaultSwapInteractor: SwapInteractor {
 
     func updateBalance(for coin: Coin) async {
         await balance.updateBalance(for: coin)
+    }
+
+    func warmDiscountTier(for vault: Vault) async {
+        _ = await tierResolver.resolveTierForSession(for: vault)
     }
 }

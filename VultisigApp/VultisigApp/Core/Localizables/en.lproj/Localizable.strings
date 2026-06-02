@@ -125,6 +125,8 @@
 "bondRune" = "Bond RUNE";
 "bondToNode" = "Bond to Node";
 "bridge" = "Bridge";
+"broadcastCouldNotConfirm" = "We couldn't confirm this transaction. It may still have gone through — check the explorer before trying again.";
+"broadcastCouldNotConfirmTitle" = "Couldn't confirm transaction";
 "broadcastRetryGeneric" = "Transaction data expired — details refreshed. Please try again.";
 "broadcastRetryStaleBlockhash" = "Transaction expired. Please try again.";
 "broadcastRetryStaleNonce" = "Transaction nonce outdated — details refreshed. Please try again.";

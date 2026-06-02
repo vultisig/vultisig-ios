@@ -117,6 +117,8 @@
 "bondRune" = "绑定 RUNE";
 "bondToNode" = "绑定到节点";
 "bridge" = "跨链桥";
+"broadcastCouldNotConfirm" = "我们无法确认此交易。它可能仍已完成 — 请在重试前查看区块浏览器。";
+"broadcastCouldNotConfirmTitle" = "无法确认交易";
 "broadcastRetryGeneric" = "交易数据已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleBlockhash" = "交易已过期。请重试。";
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
