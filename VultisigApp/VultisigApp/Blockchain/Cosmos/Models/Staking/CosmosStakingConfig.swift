@@ -43,18 +43,23 @@ enum CosmosStakingConfig {
     /// though THORChain is a Cosmos-SDK chain, because THOR uses its own
     /// bond model rather than x/staking.
     ///
-    /// LUNC gas (1.5M units / 100M uluna) is the empirically-verified
-    /// floor — agent-app txs `534BFEF22F…` (delegate) and `200345EA31…`
-    /// (withdraw-rewards) used 1.07M gas with 28% headroom; smaller
-    /// budgets OoG on `columbus-5`.
+    /// Gas budgets are empirically-verified floors with headroom for the
+    /// heaviest single-msg path, MsgBeginRedelegate. Phoenix-1 redelegate
+    /// was observed at 300_140 gas in vultisig-android mainnet tx
+    /// `44A3CE6C…EAF31` (OoG against the prior 300_000 floor) so the Terra
+    /// floor was raised to 400_000 with proportional fee. LUNC bumped to
+    /// 2M for the same dual-record allowance, fee scaled to preserve the
+    /// prior ~66.6667 uluna/gas ratio (133_333_334 / 2M).
     static let table: [Chain: Entry] = [
         .terra: Entry(
             chainId: "phoenix-1",
             bondDenom: "uluna",
             feeDenom: "uluna",
             valoperHrp: "terravaloper",
-            gasLimit: 300_000,
-            feeAmount: 7_500,
+            // Bumped from 300_000 -> 400_000 after observed OoG on redelegate
+            // (vultisig-android #4687 tx 44A3CE6C…EAF31, gasUsed 300_140).
+            gasLimit: 400_000,
+            feeAmount: 10_000,
             unbondingDays: 21
         ),
         .terraClassic: Entry(
@@ -62,8 +67,10 @@ enum CosmosStakingConfig {
             bondDenom: "uluna",
             feeDenom: "uluna",
             valoperHrp: "terravaloper",
-            gasLimit: 1_500_000,
-            feeAmount: 100_000_000,
+            // Bumped 1.5M -> 2M for redelegate headroom; fee scaled to keep
+            // gas-price ratio (~66.6667 uluna/gas) constant.
+            gasLimit: 2_000_000,
+            feeAmount: 133_333_334,
             unbondingDays: 21
         )
     ]

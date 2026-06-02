@@ -25,26 +25,29 @@ final class CosmosRedelegationCooldownGateTests: XCTestCase {
         XCTAssertEqual(state, .available)
     }
 
-    func testBlockedWhenPendingRedelegationExistsFromSource() {
+    func testTransitiveRedelegationBlocksNewRedelegationFromSource() {
+        // After `otherSrc -> src`, redelegating from src is blocked - cosmos-sdk
+        // `HasReceivingRedelegation(delAddr, src)` returns true because src
+        // was the DESTINATION of an active redelegation.
         let unlock = now.addingTimeInterval(10 * 24 * 3600)  // 10 days out
         let state = CosmosRedelegationCooldownGate.evaluate(
             sourceValidator: src,
             redelegations: [
-                CosmosRedelegationEntry(srcValidator: src, dstValidator: dst1, completionTime: unlock)
+                CosmosRedelegationEntry(srcValidator: otherSrc, dstValidator: src, completionTime: unlock)
             ],
             now: now
         )
         XCTAssertEqual(state, .blocked(unlocksAt: unlock))
     }
 
-    func testEarliestUnlockIsSurfacedWhenMultipleRedelegationsPending() {
+    func testEarliestUnlockIsSurfacedWhenMultipleRedelegationsTargetSrcAsDst() {
         let earlier = now.addingTimeInterval(5 * 24 * 3600)
         let later = now.addingTimeInterval(15 * 24 * 3600)
         let state = CosmosRedelegationCooldownGate.evaluate(
             sourceValidator: src,
             redelegations: [
-                CosmosRedelegationEntry(srcValidator: src, dstValidator: dst1, completionTime: later),
-                CosmosRedelegationEntry(srcValidator: src, dstValidator: dst2, completionTime: earlier)
+                CosmosRedelegationEntry(srcValidator: dst1, dstValidator: src, completionTime: later),
+                CosmosRedelegationEntry(srcValidator: dst2, dstValidator: src, completionTime: earlier)
             ],
             now: now
         )
@@ -56,21 +59,22 @@ final class CosmosRedelegationCooldownGateTests: XCTestCase {
         let state = CosmosRedelegationCooldownGate.evaluate(
             sourceValidator: src,
             redelegations: [
-                CosmosRedelegationEntry(srcValidator: src, dstValidator: dst1, completionTime: expired)
+                CosmosRedelegationEntry(srcValidator: otherSrc, dstValidator: src, completionTime: expired)
             ],
             now: now
         )
         XCTAssertEqual(state, .available)
     }
 
-    func testRedelegationsFromOtherValidatorDoNotBlockUs() {
-        // The cosmos-sdk cooldown is per-source-validator. A pending
-        // redelegation FROM a different source must not block us.
+    func testOutgoingRedelegationsDoNotBlockNewSrcRedelegate() {
+        // The chain only blocks new `B -> C` when B was a recent DST. An
+        // active `A -> B` does NOT prevent another `A -> C` (different dst).
+        // The gate must not over-block.
         let pending = now.addingTimeInterval(10 * 24 * 3600)
         let state = CosmosRedelegationCooldownGate.evaluate(
             sourceValidator: src,
             redelegations: [
-                CosmosRedelegationEntry(srcValidator: otherSrc, dstValidator: dst1, completionTime: pending)
+                CosmosRedelegationEntry(srcValidator: src, dstValidator: dst1, completionTime: pending)
             ],
             now: now
         )
