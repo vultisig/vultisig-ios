@@ -19,10 +19,13 @@ struct VultTierService {
     @AppStorage("vult_balance_cache") private var cacheEntries: [CacheEntry] = []
     private static let cacheValidityDuration: TimeInterval = 3 * 60 // 3 minutes
 
-    /// Process-lifetime, per-wallet cache of the fully-resolved discount tier
-    /// (VULT balance result + Thorguard boost). The tier doesn't change during a
-    /// swap session, so once resolved it's read back without re-running the
-    /// Thorguard NFT `eth_call` on every quote fetch.
+    /// Per-wallet cache of the fully-resolved discount tier (VULT balance result
+    /// + Thorguard boost), keyed by vault id and held for the process lifetime.
+    /// The tier doesn't change during a swap session, so once resolved it's read
+    /// back without re-running the Thorguard NFT `eth_call` on every quote fetch.
+    /// Switching vaults resolves fresh because the cache is keyed per vault; a
+    /// VULT/Thorguard balance change for the *same* vault isn't reflected until
+    /// the next app launch, which is acceptable for a discount-tier hint.
     private static let sessionCache = SessionTierCache()
 
     func fetchDiscountTier(for vault: Vault, cached: Bool = false) async -> VultDiscountTier? {
@@ -52,12 +55,6 @@ struct VultTierService {
         return await Self.sessionCache.resolve(for: vaultId) {
             await fetchDiscountTier(for: vault)
         }
-    }
-
-    /// Drops the session-cached resolved tier for a vault, forcing the next
-    /// `resolveTierForSession` to re-resolve from the network.
-    func clearSessionTier(for vault: Vault) async {
-        await Self.sessionCache.clear(for: vault.pubKeyEdDSA)
     }
 
     func getVultToken(for vault: Vault) -> Coin? {
@@ -202,10 +199,12 @@ actor SessionTierCache {
 
     /// Returns the cached tier if resolved; otherwise runs `work` once, sharing
     /// the in-flight `Task` with any concurrent caller for the same vault.
-    /// `work` must not capture `@Model` types — pass value-type inputs only.
+    /// `work` is `@MainActor`-isolated so it can safely read the `@Model` vault
+    /// it resolves the tier from — nothing non-Sendable crosses the actor's
+    /// executor boundary.
     func resolve(
         for vaultId: String,
-        _ work: @Sendable @escaping () async -> VultDiscountTier?
+        _ work: @MainActor @escaping () async -> VultDiscountTier?
     ) async -> VultDiscountTier? {
         if let box = tiers[vaultId] {
             return box.value
@@ -213,16 +212,11 @@ actor SessionTierCache {
         if let task = inFlight[vaultId] {
             return await task.value
         }
-        let task = Task { await work() }
+        let task = Task { @MainActor in await work() }
         inFlight[vaultId] = task
         let value = await task.value
         tiers[vaultId] = Box(value: value)
         inFlight[vaultId] = nil
         return value
-    }
-
-    func clear(for vaultId: String) {
-        tiers[vaultId] = nil
-        inFlight[vaultId] = nil
     }
 }
