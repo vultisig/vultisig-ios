@@ -10,9 +10,36 @@ class TonService {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-service")
     private let httpClient: HTTPClientProtocol = HTTPClient()
 
+    /// Resolves the TON custom RPC override. Injected so the API values are
+    /// built from a dependency rather than a global reach-in; resolution happens
+    /// per request inside `api(_:)` so a runtime override change is picked up
+    /// live. The default host stays the Vultisig proxy, so default users are
+    /// unaffected; an override only swaps the host (the `/ton/v2|v3` paths are
+    /// preserved, matching TON Center's public API scheme).
+    private let resolver: RPCEndpointResolving
+
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+    }
+
+    /// The override-aware TON host. Falls back to the default proxy host when no
+    /// override is set.
+    private var resolvedHost: URL {
+        if let override = resolver.url(for: .ton), let url = URL(string: override) {
+            return url
+        }
+        return TonAPI.defaultHost
+    }
+
+    /// Builds a pure `TonAPI` value with the resolved host baked in. The
+    /// `TargetType` itself never consults the resolver.
+    private func api(_ endpoint: TonAPI.Endpoint) -> TonAPI {
+        TonAPI(endpoint, host: resolvedHost)
+    }
+
     func broadcastTransaction(_ obj: String) async throws -> String {
         let response = try await httpClient.request(
-            TonAPI.broadcastTransaction(boc: obj),
+            api(.broadcastTransaction(boc: obj)),
             responseType: ApiResponse<TonBroadcastSuccessResponse>.self
         )
 
@@ -38,7 +65,7 @@ class TonService {
 
     func getTONBalance(address: String) async throws -> String {
         let response = try await httpClient.request(
-            TonAPI.addressInformation(address: address),
+            api(.addressInformation(address: address)),
             responseType: TonAddressInformation.self
         )
         return response.data.balance ?? .zero
@@ -54,7 +81,7 @@ class TonService {
 
     func getWalletState(_ address: String) async throws -> String {
         let response = try await httpClient.request(
-            TonAPI.addressInformation(address: address),
+            api(.addressInformation(address: address)),
             responseType: TonAddressInformation.self
         )
         return response.data.status ?? "uninit"
@@ -63,7 +90,7 @@ class TonService {
     func getJettonBalance(coin: CoinMeta, address: String) async throws -> String {
         do {
             let response = try await httpClient.request(
-                TonAPI.jettonWallets(ownerAddress: address, jettonMasterAddress: coin.contractAddress),
+                api(.jettonWallets(ownerAddress: address, jettonMasterAddress: coin.contractAddress)),
                 responseType: JettonWalletsResponse.self
             )
 
@@ -94,7 +121,7 @@ class TonService {
         let mastersResponse: JettonMastersResponse
         do {
             let response = try await httpClient.request(
-                TonAPI.jettonMasters(jettonAddress: contractAddress),
+                api(.jettonMasters(jettonAddress: contractAddress)),
                 responseType: JettonMastersResponse.self
             )
             mastersResponse = response.data
@@ -137,7 +164,7 @@ class TonService {
         let expireAt = UInt64(futureDate.timeIntervalSince1970)
 
         let response = try await httpClient.request(
-            TonAPI.extendedAddressInformation(address: coin.address),
+            api(.extendedAddressInformation(address: coin.address)),
             responseType: TonExtendedAddressInformation.self
         )
 
@@ -158,7 +185,7 @@ class TonService {
             // `.object(StackItem)`, and array-shaped stack entries decode as
             // `.array(...)`. One typed decode covers both server variants.
             let response = try await httpClient.request(
-                TonAPI.runGetMethod(address: master, method: "get_wallet_address", stack: [["tvm.Slice", boc]]),
+                api(.runGetMethod(address: master, method: "get_wallet_address", stack: [["tvm.Slice", boc]])),
                 responseType: RunGetMethodFlexibleResponse.self
             )
 

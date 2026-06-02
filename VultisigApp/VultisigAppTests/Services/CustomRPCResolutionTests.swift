@@ -115,6 +115,104 @@ final class CustomRPCResolutionTests: XCTestCase {
         XCTAssertEqual(api.baseURL, host)
     }
 
+    // MARK: - MayaChain (Mayanode host injected; Midgard stays default)
+
+    func test_mayaChainAPI_default_usesMayanodeHost() {
+        let api = MayaChainAPI(.balances(address: "maya1abc"))
+        XCTAssertEqual(api.baseURL, MayaChainAPI.defaultHost)
+        XCTAssertEqual(api.baseURL.absoluteString, "https://mayanode.mayachain.info")
+        XCTAssertEqual(api.path, "/cosmos/bank/v1beta1/balances/maya1abc")
+    }
+
+    func test_mayaChainAPI_override_usesInjectedHost() throws {
+        let host = try XCTUnwrap(URL(string: "https://my-maya-node.example"))
+        let api = MayaChainAPI(.broadcast(body: Data()), host: host)
+        XCTAssertEqual(api.baseURL, host)
+        XCTAssertEqual(api.path, "/cosmos/tx/v1beta1/txs")
+    }
+
+    // MARK: - Ripple (XRPL host injected; path-agnostic JSON-RPC)
+
+    func test_rippleAPI_default_usesXrplHost() {
+        let api = RippleAPI(.serverState)
+        XCTAssertEqual(api.baseURL, RippleAPI.defaultHost)
+        XCTAssertEqual(api.baseURL.absoluteString, "https://xrplcluster.com")
+        XCTAssertEqual(api.path, "/")
+    }
+
+    func test_rippleAPI_override_usesInjectedHost() throws {
+        let host = try XCTUnwrap(URL(string: "https://my-xrpl-node.example"))
+        let api = RippleAPI(.submit(txBlob: "deadbeef"), host: host)
+        XCTAssertEqual(api.baseURL, host)
+        XCTAssertEqual(api.path, "/")
+    }
+
+    // MARK: - Tron (proxy default; override swaps host, keeps /wallet/* paths)
+
+    func test_tronAPI_default_usesProxyHostAndWalletPaths() {
+        let api = TronAPI(.getNowBlock)
+        XCTAssertEqual(api.baseURL, TronAPI.defaultHost)
+        XCTAssertEqual(api.baseURL.absoluteString, "https://api.vultisig.com/tron-rest")
+        XCTAssertEqual(api.path, "/wallet/getnowblock")
+    }
+
+    func test_tronAPI_override_swapsHostKeepsPath() throws {
+        let host = try XCTUnwrap(URL(string: "https://my-trongrid.example"))
+        let api = TronAPI(.broadcastTransaction(jsonString: "{}"), host: host)
+        XCTAssertEqual(api.baseURL, host)
+        XCTAssertEqual(api.path, "/wallet/broadcasttransaction")
+    }
+
+    func test_tronEvmRpc_ignoresTronOverride_keepsProxy() throws {
+        // The `.tron` override is a TronGrid REST endpoint, NOT an EVM JSON-RPC
+        // node, so the EVM-side tron-rpc host must stay on the proxy default.
+        let resolver = FakeRPCResolver(overrides: [.tron: "https://my-trongrid.example"])
+        let config = try EvmServiceConfig.getConfig(forChain: .tron, resolver: resolver)
+        XCTAssertEqual(config.rpcEndpoint, Endpoint.tronEvmServiceRpc)
+    }
+
+    // MARK: - Ton (proxy default; override swaps host, keeps /ton/v2|v3 paths)
+
+    func test_tonAPI_default_usesProxyHostAndVersionedPaths() {
+        let v3 = TonAPI(.addressInformation(address: "EQabc"))
+        XCTAssertEqual(v3.baseURL, TonAPI.defaultHost)
+        XCTAssertEqual(v3.baseURL.absoluteString, "https://api.vultisig.com")
+        XCTAssertEqual(v3.path, "/ton/v3/addressInformation")
+
+        let v2 = TonAPI(.broadcastTransaction(boc: "boc"))
+        XCTAssertEqual(v2.path, "/ton/v2/sendBocReturnHash")
+    }
+
+    func test_tonAPI_override_swapsHostKeepsVersionedPaths() throws {
+        let host = try XCTUnwrap(URL(string: "https://my-toncenter.example"))
+        let v3 = TonAPI(.jettonMasters(jettonAddress: "EQmaster"), host: host)
+        XCTAssertEqual(v3.baseURL, host)
+        XCTAssertEqual(v3.path, "/ton/v3/jetton/masters")
+
+        let v2 = TonAPI(.runGetMethod(address: "EQa", method: "m", stack: []), host: host)
+        XCTAssertEqual(v2.baseURL, host)
+        XCTAssertEqual(v2.path, "/ton/v2/runGetMethod")
+    }
+
+    // MARK: - No cross-chain leak
+
+    func test_override_doesNotLeakAcrossChains() throws {
+        let resolver = FakeRPCResolver(overrides: [.ethereum: "https://eth-only.example"])
+        // EVM sibling unaffected
+        XCTAssertEqual(
+            try EvmServiceConfig.getConfig(forChain: .base, resolver: resolver).rpcEndpoint,
+            Endpoint.baseServiceRpcService
+        )
+        // Non-EVM chains resolve their own keys, so an EVM override is invisible.
+        XCTAssertNil(resolver.url(for: .tron))
+        XCTAssertNil(resolver.url(for: .ton))
+        XCTAssertNil(resolver.url(for: .ripple))
+        XCTAssertNil(resolver.url(for: .sui))
+        XCTAssertNil(resolver.url(for: .mayaChain))
+        XCTAssertNil(resolver.url(for: .polkadot))
+        XCTAssertNil(resolver.url(for: .bittensor))
+    }
+
     // MARK: - Default == previous-default (behavior identical with no override)
 
     func test_defaults_matchHardcodedHosts() throws {
@@ -122,6 +220,15 @@ final class CustomRPCResolutionTests: XCTestCase {
         XCTAssertEqual(
             try EvmServiceConfig.getConfig(forChain: .base, resolver: noOverride).rpcEndpoint,
             Endpoint.baseServiceRpcService
+        )
+        // EVM variants newly exposed in the picker
+        XCTAssertEqual(
+            try EvmServiceConfig.getConfig(forChain: .ethereumSepolia, resolver: noOverride).rpcEndpoint,
+            Endpoint.ethSepoliaServiceRpcService
+        )
+        XCTAssertEqual(
+            try EvmServiceConfig.getConfig(forChain: .polygon, resolver: noOverride).rpcEndpoint,
+            Endpoint.polygonServiceRpcService
         )
         // Cosmos
         XCTAssertEqual(
@@ -140,5 +247,23 @@ final class CustomRPCResolutionTests: XCTestCase {
             ThorchainMainnetAPI.defaultRPCHost.absoluteString,
             "https://gateway.liquify.com/chain/thorchain_rpc"
         )
+        // MayaChain
+        XCTAssertEqual(MayaChainAPI.defaultHost.absoluteString, "https://mayanode.mayachain.info")
+        // Ripple
+        XCTAssertEqual(RippleAPI.defaultHost.absoluteString, "https://xrplcluster.com")
+        // Sui
+        XCTAssertEqual(SuiService.defaultRPCURL.absoluteString, "https://sui-rpc.publicnode.com")
+        XCTAssertEqual(Endpoint.suiServiceRpc, "https://sui-rpc.publicnode.com")
+        // Bittensor (proxy/onfinality default baked at init)
+        XCTAssertEqual(BittensorService.rpcEndpoint, "https://bittensor-finney.api.onfinality.io/public")
+        XCTAssertEqual(Endpoint.bittensorServiceRpc, "https://bittensor-finney.api.onfinality.io/public")
+        // Tron REST proxy default + EVM-rpc proxy default
+        XCTAssertEqual(TronAPI.defaultHost.absoluteString, "https://api.vultisig.com/tron-rest")
+        XCTAssertEqual(Endpoint.tronEvmServiceRpc, "https://api.vultisig.com/tron-rpc")
+        // Ton proxy default
+        XCTAssertEqual(TonAPI.defaultHost.absoluteString, "https://api.vultisig.com")
+        // Polkadot proxy default baked at init
+        XCTAssertEqual(PolkadotService.rpcEndpoint, "https://api.vultisig.com/dot/")
+        XCTAssertEqual(Endpoint.polkadotServiceRpc, "https://api.vultisig.com/dot/")
     }
 }

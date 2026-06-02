@@ -16,7 +16,8 @@ final class RPCHealthProbeTests: XCTestCase {
         http.queueDecoded(["result": "0x1"])
         let probe = RPCHealthProbe(httpClient: http)
         let result = await probe.probe(urlString: "https://eth.example/rpc", chain: .ethereum)
-        guard case .ok = result else { return XCTFail("expected .ok, got \(result)") }
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertTrue(verified, "EVM chainId match should be network-verified")
     }
 
     func test_evm_wrongChainWhenChainIdDiffers() async {
@@ -78,6 +79,115 @@ final class RPCHealthProbeTests: XCTestCase {
         let probe = RPCHealthProbe(httpClient: http)
         let result = await probe.probe(urlString: "https://thor.example", chain: .thorChain)
         XCTAssertEqual(result, .unreachable)
+    }
+
+    // MARK: - THORChain / Maya verified
+
+    func test_thorchain_okIsNetworkVerified() async {
+        let http = ProbeStubHTTPClient()
+        http.queueRawSuccess()
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://thor.example", chain: .thorChain)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertTrue(verified)
+    }
+
+    func test_maya_ridesThorchainLCD_isNetworkVerified() async {
+        // mayaChain has chainType .THORChain, so it uses the LCD node_info probe.
+        let http = ProbeStubHTTPClient()
+        http.queueRawSuccess()
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://maya.example", chain: .mayaChain)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertTrue(verified)
+    }
+
+    // MARK: - Ripple (liveness-only)
+
+    func test_ripple_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": ["state": ["build_version": "1.0"]]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://xrpl.example", chain: .ripple)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified, "Ripple has no chainId equivalent; should be liveness-only")
+    }
+
+    func test_ripple_invalidWhenStateMissing() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded([String: String]())
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://xrpl.example", chain: .ripple)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    // MARK: - Sui (liveness-only)
+
+    func test_sui_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": "123456"])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://sui.example", chain: .sui)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified)
+    }
+
+    func test_sui_invalidWhenResultMissing() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded([String: String]())
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://sui.example", chain: .sui)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    // MARK: - Substrate (Polkadot + Bittensor, liveness-only)
+
+    func test_polkadot_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": ["peers": 12, "isSyncing": false]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://dot.example", chain: .polkadot)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified)
+    }
+
+    func test_bittensor_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": ["peers": 3, "isSyncing": false]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://tao.example", chain: .bittensor)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified)
+    }
+
+    // MARK: - Tron (liveness-only)
+
+    func test_tron_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["blockID": "0000000000abcdef"])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://trongrid.example", chain: .tron)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified)
+    }
+
+    func test_tron_invalidWhenBlockIDMissing() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded([String: String]())
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://trongrid.example", chain: .tron)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    // MARK: - Ton (liveness-only, raw GET)
+
+    func test_ton_okButLivenessOnly() async {
+        let http = ProbeStubHTTPClient()
+        http.queueRawSuccess()
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://toncenter.example", chain: .ton)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified)
     }
 
     // MARK: - Bad URL

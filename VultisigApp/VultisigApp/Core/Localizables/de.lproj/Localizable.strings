@@ -274,6 +274,7 @@
 "customRPCInvalidResponse" = "Ungültige Antwort";
 "customRPCInvalidURL" = "Gültige http(s)-URL eingeben";
 "customRPCReachable" = "Erreichbar · %d ms";
+"customRPCReachableUnverified" = "Erreichbar · %d ms — Netzwerkidentität nicht verifiziert";
 "customRPCResetToDefault" = "Auf Standard zurücksetzen";
 "customRPCTagCustom" = "eigen";
 "customRPCTagDefault" = "standard";

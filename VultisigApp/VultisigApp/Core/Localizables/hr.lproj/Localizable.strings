@@ -274,6 +274,7 @@
 "customRPCInvalidResponse" = "Nevažeći odgovor";
 "customRPCInvalidURL" = "Unesite valjani http(s) URL";
 "customRPCReachable" = "Dostupno · %d ms";
+"customRPCReachableUnverified" = "Dostupno · %d ms — mrežni identitet nije potvrđen";
 "customRPCResetToDefault" = "Vrati na zadano";
 "customRPCTagCustom" = "prilagođeno";
 "customRPCTagDefault" = "zadano";

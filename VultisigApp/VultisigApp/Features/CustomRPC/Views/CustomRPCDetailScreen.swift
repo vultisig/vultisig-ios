@@ -81,10 +81,12 @@ struct CustomRPCDetailScreen: View {
     @ViewBuilder
     private func probeResultView(_ result: RPCHealthResult) -> some View {
         switch result {
-        case .ok(let latencyMs):
+        case .ok(let latencyMs, let networkVerified):
             label(
-                String(format: "customRPCReachable".localized, latencyMs),
-                color: Theme.colors.alertSuccess
+                networkVerified
+                    ? String(format: "customRPCReachable".localized, latencyMs)
+                    : String(format: "customRPCReachableUnverified".localized, latencyMs),
+                color: networkVerified ? Theme.colors.alertSuccess : Theme.colors.alertWarning
             )
         case .unreachable:
             label("customRPCUnreachable".localized, color: Theme.colors.alertError)

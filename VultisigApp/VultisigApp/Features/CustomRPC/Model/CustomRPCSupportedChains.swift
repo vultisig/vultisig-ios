@@ -22,10 +22,12 @@ enum CustomRPCSupportedChains {
     static let all: [Chain] = [
         // EVM
         .ethereum,
+        .ethereumSepolia,
         .bscChain,
         .avalanche,
         .base,
         .arbitrum,
+        .polygon,
         .polygonV2,
         .optimism,
         .blast,
@@ -36,8 +38,9 @@ enum CustomRPCSupportedChains {
         .sei,
         // Solana
         .solana,
-        // THORChain
+        // THORChain family (mayaChain rides the THORChain LCD funnel)
         .thorChain,
+        .mayaChain,
         // Cosmos
         .gaiaChain,
         .dydx,
@@ -46,7 +49,16 @@ enum CustomRPCSupportedChains {
         .terra,
         .terraClassic,
         .noble,
-        .akash
+        .akash,
+        // Real-node single-RPC chains
+        .ripple,
+        .sui,
+        .bittensor,
+        // Proxy-default chains: an override swaps only the host; the proxy
+        // request paths stay unchanged, so default users are byte-identical.
+        .tron,
+        .ton,
+        .polkadot
     ]
 
     static func isSupported(_ chain: Chain) -> Bool {

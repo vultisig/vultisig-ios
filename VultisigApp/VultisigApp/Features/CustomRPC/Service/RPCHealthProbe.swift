@@ -9,7 +9,14 @@ import OSLog
 /// Result of a live RPC health probe.
 enum RPCHealthResult: Equatable {
     /// The endpoint answered the canonical probe with a valid response.
-    case ok(latencyMs: Int)
+    ///
+    /// `networkVerified` is `true` when the probe can also confirm the endpoint
+    /// is serving the *expected network* (EVM `eth_chainId` match, THORChain LCD
+    /// `node_info`). It is `false` for liveness-only probes — chains with no
+    /// chainId equivalent (Ripple, Sui, Bittensor, Polkadot, Ton, Tron) where we
+    /// can confirm reachability but not network identity. The UI surfaces this
+    /// distinction so the user isn't given a false sense of network safety.
+    case ok(latencyMs: Int, networkVerified: Bool)
     /// The endpoint could not be reached (network error / timeout / bad URL).
     case unreachable
     /// EVM only: the endpoint answered but reported a different `chainId`.
@@ -40,6 +47,33 @@ private struct SolanaHealthResponse: Decodable {
     let result: String?
 }
 
+private struct JSONRPCResultPresentResponse: Decodable {
+    /// `result` may be a string, number, or object depending on the method;
+    /// we only need to know whether the key is present and non-null.
+    let result: AnyDecodable?
+}
+
+/// Decodes any JSON value, used purely to assert a JSON-RPC `result` is present.
+private struct AnyDecodable: Decodable {
+    init(from decoder: Decoder) throws {
+        // Succeeds for any concrete JSON value; a missing/null `result` leaves
+        // the optional `nil` because the surrounding key isn't decoded.
+        _ = try decoder.singleValueContainer()
+    }
+}
+
+private struct RippleServerStateProbeResponse: Decodable {
+    let result: ResultBody?
+    struct ResultBody: Decodable {
+        let state: AnyDecodable?
+    }
+}
+
+private struct TronProbeResponse: Decodable {
+    /// TronGrid `/wallet/getnowblock` returns the current block, keyed `blockID`.
+    let blockID: String?
+}
+
 /// Live, chain-aware JSON-RPC / REST health probe for a candidate RPC endpoint.
 /// Returns reachability plus round-trip latency so the settings UI can show
 /// `reachable · {ms} ms` or a typed failure reason instead of merely validating
@@ -66,9 +100,22 @@ struct RPCHealthProbe {
         case .Solana:
             return await probeSolana(url: url)
         case .THORChain:
+            // Covers thorChain + mayaChain: both expose the Cosmos LCD
+            // `node_info`, so reachability here also verifies network identity.
             return await probeThorchain(url: url)
         case .Cosmos:
             return await probeCosmos(url: url)
+        case .Ripple:
+            return await probeRipple(url: url)
+        case .Sui:
+            return await probeSui(url: url)
+        case .Polkadot:
+            // Covers polkadot + bittensor (both substrate JSON-RPC).
+            return await probeSubstrate(url: url)
+        case .Tron:
+            return await probeTron(url: url)
+        case .Ton:
+            return await probeTon(url: url)
         default:
             return await probeReachability(url: url)
         }
@@ -94,9 +141,9 @@ struct RPCHealthProbe {
                 return .invalidResponse
             }
             guard let expected = chain.chainID else {
-                return .ok(latencyMs: latency)
+                return .ok(latencyMs: latency, networkVerified: true)
             }
-            return got == expected ? .ok(latencyMs: latency) : .wrongChain(expected: expected, got: got)
+            return got == expected ? .ok(latencyMs: latency, networkVerified: true) : .wrongChain(expected: expected, got: got)
         } catch {
             return mapFailure(error)
         }
@@ -117,7 +164,7 @@ struct RPCHealthProbe {
         do {
             let response = try await httpClient.request(target, responseType: SolanaHealthResponse.self)
             guard response.data.result == "ok" else { return .invalidResponse }
-            return .ok(latencyMs: latencyMs(since: start))
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: true)
         } catch {
             return mapFailure(error)
         }
@@ -139,7 +186,101 @@ struct RPCHealthProbe {
         let start = CFAbsoluteTimeGetCurrent()
         do {
             _ = try await httpClient.request(target)
-            return .ok(latencyMs: latencyMs(since: start))
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: true)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    // MARK: - Ripple (liveness-only: server_state)
+
+    private func probeRipple(url: URL) async -> RPCHealthResult {
+        let target = RPCProbeTarget(
+            url: url,
+            method: .post,
+            task: .requestParameters(
+                ["jsonrpc": "2.0", "id": 1, "method": "server_state", "params": [] as [Any]],
+                .jsonEncoding
+            )
+        )
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let response = try await httpClient.request(target, responseType: RippleServerStateProbeResponse.self)
+            // A live XRPL node returns `result.state`; we can confirm liveness but
+            // not which network (no chainId equivalent).
+            guard response.data.result?.state != nil else { return .invalidResponse }
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    // MARK: - Sui (liveness-only: sui_getLatestCheckpointSequenceNumber)
+
+    private func probeSui(url: URL) async -> RPCHealthResult {
+        let target = RPCProbeTarget(
+            url: url,
+            method: .post,
+            task: .requestParameters(
+                ["jsonrpc": "2.0", "id": 1, "method": "sui_getLatestCheckpointSequenceNumber", "params": [] as [Any]],
+                .jsonEncoding
+            )
+        )
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let response = try await httpClient.request(target, responseType: JSONRPCResultPresentResponse.self)
+            guard response.data.result != nil else { return .invalidResponse }
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    // MARK: - Substrate / Polkadot + Bittensor (liveness-only: system_health)
+
+    private func probeSubstrate(url: URL) async -> RPCHealthResult {
+        let target = RPCProbeTarget(
+            url: url,
+            method: .post,
+            task: .requestParameters(
+                ["jsonrpc": "2.0", "id": 1, "method": "system_health", "params": [] as [Any]],
+                .jsonEncoding
+            )
+        )
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let response = try await httpClient.request(target, responseType: JSONRPCResultPresentResponse.self)
+            guard response.data.result != nil else { return .invalidResponse }
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    // MARK: - Tron (liveness-only: wallet/getnowblock)
+
+    private func probeTron(url: URL) async -> RPCHealthResult {
+        let probeURL = url.appendingPathComponent("/wallet/getnowblock")
+        let target = RPCProbeTarget(url: probeURL, method: .post, task: .requestPlain)
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let response = try await httpClient.request(target, responseType: TronProbeResponse.self)
+            guard response.data.blockID != nil else { return .invalidResponse }
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    // MARK: - Ton (liveness-only: getMasterchainInfo)
+
+    private func probeTon(url: URL) async -> RPCHealthResult {
+        let probeURL = url.appendingPathComponent("/ton/v2/getMasterchainInfo")
+        let target = RPCProbeTarget(url: probeURL, method: .get, task: .requestPlain)
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            _ = try await httpClient.request(target)
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
         } catch {
             return mapFailure(error)
         }
@@ -152,7 +293,7 @@ struct RPCHealthProbe {
         let start = CFAbsoluteTimeGetCurrent()
         do {
             _ = try await httpClient.request(target)
-            return .ok(latencyMs: latencyMs(since: start))
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
         } catch {
             return mapFailure(error)
         }

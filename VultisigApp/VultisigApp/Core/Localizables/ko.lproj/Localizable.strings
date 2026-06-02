@@ -269,6 +269,7 @@
 "customRPCInvalidResponse" = "잘못된 응답";
 "customRPCInvalidURL" = "유효한 http(s) URL을 입력하세요";
 "customRPCReachable" = "연결 가능 · %d ms";
+"customRPCReachableUnverified" = "연결 가능 · %d ms — 네트워크 신원 미확인";
 "customRPCResetToDefault" = "기본값으로 재설정";
 "customRPCTagCustom" = "사용자 지정";
 "customRPCTagDefault" = "기본";

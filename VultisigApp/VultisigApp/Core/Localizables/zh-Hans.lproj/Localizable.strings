@@ -274,6 +274,7 @@
 "customRPCInvalidResponse" = "无效响应";
 "customRPCInvalidURL" = "请输入有效的 http(s) URL";
 "customRPCReachable" = "可访问 · %d ms";
+"customRPCReachableUnverified" = "可访问 · %d ms — 网络身份未验证";
 "customRPCResetToDefault" = "重置为默认";
 "customRPCTagCustom" = "自定义";
 "customRPCTagDefault" = "默认";
