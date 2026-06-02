@@ -87,6 +87,15 @@ final class SwapDetailsViewModel {
         dataLoaded = true
     }
 
+    /// Warm the per-session VULT discount-tier cache once on screen load so the
+    /// quote path reads the cached tier (VULT balance + Thorguard NFT) instead of
+    /// re-resolving it — and re-running the Thorguard eth_call — on every fetch.
+    func warmDiscountTier(vault: Vault) {
+        Task { [weak self] in
+            await self?.interactor.warmDiscountTier(for: vault)
+        }
+    }
+
     func updateCoinLists() {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,

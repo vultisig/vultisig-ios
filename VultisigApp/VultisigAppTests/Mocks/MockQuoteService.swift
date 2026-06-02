@@ -11,6 +11,7 @@ import Foundation
 final class MockQuoteService: QuoteServiceProtocol {
     var stubbedResult: Result<SwapQuote, Error>
     private(set) var fetchQuoteCallCount = 0
+    private(set) var lastVultTierDiscount: Int?
 
     init(stubbedResult: Result<SwapQuote, Error>) {
         self.stubbedResult = stubbedResult
@@ -25,6 +26,7 @@ final class MockQuoteService: QuoteServiceProtocol {
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
         fetchQuoteCallCount += 1
+        lastVultTierDiscount = vultTierDiscount
         return try stubbedResult.get()
     }
 }

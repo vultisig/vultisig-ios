@@ -326,6 +326,8 @@ private final class MockSwapInteractor: SwapInteractor {
     }
 
     func updateBalance(for coin: Coin) async {}
+
+    func warmDiscountTier(for vault: Vault) async {}
 }
 
 // swiftlint:enable async_without_await unused_parameter
