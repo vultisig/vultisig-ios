@@ -917,6 +917,7 @@
 "settings" = "Postavke";
 "settingsAdvancedClear" = "Očisti";
 "settingsAdvancedCustomRPC" = "Prilagođeni RPC endpointi";
+"settingsAdvancedCustomRPCToggle" = "Prilagođeni RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Upravljaj";

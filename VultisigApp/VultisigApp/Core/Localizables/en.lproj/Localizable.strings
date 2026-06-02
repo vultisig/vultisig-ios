@@ -925,6 +925,7 @@
 "settings" = "Settings";
 "settingsAdvancedClear" = "Clear";
 "settingsAdvancedCustomRPC" = "Custom RPC Endpoints";
+"settingsAdvancedCustomRPCToggle" = "Custom RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Manage";

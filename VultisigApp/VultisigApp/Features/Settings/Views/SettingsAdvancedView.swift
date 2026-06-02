@@ -9,37 +9,16 @@ import SwiftUI
 
 struct SettingsAdvancedView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    @EnvironmentObject var appViewModel: AppViewModel
-    @Environment(\.router) var router
-
-    @State private var isCustomRPCUnlocked = false
 
     var body: some View {
         Screen {
             content
         }
         .screenTitle("advanced".localized)
-        .task(id: appViewModel.selectedVault?.pubKeyECDSA) {
-            guard let vault = appViewModel.selectedVault else {
-                isCustomRPCUnlocked = false
-                return
-            }
-            isCustomRPCUnlocked = await TierGate().isUnlocked(.silver, for: vault)
-        }
     }
 
     var content: some View {
         VStack {
-            if isCustomRPCUnlocked {
-                SettingActionCell(
-                    title: "settingsAdvancedCustomRPC".localized,
-                    icon: "network",
-                    buttonLabel: "settingsAdvancedManage".localized
-                ) {
-                    router.navigate(to: SettingsRoute.customRPC)
-                }
-            }
-
             SettingToggleCell(
                 title: "ETH Testnet(Sepolia)",
                 icon: "timelapse",
@@ -80,6 +59,12 @@ struct SettingsAdvancedView: View {
                 title: "settingsAdvancedQBTCClaimToggle".localized,
                 icon: "lock.shield",
                 isEnabled: $settingsViewModel.qbtcEnabled
+            )
+
+            SettingToggleCell(
+                title: "settingsAdvancedCustomRPCToggle".localized,
+                icon: "network",
+                isEnabled: $settingsViewModel.customRPCEnabled
             )
 
             SettingPickerCell(

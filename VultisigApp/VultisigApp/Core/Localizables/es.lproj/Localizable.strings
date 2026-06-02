@@ -917,6 +917,7 @@
 "settings" = "Configuración";
 "settingsAdvancedClear" = "Borrar";
 "settingsAdvancedCustomRPC" = "Endpoints RPC personalizados";
+"settingsAdvancedCustomRPCToggle" = "RPC personalizado";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestionar";
