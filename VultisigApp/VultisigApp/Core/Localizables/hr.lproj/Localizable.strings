@@ -117,6 +117,8 @@
 "bondRune" = "Poveži RUNE";
 "bondToNode" = "Veži na Čvor";
 "bridge" = "Most";
+"broadcastCouldNotConfirm" = "Nismo mogli potvrditi ovu transakciju. Možda je ipak prošla — provjerite preglednik prije ponovnog pokušaja.";
+"broadcastCouldNotConfirmTitle" = "Nije moguće potvrditi transakciju";
 "broadcastRetryGeneric" = "Podaci o transakciji istekli — detalji ažurirani. Molimo pokušajte ponovno.";
 "broadcastRetryStaleBlockhash" = "Transakcija istekla. Molimo pokušajte ponovno.";
 "broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";

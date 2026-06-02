@@ -33,6 +33,7 @@ struct KeysignView: View {
     @State var showError = false
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
 
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
@@ -80,6 +81,9 @@ struct KeysignView: View {
                 keysignFinished
             case .KeysignFailed:
                 sendCryptoKeysignView
+                    .padding(.horizontal, 16)
+            case .KeysignBroadcastUnconfirmed:
+                broadcastUnconfirmedView
                     .padding(.horizontal, 16)
             case .KeysignRetryRequested:
                 retryRequestedView
@@ -148,6 +152,28 @@ struct KeysignView: View {
         }
     }
 
+    /// Neutral terminal surface for a cancelled broadcast that could not be
+    /// positively confirmed on-chain. Shows the deterministic hash + explorer
+    /// link so the user can check for themselves, and deliberately does NOT
+    /// offer a one-tap re-broadcast (the tx may have landed — double-spend
+    /// risk). Never surfaces the internal "CancellationError" string.
+    var broadcastUnconfirmedView: some View {
+        ErrorView(
+            type: .warning,
+            title: "broadcastCouldNotConfirmTitle".localized,
+            description: "broadcastCouldNotConfirm".localized,
+            buttonTitle: "viewOnExplorer".localized
+        ) {
+            let urlString = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
+            if !urlString.isEmpty, let url = URL(string: urlString) {
+                openURL(url)
+            }
+        }
+        .onAppear {
+            showError = true
+        }
+    }
+
     var keysignVaultMismatchErrorView: some View {
         KeysignVaultMismatchErrorView()
             .onAppear {
@@ -184,6 +210,12 @@ struct KeysignView: View {
     }
 
     private func movetoDoneView() {
+        // Don't navigate to the success done-screen when the broadcast result is
+        // unconfirmed — the txid is set for display only, not as proof of a
+        // landed tx. The neutral in-place view handles that state.
+        guard viewModel.status != .KeysignBroadcastUnconfirmed else {
+            return
+        }
         guard let transferViewModel = transferViewModel, !viewModel.txid.isEmpty else {
             return
         }
