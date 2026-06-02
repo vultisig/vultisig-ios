@@ -270,8 +270,7 @@ class KeysignViewModel: ObservableObject {
             // unless the keysign actually completes and sets a txid (in which
             // case `KeysignView.onChange(of: txid)` will navigate away and the
             // retry view is torn down — the correct behaviour).
-            let terminal: [KeysignStatus] = [.KeysignFinished, .KeysignFailed, .KeysignVaultMismatch, .KeysignRetryRequested]
-            guard !terminal.contains(status) else { return }
+            guard !Self.isTerminalStatus(status) else { return }
             logger.warning("keysign exceeded \(Self.keysignStageTimeout, privacy: .public) stage timeout — requesting retry")
             self.retryReason = .other("KeysignStalled")
             setStatus(.KeysignRetryRequested)
@@ -290,6 +289,21 @@ class KeysignViewModel: ObservableObject {
             logger.info("status: \(String(describing: self.status), privacy: .public) → \(String(describing: newStatus), privacy: .public) at \(file, privacy: .public):\(line, privacy: .public)")
         }
         self.status = newStatus
+    }
+
+    /// A terminal status that `broadcastTransaction`/`handleBroadcastError`
+    /// (or the stage-timeout race) may have already set. Callers must NOT
+    /// overwrite it with `.KeysignFinished` afterwards. `.KeysignBroadcastUnconfirmed`
+    /// is included so a cancelled-but-unconfirmed broadcast isn't masked as a
+    /// false success by the post-broadcast finish guard.
+    static func isTerminalStatus(_ status: KeysignStatus) -> Bool {
+        switch status {
+        case .KeysignFinished, .KeysignFailed, .KeysignVaultMismatch,
+             .KeysignRetryRequested, .KeysignBroadcastUnconfirmed:
+            return true
+        case .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
+            return false
+        }
     }
 
     /// Wraps `txid = newTxid` with a logger marker. Counterpart to `setStatus`
@@ -392,8 +406,9 @@ class KeysignViewModel: ObservableObject {
                 setTxid(customMessagePayload.message)
             }
             // broadcastTransaction owns its terminal status — don't overwrite a
-            // failure (or retry request) set by handleBroadcastError.
-            if status != .KeysignFailed && status != .KeysignRetryRequested {
+            // failure, retry request, or the neutral "couldn't confirm" state
+            // set by handleBroadcastError.
+            if !Self.isTerminalStatus(status) {
                 setStatus(.KeysignFinished)
             }
         } catch {
@@ -424,7 +439,7 @@ class KeysignViewModel: ObservableObject {
         if let customMessagePayload {
             setTxid(customMessagePayload.message)
         }
-        if status != .KeysignFailed && status != .KeysignRetryRequested {
+        if !Self.isTerminalStatus(status) {
             setStatus(.KeysignFinished)
         }
     }

@@ -31,18 +31,30 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         }
 
         let behavior: Behavior
-        private(set) var callCount = 0
         private let lock = NSLock()
+        private var _callCount = 0
+        var callCount: Int {
+            lock.lock(); defer { lock.unlock() }
+            return _callCount
+        }
 
-        init(_ behavior: Behavior) {
+        /// Fulfilled the first time the checker is invoked. Lets a test wait
+        /// until the detached verification has provably started, instead of
+        /// racing it with a `task.cancel()`.
+        private let firstCall: XCTestExpectation?
+
+        init(_ behavior: Behavior, firstCall: XCTestExpectation? = nil) {
             self.behavior = behavior
+            self.firstCall = firstCall
         }
 
         func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
             await Task.yield()
             lock.lock()
-            callCount += 1
+            _callCount += 1
+            let isFirst = _callCount == 1
             lock.unlock()
+            if isFirst { firstCall?.fulfill() }
 
             switch behavior {
             case .confirmed:
@@ -188,17 +200,22 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
     // MARK: - (B) Verification runs even under a cancelled parent context
 
     func testVerificationRunsDetachedEvenWhenParentTaskIsCancelled() async {
-        let checker = FakeStatusChecker(.confirmed)
+        // The fake fulfills `firstCall` the instant it is invoked, so the test
+        // doesn't depend on cancel-timing luck: we cancel the parent, then wait
+        // on a deterministic signal that the detached verification reached the
+        // checker. A non-detached lookup would short-circuit on
+        // Task.checkCancellation() and the expectation would never fulfill.
+        let reachedChecker = expectation(description: "detached verification reached the checker")
+        let checker = FakeStatusChecker(.confirmed, firstCall: reachedChecker)
         let vm = makeViewModel(checker: checker)
         let txType = makeTransactionType()
 
-        // Run the handler inside a task that we cancel before it executes the
-        // verification. A non-detached lookup would short-circuit on
-        // Task.checkCancellation(); the detached one must still reach the fake.
         let task = Task { @MainActor in
             await vm.handleBroadcastError(error: CancellationError(), transactionType: txType)
         }
         task.cancel()
+
+        await fulfillment(of: [reachedChecker], timeout: 5)
         await task.value
 
         XCTAssertGreaterThan(checker.callCount, 0, "detached verification must still call the checker under a cancelled parent")
@@ -229,6 +246,43 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
 
         XCTAssertEqual(vm.txid, Self.txHash)
         XCTAssertNotEqual(vm.status, .KeysignFailed)
+    }
+
+    // MARK: - (C) Unconfirmed state is terminal and survives the finish guard
+
+    func testBroadcastUnconfirmedIsTerminalSoFinishGuardCannotOverwriteIt() {
+        // The post-broadcast guard in startKeysignDKLS/GG20 only sets
+        // .KeysignFinished when the current status is not terminal. If
+        // .KeysignBroadcastUnconfirmed were not terminal, the neutral
+        // "couldn't confirm" state would be silently masked as a false success.
+        XCTAssertTrue(KeysignViewModel.isTerminalStatus(.KeysignBroadcastUnconfirmed))
+        XCTAssertTrue(KeysignViewModel.isTerminalStatus(.KeysignFailed))
+        XCTAssertTrue(KeysignViewModel.isTerminalStatus(.KeysignRetryRequested))
+        XCTAssertTrue(KeysignViewModel.isTerminalStatus(.KeysignVaultMismatch))
+        XCTAssertTrue(KeysignViewModel.isTerminalStatus(.KeysignFinished))
+        XCTAssertFalse(KeysignViewModel.isTerminalStatus(.CreatingInstance))
+        XCTAssertFalse(KeysignViewModel.isTerminalStatus(.KeysignECDSA))
+        XCTAssertFalse(KeysignViewModel.isTerminalStatus(.KeysignEdDSA))
+        XCTAssertFalse(KeysignViewModel.isTerminalStatus(.KeysignMLDSA))
+    }
+
+    func testCancelledUnconfirmedBroadcastSurvivesPostBroadcastFinishGuard() async {
+        // End-to-end of the BLOCKING fix: a cancelled broadcast whose hash is
+        // NOT on-chain lands in .KeysignBroadcastUnconfirmed, and the
+        // post-broadcast finish guard (simulated here) must leave it untouched
+        // instead of flipping it to a false .KeysignFinished.
+        let checker = FakeStatusChecker(.notFound)
+        let vm = makeViewModel(checker: checker)
+
+        await vm.handleBroadcastError(error: CancellationError(), transactionType: makeTransactionType())
+        XCTAssertEqual(vm.status, .KeysignBroadcastUnconfirmed)
+
+        // Mirror the guard at the tail of startKeysignDKLS/GG20.
+        if !KeysignViewModel.isTerminalStatus(vm.status) {
+            vm.status = .KeysignFinished
+        }
+
+        XCTAssertEqual(vm.status, .KeysignBroadcastUnconfirmed, "finish guard must not overwrite the unconfirmed state")
     }
 
     // MARK: - Classifier unit coverage
