@@ -57,8 +57,12 @@ final class CosmosStakingConfigTests: XCTestCase {
         XCTAssertEqual(entry.bondDenom, "uluna")
         XCTAssertEqual(entry.feeDenom, "uluna")
         XCTAssertEqual(entry.valoperHrp, "terravaloper")
-        XCTAssertEqual(entry.gasLimit, 300_000)
-        XCTAssertEqual(entry.feeAmount, 7_500)
+        // Bumped from 300_000 -> 400_000 after observed OoG on redelegate
+        // (vultisig-android tx 44A3CE6C…EAF31, gasUsed 300_140 against the
+        // prior 300_000 floor). MsgBeginRedelegate writes two validator
+        // records; fee scaled proportionally to preserve 0.025 uluna/gas.
+        XCTAssertEqual(entry.gasLimit, 400_000)
+        XCTAssertEqual(entry.feeAmount, 10_000)
         XCTAssertEqual(entry.unbondingDays, 21)
     }
 
@@ -70,8 +74,11 @@ final class CosmosStakingConfigTests: XCTestCase {
         XCTAssertEqual(entry.bondDenom, "uluna")
         XCTAssertEqual(entry.feeDenom, "uluna")
         XCTAssertEqual(entry.valoperHrp, "terravaloper")
-        XCTAssertEqual(entry.gasLimit, 1_500_000)
-        XCTAssertEqual(entry.feeAmount, 100_000_000)
+        // LUNC redelegate hits the dual-record path too. Bumped 1.5M -> 2M
+        // for headroom; fee scaled to preserve the ~66.6667 uluna/gas ratio
+        // (100M / 1.5M -> 133_333_334 / 2M, rounded up by 1).
+        XCTAssertEqual(entry.gasLimit, 2_000_000)
+        XCTAssertEqual(entry.feeAmount, 133_333_334)
         XCTAssertEqual(entry.unbondingDays, 21)
     }
 

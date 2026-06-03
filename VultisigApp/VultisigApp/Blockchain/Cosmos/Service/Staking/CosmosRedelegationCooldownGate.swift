@@ -2,16 +2,22 @@
 //  CosmosRedelegationCooldownGate.swift
 //  VultisigApp
 //
-//  The cosmos-sdk x/staking module rejects a `MsgBeginRedelegate` if an
-//  unexpired redelegation record exists for the same `(src → *)` pair —
-//  this is the 21-day cooldown that prevents validator-hopping. The
-//  rejection happens post-broadcast, after MPC has already signed.
+//  The cosmos-sdk x/staking module rejects a `MsgBeginRedelegate` via
+//  `HasReceivingRedelegation(delAddr, valSrcAddr)` — i.e. when the proposed
+//  SOURCE validator is the DESTINATION of an existing unfinished
+//  redelegation by the same delegator. After `A -> B`, a new `B -> C` is
+//  rejected with `ErrTransitiveRedelegation`. The 21-day cooldown is
+//  enforced post-broadcast, after MPC has already signed.
 //
 //  This gate evaluates `/cosmos/staking/v1beta1/delegators/{addr}/redelegations`
-//  BEFORE the SignDoc is built. If any unfinished redelegation entry
-//  references the requested source validator, the redelegate flow is
-//  blocked and the UI surfaces the earliest unlock date inline. This is
-//  Spec Risk 4: "Don't surprise the user with an MPC burn".
+//  BEFORE the SignDoc is built. The filter looks at `dstValidator ==
+//  sourceValidator` — i.e. the proposed source was recently a destination —
+//  to mirror the chain's `HasReceivingRedelegation` rule. Spec Risk 4:
+//  "Don't surprise the user with an MPC burn".
+//
+//  Original port (PR #4432) had the filter inverted (`srcValidator ==
+//  sourceValidator`). vultisig-android caught and fixed it in commit
+//  `3729dc6dd` of its #4687 PR; this is the iOS-side cross-platform patch.
 //
 
 import Foundation
@@ -36,7 +42,7 @@ enum CosmosRedelegationCooldownGate {
         now: Date = Date()
     ) -> CosmosRedelegationCooldownState {
         let pending = redelegations
-            .filter { $0.srcValidator == sourceValidator && $0.completionTime > now }
+            .filter { $0.dstValidator == sourceValidator && $0.completionTime > now }
             .map(\.completionTime)
             .sorted()
 
