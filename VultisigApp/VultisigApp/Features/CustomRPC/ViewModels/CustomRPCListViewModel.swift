@@ -16,7 +16,8 @@ struct CustomRPCRow: Identifiable, Hashable {
 
 @MainActor
 final class CustomRPCListViewModel: ObservableObject {
-    @Published private(set) var rows: [CustomRPCRow] = []
+    @Published private(set) var allRows: [CustomRPCRow] = []
+    @Published var searchText: String = ""
 
     private let store: CustomRPCStore
 
@@ -24,8 +25,20 @@ final class CustomRPCListViewModel: ObservableObject {
         self.store = store
     }
 
+    /// Rows narrowed by `searchText`, matched case-insensitively against both the
+    /// chain name and ticker so "eth", "ethereum" and "ETH" all surface Ethereum.
+    /// An empty or whitespace-only query returns the full list.
+    var filteredRows: [CustomRPCRow] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isNotEmpty else { return allRows }
+        return allRows.filter { row in
+            row.chain.name.localizedCaseInsensitiveContains(query) ||
+            row.chain.ticker.localizedCaseInsensitiveContains(query)
+        }
+    }
+
     func reload() {
-        rows = CustomRPCSupportedChains.all.map { chain in
+        allRows = CustomRPCSupportedChains.all.map { chain in
             CustomRPCRow(chain: chain, activeURL: store.url(for: chain))
         }
     }

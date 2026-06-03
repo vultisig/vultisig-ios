@@ -8,19 +8,17 @@ import SwiftUI
 struct CustomRPCListScreen: View {
     @Environment(\.router) var router
     @StateObject private var viewModel = CustomRPCListViewModel()
+    @State private var searchFocused = false
 
     var body: some View {
         Screen {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 12) {
-                    ForEach(viewModel.rows) { row in
-                        Button {
-                            router.navigate(to: SettingsRoute.customRPCDetail(chain: row.chain))
-                        } label: {
-                            CustomRPCChainRow(row: row)
-                        }
-                        .buttonStyle(.plain)
-                    }
+            VStack(spacing: 12) {
+                SearchTextField(value: $viewModel.searchText, isFocused: $searchFocused)
+
+                if viewModel.filteredRows.isEmpty {
+                    emptyState
+                } else {
+                    list
                 }
             }
         }
@@ -28,6 +26,33 @@ struct CustomRPCListScreen: View {
         .onAppear {
             viewModel.reload()
         }
+        .onDisappear {
+            viewModel.searchText = ""
+        }
+    }
+
+    var list: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 12) {
+                ForEach(viewModel.filteredRows) { row in
+                    Button {
+                        router.navigate(to: SettingsRoute.customRPCDetail(chain: row.chain))
+                    } label: {
+                        CustomRPCChainRow(row: row)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    var emptyState: some View {
+        VStack {
+            Spacer()
+            ErrorMessage(text: "noResultFound")
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
