@@ -117,6 +117,8 @@
 "bondRune" = "绑定 RUNE";
 "bondToNode" = "绑定到节点";
 "bridge" = "跨链桥";
+"broadcastCouldNotConfirm" = "我们无法确认此交易。它可能仍已完成 — 请在重试前查看区块浏览器。";
+"broadcastCouldNotConfirmTitle" = "无法确认交易";
 "broadcastRetryGeneric" = "交易数据已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleBlockhash" = "交易已过期。请重试。";
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
@@ -412,6 +414,7 @@
 "fastLoaderTitle" = "正在寻找 Vultiserver 连接...";
 "fastModeTitle" = "快速";
 "fastSetUp" = "快速设置";
+"fastSign" = "快速签名";
 "fastVaultRegistrationFailed" = "注册 Vultiserver 失败，请重试。";
 "fastVaultSecureTextDescription" = "只需 1 个设备\n存储小额资金以进行快速操作\nVultiserver 即时共同签名";
 "fee" = "费用";
@@ -684,6 +687,7 @@
 "other" = "其他";
 "overview" = "概览";
 "pair" = "配对";
+"paired" = "已配对";
 "part" = "份额";
 "partOf" = "第 %d 部分，共 %d 部分";
 "password" = "密码";

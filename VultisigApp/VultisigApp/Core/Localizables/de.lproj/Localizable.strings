@@ -117,6 +117,8 @@
 "bondRune" = "RUNE binden";
 "bondToNode" = "An Knoten binden";
 "bridge" = "Brücke";
+"broadcastCouldNotConfirm" = "Wir konnten diese Transaktion nicht bestätigen. Sie wurde möglicherweise trotzdem ausgeführt — überprüfe den Explorer, bevor du es erneut versuchst.";
+"broadcastCouldNotConfirmTitle" = "Transaktion konnte nicht bestätigt werden";
 "broadcastRetryGeneric" = "Transaktionsdaten abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleBlockhash" = "Transaktion abgelaufen. Bitte erneut versuchen.";
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
@@ -412,6 +414,7 @@
 "fastLoaderTitle" = "Suche nach FastVaultServer";
 "fastModeTitle" = "SCHNELL";
 "fastSetUp" = "Schnelle Einrichtung";
+"fastSign" = "Schnell signieren";
 "fastVaultRegistrationFailed" = "Registrierung beim Vultiserver fehlgeschlagen. Bitte erneut versuchen.";
 "fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nKleine Beträge für schnelle Aktionen speichern\nVultiserver unterzeichnet sofort";
 "fee" = "Gebühr";
@@ -683,6 +686,7 @@
 "other" = "Andere";
 "overview" = "Übersicht";
 "pair" = "Koppeln";
+"paired" = "Gekoppelt";
 "part" = "Anteil";
 "partOf" = "Teil %d von %d";
 "password" = "Passwort";

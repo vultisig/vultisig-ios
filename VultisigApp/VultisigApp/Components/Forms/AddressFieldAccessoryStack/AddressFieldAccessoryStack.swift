@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import OSLog
 import UniformTypeIdentifiers
 #if os(iOS)
 import CodeScanner
@@ -18,15 +17,15 @@ struct AddressFieldAccessoryStack: View {
     var onResult: (AddressResult?) -> Void
 
     @State var showScanner = false
-    @State var showImagePicker = false
     @State var isUploading: Bool = false
     @State var showAddressBookSheet: Bool = false
     @State var scannerResultId: UUID? = nil
 
 #if os(iOS)
+    @State var showImagePicker = false
     @State var selectedImage: UIImage?
 #elseif os(macOS)
-    @State var selectedImage: NSImage?
+    @ObservedObject var scannerResultManager = ScannerResultManager.shared
 #endif
 
     var body: some View {
@@ -35,11 +34,7 @@ struct AddressFieldAccessoryStack: View {
                 pasteAddress()
             }
             AddressFieldAccessoryButton(icon: "camera") {
-#if os(iOS)
                 showScanner.toggle()
-#else
-                showImagePicker.toggle()
-#endif
             }
             AddressFieldAccessoryButton(icon: "book") {
                 showAddressBookSheet.toggle()
@@ -61,36 +56,15 @@ struct AddressFieldAccessoryStack: View {
             )
         }
         #else
-        .fileImporter(
-            isPresented: $showImagePicker,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                handleImageQrCode(data: qrCode)
-            } catch {
-                print(error)
-            }
-        }
         .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
             OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
         .onChange(of: showScanner) { _, shouldNavigate in
-            if shouldNavigate {
-                let resultId = UUID()
-                scannerResultId = resultId
-                router.navigate(to: KeygenRoute.macAddressScanner(
-                    selectedVault: nil,
-                    resultId: resultId
-                ))
-                showScanner = false
-            } else if let resultId = scannerResultId,
-                      let result = ScannerResultManager.shared.getResult(for: resultId) {
-                onResult(result)
-                ScannerResultManager.shared.clearResult(for: resultId)
-                scannerResultId = nil
-            }
+            guard shouldNavigate else { return }
+            presentScanner()
+        }
+        .onChange(of: scannedAddress) { _, _ in
+            deliverScannedResult()
         }
         #endif
     }
@@ -121,6 +95,32 @@ private extension AddressFieldAccessoryStack {
 }
 #else
 private extension AddressFieldAccessoryStack {
+    /// The address of the scan result currently pending delivery, if any. Observing
+    /// `scannerResultManager` re-renders this view when the pushed scanner stores a
+    /// result, letting `onChange(of: scannedAddress)` deliver it after we return.
+    var scannedAddress: String? {
+        guard let scannerResultId else { return nil }
+        return scannerResultManager.getResult(for: scannerResultId)?.address
+    }
+
+    func presentScanner() {
+        let resultId = UUID()
+        scannerResultId = resultId
+        router.navigate(to: KeygenRoute.macAddressScanner(
+            selectedVault: nil,
+            resultId: resultId
+        ))
+        showScanner = false
+    }
+
+    func deliverScannedResult() {
+        guard let scannerResultId,
+              let result = scannerResultManager.getResult(for: scannerResultId) else { return }
+        onResult(result)
+        scannerResultManager.clearResult(for: scannerResultId)
+        self.scannerResultId = nil
+    }
+
     func handleImageQrCode(data: Data) {
         onResult(.fromURI(String(data: data, encoding: .utf8) ?? .empty))
     }

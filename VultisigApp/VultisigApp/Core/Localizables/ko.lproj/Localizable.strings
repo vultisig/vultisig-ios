@@ -125,6 +125,8 @@
 "bondRune" = "RUNE 본드";
 "bondToNode" = "노드에 본드";
 "bridge" = "브릿지";
+"broadcastCouldNotConfirm" = "이 트랜잭션을 확인할 수 없습니다. 그래도 처리되었을 수 있으니 다시 시도하기 전에 익스플로러를 확인하세요.";
+"broadcastCouldNotConfirmTitle" = "트랜잭션을 확인할 수 없습니다";
 "broadcastRetryGeneric" = "트랜잭션 데이터가 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleBlockhash" = "트랜잭션이 만료되었습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleNonce" = "트랜잭션 nonce가 오래되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
@@ -409,6 +411,7 @@
 "fastLoaderTitle" = "연결할 Vultiserver를 찾는 중...";
 "fastModeTitle" = "빠름";
 "fastSetUp" = "빠른 설정";
+"fastSign" = "빠른 서명";
 "fastVaultRegistrationFailed" = "Vultiserver 등록에 실패했습니다. 다시 시도해 주세요.";
 "fastVaultSecureTextDescription" = "기기 1개만 필요\n빠른 작업을 위한 소액 자금 저장\nVultiserver가 즉시 공동 서명";
 "fee" = "수수료";
@@ -680,6 +683,7 @@
 "other" = "기타";
 "overview" = "개요";
 "pair" = "쌍";
+"paired" = "페어링됨";
 "part" = "공유";
 "partOf" = "%d/%d 공유";
 "password" = "비밀번호";

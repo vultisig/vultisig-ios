@@ -162,32 +162,22 @@ struct SendVerifyScreen: View {
     }
 
     var pairedSignButton: some View {
-        VStack {
-            if vault.isFastVault {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    // Clear password for paired sign (long press)
-                    sendCryptoVerifyViewModel.fastVaultPassword = ""
-                    onSignPress()
-                }
-                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $sendCryptoVerifyViewModel.fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { onSignPress() }
-                    )
-                }
-            } else {
-                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    onSignPress()
-                }
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: sendCryptoVerifyViewModel.signButtonDisabled,
+            singleSignTitle: "signTransaction",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
+                sendCryptoVerifyViewModel.fastVaultPassword = ""
+                onSignPress()
             }
+        )
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $sendCryptoVerifyViewModel.fastVaultPassword,
+                vault: vault,
+                onSubmit: { onSignPress() }
+            )
         }
-        .disabled(sendCryptoVerifyViewModel.signButtonDisabled)
     }
 }

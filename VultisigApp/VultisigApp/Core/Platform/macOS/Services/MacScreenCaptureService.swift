@@ -7,6 +7,9 @@
 import ScreenCaptureKit
 import CoreImage
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "screen-capture")
 
 /// Thread-safe normalized rect (0..1) in screen coordinates (bottom-left origin).
 /// Written by the preview NSView, read by the stream output for cropping QR detection.
@@ -40,7 +43,10 @@ class MacScreenCaptureService: ObservableObject {
             let content = try await SCShareableContent.current
 
             let mainDisplayID = NSScreen.main?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
-            guard let display = content.displays.first(where: { $0.displayID == mainDisplayID }) ?? content.displays.first else { return }
+            guard let display = content.displays.first(where: { $0.displayID == mainDisplayID }) ?? content.displays.first else {
+                logger.error("No shareable display found (displays: \(content.displays.count))")
+                return
+            }
 
             let excludedWindows = content.windows.filter {
                 $0.owningApplication?.bundleIdentifier == Bundle.main.bundleIdentifier
@@ -74,9 +80,10 @@ class MacScreenCaptureService: ObservableObject {
 
             stream = newStream
         } catch let error as SCStreamError where error.code == .userDeclined {
+            logger.warning("Screen recording permission denied")
             isPermissionDenied = true
         } catch {
-            print("[MacScreenCaptureService] capture failed: \(error)")
+            logger.error("Screen capture failed to start: \(error.localizedDescription)")
         }
     }
 
@@ -137,7 +144,12 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
             ).intersection(extent)
 
             guard !cropRect.isEmpty else { return }
-            imageToScan = ciImage.cropped(to: cropRect)
+            // CIDetector is unreliable on images whose extent has a non-zero
+            // origin, so translate the cropped region back to (0, 0) before
+            // running QR detection.
+            imageToScan = ciImage
+                .cropped(to: cropRect)
+                .transformed(by: CGAffineTransform(translationX: -cropRect.origin.x, y: -cropRect.origin.y))
         }
 
         guard let features = qrDetector?.features(in: imageToScan) as? [CIQRCodeFeature] else { return }
