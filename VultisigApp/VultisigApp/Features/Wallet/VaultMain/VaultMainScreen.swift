@@ -160,6 +160,11 @@ struct VaultMainScreen: View {
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
+            // Rebuild the carousel per vault so a banner dismissed on one vault
+            // (without being persisted, e.g. `.buyVult` below Silver tier) shows
+            // again when switching to another vault, instead of staying hidden by
+            // the carousel's cached internal banner state.
+            .id(vault.id)
         }
     }
 
