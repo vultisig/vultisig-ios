@@ -407,6 +407,7 @@
 "fee" = "费用";
 "filterByAsset" = "按资产筛选";
 "findCustomTokens" = "查找自定义代币";
+"findCustomTokenThorchainPlaceholder" = "输入代币，例如 THOR.LQDY";
 "folder" = "文件夹";
 "folderName" = "文件夹名称";
 "folderNeedsOneVault" = "文件夹需要至少选择一个保险库";

@@ -407,6 +407,7 @@
 "fee" = "Gebühr";
 "filterByAsset" = "Nach Asset filtern";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
+"findCustomTokenThorchainPlaceholder" = "Token eingeben, z. B. THOR.LQDY";
 "folder" = "Ordner";
 "folderName" = "Ordnername";
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";

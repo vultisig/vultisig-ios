@@ -413,6 +413,7 @@
 "fee" = "Fee";
 "filterByAsset" = "Filter by Asset";
 "findCustomTokens" = "Find custom token";
+"findCustomTokenThorchainPlaceholder" = "Enter token, e.g. THOR.LQDY";
 "folder" = "Folder";
 "folderName" = "Folder Name";
 "folderNeedsOneVault" = "Folder needs to have at least one selected vault.";

@@ -407,6 +407,7 @@
 "fee" = "Taxa";
 "filterByAsset" = "Filtrar por ativo";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
+"findCustomTokenThorchainPlaceholder" = "Insira o token, ex.: THOR.LQDY";
 "folder" = "Pasta";
 "folderName" = "Nome da Pasta";
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";

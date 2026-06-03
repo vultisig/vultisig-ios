@@ -407,6 +407,7 @@
 "fee" = "Naknada";
 "filterByAsset" = "Filtriraj po imovini";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
+"findCustomTokenThorchainPlaceholder" = "Unesite token, npr. THOR.LQDY";
 "folder" = "Mapa";
 "folderName" = "Naziv Mape";
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";

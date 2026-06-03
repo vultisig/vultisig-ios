@@ -407,6 +407,7 @@
 "fee" = "Commissione";
 "filterByAsset" = "Filtra per asset";
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
+"findCustomTokenThorchainPlaceholder" = "Inserisci il token, ad es. THOR.LQDY";
 "folder" = "Cartella";
 "folderName" = "Nome della Cartella";
 "folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";

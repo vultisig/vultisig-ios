@@ -404,6 +404,7 @@
 "fee" = "수수료";
 "filterByAsset" = "자산으로 필터링";
 "findCustomTokens" = "커스텀 토큰 찾기";
+"findCustomTokenThorchainPlaceholder" = "토큰 입력, 예: THOR.LQDY";
 "folder" = "폴더";
 "folderName" = "폴더 이름";
 "folderNeedsOneVault" = "폴더에는 선택된 볼트가 하나 이상 있어야 합니다.";
