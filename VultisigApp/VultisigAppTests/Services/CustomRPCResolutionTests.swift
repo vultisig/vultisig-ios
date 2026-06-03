@@ -85,6 +85,34 @@ final class CustomRPCResolutionTests: XCTestCase {
         XCTAssertEqual(rpc.path, "/status")
     }
 
+    func test_thorchainMainnet_feeAndInbound_default_matchLegacyNineRealmsURLs() {
+        // fetchFeePrice() / fetchThorchainInboundAddress() route through
+        // mainnet(.networkInfo) / mainnet(.inboundAddresses) so the override
+        // applies. With no override the resolved URL must stay byte-identical
+        // to the legacy NineRealms endpoints they previously hit.
+        let networkInfo = ThorchainMainnetAPI(.networkInfo)
+        XCTAssertEqual(networkInfo.baseURL, ThorchainMainnetAPI.defaultLCDHost)
+        XCTAssertEqual(
+            networkInfo.baseURL.appendingPathComponent(networkInfo.path).absoluteString,
+            "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
+        )
+
+        let inbound = ThorchainMainnetAPI(.inboundAddresses)
+        XCTAssertEqual(inbound.baseURL, ThorchainMainnetAPI.defaultLCDHost)
+        XCTAssertEqual(
+            inbound.baseURL.appendingPathComponent(inbound.path).absoluteString,
+            "https://gateway.liquify.com/chain/thorchain_api/thorchain/inbound_addresses"
+        )
+    }
+
+    func test_thorchainMainnet_feeAndInbound_override_appliesInjectedHost() throws {
+        let host = try XCTUnwrap(URL(string: "https://my-thor-node.example"))
+        let networkInfo = ThorchainMainnetAPI(.networkInfo, lcdHost: host, rpcHost: host)
+        XCTAssertEqual(networkInfo.baseURL, host)
+        let inbound = ThorchainMainnetAPI(.inboundAddresses, lcdHost: host, rpcHost: host)
+        XCTAssertEqual(inbound.baseURL, host)
+    }
+
     func test_thorchainMainnet_override_appliesToLcdAndRpcOnly() throws {
         let host = try XCTUnwrap(URL(string: "https://my-thor-node.example"))
 

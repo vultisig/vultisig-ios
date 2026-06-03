@@ -14,7 +14,12 @@ class SuiService {
     static let shared = SuiService()
 
     /// Default Sui JSON-RPC host.
-    static let defaultRPCURL = URL(string: Endpoint.suiServiceRpc)!
+    static let defaultRPCURL: URL = {
+        guard let url = URL(string: Endpoint.suiServiceRpc) else {
+            preconditionFailure("Invalid Sui default RPC URL: \(Endpoint.suiServiceRpc)")
+        }
+        return url
+    }()
 
     /// Resolves the Sui custom RPC override. Injected so the request URL is
     /// derived from a dependency rather than a global reach-in; resolution is

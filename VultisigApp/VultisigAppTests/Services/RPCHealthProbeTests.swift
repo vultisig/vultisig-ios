@@ -52,7 +52,8 @@ final class RPCHealthProbeTests: XCTestCase {
         http.queueDecoded(["result": "ok"])
         let probe = RPCHealthProbe(httpClient: http)
         let result = await probe.probe(urlString: "https://sol.example", chain: .solana)
-        guard case .ok = result else { return XCTFail("expected .ok, got \(result)") }
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertFalse(verified, "getHealth only proves liveness, not cluster identity")
     }
 
     func test_solana_invalidWhenNotOk() async {

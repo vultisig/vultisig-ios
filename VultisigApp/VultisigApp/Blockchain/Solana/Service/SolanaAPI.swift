@@ -12,7 +12,7 @@ import Foundation
 /// disagreeing — a custom override drops the proxy path, the default keeps it.
 struct SolanaAPI: TargetType {
     /// The default Vultisig proxy host. Solana RPC is nested under `/solana/`.
-    static let rpcBaseURL = URL(string: "https://api.vultisig.com")!
+    static let rpcBaseURL = URL(staticString: "https://api.vultisig.com")
     /// The proxy path appended to the default host.
     static let proxyPath = "/solana/"
 

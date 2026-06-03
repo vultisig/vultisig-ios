@@ -17,9 +17,9 @@ import Foundation
 /// types so each environment stays typed.
 struct ThorchainMainnetAPI: TargetType {
     /// Default THORChain LCD host; serves the Cosmos-SDK + thornode REST surface.
-    static let defaultLCDHost = URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
+    static let defaultLCDHost = URL(staticString: "https://gateway.liquify.com/chain/thorchain_api")
     /// Default THORChain RPC host; serves `/status`.
-    static let defaultRPCHost = URL(string: "https://gateway.liquify.com/chain/thorchain_rpc")!
+    static let defaultRPCHost = URL(staticString: "https://gateway.liquify.com/chain/thorchain_rpc")
 
     let endpoint: Endpoint
     /// The resolved THORChain LCD host (override-aware), baked in by the service.
@@ -86,10 +86,11 @@ struct ThorchainMainnetAPI: TargetType {
             return rpcHost
         case .resolveTNS(_, let chain):
             let isStagenet = (chain == .thorChainChainnet || chain == .thorChainStagenet)
-            let host = isStagenet ? "https://stagenet-midgard.thorchain.network" : "https://gateway.liquify.com/chain/thorchain_midgard"
-            return URL(string: host)!
+            return isStagenet
+                ? URL(staticString: "https://stagenet-midgard.thorchain.network")
+                : URL(staticString: "https://gateway.liquify.com/chain/thorchain_midgard")
         case .rujiGraphQL:
-            return URL(string: "https://api.vultisig.com")!
+            return URL(staticString: "https://api.vultisig.com")
         }
     }
 

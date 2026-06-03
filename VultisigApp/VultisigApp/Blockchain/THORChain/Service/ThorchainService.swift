@@ -200,9 +200,11 @@ class ThorchainService: ThorchainSwapProvider {
             return UInt64(cachedData.native_tx_fee_rune) ?? 0
         }
 
-        let urlString = Endpoint.fetchThorchainNetworkInfoNineRealms
-        let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        let thorchainNetworkInfo = try JSONDecoder().decode(ThorchainNetworkInfo.self, from: data)
+        let response = try await httpClient.request(
+            mainnet(.networkInfo),
+            responseType: ThorchainNetworkInfo.self
+        )
+        let thorchainNetworkInfo = response.data
         self.cacheFeePrice.set(cacheKey, (data: thorchainNetworkInfo, timestamp: Date()))
         return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
     }
@@ -219,9 +221,11 @@ class ThorchainService: ThorchainSwapProvider {
                 return cachedData
             }
 
-            let urlString = Endpoint.fetchThorchainInboundAddressesNineRealms
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            let inboundAddresses = try JSONDecoder().decode([InboundAddress].self, from: data)
+            let response = try await httpClient.request(
+                mainnet(.inboundAddresses),
+                responseType: [InboundAddress].self
+            )
+            let inboundAddresses = response.data
             self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
             return inboundAddresses
         } catch {

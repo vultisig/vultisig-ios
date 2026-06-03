@@ -26,7 +26,7 @@ struct TronAPI: TargetType {
     }
 
     /// Default TRON REST host (Vultisig proxy).
-    static let defaultHost = URL(string: "https://api.vultisig.com/tron-rest")!
+    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron-rest")
 
     let endpoint: Endpoint
     /// The resolved TRON REST host (override-aware), baked in by the API service.

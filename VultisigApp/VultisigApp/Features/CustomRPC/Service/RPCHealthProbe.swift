@@ -164,7 +164,10 @@ struct RPCHealthProbe {
         do {
             let response = try await httpClient.request(target, responseType: SolanaHealthResponse.self)
             guard response.data.result == "ok" else { return .invalidResponse }
-            return .ok(latencyMs: latencyMs(since: start), networkVerified: true)
+            // `getHealth` only reports liveness relative to the cluster tip; it
+            // does not identify which cluster (mainnet/devnet/testnet) the node
+            // serves, so we cannot claim network identity here.
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
         } catch {
             return mapFailure(error)
         }

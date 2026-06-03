@@ -15,7 +15,7 @@ import Foundation
 /// hardcoded default, mirroring how THORChain's Midgard stays on defaults.
 struct MayaChainAPI: TargetType {
     /// Default Mayanode REST host; serves the Cosmos-SDK + mayanode REST surface.
-    static let defaultHost = URL(string: "https://mayanode.mayachain.info")!
+    static let defaultHost = URL(staticString: "https://mayanode.mayachain.info")
 
     enum Endpoint {
         case balances(address: String)

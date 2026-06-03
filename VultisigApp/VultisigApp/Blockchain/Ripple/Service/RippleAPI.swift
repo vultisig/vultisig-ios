@@ -18,7 +18,7 @@ struct RippleAPI: TargetType {
     }
 
     /// Default XRP Ledger JSON-RPC host.
-    static let defaultHost = URL(string: "https://xrplcluster.com")!
+    static let defaultHost = URL(staticString: "https://xrplcluster.com")
 
     let endpoint: Endpoint
     /// The resolved XRPL host (override-aware), baked in by the service.
