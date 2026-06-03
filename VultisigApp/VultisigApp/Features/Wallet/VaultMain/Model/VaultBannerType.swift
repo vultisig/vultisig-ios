@@ -17,9 +17,9 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
 
     var isAppBanner: Bool {
         switch self {
-        case .upgradeVault, .backupVault:
+        case .upgradeVault, .backupVault, .buyVult:
             return false
-        case .buyVult, .followVultisig:
+        case .followVultisig:
             return true
         }
     }

@@ -92,6 +92,14 @@ class VaultDetailViewModel: ObservableObject {
             return
         }
 
+        // `.buyVult` is only dismissed permanently once the vault holds at least
+        // the Silver-tier VULT amount. Below that, skip persistence so the banner
+        // returns the next time the user opens the vault screen (the carousel has
+        // already hidden it for the current visit).
+        if banner == .buyVult, !hasReachedSilverTier(vault: vault) {
+            return
+        }
+
         vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
         do {
             try Storage.shared.save()
@@ -104,6 +112,11 @@ class VaultDetailViewModel: ObservableObject {
     func canShowChainSelection(vault: Vault) -> Bool {
         // Vault cannot change chains for KeyImport for now
         vault.libType != .KeyImport
+    }
+
+    private func hasReachedSilverTier(vault: Vault) -> Bool {
+        let vultBalance = VultTierService().getVultToken(for: vault)?.balanceDecimal ?? 0
+        return vultBalance >= VultDiscountTier.silver.balanceToUnlock
     }
 }
 
