@@ -28,10 +28,7 @@ class RippleService {
     /// The override-aware XRPL host. Falls back to the default host when no
     /// override is set.
     private var resolvedHost: URL {
-        if let override = resolver.url(for: .ripple), let url = URL(string: override) {
-            return url
-        }
-        return RippleAPI.defaultHost
+        resolver.resolvedURL(for: .ripple, default: RippleAPI.defaultHost)
     }
 
     /// Builds a pure `RippleAPI` value with the resolved host baked in. The

@@ -33,19 +33,15 @@ class ThorchainService: ThorchainSwapProvider {
     }
 
     /// The override-aware THORChain LCD host. Falls back to the default host
-    /// when no override is set. Exposed so the broadcast path can reuse it.
+    /// when no override is set. Exposed so the broadcast path can reuse it. The
+    /// single `.thorChain` override intentionally replaces both the LCD and RPC
+    /// hosts (see `resolvedRPCHost`).
     var resolvedLCDHost: URL {
-        if let override = resolver.url(for: .thorChain), let url = URL(string: override) {
-            return url
-        }
-        return ThorchainMainnetAPI.defaultLCDHost
+        resolver.resolvedURL(for: .thorChain, default: ThorchainMainnetAPI.defaultLCDHost)
     }
 
     private var resolvedRPCHost: URL {
-        if let override = resolver.url(for: .thorChain), let url = URL(string: override) {
-            return url
-        }
-        return ThorchainMainnetAPI.defaultRPCHost
+        resolver.resolvedURL(for: .thorChain, default: ThorchainMainnetAPI.defaultRPCHost)
     }
 
     /// Builds a pure `ThorchainMainnetAPI` value with the resolved LCD / RPC

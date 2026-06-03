@@ -19,4 +19,15 @@ protocol RPCEndpointResolving: Sendable {
     func url(for chain: Chain) -> String?
 }
 
+extension RPCEndpointResolving {
+    /// Returns the user's custom RPC URL for `chain` if one is set and parses as
+    /// a valid URL; otherwise the supplied default. Centralizes the override +
+    /// string→URL parsing so call sites don't repeat the guard. Stays synchronous
+    /// and SwiftData-free — it only calls the existing `url(for:)`.
+    func resolvedURL(for chain: Chain, default defaultURL: URL) -> URL {
+        guard let raw = url(for: chain), let parsed = URL(string: raw) else { return defaultURL }
+        return parsed
+    }
+}
+
 extension CustomRPCStore: RPCEndpointResolving {}

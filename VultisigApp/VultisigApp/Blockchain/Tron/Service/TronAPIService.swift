@@ -28,12 +28,11 @@ struct TronAPIService {
     }
 
     /// The override-aware TRON REST host. Falls back to the default proxy host
-    /// when no override is set.
+    /// when no override is set. The `.tron` override applies to this REST host
+    /// only; the EVM-rpc host (`EvmServiceConfig`) excludes `.tron` and is
+    /// unaffected.
     private var resolvedHost: URL {
-        if let override = resolver.url(for: .tron), let url = URL(string: override) {
-            return url
-        }
-        return TronAPI.defaultHost
+        resolver.resolvedURL(for: .tron, default: TronAPI.defaultHost)
     }
 
     /// Builds a pure `TronAPI` value with the resolved host baked in. The

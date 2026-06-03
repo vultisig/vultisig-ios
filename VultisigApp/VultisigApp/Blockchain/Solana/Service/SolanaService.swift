@@ -54,10 +54,13 @@ class SolanaService {
     /// proxy host keeps it. Both halves are resolved together here so `baseURL`
     /// and `path` cannot disagree. The `TargetType` never consults the resolver.
     private func api(_ method: SolanaAPI.Method) -> SolanaAPI {
-        if let override = resolver.url(for: .solana), let url = URL(string: override) {
-            return SolanaAPI(baseURL: url, usesProxyPath: false, rpcMethod: method)
-        }
-        return SolanaAPI(baseURL: SolanaAPI.rpcBaseURL, usesProxyPath: true, rpcMethod: method)
+        // A valid override supplies a complete JSON-RPC endpoint, so the proxy
+        // path is dropped; the no-override default keeps it. The host comes from
+        // the shared resolution helper while the proxy-path flag mirrors that
+        // same override-present decision so `baseURL` and `path` cannot disagree.
+        let hasOverride = resolver.url(for: .solana).flatMap { URL(string: $0) } != nil
+        let baseURL = resolver.resolvedURL(for: .solana, default: SolanaAPI.rpcBaseURL)
+        return SolanaAPI(baseURL: baseURL, usesProxyPath: !hasOverride, rpcMethod: method)
     }
 
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"

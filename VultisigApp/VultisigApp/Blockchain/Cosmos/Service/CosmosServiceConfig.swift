@@ -8,28 +8,35 @@ import Foundation
 struct CosmosServiceConfig {
     let chain: Chain
 
-    /// The resolved custom RPC override URL for this chain, baked in at
-    /// construction time by the factory. `nil` means no override is set and the
-    /// hardcoded default host is used.
-    let overrideURL: URL?
+    /// Resolves the custom RPC override for this chain. Held so `baseURL` can
+    /// apply the override through the shared resolution helper at access time.
+    private let resolver: RPCEndpointResolving
+
+    /// The resolved custom RPC override URL for this chain, or `nil` when no
+    /// override is set (the hardcoded default host is used).
+    var overrideURL: URL? {
+        resolver.url(for: chain).flatMap { URL(string: $0) }
+    }
 
     init(chain: Chain, resolver: RPCEndpointResolving = CustomRPCStore.shared) {
         self.chain = chain
-        if let override = resolver.url(for: chain), let url = URL(string: override) {
-            self.overrideURL = url
-        } else {
-            self.overrideURL = nil
-        }
+        self.resolver = resolver
     }
 
     /// REST host for this chain. All `/cosmos/*`, `/ibc/*`, `/cosmwasm/*`
-    /// paths are appended to this by `CosmosAPI`.
+    /// paths are appended to this by `CosmosAPI`. The app-wide custom RPC
+    /// override wins over the hardcoded default for this chain.
     var baseURL: URL? {
-        // App-wide custom RPC override wins over the hardcoded default. Falls
-        // through to the default switch when no override is set for this chain.
-        if let overrideURL {
-            return overrideURL
-        }
+        // For supported chains the override layers over the hardcoded default.
+        // For unsupported chains (no default) fall back to the bare override so
+        // behavior matches the pre-refactor `overrideURL ?? default` exactly.
+        guard let defaultHost else { return overrideURL }
+        return resolver.resolvedURL(for: chain, default: defaultHost)
+    }
+
+    /// The hardcoded default REST host for this chain, or `nil` for chains this
+    /// config does not support.
+    private var defaultHost: URL? {
         switch chain {
         case .gaiaChain:
             return URL(string: "https://cosmos-rest.publicnode.com")

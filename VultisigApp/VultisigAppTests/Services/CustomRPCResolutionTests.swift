@@ -18,6 +18,30 @@ final class CustomRPCResolutionTests: XCTestCase {
 
     private let noOverride = FakeRPCResolver()
 
+    // MARK: - resolvedURL(for:default:) extension (override + parse helper)
+
+    func test_resolvedURL_validOverride_returnsParsedURL() throws {
+        let defaultURL = try XCTUnwrap(URL(string: "https://default.example"))
+        let resolver = FakeRPCResolver(overrides: [.ethereum: "https://my-node.example/rpc"])
+        XCTAssertEqual(
+            resolver.resolvedURL(for: .ethereum, default: defaultURL).absoluteString,
+            "https://my-node.example/rpc"
+        )
+    }
+
+    func test_resolvedURL_noOverride_returnsDefault() throws {
+        let defaultURL = try XCTUnwrap(URL(string: "https://default.example"))
+        XCTAssertEqual(noOverride.resolvedURL(for: .ethereum, default: defaultURL), defaultURL)
+    }
+
+    func test_resolvedURL_malformedOverride_returnsDefault() throws {
+        let defaultURL = try XCTUnwrap(URL(string: "https://default.example"))
+        // A non-empty but unparseable override string must fall back to the
+        // default rather than producing a broken URL.
+        let resolver = FakeRPCResolver(overrides: [.ethereum: "ht tp://not a url"])
+        XCTAssertEqual(resolver.resolvedURL(for: .ethereum, default: defaultURL), defaultURL)
+    }
+
     // MARK: - EVM (single resolution point: EvmServiceConfig.getConfig)
 
     func test_evmConfig_returnsDefault_whenNoOverride() throws {

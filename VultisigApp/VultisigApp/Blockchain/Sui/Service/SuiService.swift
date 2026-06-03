@@ -35,10 +35,7 @@ class SuiService {
     /// no override is set. Sui exposes a single JSON-RPC endpoint that the
     /// request methods post to directly, so the override is the complete URL.
     private var rpcURL: URL {
-        if let override = resolver.url(for: .sui), let url = URL(string: override) {
-            return url
-        }
-        return Self.defaultRPCURL
+        resolver.resolvedURL(for: .sui, default: Self.defaultRPCURL)
     }
     private let jsonDecoder = JSONDecoder()
 

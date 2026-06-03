@@ -31,10 +31,7 @@ class MayachainService: ThorchainSwapProvider {
     /// The override-aware Mayanode host. Falls back to the default host when no
     /// override is set.
     private var resolvedHost: URL {
-        if let override = resolver.url(for: .mayaChain), let url = URL(string: override) {
-            return url
-        }
-        return MayaChainAPI.defaultHost
+        resolver.resolvedURL(for: .mayaChain, default: MayaChainAPI.defaultHost)
     }
 
     /// Builds a pure `MayaChainAPI` value with the resolved host baked in. The

@@ -25,10 +25,7 @@ class TonService {
     /// The override-aware TON host. Falls back to the default proxy host when no
     /// override is set.
     private var resolvedHost: URL {
-        if let override = resolver.url(for: .ton), let url = URL(string: override) {
-            return url
-        }
-        return TonAPI.defaultHost
+        resolver.resolvedURL(for: .ton, default: TonAPI.defaultHost)
     }
 
     /// Builds a pure `TonAPI` value with the resolved host baked in. The
