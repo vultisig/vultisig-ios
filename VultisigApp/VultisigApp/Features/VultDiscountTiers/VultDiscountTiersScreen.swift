@@ -9,7 +9,6 @@ import BigInt
 import SwiftUI
 
 struct VultDiscountTiersScreen: View {
-    @Environment(\.router) var router
     @ObservedObject var vault: Vault
 
     @State private var activeTier: VultDiscountTier?
@@ -67,19 +66,7 @@ struct VultDiscountTiersScreen: View {
                 }
             }
         }
-        .crossPlatformSheet(item: $showTierSheet) { tier in
-            VultDiscountTierBottomSheet(
-                tier: tier,
-                isPresented: Binding(get: { showTierSheet != nil }, set: { _ in showTierSheet = nil })
-            ) {
-                showTierSheet = nil
-                router.navigate(to: VaultRoute.swap(
-                    fromCoin: vault.nativeCoin(for: .ethereum),
-                    toCoin: service.getVultToken(for: vault),
-                    vault: vault
-                ))
-            }
-        }
+        .tierGated(presentedTier: $showTierSheet, vault: vault)
         .onLoad {
             getVultToken()
             getVultTier()

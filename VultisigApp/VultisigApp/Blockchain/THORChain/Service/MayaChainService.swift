@@ -14,13 +14,35 @@ class MayachainService: ThorchainSwapProvider {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-service")
     private let httpClient: HTTPClientProtocol
 
-    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+    /// Resolves the MayaChain custom RPC override. Injected so the API values
+    /// are built from a dependency rather than a global reach-in; resolution
+    /// happens per request inside `api(_:)` so a runtime override change is
+    /// picked up live (the shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
+    private init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
+    ) {
         self.httpClient = httpClient
+        self.resolver = resolver
+    }
+
+    /// The override-aware Mayanode host. Falls back to the default host when no
+    /// override is set.
+    private var resolvedHost: URL {
+        resolver.resolvedURL(for: .mayaChain, default: MayaChainAPI.defaultHost)
+    }
+
+    /// Builds a pure `MayaChainAPI` value with the resolved host baked in. The
+    /// `TargetType` itself never consults the resolver.
+    private func api(_ endpoint: MayaChainAPI.Endpoint) -> MayaChainAPI {
+        MayaChainAPI(endpoint, host: resolvedHost)
     }
 
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
         let response = try await httpClient.request(
-            MayaChainAPI.balances(address: address),
+            api(.balances(address: address)),
             responseType: CosmosBalanceResponse.self
         )
         return response.data.balances
@@ -75,7 +97,7 @@ class MayachainService: ThorchainSwapProvider {
 
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         let response = try await httpClient.request(
-            MayaChainAPI.accountNumber(address: address),
+            api(.accountNumber(address: address)),
             responseType: THORChainAccountNumberResponse.self
         )
         return response.data.result.value
@@ -97,7 +119,7 @@ class MayachainService: ThorchainSwapProvider {
         )
         let streamingQuantityParam = streamingQuantity > 0 ? String(streamingQuantity) : nil
 
-        let target = MayaChainAPI.swapQuote(
+        let target = api(.swapQuote(
             fromAsset: fromAsset,
             toAsset: toAsset,
             amount: amount,
@@ -106,7 +128,7 @@ class MayachainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantityParam,
             affiliate: affiliate,
             affiliateBps: affiliateBps
-        )
+        ))
 
         // Maya sometimes returns a structured swap error body with a
         // non-2xx status or a shape that doesn't decode as ThorchainSwapQuote.
@@ -133,7 +155,7 @@ class MayachainService: ThorchainSwapProvider {
         }
 
         do {
-            let raw = try await httpClient.request(MayaChainAPI.broadcast(body: jsonData))
+            let raw = try await httpClient.request(api(.broadcast(body: jsonData)))
             let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: raw.data)
             // Check if the transaction was successful based on the `code` field
             // code 19 means the transaction has been exist in the mempool, which indicates
@@ -162,7 +184,7 @@ class MayachainService: ThorchainSwapProvider {
 
         do {
             let response = try await httpClient.request(
-                MayaChainAPI.pools,
+                api(.pools),
                 responseType: [DepositAsset].self
             )
             return response.data.filter { $0.bondable }.map { $0.asset }

@@ -88,7 +88,8 @@ struct VultisigApp: App {
             StoredPendingTransaction.self,
             VaultSettings.self,
             TransactionHistoryItem.self,
-            SwapTrackingMetadata.self
+            SwapTrackingMetadata.self,
+            CustomRPCOverride.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -198,6 +199,11 @@ extension VultisigApp {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
+                // Hydrate the custom-RPC in-memory mirror from SwiftData so
+                // overrides survive relaunch and the off-MainActor networking
+                // funnel can read them without touching @Model.
+                CustomRPCStore.shared.reloadFromStore()
+
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
                 }
@@ -244,6 +250,11 @@ extension VultisigApp {
             .onAppear {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
+
+                // Hydrate the custom-RPC in-memory mirror from SwiftData so
+                // overrides survive relaunch and the off-MainActor networking
+                // funnel can read them without touching @Model.
+                CustomRPCStore.shared.reloadFromStore()
 
                 NSWindow.allowsAutomaticWindowTabbing = false
                 continueLogin()

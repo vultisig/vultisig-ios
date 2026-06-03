@@ -28,6 +28,16 @@ enum TonJettonMetadataResolver {
     private static let logger = Logger(subsystem: "com.vultisig.app", category: "ton-jetton-metadata-resolver")
     private static let httpClient: HTTPClientProtocol = HTTPClient()
 
+    /// Builds a `TonAPI` value honoring the user's TON custom-RPC override (host
+    /// only; the `/ton/v3` paths are preserved), falling back to the default
+    /// proxy host when none is set.
+    private static func api(_ endpoint: TonAPI.Endpoint) -> TonAPI {
+        if let override = CustomRPCStore.shared.url(for: .ton), let url = URL(string: override) {
+            return TonAPI(endpoint, host: url)
+        }
+        return TonAPI(endpoint, host: TonAPI.defaultHost)
+    }
+
     /// Resolved jetton metadata. `address` is the user-friendly master address
     /// (`EQ.../UQ...`) so the caller can key per-jetton state on it.
     struct Resolved: Equatable {
@@ -132,7 +142,7 @@ enum TonJettonMetadataResolver {
     private static func fetchMasterAddress(walletAddress: String) async -> String? {
         do {
             let response = try await httpClient.request(
-                TonAPI.jettonWalletsByAddress(walletAddress: walletAddress),
+                api(.jettonWalletsByAddress(walletAddress: walletAddress)),
                 responseType: JettonWalletsResponse.self
             )
             guard let wallet = response.data.jetton_wallets.first else { return nil }
@@ -150,7 +160,7 @@ enum TonJettonMetadataResolver {
     private static func fetchMasterMetadata(masterAddress: String) async -> Resolved? {
         do {
             let response = try await httpClient.request(
-                TonAPI.jettonMasters(jettonAddress: masterAddress),
+                api(.jettonMasters(jettonAddress: masterAddress)),
                 responseType: JettonMastersResponse.self
             )
             let body = response.data

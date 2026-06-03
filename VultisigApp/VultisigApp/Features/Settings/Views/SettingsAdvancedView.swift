@@ -61,6 +61,12 @@ struct SettingsAdvancedView: View {
                 isEnabled: $settingsViewModel.qbtcEnabled
             )
 
+            SettingToggleCell(
+                title: "settingsAdvancedCustomRPCToggle".localized,
+                icon: "network",
+                isEnabled: $settingsViewModel.customRPCEnabled
+            )
+
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",
@@ -93,4 +99,5 @@ struct SettingsAdvancedView: View {
         SettingsAdvancedView()
     }
     .environmentObject(SettingsViewModel())
+    .environmentObject(AppViewModel.shared)
 }

@@ -59,7 +59,8 @@ enum TestStore {
             StakePosition.self,
             LPPosition.self,
             CirclePosition.self,
-            DatabaseRate.self
+            DatabaseRate.self,
+            CustomRPCOverride.self
         ])
         let configuration = ModelConfiguration(
             schema: schema,

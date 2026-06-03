@@ -5,21 +5,42 @@
 
 import Foundation
 
-enum TonAPI: TargetType {
-    case addressInformation(address: String)
-    case extendedAddressInformation(address: String)
-    case jettonWallets(ownerAddress: String, jettonMasterAddress: String)
-    case jettonWalletsByAddress(walletAddress: String)
-    case jettonMasters(jettonAddress: String)
-    case runGetMethod(address: String, method: String, stack: [[String]])
-    case broadcastTransaction(boc: String)
+/// Pure `TargetType` for the TON Center endpoints consumed by `TonService`.
+/// The host is baked in at construction by the service (see `TonService.api`);
+/// this value never consults global state.
+///
+/// The default host is the Vultisig proxy (`api.vultisig.com`), so when no
+/// override is set behavior is byte-identical to before — including the
+/// heterogeneous per-case `/ton/v2` + `/ton/v3` path scheme. An override only
+/// swaps the host while keeping those TON Center paths unchanged, so a real
+/// TON Center node (same `/v2|/v3` scheme) works as-is.
+struct TonAPI: TargetType {
+    enum Endpoint {
+        case addressInformation(address: String)
+        case extendedAddressInformation(address: String)
+        case jettonWallets(ownerAddress: String, jettonMasterAddress: String)
+        case jettonWalletsByAddress(walletAddress: String)
+        case jettonMasters(jettonAddress: String)
+        case runGetMethod(address: String, method: String, stack: [[String]])
+        case broadcastTransaction(boc: String)
+    }
 
-    private static let vultisigProxyBaseURL = URL(string: "https://api.vultisig.com")!
+    /// Default TON host (Vultisig proxy).
+    static let defaultHost = URL(string: "https://api.vultisig.com")!
 
-    var baseURL: URL { Self.vultisigProxyBaseURL }
+    let endpoint: Endpoint
+    /// The resolved TON host (override-aware), baked in by the service.
+    let host: URL
+
+    init(_ endpoint: Endpoint, host: URL = TonAPI.defaultHost) {
+        self.endpoint = endpoint
+        self.host = host
+    }
+
+    var baseURL: URL { host }
 
     var path: String {
-        switch self {
+        switch endpoint {
         case .addressInformation:
             return "/ton/v3/addressInformation"
         case .extendedAddressInformation:
@@ -36,7 +57,7 @@ enum TonAPI: TargetType {
     }
 
     var method: HTTPMethod {
-        switch self {
+        switch endpoint {
         case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress, .jettonMasters:
             return .get
         case .runGetMethod, .broadcastTransaction:
@@ -45,7 +66,7 @@ enum TonAPI: TargetType {
     }
 
     var task: HTTPTask {
-        switch self {
+        switch endpoint {
         case .addressInformation(let address):
             return .requestParameters(["address": address, "use_v2": "false"], .urlEncoding)
         case .extendedAddressInformation(let address):
@@ -64,7 +85,7 @@ enum TonAPI: TargetType {
     }
 
     var validationType: ValidationType {
-        switch self {
+        switch endpoint {
         case .broadcastTransaction:
             // TON returns HTTP 500 with a body containing "duplicate message"
             // when a sibling TSS device already broadcast the same transaction;

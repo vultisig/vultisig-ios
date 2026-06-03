@@ -34,6 +34,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
     @AppStorage("swapkitEnabled") var swapkitEnabled: Bool = true
     @AppStorage("qbtcEnabled") var qbtcEnabled: Bool = false
+    @AppStorage("customRPCEnabled") var customRPCEnabled: Bool = false
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string
     /// = no force (production ranking across all providers). Otherwise one

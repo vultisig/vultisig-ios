@@ -8,7 +8,7 @@
 import SwiftUI
 import BigInt
 
-enum VultDiscountTier: String, Identifiable, CaseIterable {
+enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
     case bronze
     case silver
     case gold
@@ -87,5 +87,17 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
     /// Returns the tier matching the given BPS discount, or nil if no match
     static func from(bpsDiscount: Int) -> VultDiscountTier? {
         allCases.first { $0.bpsDiscount == bpsDiscount }
+    }
+
+    /// Ordering follows the `CaseIterable` declaration order
+    /// (bronze < silver < gold < platinum < diamond < ultimate), which is the
+    /// ascending unlock order. Used by the shared tier gate to compare a
+    /// resolved tier against a required minimum.
+    static func < (lhs: VultDiscountTier, rhs: VultDiscountTier) -> Bool {
+        guard let lhsIndex = allCases.firstIndex(of: lhs),
+              let rhsIndex = allCases.firstIndex(of: rhs) else {
+            return false
+        }
+        return lhsIndex < rhsIndex
     }
 }

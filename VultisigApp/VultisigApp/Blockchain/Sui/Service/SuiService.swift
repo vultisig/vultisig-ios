@@ -12,9 +12,31 @@ import WalletCore
 
 class SuiService {
     static let shared = SuiService()
-    private init() {}
 
-    private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
+    /// Default Sui JSON-RPC host.
+    static let defaultRPCURL: URL = {
+        guard let url = URL(string: Endpoint.suiServiceRpc) else {
+            preconditionFailure("Invalid Sui default RPC URL: \(Endpoint.suiServiceRpc)")
+        }
+        return url
+    }()
+
+    /// Resolves the Sui custom RPC override. Injected so the request URL is
+    /// derived from a dependency rather than a global reach-in; resolution is
+    /// computed per access so a runtime override change is picked up live (the
+    /// shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+    }
+
+    /// The override-aware Sui JSON-RPC URL. Falls back to the default host when
+    /// no override is set. Sui exposes a single JSON-RPC endpoint that the
+    /// request methods post to directly, so the override is the complete URL.
+    private var rpcURL: URL {
+        resolver.resolvedURL(for: .sui, default: Self.defaultRPCURL)
+    }
     private let jsonDecoder = JSONDecoder()
 
     func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
