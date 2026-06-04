@@ -77,6 +77,9 @@ struct SwapDetailsSummary: View {
     private func providerRow(providerName: String) -> some View {
         if vm.canSelectProvider {
             Button {
+                #if os(iOS)
+                hideKeyboard()
+                #endif
                 showQuotesSheet = true
             } label: {
                 HStack {
@@ -84,9 +87,11 @@ struct SwapDetailsSummary: View {
                         leadingText: "provider",
                         trailingText: providerName
                     )
-                    Image(systemName: "chevron.right")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
+                    Icon(
+                        named: "chevron-right-small",
+                        color: Theme.colors.textSecondary,
+                        size: 12
+                    )
                 }
                 .contentShape(Rectangle())
             }
@@ -113,11 +118,13 @@ struct SwapDetailsSummary: View {
     }
 
     var chevron: some View {
-        Image(systemName: "chevron.up")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textPrimary)
-            .rotationEffect(Angle(degrees: showFees ? 0 : 180))
-            .animation(.easeInOut, value: showFees)
+        Icon(
+            named: "chevron-down-small",
+            color: Theme.colors.textSecondary,
+            size: 12
+        )
+        .rotationEffect(Angle(degrees: showFees ? 180 : 0))
+        .animation(.easeInOut, value: showFees)
     }
 
     var expandableFees: some View {
