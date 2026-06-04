@@ -27,7 +27,7 @@ struct SwapQuotesPickerSheet: View {
             title
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
-                    ForEach(Array(vm.orderedPickerQuotes.enumerated()), id: \.offset) { _, quote in
+                    ForEach(vm.orderedPickerQuotes, id: \.displayName) { quote in
                         row(for: quote)
                     }
                 }

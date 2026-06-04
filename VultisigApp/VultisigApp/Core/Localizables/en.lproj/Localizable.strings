@@ -1280,4 +1280,3 @@
 "yourVaultSetup" = "Your vault setup";
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
-

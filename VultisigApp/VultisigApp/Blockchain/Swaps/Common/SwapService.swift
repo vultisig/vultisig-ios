@@ -93,7 +93,10 @@ struct SwapService {
 
         let quotes = results.compactMap { try? $0.get() }
         if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
-            return SwapQuotes(best: best, ranked: Self.rankedQuotes(quotes: quotes, toCoin: toCoin))
+            let ranked = Self.rankedQuotes(quotes: quotes, toCoin: toCoin)
+            // Preserve the `best ∈ ranked` contract: if nothing is rankable (no
+            // comparable net amounts) but a best still exists, surface it.
+            return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
         let firstError = results.compactMap { result -> Error? in
