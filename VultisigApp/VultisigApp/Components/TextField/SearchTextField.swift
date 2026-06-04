@@ -18,7 +18,7 @@ struct SearchTextField: View {
         value: Binding<String>,
         isFocused: Binding<Bool> = .constant(false),
         showPasteButton: Bool = false,
-        placeholder: String = NSLocalizedString("search", comment: "Search")
+        placeholder: String = "search".localized
     ) {
         self._value = value
         self._isFocused = isFocused

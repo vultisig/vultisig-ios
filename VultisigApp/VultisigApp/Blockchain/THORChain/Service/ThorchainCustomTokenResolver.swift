@@ -23,7 +23,7 @@ enum ThorchainCustomTokenResolver {
         var errorDescription: String? {
             switch self {
             case .invalidFormat:
-                return "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY."
+                return "thorchainCustomTokenInvalidFormat".localized
             }
         }
     }
