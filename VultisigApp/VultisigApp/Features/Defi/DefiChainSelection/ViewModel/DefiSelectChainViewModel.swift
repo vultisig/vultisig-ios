@@ -17,6 +17,11 @@ class DefiSelectChainViewModel: ObservableObject {
     /// Indicates if Ethereum is available in the vault (required for Circle)
     private var hasEthereum: Bool = false
 
+    /// Snapshot of the vault's persisted Circle state when the sheet loaded.
+    /// Circle can no longer be enabled from this list: it only remains visible
+    /// for vaults that already had it enabled, so they can turn it off.
+    private var circleAlreadyEnabled: Bool = false
+
     @Published var chains: [Chain] = []
 
     var filteredChains: [Chain] {
@@ -35,6 +40,10 @@ class DefiSelectChainViewModel: ObservableObject {
 
     /// Returns true if Circle should be visible (vault has Ethereum and matches search filter)
     var shouldShowCircle: Bool {
+        // Circle can no longer be newly enabled; only show it for vaults that
+        // already had it enabled so they can still turn it off.
+        guard circleAlreadyEnabled else { return false }
+
         // Circle requires Ethereum chain in the vault
         guard hasEthereum else { return false }
 
@@ -53,6 +62,7 @@ class DefiSelectChainViewModel: ObservableObject {
         // Filter Defi enabled chains for selection
         selection = Set(vault.defiChains)
         isCircleEnabled = vault.isCircleEnabled
+        circleAlreadyEnabled = vault.isCircleEnabled
     }
 
     private func setupChains(for vault: Vault) {
