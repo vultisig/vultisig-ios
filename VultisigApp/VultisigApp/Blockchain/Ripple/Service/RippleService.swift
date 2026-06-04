@@ -15,9 +15,31 @@ class RippleService {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
     private let httpClient: HTTPClientProtocol = HTTPClient()
 
+    /// Resolves the Ripple custom RPC override. Injected so the API values are
+    /// built from a dependency rather than a global reach-in; resolution happens
+    /// per request inside `api(_:)` so a runtime override change is picked up
+    /// live (the shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+    }
+
+    /// The override-aware XRPL host. Falls back to the default host when no
+    /// override is set.
+    private var resolvedHost: URL {
+        resolver.resolvedURL(for: .ripple, default: RippleAPI.defaultHost)
+    }
+
+    /// Builds a pure `RippleAPI` value with the resolved host baked in. The
+    /// `TargetType` itself never consults the resolver.
+    private func api(_ endpoint: RippleAPI.Endpoint) -> RippleAPI {
+        RippleAPI(endpoint, host: resolvedHost)
+    }
+
     func broadcastTransaction(_ hex: String) async throws -> String {
         let response = try await httpClient.request(
-            RippleAPI.submit(txBlob: hex),
+            api(.submit(txBlob: hex)),
             responseType: RippleSubmitResponse.self
         )
 
@@ -60,7 +82,7 @@ class RippleService {
     func fetchServerState() async throws -> RippleServerStateResponse? {
         do {
             let response = try await httpClient.request(
-                RippleAPI.serverState,
+                api(.serverState),
                 responseType: RippleServerStateResponse.self
             )
             return response.data
@@ -73,7 +95,7 @@ class RippleService {
     func fetchAccountsInfo(for walletAddress: String) async throws -> RippleAccountResponse? {
         do {
             let response = try await httpClient.request(
-                RippleAPI.accountInfo(account: walletAddress),
+                api(.accountInfo(account: walletAddress)),
                 responseType: RippleAccountResponse.self
             )
             return response.data

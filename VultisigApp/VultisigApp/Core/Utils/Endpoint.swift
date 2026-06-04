@@ -139,8 +139,6 @@ class Endpoint {
         "https://gateway.liquify.com/chain/thorchain_api/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainNetworkInfoNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
-
     static func fetchThorchainDenomMetadata(denom: String) -> String {
         "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
@@ -150,8 +148,6 @@ class Endpoint {
     }
 
     static let thorchainNetworkInfo = "https://gateway.liquify.com/chain/thorchain_rpc/status".asUrl
-
-    static let fetchThorchainInboundAddressesNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/inbound_addresses"
 
     /// Stagenet endpoints
     static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {

@@ -28,7 +28,16 @@ class RpcService {
         }
     }
 
-    func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
+    /// Sends a JSON-RPC request. `endpoint` defaults to this service's baked-in
+    /// `rpcEndpoint` so existing callers are unchanged; subclasses that resolve a
+    /// custom RPC override (e.g. Polkadot / Bittensor) pass the resolved host.
+    func sendRPCRequest<T>(
+        method: String,
+        params: [Any],
+        endpoint: String? = nil,
+        decode: (Any) throws -> T
+    ) async throws -> T {
+        let endpoint = endpoint ?? rpcEndpoint
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": method,
@@ -36,8 +45,8 @@ class RpcService {
             "id": 1
         ]
 
-        guard let url = URL(string: rpcEndpoint) else {
-            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
+        guard let url = URL(string: endpoint) else {
+            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(endpoint)")
         }
 
         // Generic JSON-RPC client used across many chains; doesn't fit
@@ -85,8 +94,8 @@ class RpcService {
 
     }
 
-    func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
-        return try await sendRPCRequest(method: method, params: params) { result in
+    func intRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> BigInt {
+        return try await sendRPCRequest(method: method, params: params, endpoint: endpoint) { result in
 
             if let intValue = result as? Int64 {
                 return BigInt(intValue)
@@ -101,8 +110,8 @@ class RpcService {
         }
     }
 
-    func strRpcCall(method: String, params: [Any]) async throws -> String {
-        return try await sendRPCRequest(method: method, params: params) { result in
+    func strRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> String {
+        return try await sendRPCRequest(method: method, params: params, endpoint: endpoint) { result in
 
             print(result)
 

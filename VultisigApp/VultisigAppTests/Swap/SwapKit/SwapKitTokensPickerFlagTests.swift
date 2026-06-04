@@ -3,44 +3,15 @@
 //  VultisigAppTests
 //
 //  Pins the destination-coin-picker invariant for the SwapKit token-list
-//  expansion: when the feature flag is OFF, the cache's per-chain bucket is
-//  empty (no `/tokens` fetch, no tag injection); when ON, the merge step
-//  prepends SwapKit's novel tokens to the curated/1inch/Jupiter union and
-//  tags only the residual SwapKit-only entries.
+//  expansion: the merge step prepends SwapKit's novel tokens to the
+//  curated/1inch/Jupiter union and tags only the residual SwapKit-only
+//  entries.
 //
 
 import XCTest
 @testable import VultisigApp
 
 final class SwapKitTokensPickerFlagTests: XCTestCase {
-
-    private let flagKey = "swapkitEnabled"
-    private var savedValue: Any?
-
-    override func setUpWithError() throws {
-        savedValue = UserDefaults.standard.object(forKey: flagKey)
-        UserDefaults.standard.removeObject(forKey: flagKey)
-    }
-
-    override func tearDownWithError() throws {
-        if let savedValue {
-            UserDefaults.standard.set(savedValue, forKey: flagKey)
-        } else {
-            UserDefaults.standard.removeObject(forKey: flagKey)
-        }
-    }
-
-    @MainActor
-    func testCacheReturnsEmptyBucketWhenFlagOff() async {
-        UserDefaults.standard.set(false, forKey: flagKey)
-        let cache = SwapKitTokensCache()
-        let bucket = await cache.tokens(for: .ethereum)
-        XCTAssertTrue(
-            bucket.tokens.isEmpty,
-            "Flag OFF must short-circuit the cache to an empty bucket — no SwapKit fetch, no tag injection"
-        )
-        XCTAssertTrue(bucket.uniqueIds.isEmpty)
-    }
 
     func testMergeExternalAppendsNovelTokens() throws {
         // Base list (e.g. from 1inch + curated) has ETH-ETH + USDC. An external
@@ -76,8 +47,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
     }
 
     @MainActor
-    func testCacheSeededSnapshotReturnsBucketsWhenFlagOn() async {
-        UserDefaults.standard.set(true, forKey: flagKey)
+    func testCacheSeededSnapshotReturnsBuckets() async {
         let novel = CoinMeta(chain: .arbitrum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x000000000000000000000000000000000000000A", isNativeToken: false)
         let bucket = DestinationTokenBucket(
             chain: .arbitrum,

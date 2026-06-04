@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "banners-carousel")
 
 struct BannersCarousel<Banner: CarouselBannerType>: View {
     @Binding var banners: [Banner]
@@ -20,6 +23,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     @State var bannersCount: Int = 0
     @State var bannersToRemove: Set<AnyHashable> = []
     @State private var timer: Timer?
+    @State private var removalTask: Task<Void, Never>?
     @State var showCarousel: Bool = false
 
     @State var internalBanners: [Banner] = []
@@ -105,22 +109,32 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         }
         .onDisappear {
             stopTimer()
+            removalTask?.cancel()
+            removalTask = nil
         }
         .onChange(of: currentIndex) {
+            guard currentIndex >= 0 && currentIndex < internalBanners.count else { return }
+            // Sync the scroll position to the active index only when it actually
+            // differs. A no-op write still emits a graph mutation, which — if it
+            // lands mid render-commit — can reenter AppKit's constraint cycle and
+            // crash on macOS. Guarding it keeps reciprocal index/scroll syncs from
+            // ping-ponging.
+            guard scrollPosition != currentIndex else { return }
             withAnimation {
-                guard currentIndex >= 0 && currentIndex < internalBanners.count else { return }
                 scrollPosition = currentIndex
             }
         }
         .onChange(of: scrollPosition) {
-            guard let newScrollPosition = scrollPosition else {
-                return
-            }
-
-            withAnimation {
-                currentIndex = newScrollPosition
-                startTimer()
-            }
+            guard let newScrollPosition = scrollPosition else { return }
+            // Only adopt a user-driven scroll change when it moves us to a new
+            // index; otherwise this would write back the value the index handler
+            // just set and re-trigger the cycle.
+            guard currentIndex != newScrollPosition else { return }
+            currentIndex = newScrollPosition
+            // Restart the auto-advance timer outside any animation block: nesting
+            // a timer (re)start inside withAnimation runs an NSAnimationContext at
+            // the same time a publisher/runloop tick is committing layout.
+            startTimer()
         }
     }
 
@@ -132,57 +146,45 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         }
 
         guard let indexToRemove = internalBanners.firstIndex(where: { $0.id == banner.id }) else {
-            print("Banner not found")
+            logger.warning("Banner not found for removal")
             return
         }
 
         // Calculate the new current index before removal
-        let newCurrentIndex: Int
-        if internalBanners.count <= 1 {
-            newCurrentIndex = 0
-        } else if indexToRemove < currentIndex {
-            // If we're removing a banner before current position
-            newCurrentIndex = currentIndex - 1
-        } else if indexToRemove == currentIndex {
-            // If we're removing the current banner
-            if indexToRemove == internalBanners.count - 1 {
-                // If it's the last banner, go to previous
-                newCurrentIndex = max(0, currentIndex - 1)
-            } else {
-                // Otherwise stay at same index (next banner will slide into position)
-                newCurrentIndex = currentIndex
-            }
-        } else {
-            // If we're removing a banner after current position
-            newCurrentIndex = currentIndex
-        }
+        let newCurrentIndex = BannersCarouselIndex.afterRemoval(
+            removedIndex: indexToRemove,
+            currentIndex: currentIndex,
+            countBeforeRemoval: internalBanners.count
+        )
 
         // Start the removal animation
-        _ = withAnimation(.easeInOut(duration: 0.4)) {
+        withAnimation(.easeInOut(duration: 0.4)) {
             bannersToRemove.insert(AnyHashable(banner.id))
         }
 
-        // Wait for removal animation to complete, then update the data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+        // Wait for removal animation to complete, then update the data. A
+        // cancellable task (cancelled in stopTimer/onDisappear) prevents a stale
+        // closure from mutating state after the view is torn down.
+        removalTask?.cancel()
+        removalTask = delayedTask(after: .milliseconds(400)) {
             // Remove the banner from the array
             internalBanners.removeAll { $0.id == banner.id }
             bannersToRemove.remove(AnyHashable(banner.id))
 
-            // Update indices without animation to prevent conflicts
-            if !internalBanners.isEmpty {
-                let safeIndex = min(max(0, newCurrentIndex), internalBanners.count - 1)
-                currentIndex = safeIndex
-                scrollPosition = safeIndex
-            } else {
-                currentIndex = 0
-                scrollPosition = 0
+            // Update indices without animation to prevent conflicts. Guard each
+            // write so an unchanged value never emits a graph mutation.
+            let targetIndex = internalBanners.isEmpty
+                ? 0
+                : min(max(0, newCurrentIndex), internalBanners.count - 1)
+            if currentIndex != targetIndex {
+                currentIndex = targetIndex
+            }
+            if scrollPosition != targetIndex {
+                scrollPosition = targetIndex
             }
 
-            // Restart timer after a brief delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                if !internalBanners.isEmpty {
-                    startTimer()
-                }
+            if !internalBanners.isEmpty {
+                startTimer()
             }
 
             // Notify parent that banner was removed
@@ -193,12 +195,13 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     private func startTimer() {
         stopTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            let nextIndex = BannersCarouselIndex.next(after: currentIndex, count: bannersCount)
+            // Guard the auto-advance write: if there's nothing to advance to
+            // (e.g. a single banner) the value is unchanged, so skip the mutation
+            // entirely rather than emit a no-op graph update from a runloop tick.
+            guard nextIndex != currentIndex else { return }
             withAnimation(.easeInOut(duration: 0.5)) {
-                if currentIndex < bannersCount - 1 {
-                    currentIndex += 1
-                } else {
-                    currentIndex = 0
-                }
+                currentIndex = nextIndex
             }
         }
     }
@@ -214,6 +217,38 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             showCarousel = shouldShow
             bannersCount = count
         }
+    }
+}
+
+/// Pure index math for the carousel, extracted so the wrap-around and
+/// post-removal logic can be unit-tested without a view host.
+enum BannersCarouselIndex {
+    /// Index the auto-advance timer should move to next, wrapping back to the
+    /// start after the last banner. Returns `current` unchanged when there is
+    /// nothing to advance to (zero or one banner) so callers can no-op the write.
+    static func next(after current: Int, count: Int) -> Int {
+        guard count > 1 else { return current }
+        return current < count - 1 ? current + 1 : 0
+    }
+
+    /// Index that should become current after the banner at `removedIndex` is
+    /// removed, given the count *before* removal.
+    static func afterRemoval(removedIndex: Int, currentIndex: Int, countBeforeRemoval: Int) -> Int {
+        guard countBeforeRemoval > 1 else { return 0 }
+
+        if removedIndex < currentIndex {
+            // Removing a banner before the current one shifts us back by one.
+            return currentIndex - 1
+        }
+
+        if removedIndex == currentIndex {
+            // Removing the current banner: if it was last, step back; otherwise
+            // the next banner slides into this slot, so the index is unchanged.
+            return removedIndex == countBeforeRemoval - 1 ? max(0, currentIndex - 1) : currentIndex
+        }
+
+        // Removing a banner after the current one leaves the index unchanged.
+        return currentIndex
     }
 }
 

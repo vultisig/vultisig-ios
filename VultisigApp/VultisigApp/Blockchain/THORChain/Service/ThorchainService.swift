@@ -16,17 +16,43 @@ class ThorchainService: ThorchainSwapProvider {
 
     let httpClient: HTTPClientProtocol = HTTPClient()
 
+    /// Resolves the THORChain custom RPC override. Injected so the API values
+    /// are built from a dependency rather than a global reach-in; resolution
+    /// happens per request inside `mainnet(_:)` so a runtime override change is
+    /// picked up live (the shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
     private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
-    private init() {}
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+    }
+
+    /// The override-aware THORChain LCD host. Falls back to the default host
+    /// when no override is set. Exposed so the broadcast path can reuse it. The
+    /// single `.thorChain` override intentionally replaces both the LCD and RPC
+    /// hosts (see `resolvedRPCHost`).
+    var resolvedLCDHost: URL {
+        resolver.resolvedURL(for: .thorChain, default: ThorchainMainnetAPI.defaultLCDHost)
+    }
+
+    private var resolvedRPCHost: URL {
+        resolver.resolvedURL(for: .thorChain, default: ThorchainMainnetAPI.defaultRPCHost)
+    }
+
+    /// Builds a pure `ThorchainMainnetAPI` value with the resolved LCD / RPC
+    /// hosts baked in. The `TargetType` itself never consults the resolver.
+    func mainnet(_ endpoint: ThorchainMainnetAPI.Endpoint) -> ThorchainMainnetAPI {
+        ThorchainMainnetAPI(endpoint, lcdHost: resolvedLCDHost, rpcHost: resolvedRPCHost)
+    }
 
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.balances(address: address),
+            mainnet(.balances(address: address)),
             responseType: CosmosBalanceResponse.self
         )
         return response.data.balances
@@ -94,7 +120,7 @@ class ThorchainService: ThorchainSwapProvider {
         }
 
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.resolveTNS(name: name, chain: chain),
+            mainnet(.resolveTNS(name: name, chain: chain)),
             responseType: Response.self
         )
 
@@ -109,7 +135,7 @@ class ThorchainService: ThorchainSwapProvider {
 
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.accountNumber(address: address),
+            mainnet(.accountNumber(address: address)),
             responseType: THORChainAccountNumberResponse.self
         )
         return response.data.result.value
@@ -130,7 +156,7 @@ class ThorchainService: ThorchainSwapProvider {
             discountBps: vultTierDiscount
         )
 
-        let target = ThorchainMainnetAPI.swapQuote(
+        let target = mainnet(.swapQuote(
             fromAsset: fromAsset,
             toAsset: toAsset,
             amount: amount,
@@ -139,7 +165,7 @@ class ThorchainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
             affiliates: affiliates,
             affiliateBps: affiliateBps
-        )
+        ))
 
         // THORChain returns a typed swap-error body (sometimes with HTTP 200,
         // sometimes 4xx) for invalid quotes. Fetch raw bytes once and try the
@@ -170,9 +196,11 @@ class ThorchainService: ThorchainSwapProvider {
             return UInt64(cachedData.native_tx_fee_rune) ?? 0
         }
 
-        let urlString = Endpoint.fetchThorchainNetworkInfoNineRealms
-        let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        let thorchainNetworkInfo = try JSONDecoder().decode(ThorchainNetworkInfo.self, from: data)
+        let response = try await httpClient.request(
+            mainnet(.networkInfo),
+            responseType: ThorchainNetworkInfo.self
+        )
+        let thorchainNetworkInfo = response.data
         self.cacheFeePrice.set(cacheKey, (data: thorchainNetworkInfo, timestamp: Date()))
         return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
     }
@@ -189,9 +217,11 @@ class ThorchainService: ThorchainSwapProvider {
                 return cachedData
             }
 
-            let urlString = Endpoint.fetchThorchainInboundAddressesNineRealms
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            let inboundAddresses = try JSONDecoder().decode([InboundAddress].self, from: data)
+            let response = try await httpClient.request(
+                mainnet(.inboundAddresses),
+                responseType: [InboundAddress].self
+            )
+            let inboundAddresses = response.data
             self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
             return inboundAddresses
         } catch {
@@ -206,7 +236,7 @@ class ThorchainService: ThorchainSwapProvider {
             return network
         }
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.networkStatus,
+            mainnet(.networkStatus),
             responseType: THORChainNetworkStatus.self
         )
         network = response.data.result.node_info.network
@@ -323,7 +353,7 @@ extension ThorchainService {
 
     private func fetchAssetPrice(assetName: String) async throws -> Double {
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.poolInfo(asset: assetName),
+            mainnet(.poolInfo(asset: assetName)),
             responseType: THORChainPoolResponse.self
         )
 
@@ -374,7 +404,7 @@ extension ThorchainService {
         let query = String(format: Self.mergedAssetsQuery, id)
 
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.rujiGraphQL(query: query),
+            mainnet(.rujiGraphQL(query: query)),
             responseType: AccountRootData.self
         )
 
@@ -425,7 +455,7 @@ extension ThorchainService {
         let query = String(format: Self.stakeQuery, id)
 
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.rujiGraphQL(query: query),
+            mainnet(.rujiGraphQL(query: query)),
             responseType: AccountRootData.self
         )
 
@@ -475,7 +505,7 @@ extension ThorchainService {
         for pool in pools {
             do {
                 let poolResponse = try await httpClient.request(
-                    ThorchainMainnetAPI.poolLiquidityProvider(asset: pool.asset, address: address)
+                    mainnet(.poolLiquidityProvider(asset: pool.asset, address: address))
                 )
 
                 // 404 means no position on this pool — TargetType validation accepts it.
@@ -522,7 +552,7 @@ extension ThorchainService {
     /// Fetch pool information for a specific asset
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
         let response = try await httpClient.request(
-            ThorchainMainnetAPI.poolInfo(asset: asset),
+            mainnet(.poolInfo(asset: asset)),
             responseType: ThorchainPool.self
         )
         return response.data
@@ -542,7 +572,7 @@ extension ThorchainService {
         // Use retry mechanism for network call
         return try await withRetry(maxAttempts: 3) {
             let response = try await httpClient.request(
-                ThorchainMainnetAPI.pools,
+                mainnet(.pools),
                 responseType: [ThorchainPool].self
             )
             let pools = response.data
@@ -784,7 +814,7 @@ extension ThorchainService {
     private func attemptDirectFetch(denom: String) async throws -> DenomMetadata? {
         do {
             let response = try await httpClient.request(
-                ThorchainMainnetAPI.denomMetadata(denom: denom),
+                mainnet(.denomMetadata(denom: denom)),
                 responseType: MetadataResponse.self
             )
             return response.data.metadata
@@ -796,7 +826,7 @@ extension ThorchainService {
     private func attemptListFetch(denom: String) async throws -> DenomMetadata? {
         do {
             let response = try await httpClient.request(
-                ThorchainMainnetAPI.allDenomMetadata,
+                mainnet(.allDenomMetadata),
                 responseType: MetadatasResponse.self
             )
             if let metadatas = response.data.metadatas {

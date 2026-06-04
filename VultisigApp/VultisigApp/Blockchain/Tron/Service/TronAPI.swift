@@ -7,20 +7,40 @@
 
 import Foundation
 
-enum TronAPI: TargetType {
-    case getNowBlock
-    case getAccount(address: String)
-    case getAccountResource(address: String)
-    case getChainParameters
-    case broadcastTransaction(jsonString: String)
-    case triggerConstantContract(ownerAddress: String, contractAddress: String, functionSelector: String, parameter: String)
-
-    var baseURL: URL {
-        URL(string: "https://api.vultisig.com/tron-rest")!
+/// Pure `TargetType` for the TRON REST endpoints consumed by `TronAPIService`.
+/// The host is baked in at construction by the API service (see
+/// `TronAPIService.api`); this value never consults global state.
+///
+/// The default host is the Vultisig proxy (`api.vultisig.com/tron-rest`), so
+/// when no override is set behavior is byte-identical to before. An override
+/// only swaps the host while keeping the TronGrid-compatible `/wallet/*` paths
+/// unchanged, so a real public TRON node (TronGrid scheme) works as-is.
+struct TronAPI: TargetType {
+    enum Endpoint {
+        case getNowBlock
+        case getAccount(address: String)
+        case getAccountResource(address: String)
+        case getChainParameters
+        case broadcastTransaction(jsonString: String)
+        case triggerConstantContract(ownerAddress: String, contractAddress: String, functionSelector: String, parameter: String)
     }
 
+    /// Default TRON REST host (Vultisig proxy).
+    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron-rest")
+
+    let endpoint: Endpoint
+    /// The resolved TRON REST host (override-aware), baked in by the API service.
+    let host: URL
+
+    init(_ endpoint: Endpoint, host: URL = TronAPI.defaultHost) {
+        self.endpoint = endpoint
+        self.host = host
+    }
+
+    var baseURL: URL { host }
+
     var path: String {
-        switch self {
+        switch endpoint {
         case .getNowBlock:
             return "/wallet/getnowblock"
         case .getAccount:
@@ -37,7 +57,7 @@ enum TronAPI: TargetType {
     }
 
     var method: HTTPMethod {
-        switch self {
+        switch endpoint {
         case .getNowBlock, .getChainParameters:
             return .get
         case .getAccount, .getAccountResource, .broadcastTransaction, .triggerConstantContract:
@@ -46,7 +66,7 @@ enum TronAPI: TargetType {
     }
 
     var task: HTTPTask {
-        switch self {
+        switch endpoint {
         case .getNowBlock, .getChainParameters:
             return .requestPlain
 

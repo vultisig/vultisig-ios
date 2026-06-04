@@ -29,6 +29,7 @@ enum SettingsOption: String, Identifiable {
     case currency
     case notifications
     case addressBook
+    case customRPC
     case referralCode
     case faq
     case education
@@ -55,6 +56,8 @@ enum SettingsOption: String, Identifiable {
             return "notifications"
         case .addressBook:
             return "addressBook"
+        case .customRPC:
+            return "settingsAdvancedCustomRPC"
         case .referralCode:
             return "referralCode"
         case .faq:
@@ -94,6 +97,8 @@ enum SettingsOption: String, Identifiable {
             return "bell"
         case .addressBook:
             return "book-marked"
+        case .customRPC:
+            return "globe"
         case .referralCode:
             return "megaphone"
         case .faq:

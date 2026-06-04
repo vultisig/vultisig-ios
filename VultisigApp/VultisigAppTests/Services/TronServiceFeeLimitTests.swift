@@ -95,7 +95,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
     func testGetBlockInfo_trc20Transfer_fallsBackOnSimulationError() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000)
-        stub.errors[TronAPI.triggerConstantContract(ownerAddress: "", contractAddress: "", functionSelector: "", parameter: "").path] = HTTPError.invalidResponse
+        stub.errors[TronAPI(.triggerConstantContract(ownerAddress: "", contractAddress: "", functionSelector: "", parameter: "")).path] = HTTPError.invalidResponse
         let service = TronService(httpClient: stub)
 
         let coin = makeTrc20Coin()

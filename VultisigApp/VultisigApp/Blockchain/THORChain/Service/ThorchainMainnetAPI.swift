@@ -7,68 +7,95 @@
 
 import Foundation
 
-/// TargetType enum for the THORChain mainnet REST endpoints consumed by
-/// `ThorchainService` and its extensions. Stagenet and Chainnet variants
-/// share the same API shape on different hosts; they'll get their own
-/// enums in the 3.c.3 sub-issue so each environment stays typed.
-enum ThorchainMainnetAPI: TargetType {
-    // MARK: Cosmos SDK endpoints (thornode)
-    case balances(address: String)
-    case accountNumber(address: String)
-    case denomMetadata(denom: String)
-    case allDenomMetadata
+/// Pure `TargetType` for the THORChain mainnet REST endpoints consumed by
+/// `ThorchainService` and its extensions. The override-eligible LCD and RPC
+/// hosts are baked in at construction by `ThorchainService` (see
+/// `ThorchainService.mainnet`); this value never consults global state. Midgard
+/// (TNS) and the Vultisig GraphQL proxy are distinct hosts with no single-chain
+/// identity, so they keep their hardcoded defaults. Stagenet and Chainnet
+/// variants share the same API shape on different hosts; they'll get their own
+/// types so each environment stays typed.
+struct ThorchainMainnetAPI: TargetType {
+    /// Default THORChain LCD host; serves the Cosmos-SDK + thornode REST surface.
+    static let defaultLCDHost = URL(staticString: "https://gateway.liquify.com/chain/thorchain_api")
+    /// Default THORChain RPC host; serves `/status`.
+    static let defaultRPCHost = URL(staticString: "https://gateway.liquify.com/chain/thorchain_rpc")
 
-    // MARK: THORChain-specific endpoints (thornode)
-    case networkInfo
-    case inboundAddresses
-    case poolInfo(asset: String)
-    case pools
-    case poolLiquidityProvider(asset: String, address: String)
-    case swapQuote(
-        fromAsset: String,
-        toAsset: String,
-        amount: String,
-        destination: String,
-        streamingInterval: String,
-        streamingQuantity: String?,
-        affiliates: String?,
-        affiliateBps: String?
-    )
-    case tcyStaker(address: String)
+    let endpoint: Endpoint
+    /// The resolved THORChain LCD host (override-aware), baked in by the service.
+    let lcdHost: URL
+    /// The resolved THORChain RPC host (override-aware), baked in by the service.
+    let rpcHost: URL
 
-    // MARK: RPC node (different host)
-    case networkStatus
+    init(_ endpoint: Endpoint, lcdHost: URL = ThorchainMainnetAPI.defaultLCDHost, rpcHost: URL = ThorchainMainnetAPI.defaultRPCHost) {
+        self.endpoint = endpoint
+        self.lcdHost = lcdHost
+        self.rpcHost = rpcHost
+    }
 
-    // MARK: Midgard (different host; routes by chain to pick mainnet vs stagenet midgard)
-    case resolveTNS(name: String, chain: Chain)
+    enum Endpoint {
+        // MARK: Cosmos SDK endpoints (thornode)
+        case balances(address: String)
+        case accountNumber(address: String)
+        case denomMetadata(denom: String)
+        case allDenomMetadata
 
-    // MARK: CosmWasm smart-query (base64 payload pinned in path)
-    case tcyAutoCompoundStatus
+        // MARK: THORChain-specific endpoints (thornode)
+        case networkInfo
+        case inboundAddresses
+        case poolInfo(asset: String)
+        case pools
+        case poolLiquidityProvider(asset: String, address: String)
+        case swapQuote(
+            fromAsset: String,
+            toAsset: String,
+            amount: String,
+            destination: String,
+            streamingInterval: String,
+            streamingQuantity: String?,
+            affiliates: String?,
+            affiliateBps: String?
+        )
+        case tcyStaker(address: String)
 
-    // MARK: GraphQL (Vultisig proxy)
-    case rujiGraphQL(query: String)
+        // MARK: RPC node (different host)
+        case networkStatus
+
+        // MARK: Midgard (different host; routes by chain to pick mainnet vs stagenet midgard)
+        case resolveTNS(name: String, chain: Chain)
+
+        // MARK: CosmWasm smart-query (base64 payload pinned in path)
+        case tcyAutoCompoundStatus
+
+        // MARK: GraphQL (Vultisig proxy)
+        case rujiGraphQL(query: String)
+    }
 
     var baseURL: URL {
-        switch self {
+        switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .poolInfo, .pools,
              .poolLiquidityProvider, .swapQuote, .tcyStaker,
              .tcyAutoCompoundStatus:
-            // CosmWasm smart-query lives on the REST/LCD host, not RPC.
-            return URL(string: "https://gateway.liquify.com/chain/thorchain_api")!
+            // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
+            // host (balances / account / inbound addresses, the primary balance
+            // path) honors the THORChain override; it falls back to the default
+            // host when none is set.
+            return lcdHost
         case .networkStatus:
-            return URL(string: "https://gateway.liquify.com/chain/thorchain_rpc")!
+            return rpcHost
         case .resolveTNS(_, let chain):
             let isStagenet = (chain == .thorChainChainnet || chain == .thorChainStagenet)
-            let host = isStagenet ? "https://stagenet-midgard.thorchain.network" : "https://gateway.liquify.com/chain/thorchain_midgard"
-            return URL(string: host)!
+            return isStagenet
+                ? URL(staticString: "https://stagenet-midgard.thorchain.network")
+                : URL(staticString: "https://gateway.liquify.com/chain/thorchain_midgard")
         case .rujiGraphQL:
-            return URL(string: "https://api.vultisig.com")!
+            return URL(staticString: "https://api.vultisig.com")
         }
     }
 
     var path: String {
-        switch self {
+        switch endpoint {
         case .balances(let addr):
             return "/cosmos/bank/v1beta1/balances/\(addr)"
         case .accountNumber(let addr):
@@ -108,7 +135,7 @@ enum ThorchainMainnetAPI: TargetType {
     }
 
     var method: HTTPMethod {
-        switch self {
+        switch endpoint {
         case .rujiGraphQL:
             return .post
         default:
@@ -117,7 +144,7 @@ enum ThorchainMainnetAPI: TargetType {
     }
 
     var task: HTTPTask {
-        switch self {
+        switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
              .inboundAddresses, .poolInfo, .pools, .poolLiquidityProvider,
              .tcyStaker, .networkStatus, .tcyAutoCompoundStatus, .resolveTNS:
@@ -146,7 +173,7 @@ enum ThorchainMainnetAPI: TargetType {
 
     var headers: [String: String]? {
         var base: [String: String] = ["Content-Type": "application/json"]
-        switch self {
+        switch endpoint {
         case .balances, .accountNumber, .swapQuote, .poolInfo, .pools,
              .poolLiquidityProvider, .inboundAddresses:
             // Endpoints that the legacy code marked with X-Client-ID via
@@ -162,7 +189,7 @@ enum ThorchainMainnetAPI: TargetType {
     /// callers use `.customCodes([200, 404])` via the service layer today —
     /// expose it here so the service can just throw on other codes.
     var validationType: ValidationType {
-        switch self {
+        switch endpoint {
         case .poolLiquidityProvider:
             return .customCodes([200, 404])
         default:
@@ -174,7 +201,7 @@ enum ThorchainMainnetAPI: TargetType {
     /// the pre-migration session config used a 10s request timeout to avoid
     /// the retry chain blocking up to 3 minutes on a slow node.
     var timeoutInterval: TimeInterval {
-        switch self {
+        switch endpoint {
         case .pools:
             return 10
         default:

@@ -12,33 +12,58 @@ import WalletCore
 struct TronAPIService {
     let httpClient: HTTPClientProtocol
 
-    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+    /// Resolves the TRON custom RPC override. Injected so the API values are
+    /// built from a dependency rather than a global reach-in; resolution happens
+    /// per request inside `api(_:)` so a runtime override change is picked up
+    /// live. The default host stays the Vultisig proxy (REST), so default users
+    /// are unaffected; an override only swaps the host.
+    private let resolver: RPCEndpointResolving
+
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
+    ) {
         self.httpClient = httpClient
+        self.resolver = resolver
+    }
+
+    /// The override-aware TRON REST host. Falls back to the default proxy host
+    /// when no override is set. The `.tron` override applies to this REST host
+    /// only; the EVM-rpc host (`EvmServiceConfig`) excludes `.tron` and is
+    /// unaffected.
+    private var resolvedHost: URL {
+        resolver.resolvedURL(for: .tron, default: TronAPI.defaultHost)
+    }
+
+    /// Builds a pure `TronAPI` value with the resolved host baked in. The
+    /// `TargetType` itself never consults the resolver.
+    private func api(_ endpoint: TronAPI.Endpoint) -> TronAPI {
+        TronAPI(endpoint, host: resolvedHost)
     }
 
     // MARK: - Block Info
 
     func getNowBlock() async throws -> TronNowBlockResponse {
-        let response = try await httpClient.request(TronAPI.getNowBlock, responseType: TronNowBlockResponse.self)
+        let response = try await httpClient.request(api(.getNowBlock), responseType: TronNowBlockResponse.self)
         return response.data
     }
 
     // MARK: - Account
 
     func getAccount(address: String) async throws -> TronAccountResponse {
-        let response = try await httpClient.request(TronAPI.getAccount(address: address), responseType: TronAccountResponse.self)
+        let response = try await httpClient.request(api(.getAccount(address: address)), responseType: TronAccountResponse.self)
         return response.data
     }
 
     func getAccountResource(address: String) async throws -> TronAccountResourceResponse {
-        let response = try await httpClient.request(TronAPI.getAccountResource(address: address), responseType: TronAccountResourceResponse.self)
+        let response = try await httpClient.request(api(.getAccountResource(address: address)), responseType: TronAccountResourceResponse.self)
         return response.data
     }
 
     // MARK: - Chain Parameters
 
     func getChainParameters() async throws -> TronChainParametersResponse {
-        let response = try await httpClient.request(TronAPI.getChainParameters, responseType: TronChainParametersResponse.self)
+        let response = try await httpClient.request(api(.getChainParameters), responseType: TronChainParametersResponse.self)
         return response.data
     }
 
@@ -47,7 +72,7 @@ struct TronAPIService {
     private static let DUP_TRANSACTION_ERROR_CODE = "DUP_TRANSACTION_ERROR"
 
     func broadcastTransaction(jsonString: String) async throws -> String {
-        let response = try await httpClient.request(TronAPI.broadcastTransaction(jsonString: jsonString), responseType: TronBroadcastResponse.self)
+        let response = try await httpClient.request(api(.broadcastTransaction(jsonString: jsonString)), responseType: TronBroadcastResponse.self)
 
         // Accept success (result == true) OR duplicate transaction error (already broadcast)
         // This matches Android behavior where DUP_TRANSACTION_ERROR is treated as success
@@ -86,12 +111,12 @@ struct TronAPIService {
     ) async throws -> TronTriggerConstantResponse {
         let parameter = try Self.encodeTrc20TransferParameter(toAddress: toAddress, amount: 1)
         let response = try await httpClient.request(
-            TronAPI.triggerConstantContract(
+            api(.triggerConstantContract(
                 ownerAddress: ownerAddress,
                 contractAddress: contractAddress,
                 functionSelector: "transfer(address,uint256)",
                 parameter: parameter
-            ),
+            )),
             responseType: TronTriggerConstantResponse.self
         )
         return response.data
@@ -136,32 +161,32 @@ struct TronAPIService {
 
         // Fetch all three in parallel
         async let nameResponse = httpClient.request(
-            TronAPI.triggerConstantContract(
+            api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
                 functionSelector: "name()",
                 parameter: emptyParameter
-            ),
+            )),
             responseType: TronTriggerConstantResponse.self
         )
 
         async let symbolResponse = httpClient.request(
-            TronAPI.triggerConstantContract(
+            api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
                 functionSelector: "symbol()",
                 parameter: emptyParameter
-            ),
+            )),
             responseType: TronTriggerConstantResponse.self
         )
 
         async let decimalsResponse = httpClient.request(
-            TronAPI.triggerConstantContract(
+            api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
                 functionSelector: "decimals()",
                 parameter: emptyParameter
-            ),
+            )),
             responseType: TronTriggerConstantResponse.self
         )
 
@@ -227,12 +252,12 @@ struct TronAPIService {
         let parameter = String(repeating: "0", count: max(0, 64 - addressHex.count)) + addressHex
 
         let response = try await httpClient.request(
-            TronAPI.triggerConstantContract(
+            api(.triggerConstantContract(
                 ownerAddress: walletAddress,
                 contractAddress: contractAddress,
                 functionSelector: "balanceOf(address)",
                 parameter: parameter
-            ),
+            )),
             responseType: TronTriggerConstantResponse.self
         )
 
