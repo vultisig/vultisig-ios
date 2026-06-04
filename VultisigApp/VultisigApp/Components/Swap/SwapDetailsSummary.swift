@@ -12,6 +12,7 @@ struct SwapDetailsSummary: View {
     @Bindable var detailsViewModel: SwapDetailsViewModel
 
     @State private var showFees: Bool = true
+    @State private var showQuotesSheet: Bool = false
 
     private var vm: SwapDetailsViewModel { detailsViewModel }
 
@@ -39,10 +40,7 @@ struct SwapDetailsSummary: View {
         VStack(spacing: 16) {
             if isBlockVisible {
                 if let providerName = vm.quote?.displayName {
-                    getSummaryCell(
-                        leadingText: "provider",
-                        trailingText: providerName
-                    )
+                    providerRow(providerName: providerName)
                 }
 
                 if vm.showTotalFees {
@@ -66,6 +64,64 @@ struct SwapDetailsSummary: View {
             }
         }
         .padding(.top, 8)
+        .crossPlatformSheet(isPresented: $showQuotesSheet) {
+            SwapQuotesPickerSheet(detailsViewModel: detailsViewModel, showSheet: $showQuotesSheet)
+        }
+    }
+
+    /// The Provider row. When provider selection is available (feature flag +
+    /// Silver+ AND more than one quote), it becomes tappable with a chevron that
+    /// opens the picker sheet. Otherwise it stays the static read-only row — the
+    /// exact behavior shipped today.
+    @ViewBuilder
+    private func providerRow(providerName: String) -> some View {
+        if vm.canSelectProvider {
+            Button {
+                #if os(iOS)
+                hideKeyboard()
+                #endif
+                showQuotesSheet = true
+            } label: {
+                HStack {
+                    providerCell(providerName: providerName)
+                    Icon(
+                        named: "chevron-down-small",
+                        color: Theme.colors.textSecondary,
+                        size: 12
+                    )
+                    .rotationEffect(.degrees(-90))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            providerCell(providerName: providerName)
+        }
+    }
+
+    /// Provider summary cell — mirrors `getSummaryCell` but shows the provider's
+    /// brand logo to the left of the name.
+    private func providerCell(providerName: String) -> some View {
+        HStack(spacing: 8) {
+            Text("provider".localized)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            if let logo = vm.quote?.providerLogo {
+                AsyncImageView(
+                    logo: logo,
+                    size: CGSize(width: 16, height: 16),
+                    ticker: providerName,
+                    tokenChainLogo: nil
+                )
+            }
+
+            Text(providerName)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .redacted(reason: detailsViewModel.isLoading ? .placeholder : [])
+        }
+        .font(Theme.fonts.caption12)
     }
 
     private func totalFeesLabel(showChevron: Bool = true) -> some View {
@@ -82,11 +138,13 @@ struct SwapDetailsSummary: View {
     }
 
     var chevron: some View {
-        Image(systemName: "chevron.up")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textPrimary)
-            .rotationEffect(Angle(degrees: showFees ? 0 : 180))
-            .animation(.easeInOut, value: showFees)
+        Icon(
+            named: "chevron-down-small",
+            color: Theme.colors.textSecondary,
+            size: 12
+        )
+        .rotationEffect(Angle(degrees: showFees ? 180 : 0))
+        .animation(.easeInOut, value: showFees)
     }
 
     var expandableFees: some View {

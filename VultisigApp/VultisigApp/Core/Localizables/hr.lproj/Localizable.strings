@@ -1019,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
+"swapProviderRecommended" = "Preporučeno";
+"swapProvidersSheetTitle" = "Odaberite davatelja";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";

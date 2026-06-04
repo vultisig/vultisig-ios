@@ -54,7 +54,7 @@ struct DefaultSwapInteractor: SwapInteractor {
                     - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0)
             )
 
-        let fetched = try await self.quote.fetchQuote(
+        let fetched = try await self.quote.fetchQuotes(
             amount: amount,
             fromCoin: fromCoin,
             toCoin: toCoin,
@@ -64,7 +64,8 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
 
         return SwapQuoteResult(
-            quote: fetched,
+            quote: fetched.best,
+            allQuotes: fetched.ranked,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
@@ -118,5 +119,12 @@ struct DefaultSwapInteractor: SwapInteractor {
 
     func warmDiscountTier(for vault: Vault) async {
         _ = await tierResolver.resolveTierForSession(for: vault)
+    }
+
+    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool {
+        guard let tier = await tierResolver.resolveTierForSession(for: vault) else {
+            return false
+        }
+        return tier >= .silver
     }
 }

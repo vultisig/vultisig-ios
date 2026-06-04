@@ -30,18 +30,40 @@ struct SwapService {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
+        try await fetchQuotes(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            isAffiliate: isAffiliate,
+            referredCode: referredCode,
+            vultTierDiscount: vultTierDiscount
+        ).best
+    }
+
+    /// Fetch every eligible provider in parallel and return the full ranked set alongside the
+    /// auto-selected winner. The winner is still chosen by `selectBestQuote` (net output + banded
+    /// provider preference); `ranked` is the same candidate pool sorted best→worst by
+    /// `expectedNetToAmount` so the UI can surface alternatives without re-fetching.
+    ///
+    /// Returning on first success would honour the priority order baked into `resolveAllProviders`,
+    /// which is fine when only one provider is eligible but produces poor outcomes on same-chain
+    /// ERC20 routes where THORChain is listed first yet routes through its Router with a costly
+    /// `depositWithExpiry` deposit and a destination amount that's typically lower than what an
+    /// aggregator returns.
+    func fetchQuotes(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuotes {
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
 
         guard !providers.isEmpty else {
             throw SwapError.routeUnavailable
         }
 
-        // Fetch every eligible provider in parallel, then rank by net output. Returning on
-        // first success would honour the priority order baked into `resolveAllProviders`,
-        // which is fine when only one provider is eligible but produces poor outcomes on
-        // same-chain ERC20 routes where THORChain is listed first yet routes through its
-        // Router with a costly `depositWithExpiry` deposit and a destination amount that's
-        // typically lower than what an aggregator returns.
         let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
             for provider in providers {
                 group.addTask {
@@ -71,7 +93,10 @@ struct SwapService {
 
         let quotes = results.compactMap { try? $0.get() }
         if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
-            return best
+            let ranked = Self.rankedQuotes(quotes: quotes, toCoin: toCoin)
+            // Preserve the `best ∈ ranked` contract: if nothing is rankable (no
+            // comparable net amounts) but a best still exists, surface it.
+            return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
         let firstError = results.compactMap { result -> Error? in
@@ -80,6 +105,21 @@ struct SwapService {
         }.first
 
         throw firstError ?? SwapError.routeUnavailable
+    }
+
+    /// All rankable quotes sorted best→worst by net output in `toCoin` units — the same metric
+    /// `selectBestQuote` ranks on, so the first element matches the winner on a pure-rate basis.
+    /// Quotes that can't produce a comparable net amount are dropped (they can't be ranked).
+    /// Provider preference (the banded layer in `selectBestQuote`) intentionally does *not* reorder
+    /// this list: the user-facing list shows raw rate order so the displayed amounts are monotonic.
+    static func rankedQuotes(quotes: [SwapQuote], toCoin: Coin) -> [SwapQuote] {
+        quotes
+            .compactMap { quote -> (SwapQuote, Decimal)? in
+                guard let value = quote.expectedNetToAmount(toCoin: toCoin) else { return nil }
+                return (quote, value)
+            }
+            .sorted { $0.1 > $1.1 }
+            .map { $0.0 }
     }
 
     /// Width of the priority band, as a fraction of the best net output. Quotes whose net
