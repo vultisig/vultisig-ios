@@ -420,6 +420,7 @@
 "fee" = "Tarifa";
 "filterByAsset" = "Filtrar por activo";
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
+"findCustomTokenThorchainPlaceholder" = "Introduce el token, p. ej. THOR.LQDY";
 "folder" = "Carpeta";
 "folderName" = "Nombre de la Carpeta";
 "folderNeedsOneVault" = "La carpeta debe tener al menos un Vault seleccionado.";
@@ -1038,6 +1039,7 @@
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "Dirección de THORChain";
+"thorchainCustomTokenInvalidFormat" = "Formato de token de THORChain no válido. Usa THOR.{SYMBOL}, p. ej. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";

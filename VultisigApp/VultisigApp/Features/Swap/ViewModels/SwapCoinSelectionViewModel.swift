@@ -127,8 +127,19 @@ struct SwapCoinSelectionLogic {
             externalBuckets = []
         }
 
+        // Coins the vault actually holds for this chain — including user-added
+        // custom tokens that aren't in the curated TokensStore / search list.
+        // DeFi-only positions (e.g. staking) aren't swappable, so drop them.
+        // `vault`/`selectedCoin` are SwiftData @Model objects, so the reads
+        // (`vault.coins(for:)` and `sort`'s `vault.coin(for:)`) must run on the
+        // MainActor.
+        let vaultTokens = await MainActor.run {
+            vault.coins(for: chain).filter { !$0.isDefiOnly }.map { $0.toCoinMeta() }
+        }
+
         let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
-        let sorted = sort(tokens: merged)
+        let withVault = Self.merge(base: merged, extra: vaultTokens)
+        let sorted = await MainActor.run { sort(tokens: withVault) }
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
@@ -142,13 +153,18 @@ struct SwapCoinSelectionLogic {
         base: [CoinMeta],
         externals: [DestinationTokenBucket]
     ) -> [CoinMeta] {
+        merge(base: base, extra: externals.flatMap { $0.tokens })
+    }
+
+    /// Appends `extra` tokens not already present in `base`, deduped by
+    /// `CoinMeta.uniqueId`. Base order is kept; novel tokens append in
+    /// `extra` order.
+    static func merge(base: [CoinMeta], extra: [CoinMeta]) -> [CoinMeta] {
         var seen = Set(base.map { $0.uniqueId })
         var result = base
-        for bucket in externals {
-            for token in bucket.tokens where !seen.contains(token.uniqueId) {
-                result.append(token)
-                seen.insert(token.uniqueId)
-            }
+        for token in extra where !seen.contains(token.uniqueId) {
+            result.append(token)
+            seen.insert(token.uniqueId)
         }
         return result
     }
