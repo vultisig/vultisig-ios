@@ -925,6 +925,7 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Verwalten";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
+"settingsAdvancedSwapProviderSelection" = "Auswahl des Swap-Anbieters";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";
 "shareQRType" = "Typ";
@@ -1018,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
 "swapOverview" = "Tauschübersicht";
+"swapProviderBest" = "Beste";
+"swapProvidersSheetTitle" = "Anbieter auswählen";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";

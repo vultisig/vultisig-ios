@@ -925,6 +925,7 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestionar";
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
+"settingsAdvancedSwapProviderSelection" = "Selección de proveedor de swap";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";
 "shareQRType" = "Tipo";
@@ -1018,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "El intercambio fue reembolsado a tu dirección de origen";
 "swapKitViewOnTracker" = "Ver en SwapKit Tracker";
 "swapOverview" = "Resumen del intercambio";
+"swapProviderBest" = "Mejor";
+"swapProvidersSheetTitle" = "Seleccionar proveedor";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swaps" = "Intercambios";
 "swapTrackingLink" = "Enlace de seguimiento del intercambio";
