@@ -65,19 +65,13 @@ enum CosmosStakingSignDataResolver {
         category: "cosmos-staking-sign-resolver"
     )
 
-    /// Resolves the SignDoc artefacts for a staking payload. Caller passes
-    /// the immutable `SendTransaction` and the Cosmos chain-specific
+    /// Resolves the SignDoc artefacts for a secp256k1 staking payload. Caller
+    /// passes the immutable `SendTransaction` and the Cosmos chain-specific
     /// (already populated upstream by `BlockChainService.fetchSpecific(...)`).
     static func resolve(
         sendTransaction: SendTransaction,
         chainSpecific: BlockChainSpecific
     ) throws -> SignDirect {
-        guard let payload = sendTransaction.cosmosStakingPayload else {
-            throw Errors.missingPayloadField("cosmosStakingPayload")
-        }
-        guard case .Cosmos(let accountNumber, let sequence, _, _, _) = chainSpecific else {
-            throw Errors.missingChainSpecific
-        }
         // Validate compressed secp256k1 shape (33 bytes, 0x02 / 0x03 prefix)
         // *before* building AuthInfo — malformed keys would otherwise burn an
         // MPC ceremony and be rejected on-chain after signing.
@@ -86,6 +80,48 @@ enum CosmosStakingSignDataResolver {
               pubKey.first == 0x02 || pubKey.first == 0x03
         else {
             throw Errors.invalidPublicKey
+        }
+        return try buildSignDirect(
+            sendTransaction: sendTransaction,
+            chainSpecific: chainSpecific,
+            pubKey: pubKey,
+            pubKeyTypeURL: CosmosStakingHelper.pubKeyTypeURL
+        )
+    }
+
+    /// QBTC variant. QBTC signs with ML-DSA (post-quantum), so its pubkey is
+    /// ~1312 bytes — the secp256k1 33-byte guard above would reject it. The
+    /// staking msg bodies are pubkey-agnostic, so the ONLY differences are
+    /// skipping that guard and stamping the ML-DSA pubkey type URL into
+    /// AuthInfo. The resulting `signDirect` bytes round-trip through the proto
+    /// so the peer device rebuilds the identical SignDoc hash; `QBTCHelper`
+    /// consumes them directly instead of via WalletCore's secp256k1 compiler.
+    static func resolveMLDSA(
+        sendTransaction: SendTransaction,
+        chainSpecific: BlockChainSpecific
+    ) throws -> SignDirect {
+        guard let pubKey = Data(hexString: sendTransaction.coin.hexPublicKey), !pubKey.isEmpty else {
+            throw Errors.invalidPublicKey
+        }
+        return try buildSignDirect(
+            sendTransaction: sendTransaction,
+            chainSpecific: chainSpecific,
+            pubKey: pubKey,
+            pubKeyTypeURL: QBTCHelper.pubKeyTypeURL
+        )
+    }
+
+    private static func buildSignDirect(
+        sendTransaction: SendTransaction,
+        chainSpecific: BlockChainSpecific,
+        pubKey: Data,
+        pubKeyTypeURL: String
+    ) throws -> SignDirect {
+        guard let payload = sendTransaction.cosmosStakingPayload else {
+            throw Errors.missingPayloadField("cosmosStakingPayload")
+        }
+        guard case .Cosmos(let accountNumber, let sequence, _, _, _) = chainSpecific else {
+            throw Errors.missingChainSpecific
         }
         let chain = sendTransaction.coin.chain
         let entry = try CosmosStakingConfig.entry(for: chain)
@@ -110,7 +146,8 @@ enum CosmosStakingSignDataResolver {
             sequence: sequence,
             gasLimit: gasLimit,
             feeDenom: entry.feeDenom,
-            feeAmount: feeAmount
+            feeAmount: feeAmount,
+            pubKeyTypeURL: pubKeyTypeURL
         )
 
         logger.info(
