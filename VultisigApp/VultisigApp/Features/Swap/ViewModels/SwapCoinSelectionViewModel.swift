@@ -130,13 +130,16 @@ struct SwapCoinSelectionLogic {
         // Coins the vault actually holds for this chain — including user-added
         // custom tokens that aren't in the curated TokensStore / search list.
         // DeFi-only positions (e.g. staking) aren't swappable, so drop them.
-        let vaultTokens = vault.coins(for: chain)
-            .filter { !$0.isDefiOnly }
-            .map { $0.toCoinMeta() }
+        // `vault`/`selectedCoin` are SwiftData @Model objects, so the reads
+        // (`vault.coins(for:)` and `sort`'s `vault.coin(for:)`) must run on the
+        // MainActor.
+        let vaultTokens = await MainActor.run {
+            vault.coins(for: chain).filter { !$0.isDefiOnly }.map { $0.toCoinMeta() }
+        }
 
         let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
         let withVault = Self.merge(base: merged, extra: vaultTokens)
-        let sorted = sort(tokens: withVault)
+        let sorted = await MainActor.run { sort(tokens: withVault) }
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
