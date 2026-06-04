@@ -36,11 +36,46 @@ final class SwapDetailsViewModel {
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
 
-    var quote: SwapQuote?
+    // MARK: - Quote state
+    //
+    // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
+    // override (provider selection). The rest of the screen — fees, validation,
+    // verify, sign — reads the computed `quote`, so a manual pick flows through
+    // unchanged. A refresh resets `selectedQuote` so it re-defaults to Best.
+
+    /// Full ranked candidate set (best→worst by net output). Drives the
+    /// provider-selection sheet. Empty until the first quote of a pair lands.
+    var allQuotes: [SwapQuote] = []
+    /// Auto-selected winner for the current pair/amount.
+    var bestQuote: SwapQuote?
+    /// Manual provider override. `nil` means "use Best". Reset on every refresh.
+    var selectedQuote: SwapQuote?
+
+    /// The active quote the whole flow reads. A manual pick wins; otherwise the
+    /// auto-selected best. Writing it (e.g. the reset paths, tests) clears the
+    /// manual override and assigns the best slot so existing call sites behave
+    /// exactly as before.
+    var quote: SwapQuote? {
+        get { selectedQuote ?? bestQuote }
+        set {
+            selectedQuote = nil
+            bestQuote = newValue
+            if newValue == nil {
+                allQuotes = []
+            }
+        }
+    }
+
     var thorchainFee: BigInt = .zero
     var gas: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
+
+    /// Feature-flag (Settings → Advanced) AND Silver-tier entitlement, resolved
+    /// once on screen load. The provider-selection UI only renders/selects when
+    /// this is true. False → exactly today's behavior (best auto-selected, no
+    /// chevron, no sheet).
+    var isProviderSelectionEnabled = false
 
     // MARK: - UI state (details-screen-only)
 
@@ -90,10 +125,62 @@ final class SwapDetailsViewModel {
     /// Warm the per-session VULT discount-tier cache once on screen load so the
     /// quote path reads the cached tier (VULT balance + Thorguard NFT) instead of
     /// re-resolving it — and re-running the Thorguard eth_call — on every fetch.
+    /// The same resolved tier also gates provider selection (Silver+), so this
+    /// reuses the cached path rather than adding a second network hit.
     func warmDiscountTier(vault: Vault) {
         Task { [weak self] in
-            await self?.interactor.warmDiscountTier(for: vault)
+            guard let self else { return }
+            await self.interactor.warmDiscountTier(for: vault)
+            await self.resolveProviderSelectionGate(vault: vault)
         }
+    }
+
+    /// Provider selection requires BOTH the Advanced-Settings flag AND a Silver
+    /// `VultDiscountTier` (or above). Resolved once on load off the cached tier
+    /// (no extra network path). When the flag is off, the tier isn't even
+    /// resolved — the gate stays false and behavior is exactly today's.
+    func resolveProviderSelectionGate(vault: Vault) async {
+        guard SwapProviderSelectionConfig.isFeatureEnabled else {
+            isProviderSelectionEnabled = false
+            return
+        }
+        isProviderSelectionEnabled = await interactor.isProviderSelectionUnlocked(for: vault)
+    }
+
+    /// True when the user can open the provider-selection sheet: the feature is
+    /// enabled (flag + Silver+) and there's more than one quote to choose from.
+    /// The Provider row only becomes tappable (chevron) when this holds.
+    var canSelectProvider: Bool {
+        isProviderSelectionEnabled && allQuotes.count > 1
+    }
+
+    /// Apply a manual provider pick. Ignored unless provider selection is enabled,
+    /// keeping the verify/sign path on the auto-selected best whenever the feature
+    /// is off or the vault is below Silver.
+    func selectProvider(_ quote: SwapQuote) {
+        guard isProviderSelectionEnabled else { return }
+        selectedQuote = quote
+    }
+
+    /// Whether `candidate` is the top-ranked (rate-best) quote — the one the list
+    /// tags "Best". Defined as the first element of the net-output-sorted
+    /// `allQuotes` so the tag always lands on the row showing the largest output.
+    func isBest(_ candidate: SwapQuote) -> Bool {
+        candidate == allQuotes.first
+    }
+
+    /// Whether `candidate` is the currently-active quote (manual pick or best).
+    func isSelected(_ candidate: SwapQuote) -> Bool {
+        candidate == quote
+    }
+
+    /// Each provider row's reference output amount, prefixed with `~` (approximate).
+    /// Uses the SAME `expectedNetToAmount(toCoin:)` the ranking sorts on, so the
+    /// row highlighted "Best" always shows the largest amount in the list. Returns
+    /// empty when the quote can't produce a comparable net amount.
+    func referenceOutput(for candidate: SwapQuote) -> String {
+        guard let amount = candidate.expectedNetToAmount(toCoin: toCoin) else { return .empty }
+        return "~\(amount.formatForDisplay()) \(toCoin.ticker)"
     }
 
     func updateCoinLists() {
@@ -416,6 +503,15 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
+    /// Clear the full quote slot: the manual override, the best, and the ranked
+    /// set. Keeps the three in lock-step so a stale provider list can't outlive
+    /// the quote it belonged to.
+    func clearQuoteState() {
+        selectedQuote = nil
+        bestQuote = nil
+        allQuotes = []
+    }
+
     func fetchQuotes(vault: Vault, referredCode: String, immediate: Bool = false) {
         updateQuoteTask?.cancel()
 
@@ -423,7 +519,7 @@ private extension SwapDetailsViewModel {
         // state from a prior valid input so `validateForm` doesn't pass on
         // a stale combination of new amount + old downstream values.
         if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
-            quote = nil
+            clearQuoteState()
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
@@ -444,7 +540,7 @@ private extension SwapDetailsViewModel {
         // isLoadingQuotes && quote == nil) until the fresh quote lands.
         let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount
         if !isSilentRefresh {
-            quote = nil
+            clearQuoteState()
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
@@ -504,7 +600,12 @@ private extension SwapDetailsViewModel {
             // quote over the state the new fetch is about to populate.
             guard !Task.isCancelled else { return }
             if let result {
-                quote = result.quote
+                // Every refresh re-defaults to Best: drop any manual override so
+                // the active `quote` tracks the fresh winner ("until next refresh"
+                // persistence). `allQuotes` repopulates from the ranked set.
+                selectedQuote = nil
+                bestQuote = result.quote
+                allQuotes = result.allQuotes
                 quotedPair = currentPair
                 quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
