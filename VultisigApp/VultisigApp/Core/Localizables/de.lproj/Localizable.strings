@@ -921,12 +921,10 @@
 "settings" = "Einstellungen";
 "settingsAdvancedClear" = "Leeren";
 "settingsAdvancedCustomRPC" = "Eigene RPC-Endpunkte";
-"settingsAdvancedCustomRPCToggle" = "Eigenes RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Verwalten";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
-"settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";
 "shareQRType" = "Typ";

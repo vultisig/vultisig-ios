@@ -7,9 +7,8 @@
 //  quantum-security onboarding hop, join-keysign QBTC fork — gates against
 //  this single source of truth.
 //
-//  The flag is independent of `isMLDSAEnabled`. MLDSA gates *keygen*; this
-//  flag gates QBTC *claim UI*. Both need to be true for an end-to-end
-//  claim, but the toggles are orthogonal.
+//  This gate is orthogonal to MLDSA keygen: MLDSA gates *keygen* (driven
+//  by the QBTC claim flow), this gates QBTC *claim UI*.
 //
 //  QBTC claim is enabled for everyone — the former Settings → Advanced
 //  opt-in toggle has been removed now that the workstream has shipped.

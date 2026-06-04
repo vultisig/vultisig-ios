@@ -61,19 +61,12 @@ enum SwapKitConfig {
         "MAYACHAIN_STREAMING"
     ]
 
-    /// Advanced-settings flag (Settings → Advanced → "SwapKit"). When
-    /// `false`, SwapKit is dropped from every coin's `swapProviders` list
-    /// and `SwapKitService.fetchBestRoute` short-circuits to `nil`. The key
-    /// is the same `@AppStorage` value `SettingsViewModel.swapkitEnabled`
-    /// writes to, so the toggle and this read share one source of truth.
-    /// Default `true` — users can opt out via Settings → Advanced.
+    /// Gates SwapKit across the app — `swapProviders` list inclusion and
+    /// `SwapKitService.fetchBestRoute`. SwapKit has shipped and is always
+    /// enabled; the former Settings → Advanced opt-out toggle has been
+    /// removed. The property is kept as a single source of truth so the
+    /// call sites retain one gate if we ever need to dark-launch a change.
     static var isFeatureEnabled: Bool {
-        // `bool(forKey:)` returns false when the key is absent, so we check
-        // for the object directly to distinguish "never set" (default on)
-        // from "explicitly set to false".
-        guard let stored = UserDefaults.standard.object(forKey: "swapkitEnabled") as? Bool else {
-            return true
-        }
-        return stored
+        true
     }
 }
