@@ -902,7 +902,6 @@
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "관리";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "공유";

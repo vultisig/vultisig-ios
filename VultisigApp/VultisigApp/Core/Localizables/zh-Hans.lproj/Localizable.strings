@@ -925,7 +925,6 @@
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "管理";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "分享";

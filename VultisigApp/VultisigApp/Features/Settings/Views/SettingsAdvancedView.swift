@@ -56,12 +56,6 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
-                title: "settingsAdvancedQBTCClaimToggle".localized,
-                icon: "lock.shield",
-                isEnabled: $settingsViewModel.qbtcEnabled
-            )
-
-            SettingToggleCell(
                 title: "settingsAdvancedCustomRPCToggle".localized,
                 icon: "network",
                 isEnabled: $settingsViewModel.customRPCEnabled

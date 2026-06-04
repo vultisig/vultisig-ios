@@ -33,7 +33,6 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
     @AppStorage("swapkitEnabled") var swapkitEnabled: Bool = true
-    @AppStorage("qbtcEnabled") var qbtcEnabled: Bool = false
     @AppStorage("customRPCEnabled") var customRPCEnabled: Bool = false
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string

@@ -925,7 +925,6 @@
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestionar";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartir";
