@@ -19,7 +19,7 @@ enum SettingsRoute: Hashable {
     case notifications
     case faq
     case checkForUpdates
-    case advancedSettings
+    case advancedSettings(vault: Vault)
     case customRPC
     case customRPCDetail(chain: Chain)
     case vaultDetailQRCode(vault: Vault)

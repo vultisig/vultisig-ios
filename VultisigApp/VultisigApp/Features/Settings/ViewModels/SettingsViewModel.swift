@@ -38,6 +38,11 @@ class SettingsViewModel: ObservableObject {
     /// "mayachain". `Coin+Swaps.swapProviders` reads this and filters the
     /// natural provider list down to the single forced provider.
     @AppStorage("forcedSwapProvider") var forcedSwapProvider: String = ""
+    /// Opt-in (Silver `VultDiscountTier`+ only) toggle that lets the user pick a
+    /// non-best swap provider on the details screen. Backs
+    /// `SwapProviderSelectionConfig.isFeatureEnabled`; the row is hidden below
+    /// Silver. Off → best is auto-selected, exactly as before.
+    @AppStorage(SwapProviderSelectionConfig.storageKey) var swapProviderSelectionEnabled: Bool = false
 
     init() {
         self.selectedCurrency = SettingsCurrency.current
