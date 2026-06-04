@@ -330,7 +330,6 @@ struct CustomTokenScreen: View {
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
                 await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
-                try? await Task.sleep(for: .seconds(1)) // Small delay to improve UX
                 isAddingToken = false
                 dismiss()
             }

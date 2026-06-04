@@ -52,8 +52,13 @@ struct CoinService {
             // Step 2: Add newly selected coins
             try await addNewlySelectedCoins(vault: vault, selection: selection)
 
+            // `vault.coins` is a SwiftData @Model relationship, not @Published, so
+            // mutating it doesn't emit `objectWillChange` on its own. Notify observers
+            // explicitly so live screens that recompute their token list off this
+            // signal (e.g. chain detail) reflect the change without being rebuilt.
+            vault.objectWillChange.send()
         } catch {
-            print("fail to save asset,\(error)")
+            logger.error("failed to save assets: \(error)")
         }
     }
 
