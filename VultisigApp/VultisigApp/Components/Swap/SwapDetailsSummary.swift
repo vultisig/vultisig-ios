@@ -85,10 +85,11 @@ struct SwapDetailsSummary: View {
                 HStack {
                     providerCell(providerName: providerName)
                     Icon(
-                        named: "chevron-right-small",
+                        named: "chevron-down-small",
                         color: Theme.colors.textSecondary,
                         size: 12
                     )
+                    .rotationEffect(.degrees(-90))
                 }
                 .contentShape(Rectangle())
             }
@@ -101,7 +102,7 @@ struct SwapDetailsSummary: View {
     /// Provider summary cell — mirrors `getSummaryCell` but shows the provider's
     /// brand logo to the left of the name.
     private func providerCell(providerName: String) -> some View {
-        HStack {
+        HStack(spacing: 8) {
             Text("provider".localized)
                 .foregroundStyle(Theme.colors.textTertiary)
 
