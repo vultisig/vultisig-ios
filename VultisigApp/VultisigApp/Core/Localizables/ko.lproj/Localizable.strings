@@ -1246,4 +1246,3 @@
 "zipImportAllDuplicates" = "모든 볼트 %d개가 이미 존재하여 건너뛰었습니다: %@.";
 "zipImportPartialSuccess" = "%d개의 볼트를 가져왔습니다. %d개의 중복을 건너뛰었습니다: %@.";
 
-"swapProviderSelected" = "선택됨";

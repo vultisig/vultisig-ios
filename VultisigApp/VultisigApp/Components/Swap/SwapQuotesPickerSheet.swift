@@ -57,7 +57,6 @@ struct SwapQuotesPickerSheet: View {
 
     private func row(for quote: SwapQuote) -> some View {
         let isRecommended = vm.isBest(quote)
-        let isSelected = vm.isSelected(quote)
         return Button {
             vm.selectProvider(quote)
             showSheet = false
@@ -75,15 +74,8 @@ struct SwapQuotesPickerSheet: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
 
-                    if isSelected || isRecommended {
-                        HStack(spacing: 6) {
-                            if isSelected {
-                                tag("swapProviderSelected".localized, color: Theme.colors.primaryAccent4)
-                            }
-                            if isRecommended {
-                                tag("swapProviderRecommended".localized, color: Theme.colors.alertSuccess)
-                            }
-                        }
+                    if isRecommended {
+                        tag("swapProviderRecommended".localized, color: Theme.colors.alertSuccess)
                     }
                 }
 

@@ -164,11 +164,6 @@ final class SwapDetailsViewModel {
         candidate == allQuotes.first
     }
 
-    /// Whether `candidate` is the currently-active quote (manual pick or best).
-    func isSelected(_ candidate: SwapQuote) -> Bool {
-        candidate == quote
-    }
-
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
     /// the top; the rest keep their net-output ranking.
     var orderedPickerQuotes: [SwapQuote] {
