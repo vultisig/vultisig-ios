@@ -135,35 +135,30 @@ final class SwapDetailsViewModel {
         }
     }
 
-    /// Provider selection requires BOTH the Advanced-Settings flag AND a Silver
-    /// `VultDiscountTier` (or above). Resolved once on load off the cached tier
-    /// (no extra network path). When the flag is off, the tier isn't even
-    /// resolved — the gate stays false and behavior is exactly today's.
+    /// Provider selection requires a Silver `VultDiscountTier` (or above).
+    /// Resolved once on load off the cached tier (no extra network path); below
+    /// Silver the gate stays false and behavior is exactly today's.
     func resolveProviderSelectionGate(vault: Vault) async {
-        guard SwapProviderSelectionConfig.isFeatureEnabled else {
-            isProviderSelectionEnabled = false
-            return
-        }
         isProviderSelectionEnabled = await interactor.isProviderSelectionUnlocked(for: vault)
     }
 
-    /// True when the user can open the provider-selection sheet: the feature is
-    /// enabled (flag + Silver+) and there's more than one quote to choose from.
+    /// True when the user can open the provider-selection sheet: the vault is
+    /// Silver `VultDiscountTier`+ and there's more than one quote to choose from.
     /// The Provider row only becomes tappable (chevron) when this holds.
     var canSelectProvider: Bool {
         isProviderSelectionEnabled && allQuotes.count > 1
     }
 
     /// Apply a manual provider pick. Ignored unless provider selection is enabled,
-    /// keeping the verify/sign path on the auto-selected best whenever the feature
-    /// is off or the vault is below Silver.
+    /// keeping the verify/sign path on the auto-selected best whenever the vault
+    /// is below Silver.
     func selectProvider(_ quote: SwapQuote) {
         guard isProviderSelectionEnabled else { return }
         selectedQuote = quote
     }
 
     /// Whether `candidate` is the top-ranked (rate-best) quote — the one the list
-    /// tags "Best". Defined as the first element of the net-output-sorted
+    /// tags "Recommended". Defined as the first element of the net-output-sorted
     /// `allQuotes` so the tag always lands on the row showing the largest output.
     func isBest(_ candidate: SwapQuote) -> Bool {
         candidate == allQuotes.first
@@ -176,11 +171,18 @@ final class SwapDetailsViewModel {
 
     /// Each provider row's reference output amount, prefixed with `~` (approximate).
     /// Uses the SAME `expectedNetToAmount(toCoin:)` the ranking sorts on, so the
-    /// row highlighted "Best" always shows the largest amount in the list. Returns
+    /// "Recommended" row always shows the largest amount in the list. Returns
     /// empty when the quote can't produce a comparable net amount.
     func referenceOutput(for candidate: SwapQuote) -> String {
         guard let amount = candidate.expectedNetToAmount(toCoin: toCoin) else { return .empty }
         return "~\(amount.formatForDisplay()) \(toCoin.ticker)"
+    }
+
+    /// Fiat equivalent of a row's reference output, using the same
+    /// `expectedNetToAmount(toCoin:)`. Display-only; empty when not comparable.
+    func referenceFiat(for candidate: SwapQuote) -> String {
+        guard let amount = candidate.expectedNetToAmount(toCoin: toCoin) else { return .empty }
+        return toCoin.fiat(decimal: amount).formatForDisplay()
     }
 
     func updateCoinLists() {

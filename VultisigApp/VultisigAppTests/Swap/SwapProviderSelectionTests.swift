@@ -9,7 +9,7 @@
 //   2. VM selection — `selectedQuote` drives the computed `quote`, a non-best
 //      pick reaches the active quote (and therefore the verify/sign summary),
 //      and every refresh resets the override back to Best.
-//   3. The flag-off / below-Silver invariant: provider selection is inert
+//   3. The below-Silver invariant: provider selection is inert
 //      (no list, best auto-selected) unless the gate is unlocked.
 //
 
@@ -127,24 +127,24 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertTrue(vm.allQuotes.isEmpty, "Emptying the amount clears the ranked set")
     }
 
-    // MARK: - Item 3: flag-off / below-Silver invariant
+    // MARK: - Item 3: below-Silver invariant
 
-    func testCanSelectProviderFalseWhenFeatureDisabled() async {
+    func testCanSelectProviderFalseWhenBelowSilver() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        // Gate locked (below Silver / flag off): more than one quote, but the row
+        // Gate locked (below Silver): more than one quote, but the row
         // must stay static and a pick must not change the active quote.
         let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: false)
         await landQuotes(on: vm)
 
         XCTAssertFalse(
             vm.canSelectProvider,
-            "Below Silver / flag off: provider selection must be unavailable even with multiple quotes"
+            "Below Silver: provider selection must be unavailable even with multiple quotes"
         )
 
         vm.selectProvider(alt)
         XCTAssertNil(vm.selectedQuote, "A locked gate must ignore selection")
-        XCTAssertEqual(vm.quote, best, "Below Silver / flag off: best stays auto-selected — exactly today's behavior")
+        XCTAssertEqual(vm.quote, best, "Below Silver: best stays auto-selected — exactly today's behavior")
     }
 
     func testCanSelectProviderFalseWithSingleQuote() async {

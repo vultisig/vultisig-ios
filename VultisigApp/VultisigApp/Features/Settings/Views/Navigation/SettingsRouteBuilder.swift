@@ -67,8 +67,8 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildAdvancedSettingsScreen(vault: Vault) -> some View {
-        SettingsAdvancedView(vault: vault)
+    func buildAdvancedSettingsScreen() -> some View {
+        SettingsAdvancedView()
     }
 
     @ViewBuilder

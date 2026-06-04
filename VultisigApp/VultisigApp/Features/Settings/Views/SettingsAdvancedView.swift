@@ -8,23 +8,13 @@
 import SwiftUI
 
 struct SettingsAdvancedView: View {
-    let vault: Vault
-
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-
-    /// Resolved once on load via the shared `TierGate`. The swap provider-selection
-    /// toggle is a Silver-tier (and above) entitlement, so its row stays hidden for
-    /// vaults below Silver — keeping the gate and the swap VM's runtime check aligned.
-    @State private var isSwapProviderSelectionUnlocked = false
 
     var body: some View {
         Screen {
             content
         }
         .screenTitle("advanced".localized)
-        .task {
-            isSwapProviderSelectionUnlocked = await TierGate().isUnlocked(.silver, for: vault)
-        }
     }
 
     var content: some View {
@@ -52,14 +42,6 @@ struct SettingsAdvancedView: View {
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
-
-            if isSwapProviderSelectionUnlocked {
-                SettingToggleCell(
-                    title: "settingsAdvancedSwapProviderSelection".localized,
-                    icon: "arrow.left.arrow.right",
-                    isEnabled: $settingsViewModel.swapProviderSelectionEnabled
-                )
-            }
 
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
@@ -90,7 +72,7 @@ struct SettingsAdvancedView: View {
 #Preview {
     ZStack {
         Background()
-        SettingsAdvancedView(vault: .example)
+        SettingsAdvancedView()
     }
     .environmentObject(SettingsViewModel())
     .environmentObject(AppViewModel.shared)

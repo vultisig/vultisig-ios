@@ -225,7 +225,7 @@ struct SettingsMainScreen: View {
 
             if tapCount > 4 {
                 tapCount = 0
-                router.navigate(to: SettingsRoute.advancedSettings(vault: vault))
+                router.navigate(to: SettingsRoute.advancedSettings)
             }
         }
     }
