@@ -925,7 +925,6 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Upravljaj";
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
-"settingsAdvancedSwapProviderSelection" = "Odabir davatelja zamjene";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";
 "shareQRType" = "Vrsta";
@@ -1019,7 +1018,7 @@
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
-"swapProviderBest" = "Najbolje";
+"swapProviderRecommended" = "Preporučeno";
 "swapProvidersSheetTitle" = "Odaberite davatelja";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";

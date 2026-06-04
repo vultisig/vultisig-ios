@@ -2,12 +2,12 @@
 //  SwapQuotesPickerSheet.swift
 //  VultisigApp
 //
-//  Provider-selection sheet (Silver `VultDiscountTier`+, feature-flagged). Lists
-//  every fetched swap quote best→worst by net output, tags the top row "Best"
-//  with an accent border, and lets the user pick a non-best provider. The pick
-//  sets `selectedQuote`; the rest of the flow (fees, rate, verify, sign)
-//  recomputes off the active `quote`. Output amounts are reference figures
-//  (`~`-prefixed) using the same `expectedNetToAmount` the ranking sorts on.
+//  Provider-selection sheet (Silver `VultDiscountTier`+). Lists every fetched
+//  swap quote best→worst by net output, tags the top row "Recommended", and lets
+//  the user pick a non-best provider. The pick sets `selectedQuote`; the rest of
+//  the flow (fees, rate, verify, sign) recomputes off the active `quote`. Each
+//  row shows the provider logo + name on the left and the reference output
+//  (`~`-prefixed, with the asset icon) + its fiat value on the right.
 //
 
 import SwiftUI
@@ -56,30 +56,50 @@ struct SwapQuotesPickerSheet: View {
     }
 
     private func row(for quote: SwapQuote) -> some View {
-        let isBest = vm.isBest(quote)
+        let isRecommended = vm.isBest(quote)
         let isSelected = vm.isSelected(quote)
         return Button {
             vm.selectProvider(quote)
             showSheet = false
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(quote.displayName ?? "")
-                            .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(Theme.colors.textPrimary)
+                AsyncImageView(
+                    logo: quote.providerLogo,
+                    size: CGSize(width: 28, height: 28),
+                    ticker: quote.displayName ?? "",
+                    tokenChainLogo: nil
+                )
 
-                        if isBest {
-                            bestTag
-                        }
+                HStack(spacing: 8) {
+                    Text(quote.displayName ?? "")
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+
+                    if isRecommended {
+                        recommendedTag
                     }
-
-                    Text(vm.referenceOutput(for: quote))
-                        .font(Theme.fonts.priceBodyS)
-                        .foregroundStyle(Theme.colors.textSecondary)
                 }
 
                 Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(vm.referenceOutput(for: quote))
+                            .font(Theme.fonts.priceBodyS)
+                            .foregroundStyle(Theme.colors.textPrimary)
+
+                        AsyncImageView(
+                            logo: vm.toCoin.logo,
+                            size: CGSize(width: 18, height: 18),
+                            ticker: vm.toCoin.ticker,
+                            tokenChainLogo: nil
+                        )
+                    }
+
+                    Text(vm.referenceFiat(for: quote))
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
 
                 if isSelected {
                     Image(systemName: "checkmark")
@@ -91,20 +111,13 @@ struct SwapQuotesPickerSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(
-                        isBest ? Theme.colors.primaryAccent4 : Color.clear,
-                        lineWidth: 1
-                    )
-            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private var bestTag: some View {
-        Text("swapProviderBest".localized)
+    private var recommendedTag: some View {
+        Text("swapProviderRecommended".localized)
             .font(Theme.fonts.caption10)
             .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(.horizontal, 8)

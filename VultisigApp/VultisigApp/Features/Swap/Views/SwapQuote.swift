@@ -90,6 +90,26 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Brand-logo asset name for the provider (in `Crypto/`), matching the
+    /// imageset filenames. Providers without a bundled logo (KyberSwap, SwapKit)
+    /// fall back to `AsyncImageView`'s monogram.
+    var providerLogo: String {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return "THORChain"
+        case .mayachain:
+            return "Maya protocol"
+        case .oneinch:
+            return "1Inch"
+        case .lifi:
+            return "LI.FI"
+        case .kyberswap:
+            return "KyberSwap"
+        case .swapkit:
+            return "SwapKit"
+        }
+    }
+
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):

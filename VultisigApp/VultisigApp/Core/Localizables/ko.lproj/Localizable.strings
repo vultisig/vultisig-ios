@@ -902,7 +902,6 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "관리";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
-"settingsAdvancedSwapProviderSelection" = "스왑 공급자 선택";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";
 "shareQRType" = "유형";
@@ -995,7 +994,7 @@
 "swapKitStatusRefundedReason" = "스왑이 원래 주소로 환불되었습니다";
 "swapKitViewOnTracker" = "SwapKit 추적기에서 보기";
 "swapOverview" = "스왑 개요";
-"swapProviderBest" = "최고";
+"swapProviderRecommended" = "추천";
 "swapProvidersSheetTitle" = "공급자 선택";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
