@@ -187,7 +187,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     derivePath: coin.coinType.derivationPath(),
                     isECDSA: coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword,
-                    chain: coin.chain.name
+                    chain: coin.chain.name,
+                    isMldsa: coin.chain.signingKeyType == .MLDSA
                 )
                 self.logger.info("Fast Vault signing initiated successfully")
             } catch {
