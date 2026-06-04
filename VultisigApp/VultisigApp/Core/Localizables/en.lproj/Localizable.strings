@@ -929,13 +929,10 @@
 "settings" = "Settings";
 "settingsAdvancedClear" = "Clear";
 "settingsAdvancedCustomRPC" = "Custom RPC Endpoints";
-"settingsAdvancedCustomRPCToggle" = "Custom RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Manage";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
-"settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Share";
 "shareOf" = "share %d of %d";
 "shareQRType" = "Type";

@@ -38,33 +38,9 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
-                title: "MLDSA",
-                icon: "lock.shield",
-                isEnabled: $settingsViewModel.isMLDSAEnabled
-            )
-
-            SettingToggleCell(
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
-            )
-
-            SettingToggleCell(
-                title: "settingsAdvancedSwapKitToggle".localized,
-                icon: "arrow.triangle.swap",
-                isEnabled: $settingsViewModel.swapkitEnabled
-            )
-
-            SettingToggleCell(
-                title: "settingsAdvancedQBTCClaimToggle".localized,
-                icon: "lock.shield",
-                isEnabled: $settingsViewModel.qbtcEnabled
-            )
-
-            SettingToggleCell(
-                title: "settingsAdvancedCustomRPCToggle".localized,
-                icon: "network",
-                isEnabled: $settingsViewModel.customRPCEnabled
             )
 
             SettingPickerCell(

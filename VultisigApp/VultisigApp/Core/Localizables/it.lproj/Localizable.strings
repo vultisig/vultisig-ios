@@ -921,13 +921,10 @@
 "settings" = "Impostazioni";
 "settingsAdvancedClear" = "Cancella";
 "settingsAdvancedCustomRPC" = "Endpoint RPC personalizzati";
-"settingsAdvancedCustomRPCToggle" = "RPC personalizzato";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestisci";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
-"settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "Compartilhar";
 "shareOf" = "Condividi %d di %d";
 "shareQRType" = "Tipo";

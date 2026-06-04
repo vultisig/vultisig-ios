@@ -921,13 +921,10 @@
 "settings" = "设置";
 "settingsAdvancedClear" = "清除";
 "settingsAdvancedCustomRPC" = "自定义 RPC 端点";
-"settingsAdvancedCustomRPCToggle" = "自定义 RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "管理";
-"settingsAdvancedQBTCClaimToggle" = "QBTC Claim";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
-"settingsAdvancedSwapKitToggle" = "SwapKit";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
 "shareQRType" = "类型";
