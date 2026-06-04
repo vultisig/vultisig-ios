@@ -72,6 +72,22 @@ enum CosmosStakingConfig {
             gasLimit: 2_000_000,
             feeAmount: 133_333_334,
             unbondingDays: 21
+        ),
+        // QBTC (post-quantum) is a Cosmos-SDK chain that signs with ML-DSA, not
+        // secp256k1, so it does NOT route through `CosmosStakingSignDataResolver`
+        // — `QBTCHelper` rebuilds the SignDoc/AuthInfo via the ML-DSA path. This
+        // entry is still the single source of truth for denom / valoper-prefix /
+        // gas / fee / unbonding everywhere else (read surfaces, balance preflight,
+        // validator bech32 preflight). `bondDenom` is lowercase `qbtc` (8 decimals,
+        // NOT a micro-denom). Values verified on the live qbtc-testnet LCD.
+        .qbtc: Entry(
+            chainId: "qbtc-testnet",
+            bondDenom: "qbtc",
+            feeDenom: "qbtc",
+            valoperHrp: "qbtcvaloper",
+            gasLimit: 300_000,
+            feeAmount: 7_500,
+            unbondingDays: 21
         )
     ]
 

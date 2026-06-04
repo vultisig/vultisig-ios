@@ -554,7 +554,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     /// in-app staking UI.
     var isCosmosStakingChain: Bool {
         switch self {
-        case .terra, .terraClassic:
+        case .terra, .terraClassic, .qbtc:
             return true
         default:
             return false

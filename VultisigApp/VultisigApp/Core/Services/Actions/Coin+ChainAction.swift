@@ -20,7 +20,8 @@ extension CoinAction {
         .mayaChain,
         .tron,
         .terra,
-        .terraClassic
+        .terraClassic,
+        .qbtc
     ]
 
 }
