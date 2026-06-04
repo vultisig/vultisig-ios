@@ -27,7 +27,7 @@ struct SwapQuotesPickerSheet: View {
             title
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
-                    ForEach(Array(vm.allQuotes.enumerated()), id: \.offset) { _, quote in
+                    ForEach(Array(vm.orderedPickerQuotes.enumerated()), id: \.offset) { _, quote in
                         row(for: quote)
                     }
                 }
@@ -70,13 +70,20 @@ struct SwapQuotesPickerSheet: View {
                     tokenChainLogo: nil
                 )
 
-                HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(quote.displayName ?? "")
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
 
-                    if isRecommended {
-                        recommendedTag
+                    if isSelected || isRecommended {
+                        HStack(spacing: 6) {
+                            if isSelected {
+                                tag("swapProviderSelected".localized, color: Theme.colors.primaryAccent4)
+                            }
+                            if isRecommended {
+                                tag("swapProviderRecommended".localized, color: Theme.colors.alertSuccess)
+                            }
+                        }
                     }
                 }
 
@@ -100,14 +107,9 @@ struct SwapQuotesPickerSheet: View {
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
-
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.primaryAccent4)
-                }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .frame(height: 72)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
@@ -116,14 +118,19 @@ struct SwapQuotesPickerSheet: View {
         .buttonStyle(.plain)
     }
 
-    private var recommendedTag: some View {
-        Text("swapProviderRecommended".localized)
+    /// Small capsule tag with a soft glow in its own colour (Selected / Recommended).
+    private func tag(_ title: String, color: Color) -> some View {
+        Text(title)
             .font(Theme.fonts.caption10)
-            .foregroundStyle(Theme.colors.primaryAccent4)
+            .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(Theme.colors.primaryAccent4.opacity(0.16))
+            .background(color.opacity(0.16))
             .clipShape(Capsule())
+            .overlay(
+                Capsule().stroke(color.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: color.opacity(0.6), radius: 4)
     }
 }
 

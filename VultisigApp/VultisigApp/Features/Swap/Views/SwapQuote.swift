@@ -84,9 +84,10 @@ enum SwapQuote: Hashable {
             return "KyberSwap"
         case .lifi:
             return "LI.FI"
-        case .swapkit(_, _, let subProvider):
-            // Surface the sub-provider so the verify screen can show "via Chainflip".
-            return "SwapKit (\(subProvider))"
+        case .swapkit:
+            // The sub-provider (e.g. Chainflip) is carried on the payload for
+            // routing/explorer links; the display name stays the clean brand.
+            return "SwapKit"
         }
     }
 
@@ -104,9 +105,9 @@ enum SwapQuote: Hashable {
         case .lifi:
             return "LI.FI"
         case .kyberswap:
-            return "KyberSwap"
+            return "kyberswap"
         case .swapkit:
-            return "SwapKit"
+            return "swapkit"
         }
     }
 

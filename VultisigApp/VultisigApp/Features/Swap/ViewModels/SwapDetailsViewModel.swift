@@ -169,6 +169,13 @@ final class SwapDetailsViewModel {
         candidate == quote
     }
 
+    /// Quotes for the picker sheet, with the active (selected) quote pinned to
+    /// the top; the rest keep their net-output ranking.
+    var orderedPickerQuotes: [SwapQuote] {
+        guard let active = quote, allQuotes.contains(active) else { return allQuotes }
+        return [active] + allQuotes.filter { $0 != active }
+    }
+
     /// Each provider row's reference output amount, prefixed with `~` (approximate).
     /// Uses the SAME `expectedNetToAmount(toCoin:)` the ranking sorts on, so the
     /// "Recommended" row always shows the largest amount in the list. Returns
@@ -182,7 +189,7 @@ final class SwapDetailsViewModel {
     /// `expectedNetToAmount(toCoin:)`. Display-only; empty when not comparable.
     func referenceFiat(for candidate: SwapQuote) -> String {
         guard let amount = candidate.expectedNetToAmount(toCoin: toCoin) else { return .empty }
-        return toCoin.fiat(decimal: amount).formatForDisplay()
+        return toCoin.fiat(decimal: amount).formatToFiat()
     }
 
     func updateCoinLists() {

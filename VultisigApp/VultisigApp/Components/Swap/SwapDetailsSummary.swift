@@ -83,10 +83,7 @@ struct SwapDetailsSummary: View {
                 showQuotesSheet = true
             } label: {
                 HStack {
-                    getSummaryCell(
-                        leadingText: "provider",
-                        trailingText: providerName
-                    )
+                    providerCell(providerName: providerName)
                     Icon(
                         named: "chevron-right-small",
                         color: Theme.colors.textSecondary,
@@ -97,11 +94,33 @@ struct SwapDetailsSummary: View {
             }
             .buttonStyle(.plain)
         } else {
-            getSummaryCell(
-                leadingText: "provider",
-                trailingText: providerName
-            )
+            providerCell(providerName: providerName)
         }
+    }
+
+    /// Provider summary cell — mirrors `getSummaryCell` but shows the provider's
+    /// brand logo to the left of the name.
+    private func providerCell(providerName: String) -> some View {
+        HStack {
+            Text("provider".localized)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            if let logo = vm.quote?.providerLogo {
+                AsyncImageView(
+                    logo: logo,
+                    size: CGSize(width: 16, height: 16),
+                    ticker: providerName,
+                    tokenChainLogo: nil
+                )
+            }
+
+            Text(providerName)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .redacted(reason: detailsViewModel.isLoading ? .placeholder : [])
+        }
+        .font(Theme.fonts.caption12)
     }
 
     private func totalFeesLabel(showChevron: Bool = true) -> some View {

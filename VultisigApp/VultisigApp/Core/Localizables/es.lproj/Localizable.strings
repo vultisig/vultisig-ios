@@ -1266,3 +1266,5 @@
 "yourVaultSetup" = "Tu configuración de bóveda";
 "zipImportAllDuplicates" = "Las %d bóveda(s) ya existen y fueron omitidas: %@.";
 "zipImportPartialSuccess" = "Se importaron %d bóveda(s). Se omitieron %d duplicado(s): %@.";
+
+"swapProviderSelected" = "Seleccionado";

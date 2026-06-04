@@ -1266,3 +1266,5 @@
 "yourVaultSetup" = "Sua configuração de cofre";
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
+
+"swapProviderSelected" = "Selecionado";
