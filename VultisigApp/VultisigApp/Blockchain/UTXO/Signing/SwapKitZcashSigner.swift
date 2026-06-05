@@ -13,7 +13,7 @@
 //  Sighash: WalletCore's ZEC signer implements ZIP-243 (the Sapling
 //  signature digest with the personalised Blake2b-256). It reads the branch
 //  ID from `BitcoinTransactionPlan.branchID` — the existing native ZEC
-//  send (`UTXOChainsHelper.swift:138-139`) uses `f04dec4d`, and we match
+//  send (`UTXOChainsHelper.swift:138-139`) uses `30f33754`, and we match
 //  that here so the digest output is identical to a manually-sent ZEC
 //  transaction. (Deviating to the Sapling-v4 spec ID `0x76b809bb` would
 //  produce a different digest that the chain rejects.)
@@ -58,7 +58,7 @@ private let nu5VersionGroupID: UInt32 = 0x26A7270A
 /// (`UTXOChainsHelper.swift:138-139`). WalletCore reads it as the branch
 /// identifier for ZIP-243's personalised Blake2b. Diverging to the
 /// Sapling-v4-spec `0x76b809bb` would produce a digest the network rejects.
-private let zcashBranchID: Data = Data(hexString: "f04dec4d")!
+private let zcashBranchID: Data = Data(hexString: "30f33754")!
 
 enum SwapKitZcashSigner {
 
