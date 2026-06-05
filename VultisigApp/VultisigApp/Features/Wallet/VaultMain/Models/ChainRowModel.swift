@@ -14,6 +14,11 @@ import Foundation
 /// `Equatable`, so SwiftUI can skip unchanged rows while scrolling.
 struct ChainRowModel: Identifiable, Equatable {
     let chain: Chain
+    /// Native coin ticker (e.g. "ETH" for Base/Arbitrum/Optimism, "BTC" for
+    /// Bitcoin). Distinct from `chain.ticker` (BASE/ARB/OP…); wallet search
+    /// matches the asset ticker so "ETH" surfaces every ETH-based chain, the
+    /// same as the pre-projection search did via the native coin's ticker.
+    let nativeTicker: String
     /// Precomputed address for the copy affordance (native coin's, falling back
     /// to the first coin on the chain).
     let address: String

@@ -17,14 +17,14 @@
 //       non-empty `chains` array.
 //    3. A same-vault, same-membership refresh does *not* synchronously re-sort
 //       (balances changed only) — preserves the fix for the visible
-//       "stale-then-fresh" double reorder on post-swap refreshes (#4337).
+//       "stale-then-fresh" double reorder on post-swap refreshes.
 //    4. A same-vault refresh where chain membership changed (a chain was
 //       added/removed) DOES re-seed synchronously, so the row appears/leaves
-//       in the same runloop as the save (#4494) — no vault switch required.
+//       in the same runloop as the save — no vault switch required.
 //    5. `groupChains(vault:)` keeps the identity tracker in sync so a
 //       subsequent same-vault, same-membership `updateBalance` still skips.
 //    6. The `chainRows` builder projects the expected rows, and two builds from
-//       equal inputs are `==` (#4495 — Equatable rows).
+//       equal inputs are `==` (Equatable rows).
 //
 
 import XCTest
@@ -66,7 +66,7 @@ final class VaultDetailViewModelTests: XCTestCase {
 
     /// A same-vault refresh where chain membership is unchanged (only balances
     /// moved) must NOT synchronously re-sort. The "stale-then-fresh" double
-    /// reorder this gate was originally added to prevent (#4337) depends on this
+    /// reorder this gate was originally added to prevent depends on this
     /// invariant: with the chain set unchanged, the existing order survives the
     /// synchronous pass and is only refined by the async tail.
     func testUpdateBalance_sameVaultSameMembership_doesNotReSeedChains() {
@@ -87,7 +87,7 @@ final class VaultDetailViewModelTests: XCTestCase {
                        "Same-vault, same-membership updateBalance must not synchronously re-sort chains")
     }
 
-    /// #4494: adding a chain on the SAME vault (no identity flip) must surface
+    /// Adding a chain on the SAME vault (no identity flip) must surface
     /// the new chain synchronously via the membership-aware seed — without
     /// waiting on the network-gated async balance tail.
     func testUpdateBalance_sameVault_chainAdded_buildsRowSynchronously() {
@@ -107,7 +107,7 @@ final class VaultDetailViewModelTests: XCTestCase {
                       "A chain added on the same vault must appear in `rows` synchronously")
     }
 
-    /// #4494: symmetric removal — dropping a chain's coins on the same vault
+    /// Symmetric removal — dropping a chain's coins on the same vault
     /// must drop its row synchronously.
     func testUpdateBalance_sameVault_chainRemoved_dropsRowSynchronously() {
         let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum, .solana])
@@ -145,7 +145,7 @@ final class VaultDetailViewModelTests: XCTestCase {
                        "updateBalance after groupChains for the same vault/membership must not re-seed")
     }
 
-    // MARK: - chainRows builder (#4495)
+    // MARK: - chainRows builder
 
     /// The projection builds one row per chain, ordered to match
     /// `sortedChains(vault:)`, with the right asset count per chain.
@@ -176,6 +176,35 @@ final class VaultDetailViewModelTests: XCTestCase {
         XCTAssertEqual(first, second, "Two builds from the same vault must be ==")
     }
 
+    // MARK: - filteredRows search parity
+
+    /// Searching the native asset ticker must surface chains whose `chain.ticker`
+    /// differs from the asset — Base/Arbitrum/Optimism hold native ETH but
+    /// `chain.ticker` is BASE/ARB/OP. Pre-projection search matched the native
+    /// coin's ticker; the projection carries it as `nativeTicker` to keep parity.
+    func testFilteredRows_searchByNativeAssetTicker_matchesEthL2Chains() {
+        let vault = makeVault(pubKey: "vault-l2", chains: [])
+        vault.coins = [
+            makeNativeCoin(pubKey: "vault-l2", chain: .base, ticker: "ETH"),
+            makeNativeCoin(pubKey: "vault-l2", chain: .bitcoin, ticker: "BTC")
+        ]
+        let logic = VaultDetailLogic()
+        let rows = logic.chainRows(vault: vault)
+
+        XCTAssertEqual(rows.first(where: { $0.chain == .base })?.nativeTicker, "ETH",
+                       "Row must carry the native coin ticker (ETH), not chain.ticker (BASE)")
+
+        let ethMatches = logic.filteredRows(searchText: "ETH", rows: rows)
+        XCTAssertTrue(ethMatches.contains(where: { $0.chain == .base }),
+                      "Searching 'ETH' must surface Base — its native asset is ETH")
+        XCTAssertFalse(ethMatches.contains(where: { $0.chain == .bitcoin }),
+                       "Bitcoin must not match an 'ETH' search")
+
+        let baseMatches = logic.filteredRows(searchText: "base", rows: rows)
+        XCTAssertTrue(baseMatches.contains(where: { $0.chain == .base }),
+                      "Chain still resolves by name")
+    }
+
     // MARK: - Helpers
 
     /// Build a Vault populated with native coins for the requested chains.
@@ -203,9 +232,13 @@ final class VaultDetailViewModelTests: XCTestCase {
     }
 
     private func makeNativeCoin(pubKey: String, chain: Chain) -> Coin {
+        makeNativeCoin(pubKey: pubKey, chain: chain, ticker: chain.ticker)
+    }
+
+    private func makeNativeCoin(pubKey: String, chain: Chain, ticker: String) -> Coin {
         let meta = CoinMeta(
             chain: chain,
-            ticker: chain.ticker,
+            ticker: ticker,
             logo: "",
             decimals: 8,
             priceProviderId: "",

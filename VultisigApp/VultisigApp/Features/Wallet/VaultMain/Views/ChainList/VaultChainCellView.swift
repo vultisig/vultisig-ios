@@ -36,6 +36,7 @@ struct VaultChainCellView: View {
     VaultChainCellView(
         row: ChainRowModel(
             chain: .bitcoin,
+            nativeTicker: "BTC",
             address: "bc1qexampleaddress",
             fiatBalance: "$0.00",
             cryptoBalance: "0 BTC",

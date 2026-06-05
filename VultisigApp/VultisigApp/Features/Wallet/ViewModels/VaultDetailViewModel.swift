@@ -37,8 +37,8 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     // `vault` is accepted for call-site parity with `filteredChains(in:)` but
-    // is unused: rows carry their own `chain`, and `chain.ticker` is the native
-    // ticker the search matches against — no lookup through the vault needed.
+    // is unused: rows carry their own `chain` and precomputed `nativeTicker`,
+    // so search matches without a per-row lookup through the vault.
     func filteredRows(in _: Vault) -> [ChainRowModel] {
         logic.filteredRows(searchText: searchText, rows: rows)
     }
@@ -164,7 +164,7 @@ struct VaultDetailLogic {
         }
         return rows.filter { row in
             let nameMatches = row.chain.name.localizedCaseInsensitiveContains(searchText)
-            let tickerMatches = row.chain.ticker.localizedCaseInsensitiveContains(searchText)
+            let tickerMatches = row.nativeTicker.localizedCaseInsensitiveContains(searchText)
             return nameMatches || tickerMatches
         }
     }
@@ -184,6 +184,7 @@ struct VaultDetailLogic {
             let native = coins.first(where: { $0.isNativeToken })
             return ChainRowModel(
                 chain: chain,
+                nativeTicker: native?.ticker ?? "",
                 address: native?.address ?? coins.first?.address ?? "",
                 fiatBalance: coins.totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true),
                 cryptoBalance: native?.balanceStringWithTicker ?? "",
