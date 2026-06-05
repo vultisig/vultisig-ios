@@ -239,6 +239,7 @@ struct CircleSetupView: View {
                     isSystemIcon: true,
                     action: { router.navigate(to: CircleRoute.deposit(vault: vault)) }
                 )
+                .disabled(!CircleConstants.depositsEnabled)
             }
         }
         .padding(CircleConstants.Design.cardPadding)
@@ -348,7 +349,7 @@ struct CircleSetupView: View {
             ) {
                 Task { await createWallet() }
             }
-            .disabled(model.isLoading)
+            .disabled(model.isLoading || !CircleConstants.depositsEnabled)
         }
         .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)

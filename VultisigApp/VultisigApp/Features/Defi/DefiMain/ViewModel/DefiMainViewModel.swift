@@ -50,7 +50,12 @@ final class DefiMainViewModel: ObservableObject {
             value: { vault.coins(for: $0).totalDefiBalanceInFiatDecimal }
         )
 
-        showsCircle = vault.isCircleEnabled && vault.chains.contains(.ethereum)
+        // Circle is no longer offered to new users: only show it for vaults
+        // that already created a Circle account, so they can still withdraw.
+        let hasCircleAccount = vault.circleWalletAddress?.isEmpty == false
+        showsCircle = vault.isCircleEnabled
+            && vault.chains.contains(.ethereum)
+            && hasCircleAccount
     }
 
     private var circleName: String { "Circle" }
