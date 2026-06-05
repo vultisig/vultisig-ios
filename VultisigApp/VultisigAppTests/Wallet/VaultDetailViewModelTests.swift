@@ -2,22 +2,29 @@
 //  VaultDetailViewModelTests.swift
 //  VultisigAppTests
 //
-//  Regression tests for the `chains.isEmpty || chainsVaultPubKeyECDSA !=
-//  vault.pubKeyECDSA` seed guard in `VaultDetailViewModel.updateBalance(vault:)`.
+//  Regression tests for the membership-aware seed guard in
+//  `VaultDetailViewModel.updateBalance(vault:)`:
 //
-//  The earlier `chains.isEmpty` guard was vault-blind: after switching vaults
-//  the cached list still belonged to the previous vault, so the synchronous
-//  seed was skipped and the wallet tab kept rendering stale chains until the
-//  async refresh landed (~250ms debounce + network round trip). These tests
-//  pin the fix and the invariants it must preserve:
+//      chains.isEmpty
+//        || chainsVaultPubKeyECDSA != vault.pubKeyECDSA
+//        || Set(vault.chainsWithCoins) != Set(chains)
+//
+//  The synchronous seed rebuilds both `chains` and the `rows` projection. These
+//  tests pin the invariants it must preserve:
 //
 //    1. First call on an empty model seeds synchronously.
 //    2. Switching to a different vault re-seeds synchronously, even with a
 //       non-empty `chains` array.
-//    3. Same-vault calls do *not* re-seed — preserves the prior fix for the
-//       visible "stale-then-fresh" double reorder on post-swap refreshes.
-//    4. `groupChains(vault:)` keeps the identity tracker in sync so a
-//       subsequent same-vault `updateBalance` call still skips the seed.
+//    3. A same-vault, same-membership refresh does *not* synchronously re-sort
+//       (balances changed only) — preserves the fix for the visible
+//       "stale-then-fresh" double reorder on post-swap refreshes (#4337).
+//    4. A same-vault refresh where chain membership changed (a chain was
+//       added/removed) DOES re-seed synchronously, so the row appears/leaves
+//       in the same runloop as the save (#4494) — no vault switch required.
+//    5. `groupChains(vault:)` keeps the identity tracker in sync so a
+//       subsequent same-vault, same-membership `updateBalance` still skips.
+//    6. The `chainRows` builder projects the expected rows, and two builds from
+//       equal inputs are `==` (#4495 — Equatable rows).
 //
 
 import XCTest
@@ -33,6 +40,7 @@ final class VaultDetailViewModelTests: XCTestCase {
         vm.updateBalance(vault: vault)
 
         XCTAssertEqual(Set(vm.chains), Set(vault.chainsWithCoins))
+        XCTAssertEqual(Set(vm.rows.map(\.chain)), Set(vault.chainsWithCoins))
     }
 
     /// The bug: switching vaults with a non-empty `chains` array used to skip
@@ -51,45 +59,121 @@ final class VaultDetailViewModelTests: XCTestCase {
         // vault A. The synchronous seed must still fire.
         vm.updateBalance(vault: vaultB)
         XCTAssertEqual(Set(vm.chains), Set(vaultB.chainsWithCoins))
+        XCTAssertEqual(Set(vm.rows.map(\.chain)), Set(vaultB.chainsWithCoins))
         XCTAssertFalse(vm.chains.contains(where: { vaultA.chainsWithCoins.contains($0) && !vaultB.chainsWithCoins.contains($0) }),
                        "Stale chains from vault A must not survive the switch to vault B")
     }
 
-    /// Calling `updateBalance` repeatedly against the same vault must not
-    /// re-seed `chains`. The "stale-then-fresh" double reorder this gate was
-    /// originally added to prevent depends on this invariant — the seed only
-    /// fires on identity change, not on every refresh.
-    func testUpdateBalance_sameVaultRefresh_doesNotReSeedChains() {
+    /// A same-vault refresh where chain membership is unchanged (only balances
+    /// moved) must NOT synchronously re-sort. The "stale-then-fresh" double
+    /// reorder this gate was originally added to prevent (#4337) depends on this
+    /// invariant: with the chain set unchanged, the existing order survives the
+    /// synchronous pass and is only refined by the async tail.
+    func testUpdateBalance_sameVaultSameMembership_doesNotReSeedChains() {
         let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum])
         let vm = VaultDetailViewModel()
 
         vm.updateBalance(vault: vault)
-        // Mutate the array in a way that the seed would clobber. If the
-        // second call re-seeds, this sentinel disappears.
-        let sentinel: [Chain] = [.dydx]
-        vm.chains = sentinel
+
+        // Same membership, deliberately different order. A synchronous re-seed
+        // would re-sort this back to balance/index order and clobber it.
+        let reordered = Array(vm.chains.reversed())
+        XCTAssertNotEqual(reordered, vm.chains, "precondition: order must actually differ")
+        vm.chains = reordered
 
         vm.updateBalance(vault: vault)
 
-        XCTAssertEqual(vm.chains, sentinel,
-                       "Same-vault updateBalance must not synchronously re-seed chains")
+        XCTAssertEqual(vm.chains, reordered,
+                       "Same-vault, same-membership updateBalance must not synchronously re-sort chains")
+    }
+
+    /// #4494: adding a chain on the SAME vault (no identity flip) must surface
+    /// the new chain synchronously via the membership-aware seed — without
+    /// waiting on the network-gated async balance tail.
+    func testUpdateBalance_sameVault_chainAdded_buildsRowSynchronously() {
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum])
+        let vm = VaultDetailViewModel()
+
+        vm.updateBalance(vault: vault)
+        XCTAssertFalse(vm.rows.contains(where: { $0.chain == .solana }))
+
+        // Add a Solana native coin to the same vault, then refresh.
+        appendNativeCoin(to: vault, chain: .solana)
+        vm.updateBalance(vault: vault)
+
+        XCTAssertTrue(vm.chains.contains(.solana),
+                      "A chain added on the same vault must appear in `chains` synchronously")
+        XCTAssertTrue(vm.rows.contains(where: { $0.chain == .solana }),
+                      "A chain added on the same vault must appear in `rows` synchronously")
+    }
+
+    /// #4494: symmetric removal — dropping a chain's coins on the same vault
+    /// must drop its row synchronously.
+    func testUpdateBalance_sameVault_chainRemoved_dropsRowSynchronously() {
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum, .solana])
+        let vm = VaultDetailViewModel()
+
+        vm.updateBalance(vault: vault)
+        XCTAssertTrue(vm.rows.contains(where: { $0.chain == .solana }))
+
+        // Remove all Solana coins, then refresh.
+        vault.coins.removeAll(where: { $0.chain == .solana })
+        vm.updateBalance(vault: vault)
+
+        XCTAssertFalse(vm.chains.contains(.solana),
+                       "A chain removed on the same vault must leave `chains` synchronously")
+        XCTAssertFalse(vm.rows.contains(where: { $0.chain == .solana }),
+                       "A chain removed on the same vault must leave `rows` synchronously")
     }
 
     /// `groupChains(vault:)` is another seed site. It must update the identity
     /// tracker so a subsequent `updateBalance(vault:)` call against the same
-    /// vault hits the skip branch (no double seed).
+    /// vault (same membership) hits the skip branch (no double seed).
     func testGroupChains_updatesIdentityTracker_soSameVaultUpdateDoesNotReSeed() {
         let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum])
         let vm = VaultDetailViewModel()
 
         vm.groupChains(vault: vault)
-        let sentinel: [Chain] = [.dydx]
-        vm.chains = sentinel
+
+        let reordered = Array(vm.chains.reversed())
+        XCTAssertNotEqual(reordered, vm.chains, "precondition: order must actually differ")
+        vm.chains = reordered
 
         vm.updateBalance(vault: vault)
 
-        XCTAssertEqual(vm.chains, sentinel,
-                       "updateBalance after groupChains for the same vault must not re-seed")
+        XCTAssertEqual(vm.chains, reordered,
+                       "updateBalance after groupChains for the same vault/membership must not re-seed")
+    }
+
+    // MARK: - chainRows builder (#4495)
+
+    /// The projection builds one row per chain, ordered to match
+    /// `sortedChains(vault:)`, with the right asset count per chain.
+    func testChainRows_buildsExpectedProjection() {
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum])
+        // Give Ethereum a second (token) coin so its assetCount is 2.
+        appendNativeCoin(to: vault, chain: .ethereum)
+        let logic = VaultDetailLogic()
+
+        let rows = logic.chainRows(vault: vault)
+
+        XCTAssertEqual(Set(rows.map(\.chain)), [.bitcoin, .ethereum])
+        XCTAssertEqual(rows.map(\.chain), logic.sortedChains(vault: vault),
+                       "Row order must match sortedChains(vault:)")
+        XCTAssertEqual(rows.first(where: { $0.chain == .ethereum })?.assetCount, 2)
+        XCTAssertEqual(rows.first(where: { $0.chain == .bitcoin })?.assetCount, 1)
+    }
+
+    /// Equal inputs must produce equal rows (Equatable) so SwiftUI can skip
+    /// re-rendering unchanged rows during scroll.
+    func testChainRows_equalInputsProduceEqualRows() {
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum, .solana])
+        let logic = VaultDetailLogic()
+
+        let first = logic.chainRows(vault: vault)
+        let second = logic.chainRows(vault: vault)
+
+        XCTAssertEqual(first, second, "Two builds from the same vault must be ==")
     }
 
     // MARK: - Helpers
@@ -110,18 +194,24 @@ final class VaultDetailViewModelTests: XCTestCase {
             resharePrefix: nil,
             libType: .DKLS
         )
-        vault.coins = chains.map { chain in
-            let meta = CoinMeta(
-                chain: chain,
-                ticker: chain.ticker,
-                logo: "",
-                decimals: 8,
-                priceProviderId: "",
-                contractAddress: "",
-                isNativeToken: true
-            )
-            return Coin(asset: meta, address: "addr-\(pubKey)-\(chain.name)", hexPublicKey: "")
-        }
+        vault.coins = chains.map { makeNativeCoin(pubKey: pubKey, chain: $0) }
         return vault
+    }
+
+    private func appendNativeCoin(to vault: Vault, chain: Chain) {
+        vault.coins.append(makeNativeCoin(pubKey: vault.pubKeyECDSA, chain: chain))
+    }
+
+    private func makeNativeCoin(pubKey: String, chain: Chain) -> Coin {
+        let meta = CoinMeta(
+            chain: chain,
+            ticker: chain.ticker,
+            logo: "",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        return Coin(asset: meta, address: "addr-\(pubKey)-\(chain.name)", hexPublicKey: "")
     }
 }

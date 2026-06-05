@@ -8,33 +8,22 @@
 import SwiftUI
 
 struct VaultChainCellView: View {
-    let chain: Chain
+    let row: ChainRowModel
     let vault: Vault
     var onCopy: () -> Void
 
     @Environment(\.router) var router
 
-    @EnvironmentObject var homeViewModel: HomeViewModel
-
-    private var chainCoins: [Coin] { vault.coins(for: chain) }
-
-    private var fiatBalance: String {
-        chainCoins.totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
-    }
-
-    private var cryptoBalance: String {
-        vault.nativeCoin(for: chain)?.balanceStringWithTicker ?? ""
-    }
-
     var body: some View {
         Button {
-            router.navigate(to: VaultRoute.chainDetail(chain: chain, vault: vault))
+            router.navigate(to: VaultRoute.chainDetail(chain: row.chain, vault: vault))
         } label: {
             GroupedChainCellView(
-                chain: chain,
-                vault: vault,
-                fiatBalance: fiatBalance,
-                cryptoBalance: cryptoBalance,
+                chain: row.chain,
+                address: row.address,
+                fiatBalance: row.fiatBalance,
+                cryptoBalance: row.cryptoBalance,
+                assetCount: row.assetCount,
                 onCopy: onCopy
             )
             .contentShape(Rectangle())
@@ -44,6 +33,15 @@ struct VaultChainCellView: View {
 }
 
 #Preview {
-    VaultChainCellView(chain: .bitcoin, vault: .example) {}
-        .environmentObject(HomeViewModel())
+    VaultChainCellView(
+        row: ChainRowModel(
+            chain: .bitcoin,
+            address: "bc1qexampleaddress",
+            fiatBalance: "$0.00",
+            cryptoBalance: "0 BTC",
+            assetCount: 1
+        ),
+        vault: .example
+    ) {}
+    .environmentObject(HomeViewModel())
 }

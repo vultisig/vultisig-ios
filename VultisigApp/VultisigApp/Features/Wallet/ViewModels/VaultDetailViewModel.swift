@@ -11,6 +11,12 @@ import SwiftUI
 class VaultDetailViewModel: ObservableObject {
     @Published var selectedChain: Chain? = nil
     @Published var chains = [Chain]()
+    // Value-type projection the wallet chain list renders off. Rebuilt in
+    // lockstep with `chains` so chain membership becomes the reactive source —
+    // `@ObservedObject var vault` is inert for relationship/balance mutations
+    // (Vault/Coin are @Model + ObservableObject with no @Published members),
+    // so the list only repaints when a @Published on this view model changes.
+    @Published private(set) var rows: [ChainRowModel] = []
     @Published var searchText: String = ""
     @Published var vaultBanners: [VaultBannerType] = []
 
@@ -30,21 +36,34 @@ class VaultDetailViewModel: ObservableObject {
         logic.filteredChains(searchText: searchText, chains: chains, vault: vault)
     }
 
+    // `vault` is accepted for call-site parity with `filteredChains(in:)` but
+    // is unused: rows carry their own `chain`, and `chain.ticker` is the native
+    // ticker the search matches against — no lookup through the vault needed.
+    func filteredRows(in _: Vault) -> [ChainRowModel] {
+        logic.filteredRows(searchText: searchText, rows: rows)
+    }
+
     var availableActions: [CoinAction] {
         [.swap, .send, .buy, .receive].filtered
     }
 
     func updateBalance(vault: Vault) {
-        // Seed `chains` synchronously when the cached list is empty (first
-        // call) OR when the cached list was sorted against a different vault
-        // than the one we're now refreshing — the vault-switch case. The
-        // same-vault refresh path (post-swap, balance cascade) still skips
-        // the seed, leaving the existing order in place until the async sort
-        // below replaces it. That preserves the fix for the "stale-then-fresh"
-        // double reorder while ensuring the list flips instantly on a vault
-        // identity flip instead of waiting on the debounce + fetch window.
-        if chains.isEmpty || chainsVaultPubKeyECDSA != vault.pubKeyECDSA {
+        // Seed `chains`/`rows` synchronously when the cached list is empty
+        // (first call), when it was sorted against a different vault than the
+        // one we're now refreshing (vault-switch case), OR when chain
+        // membership changed (a chain was added/removed on the same vault).
+        // A same-vault, same-membership refresh (post-swap balance cascade)
+        // still skips the seed, leaving the existing order until the async
+        // sort below replaces it — that preserves the fix for the
+        // "stale-then-fresh" double reorder. The membership check makes a
+        // freshly added/removed chain appear in the same runloop as the save
+        // instead of waiting on the network-gated async tail. Token
+        // auto-discovery adds non-native coins to existing chains, so the
+        // chain set is unchanged and the list does not reshuffle.
+        let membershipChanged = Set(vault.chainsWithCoins) != Set(chains)
+        if chains.isEmpty || chainsVaultPubKeyECDSA != vault.pubKeyECDSA || membershipChanged {
             chains = logic.sortedChains(vault: vault)
+            rows = logic.chainRows(vault: vault)
             chainsVaultPubKeyECDSA = vault.pubKeyECDSA
         }
 
@@ -62,6 +81,7 @@ class VaultDetailViewModel: ObservableObject {
             if !Task.isCancelled {
                 await MainActor.run {
                     self.chains = updated
+                    self.rows = self.logic.chainRows(vault: vault)
                     self.chainsVaultPubKeyECDSA = vault.pubKeyECDSA
                 }
             }
@@ -70,6 +90,7 @@ class VaultDetailViewModel: ObservableObject {
 
     func groupChains(vault: Vault) {
         chains = logic.sortedChains(vault: vault)
+        rows = logic.chainRows(vault: vault)
         chainsVaultPubKeyECDSA = vault.pubKeyECDSA
     }
 
@@ -134,6 +155,40 @@ struct VaultDetailLogic {
             let tickerMatches = vault.nativeCoin(for: chain)?.ticker
                 .localizedCaseInsensitiveContains(searchText) ?? false
             return nameMatches || tickerMatches
+        }
+    }
+
+    func filteredRows(searchText: String, rows: [ChainRowModel]) -> [ChainRowModel] {
+        guard !searchText.isEmpty else {
+            return rows
+        }
+        return rows.filter { row in
+            let nameMatches = row.chain.name.localizedCaseInsensitiveContains(searchText)
+            let tickerMatches = row.chain.ticker.localizedCaseInsensitiveContains(searchText)
+            return nameMatches || tickerMatches
+        }
+    }
+
+    /// Builds the row projection in a single pass over `vault.coins`, grouping
+    /// coins by chain once instead of calling `vault.coins(for:)` per row. The
+    /// ordering matches `sortedChains(vault:)` exactly (fiat balance desc,
+    /// tie-broken by `chain.index`).
+    func chainRows(vault: Vault) -> [ChainRowModel] {
+        let coinsByChain = Dictionary(grouping: vault.coins, by: { $0.chain })
+        let ordered = sortedChains(
+            chains: Array(coinsByChain.keys),
+            value: { (coinsByChain[$0] ?? []).totalBalanceInFiatDecimal }
+        )
+        return ordered.map { chain in
+            let coins = coinsByChain[chain] ?? []
+            let native = coins.first(where: { $0.isNativeToken })
+            return ChainRowModel(
+                chain: chain,
+                address: native?.address ?? coins.first?.address ?? "",
+                fiatBalance: coins.totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true),
+                cryptoBalance: native?.balanceStringWithTicker ?? "",
+                assetCount: coins.count
+            )
         }
     }
 
