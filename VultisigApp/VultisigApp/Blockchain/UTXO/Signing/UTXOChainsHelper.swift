@@ -154,6 +154,7 @@ class UTXOChainsHelper {
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)
+            $0.zip0317 = if coin == .zcash { true } else { false }
             $0.coinType = coin.rawValue
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData
