@@ -97,6 +97,10 @@ class UTXOChainsHelper {
         input.byteFee = Int64(byteFee)
         input.hashType = BitcoinScript.hashTypeForCoin(coinType: coin)
         input.useMaxAmount = sendMaxAmount
+        // Zcash enforces ZIP-317: the fee must cover the tx's logical actions,
+        // not just its byte size. Enable it so the planner below computes a
+        // conforming fee and the node doesn't reject the swap broadcast.
+        input.zip0317 = coin == .zcash
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)
 
