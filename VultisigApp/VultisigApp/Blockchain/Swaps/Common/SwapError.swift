@@ -10,6 +10,7 @@ import Foundation
 enum SwapError: Error, LocalizedError {
     case routeUnavailable
     case noLiquidityPool
+    case tradingHalted
     case swapAmountTooSmall
     case lessThenMinSwapAmount(amount: String)
     case serverError(message: String)
@@ -20,6 +21,8 @@ enum SwapError: Error, LocalizedError {
             return "swapRouteNotAvailable".localized
         case .noLiquidityPool:
             return "noLiquidityPool".localized
+        case .tradingHalted:
+            return "swapTradingHalted".localized
         case .swapAmountTooSmall:
             return "swapAmountTooSmall".localized
         case .lessThenMinSwapAmount(let amount):

@@ -1024,6 +1024,7 @@
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";
 "swapTrackingLink" = "Link de rastreamento da troca";
+"swapTradingHalted" = "A negociação deste ativo está temporariamente suspensa. Tente novamente mais tarde.";
 "swapTXHash" = "Hash da Tx da troca";
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
