@@ -482,6 +482,107 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(interactor.validateUtxosIfNeededCalls.first?.ticker, "BTC")
     }
 
+    // MARK: - validateForm — pre-built keysign payload pass-through
+
+    /// Circle USDC withdraw signs a native-ETH MSCA `execute(USDC, 0, transfer(vault, amount))`
+    /// call whose calldata lives in `memo`, while the `transaction` carries the USDC token
+    /// purely so the verify summary shows the real amount + recipient. When a pre-built
+    /// payload is supplied, `validateForm()` must return it verbatim and must NOT re-derive
+    /// from the USDC `transaction` — re-deriving would route the USDC ERC-20 coin through the
+    /// transfer path and sign `transfer(MSCA, 0)`, the #4484 no-op.
+    func testValidateFormReturnsPrebuiltPayloadVerbatimWithoutRederiving() async throws {
+        let interactor = MockSendInteractor()
+
+        // The signed payload: native ETH, MSCA target, value 0, execute() calldata in memo.
+        let mscaAddress = "0x2222222222222222222222222222222222222222"
+        let executeMemo = "0xb61d27f6deadbeef"
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = KeysignPayload(
+            coin: nativeEth,
+            toAddress: mscaAddress,
+            toAmount: BigInt(0),
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: executeMemo,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+
+        // The display `transaction` carries the USDC token — the no-op trap if re-derived.
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1000000")
+        let tx = try makeTransaction(coin: usdc, amount: "1")
+        let vm = SendCryptoVerifyViewModel(
+            transaction: tx,
+            interactor: interactor,
+            prebuiltKeysignPayload: prebuilt
+        )
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        // Returned verbatim — the #4489 native-ETH execute() payload, unchanged.
+        XCTAssertEqual(payload, prebuilt)
+        XCTAssertTrue(payload.coin.isNativeToken, "signed coin must stay native ETH, not USDC")
+        XCTAssertEqual(payload.coin.ticker, "ETH")
+        XCTAssertEqual(payload.toAddress, mscaAddress)
+        XCTAssertEqual(payload.toAmount, BigInt(0))
+        XCTAssertEqual(payload.memo, executeMemo, "execute() calldata must survive in memo")
+
+        // No re-derivation: the USDC transaction must never reach the payload builder.
+        XCTAssertTrue(interactor.buildKeysignPayloadCalls.isEmpty,
+                      "pre-built payload must bypass buildKeysignPayload — no USDC transfer(MSCA, 0)")
+        XCTAssertTrue(interactor.fetchChainSpecificCalls.isEmpty)
+        XCTAssertTrue(interactor.validateUtxosIfNeededCalls.isEmpty)
+    }
+
+    /// The confirmation checkboxes still gate signing even with a pre-built payload — the
+    /// withdraw must not bypass the verify confirmation it was re-routed through to restore.
+    func testValidateFormWithPrebuiltPayloadStillEnforcesCheckboxes() async throws {
+        let interactor = MockSendInteractor()
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = try await interactor.buildKeysignPayload(
+            coin: nativeEth,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            amount: BigInt(0),
+            memo: "0xb61d27f6",
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            wasmExecuteContractPayload: nil,
+            vault: try TestStore.makeVault()
+        )
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1000000")
+        let vm = SendCryptoVerifyViewModel(
+            transaction: try makeTransaction(coin: usdc, amount: "1"),
+            interactor: interactor,
+            prebuiltKeysignPayload: prebuilt
+        )
+        vm.isAddressCorrect = false
+        vm.isAmountCorrect = false
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("validateForm must throw when the confirmation checkboxes are unchecked")
+        } catch let error as HelperError {
+            guard case .runtimeError(let message) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertEqual(message, "mustAgreeTermsError")
+        }
+    }
+
     // MARK: - Helpers
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {

@@ -20,8 +20,6 @@ struct CircleWithdrawView: View {
     @State var percentage: Double = 0.0
     @State var isLoading = false
     @State var error: Error?
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = ""
 
     init(vault: Vault, model: CircleViewModel) {
         self.vault = vault
@@ -41,13 +39,6 @@ struct CircleWithdrawView: View {
         }
         .screenTitle("circleWithdrawTitle".localized)
         .withLoading(isLoading: $isLoading)
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { Task { await handleWithdraw() } }
-            )
-        }
     }
 
     var footerView: some View {
@@ -158,16 +149,13 @@ struct CircleWithdrawView: View {
     }
 
     var withdrawButton: some View {
-        SigningCTAButtons(
-            isFastVault: vault.isFastVault,
-            isDisabled: isButtonDisabled,
-            singleSignTitle: "circleWithdrawConfirm",
-            onFastSign: { fastPasswordPresented = true },
-            onPairedSign: {
-                fastVaultPassword = ""
-                Task { await handleWithdraw() }
-            }
-        )
+        // Builds the native-ETH MSCA payload, then routes to the shared verify
+        // screen, where the user confirms amount/recipient and chooses the
+        // fast/paired signing path.
+        PrimaryButton(title: "circleWithdrawConfirm".localized) {
+            Task { await handleWithdraw() }
+        }
+        .disabled(isButtonDisabled)
     }
 
     var vaultEthBalance: Decimal {
@@ -228,7 +216,7 @@ struct CircleWithdrawView: View {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
 
-            // Use USDC coin for display purposes on success screen
+            // USDC coin drives the verify/done screens' amount + recipient display.
             guard let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "USDC coin not found"])
             }
@@ -262,17 +250,21 @@ struct CircleWithdrawView: View {
             }
 
             await MainActor.run {
+                // The USDC `tx` is for display only — it drives the verify
+                // summary's amount + recipient. The signed transaction is the
+                // pre-built native-ETH MSCA `execute(...)` payload, passed
+                // through verify verbatim so the withdraw is not re-derived as
+                // a USDC `transfer(MSCA, 0)` no-op.
                 let immutableTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
                     toAddress: recipientCoin.address,
                     amount: amount
                 )
                 router.navigate(
-                    to: SendRoute.pairing(
-                        vault: vault,
+                    to: SendRoute.verify(
                         tx: immutableTx,
                         retrySignal: SendRetrySignal(),
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
+                        vault: vault,
+                        prebuiltKeysignPayload: payload
                     )
                 )
 

@@ -37,10 +37,24 @@ class SendCryptoVerifyViewModel: ObservableObject {
     private let interactor: SendInteractor
     private let logic: SendCryptoVerifyLogic
 
-    init(transaction: SendTransaction, interactor: SendInteractor = DefaultSendInteractor.live) {
+    /// A keysign payload built by the calling flow that must be signed verbatim,
+    /// instead of being re-derived from `transaction` on confirm. Circle USDC
+    /// withdrawals rely on this: the signed tx is a native-ETH MSCA
+    /// `execute(USDC, 0, transfer(vault, amount))` call whose calldata lives in
+    /// `memo`, while `transaction` carries the USDC coin purely so the verify
+    /// summary shows the real amount and recipient. Re-deriving from the USDC
+    /// `transaction` would instead sign `transfer(MSCA, 0)` — a no-op.
+    private let prebuiltKeysignPayload: KeysignPayload?
+
+    init(
+        transaction: SendTransaction,
+        interactor: SendInteractor = DefaultSendInteractor.live,
+        prebuiltKeysignPayload: KeysignPayload? = nil
+    ) {
         self.transaction = transaction
         self.interactor = interactor
         self.logic = SendCryptoVerifyLogic(interactor: interactor)
+        self.prebuiltKeysignPayload = prebuiltKeysignPayload
     }
 
     func onLoad() {
@@ -125,6 +139,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
         if !isValidForm {
             throw HelperError.runtimeError("mustAgreeTermsError")
+        }
+
+        // A flow that pre-built its keysign payload (e.g. Circle withdraw) must
+        // sign it verbatim. Re-deriving from `transaction` here would change the
+        // signed tx, so confirm against the pre-built payload directly.
+        if let prebuiltKeysignPayload {
+            return prebuiltKeysignPayload
         }
 
         try await logic.validateUtxosIfNeeded(tx: transaction)
