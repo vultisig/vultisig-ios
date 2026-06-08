@@ -154,6 +154,9 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
             }
             Separator(color: Theme.colors.borderLight, opacity: 1)
             nextAwardRow(for: position)
+            if position.pendingReward > 0 {
+                claimButton(for: position)
+            }
             actionButtons(for: position)
             if let unlockDate = position.pendingUnbondingUnlockDate {
                 perRowUnlockFooter(unlockDate: unlockDate)
@@ -269,6 +272,17 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
             ) {
                 onDelegate(coin)
             }
+        }
+    }
+
+    /// Full-width "Claim Rewards" action shown above the action row. Scoped to
+    /// this one validator via the shared withdraw-rewards flow. Intentionally
+    /// not gated by the unbonding / churned-out lock — accrued rewards stay
+    /// claimable from a locked delegation (unlike Undelegate / Redelegate).
+    @ViewBuilder
+    private func claimButton(for position: CosmosStakePositionRow) -> some View {
+        PrimaryButton(title: "cosmosStakingClaimRewardsTitle".localized) {
+            onClaim([position])
         }
     }
 
