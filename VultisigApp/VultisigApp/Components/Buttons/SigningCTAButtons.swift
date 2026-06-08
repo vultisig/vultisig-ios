@@ -7,11 +7,11 @@ import SwiftUI
 
 /// Bottom call-to-action row for fast/paired signing confirmation screens.
 ///
-/// Fast Vaults render two side-by-side buttons: a primary, flexible-width
-/// "Fast Sign" (server co-sign via the FastVault password sheet) and a
-/// fixed-width secondary "Paired" button (paired-device signing). Secure
-/// (N-of-M) vaults render a single full-width button that triggers the
-/// paired path.
+/// Fast Vaults render two side-by-side buttons: a fixed-width secondary
+/// "Paired" button (paired-device signing) on the left and a primary,
+/// flexible-width "Fast Sign" (server co-sign via the FastVault password
+/// sheet) on the right. Secure (N-of-M) vaults render a single full-width
+/// button that triggers the paired path.
 struct SigningCTAButtons: View {
     let isFastVault: Bool
     let isLoading: Bool
@@ -51,15 +51,6 @@ struct SigningCTAButtons: View {
     private var fastVaultButtons: some View {
         HStack(spacing: 12) {
             PrimaryButton(
-                title: "fastSign".localized,
-                isLoading: isLoading,
-                type: .primary,
-                size: .medium,
-                action: onFastSign
-            )
-            .frame(maxWidth: .infinity)
-
-            PrimaryButton(
                 title: "paired".localized,
                 leadingView: {
                     Icon(named: "devices", color: pairedIconColor, size: 20)
@@ -69,6 +60,15 @@ struct SigningCTAButtons: View {
                 action: onPairedSign
             )
             .fixedSize(horizontal: true, vertical: false)
+
+            PrimaryButton(
+                title: "fastSign".localized,
+                isLoading: isLoading,
+                type: .primary,
+                size: .medium,
+                action: onFastSign
+            )
+            .frame(maxWidth: .infinity)
         }
     }
 

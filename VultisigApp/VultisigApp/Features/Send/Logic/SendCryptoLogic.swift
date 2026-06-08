@@ -149,20 +149,15 @@ enum SendCryptoLogic {
 
     // MARK: - Display: fees
 
-    /// Human-readable gas/fee row. EVM shows Gwei. UTXO + Cardano show the
-    /// planned `fee` (a true amount). Everything else shows `gas` (per-unit).
+    /// Human-readable gas/fee row. EVM, UTXO and Cardano show the total `fee`
+    /// (a true amount) in the native coin, matching the joining device's
+    /// `JoinKeysignGasViewModel`. Everything else shows `gas` (per-unit).
     /// Caller resolves `gasNativeCoin` — for native sends it's the same coin;
     /// for ERC20s it's the EVM-native sibling looked up against the vault.
     static func gasInReadable(coin: Coin, gasNativeCoin: Coin, gas: BigInt, fee: BigInt) -> String {
-        if coin.chain.chainType == .EVM {
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
-                return .empty
-            }
-            return "\(gasDecimal(gas: gas) / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
-        }
-
         let decimals = gasNativeCoin.decimals
-        let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
+        let usesTotalFee = coin.chainType == .EVM || coin.chainType == .UTXO || coin.chainType == .Cardano
+        let feeToDisplay = usesTotalFee ? fee : gas
         let feeDecimal = Decimal(feeToDisplay)
 
         return "\((feeDecimal / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(gasNativeCoin.ticker)"

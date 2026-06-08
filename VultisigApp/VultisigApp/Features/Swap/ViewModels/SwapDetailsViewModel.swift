@@ -332,7 +332,7 @@ extension SwapDetailsViewModel {
     }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
     }
 
     var fromAmountDecimal: Decimal {
