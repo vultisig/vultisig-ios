@@ -19,6 +19,10 @@
 import SwiftUI
 
 private enum CosmosStakeDefiFormatters {
+    /// Fraction digits for staked-amount and reward display. The Claim button
+    /// rounds the reward to this precision so it never shows for sub-display dust.
+    static let amountFractionDigits = 6
+
     static let apy: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
@@ -154,7 +158,7 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
             }
             Separator(color: Theme.colors.borderLight, opacity: 1)
             nextAwardRow(for: position)
-            if position.pendingReward > 0 {
+            if hasClaimableReward(position) {
                 claimButton(for: position)
             }
             actionButtons(for: position)
@@ -355,10 +359,21 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
         return address.prefix(8) + "…" + address.suffix(4)
     }
 
+    /// Whether the validator's pending reward is non-zero *at the displayed
+    /// precision*. QBTC rewards are fee-funded (no inflation), so sub-display
+    /// dust routinely accrues; gating the Claim button on `> 0` would show it
+    /// on a row that reads "0". Round to the same precision the row uses.
+    private func hasClaimableReward(_ position: CosmosStakePositionRow) -> Bool {
+        var reward = position.pendingReward
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &reward, CosmosStakeDefiFormatters.amountFractionDigits, .bankers)
+        return rounded > 0
+    }
+
     private func formatAmount(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 6
+        formatter.maximumFractionDigits = CosmosStakeDefiFormatters.amountFractionDigits
         formatter.numberStyle = .decimal
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0"
     }
