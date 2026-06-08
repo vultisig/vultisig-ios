@@ -356,24 +356,11 @@ private extension SwapService {
                 return .thorchain(quote)
             }
         } catch let error as ThorchainSwapError {
-            print("❌ [COSMOS DEBUG] THORChain error: code=\(error.code), message=\(error.message)")
-            if error.code == 3 {
-                if error.message.contains("not enough asset to pay for fees") {
-                    throw SwapError.swapAmountTooSmall
-                } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
-                    error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                    error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                    error.message.localizedCaseInsensitiveContains("pool does not exist") {
-                    // This typically means no liquidity pool exists for this token pair
-                    throw SwapError.noLiquidityPool
-                } else {
-                    throw SwapError.serverError(message: error.message)
-                }
-            } else {
-                throw SwapError.routeUnavailable
-            }
+            logger.error("THORChain swap error: code=\(error.code, privacy: .public), message=\(error.message, privacy: .public)")
+            throw Self.mapThorchainSwapError(error)
         } catch let error as MayachainSwapError {
-            throw SwapError.serverError(message: error.error)
+            logger.error("MAYAChain swap error: code=\(error.code ?? -1, privacy: .public), message=\(error.error, privacy: .public)")
+            throw Self.mapMayachainSwapError(error)
         } catch let error as SwapError {
             throw error
         } catch {
@@ -482,6 +469,56 @@ private extension SwapService {
             fee: service.inboundFee(from: response, fromCoin: fromCoin),
             subProvider: response.subProvider
         )
+    }
+}
+
+// MARK: - Upstream error mapping
+
+extension SwapService {
+    /// Substrings THORChain/MAYAChain emit when a chain or asset is paused
+    /// upstream (e.g. a protocol-wide trading halt after an incident). This is
+    /// a *temporary* condition the user can retry, distinct from a permanently
+    /// unsupported pair, so it gets its own user-facing message rather than the
+    /// generic "route not available" or a leaked raw upstream string.
+    private static let tradingHaltedMarkers = ["trading is halted", "trading halted"]
+
+    private static func isTradingHalted(_ message: String) -> Bool {
+        tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
+    }
+
+    /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
+    /// A trading halt is detected on any code so a paused chain surfaces as a
+    /// retryable message instead of `routeUnavailable`; otherwise the existing
+    /// code-3 classification (fees / unsupported pair / raw server message) and
+    /// the non-code-3 `routeUnavailable` fallback are preserved.
+    static func mapThorchainSwapError(_ error: ThorchainSwapError) -> SwapError {
+        if isTradingHalted(error.message) {
+            return .tradingHalted
+        }
+        if error.code == 3 {
+            if error.message.contains("not enough asset to pay for fees") {
+                return .swapAmountTooSmall
+            } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
+                error.message.localizedCaseInsensitiveContains("bad to asset") ||
+                error.message.localizedCaseInsensitiveContains("bad from asset") ||
+                error.message.localizedCaseInsensitiveContains("pool does not exist") {
+                // This typically means no liquidity pool exists for this token pair
+                return .noLiquidityPool
+            } else {
+                return .serverError(message: error.message)
+            }
+        }
+        return .routeUnavailable
+    }
+
+    /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.
+    /// A trading halt surfaces as the retryable message; any other error keeps
+    /// the previous behaviour of relaying the raw upstream string.
+    static func mapMayachainSwapError(_ error: MayachainSwapError) -> SwapError {
+        if isTradingHalted(error.error) {
+            return .tradingHalted
+        }
+        return .serverError(message: error.error)
     }
 }
 
