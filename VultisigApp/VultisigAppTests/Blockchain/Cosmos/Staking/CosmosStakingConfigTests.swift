@@ -96,11 +96,11 @@ final class CosmosStakingConfigTests: XCTestCase {
         XCTAssertEqual(entry.bondDenom, "qbtc")
         XCTAssertEqual(entry.feeDenom, "qbtc")
         XCTAssertEqual(entry.valoperHrp, "qbtcvaloper")
-        // gasLimit 400_000 matches Terra's post-OoG floor (live MsgDelegate
-        // simulate burned 278_759; redelegate is heavier). feeAmount 800 is the
-        // qbtc-testnet `min_tx_fee` floor; since `min_gas_price` is 0 the higher
-        // gas budget does not raise the fee.
-        XCTAssertEqual(entry.gasLimit, 400_000)
+        // gasLimit 1_000_000: on-device undelegate measured 401_486 gas (the
+        // prior 400_000 OoG'd it), redelegate is heavier, and block.max_gas is
+        // -1 (unlimited). feeAmount 800 is the qbtc-testnet `min_tx_fee` floor;
+        // since `min_gas_price` is 0 the higher gas budget does not raise the fee.
+        XCTAssertEqual(entry.gasLimit, 1_000_000)
         XCTAssertEqual(entry.feeAmount, 800)
         // Live LCD `unbonding_time` = 1814400s = 21 days.
         XCTAssertEqual(entry.unbondingDays, 21)

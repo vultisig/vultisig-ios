@@ -89,10 +89,11 @@ enum CosmosStakingConfig {
         // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc-testnet are constant
         // / un-queryable ante values, so the fee floor is the flat `min_tx_fee`
         // (800) and the only dynamic dimension is the gas_limit. `gasLimit` is
-        // 400_000 to match Terra's post-OoG floor: a live `MsgDelegate` simulate
-        // burned 278_759 gas (~7% headroom over the old 300_000) and the heavier
-        // redelegate OoG'd Terra at 300_140, so 300_000 was a real OoG risk. Since
-        // `min_gas_price` is 0, a higher gas_limit does NOT raise the fee.
+        // 1_000_000: an on-device undelegate measured 401_486 gas (the prior
+        // 400_000 OoG'd it), redelegate is heavier still, and the chain's
+        // `block.max_gas` is -1 (unlimited). Because `min_gas_price` is 0 the fee
+        // is decoupled from gas, so a generous limit that never OoGs costs
+        // nothing — better than inching it up per message type.
         // `feeAmount` is the 800 `min_tx_fee` floor (the prior 7_500 was the
         // carried-over generic Cosmos send default, ~9x the floor).
         .qbtc: Entry(
@@ -100,7 +101,7 @@ enum CosmosStakingConfig {
             bondDenom: "qbtc",
             feeDenom: "qbtc",
             valoperHrp: "qbtcvaloper",
-            gasLimit: 400_000,
+            gasLimit: 1_000_000,
             feeAmount: 800,
             unbondingDays: 21
         )
