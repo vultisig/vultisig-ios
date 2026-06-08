@@ -296,6 +296,20 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
 
+    /// The secure keygen flow stops at the "Review Your Vaults" screen before the
+    /// vault is committed. Defer persistence to that confirmation so aborting the
+    /// review discards the vault. Fast vaults skip review and clean up their own
+    /// abort at the email-verification step, so they persist immediately.
+    private var shouldDeferVaultPersistence: Bool {
+        guard fastSignConfig == nil else { return false }
+        switch tssType {
+        case .KeyImport, .Keygen, .Reshare:
+            return true
+        case .Migrate, .SingleKeygen:
+            return false
+        }
+    }
+
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -309,7 +323,8 @@ struct KeygenView: View {
             initiateDevice: isInitiateDevice,
             keyImportInput: keyImportInput,
             singleKeygenType: singleKeygenType,
-            isTssBatch: isTssBatch
+            isTssBatch: isTssBatch,
+            deferVaultPersistence: shouldDeferVaultPersistence
         )
     }
 

@@ -82,6 +82,14 @@ class KeygenViewModel: ObservableObject {
     var singleKeygenType: SingleKeygenType?
     var isTssBatch: Bool = false
 
+    /// When `true`, a brand-new vault is *not* inserted/saved when keygen finishes;
+    /// persistence is deferred to the "Review Your Vaults" confirmation
+    /// (`KeygenViewModel.commitVault`). This guarantees an aborted secure keygen
+    /// discards the vault on every exit path (back, "Something's wrong", app kill),
+    /// keeping the vault name reusable. The fast path persists immediately because
+    /// it manages its own abort cleanup at the email-verification step.
+    var deferVaultPersistence: Bool = false
+
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
     @Published var status = KeygenStatus.CreatingInstance
@@ -122,7 +130,8 @@ class KeygenViewModel: ObservableObject {
                  initiateDevice: Bool,
                  keyImportInput: KeyImportInput? = nil,
                  singleKeygenType: SingleKeygenType? = nil,
-                 isTssBatch: Bool = false
+                 isTssBatch: Bool = false,
+                 deferVaultPersistence: Bool = false
     ) async {
         self.vault = vault
         self.tssType = tssType
@@ -136,6 +145,7 @@ class KeygenViewModel: ObservableObject {
         self.keyImportInput = keyImportInput
         self.singleKeygenType = singleKeygenType
         self.isTssBatch = isTssBatch
+        self.deferVaultPersistence = deferVaultPersistence
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
@@ -188,6 +198,21 @@ class KeygenViewModel: ObservableObject {
         showDuplicateVaultAlert = false
         duplicateVaultContinuation?.resume(returning: shouldReplace)
         duplicateVaultContinuation = nil
+    }
+
+    /// Persists a freshly generated vault into SwiftData.
+    ///
+    /// For the secure keygen flow this is intentionally called from the
+    /// "Review Your Vaults" confirmation ("Looks Good") rather than the moment
+    /// keygen finishes, so that aborting the review screen discards the vault and
+    /// leaves its name reusable. Inserting on the unique `pubKeyECDSA` upserts, so
+    /// re-running keygen that reproduces an existing vault replaces it as before.
+    @MainActor
+    static func commitVault(_ vault: Vault, context: ModelContext) throws {
+        VaultDefaultCoinService(context: context)
+            .setDefaultCoinsOnce(vault: vault)
+        context.insert(vault)
+        try context.save()
     }
 
     func startKeygen(context: ModelContext) async {
@@ -451,12 +476,20 @@ class KeygenViewModel: ObservableObject {
                 self.didCancelDuplicateVault = true
                 return
             }
-            VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: self.vault)
-            modelContext.insert(self.vault)
+            // Deferred persistence (secure flow): do NOT touch the context here.
+            // `setDefaultCoins` inserts coins, so running it before the review
+            // confirmation would leave orphan rows the autosave could flush.
+            // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
+            if !self.deferVaultPersistence {
+                VaultDefaultCoinService(context: modelContext)
+                    .setDefaultCoinsOnce(vault: self.vault)
+                modelContext.insert(self.vault)
+                try modelContext.save()
+            }
+        } else {
+            try modelContext.save()
         }
 
-        try modelContext.save()
         self.status = .KeygenFinished
     }
 
@@ -785,12 +818,20 @@ class KeygenViewModel: ObservableObject {
                 self.didCancelDuplicateVault = true
                 return
             }
-            VaultDefaultCoinService(context: context)
-                .setDefaultCoinsOnce(vault: self.vault)
-            context.insert(self.vault)
+            // Deferred persistence (secure flow): do NOT touch the context here.
+            // `setDefaultCoins` inserts coins, so running it before the review
+            // confirmation would leave orphan rows the autosave could flush.
+            // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
+            if !self.deferVaultPersistence {
+                VaultDefaultCoinService(context: context)
+                    .setDefaultCoinsOnce(vault: self.vault)
+                context.insert(self.vault)
+                try context.save()
+            }
+        } else {
+            try context.save()
         }
 
-        try context.save()
         self.status = .KeygenFinished
     }
 
@@ -850,12 +891,20 @@ class KeygenViewModel: ObservableObject {
                     self.didCancelDuplicateVault = true
                     return
                 }
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
-                context.insert(self.vault)
+                // Deferred persistence (secure flow): do NOT touch the context here.
+                // `setDefaultCoins` inserts coins, so running it before the review
+                // confirmation would leave orphan rows the autosave could flush.
+                // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
+                if !self.deferVaultPersistence {
+                    VaultDefaultCoinService(context: context)
+                        .setDefaultCoinsOnce(vault: self.vault)
+                    context.insert(self.vault)
+                    try context.save()
+                }
+            } else {
+                try context.save()
             }
 
-            try context.save()
             self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
