@@ -9,7 +9,8 @@
 //  instead of being duplicated across the two chain-detail screens.
 //
 //  The pipeline mirrors `QBTCClaimViewModel.load()`: address-type guard,
-//  parallel kill-switch + UTXO fetch, then `filterClaimable` to drop
+//  parallel kill-switch + UTXO fetch, the confirmation gate (hide UTXOs
+//  below `MinUtxoConfirmationBlocks`), then `filterClaimable` to drop
 //  already-claimed / not-indexed entries. Any failure that would prevent
 //  a real claim from succeeding (kill-switch closed, unsupported address,
 //  network error) collapses to `.ineligible` so we don't lie to the user.
@@ -31,12 +32,18 @@ import OSLog
 /// the eligibility logic can be unit-tested without network access. The
 /// concrete services conform via extension elsewhere in this file.
 protocol BlockchairServiceClaimable: Sendable {
-    func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> [ClaimableUtxo]
+    func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> QBTCClaimableUtxosResult
 }
 
 protocol QBTCChainServiceClaimable: Sendable {
     func filterClaimable(_ utxos: [ClaimableUtxo]) async -> [ClaimableUtxo]
     func isClaimWithProofDisabled() async throws -> Bool
+    func minUtxoConfirmationBlocks() async throws -> UInt32
+    func filterSufficientlyConfirmed(
+        _ utxos: [ClaimableUtxo],
+        btcTipHeight: UInt32?,
+        minConfirmations: UInt32
+    ) -> [ClaimableUtxo]
 }
 
 @MainActor
@@ -167,10 +174,10 @@ final class QBTCClaimEligibilityChecker: ObservableObject {
         )
 
         let killSwitchDisabled: Bool
-        let rawUtxos: [ClaimableUtxo]
+        let fetched: QBTCClaimableUtxosResult
         do {
             killSwitchDisabled = try await killSwitchTask
-            rawUtxos = try await utxosTask
+            fetched = try await utxosTask
         } catch {
             logger.warning("Eligibility pipeline failed for \(address, privacy: .public): \(error.localizedDescription, privacy: .public) — treating as transient error")
             return .error
@@ -180,13 +187,39 @@ final class QBTCClaimEligibilityChecker: ObservableObject {
             return .ineligible
         }
 
-        let filtered = await chainService.filterClaimable(rawUtxos)
+        // Same confirmation gate as the claim screen so the banner / Claim
+        // button don't promise UTXOs the chain would reject as
+        // under-confirmed. Fail-open on a param-fetch error.
+        let confirmed = await confirmationGated(fetched.utxos, btcTipHeight: fetched.btcTipHeight)
+
+        let filtered = await chainService.filterClaimable(confirmed)
         if filtered.isEmpty {
             return .ineligible
         }
 
         let totalSats = filtered.reduce(UInt64(0)) { $0 + $1.amount }
         return .eligible(count: filtered.count, totalSats: totalSats)
+    }
+
+    /// Applies the confirmation gate. Fetches `MinUtxoConfirmationBlocks` and
+    /// drops under-confirmed UTXOs; on a param-fetch failure returns the input
+    /// unchanged (fail-open, consistent with `filterClaimable`).
+    private func confirmationGated(
+        _ utxos: [ClaimableUtxo],
+        btcTipHeight: UInt32?
+    ) async -> [ClaimableUtxo] {
+        guard !utxos.isEmpty else { return utxos }
+        do {
+            let minConfirmations = try await chainService.minUtxoConfirmationBlocks()
+            return chainService.filterSufficientlyConfirmed(
+                utxos,
+                btcTipHeight: btcTipHeight,
+                minConfirmations: minConfirmations
+            )
+        } catch {
+            logger.warning("MinUtxoConfirmationBlocks fetch failed — skipping confirmation gate (fail-open): \(error.localizedDescription)")
+            return utxos
+        }
     }
 
     private func applyOutcome(_ outcome: PipelineOutcome, cacheKey: String, hadCachedEligible: Bool) {

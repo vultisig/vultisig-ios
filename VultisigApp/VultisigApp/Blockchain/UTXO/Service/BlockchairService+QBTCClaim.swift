@@ -10,9 +10,23 @@
 
 import Foundation
 
+/// The unspent Bitcoin UTXOs at an address plus the chain tip height that
+/// the same Blockchair response reported. The tip is needed to compute each
+/// UTXO's confirmation count for the QBTC claim confirmation gate; it is
+/// `nil` when Blockchair omits `context.state` (the gate then fails open —
+/// see `QBTCChainService.filterSufficientlyConfirmed`).
+struct QBTCClaimableUtxosResult {
+    let utxos: [ClaimableUtxo]
+    let btcTipHeight: UInt32?
+}
+
 extension BlockchairService {
-    /// Fetches the unspent Bitcoin UTXOs at `address` and adapts them to
-    /// `ClaimableUtxo`. Reuses the existing blockchair fetch (and cache).
+    /// Fetches the unspent Bitcoin UTXOs at `address`, adapts them to
+    /// `ClaimableUtxo`, and surfaces the chain tip height from the same
+    /// Blockchair response. Reuses the existing blockchair fetch (and cache).
+    ///
+    /// The tip comes from `context.state` (the latest block Blockchair has
+    /// indexed) so confirmations can be computed without an extra round-trip.
     ///
     /// - Parameters:
     ///   - bitcoinCoin: The Bitcoin coin meta (caller supplies this from
@@ -22,9 +36,12 @@ extension BlockchairService {
     func fetchQBTCClaimableUtxos(
         bitcoinCoin: CoinMeta,
         address: String
-    ) async throws -> [ClaimableUtxo] {
-        let blockchair = try await fetchBlockchairData(coin: bitcoinCoin, address: address)
-        return (blockchair.utxo ?? []).compactMap(ClaimableUtxo.init(blockchair:))
+    ) async throws -> QBTCClaimableUtxosResult {
+        let response = try await fetchBlockchairResponse(coin: bitcoinCoin, address: address)
+        let blockchair = response.data[address]
+        let utxos = (blockchair?.utxo ?? []).compactMap(ClaimableUtxo.init(blockchair:))
+        let tip = response.context?.state.flatMap { $0 > 0 ? UInt32(exactly: $0) : nil }
+        return QBTCClaimableUtxosResult(utxos: utxos, btcTipHeight: tip)
     }
 }
 

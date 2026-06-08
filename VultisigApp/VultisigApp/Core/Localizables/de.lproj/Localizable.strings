@@ -731,6 +731,8 @@
 "psbtTransactionDetails" = "Transaktionsdetails (PSBT)";
 "pushNotifications" = "Push-Benachrichtigungen";
 "pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
+"qbtcClaimAwaitingConfirmationsDetail" = "Deine Bitcoin-UTXOs brauchen mehr Bestätigungen, bevor sie beansprucht werden können. Bitte schau später noch einmal vorbei.";
+"qbtcClaimAwaitingConfirmationsTitle" = "Warte auf Bestätigungen";
 "qbtcClaimBannerCta" = "Jetzt beanspruchen";
 "qbtcClaimBannerSubtitle" = "Dasselbe Bitcoin. Quantensicher.";
 "qbtcClaimBannerTitle" = "Beanspruche dein QBTC";

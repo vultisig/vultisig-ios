@@ -148,6 +148,78 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         XCTAssertEqual(chain.filterCallCount, 1)
     }
 
+    // MARK: - 5b. Confirmation gate — under-confirmed UTXOs are hidden
+
+    /// All UTXOs sit below `MinUtxoConfirmationBlocks` (144) given the tip,
+    /// so the gate drops them and the checker reports `.ineligible` — the
+    /// banner/Claim button stay hidden instead of promising un-mintable UTXOs.
+    func testIneligibleWhenAllUnderConfirmed() async {
+        let blockchair = MockBlockchairService()
+        let chain = MockQBTCChainService()
+        let tip: UInt32 = 1_000_000
+        blockchair.tipHeight = tip
+        // Both mined within the last few blocks ⇒ << 144 confirmations.
+        blockchair.fetchHandler = { _, _ in
+            [
+                ClaimableUtxo(txid: String(repeating: "a", count: 64), vout: 0, amount: 1_000, blockHeight: tip - 1),
+                ClaimableUtxo(txid: String(repeating: "b", count: 64), vout: 1, amount: 2_000, blockHeight: nil)
+            ]
+        }
+        chain.minConfirmationsHandler = { 144 }
+        let checker = makeChecker(blockchair: blockchair, chain: chain)
+
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+
+        XCTAssertEqual(checker.state, .ineligible)
+        XCTAssertEqual(chain.minConfirmationsCallCount, 1)
+        // The confirmation gate removes every UTXO before the entitlement
+        // filter, so `filterClaimable` is invoked once on an empty set — a
+        // guarded no-op that makes zero per-UTXO chain queries.
+        XCTAssertEqual(chain.filterCallCount, 1)
+    }
+
+    /// A confirmed UTXO alongside an under-confirmed one ⇒ only the confirmed
+    /// one survives the gate and reaches the eligible rollup.
+    func testEligibleKeepsOnlyConfirmedUtxos() async {
+        let blockchair = MockBlockchairService()
+        let chain = MockQBTCChainService()
+        let tip: UInt32 = 1_000_000
+        blockchair.tipHeight = tip
+        blockchair.fetchHandler = { _, _ in
+            [
+                // 200 confs — kept.
+                ClaimableUtxo(txid: String(repeating: "a", count: 64), vout: 0, amount: 50_000, blockHeight: tip - 199),
+                // 10 confs — hidden.
+                ClaimableUtxo(txid: String(repeating: "b", count: 64), vout: 1, amount: 99_000, blockHeight: tip - 9)
+            ]
+        }
+        chain.minConfirmationsHandler = { 144 }
+        let checker = makeChecker(blockchair: blockchair, chain: chain)
+
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+
+        XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 50_000))
+    }
+
+    /// If the `MinUtxoConfirmationBlocks` fetch throws, the gate fails open
+    /// (keeps all UTXOs) rather than hiding ones the user can see.
+    func testConfirmationGateFailsOpenWhenThresholdFetchThrows() async {
+        let blockchair = MockBlockchairService()
+        let chain = MockQBTCChainService()
+        let tip: UInt32 = 1_000_000
+        blockchair.tipHeight = tip
+        // Under-confirmed, but the threshold fetch fails ⇒ kept anyway.
+        blockchair.fetchHandler = { _, _ in
+            [ClaimableUtxo(txid: String(repeating: "a", count: 64), vout: 0, amount: 50_000, blockHeight: tip - 1)]
+        }
+        chain.minConfirmationsHandler = { throw FixtureError.boom }
+        let checker = makeChecker(blockchair: blockchair, chain: chain)
+
+        await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
+
+        XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 50_000))
+    }
+
     // MARK: - 6. Ineligible — kill-switch closed
 
     func testIneligibleWhenKillSwitchClosed() async {
@@ -432,7 +504,12 @@ private actor AsyncGate {
 }
 
 private final class MockBlockchairService: BlockchairServiceClaimable, @unchecked Sendable {
+    /// Handler still returns just the UTXOs to keep existing tests terse;
+    /// the conformance wraps them with `tipHeight`. Default tip is far above
+    /// the fixtures' block heights so they stay confirmed unless a test
+    /// overrides it.
     var fetchHandler: @Sendable (CoinMeta, String) async throws -> [ClaimableUtxo] = { _, _ in [] }
+    var tipHeight: UInt32? = 9_000_000
     private let lock = NSLock()
     private var _fetchCallCount = 0
     var fetchCallCount: Int {
@@ -440,18 +517,23 @@ private final class MockBlockchairService: BlockchairServiceClaimable, @unchecke
         return _fetchCallCount
     }
 
-    func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> [ClaimableUtxo] {
+    func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> QBTCClaimableUtxosResult {
         lock.lock(); _fetchCallCount += 1; lock.unlock()
-        return try await fetchHandler(bitcoinCoin, address)
+        let utxos = try await fetchHandler(bitcoinCoin, address)
+        return QBTCClaimableUtxosResult(utxos: utxos, btcTipHeight: tipHeight)
     }
 }
 
 private final class MockQBTCChainService: QBTCChainServiceClaimable, @unchecked Sendable {
     var filterHandler: @Sendable ([ClaimableUtxo]) async -> [ClaimableUtxo] = { $0 }
     var killSwitchHandler: @Sendable () async throws -> Bool = { false }
+    /// Default low threshold so the fixtures (≈3M+ confirmations against the
+    /// mock tip) pass the gate. Override to exercise under-confirmed paths.
+    var minConfirmationsHandler: @Sendable () async throws -> UInt32 = { 6 }
     private let lock = NSLock()
     private var _filterCallCount = 0
     private var _killSwitchCallCount = 0
+    private var _minConfirmationsCallCount = 0
 
     var filterCallCount: Int {
         lock.lock(); defer { lock.unlock() }
@@ -463,6 +545,11 @@ private final class MockQBTCChainService: QBTCChainServiceClaimable, @unchecked 
         return _killSwitchCallCount
     }
 
+    var minConfirmationsCallCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return _minConfirmationsCallCount
+    }
+
     func filterClaimable(_ utxos: [ClaimableUtxo]) async -> [ClaimableUtxo] {
         lock.lock(); _filterCallCount += 1; lock.unlock()
         return await filterHandler(utxos)
@@ -471,5 +558,23 @@ private final class MockQBTCChainService: QBTCChainServiceClaimable, @unchecked 
     func isClaimWithProofDisabled() async throws -> Bool {
         lock.lock(); _killSwitchCallCount += 1; lock.unlock()
         return try await killSwitchHandler()
+    }
+
+    func minUtxoConfirmationBlocks() async throws -> UInt32 {
+        lock.lock(); _minConfirmationsCallCount += 1; lock.unlock()
+        return try await minConfirmationsHandler()
+    }
+
+    /// Delegates to the real pure confirmation math so the gate behaviour
+    /// under test matches production.
+    func filterSufficientlyConfirmed(
+        _ utxos: [ClaimableUtxo],
+        btcTipHeight: UInt32?,
+        minConfirmations: UInt32
+    ) -> [ClaimableUtxo] {
+        guard let btcTipHeight else { return utxos }
+        return utxos.filter {
+            QBTCChainService.confirmations(blockHeight: $0.blockHeight, tipHeight: btcTipHeight) >= minConfirmations
+        }
     }
 }

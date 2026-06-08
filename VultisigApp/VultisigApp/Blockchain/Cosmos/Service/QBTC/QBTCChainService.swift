@@ -122,6 +122,53 @@ final class QBTCChainService {
         return try Self.parseDisabledFlag(response.data.param.value)
     }
 
+    /// Fetches the `MinUtxoConfirmationBlocks` chain param: the number of
+    /// Bitcoin confirmations a UTXO needs before the chain will accept a
+    /// claim against it (live value = 144). Used by the confirmation gate
+    /// to hide UTXOs the chain would reject at broadcast time.
+    func minUtxoConfirmationBlocks() async throws -> UInt32 {
+        let response = try await httpClient.request(
+            QBTCChainAPI.params(name: "MinUtxoConfirmationBlocks"),
+            responseType: QBTCParamResponse.self
+        )
+        return try Self.parseConfirmationBlocks(response.data.param.value)
+    }
+
+    /// Filters out UTXOs that do not yet have `minConfirmations` Bitcoin
+    /// confirmations, so the user can't pick one the chain would reject with
+    /// "no valid claimable UTXOs found".
+    ///
+    /// Confirmations are computed as `tip - blockHeight + 1`. A `nil`
+    /// `blockHeight` (mempool / freshly-mined / Blockchair omitted
+    /// `block_id`) counts as 0 confirmations and is always hidden.
+    ///
+    /// Fail-open policy: if the BTC tip is unknown (`btcTipHeight == nil` —
+    /// e.g. Blockchair omitted `context.state`) the gate can't prove any
+    /// UTXO is under-confirmed, so it keeps everything rather than hiding
+    /// UTXOs the user can see in their wallet. This mirrors
+    /// `filterClaimable`'s fail-open stance and is also applied by callers
+    /// when the param fetch itself fails. A UTXO with a known height that is
+    /// *provably* under-confirmed (including `nil` height ⇒ 0) is always
+    /// hidden.
+    func filterSufficientlyConfirmed(
+        _ utxos: [ClaimableUtxo],
+        btcTipHeight: UInt32?,
+        minConfirmations: UInt32
+    ) -> [ClaimableUtxo] {
+        guard let btcTipHeight else {
+            logger.warning("BTC tip height unavailable — skipping QBTC confirmation gate (fail-open)")
+            return utxos
+        }
+        return utxos.filter { utxo in
+            let confirmations = Self.confirmations(blockHeight: utxo.blockHeight, tipHeight: btcTipHeight)
+            let isConfirmed = confirmations >= minConfirmations
+            if !isConfirmed {
+                logger.debug("filtering under-confirmed UTXO \(utxo.txid, privacy: .public):\(utxo.vout, privacy: .public) — \(confirmations, privacy: .public)/\(minConfirmations, privacy: .public) confs")
+            }
+            return isConfirmed
+        }
+    }
+
     // MARK: - Pure helpers (testable without network)
 
     /// Parses the kill-switch param value. Mirrors SDK behaviour:
@@ -131,6 +178,25 @@ final class QBTCChainService {
             throw QBTCChainServiceError.invalidParamValue(raw)
         }
         return parsed > 0
+    }
+
+    /// Parses the `MinUtxoConfirmationBlocks` param value. The chain encodes
+    /// it as a JSON-string non-negative integer; throws on anything else.
+    static func parseConfirmationBlocks(_ raw: String) throws -> UInt32 {
+        guard let parsed = UInt32(raw) else {
+            throw QBTCChainServiceError.invalidParamValue(raw)
+        }
+        return parsed
+    }
+
+    /// Bitcoin confirmations for a UTXO mined at `blockHeight` given the
+    /// current `tipHeight`. The mining block itself counts as the first
+    /// confirmation (`tip - height + 1`). A `nil` height (unconfirmed /
+    /// mempool) ⇒ 0. Clamped at 0 so a tip that briefly lags the UTXO's
+    /// height (reorg / stale cache) never underflows.
+    static func confirmations(blockHeight: UInt32?, tipHeight: UInt32) -> UInt32 {
+        guard let blockHeight, tipHeight >= blockHeight else { return 0 }
+        return tipHeight - blockHeight + 1
     }
 
 }
