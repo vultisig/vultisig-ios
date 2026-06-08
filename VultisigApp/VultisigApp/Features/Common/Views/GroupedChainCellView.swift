@@ -88,6 +88,12 @@ struct GroupedChainCellView: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                         .contentTransition(.numericText())
                 }
+                // Drive the balance Texts' content transition only when the
+                // hide/show-balance toggle flips. Scoping the animation to
+                // `hideVaultBalance` keeps the row body un-animated on scroll
+                // and balance refresh (the projection's perf goal) while
+                // restoring the spring the pre-projection cell used on toggle.
+                .animation(.interpolatingSpring, value: homeViewModel.hideVaultBalance)
                 Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }
         }
