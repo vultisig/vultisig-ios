@@ -237,6 +237,7 @@
 "cosmosStakingErrorTooManyValidatorsToClaim" = "领取奖励最多支持 %d 个验证人,收到 %d 个";
 "cosmosStakingErrorUnsupportedChain" = "不支持 %@ 的 Cosmos 质押";
 "cosmosStakingErrorValidatorPreflightFailed" = "验证人地址被 bech32 预检拒绝:%@";
+"cosmosStakingInsufficientFeeBalance" = "%@ 不足以支付网络手续费";
 "cosmosStakingInsufficientGas" = "%@ 不足以支付手续费 — 请减少验证者数量";
 "cosmosStakingNextAward" = "下次奖励";
 "cosmosStakingNoDelegations" = "暂无活跃委托";

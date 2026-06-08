@@ -237,6 +237,7 @@
 "cosmosStakingErrorTooManyValidatorsToClaim" = "Belohnungsauszahlung unterstützt maximal %d Validatoren, %d angegeben";
 "cosmosStakingErrorUnsupportedChain" = "Cosmos-Staking wird für %@ nicht unterstützt";
 "cosmosStakingErrorValidatorPreflightFailed" = "Validator-Adresse vom bech32-Preflight abgelehnt: %@";
+"cosmosStakingInsufficientFeeBalance" = "Nicht genug %@ für die Netzwerkgebühr";
 "cosmosStakingInsufficientGas" = "Nicht genug %@ für Gas — von weniger Validatoren einfordern";
 "cosmosStakingNextAward" = "Nächste Belohnung";
 "cosmosStakingNoDelegations" = "Keine aktiven Delegationen";

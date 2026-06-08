@@ -120,9 +120,28 @@ final class CosmosRedelegateTransactionViewModel: ObservableObject, Form {
         return nil
     }
 
+    /// Network fee for a single `MsgBeginRedelegate` in human-decimal coin
+    /// units. Paid from the liquid (spendable) balance, NOT the staked pool
+    /// the `amountField` is bounded by — so it needs its own pre-flight.
+    var feeDecimal: Decimal {
+        guard let entry = try? CosmosStakingConfig.entry(for: coin.chain) else {
+            return 0
+        }
+        let divisor = pow(Decimal(10), coin.decimals)
+        return Decimal(entry.feeAmount) / divisor
+    }
+
+    /// Insufficient-fee pre-flight. Redelegation moves staked balance between
+    /// validators, but the fee is paid from the spendable balance — if the
+    /// user has staked nearly everything, that can be below the fee and the
+    /// chain rejects at broadcast (`code:5` insufficient funds). Fail closed.
+    var hasSufficientBalanceForFee: Bool {
+        coin.balanceDecimal >= feeDecimal
+    }
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, let dst = selectedDstValidator else { return nil }
+        guard validForm, hasSufficientBalanceForFee, let dst = selectedDstValidator else { return nil }
         guard !dst.jailed else { return nil }
         guard case .available = cooldownState else { return nil }
         return CosmosRedelegateTransactionBuilder(

@@ -34,6 +34,7 @@ struct CosmosDelegateTransactionScreen: View {
         FormScreen(
             title: String(format: "cosmosStakingDelegateTitle".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
+            isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {
             FormExpandableSection(
@@ -64,6 +65,10 @@ struct CosmosDelegateTransactionScreen: View {
                 onTap: { showValidatorPicker = true },
                 valueView: { selectedValidatorPreview }
             )
+
+            if !viewModel.hasSufficientBalanceForFee {
+                InsufficientFeeNotice(ticker: viewModel.coin.ticker)
+            }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
             ValidatorSelectionScreen(
