@@ -1034,6 +1034,7 @@
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Swap tracking link";
+"swapTradingHalted" = "Trading for this asset is temporarily halted. Please try again later.";
 "swapTXHash" = "Swap Tx Hash";
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
 "swapVerifyCheckbox2Description" = "I agree with the min. amount I'll receive";

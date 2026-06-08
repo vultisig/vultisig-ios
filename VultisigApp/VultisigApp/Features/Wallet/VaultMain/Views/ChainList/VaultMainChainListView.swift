@@ -14,13 +14,13 @@ struct VaultMainChainListView: View {
     var onCopy: (Chain) -> Void
     var onCustomizeChains: () -> Void
 
-    private var filteredChains: [Chain] {
-        viewModel.filteredChains(in: vault)
+    private var filteredRows: [ChainRowModel] {
+        viewModel.filteredRows(in: vault)
     }
 
     var body: some View {
         Group {
-            if !filteredChains.isEmpty {
+            if !filteredRows.isEmpty {
                 chainList
             } else {
                 CustomizeChainsActionBanner(
@@ -32,13 +32,13 @@ struct VaultMainChainListView: View {
     }
 
     var chainList: some View {
-        ForEach(Array(filteredChains.enumerated()), id: \.element) { index, chain in
-            VaultChainCellView(chain: chain, vault: vault) {
-                onCopy(chain)
+        ForEach(Array(filteredRows.enumerated()), id: \.element.id) { index, row in
+            VaultChainCellView(row: row, vault: vault) {
+                onCopy(row.chain)
             }
             .commonListItemContainer(
                 index: index,
-                itemsCount: filteredChains.count
+                itemsCount: filteredRows.count
             )
         }
     }

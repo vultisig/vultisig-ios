@@ -1026,6 +1026,7 @@
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
+"swapTradingHalted" = "La negoziazione di questo asset è temporaneamente sospesa. Riprova più tardi.";
 "swapTXHash" = "Hash Tx dello scambio";
 "swapVerifyCheckbox1Description" = "L'importo dello scambio è corretto";
 "swapVerifyCheckbox2Description" = "Accetto l'importo minimo che riceverò";
