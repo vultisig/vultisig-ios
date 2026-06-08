@@ -135,10 +135,13 @@ enum CosmosStakingSignDataResolver {
         )
 
         // Linear gas + fee scaling for batched-claim — single-msg flows use
-        // N=1 which collapses to the base config values.
-        let multiplier = UInt64(max(msgsAny.count, 1))
-        let gasLimit = entry.gasLimit * multiplier
-        let feeAmount = entry.feeAmount * multiplier
+        // N=1 which collapses to the base config values. Count comes from the
+        // encoded messages; the `base × count` arithmetic is shared with the
+        // verify screen via `CosmosStakingConfig` so the SIGNED fee here and
+        // the DISPLAYED fee there can never drift.
+        let msgCount = max(msgsAny.count, 1)
+        let gasLimit = try CosmosStakingConfig.scaledGasLimit(for: chain, msgCount: msgCount)
+        let feeAmount = try CosmosStakingConfig.scaledFeeAmount(for: chain, msgCount: msgCount)
 
         let bodyBytes = CosmosStakingHelper.buildTxBodyMulti(msgsAny: msgsAny, memo: "")
         let authInfoBytes = CosmosStakingHelper.buildAuthInfo(

@@ -13,6 +13,7 @@
 //  promotes it into the staking-allowlist semantics (`isStakingSupported`).
 //
 
+import BigInt
 import Foundation
 
 enum CosmosStakingConfig {
@@ -128,6 +129,30 @@ enum CosmosStakingConfig {
 
     static func unbondingDays(for chain: Chain) throws -> Int {
         try entry(for: chain).unbondingDays
+    }
+
+    // MARK: - Linear gas / fee scaling
+
+    // Single source of truth for the `base × msgCount` scaling. Both the
+    // SignDoc resolver (the SIGNED fee baked into AuthInfo) and the verify
+    // screen (the DISPLAYED / balance-preflighted fee) call these, so the
+    // shown fee can never drift from the signed one. A single-msg flow uses
+    // msgCount 1, which collapses to the per-chain base values; a batched
+    // withdraw-rewards tx scales by its validator count. msgCount is clamped
+    // to >= 1 to mirror the resolver's `max(msgsAny.count, 1)`.
+
+    static func scaledGasLimit(for chain: Chain, msgCount: Int) throws -> UInt64 {
+        try gasLimit(for: chain) * UInt64(max(msgCount, 1))
+    }
+
+    static func scaledFeeAmount(for chain: Chain, msgCount: Int) throws -> UInt64 {
+        try feeAmount(for: chain) * UInt64(max(msgCount, 1))
+    }
+
+    /// Scaled fee as `BigInt`, for `SendTransaction.gas` (the value the verify
+    /// screen renders via `gasInReadable` and prices via `feesInReadable`).
+    static func scaledFeeAmountBigInt(for chain: Chain, msgCount: Int) throws -> BigInt {
+        BigInt(try scaledFeeAmount(for: chain, msgCount: msgCount))
     }
 }
 
