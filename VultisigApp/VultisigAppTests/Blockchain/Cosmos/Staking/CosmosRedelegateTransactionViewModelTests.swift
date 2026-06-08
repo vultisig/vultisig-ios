@@ -46,7 +46,8 @@ final class CosmosRedelegateTransactionViewModelTests: XCTestCase {
 
     func testFeeDecimalMatchesConfig() {
         let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: 1))
-        XCTAssertEqual(vm.feeDecimal, Decimal(string: "0.000075"))
+        // 800 / 10^8
+        XCTAssertEqual(vm.feeDecimal, Decimal(string: "0.000008"))
     }
 
     func testInsufficientWhenSpendableBelowFee() {
@@ -62,7 +63,7 @@ final class CosmosRedelegateTransactionViewModelTests: XCTestCase {
     }
 
     func testSufficientAtExactFeeBoundary() {
-        let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: Decimal(string: "0.000075")!))
+        let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: Decimal(string: "0.000008")!))
         XCTAssertTrue(vm.hasSufficientBalanceForFee, "spendable == fee must pass")
     }
 

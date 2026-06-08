@@ -7,8 +7,8 @@
 //  (via `gasInReadable` / `feesInReadable`); the SignDoc bakes
 //  `feeAmount × msgCount` into AuthInfo. Before the fix the staking branch of
 //  `FunctionTransactionScreen.onVerify` left gas at .zero, so the user saw
-//  "0 QBTC / $0.00" while approving 7500×N — and the balance preflight
-//  under-counted. These tests assert, for a single-msg flow AND a
+//  "0 QBTC / $0.00" while approving the real `feeAmount × N` — and the balance
+//  preflight under-counted. These tests assert, for a single-msg flow AND a
 //  multi-validator batched claim, that the gas the screen sets equals the fee
 //  the resolver writes into the signed AuthInfo bytes, so display == signed
 //  can never silently drift. The scaling arithmetic lives in one place
@@ -156,7 +156,7 @@ final class CosmosStakingDisplayFeeTests: XCTestCase {
         // The exact bug: this was .zero before the fix.
         XCTAssertGreaterThan(displayed.gas, .zero, "Staking verify must not display a 0 fee")
         XCTAssertEqual(displayed.gas, signed, "Displayed gas must equal the signed fee")
-        XCTAssertEqual(displayed.gas, BigInt(7_500), "QBTC single-msg fee is 7500 base units")
+        XCTAssertEqual(displayed.gas, BigInt(800), "QBTC single-msg fee is the 800 min_tx_fee floor")
     }
 
     func testMultiValidatorClaimDisplayedFeeEqualsSignedFee() throws {
@@ -166,9 +166,9 @@ final class CosmosStakingDisplayFeeTests: XCTestCase {
         let signed = try Self.signedFee(payload: payload)
 
         XCTAssertEqual(displayed.gas, signed, "Displayed gas must equal the signed fee for an N-validator claim")
-        // 7500 × 3 — proves the display scales with msg count, not a hardcoded 1.
-        XCTAssertEqual(displayed.gas, BigInt(7_500 * validators.count))
-        XCTAssertNotEqual(displayed.gas, BigInt(7_500), "A 3-validator claim must not under-display the single-msg fee")
+        // 800 × 3 — proves the display scales with msg count, not a hardcoded 1.
+        XCTAssertEqual(displayed.gas, BigInt(800 * validators.count))
+        XCTAssertNotEqual(displayed.gas, BigInt(800), "A 3-validator claim must not under-display the single-msg fee")
     }
 
     func testEightValidatorClaimDisplayedFeeEqualsSignedFee() throws {
@@ -183,7 +183,7 @@ final class CosmosStakingDisplayFeeTests: XCTestCase {
         let signed = try Self.signedFee(payload: payload)
 
         XCTAssertEqual(displayed.gas, signed)
-        XCTAssertEqual(displayed.gas, BigInt(7_500 * 8))
+        XCTAssertEqual(displayed.gas, BigInt(800 * 8))
     }
 
     // MARK: - readable string reflects the real fee (no longer "0 QBTC")
@@ -199,7 +199,7 @@ final class CosmosStakingDisplayFeeTests: XCTestCase {
         let numeric = readable
             .replacingOccurrences(of: " QBTC", with: "")
             .replacingOccurrences(of: ",", with: ".")
-        XCTAssertEqual(Decimal(string: numeric), Decimal(string: "0.000075"), "7500 / 10^8 = 0.000075 QBTC")
+        XCTAssertEqual(Decimal(string: numeric), Decimal(string: "0.000008"), "800 / 10^8 = 0.000008 QBTC")
     }
 
     // MARK: - shared scaling helper is the single source of truth

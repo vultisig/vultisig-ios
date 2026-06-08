@@ -14,7 +14,7 @@ import XCTest
 @MainActor
 final class CosmosUndelegateTransactionViewModelTests: XCTestCase {
 
-    /// QBTC: 8 decimals, fee 7500 base units => 0.000075 QBTC. `balance` is in
+    /// QBTC: 8 decimals, fee 800 base units => 0.000008 QBTC. `balance` is in
     /// human-decimal QBTC.
     private static func makeQbtcCoin(balance: Decimal) -> Coin {
         let meta = CoinMeta(
@@ -47,14 +47,14 @@ final class CosmosUndelegateTransactionViewModelTests: XCTestCase {
 
     func testFeeDecimalMatchesConfig() {
         let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: 1))
-        // 7500 / 10^8
-        XCTAssertEqual(vm.feeDecimal, Decimal(string: "0.000075"))
+        // 800 / 10^8
+        XCTAssertEqual(vm.feeDecimal, Decimal(string: "0.000008"))
     }
 
     func testInsufficientWhenSpendableBelowFee() {
-        // 180 base units = 0.0000018 QBTC < 0.000075 fee — the real on-device
-        // failure (`spendable 180qbtc < 7500qbtc`). Staked pool is large, so
-        // this isolates the spendable-vs-fee gate.
+        // 180 base units = 0.0000018 QBTC < 0.000008 fee (800 base units) — the
+        // real on-device failure (`spendable 180qbtc < fee`). Staked pool is
+        // large, so this isolates the spendable-vs-fee gate.
         let coin = Self.makeQbtcCoin(balance: Decimal(string: "0.0000018")!)
         let vm = Self.makeVM(coin: coin)
         XCTAssertFalse(vm.hasSufficientBalanceForFee)
@@ -69,7 +69,7 @@ final class CosmosUndelegateTransactionViewModelTests: XCTestCase {
     }
 
     func testSufficientAtExactFeeBoundary() {
-        let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: Decimal(string: "0.000075")!))
+        let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: Decimal(string: "0.000008")!))
         XCTAssertTrue(vm.hasSufficientBalanceForFee, "spendable == fee must pass")
     }
 

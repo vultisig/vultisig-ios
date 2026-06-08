@@ -17,7 +17,7 @@ import XCTest
 @MainActor
 final class CosmosDelegateTransactionViewModelTests: XCTestCase {
 
-    private static let qbtcFee = Decimal(string: "0.000075")! // 7500 / 10^8
+    private static let qbtcFee = Decimal(string: "0.000008")! // 800 / 10^8
 
     private static func makeQbtcCoin(balance: Decimal) -> Coin {
         let meta = CoinMeta(

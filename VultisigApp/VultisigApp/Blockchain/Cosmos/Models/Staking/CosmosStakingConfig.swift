@@ -75,19 +75,33 @@ enum CosmosStakingConfig {
             unbondingDays: 21
         ),
         // QBTC (post-quantum) is a Cosmos-SDK chain that signs with ML-DSA, not
-        // secp256k1, so it does NOT route through `CosmosStakingSignDataResolver`
-        // — `QBTCHelper` rebuilds the SignDoc/AuthInfo via the ML-DSA path. This
-        // entry is still the single source of truth for denom / valoper-prefix /
-        // gas / fee / unbonding everywhere else (read surfaces, balance preflight,
-        // validator bech32 preflight). `bondDenom` is lowercase `qbtc` (8 decimals,
-        // NOT a micro-denom). Values verified on the live qbtc-testnet LCD.
+        // secp256k1, so it takes the `CosmosStakingSignDataResolver.resolveMLDSA`
+        // branch (NOT the secp256k1 `.resolve`): that branch skips the 33-byte
+        // secp256k1 pubkey guard and stamps `/cosmos.crypto.mldsa.PubKey`, then
+        // shares the same `buildSignDirect` AuthInfo/TxBody path. `QBTCHelper`
+        // consumes the resulting `signDirect` bytes verbatim. So QBTC's signed
+        // gas / fee come from THIS entry via the resolver, same as the Terra
+        // chains. This entry is also the single source of truth for denom /
+        // valoper-prefix / gas / fee / unbonding everywhere else (read surfaces,
+        // balance preflight, validator bech32 preflight). `bondDenom` is
+        // lowercase `qbtc` (8 decimals, NOT a micro-denom).
+        //
+        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc-testnet are constant
+        // / un-queryable ante values, so the fee floor is the flat `min_tx_fee`
+        // (800) and the only dynamic dimension is the gas_limit. `gasLimit` is
+        // 400_000 to match Terra's post-OoG floor: a live `MsgDelegate` simulate
+        // burned 278_759 gas (~7% headroom over the old 300_000) and the heavier
+        // redelegate OoG'd Terra at 300_140, so 300_000 was a real OoG risk. Since
+        // `min_gas_price` is 0, a higher gas_limit does NOT raise the fee.
+        // `feeAmount` is the 800 `min_tx_fee` floor (the prior 7_500 was the
+        // carried-over generic Cosmos send default, ~9x the floor).
         .qbtc: Entry(
             chainId: "qbtc-testnet",
             bondDenom: "qbtc",
             feeDenom: "qbtc",
             valoperHrp: "qbtcvaloper",
-            gasLimit: 300_000,
-            feeAmount: 7_500,
+            gasLimit: 400_000,
+            feeAmount: 800,
             unbondingDays: 21
         )
     ]
