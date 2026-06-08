@@ -68,14 +68,26 @@ enum SwapCryptoLogic {
 
     // MARK: - Quote-derived
 
-    static func fee(quote: SwapQuote?, thorchainFee: BigInt) -> BigInt {
+    static func fee(quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt) -> BigInt {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
         case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
         case let .swapkit(_, fee, _):
-            return fee ?? 0
+            // SwapKit's wire `inbound` fee for UTXO/Cardano sources doesn't
+            // reflect the realized on-chain miner fee — it renders as a
+            // misleadingly small amount on the Network Fee row (e.g. a BTC swap
+            // showing 0.0000008 BTC). For these chains compute the fee the same
+            // way Send does: from the WalletCore transaction plan, carried in
+            // `thorchainFee` (populated in `SwapDetailsViewModel.updateFees`).
+            // EVM/other SwapKit sources keep the wire-reported inbound fee.
+            switch fromCoin.chain.chainType {
+            case .UTXO, .Cardano:
+                return thorchainFee
+            default:
+                return fee ?? 0
+            }
         case nil:
             return .zero
         }

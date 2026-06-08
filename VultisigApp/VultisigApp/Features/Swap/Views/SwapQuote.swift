@@ -84,9 +84,30 @@ enum SwapQuote: Hashable {
             return "KyberSwap"
         case .lifi:
             return "LI.FI"
-        case .swapkit(_, _, let subProvider):
-            // Surface the sub-provider so the verify screen can show "via Chainflip".
-            return "SwapKit (\(subProvider))"
+        case .swapkit:
+            // The sub-provider (e.g. Chainflip) is carried on the payload for
+            // routing/explorer links; the display name stays the clean brand.
+            return "SwapKit"
+        }
+    }
+
+    /// Brand-logo asset name for the provider (in `Crypto/`), matching the
+    /// imageset filenames. Providers without a bundled logo (KyberSwap, SwapKit)
+    /// fall back to `AsyncImageView`'s monogram.
+    var providerLogo: String {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return "THORChain"
+        case .mayachain:
+            return "Maya protocol"
+        case .oneinch:
+            return "1Inch"
+        case .lifi:
+            return "LI.FI"
+        case .kyberswap:
+            return "kyberswap"
+        case .swapkit:
+            return "swapkit"
         }
     }
 

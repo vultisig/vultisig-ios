@@ -728,7 +728,7 @@ struct CosmosTokenMetadata {
 
 extension ThorchainService {
 
-    private func getCosmosTokenMetadata(denom: String) async throws -> CosmosTokenMetadata {
+    func getCosmosTokenMetadata(denom: String) async throws -> CosmosTokenMetadata {
         guard let metadata = try await getDenomMetaFromLCD(denom: denom) else {
             throw CosmosTokenMetadataError.noDenomMetaAvailable
         }

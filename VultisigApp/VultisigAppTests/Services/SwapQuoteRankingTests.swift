@@ -142,7 +142,7 @@ final class SwapQuoteRankingTests: XCTestCase {
         // best = LI.FI 0.03, floor = 0.0297, SwapKit 0.0299 is in band → SwapKit wins on priority.
         let pick = SwapService.selectBestQuote(quotes: [lifi, swapKit], toCoin: ethCoin())
 
-        XCTAssertEqual(pick?.displayName, "SwapKit (Chainflip)")
+        XCTAssertEqual(pick?.displayName, "SwapKit")
     }
 
     func test_selectBestQuote_priorityOrderingWithinBand_thorchainOverOneInch() {

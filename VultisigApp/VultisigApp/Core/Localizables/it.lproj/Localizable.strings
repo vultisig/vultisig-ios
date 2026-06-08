@@ -420,6 +420,7 @@
 "fee" = "Commissione";
 "filterByAsset" = "Filtra per asset";
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
+"findCustomTokenThorchainPlaceholder" = "Inserisci il token, ad es. THOR.LQDY";
 "folder" = "Cartella";
 "folderName" = "Nome della Cartella";
 "folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";
@@ -1018,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "Lo scambio è stato rimborsato al tuo indirizzo di origine";
 "swapKitViewOnTracker" = "Visualizza su SwapKit Tracker";
 "swapOverview" = "Panoramica dello scambio";
+"swapProviderRecommended" = "Consigliato";
+"swapProvidersSheetTitle" = "Seleziona fornitore";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
@@ -1038,6 +1041,7 @@
 "thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
 "thorchainAddress" = "Indirizzo THORChain";
+"thorchainCustomTokenInvalidFormat" = "Formato del token THORChain non valido. Usa THOR.{SYMBOL}, ad es. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain non è abilitato su questo caveau. Abilita THORChain per utilizzare questa funzione.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";

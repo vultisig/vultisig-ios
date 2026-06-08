@@ -1977,6 +1977,18 @@ class TokensStore {
             contractAddress: "thor.rkuji",
             isNativeToken: false
         ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "LQDY",
+            logo: "lqdy",
+            decimals: 8,
+            // THORChain fiat is fetched from the pool endpoint, not CoinGecko, so
+            // `priceProviderId` is a no-op here. LQDY has no L1 pool yet, so fiat
+            // shows $0.00 until one launches; the balance still displays.
+            priceProviderId: "",
+            contractAddress: "thor.lqdy",
+            isNativeToken: false
+        ),
         yrune,
         ytcy,
         CoinMeta(

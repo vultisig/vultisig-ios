@@ -459,7 +459,6 @@ extension SendTransaction {
     }
 }
 
-
 // MARK: - Convenience computed (delegates to SendCryptoLogic)
 
 extension SendTransaction {

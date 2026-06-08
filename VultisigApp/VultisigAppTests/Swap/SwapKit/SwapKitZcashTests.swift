@@ -138,7 +138,7 @@ final class SwapKitZcashTests: XCTestCase {
         // BranchID matches the existing native ZEC send path
         // (`UTXOChainsHelper.swift:138-139`). Diverging would produce a
         // digest the network rejects.
-        XCTAssertEqual(input.plan.branchID.hexString, "f04dec4d")
+        XCTAssertEqual(input.plan.branchID.hexString, "30f33754")
     }
 
     func testZcashSignerDerivesToAddressFromPSBTOutputScriptNotTargetAddress() throws {

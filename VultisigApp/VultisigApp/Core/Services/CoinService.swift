@@ -45,15 +45,20 @@ struct CoinService {
     }
 
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
+        // `vault.coins` is a SwiftData @Model relationship, not @Published, so
+        // mutating it doesn't emit `objectWillChange` on its own. Notify observers
+        // explicitly — via defer so live screens that recompute their token list
+        // off this signal (e.g. chain detail) still refresh even when a partial
+        // mutation throws.
+        defer { vault.objectWillChange.send() }
         do {
             // Step 1: Remove coins that are no longer selected
             try removeDeselectedCoins(vault: vault, selection: selection)
 
             // Step 2: Add newly selected coins
             try await addNewlySelectedCoins(vault: vault, selection: selection)
-
         } catch {
-            print("fail to save asset,\(error)")
+            logger.error("failed to save assets: \(error)")
         }
     }
 

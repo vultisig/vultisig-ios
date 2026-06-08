@@ -10,7 +10,23 @@
 import Foundation
 
 struct SwapQuoteResult: Equatable {
+    /// Auto-selected winner. Stays the default the rest of the flow reads.
     let quote: SwapQuote
+    /// Full ranked candidate set (best→worst), surfaced to the provider-selection
+    /// UI. Contains `quote`. With a single eligible provider this holds one entry.
+    let allQuotes: [SwapQuote]
     let vultDiscountBps: Int
     let referralDiscountBps: Int
+
+    init(
+        quote: SwapQuote,
+        allQuotes: [SwapQuote]? = nil,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) {
+        self.quote = quote
+        self.allQuotes = allQuotes ?? [quote]
+        self.vultDiscountBps = vultDiscountBps
+        self.referralDiscountBps = referralDiscountBps
+    }
 }

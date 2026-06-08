@@ -420,6 +420,7 @@
 "fee" = "Naknada";
 "filterByAsset" = "Filtriraj po imovini";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
+"findCustomTokenThorchainPlaceholder" = "Unesite token, npr. THOR.LQDY";
 "folder" = "Mapa";
 "folderName" = "Naziv Mape";
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
@@ -1018,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
+"swapProviderRecommended" = "Preporučeno";
+"swapProvidersSheetTitle" = "Odaberite davatelja";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
@@ -1038,6 +1041,7 @@
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain adresa";
+"thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";

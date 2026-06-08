@@ -139,10 +139,6 @@ struct CircleViewLogic {
             data: dataHex
         )
 
-        guard let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
-            throw CircleServiceError.keysignError("Missing USDC Coin")
-        }
-
         let chainSpecific = BlockChainSpecific.Ethereum(
             maxFeePerGasWei: boostedGasPrice,
             priorityFeeWei: boostedPriorityFee,
@@ -150,13 +146,42 @@ struct CircleViewLogic {
             gasLimit: gasLimit
         )
 
-        let payloadWithData = KeysignPayload(
+        return try makeWithdrawalKeysignPayload(
+            vault: vault,
+            chain: chain,
+            to: to,
+            value: value,
+            memoHex: dataHex,
+            chainSpecific: chainSpecific
+        )
+    }
+
+    /// Assembles the keysign payload for a Circle MSCA withdrawal.
+    ///
+    /// A withdrawal is a contract call to the MSCA — `execute(USDC, 0, transfer(vault, amount))`
+    /// — whose calldata travels in `memo`. The EVM signer only forwards `memo` as `tx.data` on
+    /// the native-coin path; an ERC-20 coin instead builds a plain `transfer(toAddress, toAmount)`
+    /// and drops the memo, which with `toAmount == 0` signs a no-op. The payload coin must
+    /// therefore be the chain's native coin, not the USDC token.
+    func makeWithdrawalKeysignPayload(
+        vault: Vault,
+        chain: Chain,
+        to: String,
+        value: BigInt,
+        memoHex: String,
+        chainSpecific: BlockChainSpecific
+    ) throws -> KeysignPayload {
+        guard let coin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+            throw CircleServiceError.keysignError("Missing native coin for \(chain.name)")
+        }
+
+        return KeysignPayload(
             coin: coin,
             toAddress: to,
             toAmount: value,
             chainSpecific: chainSpecific,
             utxos: [],
-            memo: dataHex, // Pass contract data as hex memo
+            memo: memoHex, // execute(...) calldata; only forwarded as tx.data on the native-coin path
             swapPayload: nil, // No swap payload = shows as Send
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
@@ -171,8 +196,6 @@ struct CircleViewLogic {
             skipBroadcast: false,
             signData: nil
         )
-
-        return payloadWithData
     }
 
     static func getChainDetails() -> (chain: Chain, usdcContract: String) {

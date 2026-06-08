@@ -97,6 +97,10 @@ class UTXOChainsHelper {
         input.byteFee = Int64(byteFee)
         input.hashType = BitcoinScript.hashTypeForCoin(coinType: coin)
         input.useMaxAmount = sendMaxAmount
+        // Zcash enforces ZIP-317: the fee must cover the tx's logical actions,
+        // not just its byte size. Enable it so the planner below computes a
+        // conforming fee and the node doesn't reject the swap broadcast.
+        input.zip0317 = coin == .zcash
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)
 
@@ -135,7 +139,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "f04dec4d")! // Correct hex string
+            plan.branchID = Data(hexString: "30f33754")!
         }
 
         input.plan = plan
@@ -154,6 +158,11 @@ class UTXOChainsHelper {
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)
+            // Zcash enforces ZIP-317 fees: the fee must cover the tx's logical
+            // actions, not just its byte size. Enabling this lets WalletCore's
+            // planner compute a conforming fee and avoids node rejection
+            // ("tx unpaid action limit exceeds limit of 0").
+            $0.zip0317 = coin == .zcash
             $0.coinType = coin.rawValue
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData
@@ -208,7 +217,7 @@ class UTXOChainsHelper {
         }
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "f04dec4d")! // Correct hex string
+            plan.branchID = Data(hexString: "30f33754")!
         }
 
         input.plan = plan
@@ -220,7 +229,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "f04dec4d")! // Correct hex string
+            plan.branchID = Data(hexString: "30f33754")!
         }
 
         return plan
@@ -276,7 +285,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "f04dec4d")!
+            plan.branchID = Data(hexString: "30f33754")!
         }
 
         // Build raw transaction manually using plan data

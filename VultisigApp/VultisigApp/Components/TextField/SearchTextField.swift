@@ -11,12 +11,19 @@ struct SearchTextField: View {
     @Binding var value: String
     @Binding var isFocused: Bool
     let showPasteButton: Bool
+    let placeholder: String
     @FocusState var focusedState: Bool
 
-    init(value: Binding<String>, isFocused: Binding<Bool> = .constant(false), showPasteButton: Bool = false) {
+    init(
+        value: Binding<String>,
+        isFocused: Binding<Bool> = .constant(false),
+        showPasteButton: Bool = false,
+        placeholder: String = "search".localized
+    ) {
         self._value = value
         self._isFocused = isFocused
         self.showPasteButton = showPasteButton
+        self.placeholder = placeholder
     }
 
     var showClearButton: Bool {
@@ -30,7 +37,7 @@ struct SearchTextField: View {
                 color: Theme.colors.textSecondary,
                 size: 16
             )
-            TextField(NSLocalizedString("search", comment: "Search"), text: $value)
+            TextField(placeholder, text: $value)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)

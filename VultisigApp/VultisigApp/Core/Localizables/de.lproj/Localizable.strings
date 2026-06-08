@@ -420,6 +420,7 @@
 "fee" = "Gebühr";
 "filterByAsset" = "Nach Asset filtern";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
+"findCustomTokenThorchainPlaceholder" = "Token eingeben, z. B. THOR.LQDY";
 "folder" = "Ordner";
 "folderName" = "Ordnername";
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
@@ -1018,6 +1019,8 @@
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
 "swapOverview" = "Tauschübersicht";
+"swapProviderRecommended" = "Empfohlen";
+"swapProvidersSheetTitle" = "Anbieter auswählen";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";
@@ -1038,6 +1041,7 @@
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain-Adresse";
+"thorchainCustomTokenInvalidFormat" = "Ungültiges THORChain-Token-Format. Verwende THOR.{SYMBOL}, z. B. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";

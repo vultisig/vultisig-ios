@@ -426,6 +426,7 @@
 "fee" = "Fee";
 "filterByAsset" = "Filter by Asset";
 "findCustomTokens" = "Find custom token";
+"findCustomTokenThorchainPlaceholder" = "Enter token, e.g. THOR.LQDY";
 "folder" = "Folder";
 "folderName" = "Folder Name";
 "folderNeedsOneVault" = "Folder needs to have at least one selected vault.";
@@ -1026,6 +1027,8 @@
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
 "swapKitViewOnTracker" = "View on SwapKit Tracker";
 "swapOverview" = "Swap overview";
+"swapProviderRecommended" = "Recommended";
+"swapProvidersSheetTitle" = "Select provider";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Swap tracking link";
@@ -1046,6 +1049,7 @@
 "thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain Address";
+"thorchainCustomTokenInvalidFormat" = "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain is not enabled on this vault. Please enable THORChain to use this feature.";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";
