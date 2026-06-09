@@ -81,6 +81,7 @@ struct CosmosRedelegateTransactionScreen: View {
                 selectedValidator: $viewModel.selectedDstValidator,
                 chain: viewModel.coin.chain,
                 chainTicker: viewModel.coin.ticker,
+                chainDecimals: viewModel.coin.decimals,
                 excludedValidators: viewModel.excludedDstValidators
             )
         }

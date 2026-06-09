@@ -75,7 +75,8 @@ struct CosmosDelegateTransactionScreen: View {
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedValidator,
                 chain: viewModel.coin.chain,
-                chainTicker: viewModel.coin.ticker
+                chainTicker: viewModel.coin.ticker,
+                chainDecimals: viewModel.coin.decimals
             )
         }
         .onLoad {
