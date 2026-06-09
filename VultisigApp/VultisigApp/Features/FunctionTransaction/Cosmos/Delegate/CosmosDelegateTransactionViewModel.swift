@@ -45,15 +45,18 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
 
     /// Headroom-aware stakeable balance — the cosmos fee for a single
     /// `MsgDelegate` lives in the same denom as the bond, so we must reserve
-    /// it before letting the user delegate up to "max".
+    /// it before letting the user delegate up to "max". This is what backs
+    /// the `AmountBalanceValidator` and the "Max" path, so `amount + fee`
+    /// can never exceed the spendable balance.
     var stakeableBalance: Decimal {
-        let total = coin.balanceDecimal
-        let reserved = feeReservation
-        let remaining = total - reserved
+        let remaining = coin.balanceDecimal - feeDecimal
         return remaining > 0 ? remaining : 0
     }
 
-    private var feeReservation: Decimal {
+    /// Network fee for a single `MsgDelegate` in human-decimal coin units.
+    /// For delegate, both the staked amount AND this fee draw on the liquid
+    /// (spendable) balance.
+    var feeDecimal: Decimal {
         guard let entry = try? CosmosStakingConfig.entry(for: coin.chain) else {
             return 0
         }
@@ -61,9 +64,17 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
         return Decimal(entry.feeAmount) / divisor
     }
 
+    /// Insufficient-fee pre-flight. When the spendable balance is below the
+    /// fee, `stakeableBalance` collapses to 0 and the amount validator would
+    /// reject every input with a misleading "amount exceeded"; this gates the
+    /// builder and drives a clear inline fee message instead.
+    var hasSufficientBalanceForFee: Bool {
+        coin.balanceDecimal >= feeDecimal
+    }
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, let validator = selectedValidator else { return nil }
+        guard validForm, hasSufficientBalanceForFee, let validator = selectedValidator else { return nil }
         guard !validator.jailed else { return nil }
         return CosmosDelegateTransactionBuilder(
             coin: coin,

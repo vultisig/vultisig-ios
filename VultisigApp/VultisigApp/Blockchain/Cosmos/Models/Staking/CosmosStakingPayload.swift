@@ -88,4 +88,20 @@ struct CosmosStakingPayload: Codable, Hashable {
             amount: nil
         )
     }
+
+    /// Number of Cosmos-SDK messages this payload encodes into — the same
+    /// count the resolver derives from `msgsAny.count` and uses to scale gas +
+    /// fee. delegate / undelegate / redelegate are always one message;
+    /// withdraw-rewards is one `MsgWithdrawDelegatorReward` per validator.
+    /// Clamped to >= 1 so an empty/absent validator list (which the resolver
+    /// rejects before signing) still yields the single-msg base fee for
+    /// display rather than zero.
+    var msgCount: Int {
+        switch opType {
+        case .delegate, .undelegate, .redelegate:
+            return 1
+        case .withdrawRewards:
+            return max(validators?.count ?? 0, 1)
+        }
+    }
 }

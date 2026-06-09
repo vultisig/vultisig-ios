@@ -237,6 +237,7 @@
 "cosmosStakingErrorTooManyValidatorsToClaim" = "Preuzimanje nagrada podržava najviše %d validatora, dobiveno %d";
 "cosmosStakingErrorUnsupportedChain" = "Cosmos staking nije podržan za %@";
 "cosmosStakingErrorValidatorPreflightFailed" = "Adresa validatora odbijena bech32 preflightom: %@";
+"cosmosStakingInsufficientFeeBalance" = "Nedovoljno %@ za mrežnu naknadu";
 "cosmosStakingInsufficientGas" = "Nedovoljno %@ za gas — preuzmi od manje validatora";
 "cosmosStakingNextAward" = "Sljedeća nagrada";
 "cosmosStakingNoDelegations" = "Nema aktivnih delegacija";

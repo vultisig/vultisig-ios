@@ -232,6 +232,7 @@
 "cosmosStakingDelegateNewValidator" = "새 검증인에게 위임";
 "cosmosStakingDelegateStubSubtitle" = "검증인에게 위임하여 스테이킹 보상을 받으세요. 언본딩에는 21일이 소요됩니다.";
 "cosmosStakingDelegateTitle" = "%@ 스테이킹";
+"cosmosStakingInsufficientFeeBalance" = "네트워크 수수료를 충당할 %@이(가) 부족합니다";
 "cosmosStakingInsufficientGas" = "%@ 가스 부족 — 더 적은 검증자로부터 청구하세요";
 "cosmosStakingNextAward" = "다음 보상";
 "cosmosStakingNoDelegations" = "활성 위임 없음";

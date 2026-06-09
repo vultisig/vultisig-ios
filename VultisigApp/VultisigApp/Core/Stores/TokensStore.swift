@@ -2097,6 +2097,16 @@ class TokensStore {
         isNativeToken: true
     )
 
+    static let qbtc: CoinMeta = CoinMeta(
+        chain: .qbtc,
+        ticker: "QBTC",
+        logo: "qbtc",
+        decimals: 8,
+        priceProviderId: "",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
     static let tcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "TCY",

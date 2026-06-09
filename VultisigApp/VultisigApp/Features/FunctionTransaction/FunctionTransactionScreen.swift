@@ -5,7 +5,10 @@
 //  Created by Gaston Mazzeo on 31/10/2025.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-transaction-screen")
 
 struct FunctionTransactionScreen: View {
     @Environment(\.router) var router
@@ -195,9 +198,33 @@ struct FunctionTransactionScreen: View {
             // `SendTransaction.cosmosStakingPayload`, which `fromForm(_:)`
             // would drop. Skip directly to the immutable struct so the
             // Verify → KeysignPayload resolver sees the staking intent.
-            if transactionBuilder.cosmosStakingPayload != nil {
+            if let stakingPayload = transactionBuilder.cosmosStakingPayload {
                 isLoading = true
-                let immutableTx = transactionBuilder.buildSendTransaction(vault: vault)
+                var immutableTx = transactionBuilder.buildSendTransaction(vault: vault)
+                // `buildSendTransaction` defaults gas to .zero and the staking
+                // flow never fetches chain-specific gas (the SignDoc resolver
+                // bakes a fixed per-chain fee instead). Set gas to the SAME
+                // value the resolver signs — `feeAmount × msgCount` from the
+                // shared `CosmosStakingConfig` helper — so the verify screen's
+                // fee row and balance preflight match what is actually signed
+                // (delegate/undelegate/redelegate = 1 msg; a batched claim =
+                // one msg per validator). Without this the user approves a fee
+                // shown as 0 while signing 7500×N (and Terra shows 0 too).
+                do {
+                    let scaledGas = try CosmosStakingConfig.scaledFeeAmountBigInt(
+                        for: transactionBuilder.coin.chain,
+                        msgCount: stakingPayload.msgCount
+                    )
+                    immutableTx = immutableTx.copy(gas: scaledGas)
+                } catch {
+                    // Unreachable for the staking-supported chains that ever
+                    // populate `cosmosStakingPayload`; log rather than swallow
+                    // so a future chain missing from the config table surfaces
+                    // here instead of silently showing a 0 fee again.
+                    logger.error(
+                        "Failed to derive staking display fee: \(error.localizedDescription, privacy: .public)"
+                    )
+                }
                 isLoading = false
                 router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
                 return

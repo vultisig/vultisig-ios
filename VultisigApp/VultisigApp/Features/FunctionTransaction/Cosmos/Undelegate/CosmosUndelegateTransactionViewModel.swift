@@ -61,9 +61,29 @@ final class CosmosUndelegateTransactionViewModel: ObservableObject, Form {
         isMaxAmount = true
     }
 
+    /// Network fee for a single `MsgUndelegate` in human-decimal coin units.
+    /// Drawn from the liquid (spendable) balance, NOT the staked pool the
+    /// `amountField` is bounded by — so it needs its own pre-flight.
+    var feeDecimal: Decimal {
+        guard let entry = try? CosmosStakingConfig.entry(for: coin.chain) else {
+            return 0
+        }
+        let divisor = pow(Decimal(10), coin.decimals)
+        return Decimal(entry.feeAmount) / divisor
+    }
+
+    /// Insufficient-fee pre-flight. The undelegate amount comes out of the
+    /// staked balance, but the fee is paid from the spendable balance — if
+    /// the user has staked nearly everything, that can be below the fee and
+    /// the chain rejects at broadcast (`code:5` insufficient funds). Fail
+    /// closed here so we never burn an MPC ceremony on it.
+    var hasSufficientBalanceForFee: Bool {
+        coin.balanceDecimal >= feeDecimal
+    }
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm else { return nil }
+        guard validForm, hasSufficientBalanceForFee else { return nil }
         return CosmosUndelegateTransactionBuilder(
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),

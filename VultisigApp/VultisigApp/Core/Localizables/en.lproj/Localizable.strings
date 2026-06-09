@@ -239,6 +239,7 @@
 "cosmosStakingErrorTooManyValidatorsToClaim" = "Withdraw rewards supports at most %d validators, got %d";
 "cosmosStakingErrorUnsupportedChain" = "Cosmos staking not supported for %@";
 "cosmosStakingErrorValidatorPreflightFailed" = "Validator address rejected by bech32 preflight: %@";
+"cosmosStakingInsufficientFeeBalance" = "Insufficient %@ to cover the network fee";
 "cosmosStakingInsufficientGas" = "Insufficient %@ for gas — claim from fewer validators";
 "cosmosStakingNextAward" = "Next Award";
 "cosmosStakingNoDelegations" = "No active delegations";

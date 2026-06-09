@@ -237,6 +237,7 @@
 "cosmosStakingErrorTooManyValidatorsToClaim" = "Il riscatto delle ricompense supporta al massimo %d validatori, ricevuti %d";
 "cosmosStakingErrorUnsupportedChain" = "Staking Cosmos non supportato per %@";
 "cosmosStakingErrorValidatorPreflightFailed" = "Indirizzo validatore rifiutato dal preflight bech32: %@";
+"cosmosStakingInsufficientFeeBalance" = "%@ insufficiente per coprire la commissione di rete";
 "cosmosStakingInsufficientGas" = "%@ insufficiente per il gas — riscatta da meno validatori";
 "cosmosStakingNextAward" = "Prossima ricompensa";
 "cosmosStakingNoDelegations" = "Nessuna delega attiva";

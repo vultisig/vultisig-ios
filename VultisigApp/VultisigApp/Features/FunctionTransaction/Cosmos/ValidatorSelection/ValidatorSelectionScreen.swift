@@ -19,6 +19,7 @@ struct ValidatorSelectionScreen: View {
     @Binding var isPresented: Bool
     @Binding var selectedValidator: CosmosValidator?
     let chainTicker: String
+    let chainDecimals: Int
     @StateObject private var viewModel: ValidatorSelectionViewModel
     /// Persist the entire picked validator (not just the address). Resolving
     /// against `filteredValidators` at confirm time would silently no-op if
@@ -30,11 +31,13 @@ struct ValidatorSelectionScreen: View {
         selectedValidator: Binding<CosmosValidator?>,
         chain: Chain,
         chainTicker: String,
+        chainDecimals: Int,
         excludedValidators: Set<String> = []
     ) {
         self._isPresented = isPresented
         self._selectedValidator = selectedValidator
         self.chainTicker = chainTicker
+        self.chainDecimals = chainDecimals
         self._viewModel = .init(wrappedValue: ValidatorSelectionViewModel(
             chain: chain,
             excludedValidators: excludedValidators
@@ -96,6 +99,7 @@ struct ValidatorSelectionScreen: View {
                 ValidatorCard(
                     validator: validator,
                     chainTicker: chainTicker,
+                    chainDecimals: chainDecimals,
                     isSelected: pickedValidator?.operatorAddress == validator.operatorAddress
                 ) {
                     pickedValidator = validator

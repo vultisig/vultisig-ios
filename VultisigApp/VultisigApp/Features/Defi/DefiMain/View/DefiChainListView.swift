@@ -66,7 +66,7 @@ struct DefiChainListView: View {
             router.navigate(to: CircleRoute.main(vault: vault))
         case .chain(let chain):
             switch chain {
-            case .thorChain, .mayaChain, .terra, .terraClassic:
+            case .thorChain, .mayaChain, .terra, .terraClassic, .qbtc:
                 router.navigate(to: VaultRoute.defiChain(chain: chain, vault: vault))
             case .tron:
                 router.navigate(to: TronRoute.main(vault: vault))

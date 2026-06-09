@@ -26,9 +26,6 @@ struct QBTCHelper {
     private static let msgSendTypeURL = "/cosmos.bank.v1beta1.MsgSend"
     private static let msgTransferTypeURL = "/ibc.applications.transfer.v1.MsgTransfer"
     private static let msgVoteTypeURL = "/cosmos.gov.v1beta1.MsgVote"
-    private static let msgDelegateTypeURL = "/cosmos.staking.v1beta1.MsgDelegate"
-    private static let msgUndelegateTypeURL = "/cosmos.staking.v1beta1.MsgUndelegate"
-    private static let msgWithdrawRewardTypeURL = "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"
 
     static func create() -> QBTCHelper {
         QBTCHelper(
@@ -97,6 +94,20 @@ struct QBTCHelper {
     }
 
     private func buildTxComponents(keysignPayload: KeysignPayload) throws -> (bodyBytes: Data, authInfoBytes: Data) {
+        // Staking ops (delegate / undelegate / redelegate / claim) ship the
+        // fully-formed TxBody + AuthInfo bytes via `signData.signDirect`, built
+        // upstream by `CosmosStakingSignDataResolver.resolveMLDSA` with the
+        // ML-DSA pubkey type URL. Those bytes round-trip through the proto, so
+        // both devices reconstruct the identical SignDoc hash. Consume them
+        // verbatim — no rebuild — to keep the signed bytes byte-exact.
+        if let signDirect = keysignPayload.signDirect {
+            guard let bodyBytes = Data(base64Encoded: signDirect.bodyBytes),
+                  let authInfoBytes = Data(base64Encoded: signDirect.authInfoBytes) else {
+                throw HelperError.runtimeError("QBTC: invalid signDirect base64 in keysign payload")
+            }
+            return (bodyBytes, authInfoBytes)
+        }
+
         guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("QBTC: fail to get account number and sequence")
         }
@@ -115,15 +126,31 @@ struct QBTCHelper {
         authInfoBytes: Data,
         keysignPayload: KeysignPayload
     ) throws -> Data {
-        guard case let .Cosmos(accountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("QBTC: fail to get account number")
+        // For staking, `chain_id` + `account_number` come from the round-tripped
+        // `signDirect` so the SignDoc is reconstructed byte-for-byte on both
+        // devices, independent of any per-device chainSpecific drift. The
+        // send/IBC/vote path reads them from chainSpecific as before.
+        let docChainID: String
+        let accountNumber: UInt64
+        if let signDirect = keysignPayload.signDirect {
+            docChainID = signDirect.chainID
+            guard let parsed = UInt64(signDirect.accountNumber) else {
+                throw HelperError.runtimeError("QBTC: invalid account number in signDirect")
+            }
+            accountNumber = parsed
+        } else {
+            guard case let .Cosmos(chainSpecificAccountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
+                throw HelperError.runtimeError("QBTC: fail to get account number")
+            }
+            docChainID = chainID
+            accountNumber = chainSpecificAccountNumber
         }
 
         // SignDoc proto: field 1 = body_bytes, field 2 = auth_info_bytes, field 3 = chain_id, field 4 = account_number
         var signDoc = Data()
         signDoc.appendProtoBytes(fieldNumber: 1, data: bodyBytes)
         signDoc.appendProtoBytes(fieldNumber: 2, data: authInfoBytes)
-        signDoc.appendProtoString(fieldNumber: 3, value: chainID)
+        signDoc.appendProtoString(fieldNumber: 3, value: docChainID)
         signDoc.appendProtoVarint(fieldNumber: 4, value: accountNumber)
         return signDoc
     }
@@ -288,71 +315,6 @@ struct QBTCHelper {
         case "NO_WITH_VETO", "NOWITHVETO": return 4
         default: return 0 // UNSPECIFIED
         }
-    }
-
-    // MARK: - Staking: MsgDelegate
-
-    func buildDelegateAny(delegator: String, validator: String, amount: String) -> Data {
-        let msg = buildMsgDelegate(delegator: delegator, validator: validator, amount: amount)
-        var anyMsg = Data()
-        anyMsg.appendProtoString(fieldNumber: 1, value: Self.msgDelegateTypeURL)
-        anyMsg.appendProtoBytes(fieldNumber: 2, data: msg)
-        return anyMsg
-    }
-
-    private func buildMsgDelegate(delegator: String, validator: String, amount: String) -> Data {
-        // Coin: field 1 = denom, field 2 = amount
-        var coin = Data()
-        coin.appendProtoString(fieldNumber: 1, value: denom)
-        coin.appendProtoString(fieldNumber: 2, value: amount)
-
-        // MsgDelegate: field 1 = delegator_address, field 2 = validator_address, field 3 = amount
-        var msg = Data()
-        msg.appendProtoString(fieldNumber: 1, value: delegator)
-        msg.appendProtoString(fieldNumber: 2, value: validator)
-        msg.appendProtoBytes(fieldNumber: 3, data: coin)
-        return msg
-    }
-
-    // MARK: - Staking: MsgUndelegate
-
-    func buildUndelegateAny(delegator: String, validator: String, amount: String) -> Data {
-        let msg = buildMsgUndelegate(delegator: delegator, validator: validator, amount: amount)
-        var anyMsg = Data()
-        anyMsg.appendProtoString(fieldNumber: 1, value: Self.msgUndelegateTypeURL)
-        anyMsg.appendProtoBytes(fieldNumber: 2, data: msg)
-        return anyMsg
-    }
-
-    private func buildMsgUndelegate(delegator: String, validator: String, amount: String) -> Data {
-        // Same structure as MsgDelegate
-        var coin = Data()
-        coin.appendProtoString(fieldNumber: 1, value: denom)
-        coin.appendProtoString(fieldNumber: 2, value: amount)
-
-        var msg = Data()
-        msg.appendProtoString(fieldNumber: 1, value: delegator)
-        msg.appendProtoString(fieldNumber: 2, value: validator)
-        msg.appendProtoBytes(fieldNumber: 3, data: coin)
-        return msg
-    }
-
-    // MARK: - Distribution: MsgWithdrawDelegatorReward
-
-    func buildWithdrawRewardAny(delegator: String, validator: String) -> Data {
-        let msg = buildMsgWithdrawReward(delegator: delegator, validator: validator)
-        var anyMsg = Data()
-        anyMsg.appendProtoString(fieldNumber: 1, value: Self.msgWithdrawRewardTypeURL)
-        anyMsg.appendProtoBytes(fieldNumber: 2, data: msg)
-        return anyMsg
-    }
-
-    private func buildMsgWithdrawReward(delegator: String, validator: String) -> Data {
-        // MsgWithdrawDelegatorReward: field 1 = delegator_address, field 2 = validator_address
-        var msg = Data()
-        msg.appendProtoString(fieldNumber: 1, value: delegator)
-        msg.appendProtoString(fieldNumber: 2, value: validator)
-        return msg
     }
 
     // MARK: - AuthInfo

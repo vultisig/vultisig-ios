@@ -29,7 +29,7 @@ struct DefiBalanceService {
             mayaChainTotalBalanceFiatDecimal(for: vault)
         case .tron:
             tronTotalBalanceFiatDecimal(for: vault)
-        case .terra, .terraClassic:
+        case .terra, .terraClassic, .qbtc:
             cosmosStakingTotalBalanceFiatDecimal(chain: chain, vault: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
@@ -50,7 +50,7 @@ struct DefiBalanceService {
             mayaChainPositionCount(for: vault)
         case .tron:
             tronPositionCount(for: vault)
-        case .terra, .terraClassic:
+        case .terra, .terraClassic, .qbtc:
             cosmosStakingPositionCount(chain: chain, vault: vault)
         default:
             defaultPositionCount(chain: chain, for: vault)

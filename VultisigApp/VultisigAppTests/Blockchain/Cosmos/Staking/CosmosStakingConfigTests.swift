@@ -82,6 +82,30 @@ final class CosmosStakingConfigTests: XCTestCase {
         XCTAssertEqual(entry.unbondingDays, 21)
     }
 
+    // MARK: - QBTC (qbtc-testnet) contract
+
+    func testIsStakingSupportedTrueForQBTC() {
+        XCTAssertTrue(CosmosStakingConfig.isStakingSupported(.qbtc))
+    }
+
+    func testQBTCEntryMatchesContract() throws {
+        let entry = try CosmosStakingConfig.entry(for: .qbtc)
+        XCTAssertEqual(entry.chainId, "qbtc-testnet")
+        // `qbtc` is lowercase and NOT a micro-denom (8 decimals) — verified on
+        // the live qbtc-testnet LCD `staking/params.bond_denom`.
+        XCTAssertEqual(entry.bondDenom, "qbtc")
+        XCTAssertEqual(entry.feeDenom, "qbtc")
+        XCTAssertEqual(entry.valoperHrp, "qbtcvaloper")
+        // gasLimit 1_000_000: on-device undelegate measured 401_486 gas (the
+        // prior 400_000 OoG'd it), redelegate is heavier, and block.max_gas is
+        // -1 (unlimited). feeAmount 800 is the qbtc-testnet `min_tx_fee` floor;
+        // since `min_gas_price` is 0 the higher gas budget does not raise the fee.
+        XCTAssertEqual(entry.gasLimit, 1_000_000)
+        XCTAssertEqual(entry.feeAmount, 800)
+        // Live LCD `unbonding_time` = 1814400s = 21 days.
+        XCTAssertEqual(entry.unbondingDays, 21)
+    }
+
     func testTerraClassicGasIsFiveTimesPhoenix() throws {
         // Empirical fact pinned by agent-app on-chain measurements — the
         // columbus-5 stability-tax / value-per-byte module bills extra gas

@@ -13,6 +13,7 @@ import SwiftUI
 struct ValidatorCard: View {
     let validator: CosmosValidator
     let chainTicker: String
+    let chainDecimals: Int
     let isSelected: Bool
     let onSelect: () -> Void
 
@@ -75,7 +76,7 @@ struct ValidatorCard: View {
     }
 
     private var votingPowerText: String {
-        let display = formatVotingPower(validator.votingPower, decimals: 6)
+        let display = formatVotingPower(validator.votingPower, decimals: chainDecimals)
         return "\(display) \(chainTicker)"
     }
 
@@ -88,9 +89,10 @@ struct ValidatorCard: View {
         return "\(formatter.string(from: nsNumber) ?? "0")%"
     }
 
-    /// Voting power arrives as base-units `Decimal` (uluna). For display we
-    /// scale down by the chain's native decimals and round to thousands so
-    /// values like "200,392 LUNA" match the Figma reference.
+    /// Voting power arrives as base-units `Decimal` (e.g. uluna for Terra,
+    /// the 8-decimal base unit for QBTC). For display we scale down by the
+    /// chain's native decimals and round to whole tokens so values like
+    /// "200,392 LUNA" match the Figma reference.
     private func formatVotingPower(_ value: Decimal, decimals: Int) -> String {
         let divisor = pow(Decimal(10), decimals)
         let scaled = value / divisor
