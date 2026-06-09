@@ -257,6 +257,7 @@
 "cosmosStakingUndelegateTitle" = "Unstake %@";
 "cosmosStakingValidatorActive" = "Active";
 "cosmosStakingValidatorChurnedOut" = "Churned Out";
+"cosmosStakingValidatorCommission" = "Commission";
 "cosmosStakingValidatorJailed" = "Jailed";
 "cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Costs";

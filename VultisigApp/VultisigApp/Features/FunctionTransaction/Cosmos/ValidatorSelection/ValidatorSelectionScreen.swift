@@ -6,11 +6,10 @@
 //  `SearchTextField` + scrollable `LazyVStack` of `ValidatorCard`s with the
 //  selected-state stroke variant.
 //
-//  Sheet-presented; tapping a row stages a local "picked" address (without
-//  dismissing) and the trailing toolbar confirm button commits the
-//  selection to the parent's `selectedValidator` binding and dismisses the
-//  sheet. This two-tap pattern matches the desktop client's
-//  `ValidatorPickerSheet`.
+//  Sheet-presented; tapping a row highlights it, then after a short delay
+//  commits the selection to the parent's `selectedValidator` binding and
+//  dismisses the sheet. The delay lets the user see the row selected before
+//  the sheet closes.
 //
 
 import SwiftUI
@@ -21,10 +20,12 @@ struct ValidatorSelectionScreen: View {
     let chainTicker: String
     let chainDecimals: Int
     @StateObject private var viewModel: ValidatorSelectionViewModel
-    /// Persist the entire picked validator (not just the address). Resolving
-    /// against `filteredValidators` at confirm time would silently no-op if
-    /// the user typed a search term that filters the picked row out.
+    /// The highlighted row. Set immediately on tap so the selection is visible
+    /// during the brief delay before the sheet dismisses.
     @State private var pickedValidator: CosmosValidator?
+    /// Drives the select-then-dismiss delay; cancelled if the user taps again
+    /// or closes the sheet before it fires.
+    @State private var selectionTask: Task<Void, Never>?
 
     init(
         isPresented: Binding<Bool>,
@@ -52,6 +53,7 @@ struct ValidatorSelectionScreen: View {
         Screen {
             VStack(spacing: 8) {
                 SearchTextField(value: $viewModel.searchText)
+                columnHeader
                 ScrollView {
                     if viewModel.isLoading {
                         loadingView
@@ -76,21 +78,27 @@ struct ValidatorSelectionScreen: View {
                     isPresented.toggle()
                 }
             }
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "check", type: .confirmation) {
-                    confirmSelection()
-                }
-                .supportsLiquidGlass { view, isSupported in
-                    view.padding(.top, isSupported ? 0 : 16)
-                }
-            }
         }
         .sheetStyle()
-        .onDisappear { viewModel.searchText = "" }
+        .onDisappear {
+            viewModel.searchText = ""
+            selectionTask?.cancel()
+        }
         .onLoad {
             pickedValidator = selectedValidator
             Task { await viewModel.load() }
         }
+    }
+
+    private var columnHeader: some View {
+        HStack {
+            Text("cosmosStakingValidatorPicker".localized)
+            Spacer()
+            Text("cosmosStakingValidatorCommission".localized)
+        }
+        .font(Theme.fonts.caption12)
+        .foregroundStyle(Theme.colors.textTertiary)
+        .padding(.horizontal, 14)
     }
 
     private var list: some View {
@@ -102,17 +110,22 @@ struct ValidatorSelectionScreen: View {
                     chainDecimals: chainDecimals,
                     isSelected: pickedValidator?.operatorAddress == validator.operatorAddress
                 ) {
-                    pickedValidator = validator
+                    select(validator)
                 }
             }
         }
         .padding(.vertical, 4)
     }
 
-    private func confirmSelection() {
-        guard let pickedValidator else { return }
-        selectedValidator = pickedValidator
-        isPresented = false
+    private func select(_ validator: CosmosValidator) {
+        pickedValidator = validator
+        selectionTask?.cancel()
+        selectionTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            selectedValidator = validator
+            isPresented = false
+        }
     }
 
     private var loadingView: some View {

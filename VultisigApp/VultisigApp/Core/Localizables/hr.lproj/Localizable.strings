@@ -255,6 +255,7 @@
 "cosmosStakingUndelegateTitle" = "Povući %@";
 "cosmosStakingValidatorActive" = "Aktivan";
 "cosmosStakingValidatorChurnedOut" = "Isključen";
+"cosmosStakingValidatorCommission" = "Provizija";
 "cosmosStakingValidatorJailed" = "Zatvoren";
 "cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Troškovi";

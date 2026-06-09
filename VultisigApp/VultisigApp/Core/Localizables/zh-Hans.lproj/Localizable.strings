@@ -255,6 +255,7 @@
 "cosmosStakingUndelegateTitle" = "取消质押 %@";
 "cosmosStakingValidatorActive" = "活跃";
 "cosmosStakingValidatorChurnedOut" = "已退出";
+"cosmosStakingValidatorCommission" = "佣金";
 "cosmosStakingValidatorJailed" = "已锁定";
 "cosmosStakingValidatorPicker" = "验证人";
 "costs" = "成本";
