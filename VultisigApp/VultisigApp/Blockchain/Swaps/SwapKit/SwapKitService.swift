@@ -196,17 +196,45 @@ struct SwapKitService {
 // MARK: - Asset identifiers
 
 extension SwapKitService {
-    /// Source-chain network fee from a SwapKit swap response, in
-    /// `fromCoin`'s raw units. SwapKit surfaces this uniformly across EVM
-    /// and non-EVM responses as the `fees[]` entry with `type == "inbound"`
-    /// and `chain` matching the source coin's canonical SwapKit prefix —
-    /// value in decimal native units (e.g. "0.000005" SOL). We pull from
-    /// that single field rather than parsing per-chain tx shapes
-    /// (EVM `gas * gasPrice`, Solana base64 compute budget, Tron/SUI/PSBT
-    /// fee math) so the same code path covers every Phase 1+ chain *and*
-    /// the gas-coin balance check in `SwapCryptoLogic.balanceError` gets a
-    /// real value to compare against.
+    /// Source-chain network fee from a SwapKit swap response, in the source
+    /// chain's native-gas-coin raw units. Feeds the verify-screen Network Fee
+    /// row, the Total Fee (fiat), and the gas-coin sufficiency check in
+    /// `SwapCryptoLogic.balanceError`.
+    ///
+    /// EVM sources derive the fee from the realised `tx.gas × tx.gasPrice`
+    /// rather than the wire `inbound` `fees[]` entry. The `inbound` amount is a
+    /// per-provider estimate: ONEINCH reports a plausible gas figure there, but
+    /// FLASHNET-on-EVM returns a near-zero placeholder (~hundreds of wei) that
+    /// renders as garbage like `0.00000000000000013 ETH` and a `$0.00` total.
+    /// `gas × gasPrice` is the value the keysign path actually commits to
+    /// (`SwapPayloadBuilder.buildEVMQuoteFromSwapKit`), so the displayed fee
+    /// matches what the user is charged for every EVM sub-provider — the same
+    /// convention KyberSwap / 1inch / LI.FI use for their own `fee` BigInt.
+    ///
+    /// Non-EVM sources keep the `inbound`-decimal path: the BTC PSBT, Solana,
+    /// and TRON fixtures all report the real native miner/network fee there as
+    /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
+        if case let .evm(tx) = response.tx {
+            return evmNetworkFee(from: tx)
+        }
+        return inboundFeeFromWire(response: response, fromCoin: fromCoin)
+    }
+
+    /// Realised EVM network fee = `gasPrice × gas` in wei, parsing the hex
+    /// `SwapKitEvmTx` fields exactly as the keysign path does. A zero/missing
+    /// `gas` falls back to `EVMHelper.defaultETHSwapGasUnit` so a route that
+    /// omits the limit still shows a representative fee instead of zero —
+    /// identical normalisation to `buildEVMQuoteFromSwapKit`.
+    func evmNetworkFee(from tx: SwapKitEvmTx) -> BigInt? {
+        let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
+        let parsedGas = BigInt(tx.gas.stripHexPrefix(), radix: 16) ?? .zero
+        let gas = parsedGas == .zero ? BigInt(EVMHelper.defaultETHSwapGasUnit) : parsedGas
+        let fee = gasPrice * gas
+        return fee == .zero ? nil : fee
+    }
+
+    private func inboundFeeFromWire(response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
         let prefix = chainPrefix(for: fromCoin.chain, fallback: fromCoin.ticker)
         guard
             let inbound = response.fees.first(where: { $0.type == "inbound" && $0.chain == prefix }),
@@ -214,11 +242,11 @@ extension SwapKitService {
         else {
             return nil
         }
-        // The inbound fee is denominated in the source chain's NATIVE gas coin (e.g. "ETH.ETH",
+        // The inbound fee is denominated in the source chain's NATIVE gas coin (e.g. "BTC.BTC",
         // "SOL.SOL"), never the sell token. Scaling by `fromCoin.decimals` under-counts the fee
-        // for an ERC-20 / SPL token source (e.g. USDC's 6 vs ETH's 18 — off by 10^12), which reads
-        // as dust on the Network Fee row and weakens the gas-coin balance check. Scale by the
-        // native coin's decimals — identical to `fromCoin.decimals` on a native-source route.
+        // for an SPL/UTXO token source (e.g. a 6-dp token vs the chain's native decimals), which
+        // reads as dust on the Network Fee row and weakens the gas-coin balance check. Scale by
+        // the native coin's decimals — identical to `fromCoin.decimals` on a native-source route.
         var scaled = amount * pow(Decimal(10), nativeDecimals(for: fromCoin))
         var rounded = Decimal()
         NSDecimalRound(&rounded, &scaled, 0, .up)

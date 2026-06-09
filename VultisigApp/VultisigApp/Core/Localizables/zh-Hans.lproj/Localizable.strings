@@ -1025,6 +1025,7 @@
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
 "swapTrackingLink" = "交换跟踪链接";
+"swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";
 "swapTXHash" = "交换交易哈希";
 "swapVerifyCheckbox1Description" = "交换金额正确";
 "swapVerifyCheckbox2Description" = "我同意我将收到的最小金额";

@@ -25,9 +25,10 @@ struct DefiChainCellView: View {
     var body: some View {
         GroupedChainCellView(
             chain: chain,
-            vault: vault,
+            address: "",
             fiatBalance: balanceFiat,
             cryptoBalance: "",
+            assetCount: 0,
             trailingSubtitleOverride: positionsSubtitle
         )
         .buttonStyle(.plain)

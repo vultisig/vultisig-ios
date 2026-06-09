@@ -1025,6 +1025,7 @@
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";
+"swapTradingHalted" = "Der Handel für diesen Vermögenswert ist vorübergehend ausgesetzt. Bitte versuche es später erneut.";
 "swapTXHash" = "Tausch-Tx-Hash";
 "swapVerifyCheckbox1Description" = "Der Tauschbetrag ist korrekt";
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalten werde";
