@@ -5,10 +5,13 @@
 //  Created by Enrique Souza on 2025-12-13.
 //
 
+import OSLog
 import SwiftUI
 import BigInt
 import WalletCore
 import VultisigCommonData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "circle-withdraw")
 
 struct CircleWithdrawView: View {
     let vault: Vault
@@ -67,7 +70,7 @@ struct CircleWithdrawView: View {
         VStack(spacing: CircleConstants.Design.verticalSpacing) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("circleWithdrawAmount".localized)
+                    Text("circleWithdrawAmountLabel".localized)
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
 
@@ -239,7 +242,7 @@ struct CircleWithdrawView: View {
                             ethAddress: recipientCoin.address
                         )
                     } catch {
-                        print("Circle create wallet error: \(error.localizedDescription)")
+                        logger.error("Circle create wallet error: \(error.localizedDescription)")
                     }
                     payload = try await attemptPayload()
                 } else {

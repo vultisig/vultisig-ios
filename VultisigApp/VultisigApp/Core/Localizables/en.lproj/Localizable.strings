@@ -192,7 +192,7 @@
 "circleSetupOpenAccount" = "Open Account";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC deposited";
-"circleWithdrawAmount" = "Amount";
+"circleWithdrawAmountLabel" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
 "claim" = "Claim";

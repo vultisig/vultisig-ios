@@ -192,7 +192,7 @@
 "circleSetupOpenAccount" = "계정 개설";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC 입금됨";
-"circleWithdrawAmount" = "금액";
+"circleWithdrawAmountLabel" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
 "claim" = "수령";
