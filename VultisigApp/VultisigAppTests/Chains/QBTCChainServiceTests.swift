@@ -150,8 +150,16 @@ final class QBTCChainServiceTests: XCTestCase {
         do {
             _ = try await service.minUtxoConfirmationBlocks()
             XCTFail("expected parse to throw on non-numeric param value")
+        } catch let error as QBTCChainServiceError {
+            // Pin the contract: callers (confirmationGated) only fail-open on
+            // *this* error, so a generic throw assertion would mask a regression
+            // that surfaced an unrelated failure here.
+            guard case .invalidParamValue(let raw) = error else {
+                return XCTFail("expected .invalidParamValue, got \(error)")
+            }
+            XCTAssertEqual(raw, "oops")
         } catch {
-            // Expected — callers (confirmationGated) treat this as fail-open.
+            XCTFail("expected QBTCChainServiceError.invalidParamValue, got \(error)")
         }
     }
 }

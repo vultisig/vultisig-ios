@@ -20,6 +20,14 @@ struct QBTCClaimableUtxosResult {
     let btcTipHeight: UInt32?
 }
 
+enum QBTCClaimableUtxosError: Error {
+    /// Blockchair returned a response that lacks the requested address key.
+    /// Treated as a fetch/normalization failure (propagated) rather than an
+    /// empty UTXO set, so a backend hiccup can't masquerade as "nothing to
+    /// claim".
+    case missingAddressData(String)
+}
+
 extension BlockchairService {
     /// Fetches the unspent Bitcoin UTXOs at `address`, adapts them to
     /// `ClaimableUtxo`, and surfaces the chain tip height from the same
@@ -38,8 +46,13 @@ extension BlockchairService {
         address: String
     ) async throws -> QBTCClaimableUtxosResult {
         let response = try await fetchBlockchairResponse(coin: bitcoinCoin, address: address)
-        let blockchair = response.data[address]
-        let utxos = (blockchair?.utxo ?? []).compactMap(ClaimableUtxo.init(blockchair:))
+        // A missing address key means the fetch/normalization failed, not that
+        // the address has zero UTXOs — surface it as an error so the claim flow
+        // can fail-closed instead of telling the user there's nothing to claim.
+        guard let blockchair = response.data[address] else {
+            throw QBTCClaimableUtxosError.missingAddressData(address)
+        }
+        let utxos = (blockchair.utxo ?? []).compactMap(ClaimableUtxo.init(blockchair:))
         let tip = response.context?.state.flatMap { $0 > 0 ? UInt32(exactly: $0) : nil }
         return QBTCClaimableUtxosResult(utxos: utxos, btcTipHeight: tip)
     }

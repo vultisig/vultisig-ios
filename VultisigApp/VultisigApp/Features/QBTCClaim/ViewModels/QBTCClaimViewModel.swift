@@ -367,7 +367,7 @@ final class QBTCClaimViewModel: ObservableObject {
         // broadcast fail with "no valid claimable UTXOs found"). Fail-open if
         // the param fetch fails — hiding a genuinely-confirmed UTXO over a
         // transient param error is worse UX than letting the chain reject it.
-        let confirmed = await confirmationGated(blockchairUtxos, btcTipHeight: result.btcTipHeight)
+        let confirmed = await chainService.confirmationGated(blockchairUtxos, btcTipHeight: result.btcTipHeight)
 
         // Drop already-claimed (entitled_amount=0) and not-yet-indexed (404)
         // entries before showing them to the user. Fails open on transient
@@ -380,27 +380,6 @@ final class QBTCClaimViewModel: ObservableObject {
         // raw UTXOs but the confirmation gate removed all of them.
         let emptiedByConfirmationGate = !blockchairUtxos.isEmpty && confirmed.isEmpty
         return FetchedUtxos(utxos: filtered, emptiedByConfirmationGate: emptiedByConfirmationGate)
-    }
-
-    /// Applies the confirmation gate. Fetches `MinUtxoConfirmationBlocks` and
-    /// drops under-confirmed UTXOs; on a param-fetch failure returns the input
-    /// unchanged (fail-open, consistent with `filterClaimable`).
-    private func confirmationGated(
-        _ utxos: [ClaimableUtxo],
-        btcTipHeight: UInt32?
-    ) async -> [ClaimableUtxo] {
-        guard !utxos.isEmpty else { return utxos }
-        do {
-            let minConfirmations = try await chainService.minUtxoConfirmationBlocks()
-            return chainService.filterSufficientlyConfirmed(
-                utxos,
-                btcTipHeight: btcTipHeight,
-                minConfirmations: minConfirmations
-            )
-        } catch {
-            logger.warning("MinUtxoConfirmationBlocks fetch failed — skipping confirmation gate (fail-open): \(error.localizedDescription)")
-            return utxos
-        }
     }
 
     // MARK: - Snapshot test seeding
