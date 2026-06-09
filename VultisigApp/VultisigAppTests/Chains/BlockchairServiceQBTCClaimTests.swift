@@ -63,6 +63,43 @@ final class BlockchairServiceQBTCClaimTests: XCTestCase {
         XCTAssertEqual(utxo.blockHeight, 952_734)
     }
 
+    // MARK: - Missing chain tip ⇒ nil height, UTXOs still returned
+
+    /// When Blockchair omits `context` (or `context.state`), the tip is
+    /// unknown: `btcTipHeight` must be `nil` while the UTXOs still come
+    /// through. The downstream confirmation gate then fails open — see
+    /// `QBTCChainService.filterSufficientlyConfirmed`.
+    func testFetchReturnsNilTipWhenContextMissing() async throws {
+        let body = """
+        {
+          "data": {
+            "\(Self.address)": {
+              "utxo": [
+                {
+                  "block_id": 952734,
+                  "transaction_hash": "\(Self.txid)",
+                  "index": 0,
+                  "value": 50000
+                }
+              ]
+            }
+          }
+        }
+        """
+        let service = BlockchairService(httpClient: StubJSONHTTPClient(body: body))
+
+        let result = try await service.fetchQBTCClaimableUtxos(
+            bitcoinCoin: makeBtcCoinMeta(),
+            address: Self.address
+        )
+
+        XCTAssertNil(result.btcTipHeight)
+        XCTAssertEqual(result.utxos.count, 1)
+        let utxo = try XCTUnwrap(result.utxos.first)
+        XCTAssertEqual(utxo.txid, Self.txid)
+        XCTAssertEqual(utxo.amount, 50_000)
+    }
+
     // MARK: - Missing address ⇒ throw (don't mask as empty set)
 
     /// A response whose `data` map lacks the requested address key is a
