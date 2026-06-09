@@ -284,7 +284,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     func testGetExplorerURLReturnsQbtcExplorerURL() {
         XCTAssertEqual(
             ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash),
-            "https://explorer.qbtc.net/tx/\(txHash)"
+            "https://explorer.qbtc.net/qbtc/tx/\(txHash)"
         )
     }
 

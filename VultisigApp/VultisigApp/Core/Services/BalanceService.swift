@@ -400,11 +400,11 @@ private extension BalanceService {
                 return "0"
             }
 
-        case .terra, .terraClassic:
-            // LUNA / LUNC delegations are the DeFi position. Sum the per-validator
-            // balances (all returned in the chain's staking denom, base units) so
-            // `DefiBalanceService` can roll them into the vault-wide DeFi total
-            // without re-fetching. Non-native tokens on Terra don't stake.
+        case .terra, .terraClassic, .qbtc:
+            // LUNA / LUNC / QBTC delegations are the DeFi position. Sum the
+            // per-validator balances (all returned in the chain's staking denom,
+            // base units) so `DefiBalanceService` can roll them into the
+            // vault-wide DeFi total without re-fetching. Only native tokens stake.
             guard identifier.isNativeToken else { return nil }
             do {
                 let delegations = try await CosmosStakingService().fetchDelegations(
@@ -416,7 +416,7 @@ private extension BalanceService {
                     .reduce(Decimal.zero, +)
                 return total.description
             } catch {
-                logger.warning("Failed to fetch Terra delegations for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
+                logger.warning("Failed to fetch Cosmos delegations for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
                 return nil
             }
 

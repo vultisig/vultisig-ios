@@ -35,6 +35,7 @@ struct CosmosRedelegateTransactionScreen: View {
         FormScreen(
             title: String(format: "cosmosStakingRedelegateTitle".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
+            isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {
             if let cooldownMessage = viewModel.cooldownBlockedMessage {
@@ -68,6 +69,10 @@ struct CosmosRedelegateTransactionScreen: View {
                     onTap: { showValidatorPicker = true },
                     valueView: { selectedDestinationPreview }
                 )
+
+                if !viewModel.hasSufficientBalanceForFee {
+                    InsufficientFeeNotice(ticker: viewModel.coin.ticker)
+                }
             }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
@@ -76,6 +81,7 @@ struct CosmosRedelegateTransactionScreen: View {
                 selectedValidator: $viewModel.selectedDstValidator,
                 chain: viewModel.coin.chain,
                 chainTicker: viewModel.coin.ticker,
+                chainDecimals: viewModel.coin.decimals,
                 excludedValidators: viewModel.excludedDstValidators
             )
         }

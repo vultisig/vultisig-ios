@@ -75,7 +75,9 @@ struct DefiChainBalanceView: View {
     var imageView: some View {
         switch chain {
         case .terra, .terraClassic:
-            terraIconOverlay
+            cosmosStakingIconOverlay(logo: "luna")
+        case .qbtc:
+            cosmosStakingIconOverlay(logo: "qbtc")
         default:
             Image(imageName)
                 .resizable()
@@ -83,9 +85,9 @@ struct DefiChainBalanceView: View {
         }
     }
 
-    private var terraIconOverlay: some View {
+    private func cosmosStakingIconOverlay(logo: String) -> some View {
         ZStack {
-            Image("luna")
+            Image(logo)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 130, height: 130)

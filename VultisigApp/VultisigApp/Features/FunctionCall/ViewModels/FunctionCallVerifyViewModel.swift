@@ -104,11 +104,24 @@ class FunctionCallVerifyViewModel: ObservableObject {
             // carrying the proto-encoded Cosmos staking message instead, or
             // the chain rejects with a bech32-prefix mismatch on the
             // validator address. Mirrors `SendCryptoVerifyLogic`.
+            //
+            // Both secp256k1 chains and QBTC ship the SignDoc via
+            // `signData.signDirect` — it's the one field that round-trips
+            // through the proto, so the peer device rebuilds the identical
+            // SignDoc hash. The only difference is the AuthInfo pubkey type:
+            // QBTC's resolver path stamps `/cosmos.crypto.mldsa.PubKey`
+            // (post-quantum) instead of secp256k1, and `QBTCHelper` consumes
+            // those `signDirect` bytes directly rather than via WalletCore.
             if tx.cosmosStakingPayload != nil {
-                let signDirect = try CosmosStakingSignDataResolver.resolve(
-                    sendTransaction: tx,
-                    chainSpecific: chainSpecific
-                )
+                let signDirect = tx.coin.chain == .qbtc
+                    ? try CosmosStakingSignDataResolver.resolveMLDSA(
+                        sendTransaction: tx,
+                        chainSpecific: chainSpecific
+                    )
+                    : try CosmosStakingSignDataResolver.resolve(
+                        sendTransaction: tx,
+                        chainSpecific: chainSpecific
+                    )
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 

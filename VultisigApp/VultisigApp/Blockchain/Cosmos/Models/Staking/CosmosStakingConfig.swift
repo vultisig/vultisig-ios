@@ -13,6 +13,7 @@
 //  promotes it into the staking-allowlist semantics (`isStakingSupported`).
 //
 
+import BigInt
 import Foundation
 
 enum CosmosStakingConfig {
@@ -72,6 +73,37 @@ enum CosmosStakingConfig {
             gasLimit: 2_000_000,
             feeAmount: 133_333_334,
             unbondingDays: 21
+        ),
+        // QBTC (post-quantum) is a Cosmos-SDK chain that signs with ML-DSA, not
+        // secp256k1, so it takes the `CosmosStakingSignDataResolver.resolveMLDSA`
+        // branch (NOT the secp256k1 `.resolve`): that branch skips the 33-byte
+        // secp256k1 pubkey guard and stamps `/cosmos.crypto.mldsa.PubKey`, then
+        // shares the same `buildSignDirect` AuthInfo/TxBody path. `QBTCHelper`
+        // consumes the resulting `signDirect` bytes verbatim. So QBTC's signed
+        // gas / fee come from THIS entry via the resolver, same as the Terra
+        // chains. This entry is also the single source of truth for denom /
+        // valoper-prefix / gas / fee / unbonding everywhere else (read surfaces,
+        // balance preflight, validator bech32 preflight). `bondDenom` is
+        // lowercase `qbtc` (8 decimals, NOT a micro-denom).
+        //
+        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc-testnet are constant
+        // / un-queryable ante values, so the fee floor is the flat `min_tx_fee`
+        // (800) and the only dynamic dimension is the gas_limit. `gasLimit` is
+        // 1_000_000: an on-device undelegate measured 401_486 gas (the prior
+        // 400_000 OoG'd it), redelegate is heavier still, and the chain's
+        // `block.max_gas` is -1 (unlimited). Because `min_gas_price` is 0 the fee
+        // is decoupled from gas, so a generous limit that never OoGs costs
+        // nothing — better than inching it up per message type.
+        // `feeAmount` is the 800 `min_tx_fee` floor (the prior 7_500 was the
+        // carried-over generic Cosmos send default, ~9x the floor).
+        .qbtc: Entry(
+            chainId: "qbtc-testnet",
+            bondDenom: "qbtc",
+            feeDenom: "qbtc",
+            valoperHrp: "qbtcvaloper",
+            gasLimit: 1_000_000,
+            feeAmount: 800,
+            unbondingDays: 21
         )
     ]
 
@@ -112,6 +144,30 @@ enum CosmosStakingConfig {
 
     static func unbondingDays(for chain: Chain) throws -> Int {
         try entry(for: chain).unbondingDays
+    }
+
+    // MARK: - Linear gas / fee scaling
+
+    // Single source of truth for the `base × msgCount` scaling. Both the
+    // SignDoc resolver (the SIGNED fee baked into AuthInfo) and the verify
+    // screen (the DISPLAYED / balance-preflighted fee) call these, so the
+    // shown fee can never drift from the signed one. A single-msg flow uses
+    // msgCount 1, which collapses to the per-chain base values; a batched
+    // withdraw-rewards tx scales by its validator count. msgCount is clamped
+    // to >= 1 to mirror the resolver's `max(msgsAny.count, 1)`.
+
+    static func scaledGasLimit(for chain: Chain, msgCount: Int) throws -> UInt64 {
+        try gasLimit(for: chain) * UInt64(max(msgCount, 1))
+    }
+
+    static func scaledFeeAmount(for chain: Chain, msgCount: Int) throws -> UInt64 {
+        try feeAmount(for: chain) * UInt64(max(msgCount, 1))
+    }
+
+    /// Scaled fee as `BigInt`, for `SendTransaction.gas` (the value the verify
+    /// screen renders via `gasInReadable` and prices via `feesInReadable`).
+    static func scaledFeeAmountBigInt(for chain: Chain, msgCount: Int) throws -> BigInt {
+        BigInt(try scaledFeeAmount(for: chain, msgCount: msgCount))
     }
 }
 

@@ -41,6 +41,8 @@ struct DefiPositionsService {
             [TokensStore.luna]
         case .terraClassic:
             [TokensStore.lunc]
+        case .qbtc:
+            [TokensStore.qbtc]
         default:
             []
         }

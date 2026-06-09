@@ -208,7 +208,7 @@ enum ExplorerLinkBuilder {
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
         case .qbtc:
-            return "https://explorer.qbtc.net/tx/\(txid)"
+            return "https://explorer.qbtc.net/qbtc/tx/\(txid)"
         }
     }
 

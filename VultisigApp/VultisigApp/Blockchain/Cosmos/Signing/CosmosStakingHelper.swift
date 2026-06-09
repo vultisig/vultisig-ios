@@ -134,7 +134,12 @@ enum CosmosStakingHelper {
         return txBody
     }
 
-    /// Builds the `AuthInfo` for a single-signer secp256k1 tx in SIGN_MODE_DIRECT.
+    /// Builds the `AuthInfo` for a single-signer tx in SIGN_MODE_DIRECT.
+    ///
+    /// `pubKeyTypeURL` defaults to secp256k1 (the Terra path). QBTC passes the
+    /// ML-DSA URL (`/cosmos.crypto.mldsa.PubKey`) so the post-quantum signing
+    /// path reuses this single AuthInfo encoder rather than maintaining a
+    /// divergent copy — only the inner `Any` type URL differs by scheme.
     ///
     /// AuthInfo wire shape: `{ signer_infos(1, repeated), fee(2) }`.
     /// SignerInfo: `{ public_key(1, Any), mode_info(2), sequence(3) }`.
@@ -145,9 +150,10 @@ enum CosmosStakingHelper {
         sequence: UInt64,
         gasLimit: UInt64,
         feeDenom: String,
-        feeAmount: UInt64
+        feeAmount: UInt64,
+        pubKeyTypeURL: String = CosmosStakingHelper.pubKeyTypeURL
     ) -> Data {
-        // Inner secp256k1.PubKey: { key(1, bytes) }
+        // Inner PubKey: { key(1, bytes) }
         var pubKeyInner = Data()
         pubKeyInner.appendProtoBytes(fieldNumber: 1, data: pubKey)
 

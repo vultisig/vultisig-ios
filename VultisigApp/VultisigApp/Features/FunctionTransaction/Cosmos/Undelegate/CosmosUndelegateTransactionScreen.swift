@@ -35,6 +35,7 @@ struct CosmosUndelegateTransactionScreen: View {
         FormScreen(
             title: String(format: "cosmosStakingUndelegateTitle".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
+            isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {
             FormExpandableSection(
@@ -57,6 +58,10 @@ struct CosmosUndelegateTransactionScreen: View {
                     percentage: $percentageSelected
                 )
                 .focused($focusedField, equals: .amount)
+            }
+
+            if !viewModel.hasSufficientBalanceForFee {
+                InsufficientFeeNotice(ticker: viewModel.coin.ticker)
             }
         }
         .onLoad {
