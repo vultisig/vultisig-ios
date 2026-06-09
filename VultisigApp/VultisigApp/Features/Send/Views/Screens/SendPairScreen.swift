@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SendPairScreen: View {
     @Environment(\.router) var router
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
     let tx: SendTransaction
@@ -18,34 +17,13 @@ struct SendPairScreen: View {
     let fastVaultPassword: String?
 
     var body: some View {
-        Screen {
-            KeysignDiscoveryView(
-                vault: vault,
-                keysignPayload: keysignPayload,
-                customMessagePayload: nil,
-                fastVaultPassword: fastVaultPassword,
-                shareSheetViewModel: shareSheetViewModel,
-                previewType: .Send,
-                contentPadding: 0
-            ) { input in
-                router.navigate(to: SendRoute.keysign(input: input, tx: tx, retrySignal: retrySignal))
-            }
-        }
-        .screenTitle("pair".localized)
-        .if(fastVaultPassword != nil) {
-            $0
-                .screenNavigationBarHidden(true)
-                .screenEdgeInsets(.zero)
-        }
-        .screenToolbar {
-            CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
-                .showIf(fastVaultPassword == nil)
-            }
+        PairScreen(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            fastVaultPassword: fastVaultPassword,
+            previewType: .Send
+        ) { input in
+            router.navigate(to: SendRoute.keysign(input: input, tx: tx, retrySignal: retrySignal))
         }
     }
 }

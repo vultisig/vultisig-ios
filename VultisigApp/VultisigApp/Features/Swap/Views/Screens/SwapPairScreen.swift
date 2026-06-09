@@ -7,7 +7,6 @@ import SwiftUI
 
 struct SwapPairScreen: View {
     @Environment(\.router) var router
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
     let transaction: SwapTransaction
@@ -16,35 +15,14 @@ struct SwapPairScreen: View {
     let fastVaultPassword: String?
 
     var body: some View {
-        Screen {
-            KeysignDiscoveryView(
-                vault: vault,
-                keysignPayload: keysignPayload,
-                customMessagePayload: nil,
-                fastVaultPassword: fastVaultPassword,
-                shareSheetViewModel: shareSheetViewModel,
-                previewType: .Swap,
-                swapTransaction: transaction,
-                contentPadding: 0
-            ) { input in
-                router.navigate(to: SwapRoute.keysign(input: input, transaction: transaction, retrySignal: retrySignal))
-            }
-        }
-        .screenTitle("pair".localized)
-        .if(fastVaultPassword != nil) {
-            $0
-                .screenNavigationBarHidden(true)
-                .screenEdgeInsets(.zero)
-        }
-        .screenToolbar {
-            CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
-                .showIf(fastVaultPassword == nil)
-            }
+        PairScreen(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            fastVaultPassword: fastVaultPassword,
+            previewType: .Swap,
+            swapTransaction: transaction
+        ) { input in
+            router.navigate(to: SwapRoute.keysign(input: input, transaction: transaction, retrySignal: retrySignal))
         }
     }
 }
