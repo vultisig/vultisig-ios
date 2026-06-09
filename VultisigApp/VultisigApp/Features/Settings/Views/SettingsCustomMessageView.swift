@@ -12,7 +12,6 @@ struct SettingsCustomMessageView: View {
     @Environment(\.dismiss) var dismiss
 
     @StateObject var viewModel = SettingsCustomMessageViewModel()
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
     @State var method: String = .empty
@@ -130,12 +129,12 @@ struct SettingsCustomMessageView: View {
     }
 
     var pair: some View {
-        KeysignDiscoveryView(
+        PairScreen(
             vault: vault,
-            keysignPayload: nil,
             customMessagePayload: customMessagePayload,
             fastVaultPassword: fastVaultPassword.nilIfEmpty,
-            shareSheetViewModel: shareSheetViewModel
+            title: viewModel.state.title,
+            isShareButtonVisible: !vault.isFastVault
         ) { input in
             self.keysignView = KeysignView(
                 vault: input.vault,
@@ -151,16 +150,6 @@ struct SettingsCustomMessageView: View {
                 isInitiateDevice: input.isInitiateDevice
             )
             viewModel.moveToNextView()
-        }
-        .crossPlatformToolbar(viewModel.state.title) {
-            CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
-                .showIf(!vault.isFastVault)
-            }
         }
     }
 
