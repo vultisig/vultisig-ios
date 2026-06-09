@@ -10,6 +10,16 @@ import WalletCore
 
 struct BlockchairResponse: Codable {
 	let data: [String: Blockchair]
+	/// Request-level metadata. `context.state` is the height of the latest
+	/// block Blockchair has indexed — i.e. the current chain tip — which the
+	/// QBTC claim flow uses to compute per-UTXO confirmations. Optional so
+	/// older/partial payloads (and existing decode tests) keep decoding.
+	let context: Context?
+
+	struct Context: Codable {
+		/// Latest indexed block height (chain tip).
+		let state: Int?
+	}
 }
 
 struct Blockchair: Codable {

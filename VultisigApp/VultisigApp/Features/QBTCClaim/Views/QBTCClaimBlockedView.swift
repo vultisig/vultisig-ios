@@ -40,6 +40,8 @@ struct QBTCClaimBlockedView: View {
             return "questionmark.circle.fill"
         case .noUtxos:
             return "tray.fill"
+        case .awaitingConfirmations:
+            return "clock.fill"
         }
     }
 
@@ -55,6 +57,8 @@ struct QBTCClaimBlockedView: View {
             return "qbtcClaimFailedToLoadTitle".localized
         case .noUtxos:
             return "qbtcClaimNoUtxosTitle".localized
+        case .awaitingConfirmations:
+            return "qbtcClaimAwaitingConfirmationsTitle".localized
         }
     }
 
@@ -70,6 +74,8 @@ struct QBTCClaimBlockedView: View {
             return message
         case .noUtxos:
             return "qbtcClaimNoUtxosDetail".localized
+        case .awaitingConfirmations:
+            return "qbtcClaimAwaitingConfirmationsDetail".localized
         }
     }
 }

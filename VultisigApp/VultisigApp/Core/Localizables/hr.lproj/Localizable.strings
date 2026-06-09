@@ -732,6 +732,8 @@
 "psbtTransactionDetails" = "Detalji transakcije (PSBT)";
 "pushNotifications" = "Push obavijesti";
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
+"qbtcClaimAwaitingConfirmationsDetail" = "Tvoji Bitcoin UTXO-i trebaju više potvrda prije nego ih je moguće zahtijevati. Provjeri ponovno kasnije.";
+"qbtcClaimAwaitingConfirmationsTitle" = "Čeka se potvrde";
 "qbtcClaimBannerCta" = "Polaži sada";
 "qbtcClaimBannerSubtitle" = "Isti Bitcoin. Kvantno siguran.";
 "qbtcClaimBannerTitle" = "Polaži svoj QBTC";

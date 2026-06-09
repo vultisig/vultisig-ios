@@ -733,6 +733,8 @@
 "psbtTransactionDetails" = "交易详情 (PSBT)";
 "pushNotifications" = "推送通知";
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
+"qbtcClaimAwaitingConfirmationsDetail" = "您的 Bitcoin UTXO 需要更多确认才能认领。请稍后再查看。";
+"qbtcClaimAwaitingConfirmationsTitle" = "等待确认";
 "qbtcClaimBannerCta" = "立即领取";
 "qbtcClaimBannerSubtitle" = "同样的比特币，量子安全。";
 "qbtcClaimBannerTitle" = "领取你的 QBTC";

@@ -732,6 +732,8 @@
 "psbtTransactionDetails" = "Detalhes da transação (PSBT)";
 "pushNotifications" = "Notificações push";
 "pushNotificationsDescription" = "Receba notificações quando sua assinatura for necessária ou um dispositivo solicitar acesso.";
+"qbtcClaimAwaitingConfirmationsDetail" = "Seus UTXOs de Bitcoin precisam de mais confirmações antes de poderem ser resgatados. Volte a verificar mais tarde.";
+"qbtcClaimAwaitingConfirmationsTitle" = "Aguardando confirmações";
 "qbtcClaimBannerCta" = "Reivindicar agora";
 "qbtcClaimBannerSubtitle" = "O mesmo Bitcoin. Quântico-seguro.";
 "qbtcClaimBannerTitle" = "Reivindique seu QBTC";

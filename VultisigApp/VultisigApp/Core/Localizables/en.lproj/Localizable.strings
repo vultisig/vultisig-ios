@@ -739,6 +739,8 @@
 "psbtTransactionDetails" = "Transaction Details (PSBT)";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
+"qbtcClaimAwaitingConfirmationsDetail" = "Your Bitcoin UTXOs need more confirmations before they can be claimed. Please check back later.";
+"qbtcClaimAwaitingConfirmationsTitle" = "Awaiting confirmations";
 "qbtcClaimBannerCta" = "Claim Now";
 "qbtcClaimBannerSubtitle" = "Same Bitcoin. Quantum-safe.";
 "qbtcClaimBannerTitle" = "Claim your QBTC";

@@ -25,20 +25,27 @@ actor BlockchairService {
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
 
     func fetchBlockchairData(coin: CoinMeta, address: String) async throws -> Blockchair {
-        let coinName = coin.chain.name.lowercased()
+        let response = try await fetchBlockchairResponse(coin: coin, address: address)
 
-        let response = try await httpClient.request(
-            BlockchairAPI.dashboard(address: address, chain: coinName),
-            responseType: BlockchairResponse.self
-        )
-
-        guard let d = response.data.data[address] else {
+        guard let d = response.data[address] else {
             throw Errors.fetchBlockchairDataFailed
         }
 
         blockchairData.set(blockchairKey(for: coin, address: address), d)
 
         return d
+    }
+
+    /// Fetches the full Blockchair dashboard response (data + request
+    /// `context`). `fetchBlockchairData` wraps this to return only the
+    /// per-address entry; the QBTC claim flow uses the raw response to read
+    /// `context.state` (the chain tip) for confirmation counting.
+    func fetchBlockchairResponse(coin: CoinMeta, address: String) async throws -> BlockchairResponse {
+        let coinName = coin.chain.name.lowercased()
+        return try await httpClient.request(
+            BlockchairAPI.dashboard(address: address, chain: coinName),
+            responseType: BlockchairResponse.self
+        ).data
     }
 
     func blockchairKey(for coin: CoinMeta, address: String) -> String {

@@ -38,6 +38,9 @@ enum QBTCClaimBlockedReason: Hashable {
     case utxoFetchFailed(message: String)
     /// Address has no claimable UTXOs.
     case noUtxos
+    /// Address has UTXOs but every one is still below the chain's
+    /// `MinUtxoConfirmationBlocks` threshold — claimable once they confirm.
+    case awaitingConfirmations
 }
 
 /// Identifier used for selection-state Set lookup.
@@ -209,13 +212,17 @@ final class QBTCClaimViewModel: ObservableObject {
                 return
             }
 
-            self.utxos = fetchedUtxos
+            self.utxos = fetchedUtxos.utxos
             // Reconcile selection against the freshly fetched set so a
             // reload that drops UTXOs doesn't leave stale ids selected.
-            let validIds = Set(fetchedUtxos.map(\.id))
+            let validIds = Set(fetchedUtxos.utxos.map(\.id))
             selectedIds.formIntersection(validIds)
-            if fetchedUtxos.isEmpty {
-                state = .blocked(reason: .noUtxos)
+            if fetchedUtxos.utxos.isEmpty {
+                // Distinguish "everything is still under-confirmed" (retry
+                // later) from "genuinely nothing to claim".
+                state = .blocked(reason: fetchedUtxos.emptiedByConfirmationGate
+                    ? .awaitingConfirmations
+                    : .noUtxos)
             } else {
                 state = .selecting
             }
@@ -338,19 +345,41 @@ final class QBTCClaimViewModel: ObservableObject {
 
     // MARK: - Private
 
-    private func fetchUtxos(btcCoin: Coin) async throws -> [ClaimableUtxo] {
-        let blockchairUtxos = try await blockchairService.fetchQBTCClaimableUtxos(
+    /// Result of the UTXO fetch + filtering pipeline. `emptiedByConfirmationGate`
+    /// lets `load()` show an "awaiting confirmations" banner instead of the
+    /// generic "nothing to claim" one when the *only* reason the list is empty
+    /// is that every UTXO is still under-confirmed.
+    private struct FetchedUtxos {
+        let utxos: [ClaimableUtxo]
+        let emptiedByConfirmationGate: Bool
+    }
+
+    private func fetchUtxos(btcCoin: Coin) async throws -> FetchedUtxos {
+        let result = try await blockchairService.fetchQBTCClaimableUtxos(
             bitcoinCoin: btcCoin.toCoinMeta(),
             address: btcCoin.address
         )
+        let blockchairUtxos = result.utxos
+
+        // Confirmation gate: the chain only accepts a claim once the UTXO has
+        // `MinUtxoConfirmationBlocks` BTC confirmations, so hide UTXOs below
+        // that threshold (the user would otherwise pick one and have the
+        // broadcast fail with "no valid claimable UTXOs found"). Fail-open if
+        // the param fetch fails — hiding a genuinely-confirmed UTXO over a
+        // transient param error is worse UX than letting the chain reject it.
+        let confirmed = await chainService.confirmationGated(blockchairUtxos, btcTipHeight: result.btcTipHeight)
+
         // Drop already-claimed (entitled_amount=0) and not-yet-indexed (404)
         // entries before showing them to the user. Fails open on transient
         // chain errors — see `QBTCChainService.filterClaimable`.
-        let filtered = await chainService.filterClaimable(blockchairUtxos)
+        let filtered = await chainService.filterClaimable(confirmed)
         if filtered.count != blockchairUtxos.count {
-            logger.debug("Filtered QBTC UTXOs: blockchair=\(blockchairUtxos.count, privacy: .public) claimable=\(filtered.count, privacy: .public)")
+            logger.debug("Filtered QBTC UTXOs: blockchair=\(blockchairUtxos.count, privacy: .public) confirmed=\(confirmed.count, privacy: .public) claimable=\(filtered.count, privacy: .public)")
         }
-        return filtered
+        // The list is empty *purely* because of confirmations when there were
+        // raw UTXOs but the confirmation gate removed all of them.
+        let emptiedByConfirmationGate = !blockchairUtxos.isEmpty && confirmed.isEmpty
+        return FetchedUtxos(utxos: filtered, emptiedByConfirmationGate: emptiedByConfirmationGate)
     }
 
     // MARK: - Snapshot test seeding
