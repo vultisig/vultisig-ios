@@ -44,10 +44,8 @@ extension BlockaidTransactionScanResponseJson {
         let riskLevel = result.validation.toSolanaValidationRiskLevel()
         let isSecure = riskLevel == .noRisk || riskLevel == .low
 
-        var description: String?
-        if isSecure {
-            description = result.validation.features.prefix(3).joined(separator: "\n")
-        }
+        let summary = result.validation.features.prefix(3).joined(separator: "\n")
+        let description: String? = isSecure || summary.isEmpty ? nil : summary
 
         let warnings = result.validation.extendedFeatures.map { extendedFeature in
             SecurityWarning(
@@ -122,9 +120,8 @@ extension BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.BlockaidS
         let riskLevel = toSolanaValidationRiskLevel()
         let isSecure = riskLevel == .noRisk || riskLevel == .low
 
-        let description: String? = isSecure
-            ? features.prefix(3).joined(separator: "\n")
-            : nil
+        let summary = features.prefix(3).joined(separator: "\n")
+        let description: String? = isSecure || summary.isEmpty ? nil : summary
 
         let warnings = extendedFeatures.map { feature in
             SecurityWarning(
