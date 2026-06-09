@@ -52,6 +52,7 @@ struct ValidatorSelectionScreen: View {
         Screen {
             VStack(spacing: 8) {
                 SearchTextField(value: $viewModel.searchText)
+                columnHeader
                 ScrollView {
                     if viewModel.isLoading {
                         loadingView
@@ -85,12 +86,23 @@ struct ValidatorSelectionScreen: View {
                 }
             }
         }
-        .sheetStyle()
+        .sheetStyle(fullScreen: true)
         .onDisappear { viewModel.searchText = "" }
         .onLoad {
             pickedValidator = selectedValidator
             Task { await viewModel.load() }
         }
+    }
+
+    private var columnHeader: some View {
+        HStack {
+            Text("cosmosStakingValidatorPicker".localized)
+            Spacer()
+            Text("cosmosStakingValidatorCommission".localized)
+        }
+        .font(Theme.fonts.caption12)
+        .foregroundStyle(Theme.colors.textTertiary)
+        .padding(.horizontal, 14)
     }
 
     private var list: some View {

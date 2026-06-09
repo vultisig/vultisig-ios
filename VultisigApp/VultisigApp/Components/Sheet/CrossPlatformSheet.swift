@@ -8,8 +8,11 @@
 import SwiftUI
 
 extension View {
-    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
-        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, sheetContent: sheetContent))
+    /// - Parameter fullScreen: iOS-only. When `true`, the sheet is presented as
+    ///   a `.fullScreenCover` (edge-to-edge, no parent peek) instead of a
+    ///   detented `.sheet`. The macOS presentation is unaffected.
+    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, fullScreen: Bool = false, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
+        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, fullScreen: fullScreen, sheetContent: sheetContent))
     }
 
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) -> some View {
@@ -21,6 +24,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
 
     let isDismissable: Bool
+    let fullScreen: Bool
     var sheetContent: () -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -29,9 +33,10 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @State private var internalIsPresented: Bool = false
     @State private var dismissTask: Task<Void, Never>?
 
-    init(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+    init(isPresented: Binding<Bool>, isDismissable: Bool = true, fullScreen: Bool = false, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
         self.isDismissable = isDismissable
+        self.fullScreen = fullScreen
         self.sheetContent = sheetContent
     }
 
@@ -43,7 +48,11 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
             customSheet(content: content)
         }
         #else
-        nativeSheet(content: content)
+        if fullScreen {
+            fullScreenCoverSheet(content: content)
+        } else {
+            nativeSheet(content: content)
+        }
         #endif
     }
 
@@ -98,20 +107,42 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                     .interactiveDismissDisabled(!isDismissable)
             }
             .onChange(of: isPresented) { _, newValue in
-                // Defer state updates to avoid interfering with sheet animation on macOS 15.5
-                Task { @MainActor in
-                    if newValue {
-                        counterManager.increment()
-                        counter = counterManager.counter
-                    } else {
-                        if counter == 1 {
-                            counterManager.resetCounter()
-                        } else {
-                            counterManager.decrement()
-                        }
-                    }
+                updateSheetCounter(isPresented: newValue)
+            }
+    }
+
+    #if os(iOS)
+    /// Full-screen variant: presents via `.fullScreenCover` so the sheet covers
+    /// the parent edge-to-edge (no peek). Mirrors `nativeSheet`'s environment
+    /// injection and counter bookkeeping so the toolbar/title (gated on
+    /// `\.isSheetPresented`) and the presented-sheet blur behave identically.
+    func fullScreenCoverSheet(content: Content) -> some View {
+        content
+            .fullScreenCover(isPresented: $isPresented) {
+                sheetContent()
+                    .environment(\.isSheetPresented, true)
+                    .interactiveDismissDisabled(!isDismissable)
+            }
+            .onChange(of: isPresented) { _, newValue in
+                updateSheetCounter(isPresented: newValue)
+            }
+    }
+    #endif
+
+    private func updateSheetCounter(isPresented newValue: Bool) {
+        // Defer state updates to avoid interfering with sheet animation on macOS 15.5
+        Task { @MainActor in
+            if newValue {
+                counterManager.increment()
+                counter = counterManager.counter
+            } else {
+                if counter == 1 {
+                    counterManager.resetCounter()
+                } else {
+                    counterManager.decrement()
                 }
             }
+        }
     }
 }
 

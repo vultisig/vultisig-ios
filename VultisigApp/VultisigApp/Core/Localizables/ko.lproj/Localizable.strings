@@ -250,6 +250,7 @@
 "cosmosStakingUndelegateTitle" = "%@ 언스테이킹";
 "cosmosStakingValidatorActive" = "활성";
 "cosmosStakingValidatorChurnedOut" = "탈락";
+"cosmosStakingValidatorCommission" = "수수료";
 "cosmosStakingValidatorJailed" = "제재됨";
 "cosmosStakingValidatorPicker" = "검증인";
 "costs" = "비용";
@@ -1000,8 +1001,8 @@
 "swapProvidersSheetTitle" = "공급자 선택";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
-"swapTradingHalted" = "이 자산의 거래가 일시적으로 중단되었습니다. 나중에 다시 시도해 주세요.";
 "swapTrackingLink" = "스왑 추적 링크";
+"swapTradingHalted" = "이 자산의 거래가 일시적으로 중단되었습니다. 나중에 다시 시도해 주세요.";
 "swapTXHash" = "스왑 Tx 해시";
 "swapVerifyCheckbox1Description" = "스왑 금액이 올바릅니다";
 "swapVerifyCheckbox2Description" = "받을 최소 금액에 동의합니다";

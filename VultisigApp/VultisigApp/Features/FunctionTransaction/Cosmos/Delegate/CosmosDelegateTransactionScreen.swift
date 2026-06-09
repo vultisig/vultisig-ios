@@ -70,7 +70,7 @@ struct CosmosDelegateTransactionScreen: View {
                 InsufficientFeeNotice(ticker: viewModel.coin.ticker)
             }
         }
-        .crossPlatformSheet(isPresented: $showValidatorPicker) {
+        .crossPlatformSheet(isPresented: $showValidatorPicker, fullScreen: true) {
             ValidatorSelectionScreen(
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedValidator,

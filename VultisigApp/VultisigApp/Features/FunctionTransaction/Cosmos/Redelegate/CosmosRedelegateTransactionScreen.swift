@@ -75,7 +75,7 @@ struct CosmosRedelegateTransactionScreen: View {
                 }
             }
         }
-        .crossPlatformSheet(isPresented: $showValidatorPicker) {
+        .crossPlatformSheet(isPresented: $showValidatorPicker, fullScreen: true) {
             ValidatorSelectionScreen(
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedDstValidator,
