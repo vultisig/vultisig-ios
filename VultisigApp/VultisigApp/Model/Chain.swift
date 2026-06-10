@@ -548,6 +548,13 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
+    /// Whether the fiat on-ramp (Buy) flow is offered for this chain. QBTC has
+    /// no on-ramp provider, so Buy is hidden; every other chain keeps the
+    /// existing behaviour.
+    var isBuyAvailable: Bool {
+        self != .qbtc
+    }
+
     /// Cosmos-SDK native staking via delegate / undelegate / redelegate /
     /// claim-rewards. Only the LUNA / LUNC chains today; other Cosmos
     /// chains (gaia / kujira / osmosis / etc.) are out of scope for the
