@@ -658,7 +658,7 @@ class Endpoint {
         case .sei:
             return "https://seiscan.io/address/\(address)"
         case .qbtc:
-            return nil
+            return "https://explorer.qbtc.net/qbtc/address/\(address)"
         case .bittensor:
             return "https://taostats.io/account/\(address)"
         case .none:

@@ -290,7 +290,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
 
     func testGetExplorerByAddressURLProducesNonEmptyURLForEveryChain() {
         let address = "test-address"
-        for chain in Chain.allCases where chain != .qbtc {
+        for chain in Chain.allCases {
             let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address)
             XCTAssertNotNil(url, "Chain \(chain.rawValue) returned nil for address URL")
             XCTAssertFalse(
@@ -300,7 +300,10 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         }
     }
 
-    func testGetExplorerByAddressURLReturnsNilForQbtc() {
-        XCTAssertNil(ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"))
+    func testGetExplorerByAddressURLReturnsQbtcExplorerURL() {
+        XCTAssertEqual(
+            ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"),
+            "https://explorer.qbtc.net/qbtc/address/addr"
+        )
     }
 }
