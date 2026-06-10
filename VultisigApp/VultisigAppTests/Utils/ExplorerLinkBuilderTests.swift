@@ -303,7 +303,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     func testGetExplorerByAddressURLReturnsQbtcExplorerURL() {
         XCTAssertEqual(
             ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"),
-            "https://explorer.qbtc.net/qbtc/address/addr"
+            "https://explorer.qbtc.net/qbtc/account/addr"
         )
     }
 }

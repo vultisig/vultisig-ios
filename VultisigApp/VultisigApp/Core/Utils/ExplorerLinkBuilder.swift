@@ -297,7 +297,7 @@ enum ExplorerLinkBuilder {
         case .bittensor:
             return "https://taostats.io/account/\(address)"
         case .qbtc:
-            return "https://explorer.qbtc.net/qbtc/address/\(address)"
+            return "https://explorer.qbtc.net/qbtc/account/\(address)"
         }
     }
 
