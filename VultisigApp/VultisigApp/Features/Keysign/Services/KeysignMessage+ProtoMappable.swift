@@ -243,6 +243,10 @@ extension SwapPayload {
                 isAffiliate: value.isAffiliate
             ))
         case .oneinchSwapPayload(let value):
+            // `has*` guards distinguish "legacy sender, context unknown"
+            // (field absent → nil) from a populated value. Empty strings are
+            // normalized to nil so consumers have a single "unknown" shape.
+            let swapFeeTokenId = value.quote.tx.hasSwapFeeTokenID ? value.quote.tx.swapFeeTokenID.nilIfEmpty : nil
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
@@ -258,10 +262,13 @@ extension SwapPayload {
                         gasPrice: value.quote.tx.gasPrice,
                         gas: value.quote.tx.gas,
                         swapFee: value.quote.tx.swapFee,
-                        swapFeeTokenContract: ""
+                        swapFeeTokenContract: swapFeeTokenId ?? ""
                     )
                 ),
-                provider: SwapProviderId.from(rawValue: value.provider)
+                provider: SwapProviderId.from(rawValue: value.provider),
+                swapFeeChain: value.quote.tx.hasSwapFeeChain ? value.quote.tx.swapFeeChain.nilIfEmpty : nil,
+                swapFeeTokenId: swapFeeTokenId,
+                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(
@@ -350,6 +357,20 @@ extension SwapPayload {
                         $0.gas = payload.quote.tx.gas
                         if payload.quote.tx.swapFee != "0" {
                             $0.swapFee = payload.quote.tx.swapFee
+                            // Explicit presence matters: receivers treat
+                            // absent fields as "legacy sender → render no
+                            // fee", while a present-but-empty token id breaks
+                            // their coin-key lookup. Never set from nils so
+                            // re-encoded legacy payloads stay byte-stable.
+                            if let swapFeeChain = payload.swapFeeChain, !swapFeeChain.isEmpty {
+                                $0.swapFeeChain = swapFeeChain
+                            }
+                            if let swapFeeTokenId = payload.swapFeeTokenId, !swapFeeTokenId.isEmpty {
+                                $0.swapFeeTokenID = swapFeeTokenId
+                            }
+                            if let swapFeeDecimals = payload.swapFeeDecimals {
+                                $0.swapFeeDecimals = Int32(swapFeeDecimals)
+                            }
                         }
                     }
                 }

@@ -38,6 +38,11 @@ struct KeysignSwapConfirmView: View {
                 showIcon: true
             )
 
+            if let swapFee = viewModel.getSwapFee() {
+                separator
+                getFeeCell(title: "swapFee", fees: swapFee)
+            }
+
             separator
             getNetworkFeeCell()
         }
@@ -156,9 +161,12 @@ struct KeysignSwapConfirmView: View {
     }
 
     private func getNetworkFeeCell() -> some View {
-        let fees = viewModel.getCalculatedNetworkFee()
-        return HStack(spacing: 4) {
-            Text(NSLocalizedString("networkFee", comment: ""))
+        getFeeCell(title: "networkFee", fees: viewModel.getCalculatedNetworkFee())
+    }
+
+    private func getFeeCell(title: String, fees: (feeCrypto: String, feeFiat: String)) -> some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
 

@@ -90,6 +90,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     private let gasViewModel = JoinKeysignGasViewModel()
+    private let swapFeeViewModel = JoinKeysignSwapFeeViewModel()
 
     init() {
         self.vault = Vault(name: "Main Vault")
@@ -711,6 +712,12 @@ class JoinKeysignViewModel: ObservableObject {
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+    }
+
+    /// Swap-fee row for the swap confirm screen, nil when the payload
+    /// carries no fee or no trustworthy coin context (legacy sender).
+    func getSwapFee() -> (feeCrypto: String, feeFiat: String)? {
+        swapFeeViewModel.getSwapFee(swapPayload: keysignPayload?.swapPayload, vault: vault)
     }
 
     func getFromFiatAmount() -> String {

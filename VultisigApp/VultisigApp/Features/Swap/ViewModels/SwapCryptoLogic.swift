@@ -522,7 +522,11 @@ enum SwapCryptoLogic {
         return fiatValue
     }
 
-    private static func swapFeeCoin(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Coin {
+    /// Resolves the coin the quote's swap fee is denominated in. Also the
+    /// source of truth for the coin context serialized onto the keysign
+    /// payload — serializing this output guarantees the initiator's fiat
+    /// display and the co-signer's agree by construction.
+    static func swapFeeCoin(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Coin {
         guard let contract = quote?.swapFeeTokenContract else {
             return feeCoin
         }
