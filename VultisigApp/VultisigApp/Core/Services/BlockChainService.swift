@@ -16,10 +16,6 @@ struct BlockSpecificCacheItem {
 }
 final class BlockChainService {
 
-    static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
-        return value * 2 + value / 2 // x2.5 fee
-    }
-
     static func normalizeEVMFee(_ value: BigInt) -> BigInt {
         let normalized = value + value / 2 // x1.5 fee
         return max(normalized, 1) // To avoid 0 miner tips
@@ -259,9 +255,9 @@ final class BlockChainService {
             // Use a much lower value that WalletCore can work with: divide by 10
             result = sats / 10 // 500k / 10 = 50k sats/byte (still high but workable)
         } else {
-            // For other chains, use normal normalization and multipliers
-            let normalized = Self.normalizeUTXOFee(sats)
-            let prioritized = Float(normalized) * feeMode.utxoMultiplier
+            // The API rate is already a next-block suggestion; apply only the fee-mode
+            // tier (fast 2.5x / normal 1x / low 0.75x) to match Android's 2.5x default.
+            let prioritized = Float(sats) * feeMode.utxoMultiplier
             result = BigInt(prioritized)
         }
 
