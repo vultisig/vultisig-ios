@@ -36,7 +36,9 @@ extension Chain {
         }
         actions.append(.send) // always include send
 
-        actions.append(.buy)
+        if self.isBuyAvailable {
+            actions.append(.buy)
+        }
         let enableSell = UserDefaults.standard.bool(forKey: "SellEnabled")
         if enableSell {
             actions.append(.sell)
