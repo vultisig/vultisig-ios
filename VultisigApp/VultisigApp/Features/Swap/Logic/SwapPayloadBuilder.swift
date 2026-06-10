@@ -212,13 +212,34 @@ extension SwapCryptoLogic {
             )
 
         case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
+            // Attribute the affiliate fee to its coin so peers holding only
+            // the serialized payload (the co-signer has no live quote) don't
+            // guess. `swapFeeCoin` is what the initiator's own fiat display
+            // uses, so both devices agree by construction.
+            var swapFeeChain: String?
+            var swapFeeTokenId: String?
+            var swapFeeDecimals: Int?
+            if transaction.quote.evmSwapFeeBigInt != nil {
+                let resolvedFeeCoin = swapFeeCoin(
+                    quote: transaction.quote,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    feeCoin: transaction.feeCoin
+                )
+                swapFeeChain = resolvedFeeCoin.chain.name
+                swapFeeTokenId = resolvedFeeCoin.contractAddress.nilIfEmpty
+                swapFeeDecimals = resolvedFeeCoin.decimals
+            }
             let payload = GenericSwapPayload(
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 fromAmount: amountInCoin,
                 toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: transaction.quote.swapProviderId ?? .oneInch
+                provider: transaction.quote.swapProviderId ?? .oneInch,
+                swapFeeChain: swapFeeChain,
+                swapFeeTokenId: swapFeeTokenId,
+                swapFeeDecimals: swapFeeDecimals
             )
             return try await keysignFactory.buildTransfer(
                 coin: fromCoin,

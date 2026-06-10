@@ -673,6 +673,9 @@ extension VSOneInchTransaction: @retroactive Codable {
         case gasPrice = "gas_price"
         case gas
         case swapFee = "swap_fee"
+        case swapFeeChain = "swap_fee_chain"
+        case swapFeeTokenID = "swap_fee_token_id"
+        case swapFeeDecimals = "swap_fee_decimals"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -683,6 +686,17 @@ extension VSOneInchTransaction: @retroactive Codable {
         try container.encode(gasPrice, forKey: .gasPrice)
         try container.encode(gas, forKey: .gas)
         try container.encode(swapFee, forKey: .swapFee)
+        // Optional proto fields with explicit presence: encode only when set
+        // so fixtures distinguish absent from present-but-empty.
+        if hasSwapFeeChain {
+            try container.encode(swapFeeChain, forKey: .swapFeeChain)
+        }
+        if hasSwapFeeTokenID {
+            try container.encode(swapFeeTokenID, forKey: .swapFeeTokenID)
+        }
+        if hasSwapFeeDecimals {
+            try container.encode(swapFeeDecimals, forKey: .swapFeeDecimals)
+        }
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -694,6 +708,15 @@ extension VSOneInchTransaction: @retroactive Codable {
         gasPrice = try container.decodeIfPresent(String.self, forKey: .gasPrice) ?? String()
         gas = try container.decode(Int64.self, forKey: .gas)
         swapFee = try container.decodeIfPresent(String.self, forKey: .swapFee) ?? String()
+        if let chain = try container.decodeIfPresent(String.self, forKey: .swapFeeChain) {
+            swapFeeChain = chain
+        }
+        if let tokenID = try container.decodeIfPresent(String.self, forKey: .swapFeeTokenID) {
+            swapFeeTokenID = tokenID
+        }
+        if let decimals = try container.decodeIfPresent(Int32.self, forKey: .swapFeeDecimals) {
+            swapFeeDecimals = decimals
+        }
     }
 }
 

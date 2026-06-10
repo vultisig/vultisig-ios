@@ -57,12 +57,15 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the main revision that merged the SwapKitSwapPayload proto
-    # (commondata #86, merged 2026-05-23). `SwapKitSwapPayload` is `oneof`
-    # entry 26 on `KeysignPayload` — carries pre-built tx bytes for non-EVM
-    # SwapKit routes (BTC PSBT, TON, ADA CBOR, TRON, SUI PTB, DOGE/BCH/DASH
-    # PSBT legacy P2PKH, ZEC Sapling).
-    revision: dc4b8edc5e30946bd59efdb76ab1f41d0b7c3e6b
+    # Pinned to the main revision that added coin context for `swap_fee` on
+    # `OneInchTransaction` (commondata #87, merged 2026-06-03): optional
+    # `swap_fee_chain = 8`, `swap_fee_token_id = 9`, `swap_fee_decimals = 10`
+    # with explicit presence, so receivers can attribute the affiliate fee
+    # to the right coin (KyberSwap denominates it in the destination token).
+    # Deliberately NOT head: the next schema change adds a `sign_sui` case
+    # to the `KeysignPayload.sign_data` oneof, which our exhaustive
+    # `OneOf_SignData` switches would be forced to handle.
+    revision: 5a72a86cb061dade165d42ad426ba3639fb9a877
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

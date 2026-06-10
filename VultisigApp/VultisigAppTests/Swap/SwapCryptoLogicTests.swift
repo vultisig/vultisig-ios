@@ -193,6 +193,51 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertTrue(SwapCryptoLogic.isAffiliate)
     }
 
+    // MARK: - swapFeeCoin
+
+    func testSwapFeeCoinMatchesFromCoinContractCaseInsensitively() {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quote = SwapQuote.lifi(
+            makeEVMQuote(swapFee: "1", swapFeeTokenContract: "usdc-CONTRACT"),
+            fee: nil,
+            integratorFee: nil
+        )
+        let result = SwapCryptoLogic.swapFeeCoin(quote: quote, fromCoin: usdc, toCoin: eth, feeCoin: eth)
+        XCTAssertEqual(result.ticker, "USDC")
+    }
+
+    func testSwapFeeCoinMatchesToCoinContract() {
+        // KyberSwap shape: fee denominated in the destination token.
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quote = SwapQuote.kyberswap(
+            makeEVMQuote(swapFee: "1", swapFeeTokenContract: "USDC-contract"),
+            fee: nil
+        )
+        let result = SwapCryptoLogic.swapFeeCoin(quote: quote, fromCoin: eth, toCoin: usdc, feeCoin: eth)
+        XCTAssertEqual(result.ticker, "USDC")
+    }
+
+    func testSwapFeeCoinFallsBackToFeeCoinWithoutContract() {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quote = SwapQuote.oneinch(makeEVMQuote(swapFee: "1"), fee: nil)
+        let result = SwapCryptoLogic.swapFeeCoin(quote: quote, fromCoin: usdc, toCoin: usdc, feeCoin: eth)
+        XCTAssertEqual(result.ticker, "ETH")
+    }
+
+    func testSwapFeeCoinFallsBackToFeeCoinForUnknownContract() {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quote = SwapQuote.kyberswap(
+            makeEVMQuote(swapFee: "1", swapFeeTokenContract: "0xdeadbeef"),
+            fee: nil
+        )
+        let result = SwapCryptoLogic.swapFeeCoin(quote: quote, fromCoin: usdc, toCoin: usdc, feeCoin: eth)
+        XCTAssertEqual(result.ticker, "ETH")
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -274,7 +319,9 @@ final class SwapCryptoLogicTests: XCTestCase {
 
     private func makeEVMQuote(
         dstAmount: String = "0",
-        toAddress: String = "0xTo"
+        toAddress: String = "0xTo",
+        swapFee: String = "0",
+        swapFeeTokenContract: String = ""
     ) -> EVMQuote {
         EVMQuote(
             dstAmount: dstAmount,
@@ -284,7 +331,9 @@ final class SwapCryptoLogicTests: XCTestCase {
                 data: "0x",
                 value: "0",
                 gasPrice: "0",
-                gas: 0
+                gas: 0,
+                swapFee: swapFee,
+                swapFeeTokenContract: swapFeeTokenContract
             )
         )
     }
