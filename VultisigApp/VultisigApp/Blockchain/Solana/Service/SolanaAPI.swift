@@ -49,7 +49,12 @@ struct SolanaAPI: TargetType {
         // HTTPClient owns the JSON serialization.
         switch rpcMethod {
         case .sendTransaction(let encodedTransaction):
-            return .requestParameters(rpcEnvelope(method: "sendTransaction", params: [encodedTransaction]), .jsonEncoding)
+            // Pin the encoding: signed transactions are normalized to base64
+            // before broadcast, while the RPC default is base58.
+            return .requestParameters(
+                rpcEnvelope(method: "sendTransaction", params: [encodedTransaction, ["encoding": "base64"]]),
+                .jsonEncoding
+            )
         case .getBalance(let address):
             return .requestParameters(rpcEnvelope(method: "getBalance", params: [address]), .jsonEncoding)
         case .getRecentPrioritizationFees:
