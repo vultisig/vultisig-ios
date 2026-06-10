@@ -245,11 +245,15 @@ enum SolanaHelper {
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
 
-        guard let txData = Data(base64Encoded: output.encoded) else {
+        // WalletCore emits `output.encoded` as base58: the signing input never
+        // sets `txEncoding`, so the proto default (base58) applies. Normalize
+        // `rawTransaction` to base64 to match the encoding pinned on the
+        // sendTransaction RPC call.
+        guard let txData = Base58.decodeNoCheck(string: output.encoded) else {
             throw HelperError.runtimeError("Failed to decode signed Solana transaction")
         }
         let result = SignedTransactionResult(
-            rawTransaction: output.encoded,
+            rawTransaction: txData.base64EncodedString(),
             transactionHash: try getHashFromRawTransaction(txData: txData)
         )
 
@@ -380,6 +384,8 @@ enum SolanaHelper {
         return Base58.encodeNoCheck(data: sigBytes)
     }
 
+    /// Returns WalletCore's base58 output unchanged — base58 is the Blockaid
+    /// security-scanner contract; do not normalize to base64 here.
     static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let publicKey = PublicKey(data: Data(hex: coinHexPublicKey), type: PublicKeyType.ed25519) else {
