@@ -90,7 +90,7 @@ struct DefaultLimitSwapInteractor: LimitSwapInteractor {
         if !validationErrors.isEmpty {
             throw LimitSwapInteractorError.validationFailed(validationErrors)
         }
-        let memo = buildLimitSwapMemo(inputs)
+        let memo = try buildLimitSwapMemo(inputs)
         try assertMemoByteLength(memo, sourceChainKind: sourceChainKind)
         return memo
     }

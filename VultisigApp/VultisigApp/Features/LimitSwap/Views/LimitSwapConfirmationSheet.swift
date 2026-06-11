@@ -157,6 +157,8 @@ struct LimitSwapConfirmationSheet: View {
                 actual,
                 limit
             )
+        case .targetPriceOverflow:
+            return "limitSwap.error.targetPriceOverflow".localized
         }
     }
 }

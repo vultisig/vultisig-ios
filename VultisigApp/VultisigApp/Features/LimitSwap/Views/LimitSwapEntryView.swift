@@ -4,7 +4,10 @@
 //
 
 import BigInt
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-swap-entry")
 
 /// Wrapper that owns the `LimitSwapFormViewModel` lifecycle plus Limit's
 /// **independent** coin selection state. The initial from/to coins seed
@@ -123,6 +126,18 @@ struct LimitSwapEntryView: View {
             )
             .environmentObject(coinSelectionViewModel)
         }
+        .alert(
+            "limitSwap.error.title".localized,
+            isPresented: Binding(
+                get: { vm.placeOrderError != nil },
+                set: { if !$0 { vm.placeOrderError = nil } }
+            ),
+            presenting: vm.placeOrderError
+        ) { _ in
+            Button("ok".localized, role: .cancel) { vm.placeOrderError = nil }
+        } message: { error in
+            Text(error.message)
+        }
     }
 
     // MARK: - Picker bindings (swap-on-collision)
@@ -188,6 +203,18 @@ struct LimitSwapEntryView: View {
             return
         }
 
+        // Phase 1 routes only native source assets. A non-native (ERC20-style)
+        // source would set `toAddress = router` with `approvePayload: nil` and
+        // no approve-first keysign, which the THORChain router rejects. The
+        // picker filters by chain, not token type, so ETH.USDC is still
+        // pickable — guard loudly here so the user gets feedback instead of a
+        // failed on-chain tx. (ERC20 approve-first flow is Phase 2.)
+        guard limitFromCoin.isNativeToken else {
+            logger.error("Place order rejected: non-native source \(limitFromCoin.ticker, privacy: .public) not supported in Phase 1")
+            vm.placeOrderError = .nonNativeSourceUnsupported
+            return
+        }
+
         // Real affiliate config: read the vault's referral code (if any)
         // and compute the affiliate fragment via the same helper the market
         // path uses. Vault-tier discount defaults to 0 for Phase 1; the
@@ -210,15 +237,32 @@ struct LimitSwapEntryView: View {
             affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
         )
 
-        let memo = buildLimitSwapMemo(inputs)
         let chainKind = vm.draft.fromAsset.chain.chainType
 
-        // Byte-cap pre-flight: bail early if the assembled memo doesn't
-        // fit the source chain's per-tx memo limit. We bail silently here
-        // and let the form remain editable; richer error UI lands later.
+        // Memo assembly + byte-cap pre-flight. Both can fail for genuinely
+        // user-actionable reasons (a target price that overflows the LIM
+        // fixed-point, or a memo that overflows the source chain's per-tx
+        // byte budget — realistic on UTXO source + token destination). These
+        // must surface to the user via an alert, NOT be swallowed silently:
+        // tapping "Place Order" and having nothing happen is a confusing UX,
+        // and an overflowed LIM is a fund-safety hazard.
+        let memo: String
         do {
+            memo = try buildLimitSwapMemo(inputs)
             try assertMemoByteLength(memo, sourceChainKind: chainKind)
+        } catch let error as LimitSwapMemoError {
+            switch error {
+            case let .memoExceedsByteLimit(actual, limit):
+                logger.error("Place order rejected: memo \(actual) bytes exceeds \(limit)-byte cap")
+                vm.placeOrderError = .memoTooLong(actual: actual, limit: limit)
+            case .targetPriceOverflow:
+                logger.error("Place order rejected: target price overflowed LIM fixed-point")
+                vm.placeOrderError = .targetPriceOverflow
+            }
+            return
         } catch {
+            logger.error("Place order rejected: \(error.localizedDescription, privacy: .public)")
+            vm.placeOrderError = .targetPriceOverflow
             return
         }
 

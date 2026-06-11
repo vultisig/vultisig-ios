@@ -11,25 +11,25 @@ final class LimitMathTests: XCTestCase {
 
     // MARK: - computeLim — integer prices
 
-    func testComputeLimForOneBtcAt16PerBtc() {
-        let lim = computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 16)
+    func testComputeLimForOneBtcAt16PerBtc() throws {
+        let lim = try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 16)
         XCTAssertEqual(lim, BigInt(1_600_000_000))
     }
 
-    func testComputeLimForHalfBtcAt16PerBtc() {
-        let lim = computeLim(sourceAmount: BigInt(50_000_000), sourceDecimals: 8, targetPrice: 16)
+    func testComputeLimForHalfBtcAt16PerBtc() throws {
+        let lim = try computeLim(sourceAmount: BigInt(50_000_000), sourceDecimals: 8, targetPrice: 16)
         XCTAssertEqual(lim, BigInt(800_000_000))
     }
 
-    func testComputeLimForOneBtcAt6000PerBtc() {
-        let lim = computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 6000)
+    func testComputeLimForOneBtcAt6000PerBtc() throws {
+        let lim = try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 6000)
         XCTAssertEqual(lim, BigInt(600_000_000_000))
     }
 
     // MARK: - computeLim — fractional prices
 
-    func testComputeLimForOneEthAt00625PerEth() {
-        let lim = computeLim(
+    func testComputeLimForOneEthAt00625PerEth() throws {
+        let lim = try computeLim(
             sourceAmount: BigInt("1000000000000000000"),
             sourceDecimals: 18,
             targetPrice: Decimal(string: "0.0625")!
@@ -37,8 +37,8 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(6_250_000))
     }
 
-    func testComputeLimForFiftyKUsdtAt000001PerUsdt() {
-        let lim = computeLim(
+    func testComputeLimForFiftyKUsdtAt000001PerUsdt() throws {
+        let lim = try computeLim(
             sourceAmount: BigInt(50_000_000_000),
             sourceDecimals: 6,
             targetPrice: Decimal(string: "0.00001")!
@@ -48,9 +48,9 @@ final class LimitMathTests: XCTestCase {
 
     // MARK: - computeLim — edge cases
 
-    func testComputeLimForVerySmallPriceProducesOne() {
+    func testComputeLimForVerySmallPriceProducesOne() throws {
         // 1 BTC at 0.00000001 target/source → 0.00000001 target → LIM = 1 (1e8 fixed-point)
-        let lim = computeLim(
+        let lim = try computeLim(
             sourceAmount: BigInt(100_000_000),
             sourceDecimals: 8,
             targetPrice: Decimal(string: "0.00000001")!
@@ -58,9 +58,9 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(1))
     }
 
-    func testComputeLimForVeryLargePrice() {
+    func testComputeLimForVeryLargePrice() throws {
         // 1 BTC at 1_000_000 target/source → 1_000_000 target → LIM = 1e14
-        let lim = computeLim(
+        let lim = try computeLim(
             sourceAmount: BigInt(100_000_000),
             sourceDecimals: 8,
             targetPrice: 1_000_000
@@ -68,10 +68,10 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt("100000000000000"))
     }
 
-    func testComputeLimTruncatesPriceBeyondEightDecimalPlaces() {
+    func testComputeLimTruncatesPriceBeyondEightDecimalPlaces() throws {
         // targetPrice = 16.123456789 (9 dp); should truncate to 16.12345678 in 1e8 fixed-point
         // → LIM = 1_612_345_678 (not 1_612_345_678.9, not 0)
-        let lim = computeLim(
+        let lim = try computeLim(
             sourceAmount: BigInt(100_000_000),
             sourceDecimals: 8,
             targetPrice: Decimal(string: "16.123456789")!
@@ -79,9 +79,36 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(1_612_345_678))
     }
 
-    func testComputeLimZeroSourceAmountReturnsZero() {
-        let lim = computeLim(sourceAmount: 0, sourceDecimals: 8, targetPrice: 16)
+    func testComputeLimZeroSourceAmountReturnsZero() throws {
+        let lim = try computeLim(sourceAmount: 0, sourceDecimals: 8, targetPrice: 16)
         XCTAssertEqual(lim, BigInt(0))
+    }
+
+    // MARK: - computeLim — overflow MUST fail loud (fund-safety)
+
+    func testComputeLimOverflowingTargetPriceThrowsInsteadOfYieldingZero() {
+        // A `targetPrice` near `Decimal.greatestFiniteMagnitude` (~1e127)
+        // overflows when scaled by 1e8. The old code did `BigInt("NaN") ?? 0`,
+        // silently emitting LIM=0 — which THORChain reads as "fill at ANY
+        // price", the OPPOSITE of a limit order. We must THROW, never return 0.
+        let huge = Decimal.greatestFiniteMagnitude
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: huge)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .targetPriceOverflow)
+        }
+    }
+
+    func testComputeLimOverflowNeverSilentlyProducesZero() throws {
+        // Belt-and-suspenders: assert no overflow path returns 0. If it didn't
+        // throw, it must be a genuine non-zero value.
+        let huge = Decimal.greatestFiniteMagnitude
+        do {
+            let lim = try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: huge)
+            XCTAssertNotEqual(lim, BigInt(0), "Overflow must never silently yield LIM=0")
+        } catch {
+            XCTAssertEqual(error as? LimitSwapMemoError, .targetPriceOverflow)
+        }
     }
 
     // MARK: - computeExpiryBlocks

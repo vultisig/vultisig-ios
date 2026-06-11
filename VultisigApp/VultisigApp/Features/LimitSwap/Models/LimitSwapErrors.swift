@@ -16,6 +16,11 @@ enum LimitSwapValidationError: Error, Equatable {
 
 enum LimitSwapMemoError: Error, Equatable {
     case memoExceedsByteLimit(actual: Int, limit: Int)
+    /// The target price (scaled to THORChain's 1e8 fixed-point LIM) overflowed
+    /// `Decimal`/`BigInt` and could not be represented. This MUST fail loud:
+    /// a silent fallback to `LIM=0` tells THORChain "fill at ANY price", the
+    /// exact opposite of a limit order — a fund-safety hazard.
+    case targetPriceOverflow
 }
 
 enum LimitSwapQuoteError: Error, Equatable {
@@ -31,4 +36,47 @@ enum LimitSwapQuoteError: Error, Equatable {
 enum LimitSwapWarning: Equatable {
     case priceAtOrBelowMarket
     case priceFarAboveMarket
+}
+
+/// User-facing failure surfaced when "Place Order" cannot assemble a valid
+/// order. Carries a localized message so the entry view can show an alert
+/// instead of silently doing nothing. `Identifiable` so it can back a SwiftUI
+/// `.alert(item:)`.
+enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
+    /// The assembled memo exceeds the source chain's per-tx byte budget.
+    case memoTooLong(actual: Int, limit: Int)
+    /// The target price overflowed when scaled to THORChain's fixed-point LIM.
+    case targetPriceOverflow
+    /// A non-native (ERC20-style) source asset was selected. The Phase 1
+    /// limit-swap flow routes the source transfer straight to the THORChain
+    /// router without an approve-first keysign, which the router would reject.
+    /// Fail loud at "Place Order" rather than broadcasting a doomed tx.
+    case nonNativeSourceUnsupported
+
+    var id: String {
+        switch self {
+        case let .memoTooLong(actual, limit):
+            return "memoTooLong-\(actual)-\(limit)"
+        case .targetPriceOverflow:
+            return "targetPriceOverflow"
+        case .nonNativeSourceUnsupported:
+            return "nonNativeSourceUnsupported"
+        }
+    }
+
+    /// Localized, user-readable description for the alert body.
+    var message: String {
+        switch self {
+        case let .memoTooLong(actual, limit):
+            return String(
+                format: "limitSwap.confirmation.byteCapError.format".localized,
+                actual,
+                limit
+            )
+        case .targetPriceOverflow:
+            return "limitSwap.error.targetPriceOverflow".localized
+        case .nonNativeSourceUnsupported:
+            return "limitSwap.error.nonNativeSource".localized
+        }
+    }
 }

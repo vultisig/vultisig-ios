@@ -6,7 +6,17 @@
 import BigInt
 import Foundation
 
-func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal) -> BigInt {
+/// Scales `targetPrice` to THORChain's 1e8 fixed-point and derives the LIM
+/// (minimum amount out) for the memo.
+///
+/// **Fund-safety: overflow MUST fail loud.** If `targetPrice` is large enough
+/// that scaling it by 1e8 overflows `Decimal` (max ~1e127), the multiply yields
+/// a `Decimal` NaN whose `stringValue` is `"NaN"`. `BigInt("NaN")` is `nil`. A
+/// silent `?? 0` fallback would emit `LIM=0` in the memo, which THORChain reads
+/// as "fill at ANY price" — the exact opposite of a limit order. We throw
+/// `LimitSwapMemoError.targetPriceOverflow` instead so the place-order flow
+/// surfaces the error rather than placing a price-blind swap.
+func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal) throws -> BigInt {
     var price = targetPrice
     var scaled = Decimal()
     NSDecimalMultiplyByPowerOf10(&scaled, &price, 8, .plain)
@@ -14,7 +24,12 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
     var truncated = Decimal()
     NSDecimalRound(&truncated, &scaled, 0, .down)
 
-    let priceBig = BigInt(NSDecimalNumber(decimal: truncated).stringValue) ?? 0
+    // `Decimal.isNaN` catches an overflowed multiply; the explicit BigInt parse
+    // guard is belt-and-suspenders for any other unrepresentable result.
+    guard !truncated.isNaN,
+          let priceBig = BigInt(NSDecimalNumber(decimal: truncated).stringValue) else {
+        throw LimitSwapMemoError.targetPriceOverflow
+    }
     let denominator = BigInt(10).power(sourceDecimals)
     return (sourceAmount * priceBig) / denominator
 }

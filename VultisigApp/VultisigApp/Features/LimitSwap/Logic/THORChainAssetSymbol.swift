@@ -23,8 +23,13 @@ func thorchainMemoAsset(
     guard let prefix = thorchainChainPrefix(for: chain) else {
         return nil
     }
+    // Reject whitespace-only / empty tickers so the memo never gains a
+    // malformed asset segment that fails downstream at memo/broadcast time.
+    let normalizedTicker = ticker.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !normalizedTicker.isEmpty else { return nil }
+
     if isNativeToken {
-        return "\(prefix).\(ticker)"
+        return "\(prefix).\(normalizedTicker)"
     }
     // Token form: `<CHAIN>.<TICKER>-<SUFFIX>` where SUFFIX is the last 6 chars
     // of the contract address. Reject too-short or whitespace-only contracts
@@ -32,7 +37,7 @@ func thorchainMemoAsset(
     let normalized = contractAddress.trimmingCharacters(in: .whitespacesAndNewlines)
     guard normalized.count >= 6 else { return nil }
     let suffix = normalized.suffix(6).uppercased()
-    return "\(prefix).\(ticker)-\(suffix)"
+    return "\(prefix).\(normalizedTicker)-\(suffix)"
 }
 
 /// Convenience overload over `Coin`.
@@ -93,7 +98,10 @@ func isThorchainRoutable(chain: Chain) -> Bool {
 /// targets that wouldn't show up via a public `inbound_addresses` fetch
 /// in production anyway.
 func chainFromThorchainSymbol(_ symbol: String) -> Chain? {
-    let upper = symbol.uppercased()
+    let upper = symbol
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .uppercased()
+    guard !upper.isEmpty else { return nil }
     if upper == "THOR" { return .thorChain }
     return Chain.allCases.first { thorchainChainPrefix(for: $0) == upper }
 }

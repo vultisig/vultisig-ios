@@ -65,6 +65,30 @@ final class LimitOrderStorageServiceTests: XCTestCase {
         XCTAssertEqual(vault.limitOrders.count, 2)
     }
 
+    // MARK: - empty inbound hash — collision guard (fund-safety)
+
+    func testPersistEmptyInboundHashThrowsLoudly() throws {
+        // The unique id is `inboundTxHash + pubKeyECDSA`. A pre-broadcast
+        // record (empty hash) would produce id `"_pubkey"`, so two pending
+        // orders would collide and silently drop one. `persist` must reject
+        // an empty hash loudly instead.
+        XCTAssertThrowsError(try service.persist(makeRecord(inboundTxHash: ""), for: vault)) { error in
+            guard case LimitOrderStorageError.emptyInboundTxHash = error else {
+                return XCTFail("Expected emptyInboundTxHash, got \(error)")
+            }
+        }
+        XCTAssertTrue(vault.limitOrders.isEmpty)
+    }
+
+    func testTwoPendingEmptyHashOrdersCannotSilentlyCollide() throws {
+        // Two distinct pending orders both with empty hashes: the second must
+        // NOT silently overwrite / drop the first. Both attempts throw, and the
+        // store stays empty rather than holding exactly one of the two.
+        XCTAssertThrowsError(try service.persist(makeRecord(inboundTxHash: ""), for: vault))
+        XCTAssertThrowsError(try service.persist(makeRecord(inboundTxHash: ""), for: vault))
+        XCTAssertEqual(vault.limitOrders.count, 0)
+    }
+
     // MARK: - fetchAll
 
     func testFetchAllReturnsOrdersSortedByCreatedAtDesc() throws {

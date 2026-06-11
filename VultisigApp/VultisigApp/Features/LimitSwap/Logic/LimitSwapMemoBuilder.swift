@@ -6,8 +6,11 @@
 import BigInt
 import Foundation
 
-func buildLimitSwapMemo(_ inputs: LimitSwapInputs) -> String {
-    let lim = computeLim(
+/// - Throws: `LimitSwapMemoError.targetPriceOverflow` if `targetPrice` is too
+///   large to scale into a valid LIM (see `computeLim`). Failing loud here
+///   prevents a `LIM=0` ("fill at any price") memo from ever being built.
+func buildLimitSwapMemo(_ inputs: LimitSwapInputs) throws -> String {
+    let lim = try computeLim(
         sourceAmount: inputs.sourceAmount,
         sourceDecimals: inputs.sourceDecimals,
         targetPrice: inputs.targetPrice

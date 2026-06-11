@@ -36,7 +36,7 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
                 affiliateBps: vector.inputs.affiliate_bps
             )
 
-            let memo = buildLimitSwapMemo(inputs)
+            let memo = try buildLimitSwapMemo(inputs)
 
             XCTAssertEqual(memo, vector.expected_memo, "Vector \(vector.name) failed")
         }

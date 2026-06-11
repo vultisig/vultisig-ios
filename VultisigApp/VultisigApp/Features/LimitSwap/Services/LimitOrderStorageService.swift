@@ -18,6 +18,12 @@ extension Notification.Name {
 enum LimitOrderStorageError: Error, Equatable {
     case duplicate(id: String)
     case notFound(id: String)
+    /// A record was handed to `persist` before its inbound TX hash was spliced
+    /// in. The unique id is `inboundTxHash + pubKeyECDSA`; persisting with an
+    /// empty hash would make every pre-broadcast order collide on `"_pubkey"`,
+    /// silently dropping all but the first. Fail loud instead of corrupting the
+    /// open-orders table.
+    case emptyInboundTxHash
 }
 
 struct LimitOrderStorageService {
@@ -28,6 +34,9 @@ struct LimitOrderStorageService {
     @discardableResult
     @MainActor
     func persist(_ record: LimitOrderRecord, for vault: Vault) throws -> LimitOrder {
+        guard !record.inboundTxHash.isEmpty else {
+            throw LimitOrderStorageError.emptyInboundTxHash
+        }
         let id = makeId(inboundTxHash: record.inboundTxHash, vault: vault)
         if vault.limitOrders.contains(where: { $0.id == id }) {
             throw LimitOrderStorageError.duplicate(id: id)

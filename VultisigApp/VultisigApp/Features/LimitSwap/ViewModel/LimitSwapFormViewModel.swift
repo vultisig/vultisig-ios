@@ -51,6 +51,13 @@ final class LimitSwapFormViewModel {
     var isLoadingMarketPrice = false
     var marketPriceError: Error?
 
+    /// User-facing error raised while assembling / pre-flighting the order in
+    /// "Place Order" (memo byte-cap overflow, target-price overflow). Drives an
+    /// alert in `LimitSwapEntryView`. `nil` clears the alert. Previously these
+    /// failures were swallowed silently — the user tapped "Place Order" and
+    /// nothing happened, with no feedback.
+    var placeOrderError: LimitSwapPlaceOrderError?
+
     private let vault: Vault
     private let interactor: LimitSwapInteractor
 

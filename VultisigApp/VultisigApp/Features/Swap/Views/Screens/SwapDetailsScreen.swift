@@ -20,7 +20,7 @@ struct SwapDetailsScreen: View {
     /// inside `LimitSwapModeBody` (which owns its own form view model and
     /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
     /// renders the existing Market layout pixel-identical to pre-feature.
-    @State var selectedSwapMode: SwapMode = .market
+    @State private var selectedSwapMode: SwapMode = .market
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
