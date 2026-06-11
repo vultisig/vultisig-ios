@@ -93,18 +93,6 @@ enum SendCryptoLogic {
         return remainingBalance > .zero && remainingBalance < existentialDeposit
     }
 
-    /// True when the requested *amount* sent to the recipient is below the
-    /// chain's existential deposit. On `transfer_keep_alive` chains a transfer
-    /// of less than the ED can't create a new recipient account and fails
-    /// on-chain. Scoped to ED-bearing chains via `existentialDeposit(for:)`.
-    static func recipientBelowExistentialDeposit(coin: Coin, amount: String) -> Bool {
-        let existentialDeposit = existentialDeposit(for: coin)
-        guard existentialDeposit > .zero else { return false }
-
-        let amountRaw = amountInRaw(coin: coin, amount: amount)
-        return amountRaw > .zero && amountRaw < existentialDeposit
-    }
-
     /// A send is a "deposit" (memo-bearing function call) iff the memo
     /// dictionary carries entries AND the chain supports memos. UTXO, Ripple,
     /// and Solana sends never carry function-call memos in this flow.

@@ -782,7 +782,6 @@
 "rebondNote" = "Napomena: REBOND transakcije moraju poslati 0 RUNE. Iznos gore ide samo u memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Primi";
-"recipientBelowExistentialDepositError" = "Iznos je ispod minimalnog stanja mreže (egzistencijalni depozit), pa se račun primatelja ne može stvoriti. Pošaljite veći iznos.";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "referral" = "Preporuka";

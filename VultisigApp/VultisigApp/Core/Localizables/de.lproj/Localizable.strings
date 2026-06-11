@@ -782,7 +782,6 @@
 "rebondNote" = "Hinweis: REBOND-Transaktionen müssen 0 RUNE senden. Der oben genannte Betrag geht nur in das Memo ein.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Empfangen";
-"recipientBelowExistentialDepositError" = "Der Betrag liegt unter dem Mindestguthaben (Existenzminimum) des Netzwerks, sodass das Empfängerkonto nicht erstellt werden kann. Senden Sie einen höheren Betrag.";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "referral" = "Empfehlung";

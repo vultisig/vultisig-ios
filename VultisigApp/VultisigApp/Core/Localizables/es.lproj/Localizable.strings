@@ -782,7 +782,6 @@
 "rebondNote" = "Nota: Las transacciones REBOND deben enviar 0 RUNE. La cantidad anterior solo va en el memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Recibir";
-"recipientBelowExistentialDepositError" = "El importe es inferior al saldo mínimo de la red (depósito existencial), por lo que no se puede crear la cuenta del destinatario. Envía un importe mayor.";
 "redeem" = "Canjear";
 "redeemCoin" = "Canjear %@";
 "referral" = "Referido";

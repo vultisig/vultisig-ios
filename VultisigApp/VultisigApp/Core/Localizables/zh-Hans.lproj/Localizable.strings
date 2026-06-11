@@ -783,7 +783,6 @@
 "rebondNote" = "注意：REBOND 交易必须发送 0 RUNE。上述金额仅用于备忘录。";
 "rebondRequiresRune" = "重新绑定需要在 THORChain 上有 RUNE 代币";
 "receive" = "接收";
-"recipientBelowExistentialDepositError" = "金额低于网络的最低留存额（生存性存款），无法创建收款方账户。请转出更大的金额。";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "referral" = "推荐";

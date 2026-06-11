@@ -758,7 +758,6 @@
 "rebondNote" = "참고: REBOND 트랜잭션은 0 RUNE을 전송해야 합니다. 위 금액은 메모에만 포함됩니다.";
 "rebondRequiresRune" = "REBOND는 THORChain의 RUNE 토큰이 필요합니다";
 "receive" = "수신";
-"recipientBelowExistentialDepositError" = "금액이 네트워크의 최소 잔액(존재 보증금)보다 적어 수신자 계정을 생성할 수 없습니다. 더 큰 금액을 보내세요.";
 "redeem" = "상환";
 "redeemCoin" = "%@ 상환";
 "reEnterPassword" = "비밀번호 재입력";

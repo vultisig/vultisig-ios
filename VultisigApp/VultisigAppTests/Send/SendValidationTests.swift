@@ -182,19 +182,15 @@ final class SendValidationTests: XCTestCase {
         XCTAssertEqual(maxAmount.toDecimal(), amount("0.999").toDecimal())
     }
 
-    func testRecipientBelowExistentialDepositForPolkadot() {
+    func testSubExistentialDepositSendToRecipientIsAllowed() {
+        // A sub-ED amount to the recipient is the user's choice and must NOT be
+        // blocked, regardless of whether the target account already exists.
+        // Only the sender-reaping guard applies, and here the sender keeps a
+        // large remainder, so canBeReaped is false.
         let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
-                           rawBalance: "100000000000")
-        // 0.005 DOT < 0.01 DOT ED — can't fund a new recipient account.
-        XCTAssertTrue(SendCryptoLogic.recipientBelowExistentialDeposit(coin: dot, amount: amount("0.005")))
-        // 0.02 DOT > ED — fine.
-        XCTAssertFalse(SendCryptoLogic.recipientBelowExistentialDeposit(coin: dot, amount: amount("0.02")))
-    }
-
-    func testRecipientBelowExistentialDepositFalseForChainWithoutED() {
-        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
-                           rawBalance: "1000000000000000000")
-        XCTAssertFalse(SendCryptoLogic.recipientBelowExistentialDeposit(coin: eth, amount: amount("0.0000001")))
+                           rawBalance: "100000000000") // 10 DOT
+        // Sending 0.005 DOT (< 0.01 DOT ED) leaves ~9.995 DOT for the sender.
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("0.005"), gas: .zero))
     }
 
     func testCanBeReapedTrueForRippleWhenRemainderBelowExistentialDeposit() {

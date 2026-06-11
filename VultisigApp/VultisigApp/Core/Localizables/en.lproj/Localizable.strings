@@ -789,7 +789,6 @@
 "rebondNote" = "Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Receive";
-"recipientBelowExistentialDepositError" = "The amount is below the network's minimum balance (existential deposit), so the recipient account can't be created. Send a larger amount.";
 "redeem" = "Redeem";
 "redeemCoin" = "Redeem %@";
 "reEnterPassword" = "Re-enter password";

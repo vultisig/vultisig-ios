@@ -630,17 +630,14 @@ final class SendDetailsViewModel {
             return false
         }
 
-        // Existential-deposit guards for ED-bearing chains (DOT/XRP). Block here
-        // — before the keysign ceremony — rather than letting `transfer_keep_alive`
-        // fail on-chain with the fee already charged. Skipped for non-native
-        // tokens (ED applies to the native account, not token transfers).
+        // Existential-deposit guard for ED-bearing chains (DOT/XRP) that reap
+        // the *sender*. Block here — before the keysign ceremony — rather than
+        // letting `transfer_keep_alive` fail on-chain with the fee already
+        // charged. Skipped for non-native tokens (ED applies to the native
+        // account, not token transfers).
         if coin.isNativeToken {
-            if SendCryptoLogic.recipientBelowExistentialDeposit(coin: coin, amount: amount) {
-                setAmountError(message: "recipientBelowExistentialDepositError")
-                return false
-            }
             if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: gas) {
-                setAmountError(message: "belowExistentialDepositError")
+                setAmountError(message: "belowExistentialDepositError".localized)
                 return false
             }
         }
