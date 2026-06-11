@@ -60,7 +60,11 @@ struct SolanaAPI: TargetType {
         case .getRecentPrioritizationFees:
             return .requestParameters(rpcEnvelope(method: "getRecentPrioritizationFees", params: [] as [Any]), .jsonEncoding)
         case .getLatestBlockhash:
-            return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "finalized"]]), .jsonEncoding)
+            // `confirmed` is the standard commitment for sending: it tracks the
+            // tip closely, whereas `finalized` lags ~32 slots (~13s) behind and
+            // burns that much of the ~60–90s blockhash validity window before
+            // the keysign ceremony even starts.
+            return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "confirmed"]]), .jsonEncoding)
         case .getTokenAccountsByOwner(let walletAddress, let filter):
             let filterDict: [String: String]
             switch filter {

@@ -390,6 +390,7 @@
 "failToGetAccountNumber" = "Falha ao obter o número da conta";
 "failToGetRecentBlockHash" = "Falha ao obter o hash do bloco recente";
 "failToGetSequenceNo" = "Falha ao obter o número de sequência";
+"failToResolveJettonWallet" = "Não foi possível resolver o endereço da carteira jetton. Tente novamente.";
 "failToStartKesign" = "Erro de assinatura";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
 "failureReason" = "Motivo da falha";
