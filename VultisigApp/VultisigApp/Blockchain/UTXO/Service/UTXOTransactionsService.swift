@@ -20,13 +20,25 @@ class UTXOTransactionsService: ObservableObject {
     /// successful response here does not guarantee the network has accepted
     /// the broadcast yet. Callers should treat the txid as best-effort and
     /// poll a separate explorer if confirmation matters.
-    static func broadcastBitcoinTransaction(signedTransaction: String) async throws -> String {
+    static func broadcastBitcoinTransaction(signedTransaction: String, expectedTxid: String) async throws -> String {
         let response = try await httpClient.request(
             BitcoinBroadcastAPI.broadcast(signedTransaction: signedTransaction)
         )
-        guard let txid = String(data: response.data, encoding: .utf8) else {
-            throw NSError(domain: "BlockchairServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])
+        guard let body = String(data: response.data, encoding: .utf8) else {
+            throw UTXOTransactionError.unexpectedResponse
         }
+
+        // The proxy runs with validation disabled, so the body reaches us for any
+        // HTTP status: the txid on success, or an error string on failure. The
+        // txid is the hash of the exact bytes we broadcast, so an accepted
+        // transaction echoes back the txid computed locally at signing time.
+        // Anything else is an error body — throw it instead of persisting it as
+        // a fake txid.
+        let txid = body.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard txid.caseInsensitiveCompare(expectedTxid) == .orderedSame else {
+            throw UTXOTransactionError.apiError(txid)
+        }
+
         return txid
     }
 

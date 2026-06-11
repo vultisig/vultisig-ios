@@ -142,7 +142,7 @@ class BittensorService: RpcService {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         do {
             let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix], endpoint: resolvedEndpoint)
-            return result
+            return try SubstrateBroadcast.validatedHash(result)
         } catch {
             // Suppress "Already Imported" errors (multi-device signing, second device gets this)
             let errorMessage = error.localizedDescription.lowercased()
