@@ -831,7 +831,7 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:
                     do {
-                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction)
+                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction, expectedTxid: tx.transactionHash)
                         self.txid = transactionHash
                         // Fire-and-forget: don't block the broadcast confirmation on cache eviction.
                         Task { await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin) }
