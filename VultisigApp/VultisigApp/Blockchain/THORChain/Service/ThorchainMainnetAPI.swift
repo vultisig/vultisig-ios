@@ -54,7 +54,8 @@ struct ThorchainMainnetAPI: TargetType {
             streamingInterval: String,
             streamingQuantity: String?,
             affiliates: String?,
-            affiliateBps: String?
+            affiliateBps: String?,
+            toleranceBps: String?
         )
         case tcyStaker(address: String)
 
@@ -153,7 +154,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .allDenomMetadata:
             return .requestParameters(["pagination.limit": "1000"], .urlEncoding)
 
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps, let toleranceBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -164,6 +165,7 @@ struct ThorchainMainnetAPI: TargetType {
             if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliates = affiliates { params["affiliate"] = affiliates }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
+            if let toleranceBps = toleranceBps { params["tolerance_bps"] = toleranceBps }
             return .requestParameters(params, .urlEncoding)
 
         case .rujiGraphQL(let query):
