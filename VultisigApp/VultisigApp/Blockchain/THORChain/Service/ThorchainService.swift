@@ -148,6 +148,7 @@ class ThorchainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
+        toleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -164,7 +165,8 @@ class ThorchainService: ThorchainSwapProvider {
             streamingInterval: String(interval),
             streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
             affiliates: affiliates,
-            affiliateBps: affiliateBps
+            affiliateBps: affiliateBps,
+            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
         ))
 
         // THORChain returns a typed swap-error body (sometimes with HTTP 200,
