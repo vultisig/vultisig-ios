@@ -176,8 +176,8 @@ class SuiService {
                 )
 
                 guard let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data") else {
-                    logger.error("Failed to decode coins")
-                    break
+                    logger.error("Failed to decode coin page at cursor \(cursor ?? "<start>", privacy: .public)")
+                    throw Errors.coinPageDecodeFailed(cursor: cursor)
                 }
 
                 allCoins.append(contentsOf: coins.map { suiCoin in
@@ -347,6 +347,7 @@ private extension SuiService {
         case simulationFailed(String)
         case failedToParseGasEstimate
         case dryRunFailed(String)
+        case coinPageDecodeFailed(cursor: String?)
 
         var errorDescription: String? {
             switch self {
@@ -358,6 +359,8 @@ private extension SuiService {
                 return "Failed to parse gas estimate from dry run"
             case .dryRunFailed(let error):
                 return "Dry run failed: \(error)"
+            case .coinPageDecodeFailed(let cursor):
+                return "Failed to decode coin page from suix_getAllCoins at cursor \(cursor ?? "<start>"). Aborting to avoid a truncated coin set."
             }
         }
     }
