@@ -487,6 +487,8 @@ class Endpoint {
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
 
+    static let zcashServiceRpc = "https://api.vultisig.com/zcash/"
+
     static func getExplorerByCoinURL(coin: Coin) -> String? {
         // For native tokens, show the address page
         guard !coin.isNativeToken else {

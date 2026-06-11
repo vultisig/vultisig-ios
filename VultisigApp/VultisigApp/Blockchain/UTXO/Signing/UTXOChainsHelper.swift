@@ -24,6 +24,21 @@ class UTXOChainsHelper {
         self.coin = coin
     }
 
+    /// Live ZIP-243 branch id WalletCore reads off the plan during preimage
+    /// construction. Resolved at send time and carried on the payload's UTXO
+    /// specific — the initiator stamps it (BlockChainService), the co-signer
+    /// re-resolves the same network-global value (JoinKeysignViewModel). There
+    /// is no compiled-in fallback: signing with a stale branch id produces a tx
+    /// the network rejects, so refuse to sign when it could not be resolved.
+    private func zcashBranchID(keysignPayload: KeysignPayload) throws -> Data {
+        guard let branchId = keysignPayload.chainSpecific.zcashBranchId,
+              !branchId.isEmpty,
+              let branchData = Data(hexString: branchId) else {
+            throw HelperError.runtimeError("Zcash ZIP-243 consensus branch id is unavailable; cannot sign the ZEC transaction without the live branch id")
+        }
+        return branchData
+    }
+
     static func getHelper(coin: Coin) -> UTXOChainsHelper? {
         switch coin.chainType {
         case .UTXO:
@@ -90,7 +105,7 @@ class UTXOChainsHelper {
     }
 
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {
-        guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee, let sendMaxAmount, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
         var input = signingInput
@@ -139,7 +154,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "30f33754")!
+            plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
         }
 
         input.plan = plan
@@ -147,7 +162,7 @@ class UTXOChainsHelper {
     }
 
     func getBitcoinSigningInput(keysignPayload: KeysignPayload) throws -> BitcoinSigningInput {
-        guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee, let sendMaxAmount, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
 
@@ -217,7 +232,7 @@ class UTXOChainsHelper {
         }
 
         if coin == .zcash {
-            plan.branchID = Data(hexString: "30f33754")!
+            plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
         }
 
         input.plan = plan
@@ -226,12 +241,11 @@ class UTXOChainsHelper {
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
         let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-
-        if coin == .zcash {
-            plan.branchID = Data(hexString: "30f33754")!
-        }
-
+        // The branch id only affects the ZIP-243 sighash digest, not the
+        // planned amount/fee/change this method exposes for fee display, so it
+        // is deliberately not set here (avoids forcing an RPC resolve on the
+        // fee-preview path).
+        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
         return plan
     }
 
@@ -282,11 +296,9 @@ class UTXOChainsHelper {
     }
     func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
         let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-
-        if coin == .zcash {
-            plan.branchID = Data(hexString: "30f33754")!
-        }
+        // Placeholder tx for Blockaid analysis: only plan amount/change are read
+        // below, so the ZIP-243 branch id (sighash-only) is irrelevant here.
+        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         // Build raw transaction manually using plan data
         var rawTx = Data()

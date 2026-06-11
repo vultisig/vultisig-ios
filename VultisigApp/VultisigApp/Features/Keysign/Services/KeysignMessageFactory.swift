@@ -76,7 +76,7 @@ struct KeysignMessageFactory {
                 case "PSBT_DASH":
                     messages += try SwapKitDashSigner.preSigningHashes(payload: swapKitPayload)
                 case "PSBT_ZEC":
-                    messages += try SwapKitZcashSigner.preSigningHashes(payload: swapKitPayload)
+                    messages += try SwapKitZcashSigner.preSigningHashes(payload: swapKitPayload, zcashBranchId: payload.chainSpecific.zcashBranchId)
                 case "SUI":
                     messages += try SwapKitSuiSigner.preSigningHashes(payload: swapKitPayload)
                 case "TRON":

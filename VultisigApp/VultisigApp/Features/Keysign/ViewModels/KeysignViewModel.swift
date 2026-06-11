@@ -633,7 +633,8 @@ class KeysignViewModel: ObservableObject {
                     let tx = try SwapKitZcashSigner.compileSignedTransaction(
                         payload: payload,
                         signatures: signatures,
-                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                        pubKeyHex: keysignPayload.coin.hexPublicKey,
+                        zcashBranchId: keysignPayload.chainSpecific.zcashBranchId
                     )
                     signedTransactions.append(tx)
                 case "SUI":
