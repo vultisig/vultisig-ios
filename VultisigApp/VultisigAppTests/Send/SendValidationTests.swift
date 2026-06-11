@@ -193,6 +193,25 @@ final class SendValidationTests: XCTestCase {
         XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("0.005"), gas: .zero))
     }
 
+    func testCanBeReapedUsesFeeNotGasForExistentialDepositReserve() {
+        // The call sites (SendDetailsViewModel.validateBalance and
+        // SendCryptoVerifyLogic.validateBalanceWithFee) must pass the planned
+        // transaction `fee` into the `gas:` parameter — not the raw per-unit
+        // `gas`. This test pins that distinction: with the same amount, the
+        // real fee tips the remainder below ED (reaped) while the tiny raw gas
+        // would leave it above ED (not reaped).
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
+                           rawBalance: "100000000000") // 10 DOT
+        let amountStr = amount("9.985") // leaves 0.015 DOT before fee/gas deduction
+        let fee = BigInt(100_000_000) // 0.01 DOT planned fee
+        let rawGas = BigInt(1_000)    // negligible per-unit gas
+        // With the fee: remainder = 0.015 − 0.01 = 0.005 DOT < 0.01 ED → reaped.
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: dot, amount: amountStr, gas: fee))
+        // With the raw gas: remainder ≈ 0.015 DOT > 0.01 ED → NOT reaped.
+        // Passing gas here would wrongly let a reaping send through.
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amountStr, gas: rawGas))
+    }
+
     func testCanBeReapedTrueForRippleWhenRemainderBelowExistentialDeposit() {
         let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true,
                            rawBalance: "11000000") // 11 XRP

@@ -636,7 +636,7 @@ final class SendDetailsViewModel {
         // charged. Skipped for non-native tokens (ED applies to the native
         // account, not token transfers).
         if coin.isNativeToken {
-            if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: gas) {
+            if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: fee) {
                 setAmountError(message: "belowExistentialDepositError".localized)
                 return false
             }

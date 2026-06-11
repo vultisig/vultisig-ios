@@ -105,7 +105,7 @@ struct SendCryptoVerifyLogic {
             // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
             // after the ceremony if the send would drop the sender below ED.
             if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
-                return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError")
+                return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }
         } else {
             if amount > balance {
