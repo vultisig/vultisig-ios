@@ -52,9 +52,13 @@ class RippleService {
         // poller resolves the real outcome from this hash and surfaces the error
         // on screen. The bug this guards against is returning the engine error
         // *message* as the txid; a missing hash means we have nothing to track,
-        // so throw instead of persisting an empty string as a fake success.
+        // so surface the engine result/message as the failure instead of
+        // persisting an empty string as a fake success.
         guard let hash = result?.txJson?.hash, !hash.isEmpty else {
-            throw RippleBroadcastError.missingTransactionHash
+            throw RippleBroadcastError.broadcastFailed(
+                code: result?.engineResult ?? "unknown",
+                message: result?.engineResultMessage
+            )
         }
         return hash
     }
@@ -108,12 +112,15 @@ class RippleService {
 }
 
 enum RippleBroadcastError: Error, LocalizedError {
-    case missingTransactionHash
+    case broadcastFailed(code: String, message: String?)
 
     var errorDescription: String? {
         switch self {
-        case .missingTransactionHash:
-            return "Ripple broadcast did not return a transaction hash"
+        case let .broadcastFailed(code, message):
+            if let message, !message.isEmpty {
+                return "Ripple broadcast failed (\(code)): \(message)"
+            }
+            return "Ripple broadcast failed (\(code))"
         }
     }
 }
