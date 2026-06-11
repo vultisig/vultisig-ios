@@ -92,4 +92,62 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertEqual(tokenObjects.map { $0["objectID"] }, ["0xtoken"])
         XCTAssertEqual(gasObjects.map { $0["objectID"] }, ["0xgas"])
     }
+
+    // MARK: - Payload coin filtering (keysign payload / QR bloat guard)
+
+    /// The full set of objects a heavy wallet might own: native SUI, an LST, a
+    /// bridged token, and an unrelated memecoin.
+    private var heterogeneousWallet: [[String: String]] {
+        [
+            ["coinType": nativeLong, "objectID": "0xnative"],
+            ["coinType": xSUI, "objectID": "0xlst"],
+            ["coinType": bridgedCoin, "objectID": "0xtoken"],
+            ["coinType": "0xfeed::moon::MOON", "objectID": "0xmemecoin"]
+        ]
+    }
+
+    /// A native SUI send embeds only the native object — no LST, no bridged
+    /// token, no memecoin — so the keysign payload / QR stays small.
+    func testPayloadCoinsForNativeSendKeepsOnlyNative() {
+        let filtered = SuiCoinType.payloadCoins(
+            heterogeneousWallet,
+            isNativeToken: true,
+            contractAddress: ""
+        )
+        XCTAssertEqual(filtered.map { $0["objectID"] }, ["0xnative"])
+    }
+
+    /// A token send embeds the native SUI objects (gas) and the target token's
+    /// objects only — never other held tokens (LST, memecoin).
+    func testPayloadCoinsForTokenSendKeepsNativeUnionTargetTokenOnly() {
+        let filtered = SuiCoinType.payloadCoins(
+            heterogeneousWallet,
+            isNativeToken: false,
+            contractAddress: bridgedCoin
+        )
+        XCTAssertEqual(Set(filtered.map { $0["objectID"] }), ["0xnative", "0xtoken"])
+        XCTAssertFalse(filtered.contains { $0["objectID"] == "0xlst" })
+        XCTAssertFalse(filtered.contains { $0["objectID"] == "0xmemecoin" })
+    }
+
+    /// Multiple objects of the same target token (and multiple native gas
+    /// objects) are all preserved — filtering by type must not cap object count.
+    func testPayloadCoinsPreservesAllMatchingObjects() {
+        let wallet = [
+            ["coinType": nativeShort, "objectID": "0xgas1"],
+            ["coinType": nativeLong, "objectID": "0xgas2"],
+            ["coinType": bridgedCoin, "objectID": "0xtoken1"],
+            ["coinType": bridgedCoin, "objectID": "0xtoken2"],
+            ["coinType": xSUI, "objectID": "0xlst"]
+        ]
+        let filtered = SuiCoinType.payloadCoins(
+            wallet,
+            isNativeToken: false,
+            contractAddress: bridgedCoin
+        )
+        XCTAssertEqual(
+            Set(filtered.map { $0["objectID"] }),
+            ["0xgas1", "0xgas2", "0xtoken1", "0xtoken2"]
+        )
+    }
 }

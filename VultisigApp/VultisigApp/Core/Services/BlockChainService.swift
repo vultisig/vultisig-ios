@@ -497,7 +497,17 @@ private extension BlockChainService {
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: dynamicPriorityFee, priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
 
         case .sui:
-            let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
+            let (referenceGasPrice, ownedCoins) = try await sui.getGasInfo(coin: coin)
+
+            // The signer only needs the native SUI objects (for gas, and as the
+            // inputs of a native send) plus the objects of the token being sent.
+            // Embedding every owned object would bloat the keysign payload — and
+            // therefore the pairing QR / TSS relay payload — on heavy wallets.
+            let allCoins = SuiCoinType.payloadCoins(
+                ownedCoins,
+                isNativeToken: coin.isNativeToken,
+                contractAddress: coin.contractAddress
+            )
 
             // Calculate dynamic gas budget using dry run simulation
             let gasBudget: BigInt

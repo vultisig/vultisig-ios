@@ -71,6 +71,27 @@ enum SuiCoinType {
         return matches(coinType, SuiConstants.nativeCoinType)
     }
 
+    /// Filters a set of owned coin objects down to exactly what a SUI send
+    /// serializes into the keysign payload: the native SUI objects (always
+    /// needed — they pay gas, and for a native send they are also the inputs)
+    /// plus, for a token send, the objects of the token being sent. Every other
+    /// owned object (unrelated memecoins / LSTs) is dropped so the payload — and
+    /// therefore the pairing QR and TSS relay payload — stays small.
+    ///
+    /// `getPreSignedInputData` performs the same selection on this set, so the
+    /// filtered output is exactly the inputs the signer consumes.
+    static func payloadCoins(
+        _ coins: [[String: String]],
+        isNativeToken: Bool,
+        contractAddress: String
+    ) -> [[String: String]] {
+        let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
+        return coins.filter { coin in
+            let coinType = coin["coinType"] ?? .empty
+            return isNative(coinType) || matches(coinType, tokenType)
+        }
+    }
+
     /// Collapses a package-address segment to `0x` + hex with leading zeros
     /// stripped, so `0x0000…0002` and `0x2` compare equal.
     private static func normalizeAddress(_ address: String) -> String {
