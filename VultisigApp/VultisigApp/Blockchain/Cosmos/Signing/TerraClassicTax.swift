@@ -59,4 +59,25 @@ enum TerraClassicTax {
             && !denom.hasPrefix("ibc/")
             && !denom.hasPrefix("factory/")
     }
+
+    /// Base gas fee for an `uluna`-denominated Terra Classic send (~0.5 LUNC at
+    /// 300k gas). Paid by native LUNC, CW20 (`terra1…`) and IBC (`ibc/…`) tokens,
+    /// whose fee the signer denominates in `uluna`.
+    static let ulunaBaseGas: UInt64 = 100000000
+
+    /// Base gas fee for a `uusd`-denominated Terra Classic send (300k gas x
+    /// 0.75 uusd/gas = 225000 uusd). Paid only by the USTC bank denom, whose fee
+    /// the signer denominates in `uusd`.
+    static let uusdBaseGas: UInt64 = 225000
+
+    /// Base gas number for a Terra Classic send, in the SAME denom the signer
+    /// uses for the fee (see `TerraHelperStruct.getPreSignedInputData`). Bank
+    /// denoms (USTC / `uusd`) get the `uusd` base; everything else — native LUNC,
+    /// CW20 and IBC — gets the `uluna` base. Gating both this and the signed fee
+    /// denom on `isBankDenom` keeps the gas number and the fee denom in lockstep.
+    static func baseGas(contractAddress: String, isNativeToken: Bool) -> UInt64 {
+        isBankDenom(contractAddress: contractAddress, isNativeToken: isNativeToken)
+            ? uusdBaseGas
+            : ulunaBaseGas
+    }
 }

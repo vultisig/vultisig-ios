@@ -92,4 +92,42 @@ final class TerraClassicTaxTests: XCTestCase {
     func testIsBankDenomFalseForFactoryToken() {
         XCTAssertFalse(TerraClassicTax.isBankDenom(contractAddress: "factory/terra1abc/utoken", isNativeToken: false))
     }
+
+    // MARK: - baseGas (the gas NUMBER must match the signer's fee denom)
+
+    func testBaseGasUstcGetsUusdNumber() {
+        // USTC (uusd bank denom) signs its fee in uusd, so the gas number is the
+        // uusd base (300k gas x 0.75 uusd/gas), NOT the much larger uluna base.
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: "uusd", isNativeToken: false),
+            TerraClassicTax.uusdBaseGas
+        )
+        XCTAssertEqual(TerraClassicTax.uusdBaseGas, 225000)
+    }
+
+    func testBaseGasNativeLuncGetsUlunaNumber() {
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: "", isNativeToken: true),
+            TerraClassicTax.ulunaBaseGas
+        )
+        XCTAssertEqual(TerraClassicTax.ulunaBaseGas, 100000000)
+    }
+
+    func testBaseGasCW20GetsUlunaNumber() {
+        // CW20 (terra1…) pays its fee in uluna, so it must get the uluna gas
+        // number — not the uusd number, which would underpay gas ~444x.
+        let cw20 = "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26"
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: cw20, isNativeToken: false),
+            TerraClassicTax.ulunaBaseGas
+        )
+    }
+
+    func testBaseGasIBCGetsUlunaNumber() {
+        let ibc = "ibc/0471F1C4E7AFD3F07702BEF6DC365268D64570F7C1FDC98EA6098DD6DE59817B"
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: ibc, isNativeToken: false),
+            TerraClassicTax.ulunaBaseGas
+        )
+    }
 }
