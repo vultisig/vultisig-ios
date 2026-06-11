@@ -207,6 +207,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Chain %@ is not enabled for this imported vault";
 "collectedRewards" = "Collected rewards";
+"commands" = "Commands";
 "commission" = "commission";
 "compoundedCoin" = "Compounded %@";
 "congratsExclamation" = "Congrats!";
@@ -451,6 +452,9 @@
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "functionTransactionScreenErrorTitle" = "Function Error";
 "gas" = "Gas";
+"gasBudget" = "Gas Budget";
+"gasOwner" = "Gas Owner";
+"gasPrice" = "Gas Price";
 "general" = "General";
 "generatedMemo" = "Generated Memo:";
 "German" = "German";
@@ -485,6 +489,7 @@
 "initializingScreenCapture" = "Initializing Screen Capture";
 "initiatingDevice" = "Initiating Device";
 "inProgress" = "In progress";
+"inputs" = "Inputs";
 "insufficientBalance" = "Insufficient Balance";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
@@ -921,6 +926,7 @@
 "self" = "Self";
 "sell" = "Sell";
 "send" = "Send";
+"sender" = "Sender";
 "sendingRightAddressCheck" = "I’m sending to the correct address";
 "sendOverview" = "Send overview";
 "sendTo" = "Send to";
@@ -982,6 +988,7 @@
 "success" = "Success";
 "successful" = "Successful";
 "successfully" = "successfully";
+"suiTransaction" = "Sui Transaction";
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";
@@ -1066,6 +1073,7 @@
 "track" = "Track";
 "transaction" = "Transaction";
 "transactionBroadcasted" = "Transaction broadcasted";
+"transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
 "transactionFailed" = "Transaction failed";

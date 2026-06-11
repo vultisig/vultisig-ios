@@ -967,6 +967,7 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         case signSolana = "sign_solana"
         case signTon = "sign_ton"
         case signBitcoin = "sign_bitcoin"
+        case signSui = "sign_sui"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -988,6 +989,9 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         } else if container.contains(.signBitcoin) {
             let signBitcoin = try container.decode(VSSignBitcoin.self, forKey: .signBitcoin)
             self = .signBitcoin(signBitcoin)
+        } else if container.contains(.signSui) {
+            let signSui = try container.decode(VSSignSui.self, forKey: .signSui)
+            self = .signSui(signSui)
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
@@ -1011,6 +1015,8 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignTon, forKey: .signTon)
         case .signBitcoin(let vSSignBitcoin):
             try container.encode(vSSignBitcoin, forKey: .signBitcoin)
+        case .signSui(let vSSignSui):
+            try container.encode(vSSignSui, forKey: .signSui)
         }
     }
 }
@@ -1310,6 +1316,23 @@ extension VSSignTon: @retroactive Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         tonMessages = try container.decode([VSTonMessage].self, forKey: .tonMessages)
+    }
+}
+
+extension VSSignSui: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case unsignedTxMsg = "unsigned_tx_msg"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(unsignedTxMsg, forKey: .unsignedTxMsg)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        unsignedTxMsg = try container.decode(String.self, forKey: .unsignedTxMsg)
     }
 }
 

@@ -149,6 +149,13 @@ struct KeysignPayload: Codable, Hashable {
         return ton
     }
 
+    var signSui: SignSui? {
+        guard case let .signSui(sui) = signData else {
+            return nil
+        }
+        return sui
+    }
+
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(swapPayload?.fromCoin.decimals ?? 1), significand: 1)

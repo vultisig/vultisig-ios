@@ -205,6 +205,7 @@
 "coinPool" = "%@ 池";
 "coinServiceChainNotEnabledForKeyImport" = "此导入的保险库未启用 %@ 链";
 "collectedRewards" = "已收集的奖励";
+"commands" = "命令";
 "commission" = "佣金";
 "compoundedCoin" = "已复利 %@";
 "congratsExclamation" = "恭喜！";
@@ -446,6 +447,9 @@
 "functionTransactionScreenErrorSubtitle" = "重定向到功能时出错";
 "functionTransactionScreenErrorTitle" = "功能错误";
 "gas" = "燃料";
+"gasBudget" = "Gas 预算";
+"gasOwner" = "Gas 所有者";
+"gasPrice" = "Gas 价格";
 "general" = "通用";
 "generatedMemo" = "生成的备注:";
 "German" = "德语";
@@ -479,6 +483,7 @@
 "initializingScreenCapture" = "正在初始化屏幕捕获";
 "initiatingDevice" = "发起设备";
 "inProgress" = "进行中";
+"inputs" = "输入";
 "insufficientBalance" = "余额不足";
 "insufficientBalanceForFunctions" = "余额不足。请输入小于或等于可用资金的金额";
 "insufficientGasTokenError" = "没有足够的 %@ 来支付发送 %@ 的燃料费";
@@ -913,6 +918,7 @@
 "self" = "自己";
 "sell" = "出售";
 "send" = "发送";
+"sender" = "发送方";
 "sendingRightAddressCheck" = "我正在发送到正确的地址";
 "sendOverview" = "发送概览";
 "sendTo" = "发送至";
@@ -974,6 +980,7 @@
 "success" = "成功";
 "successful" = "成功";
 "successfully" = "成功";
+"suiTransaction" = "Sui 交易";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";
 "swap" = "交换";
@@ -1057,6 +1064,7 @@
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";
+"transactionBytes" = "交易字节";
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
 "transactionFailed" = "交易失败";

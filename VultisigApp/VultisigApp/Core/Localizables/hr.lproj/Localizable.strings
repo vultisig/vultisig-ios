@@ -205,6 +205,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Lanac %@ nije omogućen za ovaj uvezeni vault";
 "collectedRewards" = "Prikupljene nagrade";
+"commands" = "Naredbe";
 "commission" = "provizija";
 "compoundedCoin" = "%@ Složeno";
 "congratsExclamation" = "Čestitamo!";
@@ -446,6 +447,9 @@
 "functionTransactionScreenErrorSubtitle" = "Došlo je do greške prilikom preusmjeravanja na funkciju";
 "functionTransactionScreenErrorTitle" = "Greška funkcije";
 "gas" = "Plin";
+"gasBudget" = "Proračun plina";
+"gasOwner" = "Vlasnik plina";
+"gasPrice" = "Cijena plina";
 "general" = "Općenito";
 "generatedMemo" = "Generated Memo:";
 "German" = "Njemački";
@@ -479,6 +483,7 @@
 "initializingScreenCapture" = "Pokretanje snimanja zaslona";
 "initiatingDevice" = "Pokrećući uređaj";
 "inProgress" = "U tijeku";
+"inputs" = "Ulazi";
 "insufficientBalance" = "Nedovoljno sredstava";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "insufficientGasTokenError" = "Nedovoljno %@ za pokrivanje naknada za plin za slanje %@";
@@ -913,6 +918,7 @@
 "self" = "Sam";
 "sell" = "Prodaj";
 "send" = "Pošalji";
+"sender" = "Pošiljatelj";
 "sendingRightAddressCheck" = "Šaljem na pravu adresu";
 "sendOverview" = "Pošaljite pregled";
 "sendTo" = "Pošalji na";
@@ -974,6 +980,7 @@
 "success" = "Uspjeh";
 "successful" = "Uspješno";
 "successfully" = "uspješno";
+"suiTransaction" = "Sui transakcija";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
@@ -1057,6 +1064,7 @@
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";
+"transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
 "transactionFailed" = "Transakcija nije uspjela";
