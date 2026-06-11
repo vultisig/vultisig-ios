@@ -226,7 +226,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ton:
             return TonHelper.defaultFee.description
         case .ripple:
-            return "180000"
+            return RippleFee.maxFeeDrops.description
         case .akash:
             return "3000" // 0.003 AKT Cosmos station uses something like that
         case .qbtc:

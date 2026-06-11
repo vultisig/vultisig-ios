@@ -35,6 +35,7 @@ final class BlockChainService {
         case failToGetSequenceNo
         case failToGetRecentBlockHash
         case failToGetAssociatedTokenAddressFrom
+        case failToResolveJettonWallet
 
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
@@ -683,23 +684,29 @@ private extension BlockChainService {
                 }
             }
 
+            // For jettons we must send to the SENDER's jetton wallet, never the
+            // master contract. A failed resolution must be a hard error — falling
+            // back to the master address strands funds (tx succeeds, jettons stay put).
             var senderJettonWallet: String = coin.contractAddress
             if !coin.isNativeToken {
-                if let resolved = await TonService.shared.getJettonWalletAddressAsync(ownerAddress: coin.address, masterAddress: coin.contractAddress) {
-                    senderJettonWallet = resolved
+                guard let resolved = await ton.resolveJettonWalletAddress(ownerAddress: coin.address, masterAddress: coin.contractAddress) else {
+                    throw Errors.failToResolveJettonWallet
                 }
+                senderJettonWallet = resolved
             }
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount, jettonAddress: senderJettonWallet, isActiveDestination: !isBounceable)
         case .ripple:
 
-            let account = try await ripple.fetchAccountsInfo(for: coin.address)
+            async let accountTask = ripple.fetchAccountsInfo(for: coin.address)
+            async let feeTask = ripple.fetchFee()
+            let (account, fee) = try await (accountTask, feeTask)
 
             let sequence = account?.result?.accountData?.sequence ?? 0
 
             let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
 
             // 60 is bc of tss to wait till 5min so all devices can sign.
-            return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
+            return .Ripple(sequence: UInt64(sequence), gas: UInt64(fee), lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
             return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap)
         }

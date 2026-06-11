@@ -169,8 +169,22 @@ class TonService {
         return (seqno, expireAt)
     }
 
-    func getJettonWalletAddressAsync(ownerAddress: String, masterAddress: String) async -> String? {
-        return await runGetWalletAddress(owner: ownerAddress, master: masterAddress)
+    /// Resolves the owner's jetton wallet address, retrying a few times to ride
+    /// out transient RPC failures. Returns `nil` only when every attempt fails —
+    /// callers must treat that as a hard error and never fall back to the master
+    /// contract address.
+    func resolveJettonWalletAddress(ownerAddress: String, masterAddress: String, maxAttempts: Int = 3) async -> String? {
+        for attempt in 1...max(1, maxAttempts) {
+            if let resolved = await runGetWalletAddress(owner: ownerAddress, master: masterAddress) {
+                return resolved
+            }
+            if attempt < maxAttempts {
+                logger.warning("Jetton wallet resolution failed (attempt \(attempt)/\(maxAttempts)), retrying")
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+        }
+        logger.error("Failed to resolve jetton wallet address after \(maxAttempts) attempts")
+        return nil
     }
 
     private func runGetWalletAddress(owner: String, master: String) async -> String? {
