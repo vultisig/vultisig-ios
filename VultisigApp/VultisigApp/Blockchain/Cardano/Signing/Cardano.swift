@@ -148,9 +148,9 @@ class CardanoHelper {
     }
 
     /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`
-    /// (default `180_000` lovelace, matches SDK `cardanoDefaultFee`). The
-    /// real fee baked into the body comes from `AnySigner.plan(...)` at sign
-    /// time — this is the user-facing estimate.
+    /// (seeded at `180_000` lovelace). The real fee baked into the body is
+    /// derived by WalletCore's planner from the tx size at sign time
+    /// (`minFeeA*size + minFeeB`); this is only the user-facing estimate.
     static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
         guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
@@ -171,7 +171,7 @@ class CardanoHelper {
             throw HelperError.runtimeError("coin is not ADA")
         }
 
-        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
+        guard case .Cardano(_, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
 
@@ -205,16 +205,17 @@ class CardanoHelper {
             ? UInt64(keysignPayload.toAmount)
             : Self.minLovelaceOnTokenOutput
 
-        // `forceFee` must be set before `AnySigner.plan(...)` — WalletCore's Cardano
-        // `doPlan()` reads it only during planning, so a size-derived fee here would
-        // diverge from the SDK/Windows body and break MPC sighash parity.
+        // Leave `forceFee` unset (0) so WalletCore's Cardano `doPlan()` derives
+        // the fee from the planned tx size — `minFeeA*size + minFeeB`. A flat
+        // forced fee underpays any body above ~560 bytes (CNT/multi-input/metadata
+        // txs) and the network rejects it with `FeeTooSmallUTxO`. `byteFee` from
+        // chainSpecific is retained only as the Verify-screen display estimate.
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.changeAddress = keysignPayload.coin.address
                 $0.amount = recipientLovelace
                 $0.useMaxAmount = safeGuardMaxAmount
-                $0.forceFee = UInt64(byteFee)
                 if let tokenBundle {
                     $0.tokenAmount = tokenBundle
                 }
@@ -303,6 +304,9 @@ class CardanoHelper {
             throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
         }
         input.plan = plan
+        // Pin the planner's size-derived fee into the body so the pre-image hash
+        // and the compile phase agree on identical bytes. With `forceFee` left
+        // unset above, `plan.fee` is `minFeeA*size + minFeeB`, not the flat seed.
         input.transferMessage.forceFee = plan.fee
         return try input.serializedData()
     }
