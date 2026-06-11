@@ -20,6 +20,20 @@ final class BlockChainService {
         return value * 2 + value / 2 // x2.5 fee
     }
 
+    /// Dogecoin's `suggested_transaction_fee_per_byte_sat` from Blockchair is
+    /// reported at the chain's relay-floor scale (~500k sats/byte), an order of
+    /// magnitude above the rate other UTXO chains report. Android scales it by
+    /// 0.25 (`gas * 5 / 20`) to land on a sane next-block rate; this base
+    /// multiplier reproduces that intent and the fee mode tier is applied on
+    /// top, so Low/Normal/Fast actually differ. At a live 500k sats/byte:
+    /// Low ≈ 93,750, Normal = 125,000 (== Android), Fast = 312,500 sats/byte.
+    static let dogeBaseFeeMultiplier: Float = 0.25
+
+    static func dogeByteFee(suggestedSatsPerByte sats: BigInt, feeMode: FeeMode) -> BigInt {
+        let prioritized = Float(sats) * dogeBaseFeeMultiplier * feeMode.utxoMultiplier
+        return BigInt(prioritized)
+    }
+
     static func normalizeEVMFee(_ value: BigInt) -> BigInt {
         let normalized = value + value / 2 // x1.5 fee
         return max(normalized, 1) // To avoid 0 miner tips
@@ -35,6 +49,7 @@ final class BlockChainService {
         case failToGetSequenceNo
         case failToGetRecentBlockHash
         case failToGetAssociatedTokenAddressFrom
+        case failToResolveJettonWallet
 
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
@@ -252,12 +267,11 @@ final class BlockChainService {
     func fetchUTXOFee(coin: Coin, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
 
-        // DOGE has extremely high base fees from API, need to reduce significantly
         let result: BigInt
         if coin.chain == .dogecoin {
-            // For DOGE, the API returns 500k sats/byte which is too high for WalletCore
-            // Use a much lower value that WalletCore can work with: divide by 10
-            result = sats / 10 // 500k / 10 = 50k sats/byte (still high but workable)
+            // DOGE reports its rate at the relay-floor scale; rescale to a sane
+            // next-block rate and apply the fee mode tier (see dogeByteFee).
+            result = Self.dogeByteFee(suggestedSatsPerByte: sats, feeMode: feeMode)
         } else {
             // For other chains, use normal normalization and multipliers
             let normalized = Self.normalizeUTXOFee(sats)
@@ -683,23 +697,29 @@ private extension BlockChainService {
                 }
             }
 
+            // For jettons we must send to the SENDER's jetton wallet, never the
+            // master contract. A failed resolution must be a hard error — falling
+            // back to the master address strands funds (tx succeeds, jettons stay put).
             var senderJettonWallet: String = coin.contractAddress
             if !coin.isNativeToken {
-                if let resolved = await TonService.shared.getJettonWalletAddressAsync(ownerAddress: coin.address, masterAddress: coin.contractAddress) {
-                    senderJettonWallet = resolved
+                guard let resolved = await ton.resolveJettonWalletAddress(ownerAddress: coin.address, masterAddress: coin.contractAddress) else {
+                    throw Errors.failToResolveJettonWallet
                 }
+                senderJettonWallet = resolved
             }
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount, jettonAddress: senderJettonWallet, isActiveDestination: !isBounceable)
         case .ripple:
 
-            let account = try await ripple.fetchAccountsInfo(for: coin.address)
+            async let accountTask = ripple.fetchAccountsInfo(for: coin.address)
+            async let feeTask = ripple.fetchFee()
+            let (account, fee) = try await (accountTask, feeTask)
 
             let sequence = account?.result?.accountData?.sequence ?? 0
 
             let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
 
             // 60 is bc of tss to wait till 5min so all devices can sign.
-            return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
+            return .Ripple(sequence: UInt64(sequence), gas: UInt64(fee), lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
             return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap)
         }

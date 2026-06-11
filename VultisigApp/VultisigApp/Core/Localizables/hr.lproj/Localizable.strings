@@ -391,6 +391,7 @@
 "failToGetAccountNumber" = "Nije moguće dobiti broj računa";
 "failToGetRecentBlockHash" = "Nije moguće dobiti nedavni blok hash";
 "failToGetSequenceNo" = "Nije moguće dobiti redni broj";
+"failToResolveJettonWallet" = "Nije moguće razriješiti adresu jetton novčanika. Pokušajte ponovno.";
 "failToStartKesign" = "Greška u potpisivanju";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";
 "failureReason" = "Razlog greške";
