@@ -151,6 +151,61 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    /// Circle USDC withdraw regression: the display `transaction` carries the USDC
+    /// token whose `rawBalance` is the vault EOA (~0), NOT the MSCA balance the amount
+    /// was actually validated against upstream. With a pre-built payload present the
+    /// standard balance check must be skipped — otherwise a normal withdraw trips
+    /// `walletBalanceExceededError`, sets `hasBalanceError`, and disables signing.
+    func testValidateBalanceWithFeeSkippedWhenPrebuiltPayloadPresent() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "0") // vault EOA USDC is ~0; real balance lives on the MSCA
+        let tx = try makeTransaction(coin: usdc, amount: "5") // 5 USDC > 0 EOA balance
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = KeysignPayload(
+            coin: nativeEth,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            toAmount: BigInt(0),
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: "0xb61d27f6",
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx, prebuiltKeysignPayload: prebuilt)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertFalse(vm.hasBalanceError, "pre-built payload flow must not trip the EOA balance check")
+        XCTAssertFalse(vm.showAlert)
+        XCTAssertEqual(vm.errorMessage, "")
+    }
+
+    /// Without a pre-built payload, the same insufficient-balance USDC tx must still
+    /// flag the error — the skip is strictly opt-in to the pre-built-payload flow.
+    func testValidateBalanceWithFeeStillRunsWithoutPrebuiltPayload() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "0")
+        let tx = try makeTransaction(coin: usdc, amount: "5")
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError, "regular sends keep the balance check")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     // MARK: - validateSecurityScanner
 
     func testValidateSecurityScannerReturnsTrueWhenStateIdle() throws {

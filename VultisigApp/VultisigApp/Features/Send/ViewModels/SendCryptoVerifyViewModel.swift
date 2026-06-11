@@ -116,6 +116,14 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     func validateBalanceWithFee() {
+        // A flow that pre-built its keysign payload (e.g. Circle withdraw)
+        // validates the user's amount against the real source balance upstream
+        // (the MSCA's USDC balance), and `transaction` here carries a display-only
+        // USDC coin whose `rawBalance` is the vault EOA (~0). Running the standard
+        // balance check would wrongly trip `walletBalanceExceededError` and disable
+        // signing, so skip it — mirrors the Tron-staking skip in the logic.
+        guard prebuiltKeysignPayload == nil else { return }
+
         let result = logic.validateBalanceWithFee(tx: transaction)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
