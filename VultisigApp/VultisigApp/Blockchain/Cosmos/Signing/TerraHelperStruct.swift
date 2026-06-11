@@ -108,16 +108,17 @@ struct TerraHelperStruct {
                         }
                     }]
 
+                    // Terra Classic bank-denom tokens (e.g. USTC / uusd) pay the
+                    // base gas fee plus a proportional burn tax in the send denom
+                    // itself. The total (gas + burn tax) is precomputed upstream
+                    // and carried in `gas`, so the fee is a single coin in the
+                    // token's own denom.
                     $0.fee = WalletCore.CosmosFee.with {
-                        $0.gas = 1000000
+                        $0.gas = GasLimit
                         $0.amounts = [
                             CosmosAmount.with {
-                                $0.denom = "uluna"
-                                $0.amount = String(gas) // Base fee in uluna
-                            },
-                            CosmosAmount.with { // Additional tax in uusd
-                                $0.denom = "uusd"
-                                $0.amount = String(1000000) // Replace `taxAmount` with your specific tax value
+                                $0.denom = keysignPayload.coin.contractAddress
+                                $0.amount = String(gas)
                             }
                         ]
                     }

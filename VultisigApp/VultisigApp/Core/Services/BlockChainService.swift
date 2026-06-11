@@ -293,6 +293,13 @@ private extension BlockChainService {
         }
     }
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        // Terra Classic's fee includes a proportional burn tax, so the cached
+        // fee is only valid for the exact send amount. Key the cache on the
+        // amount for that chain (reusing the free-form `quote` slot) so a
+        // re-quote at a different amount doesn't serve a stale tax.
+        let amountCacheComponent = tx.coin.chain == .terraClassic
+            ? "amount-\(tx.amountInRaw.description)"
+            : nil
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
@@ -302,7 +309,7 @@ private extension BlockChainService {
                                    toAddress: tx.toAddress,
                                    memo: tx.memo,
                                    feeMode: tx.feeMode,
-                                   quote: nil)
+                                   quote: amountCacheComponent)
 
         // Use centralized cache checking method
         if let cachedResult = shouldUseCache(for: tx.coin.chain, cacheKey: cacheKey) {
@@ -643,10 +650,15 @@ private extension BlockChainService {
             }
 
             // Chain-specific gas values
-            let gas: UInt64
+            var gas: UInt64
             switch coin.chain {
             case .terraClassic:
-                gas = 100000000
+                // Base gas fee, denominated in the SEND denom. LUNC (native) pays
+                // in uluna; USTC (uusd, non-native bank denom) pays in uusd. The
+                // uluna base (~0.5 LUNC at 300k gas) is far higher than the uusd
+                // base (300k gas x 0.75 uusd/gas = 225000 uusd), so the two can't
+                // share one constant — pick per send denom.
+                gas = coin.isNativeToken ? 100000000 : 225000
             case .dydx:
                 gas = 2500000000000000
             case .noble:
@@ -657,6 +669,20 @@ private extension BlockChainService {
                 gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
+            }
+
+            // Terra Classic charges a proportional burn tax (~0.5%) on the send
+            // amount, paid in the send denom on top of the base gas fee. Fold it
+            // into the single `gas` fee field so the signed fee, the validated
+            // fee, and the displayed fee are all the same value. The rate is
+            // fetched live (fails closed to a conservative fallback).
+            if coin.chain == .terraClassic, action == .transfer, let amount, amount > 0 {
+                let service = try CosmosService.getService(forChain: coin.chain)
+                let rate = await service.fetchTerraClassicBurnTaxRate()
+                let burnTax = TerraClassicTax.burnTax(amount: amount, rate: rate)
+                if let burnTaxUInt = UInt64(burnTax.description) {
+                    gas += burnTaxUInt
+                }
             }
 
             return .Cosmos(

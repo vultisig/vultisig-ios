@@ -100,6 +100,15 @@ struct SendCryptoVerifyLogic {
                     return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
                 }
             }
+        } else if tx.coin.chain == .terraClassic {
+            // Terra Classic bank-denom tokens (USTC / uusd) pay their gas + burn
+            // tax in the SAME denom they're sending, so the fee comes out of the
+            // token balance — not the native LUNC balance. Validate amount + fee
+            // against the token balance and skip the native-gas check below.
+            let totalAmount = tx.sendMaxAmount ? tx.fee : amount + tx.fee
+            if totalAmount > balance {
+                return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+            }
         } else {
             if amount > balance {
                 return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")

@@ -122,9 +122,35 @@ enum SendCryptoLogic {
     /// chain-specific gas, etc.) and feeds the BigInt in here. Pure math; the
     /// async fetches live in the interactor.
     static func computeMaxAmount(coin: Coin, fee: BigInt) -> String {
-        let maxValue = coin.getMaxValue(fee)
+        let maxValue: Decimal
+        if coin.chain == .terraClassic {
+            // Terra Classic charges a proportional burn tax on the send amount,
+            // so the simple `balance − fee` overshoots: the tax on that max
+            // amount is unfunded. Solve the fixed point
+            //   max = (balance − baseGasFee) / (1 + rate)
+            // using the conservative fallback rate (the Verify screen re-fetches
+            // the live rate and revalidates before signing).
+            maxValue = terraClassicMaxValue(coin: coin, baseGasFee: fee)
+        } else {
+            maxValue = coin.getMaxValue(fee)
+        }
         let digits = coin.decimals > 8 ? 8 : coin.decimals
         return formatAmountInput(maxValue, digits: digits)
+    }
+
+    /// Fixed-point max amount for Terra Classic accounting for the proportional
+    /// burn tax. `baseGasFee` is the flat gas portion in the send denom.
+    private static func terraClassicMaxValue(coin: Coin, baseGasFee: BigInt) -> Decimal {
+        let rawBalance = coin.rawBalance.toBigInt()
+        let spendableRaw = rawBalance - baseGasFee
+        guard spendableRaw > 0 else { return 0 }
+
+        let spendable = Decimal(string: spendableRaw.description) ?? 0
+        let divisor = 1 + TerraClassicTax.fallbackBurnTaxRate
+        let maxRaw = spendable / divisor
+
+        let scaled = maxRaw / pow(10, coin.decimals)
+        return scaled < .zero ? 0 : scaled.truncated(toPlaces: coin.decimals - 1)
     }
 
     /// Apply a percentage (0–100) to a max amount string. Used by the
