@@ -18,10 +18,14 @@ actor ZcashService {
 
     static let shared = ZcashService()
 
-    private let rpc = RpcService(Endpoint.zcashServiceRpc)
+    private let httpClient: HTTPClientProtocol
     private var cachedBranchId: String?
     private var cachedAt: Date?
     private var inFlight: Task<String?, Never>?
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     /// One hour: the branch id only changes at a network upgrade, so a single
     /// keysign's preimage-hash and final-compile passes (and repeated sends)
@@ -69,17 +73,11 @@ actor ZcashService {
 
     private func fetchBranchId() async -> String? {
         do {
-            let nextBlock: String? = try await rpc.sendRPCRequest(
-                method: "getblockchaininfo",
-                params: []
-            ) { result in
-                guard let dict = result as? [String: Any],
-                      let consensus = dict["consensus"] as? [String: Any] else {
-                    return nil
-                }
-                return consensus["nextblock"] as? String
-            }
-            guard let nextBlock, !nextBlock.isEmpty else {
+            let response = try await httpClient.request(
+                ZcashAPI.getBlockchainInfo,
+                responseType: ZcashBlockchainInfoResponse.self
+            )
+            guard let nextBlock = response.data.result?.consensus?.nextblock, !nextBlock.isEmpty else {
                 logger.warning("Zcash getblockchaininfo returned no consensus.nextblock branch id")
                 return nil
             }
