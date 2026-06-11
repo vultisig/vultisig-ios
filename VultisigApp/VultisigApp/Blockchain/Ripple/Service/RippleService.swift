@@ -44,27 +44,16 @@ class RippleService {
         )
 
         let result = response.data.result
+
         // `tx_json.hash` is the deterministic hash of the exact blob we
-        // submitted; XRPL echoes it back regardless of the engine result.
-        let hash = result?.txJson?.hash
-
-        if let engineResult = result?.engineResult, engineResult != "tesSUCCESS" {
-            // A "sequence already passed" result means a transaction with this
-            // sequence was already validated — when it is this exact tx (a
-            // co-signing peer broadcast it first) the echoed hash is ours, so
-            // surface it as success. Every other non-success engine result
-            // (tec/tef/tel/tem/ter) is a genuine failure and must throw so the
-            // error is never persisted as a fake txid. If a *different* tx
-            // consumed the sequence the status poller will report this hash as
-            // not found, which is the correct failed outcome.
-            if result?.engineResultMessage?.lowercased() == "This sequence number has already passed.".lowercased(),
-               let hash, !hash.isEmpty {
-                return hash
-            }
-            throw RippleBroadcastError.broadcastFailed(code: engineResult, message: result?.engineResultMessage)
-        }
-
-        guard let hash, !hash.isEmpty else {
+        // submitted; XRPL echoes it back regardless of the engine result. Track
+        // that hash even when the engine result isn't tesSUCCESS — tec* results
+        // are applied on-chain, and for a tef/tem/ter/tel rejection the status
+        // poller resolves the real outcome from this hash and surfaces the error
+        // on screen. The bug this guards against is returning the engine error
+        // *message* as the txid; a missing hash means we have nothing to track,
+        // so throw instead of persisting an empty string as a fake success.
+        guard let hash = result?.txJson?.hash, !hash.isEmpty else {
             throw RippleBroadcastError.missingTransactionHash
         }
         return hash
@@ -119,16 +108,10 @@ class RippleService {
 }
 
 enum RippleBroadcastError: Error, LocalizedError {
-    case broadcastFailed(code: String, message: String?)
     case missingTransactionHash
 
     var errorDescription: String? {
         switch self {
-        case let .broadcastFailed(code, message):
-            if let message, !message.isEmpty {
-                return "Ripple broadcast failed (\(code)): \(message)"
-            }
-            return "Ripple broadcast failed (\(code))"
         case .missingTransactionHash:
             return "Ripple broadcast did not return a transaction hash"
         }
