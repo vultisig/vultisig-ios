@@ -43,4 +43,20 @@ enum TerraClassicTax {
         }
         return value
     }
+
+    /// Whether a Terra Classic coin is a **bank denom** (e.g. USTC's `uusd`)
+    /// that pays its gas + burn tax in its OWN denom, as opposed to a CW20
+    /// contract token (`terra1…`) or an IBC token (`ibc/…`) that pays the fee
+    /// in native LUNC (`uluna`). Mirrors the bank-denom branch selection in
+    /// `TerraHelperStruct.getPreSignedInputData` so the signed fee, the
+    /// validated fee, and the max-send math all agree on which tokens are taxed
+    /// in their own denom. The native coin (LUNC) is intentionally excluded —
+    /// it is handled by its own native-balance branch.
+    static func isBankDenom(contractAddress: String, isNativeToken: Bool) -> Bool {
+        guard !isNativeToken else { return false }
+        let denom = contractAddress.lowercased()
+        return !denom.contains("terra1")
+            && !denom.hasPrefix("ibc/")
+            && !denom.hasPrefix("factory/")
+    }
 }

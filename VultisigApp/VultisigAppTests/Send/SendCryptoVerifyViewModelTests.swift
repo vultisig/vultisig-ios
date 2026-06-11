@@ -151,6 +151,87 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    // MARK: - validateBalanceWithFee — Terra Classic bank denom vs CW20/IBC
+
+    func testValidateBalanceUSTCBankDenomSubtractsFeeFromTokenBalance() throws {
+        // USTC is a Terra Classic BANK denom (uusd): it pays gas + burn tax in
+        // its OWN denom, so `amount + fee` must fit the token balance. Here the
+        // balance covers `amount` but not `amount + fee`, so it must error.
+        let ustc = makeCoin(.terraClassic, ticker: "USTC", decimals: 6, isNative: false,
+                            rawBalance: "200000000", contractAddress: "uusd")
+        let tx = try makeTransaction(coin: ustc, amount: "150", fee: BigInt(60_000_000))
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError,
+                      "USTC bank-denom must validate amount + fee against the token balance")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
+    func testValidateBalanceCW20TerraClassicTokenIsNotTaxValidated() throws {
+        // A CW20 (terra1…) Terra Classic token pays its fee in native LUNC, NOT
+        // in its own denom. The over-broad pre-fix condition wrongly folded the
+        // uluna-denominated fee into the token-denom balance check. With a token
+        // balance that exactly covers `amount` (but NOT amount + fee) and ample
+        // native LUNC for gas, the generic branch must pass.
+        let cw20 = makeCoin(.terraClassic, ticker: "ASTRO", decimals: 6, isNative: false,
+                            rawBalance: "150000000",
+                            contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "1000000000")
+        let vault = try TestStore.makeVault()
+        vault.coins = [lunc, cw20]
+        let tx = SendTransaction(
+            coin: cw20, vault: vault, fromAddress: cw20.address,
+            toAddress: "terra13lwh075aclv70w784nkjwdefmxx8p3s2f7n5m2", toAddressLabel: nil,
+            amount: "150", amountInFiat: "", memo: "",
+            gas: .zero, fee: BigInt(60_000_000), feeMode: .default,
+            estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
+            sendMaxAmount: false, isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:], wasmContractPayload: nil,
+            feeCoin: lunc
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertFalse(vm.hasBalanceError,
+                       "CW20 Terra Classic token must NOT have its uluna fee subtracted from the token balance")
+        XCTAssertEqual(vm.errorMessage, "")
+    }
+
+    func testValidateBalanceCW20TerraClassicTokenStillChecksNativeGas() throws {
+        // The CW20 branch must still surface insufficient native LUNC for gas —
+        // proving it falls through to the generic non-native gas check, not the
+        // bank-denom branch.
+        let cw20 = makeCoin(.terraClassic, ticker: "ASTRO", decimals: 6, isNative: false,
+                            rawBalance: "150000000",
+                            contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "1000") // not enough LUNC for the gas fee
+        let vault = try TestStore.makeVault()
+        vault.coins = [lunc, cw20]
+        let tx = SendTransaction(
+            coin: cw20, vault: vault, fromAddress: cw20.address,
+            toAddress: "terra13lwh075aclv70w784nkjwdefmxx8p3s2f7n5m2", toAddressLabel: nil,
+            amount: "100", amountInFiat: "", memo: "",
+            gas: .zero, fee: BigInt(60_000_000), feeMode: .default,
+            estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
+            sendMaxAmount: false, isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:], wasmContractPayload: nil,
+            feeCoin: lunc
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError,
+                      "CW20 send must report insufficient native LUNC for gas")
+    }
+
     // MARK: - validateSecurityScanner
 
     func testValidateSecurityScannerReturnsTrueWhenStateIdle() throws {
@@ -484,10 +565,13 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0", contractAddress: String? = nil) -> Coin {
         let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
         let coin = Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
         coin.rawBalance = rawBalance
+        if let contractAddress {
+            coin.contractAddress = contractAddress
+        }
         return coin
     }
 

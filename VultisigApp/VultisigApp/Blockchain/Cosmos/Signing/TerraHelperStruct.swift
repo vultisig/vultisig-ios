@@ -83,7 +83,10 @@ struct TerraHelperStruct {
 
         } else {
 
-            if !keysignPayload.coin.contractAddress.contains("terra1") && !keysignPayload.coin.contractAddress.contains("ibc/") {
+            if TerraClassicTax.isBankDenom(
+                contractAddress: keysignPayload.coin.contractAddress,
+                isNativeToken: keysignPayload.coin.isNativeToken
+            ) {
 
                 let input = CosmosSigningInput.with {
                     $0.publicKey = pubKeyData

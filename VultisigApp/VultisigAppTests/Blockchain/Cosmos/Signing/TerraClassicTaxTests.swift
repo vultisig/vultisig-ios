@@ -65,4 +65,31 @@ final class TerraClassicTaxTests: XCTestCase {
         // valid and must be honored, not overridden by the fallback.
         XCTAssertEqual(TerraClassicTax.parseRate("0.000000000000000000"), Decimal(0))
     }
+
+    // MARK: - isBankDenom (gates which tokens pay the tax in their own denom)
+
+    func testIsBankDenomTrueForUUSD() {
+        // USTC trades as the `uusd` bank denom — it pays gas + burn tax in uusd.
+        XCTAssertTrue(TerraClassicTax.isBankDenom(contractAddress: "uusd", isNativeToken: false))
+    }
+
+    func testIsBankDenomFalseForNativeToken() {
+        // The native coin (LUNC) is handled by its own native-balance branch.
+        XCTAssertFalse(TerraClassicTax.isBankDenom(contractAddress: "", isNativeToken: true))
+    }
+
+    func testIsBankDenomFalseForCW20Contract() {
+        // CW20 contract tokens (terra1…) pay the fee in native LUNC, not uusd.
+        let cw20 = "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26"
+        XCTAssertFalse(TerraClassicTax.isBankDenom(contractAddress: cw20, isNativeToken: false))
+    }
+
+    func testIsBankDenomFalseForIBCToken() {
+        let ibc = "ibc/0471F1C4E7AFD3F07702BEF6DC365268D64570F7C1FDC98EA6098DD6DE59817B"
+        XCTAssertFalse(TerraClassicTax.isBankDenom(contractAddress: ibc, isNativeToken: false))
+    }
+
+    func testIsBankDenomFalseForFactoryToken() {
+        XCTAssertFalse(TerraClassicTax.isBankDenom(contractAddress: "factory/terra1abc/utoken", isNativeToken: false))
+    }
 }
