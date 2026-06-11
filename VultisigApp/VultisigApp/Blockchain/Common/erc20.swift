@@ -21,10 +21,9 @@ class ERC20Helper {
     }
 
     func getChainId(chain: Chain) -> String {
-        if chain == Chain.ethereumSepolia {
-            return "11155111"
-        }
-        return self.coinType.chainId
+        // Delegate to EVMHelper so EVM chainID special-cases (e.g. Hyperliquid, Sei)
+        // stay in a single source of truth and ERC20 sends sign with the correct EIP-155 chainID.
+        return EVMHelper(coinType: coinType).getChainId(chain: chain)
     }
 
     private func configureGasForChain(
