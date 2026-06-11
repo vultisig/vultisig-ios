@@ -106,6 +106,7 @@
 "balanceAvailable" = "Saldo disponível:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Antes de começar...";
+"belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor ou envie o saldo completo.";
 "biometricsFastSigning" = "Biometria assinatura rápida";
 "bond" = "Vincular";
 "Bond" = "Bond";
@@ -780,6 +781,7 @@
 "rebondNote" = "Nota: As transações REBOND devem enviar 0 RUNE. A quantidade acima vai apenas no memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Receber";
+"recipientBelowExistentialDepositError" = "O valor está abaixo do saldo mínimo da rede (depósito existencial), então a conta do destinatário não pode ser criada. Envie um valor maior.";
 "redeem" = "Resgatar";
 "redeemCoin" = "Resgatar %@";
 "referral" = "Indicação";

@@ -106,6 +106,7 @@
 "balanceAvailable" = "可用余额：";
 "balanceInParentheses" = "( 余额: %@ %@ )";
 "beforeYouStart" = "开始之前...";
+"belowExistentialDepositError" = "此次转账后您账户中的余额将低于最低留存额（生存性存款），网络将拒绝该交易。请减少金额或转出全部余额。";
 "biometricsFastSigning" = "生物识别快速签名";
 "bond" = "绑定";
 "Bond" = "绑定";
@@ -781,6 +782,7 @@
 "rebondNote" = "注意：REBOND 交易必须发送 0 RUNE。上述金额仅用于备忘录。";
 "rebondRequiresRune" = "重新绑定需要在 THORChain 上有 RUNE 代币";
 "receive" = "接收";
+"recipientBelowExistentialDepositError" = "金额低于网络的最低留存额（生存性存款），无法创建收款方账户。请转出更大的金额。";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "referral" = "推荐";

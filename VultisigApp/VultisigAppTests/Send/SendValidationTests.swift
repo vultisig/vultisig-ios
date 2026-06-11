@@ -124,20 +124,83 @@ final class SendValidationTests: XCTestCase {
     func testCanBeReapedTrueForPolkadotWhenRemainderBelowExistentialDeposit() {
         let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
                            rawBalance: "100000000000") // 10 DOT
-        // Sending almost the entire balance with negligible gas leaves a tiny remainder.
-        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: dot, amount: "9.99999999", gas: BigInt(1)))
+        // Leaves 0.005 DOT remainder — below the 0.01-DOT Asset Hub ED, but > 0.
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("9.995"), gas: .zero))
     }
 
     func testCanBeReapedFalseForPolkadotWhenRemainderAboveExistentialDeposit() {
         let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
                            rawBalance: "100000000000") // 10 DOT
+        // Leaves 9 DOT remainder — well above the 0.01-DOT ED.
         XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: "1", gas: .zero))
+    }
+
+    func testCanBeReapedFalseForPolkadotWhenRemainderEqualsExistentialDeposit() {
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
+                           rawBalance: "100000000000") // 10 DOT
+        // Leaves exactly 0.01 DOT remainder — `transfer_keep_alive` permits ED,
+        // so this is NOT reaped. Confirms the max-send (balance − fee − ED) path
+        // settling at exactly ED is allowed.
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("9.99"), gas: .zero))
+    }
+
+    func testCanBeReapedFalseForBittensorTAO() {
+        // Bittensor shares chainType == .Polkadot but signs transfer_allow_death,
+        // so it has no enforced ED and must never be blocked or reserve ED.
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
+                           rawBalance: "1000000000") // 1 TAO
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("0.999999999"), gas: BigInt(1)))
+    }
+
+    func testExistentialDepositReservedForPolkadotZeroForTAO() {
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true)
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true)
+        // Asset Hub native-DOT ED is 0.01 DOT = 100_000_000 plancks (10 decimals).
+        XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: dot), BigInt(100_000_000))
+        XCTAssertEqual(PolkadotHelper.defaultExistentialDeposit, BigInt(100_000_000))
+        // TAO (allow_death) reserves nothing.
+        XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: tao), .zero)
+    }
+
+    func testComputeMaxAmountReservesExistentialDepositForPolkadot() {
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
+                           rawBalance: "100000000000") // 10 DOT
+        let fee = BigInt(100_000_000) // 0.01 DOT fee
+        // max = balance − fee − ED = 10 − 0.01 − 0.01 = 9.98 DOT
+        let maxAmount = SendCryptoLogic.computeMaxAmount(coin: dot, fee: fee)
+        XCTAssertEqual(maxAmount.toDecimal(), amount("9.98").toDecimal())
+        // And that max-send must NOT be reaped (remainder == ED, allowed).
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: maxAmount, gas: fee))
+    }
+
+    func testComputeMaxAmountDoesNotReserveExistentialDepositForTAO() {
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
+                           rawBalance: "1000000000") // 1 TAO
+        let fee = BigInt(1_000_000) // 0.001 TAO
+        // No ED reserve for allow_death: max = balance − fee = 0.999 TAO.
+        let maxAmount = SendCryptoLogic.computeMaxAmount(coin: tao, fee: fee)
+        XCTAssertEqual(maxAmount.toDecimal(), amount("0.999").toDecimal())
+    }
+
+    func testRecipientBelowExistentialDepositForPolkadot() {
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
+                           rawBalance: "100000000000")
+        // 0.005 DOT < 0.01 DOT ED — can't fund a new recipient account.
+        XCTAssertTrue(SendCryptoLogic.recipientBelowExistentialDeposit(coin: dot, amount: amount("0.005")))
+        // 0.02 DOT > ED — fine.
+        XCTAssertFalse(SendCryptoLogic.recipientBelowExistentialDeposit(coin: dot, amount: amount("0.02")))
+    }
+
+    func testRecipientBelowExistentialDepositFalseForChainWithoutED() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        XCTAssertFalse(SendCryptoLogic.recipientBelowExistentialDeposit(coin: eth, amount: amount("0.0000001")))
     }
 
     func testCanBeReapedTrueForRippleWhenRemainderBelowExistentialDeposit() {
         let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true,
                            rawBalance: "11000000") // 11 XRP
-        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: xrp, amount: "10.999", gas: BigInt(1)))
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: xrp, amount: amount("10.999"), gas: BigInt(1)))
     }
 
     // MARK: - isDeposit
@@ -236,6 +299,17 @@ final class SendValidationTests: XCTestCase {
         let coin = Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
         coin.rawBalance = rawBalance
         return coin
+    }
+
+    /// Re-renders a canonical dot-decimal amount string into the current
+    /// locale's decimal separator. The send helpers parse with
+    /// `Locale.current` first, so a literal like "0.005" misparses under
+    /// comma-decimal locales (e.g. en_AR on a dev machine, where "." reads as a
+    /// grouping separator). Building the amount with the active separator keeps
+    /// these unit tests deterministic across locales.
+    private func amount(_ canonical: String) -> String {
+        let separator = Locale.current.decimalSeparator ?? "."
+        return canonical.replacingOccurrences(of: ".", with: separator)
     }
 
     private func setPrice(_ value: Double, for coin: Coin) {

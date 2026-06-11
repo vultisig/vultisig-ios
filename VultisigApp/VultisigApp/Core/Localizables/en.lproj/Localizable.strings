@@ -114,6 +114,7 @@
 "balanceAvailable" = "Balance available:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Before you start...";
+"belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
 "bond" = "Bond";
 "Bond" = "Bond";
@@ -787,6 +788,7 @@
 "rebondNote" = "Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Receive";
+"recipientBelowExistentialDepositError" = "The amount is below the network's minimum balance (existential deposit), so the recipient account can't be created. Send a larger amount.";
 "redeem" = "Redeem";
 "redeemCoin" = "Redeem %@";
 "reEnterPassword" = "Re-enter password";
