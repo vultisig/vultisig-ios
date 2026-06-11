@@ -37,7 +37,7 @@ struct SendPreviewOverride: Hashable {
     /// instead. Returns `nil` when the coins match, so every regular send keeps
     /// the payload-derived preview untouched.
     static func makeIfNeeded(displayTx: SendTransaction, signedPayload: KeysignPayload) -> SendPreviewOverride? {
-        guard displayTx.coin != signedPayload.coin else { return nil }
+        guard displayTx.coin.id != signedPayload.coin.id else { return nil }
         return SendPreviewOverride(
             amount: "\(displayTx.amount) \(displayTx.coin.ticker)",
             toAddress: displayTx.toAddress,
