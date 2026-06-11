@@ -105,11 +105,11 @@ final class SuiSignSuiTests: XCTestCase {
         let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
         let input = try SuiSigningInput(serializedBytes: inputData)
 
-        XCTAssertEqual(input.signDirectMessage.unsignedTxMsg, unsignedTxMsg)
-        XCTAssertEqual(input.signer, payload.coin.address)
         guard case .signDirectMessage = input.transactionPayload else {
             return XCTFail("expected signDirectMessage transaction payload")
         }
+        XCTAssertEqual(input.signDirectMessage.unsignedTxMsg, unsignedTxMsg)
+        XCTAssertEqual(input.signer, payload.coin.address)
     }
 
     // MARK: - Digest parity
