@@ -38,6 +38,7 @@ struct DefaultSendInteractor: SendInteractor {
             isDeposit: request.isDeposit,
             transactionType: request.transactionType,
             gasLimit: request.gasLimit,
+            customGasLimit: request.customGasLimit,
             feeMode: request.feeMode,
             fromAddress: request.fromAddress
         )
@@ -45,9 +46,25 @@ struct DefaultSendInteractor: SendInteractor {
 
     func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult {
         let service = try EthereumFeeService(chain: request.coin.chain)
-        let resolvedGasLimit = request.gasLimit ?? (request.coin.isNativeToken
+        let cs = request.chainSpecific
+
+        // Size the limit the displayed fee is computed against the same way the
+        // keysign payload is: honor a user override, otherwise estimate against
+        // the real recipient and floor at the per-chain default. This is what
+        // makes the Send form's fee — and the seeded gas-settings value —
+        // reflect the estimate instead of the flat 23000/120000 default.
+        let fallbackGasLimit = request.coin.isNativeToken
             ? BigInt(EVMHelper.defaultETHTransferGasUnit)
-            : BigInt(EVMHelper.defaultERC20TransferGasUnit))
+            : BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let resolvedGasLimit = await blockchain.resolveEVMSendGasLimit(
+            coin: cs.coin,
+            fromAddress: cs.fromAddress,
+            toAddress: cs.toAddress,
+            amount: cs.amount,
+            memo: cs.memo,
+            requestedGasLimit: request.gasLimit,
+            customGasLimit: request.customGasLimit
+        ) ?? fallbackGasLimit
 
         let feeInfo = try await service.calculateFees(
             chain: request.coin.chain,
@@ -68,7 +85,7 @@ struct DefaultSendInteractor: SendInteractor {
             gas = limit > 0 ? amount / limit : amount
         }
 
-        return SendInteractorFeeResult(fee: fee, gas: gas)
+        return SendInteractorFeeResult(fee: fee, gas: gas, gasLimit: resolvedGasLimit)
     }
 
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
