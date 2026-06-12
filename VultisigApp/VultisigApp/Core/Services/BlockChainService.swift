@@ -397,7 +397,17 @@ private extension BlockChainService {
                        toAddress: String?,
                        memo: String?,
                        feeMode: FeeMode,
-                       amount: BigInt?) async throws -> BlockChainSpecific {
+                       amount: BigInt?,
+                       signData: SignData? = nil) async throws -> BlockChainSpecific {
+        // dApp-supplied Sui PTBs (`signSui`) arrive already fully built: coins,
+        // gas budget and reference gas price are baked into the BCS bytes that
+        // the signing pipeline forwards verbatim. There are no construction
+        // inputs to fetch, so return an empty SuiSpecific instead of hitting
+        // the RPC (`getAllCoins` / reference-gas-price).
+        if case .signSui = signData {
+            return .Sui(referenceGasPrice: 0, coins: [], gasBudget: 0)
+        }
+
         switch coin.chain {
         case .zcash:
             // Resolve the live ZIP-243 branch id at build time so it travels

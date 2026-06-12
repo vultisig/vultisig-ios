@@ -50,6 +50,7 @@
 "appUpToDate" = "Aplicativo está atualizado";
 "apr" = "APR";
 "apy" = "APY";
+"arguments" = "Argumentos";
 "asset" = "Ativo";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ não encontrado no vault )";
@@ -127,6 +128,7 @@
 "buyVultBannerButtonTitle" = "Comprar $VULT";
 "buyVultBannerSubtitle" = "E economize nas taxas de swap";
 "buyVultBannerTitle" = "Comprar $VULT";
+"bytes" = "bytes";
 "cacaoPool" = "Pool de Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ até atingir a maturidade do depósito";
 "cacaoUnstakeMaturityUnknownMessage" = "Não foi possível verificar a maturidade do depósito. Tente novamente mais tarde.";
@@ -205,6 +207,7 @@
 "coinPool" = "Pool de %@";
 "coinServiceChainNotEnabledForKeyImport" = "A chain %@ não está habilitada para este vault importado";
 "collectedRewards" = "Recompensas coletadas";
+"commands" = "Comandos";
 "commission" = "comissão";
 "compoundedCoin" = "%@ Composto";
 "congratsExclamation" = "Parabéns!";
@@ -299,6 +302,7 @@
 "deleteFolder" = "Excluir pasta";
 "deleteVault" = "Deletar seu cofre permanentemente";
 "deleteVaultTitle" = "Deletar Cofre";
+"dependencies" = "Dependências";
 "destinationAddress" = "Endereço de destino";
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
@@ -330,6 +334,7 @@
 "editReferral" = "Editar indicação";
 "editReferredCode" = "Editar código de indicação";
 "editVaults" = "Editar cofres";
+"elements" = "Elementos";
 "email" = "e-mail";
 "emailIsRequired" = "O email é necessário.";
 "emailSentTo" = "Enviado para %@";
@@ -447,6 +452,9 @@
 "functionTransactionScreenErrorSubtitle" = "Ocorreu um erro ao redirecionar para a função";
 "functionTransactionScreenErrorTitle" = "Erro de função";
 "gas" = "Gás";
+"gasBudget" = "Orçamento de gás";
+"gasOwner" = "Proprietário do gás";
+"gasPrice" = "Preço do gás";
 "general" = "Em geral";
 "generatedMemo" = "Generated Memo:";
 "German" = "Alemão";
@@ -480,6 +488,9 @@
 "initializingScreenCapture" = "Inicializando captura de tela";
 "initiatingDevice" = "Dispositivo de início";
 "inProgress" = "Em andamento";
+"input" = "Entrada";
+"inputPure" = "Puro";
+"inputs" = "Entradas";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
 "insufficientGasTokenError" = "Não há %@ suficiente para cobrir as taxas de gas para enviar %@";
@@ -563,6 +574,7 @@
 "lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Fiz um backup do cofre para restaurar mais tarde";
+"makeMoveVec" = "Criar Move Vec";
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
 "managePositions" = "Gerenciar posições";
@@ -570,6 +582,7 @@
 "memo" = "Memorando";
 "memoLabel" = "Memo";
 "Merge" = "Fundir";
+"mergeCoins" = "Mesclar moedas";
 "message" = "Mensagem";
 "messageDeposit" = "%@ depósito de mensagem";
 "messageSigned" = "Mensagem assinada";
@@ -587,9 +600,11 @@
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
+"modules" = "Módulos";
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
 "moreInfo" = "Mais informações";
 "moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
+"moveCall" = "Chamada Move";
 "mustAgreeTermsError" = "Você deve concordar com os termos.";
 "myReferralCardBody" = "Gerencie seu código de indicação e colete recompensas.";
 "myReferralCardTitle" = "Minha indicação";
@@ -732,6 +747,7 @@
 "psbtOutputs" = "Saídas";
 "psbtSignedByThisDevice" = "Assinado por este dispositivo";
 "psbtTransactionDetails" = "Detalhes da transação (PSBT)";
+"publish" = "Publicar";
 "pushNotifications" = "Notificações push";
 "pushNotificationsDescription" = "Receba notificações quando sua assinatura for necessária ou um dispositivo solicitar acesso.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Seus UTXOs de Bitcoin precisam de mais confirmações antes de poderem ser resgatados. Volte a verificar mais tarde.";
@@ -914,6 +930,7 @@
 "self" = "Próprio";
 "sell" = "Vender";
 "send" = "Enviar";
+"sender" = "Remetente";
 "sendingRightAddressCheck" = "Estou enviando para o endereço correto";
 "sendOverview" = "Enviar visão geral";
 "sendTo" = "Enviar para";
@@ -958,6 +975,7 @@
 "somethingWentWrongTryAgain" = "Algo deu errado, por favor tente novamente.";
 "sourceValidator" = "Validador de origem";
 "Spanish" = "Espanhol";
+"splitCoins" = "Dividir moedas";
 "stake" = "Stake";
 "Stake" = "Stake";
 "stakeCoin" = "Fazer Stake de %@";
@@ -975,6 +993,14 @@
 "success" = "Sucesso";
 "successful" = "Bem-sucedida";
 "successfully" = "com sucesso";
+"suiMergeInto" = "Mesclar em";
+"suiMutable" = "Mutável";
+"suiObjectsTo" = "Objetos para";
+"suiReadOnly" = "Somente leitura";
+"suiResultOfCmd" = "Resultado do cmd";
+"suiSplitFrom" = "Dividir de";
+"suiTransaction" = "Transação Sui";
+"suiTransactionSummary" = "Resumo da transação";
 "support" = "Apoiar";
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak, .vult & .zip";
 "swap" = "Troca";
@@ -1058,6 +1084,7 @@
 "totalFee" = "Taxa total";
 "track" = "Acompanhar";
 "transaction" = "Transação";
+"transactionBytes" = "Bytes da transação";
 "transactionComplete" = "Feito";
 "transactionDetails" = "Detalhes da transação";
 "transactionFailed" = "Transação falhou";
@@ -1067,6 +1094,7 @@
 "transactionSuccessful" = "Transação bem-sucedida";
 "transactionTrackingLink" = "Link de rastreamento de transação";
 "transfer" = "Transferir";
+"transferObjects" = "Transferir objetos";
 "tronBandwidth" = "Largura de Banda";
 "tronBandwidthDescription" = "Pontos de Largura de Banda são necessários para cada transação na TRON, incluindo envios padrão de tokens e interações com contratos inteligentes. Cada usuário TRON recebe 600 Pontos de Largura de Banda gratuitos por dia, que podem cobrir aproximadamente dois envios básicos. Além disso, você pode ganhar Pontos de Largura de Banda extras fazendo staking de TRX, aumentando seu saldo diário para suportar mais transações. Se você tiver Pontos de Largura de Banda suficientes, pode enviar tokens, fazer staking de TRX ou interagir com contratos inteligentes sem pagar TRX em taxas de gas.";
 "tronEnergy" = "Energia";
@@ -1099,6 +1127,7 @@
 "tronUnfreezeTitle" = "Descongelar TRX";
 "tryAgain" = "Tentar Novamente";
 "txid" = "ID da transação";
+"typeArguments" = "Argumentos de tipo";
 "typeHere" = "Digite aqui";
 "ultimateSecurity" = "Segurança Máxima";
 "unableToStartKeysignProcess" = "Não foi possível iniciar o processo de assinatura de chave devido à falta de informações.";
@@ -1120,6 +1149,7 @@
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "unverifiedFunction" = "Função não verificada";
 "updateNow" = "Atualizar agora";
+"upgrade" = "Atualizar";
 "upgradeNow" = "Atualizar agora";
 "upgradeYourVault" = "Atualizar cofre";
 "upgradeYourVaultNow" = "Atualize seu cofre agora";
