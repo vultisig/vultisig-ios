@@ -29,7 +29,8 @@ protocol QuoteServiceProtocol {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes
 }
 

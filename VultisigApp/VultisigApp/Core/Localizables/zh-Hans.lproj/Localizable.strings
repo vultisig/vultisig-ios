@@ -28,6 +28,8 @@
 "addVaultsToFolder" = "选择要添加到文件夹的保险库";
 "advanced" = "高级";
 "advancedDescription" = "重新共享、管理安全或签署消息";
+"advancedSettings" = "高级设置";
+"advancedSwap" = "高级兑换";
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
@@ -57,6 +59,7 @@
 "assets" = "资产";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
+"auto" = "自动";
 "autocompounderInfo" = "自动复利信息";
 "available" = "可用";
 "availableLPUnits" = "可用 LP 单位";
@@ -461,6 +464,7 @@
 "functionTransactionScreenErrorTitle" = "功能错误";
 "gas" = "燃料";
 "gasBudget" = "Gas 预算";
+"gasLimit" = "Gas 上限";
 "gasOwner" = "Gas 所有者";
 "gasPrice" = "Gas 价格";
 "general" = "通用";
@@ -680,6 +684,7 @@
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
 "of" = "的";
+"off" = "关闭";
 "ok" = "确定";
 "on" = "在";
 "OnboardingCard1Text1" = "向";
@@ -807,6 +812,7 @@
 "rebondNote" = "注意：REBOND 交易必须发送 0 RUNE。上述金额仅用于备忘录。";
 "rebondRequiresRune" = "重新绑定需要在 THORChain 上有 RUNE 代币";
 "receive" = "接收";
+"recipient" = "接收方";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "referral" = "推荐";
@@ -943,6 +949,7 @@
 "sendingRightAddressCheck" = "我正在发送到正确的地址";
 "sendOverview" = "发送概览";
 "sendTo" = "发送至";
+"sendToDifferentAddress" = "发送到其他地址";
 "serverBackup" = "服务器备份";
 "serverBackupDescription" = "再次请求服务器保险库份额";
 "serverBackupTitle" = "服务器备份";
@@ -980,6 +987,8 @@
 "signTransaction" = "签署交易";
 "skip" = "跳过";
 "slippage" = "滑点";
+"slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
+"slippageTolerance" = "滑点容差";
 "somethingsWrong" = "有问题";
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "sourceValidator" = "来源验证人";
@@ -1016,6 +1025,7 @@
 "swap.duration.instant" = "即时";
 "swap.outbound_fee" = "出站费用";
 "swap.price_impact" = "价格影响";
+"swap.price_impact.average" = "中等";
 "swap.price_impact.good" = "良好";
 "swap.price_impact.high" = "较高";
 "swap.referral_discount" = "推荐 (-%d bps)";
@@ -1058,6 +1068,8 @@
 "swapKitStatusFailedReason" = "交换在 SwapKit 跟踪器上失败";
 "swapKitStatusRefundedReason" = "交换已退款至您的源地址";
 "swapKitViewOnTracker" = "在 SwapKit 跟踪器中查看";
+"swapModeLimit" = "限价";
+"swapModeMarket" = "市价";
 "swapOverview" = "交换概览";
 "swapProviderRecommended" = "推荐";
 "swapProvidersSheetTitle" = "选择提供商";
@@ -1177,6 +1189,7 @@
 "uploadQRCodeImageKeygen" = "上传二维码以加入密钥生成";
 "uploadQRCodeImageKeysign" = "上传二维码以加入密钥签名";
 "useDifferentEmail" = "使用不同的电子邮件";
+"useExternalRecipient" = "使用外部接收方";
 "useLocalMode" = "使用本地模式";
 "usePassword" = "使用密码";
 "useStandardMode" = "使用标准模式";

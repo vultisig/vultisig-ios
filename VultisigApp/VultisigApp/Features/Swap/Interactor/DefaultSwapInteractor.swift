@@ -32,7 +32,8 @@ struct DefaultSwapInteractor: SwapInteractor {
         toCoin: Coin,
         vault: Vault,
         referredCode: String,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         guard !amount.isZero else { return nil }
         guard fromCoin != toCoin else {
@@ -62,7 +63,8 @@ struct DefaultSwapInteractor: SwapInteractor {
             isAffiliate: SwapCryptoLogic.isAffiliate,
             referredCode: referredCode,
             vultTierDiscount: vultDiscountBps,
-            slippageBps: slippageBps
+            slippageBps: slippageBps,
+            recipientAddress: recipientAddress
         )
 
         return SwapQuoteResult(
@@ -102,12 +104,22 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        let chainSpecific = try await fetchChainSpecific(
+        let fetched = try await fetchChainSpecific(
             fromCoin: transaction.fromCoin,
             toCoin: transaction.toCoin,
             fromAmount: transaction.fromAmount,
             quote: transaction.quote
         )
+        // Honour a user-supplied EVM gas limit from advanced settings. Applied to
+        // the swap transaction only; the ERC-20 approval tx keeps its own
+        // estimate (a swap's ~200k limit would massively over-fund the ~46k
+        // approve). The override is a no-op on non-EVM chain-specific data.
+        let chainSpecific: BlockChainSpecific
+        if let gasLimit = transaction.advancedSettings.gasLimit {
+            chainSpecific = fetched.overridingEVMGasLimit(BigInt(gasLimit))
+        } else {
+            chainSpecific = fetched
+        }
         return try await SwapCryptoLogic.buildSwapKeysignPayload(
             transaction: transaction,
             chainSpecific: chainSpecific,

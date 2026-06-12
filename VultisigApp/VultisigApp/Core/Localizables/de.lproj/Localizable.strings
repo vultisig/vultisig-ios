@@ -28,6 +28,8 @@
 "addVaultsToFolder" = "Wähle Tresore aus, die dem Ordner hinzugefügt werden sollen";
 "advanced" = "Erweitert";
 "advancedDescription" = "Umgestalten, Sicherheits- oder Zeichennachrichten verwalten.";
+"advancedSettings" = "Erweiterte Einstellungen";
+"advancedSwap" = "Erweiterter Swap";
 "allDevicesUpgradeTitle1" = "Stelle sicher, dass";
 "allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte vorhanden sind ";
 "allDevicesUpgradeTitle3" = "beim Upgrade";
@@ -57,6 +59,7 @@
 "assets" = "Vermögenswerte";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
+"auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder-Info";
 "available" = "Verfügbar";
 "availableLPUnits" = "Verfügbare LP-Einheiten";
@@ -461,6 +464,7 @@
 "functionTransactionScreenErrorTitle" = "Funktionsfehler";
 "gas" = "Gas";
 "gasBudget" = "Gas-Budget";
+"gasLimit" = "Gas-Limit";
 "gasOwner" = "Gas-Eigentümer";
 "gasPrice" = "Gas-Preis";
 "general" = "Allgemein";
@@ -679,6 +683,7 @@
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
 "of" = "von";
+"off" = "Aus";
 "ok" = "OK";
 "on" = "auf";
 "OnboardingCard1Text1" = "Sag Hallo zu ";
@@ -806,6 +811,7 @@
 "rebondNote" = "Hinweis: REBOND-Transaktionen müssen 0 RUNE senden. Der oben genannte Betrag geht nur in das Memo ein.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Empfangen";
+"recipient" = "Empfänger";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "referral" = "Empfehlung";
@@ -943,6 +949,7 @@
 "sendingRightAddressCheck" = "Ich sende an die richtige Adresse";
 "sendOverview" = "Übersicht senden";
 "sendTo" = "Senden an";
+"sendToDifferentAddress" = "An andere Adresse senden";
 "serverBackup" = "Serversicherung";
 "serverBackupDescription" = "Anfrage Server Vault Share erneut.";
 "serverBackupTitle" = "Serversicherung";
@@ -980,6 +987,8 @@
 "signTransaction" = "Transaktion signieren";
 "skip" = "Überspringen";
 "slippage" = "Gleitverlust";
+"slippageHelperText" = "Begrenzt, wie stark sich der Preis ändern darf, bevor die Ausführung abgebrochen wird.";
+"slippageTolerance" = "Slippage-Toleranz";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "sourceValidator" = "Quell-Validator";
@@ -1016,6 +1025,7 @@
 "swap.duration.instant" = "Sofort";
 "swap.outbound_fee" = "Ausgangsgebühr";
 "swap.price_impact" = "Preisauswirkung";
+"swap.price_impact.average" = "Mittel";
 "swap.price_impact.good" = "Gut";
 "swap.price_impact.high" = "Hoch";
 "swap.referral_discount" = "Empfehlung (-%d bps)";
@@ -1058,6 +1068,8 @@
 "swapKitStatusFailedReason" = "Tausch im SwapKit-Tracker fehlgeschlagen";
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
+"swapModeLimit" = "Limit";
+"swapModeMarket" = "Markt";
 "swapOverview" = "Tauschübersicht";
 "swapProviderRecommended" = "Empfohlen";
 "swapProvidersSheetTitle" = "Anbieter auswählen";
@@ -1176,6 +1188,7 @@
 "uploadQRCodeImageKeygen" = "QR-Code hochladen, um dem Keygen beizutreten";
 "uploadQRCodeImageKeysign" = "QR-Code hochladen, um dem Keysign beizutreten";
 "useDifferentEmail" = "Andere E-Mail verwenden";
+"useExternalRecipient" = "Externen Empfänger verwenden";
 "useLocalMode" = "Lokalen Modus verwenden";
 "usePassword" = "Passwort verwenden";
 "useStandardMode" = "Standardmodus verwenden";

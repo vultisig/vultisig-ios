@@ -25,7 +25,8 @@ final class DefaultSwapInteractorTests: XCTestCase {
             toCoin: .example,
             vault: makeVault(),
             referredCode: "",
-            slippageBps: nil
+            slippageBps: nil,
+            recipientAddress: nil
         )
 
         XCTAssertNil(result)
@@ -44,7 +45,8 @@ final class DefaultSwapInteractorTests: XCTestCase {
                 toCoin: btc,
                 vault: makeVault(),
                 referredCode: "",
-            slippageBps: nil
+            slippageBps: nil,
+            recipientAddress: nil
             )
             XCTFail("Expected throw")
         } catch {
@@ -123,7 +125,7 @@ final class DefaultSwapInteractorTests: XCTestCase {
         await interactor.warmDiscountTier(for: vault)
         for _ in 0..<5 {
             _ = try await interactor.fetchQuote(
-                amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: "", slippageBps: nil
+                amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: "", slippageBps: nil, recipientAddress: nil
             )
         }
 
@@ -148,11 +150,66 @@ final class DefaultSwapInteractorTests: XCTestCase {
             toCoin: makeCoin(.bitcoin, ticker: "BTC"),
             vault: makeVault(),
             referredCode: "",
-            slippageBps: nil
+            slippageBps: nil,
+            recipientAddress: nil
         )
 
         XCTAssertEqual(result?.vultDiscountBps, VultDiscountTier.gold.bpsDiscount)
         XCTAssertEqual(quoteService.lastVultTierDiscount, VultDiscountTier.gold.bpsDiscount)
+    }
+
+    // MARK: - Slippage + recipient threading
+
+    func testFetchQuoteThreadsCustomSlippageToQuoteService() async throws {
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService)
+
+        _ = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: "",
+            slippageBps: 300,
+            recipientAddress: nil
+        )
+
+        XCTAssertEqual(quoteService.lastSlippageBps, 300, "Custom slippage must reach the quote service")
+    }
+
+    func testFetchQuotePassesNilSlippageForAuto() async throws {
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService)
+
+        _ = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: "",
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+
+        XCTAssertNil(quoteService.lastSlippageBps, "Auto must pass nil so the provider default is preserved")
+    }
+
+    func testFetchQuoteThreadsExternalRecipientToQuoteService() async throws {
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService)
+
+        _ = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: "",
+            slippageBps: nil,
+            recipientAddress: "external-recipient-address"
+        )
+
+        XCTAssertEqual(quoteService.lastRecipientAddress, "external-recipient-address",
+                       "External recipient must reach the quote service to become the swap destination")
     }
 
     // MARK: - Fixtures

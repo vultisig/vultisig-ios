@@ -297,7 +297,8 @@ private final class MockSwapInteractor: SwapInteractor {
         toCoin: Coin,
         vault: Vault,
         referredCode: String,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         guard let stubbedQuote else { return nil }

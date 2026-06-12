@@ -45,7 +45,8 @@ struct SwapService {
             isAffiliate: isAffiliate,
             referredCode: referredCode,
             vultTierDiscount: vultTierDiscount,
-            slippageBps: nil
+            slippageBps: nil,
+            recipientAddress: nil
         ).best
     }
 
@@ -66,7 +67,8 @@ struct SwapService {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes {
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
 
@@ -86,7 +88,8 @@ struct SwapService {
                             isAffiliate: isAffiliate,
                             referredCode: referredCode,
                             vultTierDiscount: vultTierDiscount,
-                            slippageBps: slippageBps
+                            slippageBps: slippageBps,
+                            recipientAddress: recipientAddress
                         )
                         return Result<SwapQuote, Error>.success(quote)
                     } catch {
@@ -216,7 +219,8 @@ struct SwapService {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
@@ -228,7 +232,8 @@ struct SwapService {
                 toCoin: toCoin,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount,
-                slippageBps: slippageBps
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .thorchainChainnet:
             return try await fetchCrossChainQuote(
@@ -239,7 +244,8 @@ struct SwapService {
                 toCoin: toCoin,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount,
-                slippageBps: slippageBps
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .thorchainStagenet:
             return try await fetchCrossChainQuote(
@@ -250,7 +256,8 @@ struct SwapService {
                 toCoin: toCoin,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount,
-                slippageBps: slippageBps
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
@@ -261,7 +268,8 @@ struct SwapService {
                 toCoin: toCoin,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount,
-                slippageBps: slippageBps
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -324,7 +332,8 @@ private extension SwapService {
         toCoin: Coin,
         referredCode: String,
         vultTierDiscount: Int,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         do {
             // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
@@ -337,8 +346,14 @@ private extension SwapService {
             // into the returned memo's `LIM` floor.
             let toleranceBps = slippageBps ?? Self.defaultThorchainToleranceBps
 
+            // External recipient (when set) becomes the swap's `destination` — the
+            // node encodes it into the returned memo, so the swapped funds land at
+            // the external address instead of the user's own. Defaults to the
+            // user's own destination address.
+            let destination = recipientAddress ?? toCoin.address
+
             let rapidQuote = try await service.fetchSwapQuotes(
-                address: toCoin.address,
+                address: destination,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
@@ -361,7 +376,7 @@ private extension SwapService {
                 rapid: rapidQuote,
                 service: service,
                 provider: provider,
-                address: toCoin.address,
+                address: destination,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,

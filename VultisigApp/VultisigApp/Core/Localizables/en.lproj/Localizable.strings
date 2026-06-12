@@ -29,6 +29,8 @@
 "addVaultsToFolder" = "Select Vaults to add to the folder";
 "advanced" = "Advanced";
 "advancedDescription" = "Reshare, manage security or sign messages.";
+"advancedSettings" = "Advanced Settings";
+"advancedSwap" = "Advanced swap";
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
@@ -65,6 +67,7 @@
 "asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "atLeastOneDevice" = "At least one device";
 "atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
+"auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder Info";
 "available" = "Available";
 "availableLPUnits" = "Available LP Units";
@@ -466,6 +469,7 @@
 "functionTransactionScreenErrorTitle" = "Function Error";
 "gas" = "Gas";
 "gasBudget" = "Gas Budget";
+"gasLimit" = "Gas Limit";
 "gasOwner" = "Gas Owner";
 "gasPrice" = "Gas Price";
 "general" = "General";
@@ -686,6 +690,7 @@
 "notWhitelistedOnNode" = "You are not whitelisted on this node";
 "noVaultsFoundInZip" = "No vaults found in the ZIP file.";
 "of" = "of";
+"off" = "Off";
 "ok" = "OK";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
@@ -813,6 +818,7 @@
 "rebondNote" = "Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Receive";
+"recipient" = "Recipient";
 "redeem" = "Redeem";
 "redeemCoin" = "Redeem %@";
 "reEnterPassword" = "Re-enter password";
@@ -951,6 +957,7 @@
 "sendingRightAddressCheck" = "I’m sending to the correct address";
 "sendOverview" = "Send overview";
 "sendTo" = "Send to";
+"sendToDifferentAddress" = "Send to Different Address";
 "serverBackup" = "Server Backup";
 "serverBackupDescription" = "Request Server Vault Share again.";
 "serverBackupTitle" = "Server Backup";
@@ -988,6 +995,8 @@
 "signTransaction" = "Sign transaction";
 "skip" = "Skip";
 "slippage" = "Slippage";
+"slippageHelperText" = "Limits how much the price can change before execution is canceled.";
+"slippageTolerance" = "Slippage Tolerance";
 "somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "sourceValidator" = "Source Validator";
@@ -1024,6 +1033,7 @@
 "swap.duration.instant" = "Instant";
 "swap.outbound_fee" = "Outbound Fee";
 "swap.price_impact" = "Price Impact";
+"swap.price_impact.average" = "Average";
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
 "swap.referral_discount" = "Referral (-%d bps)";
@@ -1066,6 +1076,8 @@
 "swapKitStatusFailedReason" = "Swap failed on the SwapKit tracker";
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
 "swapKitViewOnTracker" = "View on SwapKit Tracker";
+"swapModeLimit" = "Limit";
+"swapModeMarket" = "Market";
 "swapOverview" = "Swap overview";
 "swapProviderRecommended" = "Recommended";
 "swapProvidersSheetTitle" = "Select provider";
@@ -1190,6 +1202,7 @@
 "uploadQRCodeImageKeygen" = "Upload QR-Code to join Keygen";
 "uploadQRCodeImageKeysign" = "Upload QR-Code to join Keysign";
 "useDifferentEmail" = "Use a different email";
+"useExternalRecipient" = "Use External Recipient";
 "useLocalMode" = "Use local mode";
 "usePassword" = "Use password";
 "useStandardMode" = "Use standard mode";

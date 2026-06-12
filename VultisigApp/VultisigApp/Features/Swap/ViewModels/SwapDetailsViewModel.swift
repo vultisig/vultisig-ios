@@ -234,6 +234,9 @@ final class SwapDetailsViewModel {
     }
 
     func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
+        // A new source pair starts fresh — a custom slippage / gas limit /
+        // recipient must never stick across swaps (Phase 5 reset semantics).
+        resetAdvancedSettings()
         fromCoin = coin
         fromChain = coin.chain
         // `toCoins` reflected the previous source's valid destinations —
@@ -244,6 +247,9 @@ final class SwapDetailsViewModel {
     }
 
     func updateToCoin(coin: Coin, vault: Vault, referredCode: String) {
+        // A new destination invalidates a chain-specific external recipient and
+        // resets the rest of the advanced settings (Phase 5 reset semantics).
+        resetAdvancedSettings()
         toCoin = coin
         toChain = coin.chain
         fetchQuotes(vault: vault, referredCode: referredCode)
@@ -633,7 +639,8 @@ private extension SwapDetailsViewModel {
                 toCoin: toCoin,
                 vault: vault,
                 referredCode: referredCode,
-                slippageBps: advancedSettings.slippage.bps
+                slippageBps: advancedSettings.slippage.bps,
+                recipientAddress: advancedSettings.externalRecipient
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.

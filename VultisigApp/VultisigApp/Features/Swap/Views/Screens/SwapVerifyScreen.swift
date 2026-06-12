@@ -146,11 +146,30 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
+                if currentTransaction.advancedSettings.slippage != .auto {
+                    separator
+                    getValueCell(
+                        for: "slippageTolerance",
+                        with: currentTransaction.advancedSettings.slippage.displayValue
+                    )
+                }
+
                 separator
                 getValueCell(
                     for: "vault",
                     with: vault.name
                 )
+
+                // HIGH security tier: an external recipient is a different
+                // destination than the user's own address — it MUST be shown
+                // before signing, never applied silently.
+                if currentTransaction.hasExternalRecipient {
+                    separator
+                    getValueCell(
+                        for: "recipient",
+                        with: currentTransaction.recipientAddress.truncatedAddress
+                    )
+                }
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
