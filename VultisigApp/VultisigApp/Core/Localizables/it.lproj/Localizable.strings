@@ -50,6 +50,7 @@
 "appUpToDate" = "L'applicazione è aggiornata";
 "apr" = "APR";
 "apy" = "APY";
+"arguments" = "Argomenti";
 "asset" = "Risorsa";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ non trovato nel vault )";
@@ -127,6 +128,7 @@
 "buyVultBannerButtonTitle" = "Compra $VULT";
 "buyVultBannerSubtitle" = "E risparmia sulle commissioni di swap";
 "buyVultBannerTitle" = "Compra $VULT";
+"bytes" = "byte";
 "cacaoPool" = "Pool Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
 "cacaoUnstakeMaturityUnknownMessage" = "Impossibile verificare la maturità del deposito. Riprova più tardi.";
@@ -300,6 +302,7 @@
 "deleteFolder" = "Elimina cartella";
 "deleteVault" = "Elimina permanentemente la tua cassaforte";
 "deleteVaultTitle" = "Elimina Cassaforte";
+"dependencies" = "Dipendenze";
 "destinationAddress" = "Indirizzo di destinazione";
 "destinationValidator" = "Validatore di destinazione";
 "device" = "dispositivo";
@@ -331,6 +334,7 @@
 "editReferral" = "Modifica invito";
 "editReferredCode" = "Modifica codice di invito";
 "editVaults" = "Modifica cassaforti";
+"elements" = "Elementi";
 "email" = "E-mail";
 "emailIsRequired" = "È richiesta l'e -mail.";
 "emailSentTo" = "Inviato a %@";
@@ -483,6 +487,8 @@
 "initializingScreenCapture" = "Inizializzazione acquisizione schermo";
 "initiatingDevice" = "Dispositivo di inizio";
 "inProgress" = "In corso";
+"input" = "Input";
+"inputPure" = "Pure";
 "inputs" = "Input";
 "insufficientBalance" = "Saldo insufficiente";
 "insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";
@@ -567,6 +573,7 @@
 "lpUnitsExceeded" = "Supera le unità LP disponibili (%@)";
 "lpUnitsLabel" = "Unità LP";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau da ripristinare in seguito";
+"makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
 "manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
 "managePositions" = "Gestisci posizioni";
@@ -574,6 +581,7 @@
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "Merge" = "Unisci";
+"mergeCoins" = "Unisci monete";
 "message" = "Messaggio";
 "messageDeposit" = "%@ deposito messaggio";
 "messageSigned" = "Messaggio firmato";
@@ -591,9 +599,11 @@
 "mintSecuredAsset" = "Conia Asset Garantito (SECURE+)";
 "mintTransaction" = "2. Transazione di conio asset garantito";
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
+"modules" = "Moduli";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
 "moreInfo" = "Maggiori informazioni";
 "moreInfoDescription" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile a come viene crittografato un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
+"moveCall" = "Move Call";
 "mustAgreeTermsError" = "Devi accettare i termini.";
 "myReferralCardBody" = "Gestisci il tuo codice invito e raccogli ricompense.";
 "myReferralCardTitle" = "Il mio invito";
@@ -736,6 +746,7 @@
 "psbtOutputs" = "Uscite";
 "psbtSignedByThisDevice" = "Firmato da questo dispositivo";
 "psbtTransactionDetails" = "Dettagli transazione (PSBT)";
+"publish" = "Pubblica";
 "pushNotifications" = "Notifiche push";
 "pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
 "qbtcClaimAwaitingConfirmationsDetail" = "I tuoi UTXO Bitcoin hanno bisogno di più conferme prima di poter essere riscattati. Riprova più tardi.";
@@ -963,6 +974,7 @@
 "somethingWentWrongTryAgain" = "Qualcosa è andato storto, riprova.";
 "sourceValidator" = "Validatore di origine";
 "Spanish" = "Spagnolo";
+"splitCoins" = "Dividi monete";
 "stake" = "Stake";
 "Stake" = "Stake";
 "stakeCoin" = "Stake %@";
@@ -980,6 +992,10 @@
 "success" = "Successo";
 "successful" = "Riuscita";
 "successfully" = "con successo";
+"suiMergeInto" = "Unisci in";
+"suiObjectsTo" = "Oggetti a";
+"suiResultOfCmd" = "Risultato del cmd";
+"suiSplitFrom" = "Dividi da";
 "suiTransaction" = "Transazione Sui";
 "support" = "Supporto";
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";
@@ -1074,6 +1090,7 @@
 "transactionSuccessful" = "Transazione riuscita";
 "transactionTrackingLink" = "Link di tracciamento transazione";
 "transfer" = "Trasferisci";
+"transferObjects" = "Trasferisci oggetti";
 "tronBandwidth" = "Larghezza di Banda";
 "tronBandwidthDescription" = "I Punti di Larghezza di Banda sono necessari per ogni transazione su TRON, inclusi invii standard di token e interazioni con smart contract. Ogni utente TRON riceve 600 Punti di Larghezza di Banda gratuiti al giorno, che possono coprire circa due invii base. Inoltre, puoi guadagnare Punti di Larghezza di Banda aggiuntivi facendo staking di TRX, aumentando la tua quota giornaliera per supportare più transazioni. Se hai abbastanza Punti di Larghezza di Banda, puoi inviare token, fare staking di TRX o interagire con smart contract senza pagare TRX in commissioni gas.";
 "tronEnergy" = "Energia";
@@ -1106,6 +1123,7 @@
 "tronUnfreezeTitle" = "Scongela TRX";
 "tryAgain" = "Riprova";
 "txid" = "ID transazione";
+"typeArguments" = "Argomenti di tipo";
 "typeHere" = "Digita qui";
 "ultimateSecurity" = "Massima Sicurezza";
 "unableToStartKeysignProcess" = "Impossibile avviare il processo di firma chiave a causa della mancanza di informazioni.";
@@ -1127,6 +1145,7 @@
 "unsupportedFileTypeError" = "Tipo di file non supportato, riprova";
 "unverifiedFunction" = "Funzione non verificata";
 "updateNow" = "Aggiorna ora";
+"upgrade" = "Aggiorna";
 "upgradeNow" = "Aggiorna ora";
 "upgradeYourVault" = "Aggiorna il tuo vault";
 "upgradeYourVaultNow" = "Aggiorna il tuo vault ora";

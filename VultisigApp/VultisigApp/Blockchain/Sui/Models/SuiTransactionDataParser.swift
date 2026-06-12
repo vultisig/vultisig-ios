@@ -15,8 +15,44 @@ struct SuiTransactionDataSummary: Equatable {
     let gasBudget: UInt64
     let gasPrice: UInt64
     let gasPaymentCount: Int
-    let inputCount: Int
-    let commandCount: Int
+    let inputs: [SuiPtbInput]
+    let commands: [SuiCommand]
+
+    var inputCount: Int { inputs.count }
+    var commandCount: Int { commands.count }
+}
+
+/// A PTB argument reference, mirroring the Windows `SuiArgument` union.
+enum SuiArgument: Equatable {
+    case gasCoin
+    case input(index: Int)
+    case result(index: Int)
+    case nestedResult(commandIndex: Int, resultIndex: Int)
+}
+
+/// A decoded PTB input, mirroring the Windows `SuiPtbInput` union. `pure`
+/// carries the raw BCS bytes (we don't have the consuming call's ABI offline,
+/// so values are rendered best-effort); object inputs carry their id + kind.
+enum SuiPtbInput: Equatable {
+    enum ObjectKind: String, Equatable {
+        case immOrOwnedObject = "ImmOrOwnedObject"
+        case sharedObject = "SharedObject"
+        case receiving = "Receiving"
+    }
+
+    case pure(bytes: Data)
+    case object(kind: ObjectKind, objectId: String, mutable: Bool?)
+}
+
+/// A decoded PTB command, mirroring the Windows `SuiCommand` union.
+enum SuiCommand: Equatable {
+    case moveCall(package: String, module: String, function: String, typeArguments: [String], arguments: [SuiArgument])
+    case transferObjects(objects: [SuiArgument], address: SuiArgument)
+    case splitCoins(coin: SuiArgument, amounts: [SuiArgument])
+    case mergeCoins(destination: SuiArgument, sources: [SuiArgument])
+    case publish(moduleCount: Int, dependencyCount: Int)
+    case makeMoveVec(type: String?, elements: [SuiArgument])
+    case upgrade(moduleCount: Int, dependencyCount: Int, package: String, ticket: SuiArgument)
 }
 
 enum SuiTransactionDataParser {
@@ -32,18 +68,11 @@ enum SuiTransactionDataParser {
 
         // TransactionDataV1 { kind: TransactionKind, sender, gas_data, expiration }
         // TransactionKind is an enum; ProgrammableTransaction is variant 0.
-        guard let txKind = reader.readULEB128() else { return nil }
-        guard txKind == 0 else { return nil }
+        guard let txKind = reader.readULEB128(), txKind == 0 else { return nil }
 
         // ProgrammableTransaction { inputs: Vec<CallArg>, commands: Vec<Command> }
-        // We don't fully decode each input/command (their bodies are
-        // variable-length and version-sensitive); we count the top-level
-        // vectors and let the signer read the bytes verbatim. To count safely
-        // we skip each element by parsing only its discriminant-led length,
-        // which is fragile across versions — so on any ambiguity we bail to a
-        // partial summary that still carries sender + gas.
-        guard let inputCount = reader.readULEB128() else { return nil }
-        guard let commands = countCommandsBySkippingInputs(&reader, inputCount: Int(inputCount)) else {
+        guard let inputs = readInputs(&reader),
+              let commands = readCommands(&reader) else {
             return nil
         }
 
@@ -67,23 +96,249 @@ enum SuiTransactionDataParser {
             gasBudget: gasBudget,
             gasPrice: gasPrice,
             gasPaymentCount: Int(paymentCount),
-            inputCount: Int(inputCount),
-            commandCount: commands
+            inputs: inputs,
+            commands: commands
         )
     }
 
-    /// Skips the `inputs` vector body, then reads and skips the `commands`
-    /// vector, returning the command count. Returns `nil` on any unexpected
-    /// element shape so the caller falls back to raw bytes.
-    private static func countCommandsBySkippingInputs(_ reader: inout BCSReader, inputCount: Int) -> Int? {
-        for _ in 0..<inputCount {
-            guard SuiCallArgSkipper.skip(&reader) else { return nil }
+    // MARK: - Inputs
+
+    private static func readInputs(_ reader: inout BCSReader) -> [SuiPtbInput]? {
+        guard let count = reader.readULEB128() else { return nil }
+        var inputs: [SuiPtbInput] = []
+        inputs.reserveCapacity(Int(count))
+        for _ in 0..<Int(count) {
+            guard let input = readInput(&reader) else { return nil }
+            inputs.append(input)
         }
-        guard let commandCount = reader.readULEB128() else { return nil }
-        for _ in 0..<Int(commandCount) {
-            guard SuiCommandSkipper.skip(&reader) else { return nil }
+        return inputs
+    }
+
+    /// CallArg = enum { Pure(Vec<u8>)(0), Object(ObjectArg)(1) }.
+    private static func readInput(_ reader: inout BCSReader) -> SuiPtbInput? {
+        guard let variant = reader.readULEB128() else { return nil }
+        switch variant {
+        case 0:
+            guard let bytes = reader.readBytesVec() else { return nil }
+            return .pure(bytes: bytes)
+        case 1:
+            return readObjectArg(&reader)
+        default:
+            return nil
         }
-        return Int(commandCount)
+    }
+
+    /// ObjectArg = enum {
+    ///   ImmOrOwnedObject(ObjectRef)(0),
+    ///   SharedObject { id, initial_shared_version: u64, mutable: bool }(1),
+    ///   Receiving(ObjectRef)(2)
+    /// }
+    private static func readObjectArg(_ reader: inout BCSReader) -> SuiPtbInput? {
+        guard let objKind = reader.readULEB128() else { return nil }
+        switch objKind {
+        case 0, 2:
+            // ObjectRef = ObjectID(32) + SequenceNumber(u64) + ObjectDigest(vec<u8>)
+            guard let objectId = reader.readAddressHex(),
+                  reader.skip(8),
+                  let digestLen = reader.readULEB128(),
+                  reader.skip(Int(digestLen)) else { return nil }
+            let kind: SuiPtbInput.ObjectKind = objKind == 0 ? .immOrOwnedObject : .receiving
+            return .object(kind: kind, objectId: objectId, mutable: nil)
+        case 1:
+            // id(32) + initial_shared_version(u64) + mutable(bool)
+            guard let objectId = reader.readAddressHex(),
+                  reader.skip(8),
+                  let mutableByte = reader.readByte() else { return nil }
+            return .object(kind: .sharedObject, objectId: objectId, mutable: mutableByte != 0)
+        default:
+            return nil
+        }
+    }
+
+    // MARK: - Commands
+
+    private static func readCommands(_ reader: inout BCSReader) -> [SuiCommand]? {
+        guard let count = reader.readULEB128() else { return nil }
+        var commands: [SuiCommand] = []
+        commands.reserveCapacity(Int(count))
+        for _ in 0..<Int(count) {
+            guard let command = readCommand(&reader) else { return nil }
+            commands.append(command)
+        }
+        return commands
+    }
+
+    /// Command enum: MoveCall(0), TransferObjects(1), SplitCoins(2),
+    /// MergeCoins(3), Publish(4), MakeMoveVec(5), Upgrade(6).
+    private static func readCommand(_ reader: inout BCSReader) -> SuiCommand? {
+        guard let variant = reader.readULEB128() else { return nil }
+        switch variant {
+        case 0:
+            return readMoveCall(&reader)
+        case 1:
+            // TransferObjects { objects: Vec<Argument>, address: Argument }
+            guard let objects = readArguments(&reader),
+                  let address = readArgument(&reader) else { return nil }
+            return .transferObjects(objects: objects, address: address)
+        case 2:
+            // SplitCoins { coin: Argument, amounts: Vec<Argument> }
+            guard let coin = readArgument(&reader),
+                  let amounts = readArguments(&reader) else { return nil }
+            return .splitCoins(coin: coin, amounts: amounts)
+        case 3:
+            // MergeCoins { destination: Argument, sources: Vec<Argument> }
+            guard let destination = readArgument(&reader),
+                  let sources = readArguments(&reader) else { return nil }
+            return .mergeCoins(destination: destination, sources: sources)
+        case 4:
+            // Publish { modules: Vec<Vec<u8>>, dependencies: Vec<address> }
+            guard let moduleCount = readByteVectorCount(&reader),
+                  let depCount = readAddressVectorCount(&reader) else { return nil }
+            return .publish(moduleCount: moduleCount, dependencyCount: depCount)
+        case 5:
+            // MakeMoveVec { type: Option<TypeTag>, elements: Vec<Argument> }
+            guard let type = readOptionTypeTag(&reader),
+                  let elements = readArguments(&reader) else { return nil }
+            return .makeMoveVec(type: type.tag, elements: elements)
+        case 6:
+            // Upgrade { modules, dependencies, package: address, ticket: Argument }
+            guard let moduleCount = readByteVectorCount(&reader),
+                  let depCount = readAddressVectorCount(&reader),
+                  let package = reader.readAddressHex(),
+                  let ticket = readArgument(&reader) else { return nil }
+            return .upgrade(moduleCount: moduleCount, dependencyCount: depCount, package: package, ticket: ticket)
+        default:
+            return nil
+        }
+    }
+
+    /// ProgrammableMoveCall { package: address, module: String, function: String,
+    /// type_arguments: Vec<TypeTag>, arguments: Vec<Argument> }.
+    private static func readMoveCall(_ reader: inout BCSReader) -> SuiCommand? {
+        guard let package = reader.readAddressHex(),
+              let module = reader.readString(),
+              let function = reader.readString(),
+              let typeArguments = readTypeTagVector(&reader),
+              let arguments = readArguments(&reader) else { return nil }
+        return .moveCall(
+            package: package,
+            module: module,
+            function: function,
+            typeArguments: typeArguments,
+            arguments: arguments
+        )
+    }
+
+    private static func readByteVectorCount(_ reader: inout BCSReader) -> Int? {
+        guard let count = reader.readULEB128() else { return nil }
+        for _ in 0..<Int(count) {
+            guard let len = reader.readULEB128(), reader.skip(Int(len)) else { return nil }
+        }
+        return Int(count)
+    }
+
+    private static func readAddressVectorCount(_ reader: inout BCSReader) -> Int? {
+        guard let count = reader.readULEB128() else { return nil }
+        guard reader.skip(Int(count) * 32) else { return nil }
+        return Int(count)
+    }
+
+    // MARK: - Arguments
+
+    private static func readArguments(_ reader: inout BCSReader) -> [SuiArgument]? {
+        guard let count = reader.readULEB128() else { return nil }
+        var arguments: [SuiArgument] = []
+        arguments.reserveCapacity(Int(count))
+        for _ in 0..<Int(count) {
+            guard let argument = readArgument(&reader) else { return nil }
+            arguments.append(argument)
+        }
+        return arguments
+    }
+
+    /// Argument = enum { GasCoin(0), Input(u16)(1), Result(u16)(2),
+    /// NestedResult(u16, u16)(3) }. The indices are u16 LE, not ULEB.
+    private static func readArgument(_ reader: inout BCSReader) -> SuiArgument? {
+        guard let variant = reader.readULEB128() else { return nil }
+        switch variant {
+        case 0:
+            return .gasCoin
+        case 1:
+            guard let index = reader.readU16() else { return nil }
+            return .input(index: Int(index))
+        case 2:
+            guard let index = reader.readU16() else { return nil }
+            return .result(index: Int(index))
+        case 3:
+            guard let commandIndex = reader.readU16(), let resultIndex = reader.readU16() else { return nil }
+            return .nestedResult(commandIndex: Int(commandIndex), resultIndex: Int(resultIndex))
+        default:
+            return nil
+        }
+    }
+
+    // MARK: - TypeTag
+
+    private static func readTypeTagVector(_ reader: inout BCSReader) -> [String]? {
+        guard let count = reader.readULEB128() else { return nil }
+        var tags: [String] = []
+        tags.reserveCapacity(Int(count))
+        for _ in 0..<Int(count) {
+            guard let tag = readTypeTag(&reader) else { return nil }
+            tags.append(tag)
+        }
+        return tags
+    }
+
+    /// Option<TypeTag> = enum { None(0), Some(TypeTag)(1) }. The outer optional
+    /// signals a decode failure; the inner `tag` is `nil` for the `None` case.
+    private static func readOptionTypeTag(_ reader: inout BCSReader) -> (tag: String?, present: Bool)? {
+        guard let variant = reader.readULEB128() else { return nil }
+        switch variant {
+        case 0:
+            return (tag: nil, present: false)
+        case 1:
+            guard let tag = readTypeTag(&reader) else { return nil }
+            return (tag: tag, present: true)
+        default:
+            return nil
+        }
+    }
+
+    /// Recursively decodes a `TypeTag` into its canonical
+    /// `addr::module::Name<...>` string form (matching the Windows
+    /// `typeArguments` strings).
+    private static func readTypeTag(_ reader: inout BCSReader) -> String? {
+        guard let variant = reader.readULEB128() else { return nil }
+        switch variant {
+        case 0: return "bool"
+        case 1: return "u8"
+        case 2: return "u64"
+        case 3: return "u128"
+        case 4: return "address"
+        case 5: return "signer"
+        case 6:
+            guard let inner = readTypeTag(&reader) else { return nil }
+            return "vector<\(inner)>"
+        case 7:
+            return readStructTag(&reader)
+        case 8: return "u16"
+        case 9: return "u32"
+        case 10: return "u256"
+        default: return nil
+        }
+    }
+
+    /// StructTag { address, module: String, name: String,
+    /// type_params: Vec<TypeTag> }.
+    private static func readStructTag(_ reader: inout BCSReader) -> String? {
+        guard let address = reader.readAddressHex(),
+              let module = reader.readString(),
+              let name = reader.readString(),
+              let typeParams = readTypeTagVector(&reader) else { return nil }
+        let base = "\(address)::\(module)::\(name)"
+        guard !typeParams.isEmpty else { return base }
+        return "\(base)<\(typeParams.joined(separator: ", "))>"
     }
 }
 
@@ -110,6 +365,13 @@ struct BCSReader {
         return bytes[offset]
     }
 
+    mutating func readU16() -> UInt16? {
+        guard remaining >= 2 else { return nil }
+        let value = UInt16(bytes[offset]) | (UInt16(bytes[offset + 1]) << 8)
+        offset += 2
+        return value
+    }
+
     mutating func readU64() -> UInt64? {
         guard remaining >= 8 else { return nil }
         var value: UInt64 = 0
@@ -127,6 +389,22 @@ struct BCSReader {
         return "0x" + slice.map { String(format: "%02x", $0) }.joined()
     }
 
+    /// Reads a ULEB128-length-prefixed byte vector and returns its bytes.
+    mutating func readBytesVec() -> Data? {
+        guard let len = readULEB128() else { return nil }
+        let count = Int(len)
+        guard remaining >= count else { return nil }
+        let slice = bytes[offset..<offset + count]
+        offset += count
+        return Data(slice)
+    }
+
+    /// Reads a ULEB128-length-prefixed UTF-8 string.
+    mutating func readString() -> String? {
+        guard let data = readBytesVec() else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
     /// Reads an unsigned LEB128 vector-length / enum-discriminant.
     mutating func readULEB128() -> UInt64? {
         var result: UInt64 = 0
@@ -139,106 +417,5 @@ struct BCSReader {
             if shift >= 64 { return nil }
         }
         return result
-    }
-}
-
-/// Skips a single `CallArg` (an enum) in the BCS stream. CallArg is either a
-/// `Pure(Vec<u8>)` (variant 0) or an `Object` (variant 1) whose body is an
-/// `ObjectArg` enum. We only need to advance past it, not interpret it.
-private enum SuiCallArgSkipper {
-    static func skip(_ reader: inout BCSReader) -> Bool {
-        guard let variant = reader.readULEB128() else { return false }
-        switch variant {
-        case 0:
-            // Pure(Vec<u8>)
-            guard let len = reader.readULEB128() else { return false }
-            return reader.skip(Int(len))
-        case 1:
-            // Object(ObjectArg) — ObjectArg is an enum:
-            //   0: ImmOrOwnedObject(ObjectRef)
-            //   1: SharedObject { id(32), initial_shared_version(u64), mutable(bool) }
-            //   2: Receiving(ObjectRef)
-            guard let objKind = reader.readULEB128() else { return false }
-            switch objKind {
-            case 0, 2:
-                // ObjectRef = ObjectID(32) + SequenceNumber(u64) + ObjectDigest(vec<u8>)
-                guard reader.skip(32 + 8) else { return false }
-                guard let digestLen = reader.readULEB128() else { return false }
-                return reader.skip(Int(digestLen))
-            case 1:
-                // id(32) + initial_shared_version(u64) + mutable(1)
-                return reader.skip(32 + 8 + 1)
-            default:
-                return false
-            }
-        default:
-            return false
-        }
-    }
-}
-
-/// Skips a single `Command` (an enum) in the BCS stream. We don't interpret the
-/// command bodies — we only advance past them to reach `sender` / `gas_data`.
-/// Argument-bearing commands carry counts we can walk; unknown shapes bail out.
-private enum SuiCommandSkipper {
-    // Argument = enum { GasCoin, Input(u16), Result(u16), NestedResult(u16,u16) }
-    private static func skipArgument(_ reader: inout BCSReader) -> Bool {
-        guard let variant = reader.readULEB128() else { return false }
-        switch variant {
-        case 0: return true                 // GasCoin
-        case 1, 2: return reader.skip(2)    // Input(u16) / Result(u16)
-        case 3: return reader.skip(4)       // NestedResult(u16, u16)
-        default: return false
-        }
-    }
-
-    private static func skipArguments(_ reader: inout BCSReader) -> Bool {
-        guard let count = reader.readULEB128() else { return false }
-        for _ in 0..<Int(count) where !skipArgument(&reader) { return false }
-        return true
-    }
-
-    // TypeTag vector — we only need to skip the serialized bytes. TypeTags are
-    // recursive; rather than fully decode them we treat the vector as opaque by
-    // bailing out, which forces the raw-bytes fallback for type-heavy PTBs.
-    static func skip(_ reader: inout BCSReader) -> Bool {
-        guard let variant = reader.readULEB128() else { return false }
-        switch variant {
-        case 0:
-            // MoveCall(Box<ProgrammableMoveCall>) — package(32), module(str),
-            // function(str), type_arguments(Vec<TypeTag>), arguments(Vec<Argument>)
-            guard reader.skip(32) else { return false }
-            guard skipString(&reader), skipString(&reader) else { return false }
-            // type_arguments: bail on any non-empty type-tag vector (opaque)
-            guard let typeArgs = reader.readULEB128() else { return false }
-            guard typeArgs == 0 else { return false }
-            return skipArguments(&reader)
-        case 1:
-            // TransferObjects(Vec<Argument>, Argument)
-            guard skipArguments(&reader) else { return false }
-            return skipArgument(&reader)
-        case 2:
-            // SplitCoins(Argument, Vec<Argument>)
-            guard skipArgument(&reader) else { return false }
-            return skipArguments(&reader)
-        case 3:
-            // MergeCoins(Argument, Vec<Argument>)
-            guard skipArgument(&reader) else { return false }
-            return skipArguments(&reader)
-        case 5:
-            // MakeMoveVec(Option<TypeTag>, Vec<Argument>)
-            guard let hasType = reader.readByte() else { return false }
-            guard hasType == 0 else { return false } // bail on typed vectors
-            return skipArguments(&reader)
-        default:
-            // Publish / Upgrade and any future variants carry version-sensitive
-            // bodies — bail so the caller falls back to raw bytes.
-            return false
-        }
-    }
-
-    private static func skipString(_ reader: inout BCSReader) -> Bool {
-        guard let len = reader.readULEB128() else { return false }
-        return reader.skip(Int(len))
     }
 }

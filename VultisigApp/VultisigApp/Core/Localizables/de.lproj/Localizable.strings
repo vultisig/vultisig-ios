@@ -50,6 +50,7 @@
 "appUpToDate" = "Anwendung ist auf dem neuesten Stand";
 "apr" = "APR";
 "apy" = "APY";
+"arguments" = "Argumente";
 "asset" = "Vermögenswert";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
@@ -127,6 +128,7 @@
 "buyVultBannerButtonTitle" = "$VULT kaufen";
 "buyVultBannerSubtitle" = "Und spare bei Swap-Gebühren";
 "buyVultBannerTitle" = "$VULT kaufen";
+"bytes" = "Bytes";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";
 "cacaoUnstakeMaturityUnknownMessage" = "Einzahlungsreife konnte nicht überprüft werden. Bitte später erneut versuchen.";
@@ -300,6 +302,7 @@
 "deleteFolder" = "Ordner löschen";
 "deleteVault" = "Lösche deinen Tresor dauerhaft";
 "deleteVaultTitle" = "Tresor löschen";
+"dependencies" = "Abhängigkeiten";
 "destinationAddress" = "Zieladresse";
 "destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
@@ -331,6 +334,7 @@
 "editReferral" = "Empfehlung bearbeiten";
 "editReferredCode" = "Empfehlungscode bearbeiten";
 "editVaults" = "Tresore bearbeiten";
+"elements" = "Elemente";
 "email" = "E-Mail";
 "emailIsRequired" = "E -Mail ist erforderlich.";
 "emailSentTo" = "Gesendet an %@";
@@ -483,6 +487,8 @@
 "initializingScreenCapture" = "Bildschirmaufnahme wird initialisiert";
 "initiatingDevice" = "Initiierendes Gerät";
 "inProgress" = "In Bearbeitung";
+"input" = "Eingabe";
+"inputPure" = "Pure";
 "inputs" = "Eingaben";
 "insufficientBalance" = "Unzureichendes Guthaben";
 "insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
@@ -567,6 +573,7 @@
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
+"makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
 "manageNotificationsInSettings" = "Du kannst Benachrichtigungen in den Systemeinstellungen verwalten.";
 "managePositions" = "Positionen verwalten";
@@ -574,6 +581,7 @@
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "Merge" = "Zusammenführen";
+"mergeCoins" = "Coins zusammenführen";
 "message" = "Nachricht";
 "messageDeposit" = "%@ Nachrichteneinzahlung";
 "messageSigned" = "Nachricht signiert";
@@ -591,9 +599,11 @@
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
+"modules" = "Module";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
 "moreInfo" = "Mehr Infos";
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
+"moveCall" = "Move Call";
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
 "myReferralCardBody" = "Verwalte deinen Empfehlungscode und sammle Belohnungen.";
 "myReferralCardTitle" = "Meine Empfehlung";
@@ -736,6 +746,7 @@
 "psbtOutputs" = "Ausgänge";
 "psbtSignedByThisDevice" = "Auf diesem Gerät signiert";
 "psbtTransactionDetails" = "Transaktionsdetails (PSBT)";
+"publish" = "Veröffentlichen";
 "pushNotifications" = "Push-Benachrichtigungen";
 "pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Deine Bitcoin-UTXOs brauchen mehr Bestätigungen, bevor sie beansprucht werden können. Bitte schau später noch einmal vorbei.";
@@ -963,6 +974,7 @@
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "sourceValidator" = "Quell-Validator";
 "Spanish" = "Spanisch";
+"splitCoins" = "Coins aufteilen";
 "stake" = "Staken";
 "Stake" = "Stake";
 "stakeCoin" = "%@ staken";
@@ -980,6 +992,10 @@
 "success" = "Erfolg";
 "successful" = "Erfolgreich";
 "successfully" = "erfolgreich";
+"suiMergeInto" = "Zusammenführen in";
+"suiObjectsTo" = "Objekte an";
+"suiResultOfCmd" = "Ergebnis von Befehl";
+"suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
@@ -1074,6 +1090,7 @@
 "transactionSuccessful" = "Transaktion erfolgreich";
 "transactionTrackingLink" = "Transaktionsverfolgungslink";
 "transfer" = "Übertragen";
+"transferObjects" = "Objekte übertragen";
 "tronBandwidth" = "Bandbreite";
 "tronBandwidthDescription" = "Bandbreitenpunkte werden für jede Transaktion auf TRON benötigt, einschließlich Standard-Token-Sendungen und Smart-Contract-Interaktionen. Jeder TRON-Benutzer erhält täglich 600 kostenlose Bandbreitenpunkte, die ungefähr zwei grundlegende Sendungen abdecken können. Darüber hinaus können Sie durch das Staking von TRX zusätzliche Bandbreitenpunkte verdienen und so Ihr tägliches Kontingent erhöhen, um mehr Transaktionen zu unterstützen. Wenn Sie genügend Bandbreitenpunkte haben, können Sie Token senden, TRX staken oder mit Smart Contracts interagieren, ohne TRX als Gasgebühren zu zahlen.";
 "tronEnergy" = "Energie";
@@ -1106,6 +1123,7 @@
 "tronUnfreezeTitle" = "TRX auftauen";
 "tryAgain" = "Erneut versuchen";
 "txid" = "Tx-ID";
+"typeArguments" = "Typargumente";
 "typeHere" = "Hier eingeben";
 "ultimateSecurity" = "Ultimative Sicherheit";
 "unableToStartKeysignProcess" = "Der Prozess der Unterzeichnung der Schlüssel konnte aufgrund fehlender Informationen nicht gestartet werden.";
@@ -1127,6 +1145,7 @@
 "unsupportedFileTypeError" = "Nicht unterstützter Dateityp, bitte versuche es erneut";
 "unverifiedFunction" = "Unverifizierte Funktion";
 "updateNow" = "Jetzt updaten";
+"upgrade" = "Upgrade";
 "upgradeNow" = "Jetzt aktualisieren";
 "upgradeYourVault" = "Tresor aktualisieren";
 "upgradeYourVaultNow" = "Aktualisiere deinen Tresor jetzt";

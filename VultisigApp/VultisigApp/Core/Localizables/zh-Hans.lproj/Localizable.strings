@@ -50,6 +50,7 @@
 "appUpToDate" = "应用程序已是最新版本";
 "apr" = "年化利率";
 "apy" = "年化收益率";
+"arguments" = "参数";
 "asset" = "资产";
 "assetLabel" = "资产";
 "assetNotFoundInVault" = "( %@ 在保险库中未找到 )";
@@ -127,6 +128,7 @@
 "buyVultBannerButtonTitle" = "购买 $VULT";
 "buyVultBannerSubtitle" = "并节省兑换手续费";
 "buyVultBannerTitle" = "购买 $VULT";
+"bytes" = "字节";
 "cacaoPool" = "Cacao 池";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";
 "cacaoUnstakeMaturityUnknownMessage" = "无法验证存款到期状态，请稍后重试。";
@@ -300,6 +302,7 @@
 "deleteFolder" = "删除文件夹";
 "deleteVault" = "永久删除您的保险库";
 "deleteVaultTitle" = "删除保险库";
+"dependencies" = "依赖项";
 "destinationAddress" = "目标地址";
 "destinationValidator" = "目标验证人";
 "device" = "设备";
@@ -331,6 +334,7 @@
 "editReferral" = "编辑推荐";
 "editReferredCode" = "编辑推荐码";
 "editVaults" = "编辑保险库";
+"elements" = "元素";
 "email" = "电子邮件";
 "emailIsRequired" = "电子邮件是必需的";
 "emailSentTo" = "已发送至 %@";
@@ -483,6 +487,8 @@
 "initializingScreenCapture" = "正在初始化屏幕捕获";
 "initiatingDevice" = "发起设备";
 "inProgress" = "进行中";
+"input" = "输入";
+"inputPure" = "Pure";
 "inputs" = "输入";
 "insufficientBalance" = "余额不足";
 "insufficientBalanceForFunctions" = "余额不足。请输入小于或等于可用资金的金额";
@@ -567,6 +573,7 @@
 "lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
 "lpUnitsLabel" = "LP单位";
 "madeVaultBackupPrompt" = "我已进行保险库备份以便日后恢复";
+"makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
@@ -574,6 +581,7 @@
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "Merge" = "合并";
+"mergeCoins" = "合并代币";
 "message" = "消息";
 "messageDeposit" = "%@ 消息存款";
 "messageSigned" = "消息已签名";
@@ -591,9 +599,11 @@
 "mintSecuredAsset" = "铸造担保资产 (SECURE+)";
 "mintTransaction" = "2. 铸造担保资产交易";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
+"modules" = "模块";
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";
 "moreInfo" = "更多信息";
 "moreInfoDescription" = "这是因为密码用于本地加密备份文件，类似于硬盘驱动器的加密方式。在下一步中，您可以选择添加提示";
+"moveCall" = "Move Call";
 "mustAgreeTermsError" = "您必须同意条款";
 "myReferralCardBody" = "管理您的推荐码并领取奖励。";
 "myReferralCardTitle" = "我的推荐";
@@ -737,6 +747,7 @@
 "psbtOutputs" = "输出";
 "psbtSignedByThisDevice" = "由此设备签名";
 "psbtTransactionDetails" = "交易详情 (PSBT)";
+"publish" = "发布";
 "pushNotifications" = "推送通知";
 "pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
 "qbtcClaimAwaitingConfirmationsDetail" = "您的 Bitcoin UTXO 需要更多确认才能认领。请稍后再查看。";
@@ -963,6 +974,7 @@
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "sourceValidator" = "来源验证人";
 "Spanish" = "西班牙语";
+"splitCoins" = "拆分代币";
 "stake" = "质押";
 "Stake" = "质押";
 "stakeCoin" = "质押 %@";
@@ -980,6 +992,10 @@
 "success" = "成功";
 "successful" = "成功";
 "successfully" = "成功";
+"suiMergeInto" = "合并到";
+"suiObjectsTo" = "对象到";
+"suiResultOfCmd" = "命令结果";
+"suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";
@@ -1074,6 +1090,7 @@
 "transactionSuccessful" = "交易成功";
 "transactionTrackingLink" = "交易跟踪链接";
 "transfer" = "转账";
+"transferObjects" = "转移对象";
 "tronBandwidth" = "带宽";
 "tronBandwidthDescription" = "带宽点数是 TRON 上每笔交易所必需的，包括标准代币发送和智能合约交互。每个 TRON 用户每天获得 600 个免费带宽点数，大约可以覆盖两次基本发送。此外，您可以通过质押 TRX 获得额外的带宽点数，增加每日配额以支持更多交易。如果您有足够的带宽点数，您可以发送代币、质押 TRX 或与智能合约交互，而无需支付 TRX 作为 Gas 费用。";
 "tronEnergy" = "能量";
@@ -1106,6 +1123,7 @@
 "tronUnfreezeTitle" = "解冻 TRX";
 "tryAgain" = "重试";
 "txid" = "交易 ID";
+"typeArguments" = "类型参数";
 "typeHere" = "在此输入";
 "ultimateSecurity" = "终极安全";
 "unableToStartKeysignProcess" = "由于缺少信息，无法启动密钥签名过程";
@@ -1128,6 +1146,7 @@
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
 "unverifiedFunction" = "未验证的函数";
 "updateNow" = "立即更新";
+"upgrade" = "升级";
 "upgradeNow" = "立即升级";
 "upgradeYourVault" = "升级您的保险库";
 "upgradeYourVaultNow" = "立即升级您的保险库";

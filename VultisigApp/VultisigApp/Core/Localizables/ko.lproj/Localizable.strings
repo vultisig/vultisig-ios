@@ -56,6 +56,7 @@
 "apr1Week" = "1주";
 "apr1Year" = "1년";
 "apy" = "APY";
+"arguments" = "인수";
 "asset" = "자산";
 "assetLabel" = "자산";
 "assetNotFoundInVault" = "( %@ 볼트에서 찾을 수 없음 )";
@@ -135,6 +136,7 @@
 "buyVultBannerButtonTitle" = "$VULT 구매";
 "buyVultBannerSubtitle" = "스왑 수수료 절약";
 "buyVultBannerTitle" = "$VULT 구매";
+"bytes" = "바이트";
 "cacaoPool" = "Cacao 풀";
 "cacaoUnstakeMaturityMessage" = "입금 만기까지 %@";
 "cacaoUnstakeMaturityUnknownMessage" = "입금 만기를 확인할 수 없습니다. 나중에 다시 시도하세요.";
@@ -294,6 +296,7 @@
 "deleteFolder" = "폴더 삭제";
 "deleteVault" = "볼트를 영구적으로 삭제";
 "deleteVaultTitle" = "볼트 삭제";
+"dependencies" = "종속성";
 "destinationValidator" = "도착 검증인";
 "device" = "기기";
 "deviceBackupDescription" = "이 기기의 볼트 공유를 저장합니다.";
@@ -328,6 +331,7 @@
 "editReferral" = "추천 코드 편집";
 "editReferredCode" = "추천받은 코드 편집";
 "editVaults" = "볼트 편집";
+"elements" = "요소";
 "email" = "이메일";
 "emailIsRequired" = "이메일이 필요합니다.";
 "emailSentTo" = "%@으로 전송됨";
@@ -479,6 +483,8 @@
 "initializingScreenCapture" = "화면 캡처 초기화 중";
 "initiatingDevice" = "기기 초기화 중";
 "inProgress" = "진행 중";
+"input" = "입력";
+"inputPure" = "Pure";
 "inputs" = "입력";
 "insufficientBalance" = "잔액 부족";
 "insufficientBalanceForFunctions" = "잔액이 부족합니다. 사용 가능한 자금 이하의 금액을 입력하세요.";
@@ -563,6 +569,7 @@
 "lpUnitsExceeded" = "사용 가능한 LP 단위 초과 (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "나중에 복원할 수 있도록 볼트 백업을 완료했습니다";
+"makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
@@ -570,6 +577,7 @@
 "memo" = "메모";
 "memoLabel" = "메모";
 "Merge" = "병합";
+"mergeCoins" = "코인 병합";
 "message" = "메시지";
 "messageDeposit" = "%@ 메시지 입금";
 "messageSigned" = "메시지 서명됨";
@@ -587,9 +595,11 @@
 "mintSecuredAsset" = "보안 자산 민트 (SECURE+)";
 "mintTransaction" = "2. 보안 자산 민트 트랜잭션";
 "mnemonicPlaceholder" = "시드 문구의 12개 또는 24개 단어를 입력하세요";
+"modules" = "모듈";
 "monthlyBackupTitle" = "볼트 공유를 백업하고\n완전성을 확인하는 것을 잊지 마세요.";
 "moreInfo" = "더 많은 정보";
 "moreInfoDescription" = "비밀번호는 하드 드라이브 암호화처럼 백업 파일을 로컬에서 암호화하는 데 사용됩니다. 다음 단계에서 힌트를 추가할 수 있습니다";
+"moveCall" = "Move Call";
 "mustAgreeTermsError" = "약관에 동의해야 합니다.";
 "myReferralCardBody" = "추천 코드를 관리하고 보상을 수집하세요.";
 "myReferralCardTitle" = "내 추천";
@@ -733,6 +743,7 @@
 "psbtOutputs" = "출력";
 "psbtSignedByThisDevice" = "이 기기에서 서명됨";
 "psbtTransactionDetails" = "트랜잭션 세부 정보 (PSBT)";
+"publish" = "게시";
 "pushNotifications" = "푸시 알림";
 "pushNotificationsDescription" = "서명이 필요하거나 기기가 액세스를 요청할 때 알림을 받으세요.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Bitcoin UTXO를 청구하려면 더 많은 확인이 필요합니다. 나중에 다시 확인하세요.";
@@ -940,6 +951,7 @@
 "somethingWentWrongTryAgain" = "오류가 발생했습니다. 다시 시도하세요.";
 "sourceValidator" = "출발 검증인";
 "Spanish" = "스페인어";
+"splitCoins" = "코인 분할";
 "stake" = "스테이킹";
 "Stake" = "스테이킹";
 "stakeCoin" = "%@ 스테이킹";
@@ -957,6 +969,10 @@
 "success" = "성공";
 "successful" = "성공적";
 "successfully" = "성공적으로";
+"suiMergeInto" = "병합 대상";
+"suiObjectsTo" = "객체 대상";
+"suiResultOfCmd" = "명령 결과";
+"suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
@@ -1053,6 +1069,7 @@
 "transactionSuccessfulHighlight" = "성공";
 "transactionTrackingLink" = "트랜잭션 추적 링크";
 "transfer" = "전송";
+"transferObjects" = "객체 전송";
 "tronBandwidth" = "대역폭";
 "tronBandwidthDescription" = "대역폭 포인트는 표준 토큰 전송 및 스마트 계약 상호작용을 포함한 TRON의 모든 트랜잭션에 필요합니다. 모든 TRON 사용자는 하루 600개의 무료 대역폭 포인트를 받습니다. 또한 TRX를 스테이킹하여 추가 대역폭 포인트를 얻어 더 많은 트랜잭션을 지원할 수 있습니다.";
 "tronEnergy" = "에너지";
@@ -1085,6 +1102,7 @@
 "tronUnfreezeTitle" = "TRX 동결 해제";
 "tryAgain" = "다시 시도";
 "txid" = "Tx ID";
+"typeArguments" = "유형 인수";
 "typeHere" = "여기에 입력";
 "ultimateSecurity" = "궁극적 보안";
 "unableToStartKeysignProcess" = "정보 누락으로 키 서명 프로세스를 시작할 수 없습니다.";
@@ -1108,6 +1126,7 @@
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
 "unverifiedFunction" = "확인되지 않은 함수";
 "updateNow" = "지금 업데이트";
+"upgrade" = "업그레이드";
 "upgradeNow" = "지금 업그레이드";
 "upgradeYourVault" = "볼트 업그레이드";
 "upgradeYourVaultNow" = "지금 볼트를 업그레이드하세요";
