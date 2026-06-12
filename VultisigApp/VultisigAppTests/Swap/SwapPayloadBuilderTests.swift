@@ -66,6 +66,64 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(payload.toAddress, "thor-router")
     }
 
+    // MARK: - Minimum-output limit (toAmountLimit) derivation
+
+    func testThorchainToAmountLimitAppliesTolerance() {
+        // 1% (100 bps) tolerance off 100_000_000 → 99_000_000.
+        let limit = SwapCryptoLogic.thorchainToAmountLimit(
+            expectedAmountOut: "100000000",
+            toleranceBps: 100
+        )
+        XCTAssertEqual(limit, "99000000")
+    }
+
+    func testThorchainToAmountLimitFloorsFractionalResult() {
+        // 100 bps off 12_345 = 12_221.55 → floored to 12_221.
+        let limit = SwapCryptoLogic.thorchainToAmountLimit(
+            expectedAmountOut: "12345",
+            toleranceBps: 100
+        )
+        XCTAssertEqual(limit, "12221")
+    }
+
+    func testThorchainToAmountLimitZeroToleranceKeepsFullAmount() {
+        let limit = SwapCryptoLogic.thorchainToAmountLimit(
+            expectedAmountOut: "500",
+            toleranceBps: 0
+        )
+        XCTAssertEqual(limit, "500")
+    }
+
+    func testThorchainToAmountLimitFallsBackToZeroOnBadInput() {
+        XCTAssertEqual(
+            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "not-a-number", toleranceBps: 100),
+            "0"
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "0", toleranceBps: 100),
+            "0"
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "1000", toleranceBps: 10_000),
+            "0",
+            "100% tolerance is out of range and must not zero the floor silently to a wrong value"
+        )
+    }
+
+    func testBuildThorchainSwapPayloadSetsNonZeroLimit() {
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
+            toCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
+            fromAmountInCoin: BigInt(100_000_000),
+            toAmountDecimal: 1,
+            quote: makeThorQuote(inboundAddress: "thor-vault", router: nil),
+            provider: .thorchain,
+            toleranceBps: 100,
+            now: fixedNow
+        )
+        XCTAssertNotEqual(payload.toAmountLimit, "0", "Payload must carry a real minimum-output limit, not 0")
+    }
+
     // MARK: - MayaChain
 
     func testMayachainPayloadRoutesThroughInboundForNativeSource() async throws {

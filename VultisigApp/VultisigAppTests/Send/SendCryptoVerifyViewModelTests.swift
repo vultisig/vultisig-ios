@@ -151,6 +151,142 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    // MARK: - validateBalanceWithFee — Terra Classic bank denom vs CW20/IBC
+
+    func testValidateBalanceUSTCBankDenomSubtractsFeeFromTokenBalance() throws {
+        // USTC is a Terra Classic BANK denom (uusd): it pays gas + burn tax in
+        // its OWN denom, so `amount + fee` must fit the token balance. Here the
+        // balance covers `amount` but not `amount + fee`, so it must error.
+        let ustc = makeCoin(.terraClassic, ticker: "USTC", decimals: 6, isNative: false,
+                            rawBalance: "200000000", contractAddress: "uusd")
+        let tx = try makeTransaction(coin: ustc, amount: "150", fee: BigInt(60_000_000))
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError,
+                      "USTC bank-denom must validate amount + fee against the token balance")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
+    func testValidateBalanceCW20TerraClassicTokenIsNotTaxValidated() throws {
+        // A CW20 (terra1…) Terra Classic token pays its fee in native LUNC, NOT
+        // in its own denom. The over-broad pre-fix condition wrongly folded the
+        // uluna-denominated fee into the token-denom balance check. With a token
+        // balance that exactly covers `amount` (but NOT amount + fee) and ample
+        // native LUNC for gas, the generic branch must pass.
+        let cw20 = makeCoin(.terraClassic, ticker: "ASTRO", decimals: 6, isNative: false,
+                            rawBalance: "150000000",
+                            contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "1000000000")
+        let vault = try TestStore.makeVault()
+        vault.coins = [lunc, cw20]
+        let tx = SendTransaction(
+            coin: cw20, vault: vault, fromAddress: cw20.address,
+            toAddress: "terra13lwh075aclv70w784nkjwdefmxx8p3s2f7n5m2", toAddressLabel: nil,
+            amount: "150", amountInFiat: "", memo: "",
+            gas: .zero, fee: BigInt(60_000_000), feeMode: .default,
+            estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
+            sendMaxAmount: false, isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:], wasmContractPayload: nil,
+            feeCoin: lunc
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertFalse(vm.hasBalanceError,
+                       "CW20 Terra Classic token must NOT have its uluna fee subtracted from the token balance")
+        XCTAssertEqual(vm.errorMessage, "")
+    }
+
+    func testValidateBalanceCW20TerraClassicTokenStillChecksNativeGas() throws {
+        // The CW20 branch must still surface insufficient native LUNC for gas —
+        // proving it falls through to the generic non-native gas check, not the
+        // bank-denom branch.
+        let cw20 = makeCoin(.terraClassic, ticker: "ASTRO", decimals: 6, isNative: false,
+                            rawBalance: "150000000",
+                            contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "1000") // not enough LUNC for the gas fee
+        let vault = try TestStore.makeVault()
+        vault.coins = [lunc, cw20]
+        let tx = SendTransaction(
+            coin: cw20, vault: vault, fromAddress: cw20.address,
+            toAddress: "terra13lwh075aclv70w784nkjwdefmxx8p3s2f7n5m2", toAddressLabel: nil,
+            amount: "100", amountInFiat: "", memo: "",
+            gas: .zero, fee: BigInt(60_000_000), feeMode: .default,
+            estimatedGasLimit: nil, customGasLimit: nil, customByteFee: nil,
+            sendMaxAmount: false, isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:], wasmContractPayload: nil,
+            feeCoin: lunc
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError,
+                      "CW20 send must report insufficient native LUNC for gas")
+    }
+
+    /// Circle USDC withdraw regression: the display `transaction` carries the USDC
+    /// token whose `rawBalance` is the vault EOA (~0), NOT the MSCA balance the amount
+    /// was actually validated against upstream. With a pre-built payload present the
+    /// standard balance check must be skipped — otherwise a normal withdraw trips
+    /// `walletBalanceExceededError`, sets `hasBalanceError`, and disables signing.
+    func testValidateBalanceWithFeeSkippedWhenPrebuiltPayloadPresent() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "0") // vault EOA USDC is ~0; real balance lives on the MSCA
+        let tx = try makeTransaction(coin: usdc, amount: "5") // 5 USDC > 0 EOA balance
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = KeysignPayload(
+            coin: nativeEth,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            toAmount: BigInt(0),
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: "0xb61d27f6",
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx, prebuiltKeysignPayload: prebuilt)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertFalse(vm.hasBalanceError, "pre-built payload flow must not trip the EOA balance check")
+        XCTAssertFalse(vm.showAlert)
+        XCTAssertEqual(vm.errorMessage, "")
+    }
+
+    /// Without a pre-built payload, the same insufficient-balance USDC tx must still
+    /// flag the error — the skip is strictly opt-in to the pre-built-payload flow.
+    func testValidateBalanceWithFeeStillRunsWithoutPrebuiltPayload() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "0")
+        let tx = try makeTransaction(coin: usdc, amount: "5")
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError, "regular sends keep the balance check")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     // MARK: - validateSecurityScanner
 
     func testValidateSecurityScannerReturnsTrueWhenStateIdle() throws {
@@ -482,12 +618,116 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(interactor.validateUtxosIfNeededCalls.first?.ticker, "BTC")
     }
 
+    // MARK: - validateForm — pre-built keysign payload pass-through
+
+    /// Circle USDC withdraw signs a native-ETH MSCA `execute(USDC, 0, transfer(vault, amount))`
+    /// call whose calldata lives in `memo`, while the `transaction` carries the USDC token
+    /// purely so the verify summary shows the real amount + recipient. When a pre-built
+    /// payload is supplied, `validateForm()` must return it verbatim and must NOT re-derive
+    /// from the USDC `transaction` — re-deriving would route the USDC ERC-20 coin through the
+    /// transfer path and sign `transfer(MSCA, 0)`, the #4484 no-op.
+    func testValidateFormReturnsPrebuiltPayloadVerbatimWithoutRederiving() async throws {
+        let interactor = MockSendInteractor()
+
+        // The signed payload: native ETH, MSCA target, value 0, execute() calldata in memo.
+        let mscaAddress = "0x2222222222222222222222222222222222222222"
+        let executeMemo = "0xb61d27f6deadbeef"
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = KeysignPayload(
+            coin: nativeEth,
+            toAddress: mscaAddress,
+            toAmount: BigInt(0),
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: executeMemo,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+
+        // The display `transaction` carries the USDC token — the no-op trap if re-derived.
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1000000")
+        let tx = try makeTransaction(coin: usdc, amount: "1")
+        let vm = SendCryptoVerifyViewModel(
+            transaction: tx,
+            interactor: interactor,
+            prebuiltKeysignPayload: prebuilt
+        )
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        // Returned verbatim — the #4489 native-ETH execute() payload, unchanged.
+        XCTAssertEqual(payload, prebuilt)
+        XCTAssertTrue(payload.coin.isNativeToken, "signed coin must stay native ETH, not USDC")
+        XCTAssertEqual(payload.coin.ticker, "ETH")
+        XCTAssertEqual(payload.toAddress, mscaAddress)
+        XCTAssertEqual(payload.toAmount, BigInt(0))
+        XCTAssertEqual(payload.memo, executeMemo, "execute() calldata must survive in memo")
+
+        // No re-derivation: the USDC transaction must never reach the payload builder.
+        XCTAssertTrue(interactor.buildKeysignPayloadCalls.isEmpty,
+                      "pre-built payload must bypass buildKeysignPayload — no USDC transfer(MSCA, 0)")
+        XCTAssertTrue(interactor.fetchChainSpecificCalls.isEmpty)
+        XCTAssertTrue(interactor.validateUtxosIfNeededCalls.isEmpty)
+    }
+
+    /// The confirmation checkboxes still gate signing even with a pre-built payload — the
+    /// withdraw must not bypass the verify confirmation it was re-routed through to restore.
+    func testValidateFormWithPrebuiltPayloadStillEnforcesCheckboxes() async throws {
+        let interactor = MockSendInteractor()
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        let prebuilt = try await interactor.buildKeysignPayload(
+            coin: nativeEth,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            amount: BigInt(0),
+            memo: "0xb61d27f6",
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            wasmExecuteContractPayload: nil,
+            vault: try TestStore.makeVault()
+        )
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1000000")
+        let vm = SendCryptoVerifyViewModel(
+            transaction: try makeTransaction(coin: usdc, amount: "1"),
+            interactor: interactor,
+            prebuiltKeysignPayload: prebuilt
+        )
+        vm.isAddressCorrect = false
+        vm.isAmountCorrect = false
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("validateForm must throw when the confirmation checkboxes are unchecked")
+        } catch let error as HelperError {
+            guard case .runtimeError(let message) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertEqual(message, "mustAgreeTermsError")
+        }
+    }
+
     // MARK: - Helpers
 
-    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0") -> Coin {
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0", contractAddress: String? = nil) -> Coin {
         let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
         let coin = Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
         coin.rawBalance = rawBalance
+        if let contractAddress {
+            coin.contractAddress = contractAddress
+        }
         return coin
     }
 

@@ -155,6 +155,6 @@
             "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["4fa9c4d76019a96e166890d2cbbbd93ccd03aa7926924f9c74ef51aae239a56c"]
+        "expected_image_hash": ["b96a418417af1532b9d0705323bf013b5c6ca6aca840efef872a3047caf47e18"]
     }
 ]

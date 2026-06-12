@@ -170,6 +170,11 @@ final class SchnorrKeysign {
 
     func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
+            // Cooperative cancellation: the stage-level timeout in
+            // KeysignViewModel cancels this task group on a stall. Without an
+            // explicit check the C-backed loop runs to completion and the
+            // orphaned ceremony broadcasts behind the user's back.
+            try Task.checkCancellation()
             let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != .schnorrLibOK {
                 print("fail to get outbound message")
@@ -206,6 +211,10 @@ final class SchnorrKeysign {
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
+            // Cooperative cancellation: honour cancelAll() from the stage-level
+            // timeout so a stalled poll stops instead of running to completion
+            // and broadcasting an abandoned ceremony.
+            try Task.checkCancellation()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -382,6 +391,9 @@ final class SchnorrKeysign {
                 self.signatures[messageToSign] = resp
             }
         } catch {
+            // A cancellation is not a signing failure — never retry it,
+            // propagate so the abandoned ceremony unwinds immediately.
+            if error is CancellationError { throw error }
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)

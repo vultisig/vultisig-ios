@@ -36,7 +36,7 @@ class SolanaService {
     static let shared = SolanaService()
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "solana-service")
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     /// Resolves the Solana custom RPC override. Injected so the API values are
     /// built from a dependency rather than a global reach-in; resolution happens
@@ -44,8 +44,20 @@ class SolanaService {
     /// live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    /// Backoff between client-side rebroadcast attempts. Injectable so tests can
+    /// drive the resend loop without real-time delays.
+    private let broadcastRetryBackoff: Duration
+
+    /// Number of times a signed transaction is resent when the RPC node reports
+    /// the blockhash as not yet seen (propagation lag, not true expiry).
+    private static let maxBroadcastAttempts = 3
+
+    init(resolver: RPCEndpointResolving = CustomRPCStore.shared,
+         httpClient: HTTPClientProtocol = HTTPClient(),
+         broadcastRetryBackoff: Duration = .seconds(2)) {
         self.resolver = resolver
+        self.httpClient = httpClient
+        self.broadcastRetryBackoff = broadcastRetryBackoff
     }
 
     /// Builds a pure `SolanaAPI` value with the resolved host and proxy-path
@@ -75,23 +87,45 @@ class SolanaService {
     private let cacheExpirationTime: TimeInterval = 86400 * 30 // 30 days - token accounts don't change once created
 
     func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
-        let response = try await httpClient.request(
-            api(.sendTransaction(encodedTransaction: encodedTransaction)),
-            responseType: SolanaSendTransactionResponse.self
-        )
+        for attempt in 1...Self.maxBroadcastAttempts {
+            let response = try await httpClient.request(
+                api(.sendTransaction(encodedTransaction: encodedTransaction)),
+                responseType: SolanaSendTransactionResponse.self
+            )
 
-        if let error = response.data.error {
+            guard let error = response.data.error else {
+                return response.data.result
+            }
+
             // -32002 is Solana's generic preflight-failure code, not specific
             // to expired blockhashes — match on the message instead.
             let lowered = error.message.lowercased()
+
+            // "Blockhash not found" right after signing is usually propagation
+            // lag: the RPC node we hit hasn't observed our (confirmed) blockhash
+            // yet. Resending the same signed tx after a short backoff typically
+            // clears it without escalating to a full keysign-ceremony retry.
+            if lowered.contains("blockhash not found"), attempt < Self.maxBroadcastAttempts {
+                logger.warning("solana broadcast attempt \(attempt)/\(Self.maxBroadcastAttempts) hit transient blockhash-not-found; resending after backoff")
+                try await Task.sleep(for: broadcastRetryBackoff)
+                continue
+            }
+
+            // "Block height exceeded" (or an exhausted blockhash-not-found
+            // retry) means the blockhash has expired — resending the same tx
+            // can't help, so surface it as retryable to re-sign with a fresh
+            // blockhash.
             if lowered.contains("blockhash not found") ||
                 lowered.contains("block height exceeded") {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
             }
+
             throw SolanaServiceError.rpcError(message: error.message, code: error.code)
         }
 
-        return response.data.result
+        // Unreachable: the loop either returns a result or throws on the final
+        // attempt. Present to satisfy the non-optional control-flow analysis.
+        return nil
     }
 
     func getSolanaBalance(coin: Coin) async throws -> String {

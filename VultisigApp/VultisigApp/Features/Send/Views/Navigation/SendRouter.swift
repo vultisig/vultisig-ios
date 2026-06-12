@@ -16,8 +16,13 @@ struct SendRouter {
         switch route {
         case .details(let seed):
             viewBuilder.buildDetailsScreen(seed: seed)
-        case .verify(let tx, let retrySignal, let vault):
-            viewBuilder.buildVerifyScreen(tx: tx, retrySignal: retrySignal, vault: vault)
+        case .verify(let tx, let retrySignal, let vault, let prebuiltKeysignPayload):
+            viewBuilder.buildVerifyScreen(
+                tx: tx,
+                retrySignal: retrySignal,
+                vault: vault,
+                prebuiltKeysignPayload: prebuiltKeysignPayload
+            )
         case .pairing(let vault, let tx, let retrySignal, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
