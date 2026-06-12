@@ -27,6 +27,11 @@ import XCTest
 @MainActor
 final class SwapKitZcashTests: XCTestCase {
 
+    /// Sample little-endian ZIP-243 branch id passed into the signer in place of
+    /// the (now removed) compiled-in constant; the signer must land it verbatim
+    /// on the plan.
+    private let testBranchID = "30f33754"
+
     // MARK: - Decoder
 
     func testZcashSwapFixtureDecodesAsZcashPsbt() throws {
@@ -122,7 +127,7 @@ final class SwapKitZcashTests: XCTestCase {
 
     func testZcashSignerProducesOneHashPerInput() throws {
         let payload = try makePayload()
-        let hashes = try SwapKitZcashSigner.preSigningHashes(payload: payload)
+        let hashes = try SwapKitZcashSigner.preSigningHashes(payload: payload, zcashBranchId: testBranchID)
         XCTAssertEqual(hashes.count, 1, "Fixture has 1 input → 1 preimage hash")
         for hash in hashes {
             XCTAssertEqual(hash.count, 64)
@@ -131,14 +136,25 @@ final class SwapKitZcashTests: XCTestCase {
 
     func testZcashSignerBuildsBitcoinSigningInputWithSaplingBranchID() throws {
         let payload = try makePayload()
-        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload)
+        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: testBranchID)
         XCTAssertEqual(input.coinType, CoinType.zcash.rawValue)
         XCTAssertEqual(input.utxo.count, 1)
         XCTAssertEqual(input.plan.utxos.count, 1)
-        // BranchID matches the existing native ZEC send path
-        // (`UTXOChainsHelper.swift:138-139`). Diverging would produce a
-        // digest the network rejects.
-        XCTAssertEqual(input.plan.branchID.hexString, "30f33754")
+        // The branch id passed in must land verbatim on the plan, or WalletCore
+        // derives the wrong ZIP-243 digest.
+        XCTAssertEqual(input.plan.branchID.hexString, testBranchID)
+    }
+
+    func testZcashSignerRejectsMissingBranchID() throws {
+        // No branch id supplied (RPC unavailable) — must refuse rather than sign
+        // with a stale value (there is no compiled-in fallback).
+        let payload = try makePayload()
+        XCTAssertThrowsError(try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: nil)) { err in
+            guard case SwapKitZcashSignerError.underlying(let inner) = err else {
+                return XCTFail("expected underlying plan error, got \(err)")
+            }
+            XCTAssertTrue(inner.errorDescription?.contains("branch id is unavailable") ?? false)
+        }
     }
 
     func testZcashSignerDerivesToAddressFromPSBTOutputScriptNotTargetAddress() throws {
@@ -154,7 +170,7 @@ final class SwapKitZcashTests: XCTestCase {
         // PSBT's actual scriptPubKeys or the signed tx routes funds to
         // the wrong recipient. Regression pin.
         let payload = try makePayload()
-        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload)
+        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: testBranchID)
         XCTAssertEqual(
             input.toAddress, "t1LEzADVN42PMeGGE8y2AxPydsdFNyAvpE3",
             "toAddress must be derived from PSBT output 0's hash160 (not from SwapKit's targetAddress)"

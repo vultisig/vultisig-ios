@@ -8,10 +8,13 @@
 import Foundation
 import SwiftUI
 import BigInt
+import OSLog
 import WalletCore
 
 class SuiService {
     static let shared = SuiService()
+
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "sui-service")
 
     /// Default Sui JSON-RPC host.
     static let defaultRPCURL: URL = {
@@ -151,31 +154,51 @@ class SuiService {
         return BigInt.zero
     }
 
+    /// Fetches every coin object owned by the address.
+    ///
+    /// Returns all coin objects (every `coinType`) so callers can select the
+    /// exact objects they need: the precise per-purpose selection — native SUI
+    /// for a native send, the token's exact type plus SUI gas objects for a token
+    /// send — happens downstream in `SuiHelper` by exact, normalized coin type.
+    /// `suix_getAllCoins` is paginated (default page ~50), so we follow
+    /// `nextCursor`/`hasNextPage` to avoid a truncated object set on heavy wallets.
     func getAllCoins(coin: Coin) async throws -> [[String: String]] {
 
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
+            var allCoins: [[String: String]] = []
+            var cursor: String?
 
-            if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data") {
-                let allCoins = coins.filter { $0.coinType.uppercased().contains("SUI") || $0.coinType.uppercased().contains(coin.ticker.uppercased()) }.map { coin in
-                    var coinDict = [String: String]()
-                    coinDict["objectID"] = coin.coinObjectId.description
-                    coinDict["version"] = String(coin.version)
-                    coinDict["objectDigest"] = coin.digest
-                    coinDict["balance"] = String(coin.balance)
-                    coinDict["coinType"] = String(coin.coinType)
-                    return coinDict
+            repeat {
+                let data = try await Utils.PostRequestRpc(
+                    rpcURL: rpcURL,
+                    method: "suix_getAllCoins",
+                    params: [coin.address, cursor]
+                )
+
+                guard let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data") else {
+                    logger.error("Failed to decode coin page at cursor \(cursor ?? "<start>", privacy: .public)")
+                    throw Errors.coinPageDecodeFailed(cursor: cursor)
                 }
 
-                return allCoins
-            } else {
-                print("Failed to decode coins")
-            }
+                allCoins.append(contentsOf: coins.map { suiCoin in
+                    var coinDict = [String: String]()
+                    coinDict["objectID"] = suiCoin.coinObjectId.description
+                    coinDict["version"] = String(suiCoin.version)
+                    coinDict["objectDigest"] = suiCoin.digest
+                    coinDict["balance"] = String(suiCoin.balance)
+                    coinDict["coinType"] = String(suiCoin.coinType)
+                    return coinDict
+                })
+
+                let hasNextPage = Utils.extractResultFromJson(fromData: data, path: "result.hasNextPage") as? Bool ?? false
+                cursor = hasNextPage ? Utils.extractResultFromJson(fromData: data, path: "result.nextCursor") as? String : nil
+            } while cursor != nil
+
+            return allCoins
         } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
+            logger.error("Error fetching coins: \(error.localizedDescription)")
             throw error
         }
-        return []
     }
 
     func getAllTokens(address: String) async throws -> [[String: String]] {
@@ -265,20 +288,20 @@ class SuiService {
     }
 
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
-        do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
+        let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
 
-            if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
-                return error.description
-            }
-
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String {
-                return result.description
-            }
-        } catch {
-            return error.localizedDescription
+        // A non-success execution returns an `error.message`; throw it instead
+        // of returning the text as a digest so a failed broadcast is never shown
+        // as success or persisted/polled as a fake txid.
+        if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String, !error.isEmpty {
+            throw Errors.broadcastFailed(error)
         }
-        return .empty
+
+        guard let digest = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String, !digest.isEmpty else {
+            throw Errors.missingTransactionDigest
+        }
+
+        return digest
     }
 
     /// Simulates a transaction to get accurate gas estimates
@@ -324,6 +347,9 @@ private extension SuiService {
         case simulationFailed(String)
         case failedToParseGasEstimate
         case dryRunFailed(String)
+        case coinPageDecodeFailed(cursor: String?)
+        case broadcastFailed(String)
+        case missingTransactionDigest
 
         var errorDescription: String? {
             switch self {
@@ -335,6 +361,12 @@ private extension SuiService {
                 return "Failed to parse gas estimate from dry run"
             case .dryRunFailed(let error):
                 return "Dry run failed: \(error)"
+            case .coinPageDecodeFailed(let cursor):
+                return "Failed to decode coin page from suix_getAllCoins at cursor \(cursor ?? "<start>"). Aborting to avoid a truncated coin set."
+            case .broadcastFailed(let error):
+                return "Sui broadcast failed: \(error)"
+            case .missingTransactionDigest:
+                return "Sui broadcast did not return a transaction digest"
             }
         }
     }

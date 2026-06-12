@@ -15,6 +15,35 @@ enum RpcServiceError: LocalizedError {
     }
 }
 
+/// Validation for substrate `author_submitExtrinsic` broadcast results.
+///
+/// `RpcService.sendRPCRequest` returns a non-matched RPC `error.message` as a
+/// plain string (so the base client can surface duplicate-broadcast sentinels
+/// without throwing). For broadcasts that means a rejection like
+/// `"Invalid extrinsic"` arrives where a hash is expected. Polkadot and
+/// Bittensor route their result through this validator so an error string
+/// throws instead of being persisted and polled as a fake txid.
+enum SubstrateBroadcast {
+    /// Sentinel `RpcService.sendRPCRequest` returns when an extrinsic is
+    /// rejected as a duplicate (already known / already imported). Callers
+    /// downstream map it to the locally computed extrinsic hash.
+    static let alreadyBroadcastedSentinel = "Transaction already broadcasted."
+
+    /// Returns `result` when it is an accepted broadcast — the 32-byte extrinsic
+    /// hash (`0x` + 64 hex) or the duplicate sentinel — otherwise throws, since
+    /// any other value is an error message the node returned in place of a hash.
+    static func validatedHash(_ result: String) throws -> String {
+        if result == alreadyBroadcastedSentinel {
+            return result
+        }
+        let hash = result.stripHexPrefix()
+        if hash.count == 64, hash.allSatisfy(\.isHexDigit) {
+            return result
+        }
+        throw RpcServiceError.rpcError(code: 500, message: "Broadcast rejected: \(result)")
+    }
+}
+
 class RpcService {
     // swiftlint:disable:next no_raw_urlsession
     private let session = URLSession.shared

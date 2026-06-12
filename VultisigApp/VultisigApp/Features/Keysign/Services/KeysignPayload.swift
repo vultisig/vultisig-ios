@@ -114,6 +114,34 @@ struct KeysignPayload: Codable, Hashable {
         )
     }
 
+    /// Returns a copy of the payload with `chainSpecific` swapped. Used by the
+    /// co-signer to re-stamp the live ZEC ZIP-243 branch id onto a payload
+    /// rebuilt from proto (the proto can't carry it) before computing sighashes.
+    func withChainSpecific(_ chainSpecific: BlockChainSpecific) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: toAmount,
+            chainSpecific: chainSpecific,
+            utxos: utxos,
+            memo: memo,
+            swapPayload: swapPayload,
+            approvePayload: approvePayload,
+            vaultPubKeyECDSA: vaultPubKeyECDSA,
+            vaultLocalPartyID: vaultLocalPartyID,
+            libType: libType,
+            wasmExecuteContractPayload: wasmExecuteContractPayload,
+            tronTransferContractPayload: tronTransferContractPayload,
+            tronTriggerSmartContractPayload: tronTriggerSmartContractPayload,
+            tronTransferAssetContractPayload: tronTransferAssetContractPayload,
+            qbtcClaimPayload: qbtcClaimPayload,
+            isQbtcClaim: isQbtcClaim,
+            skipBroadcast: skipBroadcast,
+            signData: signData,
+            dappMetadata: dappMetadata
+        )
+    }
+
     var signAmino: SignAmino? {
         guard case let .signAmino(amino) = signData else {
             return nil

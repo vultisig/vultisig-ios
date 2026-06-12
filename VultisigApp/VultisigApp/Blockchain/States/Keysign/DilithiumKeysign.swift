@@ -168,6 +168,11 @@ final class DilithiumKeysign {
 
     func processDilithiumOutboundMessage(handle: vscore.Handle) async throws {
         repeat {
+            // Cooperative cancellation: the stage-level timeout in
+            // KeysignViewModel cancels this task group on a stall. Without an
+            // explicit check the C-backed loop runs to completion and the
+            // orphaned ceremony broadcasts behind the user's back.
+            try Task.checkCancellation()
             let (result, outboundMessage) = GetDilithiumOutboundMessage(handle: handle)
             if result != MLDSA_LIB_OK {
                 print("fail to get outbound message,\(result)")
@@ -204,6 +209,10 @@ final class DilithiumKeysign {
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
+            // Cooperative cancellation: honour cancelAll() from the stage-level
+            // timeout so a stalled poll stops instead of running to completion
+            // and broadcasting an abandoned ceremony.
+            try Task.checkCancellation()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -366,6 +375,9 @@ final class DilithiumKeysign {
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch {
+            // A cancellation is not a signing failure — never retry it,
+            // propagate so the abandoned ceremony unwinds immediately.
+            if error is CancellationError { throw error }
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await DilithiumKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)

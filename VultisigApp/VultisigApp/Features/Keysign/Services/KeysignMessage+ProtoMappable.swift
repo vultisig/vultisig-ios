@@ -514,7 +514,10 @@ extension BlockChainSpecific {
 
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
-        case .UTXO(let byteFee, let sendMaxAmount):
+        case .UTXO(let byteFee, let sendMaxAmount, _):
+            // The live ZEC branch id is intentionally not carried by the proto:
+            // it is a network-global fact each device re-resolves at signing
+            // time (see JoinKeysignViewModel), so it never travels on the wire.
             return .utxoSpecific(.with {
                 $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount

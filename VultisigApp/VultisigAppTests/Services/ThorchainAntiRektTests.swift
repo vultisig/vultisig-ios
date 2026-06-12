@@ -80,6 +80,10 @@ final class ThorchainAntiRektTests: XCTestCase {
 
         XCTAssertEqual(result.expectedAmountOut, streaming.expectedAmountOut)
         XCTAssertEqual(mock.callCount, 1, "Streaming must be fetched at 101 bps with a 1% threshold")
+        XCTAssertEqual(
+            mock.lastToleranceBps, SwapService.defaultThorchainToleranceBps,
+            "Streaming quote must carry tolerance_bps so the node bakes a minimum-output LIM into the memo"
+        )
     }
 
     func test_rapidSlippageBps_zeroFees_returnsZero() {
@@ -259,6 +263,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
     private(set) var callCount = 0
     private(set) var lastInterval: Int?
     private(set) var lastStreamingQuantity: Int?
+    private(set) var lastToleranceBps: Int?
 
     init(response: Result<ThorchainSwapQuote, Error>) {
         self.response = response
@@ -271,6 +276,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         amount _: String,
         interval: Int,
         streamingQuantity: Int,
+        toleranceBps: Int,
         referredCode _: String,
         vultTierDiscount _: Int
     ) async throws -> ThorchainSwapQuote {
@@ -278,6 +284,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         callCount += 1
         lastInterval = interval
         lastStreamingQuantity = streamingQuantity
+        lastToleranceBps = toleranceBps
         return try response.get()
     }
 }

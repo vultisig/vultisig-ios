@@ -395,6 +395,7 @@
 "failToGetAccountNumber" = "Fehler beim Abrufen der Kontonummer";
 "failToGetRecentBlockHash" = "Fehler beim Abrufen des aktuellen Blockhashs";
 "failToGetSequenceNo" = "Fehler beim Abrufen der Sequenznummer";
+"failToResolveJettonWallet" = "Die Jetton-Wallet-Adresse konnte nicht aufgelöst werden. Bitte versuche es erneut.";
 "failToStartKesign" = "Fehler bei der Signatur";
 "failToStartKeygen" = "Schlüsselgenerierung kann wegen fehlender Informationen nicht gestartet werden";
 "failureReason" = "Fehlergrund";

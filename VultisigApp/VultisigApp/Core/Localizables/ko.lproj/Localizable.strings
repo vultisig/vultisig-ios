@@ -194,7 +194,7 @@
 "circleSetupOpenAccount" = "계정 개설";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC 입금됨";
-"circleWithdrawAmount" = "금액";
+"circleWithdrawAmountLabel" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
 "claim" = "수령";
@@ -392,6 +392,7 @@
 "failToGetAccountNumber" = "계정 번호를 가져올 수 없습니다";
 "failToGetRecentBlockHash" = "최근 블록 해시를 가져올 수 없습니다";
 "failToGetSequenceNo" = "시퀀스 번호를 가져올 수 없습니다";
+"failToResolveJettonWallet" = "제튼 지갑 주소를 확인할 수 없습니다. 다시 시도해 주세요.";
 "failToStartKesign" = "서명 오류";
 "failToStartKeygen" = "정보 누락으로 키 생성을 시작할 수 없습니다";
 "failureReason" = "실패 이유";

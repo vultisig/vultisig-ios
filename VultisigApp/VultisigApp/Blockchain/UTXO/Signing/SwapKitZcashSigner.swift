@@ -12,11 +12,11 @@
 //
 //  Sighash: WalletCore's ZEC signer implements ZIP-243 (the Sapling
 //  signature digest with the personalised Blake2b-256). It reads the branch
-//  ID from `BitcoinTransactionPlan.branchID` — the existing native ZEC
-//  send (`UTXOChainsHelper.swift:138-139`) uses `30f33754`, and we match
-//  that here so the digest output is identical to a manually-sent ZEC
-//  transaction. (Deviating to the Sapling-v4 spec ID `0x76b809bb` would
-//  produce a different digest that the chain rejects.)
+//  ID from `BitcoinTransactionPlan.branchID` — we feed it the live consensus
+//  branch id resolved at send time (the same value the native ZEC send uses),
+//  so the digest output is identical to a manually-sent ZEC transaction.
+//  (Deviating to the Sapling-v4 spec ID `0x76b809bb` would produce a
+//  different digest that the chain rejects.)
 //
 //  Real fixture: captured during the ZEC source-chain spike (`ZEC.ZEC →
 //  ETH.USDC`, funded `t1bnxtY7aLCjWx9Ru1YcGwRWch3eEWUFK7u` source). The
@@ -54,19 +54,16 @@ private let saplingVersionGroupID: UInt32 = 0x892F2085
 private let saplingTxVersion: UInt32 = 0x80000004
 /// NU5 consensus group ID — we hard-reject this until SwapKit's wire flips.
 private let nu5VersionGroupID: UInt32 = 0x26A7270A
-/// Branch ID matches the existing native ZEC send
-/// (`UTXOChainsHelper.swift:138-139`). WalletCore reads it as the branch
-/// identifier for ZIP-243's personalised Blake2b. Diverging to the
-/// Sapling-v4-spec `0x76b809bb` would produce a digest the network rejects.
-private let zcashBranchID: Data = Data(hexString: "30f33754")!
 
 enum SwapKitZcashSigner {
 
     /// ZIP-243 preimage hashes for every input. WalletCore handles the per-
     /// input personalised Blake2b construction via `CoinType.zcash` + the
-    /// branchID injected on the frozen plan.
-    static func preSigningHashes(payload: SwapKitSwapPayload) throws -> [String] {
-        let input = try Self.buildSigningInput(payload: payload)
+    /// branchID injected on the frozen plan. `zcashBranchId` is the live branch
+    /// id resolved at send time (carried on the source-chain payload's UTXO
+    /// specific); refuses when absent (no compiled-in fallback).
+    static func preSigningHashes(payload: SwapKitSwapPayload, zcashBranchId: String?) throws -> [String] {
+        let input = try Self.buildSigningInput(payload: payload, zcashBranchId: zcashBranchId)
         let serialized = try input.serializedData()
         let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
@@ -83,14 +80,15 @@ enum SwapKitZcashSigner {
     static func compileSignedTransaction(
         payload: SwapKitSwapPayload,
         signatures: [String: TssKeysignResponse],
-        pubKeyHex: String
+        pubKeyHex: String,
+        zcashBranchId: String?
     ) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: pubKeyHex),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
             throw SwapKitZcashSignerError.underlying(.invalidPublicKey(pubKeyHex))
         }
-        let input = try Self.buildSigningInput(payload: payload)
+        let input = try Self.buildSigningInput(payload: payload, zcashBranchId: zcashBranchId)
         let serialized = try input.serializedData()
         let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
@@ -126,20 +124,29 @@ enum SwapKitZcashSigner {
     }
 
     /// Exposed for unit tests: build the WalletCore signing input with the
-    /// frozen Sapling plan + branchID set.
-    static func buildSigningInput(payload: SwapKitSwapPayload) throws -> BitcoinSigningInput {
+    /// frozen Sapling plan + branchID set. `zcashBranchId` is the live branch id
+    /// resolved at send time; refuses when absent (no compiled-in fallback).
+    static func buildSigningInput(payload: SwapKitSwapPayload, zcashBranchId: String?) throws -> BitcoinSigningInput {
         let parsed = try parseSaplingPSBT(
             payload.txPayload,
-            targetAddress: payload.targetAddress
+            targetAddress: payload.targetAddress,
+            zcashBranchId: zcashBranchId
         )
-        var input = parsed.input
-        // ZEC ZIP-243 needs `branchID` on the plan — WalletCore reads it
-        // during preimage construction. Mirror the value the native send
-        // path uses so digest derivation is identical.
-        var plan = input.plan
-        plan.branchID = zcashBranchID
-        input.plan = plan
-        return input
+        return parsed.input
+    }
+
+    /// Validates and converts the live ZIP-243 branch id. WalletCore reads it
+    /// on the plan during preimage construction; there is no compiled-in
+    /// fallback because signing with a stale id produces a tx the network
+    /// rejects, so refuse up front when it could not be resolved.
+    private static func branchIDData(_ zcashBranchId: String?) throws -> Data {
+        guard let zcashBranchId, !zcashBranchId.isEmpty,
+              let data = Data(hexString: zcashBranchId) else {
+            throw SwapKitZcashSignerError.underlying(.planError(
+                "Zcash ZIP-243 consensus branch id is unavailable; cannot sign the SwapKit ZEC transaction without the live branch id"
+            ))
+        }
+        return data
     }
 
     /// Exposed for unit tests so callers can pin the Sapling-header parser
@@ -210,7 +217,7 @@ enum SwapKitZcashSigner {
         let input: BitcoinSigningInput
     }
 
-    private static func parseSaplingPSBT(_ psbtBytes: Data, targetAddress: String) throws -> ParsedSaplingPSBT {
+    private static func parseSaplingPSBT(_ psbtBytes: Data, targetAddress: String, zcashBranchId: String?) throws -> ParsedSaplingPSBT {
         // 1. Parse BIP-174 framing.
         let framingPrefix: (cursor: PSBTCursor, globals: [Data: Data], unsignedTxBytes: Data)
         do {
@@ -268,7 +275,8 @@ enum SwapKitZcashSigner {
             inputs: legacyInputs,
             outputs: parsedTx.outputs,
             expiryHeight: parsedTx.expiryHeight,
-            targetAddress: targetAddress
+            targetAddress: targetAddress,
+            zcashBranchId: zcashBranchId
         )
         return ParsedSaplingPSBT(input: input)
     }
@@ -340,8 +348,12 @@ enum SwapKitZcashSigner {
         inputs: [LegacyP2PKHInput],
         outputs: [LegacyP2PKHOutput],
         expiryHeight _: UInt32,
-        targetAddress: String
+        targetAddress: String,
+        zcashBranchId: String?
     ) throws -> BitcoinSigningInput {
+        // Validate the live branch id up front so an unresolved id refuses
+        // before we do the (otherwise wasted) plan-assembly work.
+        let branchID = try branchIDData(zcashBranchId)
         guard !inputs.isEmpty, !outputs.isEmpty else {
             throw SwapKitZcashSignerError.underlying(.planError("empty inputs or outputs"))
         }
@@ -414,7 +426,7 @@ enum SwapKitZcashSigner {
             $0.fee = fee
             $0.change = changeAmount
             $0.utxos = utxos
-            $0.branchID = zcashBranchID
+            $0.branchID = branchID
         }
 
         var scripts: [String: Data] = [:]
