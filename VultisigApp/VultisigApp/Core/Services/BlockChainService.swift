@@ -324,11 +324,10 @@ extension BlockChainService {
     /// user override the limit and that choice must win over estimation. With no
     /// override, run `eth_estimateGas` against the *real* recipient (so contract
     /// receivers and long memos are sized correctly) and floor at the per-chain
-    /// default (which covers Mantle's 250M and Base's higher intrinsic cost —
-    /// both undercut by the flat 23000/120000 request value). The estimate is
-    /// used as-is, not inflated; if it isn't enough the user can raise the limit
-    /// in the gas settings. Non-EVM chains pass `requestedGasLimit` through
-    /// unchanged; if estimation fails the send still proceeds on the floor.
+    /// default. The estimate is used as-is, not inflated; if it isn't enough the
+    /// user can raise the limit in the gas settings. Non-EVM chains pass
+    /// `requestedGasLimit` through unchanged; if estimation fails the send still
+    /// proceeds on the floor.
     ///
     /// Shared by the keysign-payload build (`fetchSendBlockChainSpecific`) and
     /// the Send form's fee display (`calculateEVMFee`) so both size gas the same
@@ -350,13 +349,12 @@ extension BlockChainService {
             return requestedGasLimit
         }
 
-        let floor = normalizeGasLimit(coin: coin, action: .transfer)
+        let floor = max(normalizeGasLimit(coin: coin, action: .transfer), requestedGasLimit ?? .zero)
 
         // Without a recipient (e.g. early Send-form fee preview) there's nothing
-        // to simulate against; the per-chain floor already fixes the Mantle/Base
-        // default bypass.
+        // to simulate against.
         guard !toAddress.isEmpty else {
-            return max(floor, requestedGasLimit ?? .zero)
+            return floor
         }
 
         do {
@@ -377,11 +375,10 @@ extension BlockChainService {
                     value: amount
                 )
             }
-            print("Estimated gas limit for transfer: \(estimated), floor: \(floor), requestedGasLimit: \(requestedGasLimit ?? .zero)")
             return max(estimated, floor)
         } catch {
             logger.warning("EVM send gas estimation failed for \(coin.chain.name, privacy: .public); using default gas limit")
-            return max(floor, requestedGasLimit ?? .zero)
+            return floor
         }
     }
 }

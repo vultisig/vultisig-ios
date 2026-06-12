@@ -185,11 +185,15 @@ class Coin: ObservableObject, Codable, Hashable {
                 return "120000"
             }
         case .mantle:
-            // Mantle requires much higher gas limits
+            // Matches the Ethereum defaults: this is only the floor/fallback for
+            // a transfer when the real eth_estimateGas can't run. The earlier
+            // 250M value over-floored every send and blew up the displayed fee
+            // (Mantle native transfers estimate at ~21k). Swaps size gas via the
+            // separate defaultMantleSwapLimit, not this.
             if self.isNativeToken {
-                return "250000000"  // 250M gas
+                return "23000"
             } else {
-                return "250000000"  // 250M gas
+                return "120000"
             }
         case .zksync:
             return "200000"
