@@ -25,10 +25,19 @@ struct SwapDetailsScreen: View {
         Screen {
             VStack {
                 fields
+                advancedSettingsLink
                 continueButton
             }
         }
         .screenTitle("swap".localized)
+        .crossPlatformSheet(isPresented: $vm.showAdvancedSettingsSheet) {
+            AdvancedSwapSheet(
+                isPresented: $vm.showAdvancedSettingsSheet,
+                coin: detailsViewModel.toCoin,
+                isGasLimitSupported: detailsViewModel.isGasLimitSupported,
+                settings: $vm.advancedSettings
+            )
+        }
         .screenToolbar {
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 refreshCounter
@@ -257,9 +266,40 @@ struct SwapDetailsScreen: View {
         }
     }
 
+    var modeTabs: some View {
+        @Bindable var vm = detailsViewModel
+        return SwapModeTabs(selected: $vm.swapMode)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    var advancedSettingsLink: some View {
+        Button {
+            detailsViewModel.showAdvancedSettingsSheet = true
+        } label: {
+            HStack(spacing: 6) {
+                Icon(named: "settings", color: Theme.colors.textPrimary, size: 16)
+                Text("advancedSettings".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                if detailsViewModel.advancedSettings.isActive {
+                    Circle()
+                        .fill(Theme.colors.primaryAccent4)
+                        .frame(width: 6, height: 6)
+                }
+                Spacer()
+                Icon(named: "chevron-right-small", color: Theme.colors.textTertiary, size: 20)
+            }
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
+                modeTabs
                 swapContent
                     #if os(macOS)
                     // Keep the error tooltip overlay above the later sibling

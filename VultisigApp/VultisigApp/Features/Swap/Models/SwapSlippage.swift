@@ -48,6 +48,9 @@ enum SwapSlippage: Equatable, Hashable {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        // Force a dot separator so the displayed percentage is stable across locales.
+        formatter.decimalSeparator = "."
         let formatted = formatter.string(from: number) ?? "\(percent)"
         return "\(formatted)%"
     }
