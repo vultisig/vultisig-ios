@@ -1002,7 +1002,9 @@
 "successful" = "Successful";
 "successfully" = "successfully";
 "suiMergeInto" = "Merge into";
+"suiMutable" = "Mutable";
 "suiObjectsTo" = "Objects to";
+"suiReadOnly" = "Read-only";
 "suiResultOfCmd" = "Result of cmd";
 "suiSplitFrom" = "Split from";
 "suiTransaction" = "Sui Transaction";

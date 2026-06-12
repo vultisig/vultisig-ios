@@ -489,7 +489,7 @@
 "initiatingDevice" = "Dispositivo iniciador";
 "inProgress" = "En progreso";
 "input" = "Entrada";
-"inputPure" = "Pure";
+"inputPure" = "Puro";
 "inputs" = "Entradas";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "Excede las unidades LP disponibles (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén para restaurarla más tarde";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Crear Move Vec";
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
 "manageNotificationsInSettings" = "Puedes gestionar las notificaciones en los ajustes del sistema.";
 "managePositions" = "Administrar posiciones";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
 "moreInfo" = "Más información";
 "moreInfoDescription" = "Esto ocurre porque la contraseña se utiliza para cifrar localmente el archivo de copia de seguridad, de forma similar a cómo se cifra un disco duro. En el siguiente paso, tienes la opción de añadir una pista.";
-"moveCall" = "Move Call";
+"moveCall" = "Llamada Move";
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
 "myReferralCardBody" = "Gestiona tu código de referido y recoge recompensas.";
 "myReferralCardTitle" = "Mi referido";
@@ -994,7 +994,9 @@
 "successful" = "Exitosa";
 "successfully" = "exitosamente";
 "suiMergeInto" = "Fusionar en";
+"suiMutable" = "Mutable";
 "suiObjectsTo" = "Objetos a";
+"suiReadOnly" = "Solo lectura";
 "suiResultOfCmd" = "Resultado del cmd";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transacción Sui";

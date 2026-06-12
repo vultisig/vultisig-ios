@@ -489,7 +489,7 @@
 "initiatingDevice" = "Initiierendes Gerät";
 "inProgress" = "In Bearbeitung";
 "input" = "Eingabe";
-"inputPure" = "Pure";
+"inputPure" = "Pur";
 "inputs" = "Eingaben";
 "insufficientBalance" = "Unzureichendes Guthaben";
 "insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Move-Vektor erstellen";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
 "manageNotificationsInSettings" = "Du kannst Benachrichtigungen in den Systemeinstellungen verwalten.";
 "managePositions" = "Positionen verwalten";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
 "moreInfo" = "Mehr Infos";
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
-"moveCall" = "Move Call";
+"moveCall" = "Move-Aufruf";
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
 "myReferralCardBody" = "Verwalte deinen Empfehlungscode und sammle Belohnungen.";
 "myReferralCardTitle" = "Meine Empfehlung";
@@ -994,7 +994,9 @@
 "successful" = "Erfolgreich";
 "successfully" = "erfolgreich";
 "suiMergeInto" = "Zusammenführen in";
+"suiMutable" = "Veränderbar";
 "suiObjectsTo" = "Objekte an";
+"suiReadOnly" = "Schreibgeschützt";
 "suiResultOfCmd" = "Ergebnis von Befehl";
 "suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";

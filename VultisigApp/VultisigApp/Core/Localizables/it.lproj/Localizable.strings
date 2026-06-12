@@ -489,7 +489,7 @@
 "initiatingDevice" = "Dispositivo di inizio";
 "inProgress" = "In corso";
 "input" = "Input";
-"inputPure" = "Pure";
+"inputPure" = "Puro";
 "inputs" = "Input";
 "insufficientBalance" = "Saldo insufficiente";
 "insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "Supera le unità LP disponibili (%@)";
 "lpUnitsLabel" = "Unità LP";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau da ripristinare in seguito";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Crea Move Vec";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
 "manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
 "managePositions" = "Gestisci posizioni";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
 "moreInfo" = "Maggiori informazioni";
 "moreInfoDescription" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile a come viene crittografato un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
-"moveCall" = "Move Call";
+"moveCall" = "Chiamata Move";
 "mustAgreeTermsError" = "Devi accettare i termini.";
 "myReferralCardBody" = "Gestisci il tuo codice invito e raccogli ricompense.";
 "myReferralCardTitle" = "Il mio invito";
@@ -994,7 +994,9 @@
 "successful" = "Riuscita";
 "successfully" = "con successo";
 "suiMergeInto" = "Unisci in";
+"suiMutable" = "Modificabile";
 "suiObjectsTo" = "Oggetti a";
+"suiReadOnly" = "Sola lettura";
 "suiResultOfCmd" = "Risultato del cmd";
 "suiSplitFrom" = "Dividi da";
 "suiTransaction" = "Transazione Sui";

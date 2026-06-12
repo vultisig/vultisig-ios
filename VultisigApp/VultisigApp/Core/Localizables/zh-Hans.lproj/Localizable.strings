@@ -489,7 +489,7 @@
 "initiatingDevice" = "发起设备";
 "inProgress" = "进行中";
 "input" = "输入";
-"inputPure" = "Pure";
+"inputPure" = "纯值";
 "inputs" = "输入";
 "insufficientBalance" = "余额不足";
 "insufficientBalanceForFunctions" = "余额不足。请输入小于或等于可用资金的金额";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
 "lpUnitsLabel" = "LP单位";
 "madeVaultBackupPrompt" = "我已进行保险库备份以便日后恢复";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "创建 Move 向量";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";
 "moreInfo" = "更多信息";
 "moreInfoDescription" = "这是因为密码用于本地加密备份文件，类似于硬盘驱动器的加密方式。在下一步中，您可以选择添加提示";
-"moveCall" = "Move Call";
+"moveCall" = "Move 调用";
 "mustAgreeTermsError" = "您必须同意条款";
 "myReferralCardBody" = "管理您的推荐码并领取奖励。";
 "myReferralCardTitle" = "我的推荐";
@@ -994,7 +994,9 @@
 "successful" = "成功";
 "successfully" = "成功";
 "suiMergeInto" = "合并到";
+"suiMutable" = "可变";
 "suiObjectsTo" = "对象到";
+"suiReadOnly" = "只读";
 "suiResultOfCmd" = "命令结果";
 "suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";

@@ -137,7 +137,9 @@ struct SignSuiDisplayView: View {
                 commandTitle("[\(index)] \("inputPure".localized) · \(decoded.label)")
                 detailMono(decoded.display)
             case let .object(kind, objectId, mutable):
-                let mutabilitySuffix = mutable.map { " (\($0 ? "mut" : "read-only"))" } ?? ""
+                let mutabilitySuffix = mutable.map {
+                    " (\($0 ? "suiMutable".localized : "suiReadOnly".localized))"
+                } ?? ""
                 commandTitle("[\(index)] \(kind.rawValue)\(mutabilitySuffix)")
                 detailMono(objectId)
             }

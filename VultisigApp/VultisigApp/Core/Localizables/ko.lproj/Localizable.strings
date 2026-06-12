@@ -485,7 +485,7 @@
 "initiatingDevice" = "기기 초기화 중";
 "inProgress" = "진행 중";
 "input" = "입력";
-"inputPure" = "Pure";
+"inputPure" = "순수값";
 "inputs" = "입력";
 "insufficientBalance" = "잔액 부족";
 "insufficientBalanceForFunctions" = "잔액이 부족합니다. 사용 가능한 자금 이하의 금액을 입력하세요.";
@@ -570,7 +570,7 @@
 "lpUnitsExceeded" = "사용 가능한 LP 단위 초과 (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "나중에 복원할 수 있도록 볼트 백업을 완료했습니다";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Move Vec 생성";
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
@@ -600,7 +600,7 @@
 "monthlyBackupTitle" = "볼트 공유를 백업하고\n완전성을 확인하는 것을 잊지 마세요.";
 "moreInfo" = "더 많은 정보";
 "moreInfoDescription" = "비밀번호는 하드 드라이브 암호화처럼 백업 파일을 로컬에서 암호화하는 데 사용됩니다. 다음 단계에서 힌트를 추가할 수 있습니다";
-"moveCall" = "Move Call";
+"moveCall" = "Move 호출";
 "mustAgreeTermsError" = "약관에 동의해야 합니다.";
 "myReferralCardBody" = "추천 코드를 관리하고 보상을 수집하세요.";
 "myReferralCardTitle" = "내 추천";
@@ -971,7 +971,9 @@
 "successful" = "성공적";
 "successfully" = "성공적으로";
 "suiMergeInto" = "병합 대상";
+"suiMutable" = "변경 가능";
 "suiObjectsTo" = "객체 대상";
+"suiReadOnly" = "읽기 전용";
 "suiResultOfCmd" = "명령 결과";
 "suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";

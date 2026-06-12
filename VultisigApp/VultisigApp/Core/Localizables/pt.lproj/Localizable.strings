@@ -489,7 +489,7 @@
 "initiatingDevice" = "Dispositivo de início";
 "inProgress" = "Em andamento";
 "input" = "Entrada";
-"inputPure" = "Pure";
+"inputPure" = "Puro";
 "inputs" = "Entradas";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Fiz um backup do cofre para restaurar mais tarde";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Criar Move Vec";
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
 "managePositions" = "Gerenciar posições";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
 "moreInfo" = "Mais informações";
 "moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
-"moveCall" = "Move Call";
+"moveCall" = "Chamada Move";
 "mustAgreeTermsError" = "Você deve concordar com os termos.";
 "myReferralCardBody" = "Gerencie seu código de indicação e colete recompensas.";
 "myReferralCardTitle" = "Minha indicação";
@@ -994,7 +994,9 @@
 "successful" = "Bem-sucedida";
 "successfully" = "com sucesso";
 "suiMergeInto" = "Mesclar em";
+"suiMutable" = "Mutável";
 "suiObjectsTo" = "Objetos para";
+"suiReadOnly" = "Somente leitura";
 "suiResultOfCmd" = "Resultado do cmd";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transação Sui";

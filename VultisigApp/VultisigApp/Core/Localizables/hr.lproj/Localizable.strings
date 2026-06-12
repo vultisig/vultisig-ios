@@ -489,7 +489,7 @@
 "initiatingDevice" = "Pokrećući uređaj";
 "inProgress" = "U tijeku";
 "input" = "Ulaz";
-"inputPure" = "Pure";
+"inputPure" = "Čisto";
 "inputs" = "Ulazi";
 "insufficientBalance" = "Nedovoljno sredstava";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
@@ -574,7 +574,7 @@
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
-"makeMoveVec" = "Make Move Vec";
+"makeMoveVec" = "Stvori Move Vec";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
 "managePositions" = "Upravljaj pozicijama";
@@ -604,7 +604,7 @@
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
 "moreInfo" = "Više informacija";
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
-"moveCall" = "Move Call";
+"moveCall" = "Move poziv";
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "myReferralCardBody" = "Upravljaj svojim kodom preporuke i prikupljaj nagrade.";
 "myReferralCardTitle" = "Moja preporuka";
@@ -994,7 +994,9 @@
 "successful" = "Uspješno";
 "successfully" = "uspješno";
 "suiMergeInto" = "Spoji u";
+"suiMutable" = "Promjenjivo";
 "suiObjectsTo" = "Objekti za";
+"suiReadOnly" = "Samo za čitanje";
 "suiResultOfCmd" = "Rezultat naredbe";
 "suiSplitFrom" = "Podijeli od";
 "suiTransaction" = "Sui transakcija";
