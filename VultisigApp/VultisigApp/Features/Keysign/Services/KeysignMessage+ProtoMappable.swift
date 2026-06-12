@@ -472,10 +472,14 @@ extension BlockChainSpecific {
                 ]
             }
 
+            // dApp-supplied Sui PTBs (`signSui`) carry an empty SuiSpecific —
+            // the coins, gas budget and reference gas price are baked into the
+            // BCS bytes. proto3 serialises those unset numeric strings as "",
+            // so parse defensively: `BigInt(stringLiteral:)` traps on "".
             self = .Sui(
-                referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
+                referenceGasPrice: BigInt(value.referenceGasPrice) ?? 0,
                 coins: coinsArray,
-                gasBudget: BigInt(stringLiteral: value.gasBudget)
+                gasBudget: BigInt(value.gasBudget) ?? 0
             )
         case .tonSpecific(let value):
             self = .Ton(
