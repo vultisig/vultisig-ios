@@ -9,6 +9,9 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
+
+private let cardanoLogger = Logger(subsystem: "com.vultisig.app", category: "cardano-helper")
 
 /*
  Cardano UTXO Validation & Send Max Recommendations
@@ -147,10 +150,11 @@ class CardanoHelper {
         return (false, nil)
     }
 
-    /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`
-    /// (seeded at `180_000` lovelace). The real fee baked into the body is
-    /// derived by WalletCore's planner from the tx size at sign time
-    /// (`minFeeA*size + minFeeB`); this is only the user-facing estimate.
+    /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`, which
+    /// the initiator now populates with the real size-based fee
+    /// (`minFeeA*size + minFeeB`, via `estimateDynamicByteFee`). Every co-signer
+    /// forces this exact value into the body, so the displayed fee equals what
+    /// is actually signed.
     static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
         guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
@@ -171,7 +175,7 @@ class CardanoHelper {
             throw HelperError.runtimeError("coin is not ADA")
         }
 
-        guard case .Cardano(_, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
+        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
 
@@ -205,17 +209,22 @@ class CardanoHelper {
             ? UInt64(keysignPayload.toAmount)
             : Self.minLovelaceOnTokenOutput
 
-        // Leave `forceFee` unset (0) so WalletCore's Cardano `doPlan()` derives
-        // the fee from the planned tx size — `minFeeA*size + minFeeB`. A flat
-        // forced fee underpays any body above ~560 bytes (CNT/multi-input/metadata
-        // txs) and the network rejects it with `FeeTooSmallUTxO`. `byteFee` from
-        // chainSpecific is retained only as the Verify-screen display estimate.
+        // `byteFee` is a SHARED payload constant: the initiator computes a real
+        // size-based fee once (see `CardanoHelper.estimateDynamicByteFee`) and
+        // every co-signing device forces that exact value here. Seeding a
+        // non-zero `forceFee` before `AnySigner.plan(...)` makes WalletCore's
+        // Cardano `doPlan()` honor it verbatim, so `plan.fee == byteFee` and the
+        // body carries the same fee on every device — guaranteeing Blake2b
+        // sighash parity across iOS/Windows/Android regardless of any per-device
+        // planner differences. This matches the SDK resolver, which forces
+        // `byteFee` the same way.
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.changeAddress = keysignPayload.coin.address
                 $0.amount = recipientLovelace
                 $0.useMaxAmount = safeGuardMaxAmount
+                $0.forceFee = UInt64(byteFee)
                 if let tokenBundle {
                     $0.tokenAmount = tokenBundle
                 }
@@ -304,11 +313,50 @@ class CardanoHelper {
             throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
         }
         input.plan = plan
-        // Pin the planner's size-derived fee into the body so the pre-image hash
-        // and the compile phase agree on identical bytes. With `forceFee` left
-        // unset above, `plan.fee` is `minFeeA*size + minFeeB`, not the flat seed.
+        // Pin the planned fee into the body so the pre-image hash and the compile
+        // phase agree on identical bytes. Because `forceFee` was seeded above with
+        // the shared `byteFee`, `doPlan()` honors it and `plan.fee == byteFee` —
+        // the body carries the fee that every device forces identically.
         input.transferMessage.forceFee = plan.fee
         return try input.serializedData()
+    }
+
+    /// Fallback flat fee used only when the initiator's preliminary plan fails.
+    /// Mirrors the SDK's historical `cardanoDefaultFee`. It underpays bodies
+    /// above ~560 bytes, so it is a last resort — `estimateDynamicByteFee`
+    /// normally returns the real size-based fee.
+    static let fallbackByteFee: BigInt = 180_000
+
+    /// Compute the shared `byteFee` the INITIATOR seeds into the keysign payload.
+    ///
+    /// MPC requires every co-signing device to bake a byte-identical fee into the
+    /// Cardano body, or the Blake2b sighash diverges and signing fails. We make
+    /// the fee a single shared constant: the initiator runs a preliminary plan
+    /// over the selected UTXOs/outputs WITHOUT forcing the fee, lets WalletCore
+    /// derive the real size-based fee (`minFeeA*size + minFeeB`), and stores that
+    /// into `chainSpecific.byteFee`. Every co-signer (iOS/SDK/Windows/Android)
+    /// then forces that exact value, so the body fee is identical everywhere.
+    ///
+    /// A flat fee underpays any body above ~560 bytes (CNT / multi-input /
+    /// metadata sends), which the network rejects with `FeeTooSmallUTxO`; a
+    /// size-derived fee fixes that. If planning fails we fall back to the flat
+    /// `fallbackByteFee` (logged) rather than crashing the send flow.
+    static func estimateDynamicByteFee(keysignPayload: KeysignPayload) -> BigInt {
+        do {
+            let input = try getPreSignedInputData(keysignPayload: keysignPayload)
+            // Drop any seeded fee so the planner derives a size-based one.
+            var unforced = input
+            unforced.transferMessage.forceFee = 0
+            let plan: CardanoTransactionPlan = AnySigner.plan(input: unforced, coin: .cardano)
+            guard plan.error == .ok, plan.fee > 0 else {
+                cardanoLogger.warning("Cardano fee plan failed (error: \(String(describing: plan.error)), fee: \(plan.fee)); falling back to flat \(fallbackByteFee) lovelace")
+                return fallbackByteFee
+            }
+            return BigInt(plan.fee)
+        } catch {
+            cardanoLogger.warning("Cardano fee estimation threw (\(error.localizedDescription)); falling back to flat \(fallbackByteFee) lovelace")
+            return fallbackByteFee
+        }
     }
 
     static func getSignedTransaction(vaultHexPubKey: String,

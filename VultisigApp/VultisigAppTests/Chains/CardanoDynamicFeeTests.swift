@@ -8,11 +8,16 @@ import BigInt
 import WalletCore
 import XCTest
 
-/// Verifies the Cardano fee baked into the signed body is derived from the
-/// planned tx size (WalletCore `minFeeA*size + minFeeB`) rather than a flat
-/// forced value. A flat 180k-lovelace fee underpays any body above ~560 bytes
-/// (CNT / multi-input / metadata txs) and the network rejects it at broadcast
-/// with `FeeTooSmallUTxO`.
+/// Covers the Cardano "shared dynamic fee" model:
+///
+/// 1. `byteFee` is a shared payload constant — every co-signing device forces it
+///    verbatim into the signed body, so the body fee always equals the
+///    transmitted `byteFee` (byte-identical bodies ⇒ Blake2b sighash parity).
+/// 2. The INITIATOR computes that `byteFee` once via
+///    `CardanoHelper.estimateDynamicByteFee` as a real size-based fee
+///    (`minFeeA*size + minFeeB`), which scales with tx size and exceeds the old
+///    flat 180k floor for large / multi-input bodies (the fix for
+///    `FeeTooSmallUTxO` rejections).
 final class CardanoDynamicFeeTests: XCTestCase {
 
     private let cardanoAddress = "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j"
@@ -32,14 +37,12 @@ final class CardanoDynamicFeeTests: XCTestCase {
         return coin
     }
 
-    private func makePayload(coin: Coin, toAmount: BigInt, utxos: [UtxoInfo]) -> KeysignPayload {
+    private func makePayload(coin: Coin, toAmount: BigInt, utxos: [UtxoInfo], byteFee: BigInt) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
             toAddress: cardanoAddress,
             toAmount: toAmount,
-            // byteFee seed is retained only as a display estimate; it must NOT
-            // be what ends up in the signed body anymore.
-            chainSpecific: .Cardano(byteFee: 180_000, sendMaxAmount: false, ttl: 190_000_000),
+            chainSpecific: .Cardano(byteFee: byteFee, sendMaxAmount: false, ttl: 190_000_000),
             utxos: utxos,
             memo: nil,
             swapPayload: nil,
@@ -61,8 +64,6 @@ final class CardanoDynamicFeeTests: XCTestCase {
     /// Drive the real signing path and return (fee baked into the body, body size in bytes).
     private func planFeeAndSize(for payload: KeysignPayload) throws -> (fee: UInt64, size: Int) {
         let inputData = try CardanoHelper.getCardanoPreSignInputData(keysignPayload: payload)
-        // Re-decode the serialized signing input: `getCardanoPreSignInputData`
-        // pins the planner's computed fee into `transferMessage.forceFee`.
         let input = try CardanoSigningInput(serializedBytes: inputData)
         let hashes = TransactionCompiler.preImageHashes(coinType: .cardano, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -70,61 +71,93 @@ final class CardanoDynamicFeeTests: XCTestCase {
         return (input.transferMessage.forceFee, preSigningOutput.data.count)
     }
 
-    /// A tiny 1-in/1-out ADA send must cost less than the old flat 180k —
-    /// proving the fee is size-derived, not a coincidental match of the seed.
-    func testSmallTransferFeeIsBelowFlatSeed() throws {
+    // MARK: - byteFee is forced verbatim into the body (sighash parity)
+
+    /// The fee baked into the signed body must equal the `byteFee` carried in the
+    /// payload — every device forces the same shared value. This is what
+    /// guarantees byte-identical bodies across iOS/SDK/Windows/Android.
+    func testBodyFeeEqualsTransmittedByteFee() throws {
         let coin = try makeCoin()
         let utxos = [UtxoInfo(hash: utxoHash, amount: 10_000_000, index: 0)]
-        let payload = makePayload(coin: coin, toAmount: 2_000_000, utxos: utxos)
 
-        let (fee, size) = try planFeeAndSize(for: payload)
+        for forced: BigInt in [165_000, 180_000, 240_000, 500_000] {
+            let payload = makePayload(coin: coin, toAmount: 2_000_000, utxos: utxos, byteFee: forced)
+            let (fee, _) = try planFeeAndSize(for: payload)
+            XCTAssertEqual(BigInt(fee), forced, "body fee must equal the transmitted byteFee (\(forced))")
+        }
+    }
 
-        XCTAssertLessThan(fee, 180_000, "small tx should cost less than the old flat 180k seed")
+    /// A dynamic fee transmitted by an initiator (e.g. iOS computing a size-based
+    /// value) is honored verbatim by the signing path — proving cross-platform
+    /// co-signers will reproduce whatever `byteFee` the initiator chose.
+    func testDynamicByteFeeIsHonored() throws {
+        let coin = try makeCoin()
+        let utxos: [UtxoInfo] = (0..<20).map { i in
+            UtxoInfo(hash: String(format: "%064x", i), amount: 3_000_000, index: UInt32(i))
+        }
+        // Compute the dynamic fee the initiator would seed, then sign with it.
+        let feePayload = makePayload(coin: coin, toAmount: 40_000_000, utxos: utxos, byteFee: 0)
+        let dynamicFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: feePayload)
+
+        let signed = makePayload(coin: coin, toAmount: 40_000_000, utxos: utxos, byteFee: dynamicFee)
+        let (fee, _) = try planFeeAndSize(for: signed)
+        XCTAssertEqual(BigInt(fee), dynamicFee, "body fee must equal the initiator's dynamic byteFee")
+    }
+
+    // MARK: - Initiator-side dynamic fee computation
+
+    /// A tiny 1-in/1-out ADA send computes a fee below the old flat 180k —
+    /// proving the initiator's fee is size-derived, not a flat constant.
+    func testInitiatorSmallTransferFeeBelowFlatFloor() throws {
+        let coin = try makeCoin()
+        let utxos = [UtxoInfo(hash: utxoHash, amount: 10_000_000, index: 0)]
+        let payload = makePayload(coin: coin, toAmount: 2_000_000, utxos: utxos, byteFee: 0)
+
+        let fee = CardanoHelper.estimateDynamicByteFee(keysignPayload: payload)
+
+        XCTAssertLessThan(fee, 180_000, "small tx should cost less than the old flat 180k floor")
         // Sanity: still covers the mainnet fixed minimum (minFeeB = 155,381).
         XCTAssertGreaterThan(fee, 155_381, "fee must cover minFeeB")
-        XCTAssertLessThan(size, 560, "small tx body should be under the ~560B break-even")
     }
 
     /// A large multi-input consolidation produces a body well over the ~560B
-    /// break-even, so its size-derived fee must EXCEED the old flat 180k that
-    /// previously caused `FeeTooSmallUTxO` rejections.
-    func testLargeMultiInputFeeExceedsFlatSeed() throws {
+    /// break-even, so the initiator's size-derived fee must EXCEED the old flat
+    /// 180k that previously caused `FeeTooSmallUTxO` rejections.
+    func testInitiatorLargeMultiInputFeeExceedsFlatFloor() throws {
         let coin = try makeCoin()
         let utxos: [UtxoInfo] = (0..<40).map { i in
-            // Distinct 32-byte hashes so the planner treats them as separate inputs.
-            let hash = String(format: "%064x", i)
-            return UtxoInfo(hash: hash, amount: 3_000_000, index: UInt32(i))
+            UtxoInfo(hash: String(format: "%064x", i), amount: 3_000_000, index: UInt32(i))
         }
-        let payload = makePayload(coin: coin, toAmount: 80_000_000, utxos: utxos)
+        let payload = makePayload(coin: coin, toAmount: 80_000_000, utxos: utxos, byteFee: 0)
 
-        let (fee, size) = try planFeeAndSize(for: payload)
+        let fee = CardanoHelper.estimateDynamicByteFee(keysignPayload: payload)
 
-        XCTAssertGreaterThan(size, 560, "multi-input body should exceed the break-even size")
         XCTAssertGreaterThan(fee, 180_000, "large tx must pay more than the old flat 180k — this is the bug fix")
     }
 
-    /// Fee must scale monotonically with tx size: the large tx pays strictly
-    /// more than the small one.
-    func testFeeScalesWithSize() throws {
+    /// The initiator's fee must scale monotonically with tx size: the large tx
+    /// pays strictly more than the small one.
+    func testInitiatorFeeScalesWithSize() throws {
         let coin = try makeCoin()
 
         let small = makePayload(
             coin: coin,
             toAmount: 2_000_000,
-            utxos: [UtxoInfo(hash: utxoHash, amount: 10_000_000, index: 0)]
+            utxos: [UtxoInfo(hash: utxoHash, amount: 10_000_000, index: 0)],
+            byteFee: 0
         )
         let large = makePayload(
             coin: coin,
             toAmount: 60_000_000,
             utxos: (0..<25).map { i in
                 UtxoInfo(hash: String(format: "%064x", i), amount: 3_000_000, index: UInt32(i))
-            }
+            },
+            byteFee: 0
         )
 
-        let smallResult = try planFeeAndSize(for: small)
-        let largeResult = try planFeeAndSize(for: large)
+        let smallFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: small)
+        let largeFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: large)
 
-        XCTAssertGreaterThan(largeResult.size, smallResult.size)
-        XCTAssertGreaterThan(largeResult.fee, smallResult.fee, "fee should grow with tx size")
+        XCTAssertGreaterThan(largeFee, smallFee, "fee should grow with tx size")
     }
 }

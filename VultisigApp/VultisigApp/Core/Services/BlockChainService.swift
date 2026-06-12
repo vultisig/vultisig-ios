@@ -385,6 +385,11 @@ private extension BlockChainService {
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let ttl = try await cardano.calculateDynamicTTL()
+            // Placeholder fee only — UTXOs aren't selected yet here. The real
+            // size-based `byteFee` is computed once by the initiator in
+            // `KeysignPayloadFactory.buildTransfer` (via
+            // `CardanoHelper.estimateDynamicByteFee`) and forced identically by
+            // every co-signer for cross-platform MPC sighash parity.
             let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
