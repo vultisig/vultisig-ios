@@ -13,8 +13,7 @@ import SwiftUI
 struct SignSuiDisplayView: View {
     let signSui: SignSui
 
-    @State private var isExpanded: Bool = false
-    @State private var areCommandsExpanded: Bool = true
+    @State private var areCommandsExpanded: Bool = false
     @State private var areInputsExpanded: Bool = false
     @State private var areRawBytesExpanded: Bool = false
 
@@ -23,58 +22,31 @@ struct SignSuiDisplayView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
-            if isExpanded {
-                content
+        VStack(alignment: .leading, spacing: 16) {
+            if let summary {
+                summaryCard(summary)
+                commandsSection(summary)
+                inputsSection(summary)
             }
+            rawBytesSection
         }
-    }
-
-    private var header: some View {
-        Button {
-            withAnimation {
-                isExpanded.toggle()
-            }
-        } label: {
-            HStack(alignment: .center) {
-                Text("suiTransaction".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-                Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
-                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
-            }
-        }
-        .buttonStyle(.borderless)
-    }
-
-    private var content: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if let summary {
-                    summarySection(summary)
-                    commandsSection(summary)
-                    inputsSection(summary)
-                }
-                rawBytesSection
-            }
-            .padding(16)
-        }
-        .frame(maxHeight: 400)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Summary
 
-    private func summarySection(_ summary: SuiTransactionDataSummary) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            row(title: "sender".localized, value: summary.sender)
-            row(title: "gasOwner".localized, value: summary.gasOwner)
-            row(title: "gasBudget".localized, value: String(summary.gasBudget))
-            row(title: "gasPrice".localized, value: String(summary.gasPrice))
+    private func summaryCard(_ summary: SuiTransactionDataSummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("suiTransactionSummary".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            summaryRow("from".localized, value: summary.sender, mono: true)
+            summaryRow("gasBudget".localized, value: Self.formatSuiAmount(summary.gasBudget))
+            summaryRow("gasPrice".localized, value: "\(summary.gasPrice) MIST")
         }
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
     }
 
     // MARK: - Commands
@@ -195,7 +167,7 @@ struct SignSuiDisplayView: View {
         isExpanded: Binding<Bool>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             Button {
                 withAnimation {
                     isExpanded.wrappedValue.toggle()
@@ -206,17 +178,23 @@ struct SignSuiDisplayView: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 14)
+                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isExpanded.wrappedValue ? 180 : 0))
                 }
+                .padding(16)
             }
             .buttonStyle(.borderless)
 
             if isExpanded.wrappedValue {
                 content()
+                    .padding([.horizontal, .bottom], 16)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.colors.border, lineWidth: 1)
+        )
     }
 
     private func commandTitle(_ text: String) -> some View {
@@ -241,14 +219,14 @@ struct SignSuiDisplayView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func row(title: String, value: String) -> some View {
+    private func summaryRow(_ title: String, value: String, mono: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text(title)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer(minLength: 8)
             Text(value)
-                .font(.system(size: 11, design: .monospaced))
+                .font(mono ? .system(size: 11, design: .monospaced) : Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.trailing)
                 .lineLimit(1)
@@ -273,6 +251,18 @@ private extension SignSuiDisplayView {
         case let .nestedResult(commandIndex, resultIndex):
             return "↳ \("suiResultOfCmd".localized) \(commandIndex)[\(resultIndex)]"
         }
+    }
+
+    /// Format a MIST gas budget as a trimmed SUI string (1 SUI = 10^9 MIST),
+    /// mirroring the Windows `formatSuiAmount`. e.g. `34265772` → `0.034265772 SUI`.
+    static func formatSuiAmount(_ mist: UInt64) -> String {
+        let mistPerSui: UInt64 = 1_000_000_000
+        let whole = mist / mistPerSui
+        let fractional = mist % mistPerSui
+        guard fractional != 0 else { return "\(whole) SUI" }
+        var fractionalStr = String(format: "%09llu", fractional)
+        while fractionalStr.hasSuffix("0") { fractionalStr.removeLast() }
+        return "\(whole).\(fractionalStr) SUI"
     }
 
     /// Compress `0xabc…::module::Name` to `module::Name`; generics recurse so

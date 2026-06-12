@@ -997,6 +997,7 @@
 "suiResultOfCmd" = "Risultato del cmd";
 "suiSplitFrom" = "Dividi da";
 "suiTransaction" = "Transazione Sui";
+"suiTransactionSummary" = "Riepilogo transazione";
 "support" = "Supporto";
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";
 "swap" = "Scambio";

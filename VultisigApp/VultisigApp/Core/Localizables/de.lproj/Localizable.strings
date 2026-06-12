@@ -997,6 +997,7 @@
 "suiResultOfCmd" = "Ergebnis von Befehl";
 "suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";
+"suiTransactionSummary" = "Transaktionsübersicht";
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
 "swap" = "Tausch";

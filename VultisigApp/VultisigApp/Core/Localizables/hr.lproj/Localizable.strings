@@ -997,6 +997,7 @@
 "suiResultOfCmd" = "Rezultat naredbe";
 "suiSplitFrom" = "Podijeli od";
 "suiTransaction" = "Sui transakcija";
+"suiTransactionSummary" = "Sažetak transakcije";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";

@@ -1005,6 +1005,7 @@
 "suiResultOfCmd" = "Result of cmd";
 "suiSplitFrom" = "Split from";
 "suiTransaction" = "Sui Transaction";
+"suiTransactionSummary" = "Transaction summary";
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";

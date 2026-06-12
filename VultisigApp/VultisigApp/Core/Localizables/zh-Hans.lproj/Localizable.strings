@@ -997,6 +997,7 @@
 "suiResultOfCmd" = "命令结果";
 "suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";
+"suiTransactionSummary" = "交易摘要";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";
 "swap" = "交换";

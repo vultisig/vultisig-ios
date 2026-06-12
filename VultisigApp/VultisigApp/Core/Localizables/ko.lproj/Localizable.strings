@@ -974,6 +974,7 @@
 "suiResultOfCmd" = "명령 결과";
 "suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";
+"suiTransactionSummary" = "거래 요약";
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
 "swap" = "스왑";
