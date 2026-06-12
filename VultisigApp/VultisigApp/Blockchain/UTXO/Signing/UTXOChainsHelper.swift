@@ -39,6 +39,14 @@ class UTXOChainsHelper {
         return branchData
     }
 
+    /// Stamp the live ZIP-243 branch id onto a Zcash plan before signing.
+    /// No-op for every other UTXO coin; throws when ZEC's branch id could not
+    /// be resolved so signing refuses rather than producing a rejectable tx.
+    private func applyZcashBranchID(to plan: inout BitcoinTransactionPlan, keysignPayload: KeysignPayload) throws {
+        guard coin == .zcash else { return }
+        plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
+    }
+
     static func getHelper(coin: Coin) -> UTXOChainsHelper? {
         switch coin.chainType {
         case .UTXO:
@@ -152,10 +160,7 @@ class UTXOChainsHelper {
         }
 
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-
-        if coin == .zcash {
-            plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
-        }
+        try applyZcashBranchID(to: &plan, keysignPayload: keysignPayload)
 
         input.plan = plan
         return try input.serializedData()
@@ -231,9 +236,7 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("Transaction plan error: \(plan.error)")
         }
 
-        if coin == .zcash {
-            plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
-        }
+        try applyZcashBranchID(to: &plan, keysignPayload: keysignPayload)
 
         input.plan = plan
         return try input.serializedData()
