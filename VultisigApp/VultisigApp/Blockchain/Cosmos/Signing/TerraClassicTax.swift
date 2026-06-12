@@ -60,10 +60,13 @@ enum TerraClassicTax {
             && !denom.hasPrefix("factory/")
     }
 
-    /// Base gas fee for an `uluna`-denominated Terra Classic send (~0.5 LUNC at
-    /// 300k gas). Paid by native LUNC, CW20 (`terra1…`) and IBC (`ibc/…`) tokens,
-    /// whose fee the signer denominates in `uluna`.
-    static let ulunaBaseGas: UInt64 = 100000000
+    /// Base gas fee for an `uluna`-denominated Terra Classic send (300k gas x
+    /// 28.325 uluna/gas = 8,497,500 uluna ≈ 8.5 LUNC). `28.325` is Terra Classic's
+    /// `uluna` minimum gas price — the same source as the `0.75 uusd` rate below
+    /// (both from the chain's gas-price config that wallets fee off). Paid by
+    /// native LUNC, CW20 (`terra1…`) and IBC (`ibc/…`) tokens, whose fee the
+    /// signer denominates in `uluna`.
+    static let ulunaBaseGas: UInt64 = 8497500
 
     /// Base gas fee for a `uusd`-denominated Terra Classic send (300k gas x
     /// 0.75 uusd/gas = 225000 uusd). Paid only by the USTC bank denom, whose fee

@@ -110,7 +110,7 @@ final class TerraClassicTaxTests: XCTestCase {
             TerraClassicTax.baseGas(contractAddress: "", isNativeToken: true),
             TerraClassicTax.ulunaBaseGas
         )
-        XCTAssertEqual(TerraClassicTax.ulunaBaseGas, 100000000)
+        XCTAssertEqual(TerraClassicTax.ulunaBaseGas, 8497500)
     }
 
     func testBaseGasCW20GetsUlunaNumber() {
