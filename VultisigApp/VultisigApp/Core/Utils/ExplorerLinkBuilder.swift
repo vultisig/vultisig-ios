@@ -204,7 +204,7 @@ enum ExplorerLinkBuilder {
         case .mantle:
             return "https://explorer.mantle.xyz/tx/\(txid)"
         case .hyperliquid:
-            return "https://liquidscan.io/tx/\(txid)"
+            return "https://hypurrscan.io/tx/\(txid)"
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
         case .qbtc:
@@ -291,7 +291,7 @@ enum ExplorerLinkBuilder {
         case .mantle:
             return "https://mantlescan.xyz/address/\(address)"
         case .hyperliquid:
-            return "https://liquidscan.io/address/\(address)"
+            return "https://hypurrscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
         case .bittensor:
