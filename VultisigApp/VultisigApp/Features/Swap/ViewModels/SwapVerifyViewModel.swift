@@ -86,7 +86,8 @@ final class SwapVerifyViewModel {
                 fromCoin: transaction.fromCoin,
                 toCoin: transaction.toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                slippageBps: transaction.advancedSettings.slippage.bps
             )
             var updated = transaction
             if let result {

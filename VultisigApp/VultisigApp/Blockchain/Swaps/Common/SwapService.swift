@@ -44,7 +44,8 @@ struct SwapService {
             toCoin: toCoin,
             isAffiliate: isAffiliate,
             referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: nil
         ).best
     }
 
@@ -64,7 +65,8 @@ struct SwapService {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuotes {
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
 
@@ -83,7 +85,8 @@ struct SwapService {
                             toCoin: toCoin,
                             isAffiliate: isAffiliate,
                             referredCode: referredCode,
-                            vultTierDiscount: vultTierDiscount
+                            vultTierDiscount: vultTierDiscount,
+                            slippageBps: slippageBps
                         )
                         return Result<SwapQuote, Error>.success(quote)
                     } catch {
@@ -212,7 +215,8 @@ struct SwapService {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
@@ -223,7 +227,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .thorchainChainnet:
             return try await fetchCrossChainQuote(
@@ -233,7 +238,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .thorchainStagenet:
             return try await fetchCrossChainQuote(
@@ -243,7 +249,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
@@ -253,7 +260,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -268,7 +276,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 isAffiliate: isAffiliate,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -282,7 +291,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .lifi:
             return try await fetchLiFiQuote(
@@ -298,7 +308,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         }
     }
@@ -312,7 +323,8 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         do {
             // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
@@ -320,13 +332,18 @@ private extension SwapService {
             // THORChain expects integer amounts - truncate any floating point residuals
             let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
 
+            // `Auto` (nil) keeps the conservative default tolerance; a custom
+            // slippage maps directly to `tolerance_bps`, which the node bakes
+            // into the returned memo's `LIM` floor.
+            let toleranceBps = slippageBps ?? Self.defaultThorchainToleranceBps
+
             let rapidQuote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
-                toleranceBps: Self.defaultThorchainToleranceBps,
+                toleranceBps: toleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -349,7 +366,8 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                toleranceBps: toleranceBps
             )
 
             switch service {
@@ -384,7 +402,8 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         isAffiliate: Bool,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
@@ -394,7 +413,8 @@ private extension SwapService {
             amount: String(rawAmount),
             from: fromCoin.address,
             isAffiliate: isAffiliate,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
         )
         return .oneinch(response.quote, fee: response.fee)
     }
@@ -405,7 +425,8 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let affiliateBps = vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount
         let rawAmount = fromCoin.raw(for: amount)
@@ -415,7 +436,8 @@ private extension SwapService {
             destination: toCoin.isNativeToken ? "" : toCoin.contractAddress,
             amount: String(rawAmount),
             from: fromCoin.address,
-            affiliateBps: affiliateBps
+            affiliateBps: affiliateBps,
+            slippageBps: slippageBps
         )
         return .kyberswap(quote, fee: fee)
     }
@@ -443,7 +465,8 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
         // doesn't enable. Fails open if the cache can't be loaded so we don't
@@ -460,10 +483,15 @@ private extension SwapService {
         // server-side, but the API allows up to 1000 and the clamp guards
         // against any future loosening.
         let affiliateBps = max(0, min(1000, 50 - vultTierDiscount))
+        // SwapKit takes slippage as a percent (Double). `Auto` (nil) omits it so
+        // NEAR Intents can negotiate its own per-route slippage; a custom value
+        // converts bps → percent (e.g. 50 bps → 0.5).
+        let slippagePercent = slippageBps.map { Double($0) / 100 }
         guard let route = try await service.fetchBestRoute(
             fromCoin: fromCoin,
             toCoin: toCoin,
             amount: amount,
+            slippagePercent: slippagePercent,
             affiliateFeeBps: affiliateBps
         ) else {
             throw SwapKitError.routeFiltered
@@ -592,7 +620,8 @@ extension SwapService {
         toAsset: String,
         amount: String,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        toleranceBps: Int = SwapService.defaultThorchainToleranceBps
     ) async -> ThorchainSwapQuote {
         guard Self.supportsStreamingFallback(provider) else {
             return rapid
@@ -619,7 +648,7 @@ extension SwapService {
                 amount: amount,
                 interval: 1,
                 streamingQuantity: streamingQuantity,
-                toleranceBps: Self.defaultThorchainToleranceBps,
+                toleranceBps: toleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )

@@ -24,7 +24,8 @@ final class DefaultSwapInteractorTests: XCTestCase {
             fromCoin: .example,
             toCoin: .example,
             vault: makeVault(),
-            referredCode: ""
+            referredCode: "",
+            slippageBps: nil
         )
 
         XCTAssertNil(result)
@@ -42,7 +43,8 @@ final class DefaultSwapInteractorTests: XCTestCase {
                 fromCoin: btc,
                 toCoin: btc,
                 vault: makeVault(),
-                referredCode: ""
+                referredCode: "",
+            slippageBps: nil
             )
             XCTFail("Expected throw")
         } catch {
@@ -121,7 +123,7 @@ final class DefaultSwapInteractorTests: XCTestCase {
         await interactor.warmDiscountTier(for: vault)
         for _ in 0..<5 {
             _ = try await interactor.fetchQuote(
-                amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: ""
+                amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: "", slippageBps: nil
             )
         }
 
@@ -145,7 +147,8 @@ final class DefaultSwapInteractorTests: XCTestCase {
             fromCoin: makeCoin(.ethereum, ticker: "ETH"),
             toCoin: makeCoin(.bitcoin, ticker: "BTC"),
             vault: makeVault(),
-            referredCode: ""
+            referredCode: "",
+            slippageBps: nil
         )
 
         XCTAssertEqual(result?.vultDiscountBps, VultDiscountTier.gold.bpsDiscount)

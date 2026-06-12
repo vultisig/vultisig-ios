@@ -36,6 +36,22 @@ final class SwapDetailsViewModel {
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
 
+    /// Active swap-mode tab. Market is the only executable mode today; Limit is
+    /// surfaced per design but order-execution is out of scope.
+    var swapMode: SwapMode = .market
+
+    /// Per-swap advanced settings (slippage / gas limit / external recipient).
+    /// Reset to `.default` between swaps so a custom slippage never sticks.
+    var advancedSettings: SwapAdvancedSettings = .default
+
+    /// Whether to show the Advanced Settings sheet.
+    var showAdvancedSettingsSheet = false
+
+    /// Gas-limit override applies only to EVM source chains.
+    var isGasLimitSupported: Bool {
+        fromCoin.chain.chainType == .EVM
+    }
+
     // MARK: - Quote state
     //
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
@@ -316,8 +332,26 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            advancedSettings: resolvedAdvancedSettings
         )
+    }
+
+    /// Advanced settings as they apply to the current pair: an external recipient
+    /// or gas-limit override only travels if it's valid for the destination/source
+    /// chain. Slippage always carries.
+    var resolvedAdvancedSettings: SwapAdvancedSettings {
+        var resolved = advancedSettings
+        if !isGasLimitSupported {
+            resolved.gasLimit = nil
+        }
+        return resolved
+    }
+
+    /// Reset advanced settings to defaults. Called when the swapped pair changes
+    /// so a custom slippage / gas limit / recipient never leaks across swaps.
+    func resetAdvancedSettings() {
+        advancedSettings = .default
     }
 }
 
@@ -598,7 +632,8 @@ private extension SwapDetailsViewModel {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                slippageBps: advancedSettings.slippage.bps
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.

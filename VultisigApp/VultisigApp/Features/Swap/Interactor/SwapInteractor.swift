@@ -18,7 +18,8 @@ protocol SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?
     ) async throws -> SwapQuoteResult?
 
     /// Chain-specific fee/nonce/blockhash data needed to assemble the keysign payload.

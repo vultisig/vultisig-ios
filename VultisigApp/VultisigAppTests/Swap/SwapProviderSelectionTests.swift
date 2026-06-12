@@ -286,7 +286,8 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?
     ) async throws -> SwapQuoteResult? {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
