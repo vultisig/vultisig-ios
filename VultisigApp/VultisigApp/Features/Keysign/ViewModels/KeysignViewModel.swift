@@ -62,12 +62,30 @@ class KeysignViewModel: ObservableObject {
     /// production singleton so runtime behaviour is unchanged.
     var transactionStatusChecker: TransactionStatusChecking = TransactionStatusService.shared
 
+    /// Per-message stage budget. Each message's inbound poll already caps at
+    /// 60s per attempt (see the DKLS/Schnorr/Dilithium `pullInboundMessages`
+    /// loops); this adds headroom for the setup-message round-trips so a single
+    /// healthy-but-slow message doesn't trip the safety net.
+    private static let perMessageStageBudget: Duration = .seconds(90)
+
+    /// Fixed headroom on top of the per-message budget for the post-signing
+    /// broadcast (RPC submit + the on-chain verification backoff).
+    private static let broadcastStageHeadroom: Duration = .seconds(30)
+
     /// Top-level timeout for a single keysign run (TSS exchange + broadcast).
     /// Underlying poll loops can stall without producing a terminal status —
     /// iOS suspending the network session in background, DKLS retry exhaustion,
     /// a peer that never sent its share — so this is the safety net that flips
     /// the UI into the retry-requested view. See vultisig-ios#4327.
-    static let keysignStageTimeout: Duration = .seconds(90)
+    ///
+    /// Messages are signed sequentially, so the budget scales with the message
+    /// count. A flat timeout fired on healthy multi-message ceremonies (e.g. a
+    /// UTXO send with several inputs), manufacturing the very retry-vs-orphan
+    /// race this guards against rather than catching a real hang.
+    var keysignStageTimeout: Duration {
+        let messageCount = max(messsageToSign.count, 1)
+        return Self.perMessageStageBudget * messageCount + Self.broadcastStageHeadroom
+    }
 
     private struct KeysignStalledError: Error {}
 
@@ -238,6 +256,9 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
+        // Snapshot the (message-count-scaled) budget before entering the group
+        // so the non-isolated sleeper closure stays Sendable-clean.
+        let stageTimeout = keysignStageTimeout
         do {
             // Race the keysign body against a stage-level timeout. If the body
             // wins, `group.next()` returns void and `cancelAll()` retires the
@@ -256,7 +277,7 @@ class KeysignViewModel: ObservableObject {
                     }
                 }
                 group.addTask {
-                    try await Task.sleep(for: Self.keysignStageTimeout)
+                    try await Task.sleep(for: stageTimeout)
                     throw KeysignStalledError()
                 }
                 try await group.next()
@@ -271,7 +292,7 @@ class KeysignViewModel: ObservableObject {
             // case `KeysignView.onChange(of: txid)` will navigate away and the
             // retry view is torn down — the correct behaviour).
             guard !Self.isTerminalStatus(status) else { return }
-            logger.warning("keysign exceeded \(Self.keysignStageTimeout, privacy: .public) stage timeout — requesting retry")
+            logger.warning("keysign exceeded \(stageTimeout, privacy: .public) stage timeout — requesting retry")
             self.retryReason = .other("KeysignStalled")
             setStatus(.KeysignRetryRequested)
         } catch {
@@ -401,6 +422,12 @@ class KeysignViewModel: ObservableObject {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             }
+            // The body may have been cancelled mid-flight (stage timeout)
+            // without a poll loop observing it. Gate broadcast on the same
+            // terminal-status check the finish guard uses so an orphaned
+            // ceremony — whose status the timeout already flipped to
+            // .KeysignRetryRequested — can never broadcast.
+            guard !Self.isTerminalStatus(status), !Task.isCancelled else { return }
             await broadcastTransaction()
             if let customMessagePayload {
                 setTxid(customMessagePayload.message)
@@ -411,6 +438,11 @@ class KeysignViewModel: ObservableObject {
             if !Self.isTerminalStatus(status) {
                 setStatus(.KeysignFinished)
             }
+        } catch is CancellationError {
+            // Stage-timeout cancellation: the timeout handler owns the terminal
+            // status (.KeysignRetryRequested). Do not overwrite it with a
+            // failure and do not broadcast.
+            logger.warning("DKLS keysign cancelled — leaving terminal status to the timeout handler")
         } catch {
             logger.error("TSS keysign failed, error: \(error.localizedDescription, privacy: .public)")
             keysignError = error.localizedDescription
@@ -424,8 +456,14 @@ class KeysignViewModel: ObservableObject {
             messagePuller?.stop()
         }
         for msg in messsageToSign {
+            // Cooperative cancellation: the stage-level timeout cancels this
+            // task group on a stall; bail before signing the next message so an
+            // abandoned ceremony can't proceed to broadcast.
+            if Task.isCancelled { return }
             do {
                 try await keysignOneMessageWithRetry(msg: msg, attempt: 1)
+            } catch is CancellationError {
+                return
             } catch {
                 logger.error("TSS keysign failed, error: \(error.localizedDescription, privacy: .public)")
                 keysignError = error.localizedDescription
@@ -434,6 +472,11 @@ class KeysignViewModel: ObservableObject {
             }
         }
 
+        // The body may have been cancelled mid-flight (stage timeout) without a
+        // poll loop observing it. Gate broadcast on the same terminal-status
+        // check the finish guard uses so an orphaned ceremony — whose status the
+        // timeout already flipped to .KeysignRetryRequested — can never broadcast.
+        guard !Self.isTerminalStatus(status), !Task.isCancelled else { return }
         await broadcastTransaction()
 
         if let customMessagePayload {
@@ -524,6 +567,9 @@ class KeysignViewModel: ObservableObject {
             try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
         } catch {
             self.messagePuller?.stop()
+            // A cancellation is not a signing failure — propagate so the
+            // abandoned ceremony unwinds instead of retrying.
+            if error is CancellationError { throw error }
             // Check whether the other party already have the signature
             logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
             let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
@@ -831,7 +877,7 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:
                     do {
-                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction)
+                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction, expectedTxid: tx.transactionHash)
                         self.txid = transactionHash
                         // Fire-and-forget: don't block the broadcast confirmation on cache eviction.
                         Task { await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin) }

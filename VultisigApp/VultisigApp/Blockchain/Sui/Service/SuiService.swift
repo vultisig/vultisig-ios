@@ -265,20 +265,20 @@ class SuiService {
     }
 
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
-        do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
+        let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
 
-            if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
-                return error.description
-            }
-
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String {
-                return result.description
-            }
-        } catch {
-            return error.localizedDescription
+        // A non-success execution returns an `error.message`; throw it instead
+        // of returning the text as a digest so a failed broadcast is never shown
+        // as success or persisted/polled as a fake txid.
+        if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String, !error.isEmpty {
+            throw Errors.broadcastFailed(error)
         }
-        return .empty
+
+        guard let digest = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String, !digest.isEmpty else {
+            throw Errors.missingTransactionDigest
+        }
+
+        return digest
     }
 
     /// Simulates a transaction to get accurate gas estimates
@@ -324,6 +324,8 @@ private extension SuiService {
         case simulationFailed(String)
         case failedToParseGasEstimate
         case dryRunFailed(String)
+        case broadcastFailed(String)
+        case missingTransactionDigest
 
         var errorDescription: String? {
             switch self {
@@ -335,6 +337,10 @@ private extension SuiService {
                 return "Failed to parse gas estimate from dry run"
             case .dryRunFailed(let error):
                 return "Dry run failed: \(error)"
+            case .broadcastFailed(let error):
+                return "Sui broadcast failed: \(error)"
+            case .missingTransactionDigest:
+                return "Sui broadcast did not return a transaction digest"
             }
         }
     }

@@ -24,8 +24,13 @@ struct SendVerifyScreen: View {
     @State private var error: HelperError?
     @State private var retryBannerText: String?
 
-    init(transaction: SendTransaction, retrySignal: SendRetrySignal, vault: Vault) {
-        _sendCryptoVerifyViewModel = StateObject(wrappedValue: SendCryptoVerifyViewModel(transaction: transaction))
+    init(transaction: SendTransaction, retrySignal: SendRetrySignal, vault: Vault, prebuiltKeysignPayload: KeysignPayload? = nil) {
+        _sendCryptoVerifyViewModel = StateObject(
+            wrappedValue: SendCryptoVerifyViewModel(
+                transaction: transaction,
+                prebuiltKeysignPayload: prebuiltKeysignPayload
+            )
+        )
         self.retrySignal = retrySignal
         self.vault = vault
     }

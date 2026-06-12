@@ -19,6 +19,7 @@ struct PairScreen: View {
     var customMessagePayload: CustomMessagePayload?
     var fastVaultPassword: String?
     var previewType: QRShareSheetType
+    var sendPreviewOverride: SendPreviewOverride?
     var swapTransaction: SwapTransaction?
     var presetSession: KeysignSessionInfo?
 
@@ -38,6 +39,7 @@ struct PairScreen: View {
         customMessagePayload: CustomMessagePayload? = nil,
         fastVaultPassword: String? = nil,
         previewType: QRShareSheetType = .Send,
+        sendPreviewOverride: SendPreviewOverride? = nil,
         swapTransaction: SwapTransaction? = nil,
         presetSession: KeysignSessionInfo? = nil,
         title: String? = nil,
@@ -49,6 +51,7 @@ struct PairScreen: View {
         self.customMessagePayload = customMessagePayload
         self.fastVaultPassword = fastVaultPassword
         self.previewType = previewType
+        self.sendPreviewOverride = sendPreviewOverride
         self.swapTransaction = swapTransaction
         self.presetSession = presetSession
         self.title = title
@@ -65,6 +68,7 @@ struct PairScreen: View {
                 fastVaultPassword: fastVaultPassword,
                 shareSheetViewModel: shareSheetViewModel,
                 previewType: previewType,
+                sendPreviewOverride: sendPreviewOverride,
                 swapTransaction: swapTransaction,
                 contentPadding: 0,
                 presetSession: presetSession,

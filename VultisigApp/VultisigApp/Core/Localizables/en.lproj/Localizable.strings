@@ -192,7 +192,7 @@
 "circleSetupOpenAccount" = "Open Account";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC deposited";
-"circleWithdrawAmount" = "Amount";
+"circleWithdrawAmountLabel" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
 "claim" = "Claim";
@@ -396,6 +396,7 @@
 "failToGetAccountNumber" = "Unable to get account number";
 "failToGetRecentBlockHash" = "Unable to get recent block hash";
 "failToGetSequenceNo" = "Unable to get sequence no";
+"failToResolveJettonWallet" = "Unable to resolve the jetton wallet address. Please try again.";
 "failToStartKesign" = "Signing Error";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "failureReason" = "Failure Reason";

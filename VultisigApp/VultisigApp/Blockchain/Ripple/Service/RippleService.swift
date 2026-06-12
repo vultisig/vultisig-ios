@@ -8,6 +8,32 @@ import WalletCore
 import BigInt
 import OSLog
 
+enum RippleFee {
+    /// XRPL reference (base) fee under no load.
+    static let referenceFeeDrops = 10
+    /// Margin applied to the open-ledger cost to survive escalation while the
+    /// TSS devices sign.
+    static let safetyMultiplier = BigInt(2)
+    /// Upper bound; comfortably covers fee escalation under load while keeping
+    /// the cost negligible (0.002 XRP).
+    static let maxFeeDrops = 2000
+
+    /// Derives a fee (in drops) from the server's reported load.
+    ///
+    /// The open-ledger cost is `base_fee * load_factor / load_base`. We apply a
+    /// safety multiplier so the transaction survives further escalation during
+    /// the TSS signing window, then clamp to `[referenceFeeDrops, maxFeeDrops]`.
+    static func recommendedFee(baseFee: Int?, loadFactor: Int?, loadBase: Int?) -> BigInt {
+        let base = BigInt(baseFee ?? referenceFeeDrops)
+        let factor = BigInt(loadFactor ?? 1)
+        let divisor = BigInt(max(loadBase ?? 1, 1))
+
+        let openLedgerFee = max(base, base * factor / divisor)
+        let recommended = openLedgerFee * safetyMultiplier
+        return min(max(recommended, BigInt(referenceFeeDrops)), BigInt(maxFeeDrops))
+    }
+}
+
 class RippleService {
 
     static let shared = RippleService()
@@ -45,17 +71,22 @@ class RippleService {
 
         let result = response.data.result
 
-        if let engineResult = result?.engineResult, engineResult != "tesSUCCESS" {
-            if let message = result?.engineResultMessage {
-                if message.lowercased() == "This sequence number has already passed.".lowercased(),
-                   let hash = result?.txJson?.hash {
-                    return hash
-                }
-                return message
-            }
+        // `tx_json.hash` is the deterministic hash of the exact blob we
+        // submitted; XRPL echoes it back regardless of the engine result. Track
+        // that hash even when the engine result isn't tesSUCCESS — tec* results
+        // are applied on-chain, and for a tef/tem/ter/tel rejection the status
+        // poller resolves the real outcome from this hash and surfaces the error
+        // on screen. The bug this guards against is returning the engine error
+        // *message* as the txid; a missing hash means we have nothing to track,
+        // so surface the engine result/message as the failure instead of
+        // persisting an empty string as a fake success.
+        guard let hash = result?.txJson?.hash, !hash.isEmpty else {
+            throw RippleBroadcastError.broadcastFailed(
+                code: result?.engineResult ?? "unknown",
+                message: result?.engineResultMessage
+            )
         }
-
-        return result?.txJson?.hash ?? ""
+        return hash
     }
 
     func getBalance(address: String) async throws -> String {
@@ -77,6 +108,28 @@ class RippleService {
         let availableBalance = max(totalBalance - reservedBalance, BigInt(0))
 
         return availableBalance.description
+    }
+
+    /// Resolves the fee (in drops) for an XRPL Payment.
+    ///
+    /// The XRPL reference fee is 10 drops; servers escalate it under load via
+    /// `load_factor / load_base`. We compute the current open-ledger cost and
+    /// apply a safety multiplier so the transaction survives fee escalation
+    /// during the (up to 5 min) TSS signing window, then clamp to a sane
+    /// ceiling. Any failure falls back to that ceiling so a send is never
+    /// blocked on the fee lookup.
+    func fetchFee() async -> BigInt {
+        do {
+            let state = try await fetchServerState()?.result?.state
+            return RippleFee.recommendedFee(
+                baseFee: state?.validatedLedger?.baseFee,
+                loadFactor: state?.loadFactor,
+                loadBase: state?.loadBase
+            )
+        } catch {
+            logger.error("fetchFee: falling back to ceiling: \(error.localizedDescription)")
+            return BigInt(RippleFee.maxFeeDrops)
+        }
     }
 
     func fetchServerState() async throws -> RippleServerStateResponse? {
@@ -102,6 +155,20 @@ class RippleService {
         } catch {
             logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
+        }
+    }
+}
+
+enum RippleBroadcastError: Error, LocalizedError {
+    case broadcastFailed(code: String, message: String?)
+
+    var errorDescription: String? {
+        switch self {
+        case let .broadcastFailed(code, message):
+            if let message, !message.isEmpty {
+                return "Ripple broadcast failed (\(code)): \(message)"
+            }
+            return "Ripple broadcast failed (\(code))"
         }
     }
 }
@@ -198,18 +265,24 @@ struct RippleServerStateResponse: Codable {
     }
 
     struct State: Codable {
+        let loadBase: Int?
+        let loadFactor: Int?
         let validatedLedger: ValidatedLedger?
 
         enum CodingKeys: String, CodingKey {
+            case loadBase = "load_base"
+            case loadFactor = "load_factor"
             case validatedLedger = "validated_ledger"
         }
     }
 
     struct ValidatedLedger: Codable {
+        let baseFee: Int?
         let reserveBase: Int?
         let reserveInc: Int?
 
         enum CodingKeys: String, CodingKey {
+            case baseFee = "base_fee"
             case reserveBase = "reserve_base"
             case reserveInc = "reserve_inc"
         }
