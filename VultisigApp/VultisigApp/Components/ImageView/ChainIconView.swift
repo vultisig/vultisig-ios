@@ -12,15 +12,15 @@ struct ChainIconView: View {
     let size: CGFloat
 
     var body: some View {
-        // Full-color brand logos carry their own margins, so they sit on a
-        // dark disc with a tighter inset than the retired mono glyphs did —
-        // mirroring the badge construction on the Windows/extension clients.
+        // Full-color brand logos carry their own margins, so they get a
+        // slightly tighter inset than the retired mono glyphs needed to
+        // occupy the same visual space on the white disc.
         Image(icon)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: size)
             .padding(size / 3)
-            .background(Circle().fill(Theme.colors.bgSurface1))
+            .background(Circle().fill(Theme.colors.textPrimary))
             .overlay(Circle().inset(by: -1).stroke(Theme.colors.bgSurface1, lineWidth: 2))
     }
 }
