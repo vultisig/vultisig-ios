@@ -393,7 +393,12 @@ private extension BlockChainService {
                        amount: BigInt?) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .zcash:
-            return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
+            // Resolve the live ZIP-243 branch id at build time so it travels
+            // with the payload to the signing helpers (covers native sends and
+            // SwapKit ZEC swaps). nil when the RPC is down — signing then
+            // refuses rather than producing a network-rejected tx.
+            let zcashBranchId = await ZcashService.shared.getConsensusBranchIdHex()
+            return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount, zcashBranchId: zcashBranchId)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let  byteFeeValue = try await fetchUTXOFee(coin: coin, feeMode: feeMode)
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)

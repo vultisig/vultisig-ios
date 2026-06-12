@@ -10,7 +10,13 @@ import BigInt
 import VultisigCommonData
 
 enum BlockChainSpecific: Codable, Hashable {
-    case UTXO(byteFee: BigInt, sendMaxAmount: Bool)
+    /// `zcashBranchId` is the live ZIP-243 consensus branch id (little-endian
+    /// hex, e.g. `30f33754`) fetched at send time for Zcash; nil for every
+    /// other UTXO chain and when the RPC was unreachable. Transient: it is NOT
+    /// carried by the proto `UTXOSpecific`, so a co-signing device that rebuilds
+    /// the payload from proto must repopulate it (see JoinKeysignViewModel)
+    /// before signing.
+    case UTXO(byteFee: BigInt, sendMaxAmount: Bool, zcashBranchId: String? = nil)
     case Cardano(byteFee: BigInt, sendMaxAmount: Bool, ttl: UInt64)
     case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt)
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool, transactionType: Int = 0)
@@ -36,7 +42,7 @@ enum BlockChainSpecific: Codable, Hashable {
 
     var gas: BigInt {
         switch self {
-        case .UTXO(let byteFee, _):
+        case .UTXO(let byteFee, _, _):
             return byteFee
         case .Cardano(let byteFee, _, _):
             return byteFee
@@ -92,5 +98,14 @@ enum BlockChainSpecific: Codable, Hashable {
         case .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return nil
         }
+    }
+
+    /// Live ZIP-243 branch id carried on a Zcash payload's UTXO specific, or nil
+    /// for non-Zcash payloads and when the RPC was unreachable.
+    var zcashBranchId: String? {
+        guard case .UTXO(_, _, let zcashBranchId) = self else {
+            return nil
+        }
+        return zcashBranchId
     }
 }
