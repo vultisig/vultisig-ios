@@ -71,17 +71,22 @@ class RippleService {
 
         let result = response.data.result
 
-        if let engineResult = result?.engineResult, engineResult != "tesSUCCESS" {
-            if let message = result?.engineResultMessage {
-                if message.lowercased() == "This sequence number has already passed.".lowercased(),
-                   let hash = result?.txJson?.hash {
-                    return hash
-                }
-                return message
-            }
+        // `tx_json.hash` is the deterministic hash of the exact blob we
+        // submitted; XRPL echoes it back regardless of the engine result. Track
+        // that hash even when the engine result isn't tesSUCCESS — tec* results
+        // are applied on-chain, and for a tef/tem/ter/tel rejection the status
+        // poller resolves the real outcome from this hash and surfaces the error
+        // on screen. The bug this guards against is returning the engine error
+        // *message* as the txid; a missing hash means we have nothing to track,
+        // so surface the engine result/message as the failure instead of
+        // persisting an empty string as a fake success.
+        guard let hash = result?.txJson?.hash, !hash.isEmpty else {
+            throw RippleBroadcastError.broadcastFailed(
+                code: result?.engineResult ?? "unknown",
+                message: result?.engineResultMessage
+            )
         }
-
-        return result?.txJson?.hash ?? ""
+        return hash
     }
 
     func getBalance(address: String) async throws -> String {
@@ -150,6 +155,20 @@ class RippleService {
         } catch {
             logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
+        }
+    }
+}
+
+enum RippleBroadcastError: Error, LocalizedError {
+    case broadcastFailed(code: String, message: String?)
+
+    var errorDescription: String? {
+        switch self {
+        case let .broadcastFailed(code, message):
+            if let message, !message.isEmpty {
+                return "Ripple broadcast failed (\(code)): \(message)"
+            }
+            return "Ripple broadcast failed (\(code))"
         }
     }
 }
