@@ -25,6 +25,7 @@ struct CosmosAPI: TargetType {
         case denomMetadata(denom: String)
         case allDenomsMetadata
         case latestBlock
+        case terraClassicTaxParams
     }
 
     var path: String {
@@ -56,6 +57,11 @@ struct CosmosAPI: TargetType {
             return "/cosmos/bank/v1beta1/denoms_metadata"
         case .latestBlock:
             return "/cosmos/base/tendermint/v1beta1/blocks/latest"
+        case .terraClassicTaxParams:
+            // Terra Classic's proportional burn tax lives in the x/tax module,
+            // not the legacy treasury module (whose tax_rate is 0). This path
+            // exposes `burn_tax_rate` (currently 0.5%).
+            return "/terra/tax/v1beta1/params"
         }
     }
 
@@ -105,5 +111,19 @@ struct CosmosWasmTokenBalanceResponse: Decodable {
 
     struct BalanceData: Decodable {
         let balance: String
+    }
+}
+
+/// Response for Terra Classic's `x/tax` params. We only consume `burn_tax_rate`
+/// (a decimal string, e.g. `"0.005000000000000000"` = 0.5%).
+struct TerraClassicTaxParamsResponse: Decodable {
+    let params: Params
+
+    struct Params: Decodable {
+        let burnTaxRate: String
+
+        enum CodingKeys: String, CodingKey {
+            case burnTaxRate = "burn_tax_rate"
+        }
     }
 }

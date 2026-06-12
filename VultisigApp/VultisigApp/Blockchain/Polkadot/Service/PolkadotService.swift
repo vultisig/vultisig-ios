@@ -142,7 +142,7 @@ class PolkadotService: RpcService {
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix], endpoint: resolvedEndpoint)
-        return result
+        return try SubstrateBroadcast.validatedHash(result)
     }
 
     func getBalance(address: String) async throws -> String {

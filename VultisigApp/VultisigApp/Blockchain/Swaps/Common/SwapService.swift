@@ -22,6 +22,14 @@ struct SwapService {
     /// and `vultisig-android` (`STREAMING_SLIPPAGE_THRESHOLD_BPS`).
     static let streamingSlippageThresholdBps = 100
 
+    /// Minimum-output tolerance (basis points) sent on every THORChain/Maya
+    /// quote request as `tolerance_bps`. The node bakes a real `LIM` into the
+    /// returned swap memo — `expected_amount_out × (1 − tolerance_bps/10_000)` —
+    /// so the signed memo carries a slippage floor instead of `LIM=0`
+    /// (unbounded). 100 bps (1%) is a conservative default aligned with the
+    /// streaming-upgrade threshold; there is no per-swap user slippage control.
+    static let defaultThorchainToleranceBps = 100
+
     func fetchQuote(
         amount: Decimal,
         fromCoin: Coin,
@@ -318,6 +326,7 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
+                toleranceBps: Self.defaultThorchainToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -610,6 +619,7 @@ extension SwapService {
                 amount: amount,
                 interval: 1,
                 streamingQuantity: streamingQuantity,
+                toleranceBps: Self.defaultThorchainToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )

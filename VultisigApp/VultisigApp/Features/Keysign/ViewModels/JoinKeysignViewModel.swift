@@ -222,7 +222,7 @@ class JoinKeysignViewModel: ObservableObject {
         })
     }
 
-    func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+    func prepareKeysignMessages(keysignPayload: KeysignPayload) async {
         // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
         // a standard tx body; the QBTCClaimJoinDriver computes the round-1
         // message hash itself. Skip the standard factory so it doesn't
@@ -235,6 +235,13 @@ class JoinKeysignViewModel: ObservableObject {
             }
             return
         }
+        // The proto UTXOSpecific can't carry the live ZEC branch id, so a
+        // payload rebuilt from the initiator's QR/relay proto arrives with it
+        // nil. Re-resolve the same network-global value the initiator used
+        // before computing sighashes so this co-signer's ZIP-243 digest matches
+        // the rest of the committee.
+        let keysignPayload = await withZcashBranchId(keysignPayload)
+        self.keysignPayload = keysignPayload
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
@@ -252,6 +259,19 @@ class JoinKeysignViewModel: ObservableObject {
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
         self.keysignMessages = customMessagePayload.keysignMessages
+    }
+
+    /// Re-stamps the live ZIP-243 branch id onto a Zcash UTXO payload rebuilt
+    /// from proto. Returns the payload unchanged for non-Zcash chains, non-UTXO
+    /// specifics, or when the RPC is unreachable (the signing helpers then
+    /// refuse rather than sign with a stale id).
+    private func withZcashBranchId(_ payload: KeysignPayload) async -> KeysignPayload {
+        guard payload.coin.chain == .zcash,
+              case .UTXO(let byteFee, let sendMaxAmount, _) = payload.chainSpecific,
+              let branchId = await ZcashService.shared.getConsensusBranchIdHex() else {
+            return payload
+        }
+        return payload.withChainSpecific(.UTXO(byteFee: byteFee, sendMaxAmount: sendMaxAmount, zcashBranchId: branchId))
     }
 
     func handleQrCodeSuccessResult(data: String?) async {
@@ -274,7 +294,7 @@ class JoinKeysignViewModel: ObservableObject {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
             }
             if let payload = keysignMsg.payload {
-                self.prepareKeysignMessages(keysignPayload: payload)
+                await self.prepareKeysignMessages(keysignPayload: payload)
             }
             if let payload = keysignMsg.customMessagePayload {
                 self.prepareKeysignMessages(customMessagePayload: payload)
@@ -391,7 +411,7 @@ class JoinKeysignViewModel: ObservableObject {
             let payload = try await payloadService.getPayload(hash: self.payloadID)
             let kp: KeysignPayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
             self.keysignPayload = kp
-            self.prepareKeysignMessages(keysignPayload: kp)
+            await self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
