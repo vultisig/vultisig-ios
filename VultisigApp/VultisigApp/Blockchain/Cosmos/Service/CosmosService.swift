@@ -105,6 +105,12 @@ enum CosmosService {
         return try await service.fetchAccountNumber(address)
     }
 
+    /// Terra Classic's live proportional burn-tax rate (`x/tax` module). Returns
+    /// a conservative fallback on failure (fails closed).
+    func fetchTerraClassicBurnTaxRate() async -> Decimal {
+        return await service.fetchTerraClassicBurnTaxRate()
+    }
+
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
         return await service.broadcastTransaction(jsonString: jsonString)
     }
