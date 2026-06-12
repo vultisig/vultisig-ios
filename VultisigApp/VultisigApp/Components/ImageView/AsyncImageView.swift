@@ -55,7 +55,7 @@ struct AsyncImageView: View {
 
             if let chainIcon = tokenChainLogo, logo != tokenChainLogo {
                 ChainIconView(
-                    icon: "chain-" + chainIcon,
+                    icon: chainIcon,
                     size: size.width / 4.5
                 ).offset(x: size.width / 2.5, y: size.width / 2.5)
             }

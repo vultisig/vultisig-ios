@@ -167,7 +167,7 @@ struct EditReferralDetailsView: View {
                 logo: viewModel.preferredAsset?.asset.logo ?? "rune",
                 size: CGSize(width: 32, height: 32),
                 ticker: viewModel.preferredAsset?.asset.ticker ?? .empty,
-                tokenChainLogo: viewModel.preferredAsset?.asset.chain.logo ?? .empty
+                tokenChainLogo: viewModel.preferredAsset?.asset.chain.logo
             )
 
             Text(viewModel.preferredAsset?.asset.ticker ?? "RUNE")
