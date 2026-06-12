@@ -11,10 +11,6 @@ import BigInt
 import Foundation
 
 protocol SwapInteractor {
-    /// Fast Vault eligibility for a given vault — exists on the server AND wasn't a
-    /// local-only backup.
-    func loadFastVault(vault: Vault) async -> Bool
-
     /// Aggregator quote fetch + discount-tier resolution. Returns nil when there's no
     /// amount to quote; throws `SwapCryptoLogic.Errors.sameAsset` when from/to coins match.
     func fetchQuote(
@@ -49,4 +45,14 @@ protocol SwapInteractor {
     /// Refresh balance for a single coin (typically called when the user picks a coin in
     /// the swap details screen).
     func updateBalance(for coin: Coin) async
+
+    /// Resolve and cache the VULT discount tier (VULT balance + Thorguard NFT) for the
+    /// wallet once per session. Called on screen load to warm the cache so the per-quote
+    /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
+    func warmDiscountTier(for vault: Vault) async
+
+    /// Whether the vault meets the Silver `VultDiscountTier` minimum that gates
+    /// provider selection. Reads the same cached tier `warmDiscountTier` warms,
+    /// so it adds no extra network path.
+    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool
 }

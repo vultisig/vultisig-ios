@@ -14,6 +14,21 @@ struct TransactionHistoryCoinAsset: Hashable {
     let network: String
 }
 
+/// Surface for native chain polling — extracted as a protocol so the
+/// tx-history viewmodel can inject a spy in tests without standing up the
+/// real per-chain RPC client.
+@MainActor
+protocol TransactionHistoryNativePoller {
+    @discardableResult
+    func poll(
+        tx: TransactionHistoryData,
+        onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
+    ) -> Bool
+    func stopPolling(txHash: String)
+}
+
+extension TransactionStatusPoller: TransactionHistoryNativePoller {}
+
 @MainActor
 class TransactionHistoryViewModel: ObservableObject {
     @Published var transactions: [TransactionHistoryData] = []
@@ -28,13 +43,26 @@ class TransactionHistoryViewModel: ObservableObject {
     let chainFilter: Chain?
 
     private let storage = TransactionHistoryStorage.shared
-    private let poller = TransactionStatusPoller.shared
+    private let poller: TransactionHistoryNativePoller
+    private let registry: SwapTrackingRegistry
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
 
-    init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
+    init(
+        pubKeyECDSA: String,
+        vaultName: String,
+        chainFilter: Chain?,
+        poller: TransactionHistoryNativePoller? = nil,
+        registry: SwapTrackingRegistry? = nil
+    ) {
         self.pubKeyECDSA = pubKeyECDSA
         self.vaultName = vaultName
         self.chainFilter = chainFilter
+        // Defaults are resolved inside the body so the MainActor-isolated
+        // `.shared` singletons aren't referenced from default-argument
+        // expressions (which run in the caller's context and would warn
+        // under Swift 6 strict concurrency).
+        self.poller = poller ?? TransactionStatusPoller.shared
+        self.registry = registry ?? SwapTrackingRegistry.shared
     }
 
     // MARK: - Loading
@@ -47,6 +75,7 @@ class TransactionHistoryViewModel: ObservableObject {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
             pollInProgressTransactions()
+            resumeSwapTracking()
         } catch {
             logger.error("Failed to load: \(error)")
         }
@@ -54,6 +83,16 @@ class TransactionHistoryViewModel: ObservableObject {
 
     func refresh() async {
         load()
+        // Pull-to-refresh forces an immediate poll for every in-flight
+        // tracked row so the user sees fresh status rather than waiting for
+        // the next scheduled tick. Only SwapKit currently surfaces a
+        // forced-refresh API; future providers add equivalent helpers and
+        // we route by provider kind here.
+        for tx in transactions where tx.isSwapRouted && !tx.swapTrackingUiStatus.isTerminal {
+            if let _ = registry.service(for: tx), tx.swapTracking?.providerKind == SwapKitTrackingService.providerKind {
+                await SwapKitTrackingService.shared.forceRefresh(tx: tx)
+            }
+        }
         // Allow pull-to-refresh animation to complete
         try? await Task.sleep(for: .milliseconds(300))
     }
@@ -66,18 +105,37 @@ class TransactionHistoryViewModel: ObservableObject {
 
     // MARK: - Status Polling
 
-    private func pollInProgressTransactions() {
+    func pollInProgressTransactions() {
         for tx in transactions where tx.status == .inProgress {
-            guard let chain = Chain(rawValue: tx.chainRawValue) else { continue }
+            // Rows owned by a registered tracking service are exclusively
+            // that service's territory under normal conditions — skip them
+            // so native polling can't race the tracker and last-writer-wins
+            // the row to `.successful` on a source-chain confirm while the
+            // cross-chain leg is still in flight. The one exception is when
+            // `trackerOutage` is `true`: the tracker has been unavailable
+            // long enough that we fall back to native polling so the user
+            // at least sees the source-chain confirmation. The next
+            // successful tracker response clears the flag and the tracker
+            // regains authority.
+            //
+            // The poller enforces the same gate internally (belt-and-
+            // suspenders); duplicating it here avoids spinning up the
+            // chain-config lookup for rows we already know to skip.
+            if registry.service(for: tx) != nil && tx.swapTracking?.trackerOutage != true {
+                continue
+            }
 
-            poller.poll(
-                txHash: tx.txHash,
-                chain: chain,
-                createdAt: tx.createdAt,
-                pubKeyECDSA: pubKeyECDSA
-            ) { [weak self] newStatus, errorMessage in
+            poller.poll(tx: tx) { [weak self] newStatus, errorMessage in
                 self?.updateTransaction(txHash: tx.txHash, status: newStatus, errorMessage: errorMessage)
             }
+        }
+    }
+
+    /// Restart tracking pollers for any still-in-flight rows. Each registered
+    /// service is idempotent — already-running pollers are left untouched.
+    private func resumeSwapTracking() {
+        for tx in transactions where tx.isSwapRouted && !tx.swapTrackingUiStatus.isTerminal {
+            registry.service(for: tx)?.start(tx: tx)
         }
     }
 
@@ -113,7 +171,8 @@ class TransactionHistoryViewModel: ObservableObject {
             createdAt: old.createdAt,
             completedAt: Date(),
             estimatedTime: old.estimatedTime,
-            errorMessage: errorMessage ?? old.errorMessage
+            errorMessage: errorMessage ?? old.errorMessage,
+            swapTracking: old.swapTracking
         )
         transactions[index] = updated
 

@@ -1,0 +1,107 @@
+//
+//  CosmosStakingPayload.swift
+//  VultisigApp
+//
+//  Carries the staking-operation intent from the per-flow `TransactionBuilder`
+//  through `SendTransaction` into the Verify → KeysignPayload bridge. At
+//  build-keysign time the `CosmosStakingSignDataResolver` consumes this
+//  payload, encodes the matching `Any`-wrapped Cosmos-SDK message via
+//  `CosmosStakingHelper`, builds the SignDoc bytes, and writes
+//  `KeysignPayload.signData = .signDirect(...)`.
+//
+//  Discriminated by `opType`. Field set per op:
+//    .delegate            → validatorAddress, denom, amount
+//    .undelegate          → validatorAddress, denom, amount
+//    .redelegate          → validatorSrcAddress, validatorDstAddress, denom, amount
+//    .withdrawRewards     → validators (1..N), denom
+//
+//  Local to iOS only — the proto-mappable bridge to `KeysignMessage` does NOT
+//  round-trip this field. Same posture as `qbtcClaimPayload`; the SignDoc
+//  bytes produced from it are what the peer device sees, and those bytes are
+//  the contract.
+//
+
+import Foundation
+
+enum CosmosStakingOpType: String, Codable, Hashable {
+    case delegate
+    case undelegate
+    case redelegate
+    case withdrawRewards
+}
+
+struct CosmosStakingPayload: Codable, Hashable {
+    let opType: CosmosStakingOpType
+    let validatorAddress: String?
+    let validatorSrcAddress: String?
+    let validatorDstAddress: String?
+    let validators: [String]?
+    let denom: String
+    /// Base-unit string (e.g. `"1000000"` for 1 LUNA). `nil` for
+    /// `.withdrawRewards` — `MsgWithdrawDelegatorReward` carries no Coin.
+    let amount: String?
+
+    static func delegate(validator: String, denom: String, amount: String) -> CosmosStakingPayload {
+        CosmosStakingPayload(
+            opType: .delegate,
+            validatorAddress: validator,
+            validatorSrcAddress: nil,
+            validatorDstAddress: nil,
+            validators: nil,
+            denom: denom,
+            amount: amount
+        )
+    }
+
+    static func undelegate(validator: String, denom: String, amount: String) -> CosmosStakingPayload {
+        CosmosStakingPayload(
+            opType: .undelegate,
+            validatorAddress: validator,
+            validatorSrcAddress: nil,
+            validatorDstAddress: nil,
+            validators: nil,
+            denom: denom,
+            amount: amount
+        )
+    }
+
+    static func redelegate(src: String, dst: String, denom: String, amount: String) -> CosmosStakingPayload {
+        CosmosStakingPayload(
+            opType: .redelegate,
+            validatorAddress: nil,
+            validatorSrcAddress: src,
+            validatorDstAddress: dst,
+            validators: nil,
+            denom: denom,
+            amount: amount
+        )
+    }
+
+    static func withdrawRewards(validators: [String], denom: String) -> CosmosStakingPayload {
+        CosmosStakingPayload(
+            opType: .withdrawRewards,
+            validatorAddress: nil,
+            validatorSrcAddress: nil,
+            validatorDstAddress: nil,
+            validators: validators,
+            denom: denom,
+            amount: nil
+        )
+    }
+
+    /// Number of Cosmos-SDK messages this payload encodes into — the same
+    /// count the resolver derives from `msgsAny.count` and uses to scale gas +
+    /// fee. delegate / undelegate / redelegate are always one message;
+    /// withdraw-rewards is one `MsgWithdrawDelegatorReward` per validator.
+    /// Clamped to >= 1 so an empty/absent validator list (which the resolver
+    /// rejects before signing) still yields the single-msg base fee for
+    /// display rather than zero.
+    var msgCount: Int {
+        switch opType {
+        case .delegate, .undelegate, .redelegate:
+            return 1
+        case .withdrawRewards:
+            return max(validators?.count ?? 0, 1)
+        }
+    }
+}

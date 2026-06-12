@@ -21,6 +21,40 @@ final class TransactionStatusPoller: ObservableObject {
 
     private init() {}
 
+    /// Typed entry point for the tx-history viewmodel. Routes through the
+    /// `txHash`-keyed core implementation after enforcing the swap-tracker
+    /// gate.
+    ///
+    /// Defensive guard: rows owned by a registered `SwapTrackingService`
+    /// (looked up via `SwapTrackingRegistry`) are exclusively that service's
+    /// territory unless `swapTracking.trackerOutage == true`, in which case
+    /// native polling is the fallback signal source. This guard duplicates
+    /// the higher-level filter in
+    /// `TransactionHistoryViewModel.pollInProgressTransactions` so a future
+    /// caller can't accidentally re-introduce the dual-polling regression
+    /// that lets a source-chain confirmation overwrite a still-in-flight
+    /// cross-chain swap as `.successful`.
+    @discardableResult
+    func poll(
+        tx: TransactionHistoryData,
+        onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
+    ) -> Bool {
+        if SwapTrackingRegistry.shared.service(for: tx) != nil
+            && tx.swapTracking?.trackerOutage != true {
+            logger.debug("Skipping native poll for swap-tracked tx \(tx.txHash) — tracker is authoritative")
+            return false
+        }
+        guard let chain = Chain(rawValue: tx.chainRawValue) else { return false }
+        poll(
+            txHash: tx.txHash,
+            chain: chain,
+            createdAt: tx.createdAt,
+            pubKeyECDSA: tx.pubKeyECDSA,
+            onUpdate: onUpdate
+        )
+        return true
+    }
+
     /// Start polling a transaction. Calls `onUpdate` on the main actor when status changes.
     func poll(
         txHash: String,
@@ -81,7 +115,7 @@ final class TransactionStatusPoller: ObservableObject {
                 }
             }
 
-            await self?.cleanupTask(txHash: txHash, token: token)
+            self?.cleanupTask(txHash: txHash, token: token)
         }
         activeTasks[txHash] = task
     }

@@ -14,20 +14,16 @@ struct DefaultSwapInteractor: SwapInteractor {
     let blockchain: BlockChainServiceProtocol
     let balance: BalanceServiceProtocol
     let fastVault: FastVaultServiceProtocol
+    let tierResolver: SwapDiscountTierResolving
 
     static var live: SwapInteractor {
         DefaultSwapInteractor(
             quote: SwapService.shared,
             blockchain: BlockChainService.shared,
             balance: BalanceService.shared,
-            fastVault: FastVaultService.shared
+            fastVault: FastVaultService.shared,
+            tierResolver: VultTierService()
         )
-    }
-
-    func loadFastVault(vault: Vault) async -> Bool {
-        let exists = await fastVault.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().hasPrefix("server-")
-        return exists && !isLocalBackup
     }
 
     func fetchQuote(
@@ -42,7 +38,12 @@ struct DefaultSwapInteractor: SwapInteractor {
             throw SwapCryptoLogic.Errors.sameAsset
         }
 
-        let vultTier = await VultTierService().fetchDiscountTier(for: vault)
+        // Read the per-session cached tier. The first call resolves it once
+        // (VULT balance + Thorguard NFT eth_call) and caches it for the wallet;
+        // every later quote reads the cached value, keeping the Thorguard
+        // eth_call off the per-quote critical path. The screen warms this cache
+        // on load, so by the time quotes run it's usually already populated.
+        let vultTier = await tierResolver.resolveTierForSession(for: vault)
         let vultDiscountBps = vultTier?.bpsDiscount ?? 0
         let referralDiscountBps = referredCode.isEmpty
             ? 0
@@ -53,7 +54,7 @@ struct DefaultSwapInteractor: SwapInteractor {
                     - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0)
             )
 
-        let fetched = try await self.quote.fetchQuote(
+        let fetched = try await self.quote.fetchQuotes(
             amount: amount,
             fromCoin: fromCoin,
             toCoin: toCoin,
@@ -63,7 +64,8 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
 
         return SwapQuoteResult(
-            quote: fetched,
+            quote: fetched.best,
+            allQuotes: fetched.ranked,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
@@ -113,5 +115,16 @@ struct DefaultSwapInteractor: SwapInteractor {
 
     func updateBalance(for coin: Coin) async {
         await balance.updateBalance(for: coin)
+    }
+
+    func warmDiscountTier(for vault: Vault) async {
+        _ = await tierResolver.resolveTierForSession(for: vault)
+    }
+
+    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool {
+        guard let tier = await tierResolver.resolveTierForSession(for: vault) else {
+            return false
+        }
+        return tier >= .silver
     }
 }

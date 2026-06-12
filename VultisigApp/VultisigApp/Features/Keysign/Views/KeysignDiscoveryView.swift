@@ -18,6 +18,34 @@ struct KeysignInput: Hashable {
     let isInitiateDevice: Bool
 }
 
+/// Opt-in override for the `.Send` QR-preview hero (amount + recipient + coin
+/// logo). The pairing preview otherwise reads these from `keysignPayload`, but
+/// some flows sign a payload whose surface differs from what the user should
+/// see: a Circle USDC withdraw signs a native-ETH MSCA `execute(...)` call
+/// (so the payload reads "0 ETH → MSCA"), while the user is really moving
+/// "N USDC → vault". Supplying this surfaces the display values without
+/// touching the signed payload. `nil` (the default) keeps the payload-derived
+/// preview for every other send.
+struct SendPreviewOverride: Hashable {
+    let amount: String
+    let toAddress: String
+    let coinLogo: String
+
+    /// Builds an override only when the signed payload's coin differs from the
+    /// display `tx` coin — i.e. the signed surface ("0 ETH → MSCA") would
+    /// mislead and the display values ("N USDC → vault") should be shown
+    /// instead. Returns `nil` when the coins match, so every regular send keeps
+    /// the payload-derived preview untouched.
+    static func makeIfNeeded(displayTx: SendTransaction, signedPayload: KeysignPayload) -> SendPreviewOverride? {
+        guard displayTx.coin.id != signedPayload.coin.id else { return nil }
+        return SendPreviewOverride(
+            amount: "\(displayTx.amount) \(displayTx.coin.ticker)",
+            toAddress: displayTx.toAddress,
+            coinLogo: displayTx.coin.logo
+        )
+    }
+}
+
 struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload?
@@ -25,8 +53,10 @@ struct KeysignDiscoveryView: View {
     let fastVaultPassword: String?
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     @State var previewType: QRShareSheetType = .Send
+    var sendPreviewOverride: SendPreviewOverride?
     var swapTransaction: SwapTransaction?
     var contentPadding: CGFloat?
+    var presetSession: KeysignSessionInfo? = nil
     var onKeysignInput: (KeysignInput) -> Void
 
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -240,6 +270,7 @@ struct KeysignDiscoveryView: View {
             customMessagePayload: customMessagePayload,
             participantDiscovery: participantDiscovery,
             fastVaultPassword: fastVaultPassword,
+            presetSession: presetSession,
             onFastKeysign: { startKeysign() }
         )
 
@@ -260,9 +291,9 @@ struct KeysignDiscoveryView: View {
             displayScale: displayScale,
             type: previewType,
             vaultName: vault.name,
-            amount: previewType == .Send ? keysignPayload?.toAmountWithTickerString ?? "" : "",
-            toAddress: previewType == .Send ? keysignPayload?.toAddress ?? "" : "",
-            coinLogo: previewType == .Send ? keysignPayload?.coin.logo ?? "" : "",
+            amount: previewType == .Send ? (sendPreviewOverride?.amount ?? keysignPayload?.toAmountWithTickerString ?? "") : "",
+            toAddress: previewType == .Send ? (sendPreviewOverride?.toAddress ?? keysignPayload?.toAddress ?? "") : "",
+            coinLogo: previewType == .Send ? (sendPreviewOverride?.coinLogo ?? keysignPayload?.coin.logo ?? "") : "",
             fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )

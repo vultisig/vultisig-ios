@@ -7,27 +7,47 @@
 
 import Foundation
 
-/// TargetType for the MayaChain REST endpoints consumed by MayachainService.
-enum MayaChainAPI: TargetType {
-    case balances(address: String)
-    case accountNumber(address: String)
-    case swapQuote(
-        fromAsset: String,
-        toAsset: String,
-        amount: String,
-        destination: String,
-        streamingInterval: String,
-        streamingQuantity: String?,
-        affiliate: String?,
-        affiliateBps: String?
-    )
-    case broadcast(body: Data)
-    case pools
+/// Pure `TargetType` for the MayaChain REST endpoints consumed by
+/// `MayachainService`. The override-eligible Mayanode host is baked in at
+/// construction by the service (see `MayachainService.api`); this value never
+/// consults global state. The secondary Midgard surface
+/// (`MayaChainBondsAPI`) has no single-chain node identity and keeps its
+/// hardcoded default, mirroring how THORChain's Midgard stays on defaults.
+struct MayaChainAPI: TargetType {
+    /// Default Mayanode REST host; serves the Cosmos-SDK + mayanode REST surface.
+    static let defaultHost = URL(staticString: "https://mayanode.mayachain.info")
 
-    var baseURL: URL { URL(string: "https://mayanode.mayachain.info")! }
+    enum Endpoint {
+        case balances(address: String)
+        case accountNumber(address: String)
+        case swapQuote(
+            fromAsset: String,
+            toAsset: String,
+            amount: String,
+            destination: String,
+            streamingInterval: String,
+            streamingQuantity: String?,
+            affiliate: String?,
+            affiliateBps: String?,
+            toleranceBps: String?
+        )
+        case broadcast(body: Data)
+        case pools
+    }
+
+    let endpoint: Endpoint
+    /// The resolved Mayanode host (override-aware), baked in by the service.
+    let host: URL
+
+    init(_ endpoint: Endpoint, host: URL = MayaChainAPI.defaultHost) {
+        self.endpoint = endpoint
+        self.host = host
+    }
+
+    var baseURL: URL { host }
 
     var path: String {
-        switch self {
+        switch endpoint {
         case .balances(let addr):
             return "/cosmos/bank/v1beta1/balances/\(addr)"
         case .accountNumber(let addr):
@@ -42,7 +62,7 @@ enum MayaChainAPI: TargetType {
     }
 
     var method: HTTPMethod {
-        switch self {
+        switch endpoint {
         case .balances, .accountNumber, .swapQuote, .pools:
             return .get
         case .broadcast:
@@ -51,10 +71,10 @@ enum MayaChainAPI: TargetType {
     }
 
     var task: HTTPTask {
-        switch self {
+        switch endpoint {
         case .balances, .accountNumber, .pools:
             return .requestPlain
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps, let toleranceBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -65,6 +85,7 @@ enum MayaChainAPI: TargetType {
             if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliate = affiliate { params["affiliate"] = affiliate }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
+            if let toleranceBps = toleranceBps { params["tolerance_bps"] = toleranceBps }
             return .requestParameters(params, .urlEncoding)
         case .broadcast(let body):
             return .requestData(body)

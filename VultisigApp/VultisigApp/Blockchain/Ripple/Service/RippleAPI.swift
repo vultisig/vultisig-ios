@@ -5,21 +5,38 @@
 
 import Foundation
 
-enum RippleAPI: TargetType {
-    case submit(txBlob: String)
-    case serverState
-    case accountInfo(account: String)
+/// Pure `TargetType` for the XRP Ledger JSON-RPC endpoint consumed by
+/// `RippleService`. The override-eligible host is baked in at construction by
+/// the service (see `RippleService.api`); this value never consults global
+/// state. The XRPL JSON-RPC scheme is path-agnostic (everything posts to `/`),
+/// so a custom public node works with the same request bodies.
+struct RippleAPI: TargetType {
+    enum Endpoint {
+        case submit(txBlob: String)
+        case serverState
+        case accountInfo(account: String)
+    }
 
-    private static let xrplBaseURL = URL(string: "https://xrplcluster.com")!
+    /// Default XRP Ledger JSON-RPC host.
+    static let defaultHost = URL(staticString: "https://xrplcluster.com")
 
-    var baseURL: URL { Self.xrplBaseURL }
+    let endpoint: Endpoint
+    /// The resolved XRPL host (override-aware), baked in by the service.
+    let host: URL
+
+    init(_ endpoint: Endpoint, host: URL = RippleAPI.defaultHost) {
+        self.endpoint = endpoint
+        self.host = host
+    }
+
+    var baseURL: URL { host }
 
     var path: String { "/" }
 
     var method: HTTPMethod { .post }
 
     var task: HTTPTask {
-        switch self {
+        switch endpoint {
         case .submit(let txBlob):
             return .requestCodable(
                 RippleRpcRequest(method: "submit", params: [RippleSubmitParams(txBlob: txBlob)]),

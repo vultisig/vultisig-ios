@@ -79,7 +79,6 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                                 .foregroundStyle(Theme.colors.textPrimary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)

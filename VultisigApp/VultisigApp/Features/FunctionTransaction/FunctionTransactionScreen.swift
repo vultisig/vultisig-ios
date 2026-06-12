@@ -5,16 +5,19 @@
 //  Created by Gaston Mazzeo on 31/10/2025.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "function-transaction-screen")
 
 struct FunctionTransactionScreen: View {
     @Environment(\.router) var router
     let vault: Vault
     let transactionType: FunctionTransactionType
 
-    @StateObject private var functionCallViewModel = FunctionCallViewModel()
-    @State private var sendTx: SendTransaction?
-    @State var isLoading: Bool = false
+    @State private var isLoading: Bool = false
+
+    private let blockchainService = BlockChainService.shared
 
     @Environment(\.dismiss) var dismiss
 
@@ -139,6 +142,50 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .cosmosDelegate(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosDelegateTransactionScreen(
+                        viewModel: CosmosDelegateTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .cosmosUndelegate(let coin, let valAddr, let valMoniker, let staked):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosUndelegateTransactionScreen(
+                        viewModel: CosmosUndelegateTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            validatorAddress: valAddr,
+                            validatorMoniker: valMoniker,
+                            stakedBalance: staked
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .cosmosRedelegate(let coin, let valAddr, let valMoniker, let staked):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosRedelegateTransactionScreen(
+                        viewModel: CosmosRedelegateTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            validatorSrcAddress: valAddr,
+                            validatorSrcMoniker: valMoniker,
+                            stakedBalance: staked
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .cosmosWithdrawRewards(let coin, let validators):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CosmosWithdrawRewardsTransactionScreen(
+                        viewModel: CosmosWithdrawRewardsTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            candidates: validators
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
@@ -146,15 +193,56 @@ struct FunctionTransactionScreen: View {
 
     func onVerify(_ transactionBuilder: TransactionBuilder) {
         Task { @MainActor in
+            // Cosmos staking flows bypass the legacy `FunctionCallForm`
+            // round-trip — the SignDoc payload travels via
+            // `SendTransaction.cosmosStakingPayload`, which `fromForm(_:)`
+            // would drop. Skip directly to the immutable struct so the
+            // Verify → KeysignPayload resolver sees the staking intent.
+            if let stakingPayload = transactionBuilder.cosmosStakingPayload {
+                isLoading = true
+                var immutableTx = transactionBuilder.buildSendTransaction(vault: vault)
+                // `buildSendTransaction` defaults gas to .zero and the staking
+                // flow never fetches chain-specific gas (the SignDoc resolver
+                // bakes a fixed per-chain fee instead). Set gas to the SAME
+                // value the resolver signs — `feeAmount × msgCount` from the
+                // shared `CosmosStakingConfig` helper — so the verify screen's
+                // fee row and balance preflight match what is actually signed
+                // (delegate/undelegate/redelegate = 1 msg; a batched claim =
+                // one msg per validator). Without this the user approves a fee
+                // shown as 0 while signing 7500×N (and Terra shows 0 too).
+                do {
+                    let scaledGas = try CosmosStakingConfig.scaledFeeAmountBigInt(
+                        for: transactionBuilder.coin.chain,
+                        msgCount: stakingPayload.msgCount
+                    )
+                    immutableTx = immutableTx.copy(gas: scaledGas)
+                } catch {
+                    // Unreachable for the staking-supported chains that ever
+                    // populate `cosmosStakingPayload`; log rather than swallow
+                    // so a future chain missing from the config table surfaces
+                    // here instead of silently showing a 0 fee again.
+                    logger.error(
+                        "Failed to derive staking display fee: \(error.localizedDescription, privacy: .public)"
+                    )
+                }
+                isLoading = false
+                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                return
+            }
+
             isLoading = true
-            let tx = transactionBuilder.buildTransaction()
+            defer { isLoading = false }
 
-            await functionCallViewModel.loadGasInfoForSending(tx: tx)
-            await functionCallViewModel.loadFastVault(tx: tx, vault: vault)
-
-            sendTx = tx
-            isLoading = false
-            router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+            var sendTx = transactionBuilder.buildSendTransaction(vault: vault)
+            do {
+                let chainSpecific = try await blockchainService.fetchSpecific(tx: sendTx)
+                sendTx = sendTx.copy(gas: chainSpecific.gas)
+            } catch {
+                // Non-fatal: gas will be re-fetched during Verify. Keep
+                // navigating so the user sees the verify screen even when
+                // the upstream chain-specific endpoint is briefly down.
+            }
+            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }
 

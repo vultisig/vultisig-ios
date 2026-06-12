@@ -31,6 +31,10 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
     case VaultTypeDoesntMatch
+    /// Multi-round QBTC claim — driven by `qbtcClaimDriver` rather than
+    /// the standard single-keysign flow. Set when the scanned QR has
+    /// `isQbtcClaim == true`. See [[v2-secure-vault-design]].
+    case QBTCClaim
 }
 
 @MainActor
@@ -50,6 +54,10 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    /// Set when the scanned QR has `isQbtcClaim == true`. The standard
+    /// single-keysign flow steps aside while this driver runs the
+    /// peer-side flow. See [[v2-secure-vault-design]].
+    @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
@@ -82,6 +90,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     private let gasViewModel = JoinKeysignGasViewModel()
+    private let swapFeeViewModel = JoinKeysignSwapFeeViewModel()
 
     init() {
         self.vault = Vault(name: "Main Vault")
@@ -213,7 +222,26 @@ class JoinKeysignViewModel: ObservableObject {
         })
     }
 
-    func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+    func prepareKeysignMessages(keysignPayload: KeysignPayload) async {
+        // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
+        // a standard tx body; the QBTCClaimJoinDriver computes the round-1
+        // message hash itself. Skip the standard factory so it doesn't
+        // fail trying to build sighashes from a body that isn't there.
+        if keysignPayload.isQbtcClaim {
+            guard QBTCConfig.isFeatureEnabled else {
+                self.errorMsg = "qbtcClaimDisabledFromAdvanced".localized
+                self.status = .FailedToStart
+                return
+            }
+            return
+        }
+        // The proto UTXOSpecific can't carry the live ZEC branch id, so a
+        // payload rebuilt from the initiator's QR/relay proto arrives with it
+        // nil. Re-resolve the same network-global value the initiator used
+        // before computing sighashes so this co-signer's ZIP-243 digest matches
+        // the rest of the committee.
+        let keysignPayload = await withZcashBranchId(keysignPayload)
+        self.keysignPayload = keysignPayload
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
@@ -231,6 +259,19 @@ class JoinKeysignViewModel: ObservableObject {
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
         self.keysignMessages = customMessagePayload.keysignMessages
+    }
+
+    /// Re-stamps the live ZIP-243 branch id onto a Zcash UTXO payload rebuilt
+    /// from proto. Returns the payload unchanged for non-Zcash chains, non-UTXO
+    /// specifics, or when the RPC is unreachable (the signing helpers then
+    /// refuse rather than sign with a stale id).
+    private func withZcashBranchId(_ payload: KeysignPayload) async -> KeysignPayload {
+        guard payload.coin.chain == .zcash,
+              case .UTXO(let byteFee, let sendMaxAmount, _) = payload.chainSpecific,
+              let branchId = await ZcashService.shared.getConsensusBranchIdHex() else {
+            return payload
+        }
+        return payload.withChainSpecific(.UTXO(byteFee: byteFee, sendMaxAmount: sendMaxAmount, zcashBranchId: branchId))
     }
 
     func handleQrCodeSuccessResult(data: String?) async {
@@ -253,7 +294,7 @@ class JoinKeysignViewModel: ObservableObject {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
             }
             if let payload = keysignMsg.payload {
-                self.prepareKeysignMessages(keysignPayload: payload)
+                await self.prepareKeysignMessages(keysignPayload: payload)
             }
             if let payload = keysignMsg.customMessagePayload {
                 self.prepareKeysignMessages(customMessagePayload: payload)
@@ -287,6 +328,37 @@ class JoinKeysignViewModel: ObservableObject {
                     logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                 }
             }
+
+            // QBTC claim fork — if the loaded payload is flagged with
+            // `isQbtcClaim`, hand off to the QBTC-claim peer driver and
+            // step the standard single-keysign flow aside. Reads from
+            // `self.keysignPayload` so it covers both inline payloads and
+            // ones fetched from the relay via `ensureKeysignPayload`.
+            // Post-qbtc#158 the peer only runs one BTC ECDSA round; the
+            // session is the keysign message's own session, not a
+            // round-suffixed derivation of a base session. The peer
+            // derives the claimer's QBTC address from its own vault.
+            if let payload = self.keysignPayload, payload.isQbtcClaim {
+                guard QBTCConfig.isFeatureEnabled else {
+                    self.errorMsg = "qbtcClaimDisabledFromAdvanced".localized
+                    self.status = .FailedToStart
+                    return
+                }
+                let session = KeysignSessionInfo(
+                    sessionId: keysignMsg.sessionID,
+                    encryptionKeyHex: keysignMsg.encryptionKeyHex,
+                    serviceName: keysignMsg.serviceName,
+                    localPartyId: self.localPartyID,
+                    serverAddr: Endpoint.vultisigRelay
+                )
+                let driver = QBTCClaimJoinDriver(
+                    vault: self.vault,
+                    session: session
+                )
+                self.qbtcClaimDriver = driver
+                self.status = .QBTCClaim
+                Task { await driver.run() }
+            }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -294,6 +366,11 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func manageQrCodeStates() {
+        // QBTC claim flow drives its own status transitions via
+        // `qbtcClaimDriver.phase`; don't let the standard flow override.
+        if status == .QBTCClaim {
+            return
+        }
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch
@@ -334,7 +411,7 @@ class JoinKeysignViewModel: ObservableObject {
             let payload = try await payloadService.getPayload(hash: self.payloadID)
             let kp: KeysignPayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
             self.keysignPayload = kp
-            self.prepareKeysignMessages(keysignPayload: kp)
+            await self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -655,6 +732,12 @@ class JoinKeysignViewModel: ObservableObject {
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+    }
+
+    /// Swap-fee row for the swap confirm screen, nil when the payload
+    /// carries no fee or no trustworthy coin context (legacy sender).
+    func getSwapFee() -> (feeCrypto: String, feeFiat: String)? {
+        swapFeeViewModel.getSwapFee(swapPayload: keysignPayload?.swapPayload, vault: vault)
     }
 
     func getFromFiatAmount() -> String {

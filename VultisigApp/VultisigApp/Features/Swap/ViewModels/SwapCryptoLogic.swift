@@ -68,12 +68,26 @@ enum SwapCryptoLogic {
 
     // MARK: - Quote-derived
 
-    static func fee(quote: SwapQuote?, thorchainFee: BigInt) -> BigInt {
+    static func fee(quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt) -> BigInt {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
         case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
+        case let .swapkit(_, fee, _):
+            // SwapKit's wire `inbound` fee for UTXO/Cardano sources doesn't
+            // reflect the realized on-chain miner fee — it renders as a
+            // misleadingly small amount on the Network Fee row (e.g. a BTC swap
+            // showing 0.0000008 BTC). For these chains compute the fee the same
+            // way Send does: from the WalletCore transaction plan, carried in
+            // `thorchainFee` (populated in `SwapDetailsViewModel.updateFees`).
+            // EVM/other SwapKit sources keep the wire-reported inbound fee.
+            switch fromCoin.chain.chainType {
+            case .UTXO, .Cardano:
+                return thorchainFee
+            default:
+                return fee ?? 0
+            }
         case nil:
             return .zero
         }
@@ -91,11 +105,30 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
+        case let .swapkit(response, _, _):
+            // SwapKit returns human-units decimal strings, not raw base units.
+            return Decimal(string: response.expectedBuyAmount) ?? .zero
         }
     }
 
     static func router(quote: SwapQuote?) -> String? {
         quote?.router
+    }
+
+    /// Display-only indicative out-amount derived from the spot fiat prices the
+    /// app already holds: `fromAmount × (fromPrice / toPrice)`. Shown greyed with
+    /// a `~` prefix while the firm quote loads. NEVER feeds signing or validation
+    /// — only the firm `quote` does. Returns nil when either price is missing or
+    /// the input amount is non-positive, so the view can fall back to empty/0.
+    static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
+        let amount = fromAmount.toDecimal()
+        guard amount > 0 else { return nil }
+
+        let fromPrice = Decimal(fromCoin.price)
+        let toPrice = Decimal(toCoin.price)
+        guard fromPrice > 0, toPrice > 0 else { return nil }
+
+        return amount * (fromPrice / toPrice)
     }
 
     static func inboundFeeDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal? {
@@ -167,20 +200,6 @@ enum SwapCryptoLogic {
             return nil
         }
         return coin
-    }
-
-    // MARK: - Picker helpers
-
-    static func pickerFromCoins(fromCoins: [Coin], selected: Coin, fromChain: Chain?) -> [Coin] {
-        fromCoins
-            .filter { $0.chain == fromChain }
-            .sorted { Int($0.chain == selected.chain) > Int($1.chain == selected.chain) }
-    }
-
-    static func pickerToCoins(toCoins: [Coin], selected: Coin, toChain: Chain?) -> [Coin] {
-        toCoins
-            .filter { $0.chain == toChain }
-            .sorted { Int($0.chain == selected.chain) > Int($1.chain == selected.chain) }
     }
 
     // MARK: - Display: amounts
@@ -516,7 +535,11 @@ enum SwapCryptoLogic {
         return fiatValue
     }
 
-    private static func swapFeeCoin(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Coin {
+    /// Resolves the coin the quote's swap fee is denominated in. Also the
+    /// source of truth for the coin context serialized onto the keysign
+    /// payload — serializing this output guarantees the initiator's fiat
+    /// display and the co-signer's agree by construction.
+    static func swapFeeCoin(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Coin {
         guard let contract = quote?.swapFeeTokenContract else {
             return feeCoin
         }

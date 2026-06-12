@@ -30,8 +30,12 @@ class FunctionCallVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
 
-    func createKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+    func createKeysignPayload(tx: SendTransaction) async throws -> KeysignPayload {
+        let vault = tx.vault
         await MainActor.run { isLoading = true }
+        defer {
+            Task { @MainActor in isLoading = false }
+        }
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
@@ -47,7 +51,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
             // replace with a dedicated deposit payload across iOS/Android/Windows.
             var approvePayload: ERC20ApprovePayload?
             var swapPayload: SwapPayload?
-            let isLPAdd = tx.memoFunctionDictionary.get("pool") != nil
+            let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
             let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
             let isRouterDeposit = isLPAdd || isSecuredAssetMint
             if isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty {
@@ -82,8 +86,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 )
             }
 
-            await MainActor.run { isLoading = false }
-            return try await keysignPayloadFactory.buildTransfer(
+            let basePayload = try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -94,6 +97,35 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 vault: vault,
                 wasmExecuteContractPayload: tx.wasmContractPayload
             )
+
+            // Cosmos staking branch — `buildTransfer` defaults `signData` to
+            // nil, which downstream resolves to MsgSend. For delegate /
+            // undelegate / redelegate / withdrawRewards we need a SignDoc
+            // carrying the proto-encoded Cosmos staking message instead, or
+            // the chain rejects with a bech32-prefix mismatch on the
+            // validator address. Mirrors `SendCryptoVerifyLogic`.
+            //
+            // Both secp256k1 chains and QBTC ship the SignDoc via
+            // `signData.signDirect` — it's the one field that round-trips
+            // through the proto, so the peer device rebuilds the identical
+            // SignDoc hash. The only difference is the AuthInfo pubkey type:
+            // QBTC's resolver path stamps `/cosmos.crypto.mldsa.PubKey`
+            // (post-quantum) instead of secp256k1, and `QBTCHelper` consumes
+            // those `signDirect` bytes directly rather than via WalletCore.
+            if tx.cosmosStakingPayload != nil {
+                let signDirect = tx.coin.chain == .qbtc
+                    ? try CosmosStakingSignDataResolver.resolveMLDSA(
+                        sendTransaction: tx,
+                        chainSpecific: chainSpecific
+                    )
+                    : try CosmosStakingSignDataResolver.resolve(
+                        sendTransaction: tx,
+                        chainSpecific: chainSpecific
+                    )
+                return basePayload.withSignData(.signDirect(signDirect))
+            }
+
+            return basePayload
         } catch {
             let errorMessage: String
             switch error {
@@ -114,13 +146,12 @@ class FunctionCallVerifyViewModel: ObservableObject {
             default:
                 errorMessage = error.localizedDescription
             }
-            await MainActor.run { isLoading = false }
             throw HelperError.runtimeError(errorMessage)
         }
     }
 
-    func scan(transaction: SendTransaction, vault: Vault) async {
-        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+    func scan(transaction: SendTransaction) async {
+        await securityScanViewModel.scan(transaction: transaction)
     }
 
     func validateSecurityScanner() -> Bool {

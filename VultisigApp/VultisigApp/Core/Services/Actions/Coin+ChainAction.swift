@@ -9,13 +9,6 @@ import Foundation
 
 extension CoinAction {
 
-    static var swapChains: [Chain] = [
-        .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
-        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum, .blast, .mantle, .hyperliquid,
-        .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash, .ripple,
-        .cronosChain, .tron
-    ]
-
     static var memoChains: [Chain] = [
         .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
@@ -25,8 +18,12 @@ extension CoinAction {
     static var defiChains: [Chain] = [
         .thorChain,
         .mayaChain,
-        .tron
+        .tron,
+        .terra,
+        .terraClassic,
+        .qbtc
     ]
+
 }
 
 extension Chain {
@@ -34,17 +31,12 @@ extension Chain {
 
         var actions: [CoinAction] = []
 
-        if CoinAction.swapChains.contains(self) {
+        if self.isSwapAvailable {
             actions.append(.swap)
         }
         actions.append(.send) // always include send
-        let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
-        // when hasBuyEnabledSet has not been set , set it to true
-        if hasBuyEnabledSet == nil {
-            UserDefaults.standard.set(true, forKey: "BuyEnabled")
-        }
-        let enableBuy = UserDefaults.standard.bool(forKey: "BuyEnabled")
-        if enableBuy {
+
+        if self.isBuyAvailable {
             actions.append(.buy)
         }
         let enableSell = UserDefaults.standard.bool(forKey: "SellEnabled")

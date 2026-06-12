@@ -8,21 +8,18 @@
 import SwiftUI
 
 struct EditReferralDetailsView: View {
-    @StateObject var viewModel: EditReferralViewModel
-    @ObservedObject var sendTx: SendTransaction
-    var onNext: () -> Void
+    @State var viewModel: EditReferralDetailsViewModel
+    var onNext: (SendTransaction) -> Void
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
-    @State var showPreferredAssetSelection: Bool = false
+    @State private var showPreferredAssetSelection: Bool = false
 
     init(
-        viewModel: EditReferralViewModel,
-        sendTx: SendTransaction,
-        onNext: @escaping () -> Void
+        viewModel: EditReferralDetailsViewModel,
+        onNext: @escaping (SendTransaction) -> Void
     ) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
-        self.sendTx = sendTx
+        self._viewModel = State(initialValue: viewModel)
         self.onNext = onNext
     }
 
@@ -148,13 +145,10 @@ struct EditReferralDetailsView: View {
 
     var button: some View {
         PrimaryButton(title: "saveChanges") {
-            Task { @MainActor in
-                guard await viewModel.verifyReferralEntries(tx: sendTx) else {
-                    return
-                }
-
-                onNext()
+            guard let tx = viewModel.verifyReferralEntries() else {
+                return
             }
+            onNext(tx)
         }
         .disabled(!viewModel.isValidForm)
     }
@@ -162,7 +156,7 @@ struct EditReferralDetailsView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: "")),
+            message: Text(viewModel.errorMessage ?? .empty),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -214,17 +208,4 @@ struct EditReferralDetailsView: View {
         }
         .font(Theme.fonts.bodySMedium)
     }
-}
-
-#Preview {
-    EditReferralDetailsView(
-        viewModel: EditReferralViewModel(
-            nativeCoin: .example,
-            vault: .example,
-            thornameDetails: .example,
-            currentBlockHeight: 0
-        ),
-        sendTx: SendTransaction(),
-        onNext: {}
-    )
 }

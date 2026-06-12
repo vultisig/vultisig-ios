@@ -15,6 +15,20 @@ struct SwapCoinCell: View {
 
     var onSelect: () -> Void
 
+    init(
+        coin: CoinMeta,
+        balance: String?,
+        balanceFiat: String?,
+        isSelected: Bool,
+        onSelect: @escaping () -> Void
+    ) {
+        self.coin = coin
+        self.balance = balance
+        self.balanceFiat = balanceFiat
+        self.isSelected = isSelected
+        self.onSelect = onSelect
+    }
+
     var body: some View {
         Button {
             onSelect()
@@ -33,7 +47,7 @@ struct SwapCoinCell: View {
     }
 
     var content: some View {
-        HStack {
+        HStack(spacing: 8) {
             icon
             title
             chain

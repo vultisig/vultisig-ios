@@ -11,7 +11,7 @@ extension ThorchainService {
 
     func fetchTcyStakedAmount(address: String) async -> Decimal {
         do {
-            let raw = try await httpClient.request(ThorchainMainnetAPI.tcyStaker(address: address))
+            let raw = try await httpClient.request(mainnet(.tcyStaker(address: address)))
             guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
                   let amountString = json["amount"] as? String,
                   let amount = UInt64(amountString) else {
@@ -53,7 +53,7 @@ extension ThorchainService {
 
         do {
             let response = try await httpClient.request(
-                ThorchainMainnetAPI.rujiGraphQL(query: query),
+                mainnet(.rujiGraphQL(query: query)),
                 responseType: MergeAccountResponse.self
             )
             return response.data.data.node?.merge?.accounts ?? []
@@ -73,7 +73,7 @@ extension ThorchainService {
     /// Returns `.zero` only when the endpoint responds successfully but the user has no
     /// `x/staking-tcy` balance in the response (genuine zero stake).
     func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
-        let raw = try await httpClient.request(ThorchainMainnetAPI.balances(address: address))
+        let raw = try await httpClient.request(mainnet(.balances(address: address)))
         guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
               let balances = json["balances"] as? [[String: Any]] else {
             throw HelperError.runtimeError("Malformed THORNode balances response")
@@ -92,7 +92,7 @@ extension ThorchainService {
 
     func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
         do {
-            let raw = try await httpClient.request(ThorchainMainnetAPI.tcyAutoCompoundStatus)
+            let raw = try await httpClient.request(mainnet(.tcyAutoCompoundStatus))
             guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
                   let dataBase64 = json["data"] as? String,
                   let decoded = Data(base64Encoded: dataBase64),

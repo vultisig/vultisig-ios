@@ -44,6 +44,48 @@ final class ThorchainAntiRektTests: XCTestCase {
         XCTAssertLessThan(bps ?? Int.max, SwapService.streamingSlippageThresholdBps)
     }
 
+    // MARK: - 1% threshold boundary
+
+    func test_rapidSlippageBps_justBelowOnePercent_doesNotTriggerStreaming() async {
+        // 99 bps slippage — just under the 1% (100 bps) cutoff.
+        // 99 / 10000 = 0.99% via authoritative totalBps field.
+        let rapid = makeQuote(expectedAmountOut: "10000", feesTotal: "0", totalBps: 99)
+        XCTAssertEqual(SwapService.rapidSlippageBps(fromQuote: rapid), 99)
+        XCTAssertLessThan(SwapService.rapidSlippageBps(fromQuote: rapid) ?? .max, SwapService.streamingSlippageThresholdBps)
+
+        let mock = MockSwapProvider(response: .success(makeQuote(expectedAmountOut: "999999", feesTotal: "0")))
+        let result = await SwapService.shared.maybeUpgradeToStreaming(
+            rapid: rapid, service: mock, provider: .thorchain,
+            address: "addr", fromAsset: "BTC.BTC", toAsset: "TRX.TRX",
+            amount: "100000000", referredCode: "", vultTierDiscount: 0
+        )
+
+        XCTAssertEqual(result.expectedAmountOut, rapid.expectedAmountOut)
+        XCTAssertEqual(mock.callCount, 0, "Streaming must not be fetched at 99 bps with a 1% threshold")
+    }
+
+    func test_rapidSlippageBps_justAboveOnePercent_triggersStreamingFetch() async {
+        // 101 bps slippage — just over the 1% (100 bps) cutoff.
+        let rapid = makeQuote(expectedAmountOut: "10000", feesTotal: "0", totalBps: 101, maxStreamingQuantity: 10)
+        XCTAssertEqual(SwapService.rapidSlippageBps(fromQuote: rapid), 101)
+        XCTAssertGreaterThan(SwapService.rapidSlippageBps(fromQuote: rapid) ?? 0, SwapService.streamingSlippageThresholdBps)
+
+        let streaming = makeQuote(expectedAmountOut: "20000", feesTotal: "0")
+        let mock = MockSwapProvider(response: .success(streaming))
+        let result = await SwapService.shared.maybeUpgradeToStreaming(
+            rapid: rapid, service: mock, provider: .thorchain,
+            address: "addr", fromAsset: "BTC.BTC", toAsset: "TRX.TRX",
+            amount: "100000000", referredCode: "", vultTierDiscount: 0
+        )
+
+        XCTAssertEqual(result.expectedAmountOut, streaming.expectedAmountOut)
+        XCTAssertEqual(mock.callCount, 1, "Streaming must be fetched at 101 bps with a 1% threshold")
+        XCTAssertEqual(
+            mock.lastToleranceBps, SwapService.defaultThorchainToleranceBps,
+            "Streaming quote must carry tolerance_bps so the node bakes a minimum-output LIM into the memo"
+        )
+    }
+
     func test_rapidSlippageBps_zeroFees_returnsZero() {
         let quote = makeQuote(expectedAmountOut: "100000", feesTotal: "0", totalBps: nil)
 
@@ -221,6 +263,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
     private(set) var callCount = 0
     private(set) var lastInterval: Int?
     private(set) var lastStreamingQuantity: Int?
+    private(set) var lastToleranceBps: Int?
 
     init(response: Result<ThorchainSwapQuote, Error>) {
         self.response = response
@@ -233,6 +276,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         amount _: String,
         interval: Int,
         streamingQuantity: Int,
+        toleranceBps: Int,
         referredCode _: String,
         vultTierDiscount _: Int
     ) async throws -> ThorchainSwapQuote {
@@ -240,6 +284,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         callCount += 1
         lastInterval = interval
         lastStreamingQuantity = streamingQuantity
+        lastToleranceBps = toleranceBps
         return try response.get()
     }
 }

@@ -184,6 +184,11 @@ final class DKLSKeysign {
 
     func processDKLSOutboundMessage(handle: godkls.Handle) async throws {
         repeat {
+            // Cooperative cancellation: the stage-level timeout in
+            // KeysignViewModel cancels this task group on a stall. Without an
+            // explicit check the C-backed loop runs to completion and the
+            // orphaned ceremony broadcasts behind the user's back.
+            try Task.checkCancellation()
             let (result, outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
                 print("fail to get outbound message,\(result)")
@@ -220,6 +225,10 @@ final class DKLSKeysign {
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
+            // Cooperative cancellation: honour cancelAll() from the stage-level
+            // timeout so a stalled poll stops instead of running to completion
+            // and broadcasting an abandoned ceremony.
+            try Task.checkCancellation()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -387,9 +396,20 @@ final class DKLSKeysign {
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch {
-            print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
+            // A cancellation is not a signing failure — never retry it,
+            // propagate so the abandoned ceremony unwinds immediately.
+            if error is CancellationError { throw error }
+            logger.error("Failed to sign message (\(messageToSign, privacy: .public)) on attempt \(attempt, privacy: .public): \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+            } else {
+                // Surface retry-exhaustion as a typed throw rather than silently
+                // returning. Previously the caller only learned about the failure
+                // indirectly via `signatures.isEmpty` further up the stack, which
+                // collapsed every cause into a generic "fail to sign transaction"
+                // message and risked leaving the UI in a half-finished state.
+                // See vultisig-ios#4327.
+                throw HelperError.runtimeError("DKLS sign message exhausted retries: \(error.localizedDescription)")
             }
         }
     }

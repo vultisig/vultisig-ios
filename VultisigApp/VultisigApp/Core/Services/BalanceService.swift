@@ -400,6 +400,26 @@ private extension BalanceService {
                 return "0"
             }
 
+        case .terra, .terraClassic, .qbtc:
+            // LUNA / LUNC / QBTC delegations are the DeFi position. Sum the
+            // per-validator balances (all returned in the chain's staking denom,
+            // base units) so `DefiBalanceService` can roll them into the
+            // vault-wide DeFi total without re-fetching. Only native tokens stake.
+            guard identifier.isNativeToken else { return nil }
+            do {
+                let delegations = try await CosmosStakingService().fetchDelegations(
+                    chain: identifier.chain,
+                    address: identifier.address
+                )
+                let total = delegations
+                    .compactMap { Decimal(string: $0.balance.amount) }
+                    .reduce(Decimal.zero, +)
+                return total.description
+            } catch {
+                logger.warning("Failed to fetch Cosmos delegations for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
+
         case .tron:
             // Native TRX is the only stake-able asset on Tron. Frozen (Stake 2.0
             // bandwidth + energy) plus unfreezing (in cooldown) TRX represent

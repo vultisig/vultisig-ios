@@ -43,8 +43,7 @@ struct KeysignMessageFactory {
             case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps()
-                    messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
+                    messages = try SolanaHelper.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
                     let swaps = OneInchSwaps()
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
@@ -57,6 +56,51 @@ struct KeysignMessageFactory {
                 }
                 let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+            case .swapkit(let swapKitPayload):
+                // Dispatch on SwapKit's `meta.txType`. For chains where the
+                // SwapKit wire shape is a plain native send (TON transfer,
+                // ADA deposit), we fall through to the per-chain helper at
+                // the bottom of this method — `keysignPayload.toAddress` /
+                // `toAmount` have already been set to SwapKit's deposit
+                // address + amount by `SwapPayloadBuilder`. PSBT (BTC), SUI
+                // (pre-built PTB), and TRON (pre-built raw_data_hex) need
+                // SwapKit-specific signers since their pre-built bytes drive
+                // the signing input directly.
+                switch swapKitPayload.txType {
+                case "PSBT":
+                    messages += try SwapKitBTCSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_DOGE":
+                    messages += try SwapKitDogeSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_BCH":
+                    messages += try SwapKitBCHSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_DASH":
+                    messages += try SwapKitDashSigner.preSigningHashes(payload: swapKitPayload)
+                case "PSBT_ZEC":
+                    messages += try SwapKitZcashSigner.preSigningHashes(payload: swapKitPayload, zcashBranchId: payload.chainSpecific.zcashBranchId)
+                case "SUI":
+                    messages += try SwapKitSuiSigner.preSigningHashes(payload: swapKitPayload)
+                case "TRON":
+                    messages += try SwapKitTronSigner.preSigningHashes(payload: swapKitPayload)
+                case "CARDANO_PREBUILT":
+                    // SwapKit-built CBOR. Hash item 0 of the envelope with
+                    // Blake2b-256 — that's the Cardano signing digest.
+                    messages += try SwapKitCardanoSigner.preSigningHashes(payload: swapKitPayload)
+                case "TON", "CARDANO", "XRP":
+                    // Fall through to the existing per-chain helper below
+                    // (deposit-only flows: the SwapKit builder already
+                    // pointed `toAddress` / `toAmount` at the deposit).
+                    // XRP: builder also stringified the destination tag
+                    // into `keysignPayload.memo` — `RippleHelper` parses
+                    // numeric memos and attaches `destinationTag` on the
+                    // `RippleOperationPayment` automatically.
+                    break
+                case "EVM", "SOLANA":
+                    // EVM and Solana ride `SwapPayload.generic` — reaching
+                    // this branch means a routing bug.
+                    throw SwapKitError.unsupportedTxType(swapKitPayload.txType)
+                default:
+                    throw SwapKitError.unsupportedTxType(swapKitPayload.txType)
+                }
             }
         }
 

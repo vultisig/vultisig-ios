@@ -11,6 +11,23 @@ class BittensorService: RpcService {
     static let rpcEndpoint = Endpoint.bittensorServiceRpc
     static let shared = BittensorService(rpcEndpoint)
 
+    /// Resolves the Bittensor custom RPC override. Injected so the resolved
+    /// endpoint is derived from a dependency rather than a global reach-in;
+    /// resolution is computed per request so a runtime override change is picked
+    /// up live (the shared mirror updates without a relaunch).
+    private let resolver: RPCEndpointResolving
+
+    init(_ rpcEndpoint: String, resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+        self.resolver = resolver
+        super.init(rpcEndpoint)
+    }
+
+    /// The override-aware JSON-RPC endpoint. Falls back to the baked-in default
+    /// (`Endpoint.bittensorServiceRpc`) when no override is set.
+    private var resolvedEndpoint: String {
+        resolver.url(for: .bittensor) ?? rpcEndpoint
+    }
+
     private var cacheBittensorBalance: ThreadSafeDictionary<String, (data: BigInt, timestamp: Date)> = ThreadSafeDictionary()
     private var cacheBittensorGenesisBlockHash: ThreadSafeDictionary<String, (data: String, timestamp: Date)> = ThreadSafeDictionary()
 
@@ -33,7 +50,7 @@ class BittensorService: RpcService {
         let storageKey = "0x" + Self.systemAccountPrefix + blake2Hash.toHexString() + pubkey.toHexString()
 
         // Query via RPC — no API key needed
-        let result: String = try await sendRPCRequest(method: "state_getStorage", params: [storageKey]) { result in
+        let result: String = try await sendRPCRequest(method: "state_getStorage", params: [storageKey], endpoint: resolvedEndpoint) { result in
             guard let hex = result as? String else {
                 return ""
             }
@@ -66,11 +83,11 @@ class BittensorService: RpcService {
     // MARK: - RPC Methods (chain metadata)
 
     private func fetchNonce(address: String) async throws -> BigInt {
-        return try await intRpcCall(method: "system_accountNextIndex", params: [address])
+        return try await intRpcCall(method: "system_accountNextIndex", params: [address], endpoint: resolvedEndpoint)
     }
 
     private func fetchBlockHash() async throws -> String {
-        return try await strRpcCall(method: "chain_getBlockHash", params: [])
+        return try await strRpcCall(method: "chain_getBlockHash", params: [], endpoint: resolvedEndpoint)
     }
 
     private func fetchGenesisBlockHash() async throws -> String {
@@ -79,13 +96,13 @@ class BittensorService: RpcService {
             return cachedData
         }
 
-        let genesis = try await strRpcCall(method: "chain_getBlockHash", params: [0])
+        let genesis = try await strRpcCall(method: "chain_getBlockHash", params: [0], endpoint: resolvedEndpoint)
         self.cacheBittensorGenesisBlockHash.set(cacheKey, (data: genesis, timestamp: Date()))
         return genesis
     }
 
     private func fetchRuntimeVersion() async throws -> (specVersion: UInt32, transactionVersion: UInt32) {
-        return try await sendRPCRequest(method: "state_getRuntimeVersion", params: []) { result in
+        return try await sendRPCRequest(method: "state_getRuntimeVersion", params: [], endpoint: resolvedEndpoint) { result in
             guard let resultDict = result as? [String: Any] else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
             }
@@ -103,7 +120,7 @@ class BittensorService: RpcService {
     }
 
     private func fetchBlockHeader() async throws -> BigInt {
-        return try await sendRPCRequest(method: "chain_getHeader", params: []) { result in
+        return try await sendRPCRequest(method: "chain_getHeader", params: [], endpoint: resolvedEndpoint) { result in
             guard let resultDict = result as? [String: Any] else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
             }
@@ -124,8 +141,8 @@ class BittensorService: RpcService {
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         do {
-            let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
-            return result
+            let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix], endpoint: resolvedEndpoint)
+            return try SubstrateBroadcast.validatedHash(result)
         } catch {
             // Suppress "Already Imported" errors (multi-device signing, second device gets this)
             let errorMessage = error.localizedDescription.lowercased()

@@ -11,9 +11,13 @@ import WalletCore
 
 struct SendCryptoVerifyLogic {
 
-    // MARK: - Services
-    private let utxo = BlockchairService.shared
-    private let blockChainService = BlockChainService.shared
+    // MARK: - Dependencies
+
+    let interactor: SendInteractor
+
+    init(interactor: SendInteractor = DefaultSendInteractor.live) {
+        self.interactor = interactor
+    }
 
     // MARK: - Fee Calculation
 
@@ -31,123 +35,40 @@ struct SendCryptoVerifyLogic {
     }
 
     private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
-        let service = try EthereumFeeService(chain: tx.coin.chain)
-
-        let gasLimit = tx.coin.isNativeToken ?
-        BigInt(EVMHelper.defaultETHTransferGasUnit) :
-        BigInt(EVMHelper.defaultERC20TransferGasUnit)
-
-        let feeInfo = try await service.calculateFees(
-            chain: tx.coin.chain,
-            limit: gasLimit,
-            isSwap: false,
-            fromAddress: tx.fromAddress,
-            feeMode: .default
-        )
-
-        let fee = feeInfo.amount
-        let gas: BigInt
-
-        switch feeInfo {
-        case .GasFee(let price, _, _, _):
-            gas = price
-        case .Eip1559(_, let maxFeePerGas, _, _, _):
-            gas = maxFeePerGas
-        case .BasicFee(let amount, _, let limit):
-            if limit > 0 {
-                gas = amount / limit
-            } else {
-                gas = amount
-            }
-        }
-
-        return FeeResult(fee: fee, gas: gas)
+        // Send-pilot decision 3: thread tx.feeMode through instead of
+        // hardcoding .default. The user's custom fee mode chosen in the
+        // Details screen is otherwise dropped on Verify refresh.
+        let result = try await interactor.calculateEVMFee(SendFeeEstimateRequest(tx: tx))
+        return FeeResult(fee: result.fee, gas: result.gas)
     }
 
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
-        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+        let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-        let fee: BigInt
+        var fee: BigInt
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
-            fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: chainSpecific)
+            fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
 
         case .Cosmos, .THORChain:
+            // Cosmos batched-claim signs one msg per validator and the
+            // resolver scales gas + fee linearly. Mirror that scaling here
+            // so the Verify summary and the balance-validation check both
+            // reflect the real signed fee, not the single-msg base. Any
+            // other staking op is 1 msg → multiplier collapses to 1.
             fee = chainSpecific.fee
+            if let payload = tx.cosmosStakingPayload,
+               payload.opType == .withdrawRewards,
+               let count = payload.validators?.count, count > 1 {
+                fee *= BigInt(count)
+            }
 
         default:
             fee = chainSpecific.gas
         }
 
         return FeeResult(fee: fee, gas: fee)
-    }
-
-    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
-        guard let vault = AppViewModel.shared.selectedVault else {
-            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
-        }
-
-        // Normalize decimal separator (replace comma with period for consistent parsing)
-        let normalizedAmount = tx.amount.replacingOccurrences(of: ",", with: ".")
-
-        // Convert to Decimal and multiply by 10^decimals to get the raw amount
-        let amountDecimal = normalizedAmount.toDecimal()
-        let multiplier = pow(Decimal(10), tx.coin.decimals)
-        let rawAmount = amountDecimal * multiplier
-
-        // Convert to BigInt safely using string representation to avoid overflow
-        // Convert to BigInt safely using NSDecimalNumber to handle rounding and string conversion
-        let rawAmountNumber = NSDecimalNumber(decimal: rawAmount)
-        let behavior = NSDecimalNumberHandler(roundingMode: .down, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedRawAmount = rawAmountNumber.rounding(accordingToBehavior: behavior)
-        let rawAmountString = roundedRawAmount.stringValue
-
-        guard let actualAmount = BigInt(rawAmountString) else {
-            throw HelperError.runtimeError("Invalid amount for fee calculation")
-        }
-
-        if actualAmount == 0 {
-            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
-        }
-
-        // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
-        if tx.coin.chain.chainType == .UTXO {
-            await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-            _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
-        }
-        // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
-
-        let keysignFactory = KeysignPayloadFactory()
-        let keysignPayload = try await keysignFactory.buildTransfer(
-            coin: tx.coin,
-            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
-            amount: actualAmount,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            chainSpecific: chainSpecific,
-            swapPayload: nil,
-            vault: vault
-        )
-
-        let planFee: BigInt
-
-        switch tx.coin.chain {
-        case .cardano:
-            planFee = try CardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
-
-        default: // UTXO chains
-            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
-                throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
-            }
-            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            planFee = BigInt(plan.fee)
-        }
-
-        if planFee > 0 {
-            return planFee
-        }
-
-        return BigInt.zero
     }
 
     // MARK: - Balance Validation
@@ -179,6 +100,21 @@ struct SendCryptoVerifyLogic {
                     return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
                 }
             }
+        } else if tx.coin.chain == .terraClassic
+                    && TerraClassicTax.isBankDenom(
+                        contractAddress: tx.coin.contractAddress,
+                        isNativeToken: tx.coin.isNativeToken
+                    ) {
+            // Terra Classic bank-denom tokens (USTC / uusd) pay their gas + burn
+            // tax in the SAME denom they're sending, so the fee comes out of the
+            // token balance — not the native LUNC balance. Validate amount + fee
+            // against the token balance and skip the native-gas check below.
+            // CW20 (terra1…) and IBC (ibc/…) Terra Classic tokens pay the fee in
+            // native LUNC, so they fall through to the generic non-native branch.
+            let totalAmount = tx.sendMaxAmount ? tx.fee : amount + tx.fee
+            if totalAmount > balance {
+                return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+            }
         } else {
             if amount > balance {
                 return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
@@ -189,8 +125,7 @@ struct SendCryptoVerifyLogic {
             // each, Alonzo era), in addition to the fee. Surface a dedicated
             // error when the vault's ADA balance can't cover that.
             if tx.coin.chain == .cardano,
-               let vault = tx.vault ?? AppViewModel.shared.selectedVault,
-               let nativeToken = vault.coins.nativeCoin(chain: .cardano) {
+               let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
                 let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
                 let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
                 if nativeBalance < tx.fee + minAdaReserve {
@@ -198,20 +133,13 @@ struct SendCryptoVerifyLogic {
                 }
             }
 
-            // Validate gas balance for non-native tokens
-            if let vault = tx.vault ?? AppViewModel.shared.selectedVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
-                    let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
-                    if tx.fee > nativeBalance {
-                        // Using a generic error message since checking gas specifically might require a new error string key
-                        // or we can reuse existing logic if available.
-                        // The user complained about "walletBalanceExceededError" being shown wrongly,
-                        // so returning it for actual insufficient gas is acceptable or we can use "notEnoughGas" if it exists.
-                        // But keeping it consistent with the function signature.
-                        let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain)
-                        let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken?.ticker ?? "Native Token", tx.coin.ticker)
-                        return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
-                    }
+            // Validate gas balance for non-native tokens. Decision 2 win:
+            // vault is now non-optional, so the singleton fallback is gone.
+            if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
+                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                if tx.fee > nativeBalance {
+                    let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
+                    return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
                 }
             }
         }
@@ -222,30 +150,41 @@ struct SendCryptoVerifyLogic {
     // MARK: - UTXO Validation
 
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
-        if tx.coin.chain.chainType == ChainType.UTXO {
-            do {
-                _ = try await utxo.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
-            } catch {
-                print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
-                throw HelperError.runtimeError("Failed to fetch UTXO data. Please check your internet connection and try again.")
-            }
-        }
+        try await interactor.validateUtxosIfNeeded(coin: tx.coin)
     }
 
     // MARK: - Keysign Payload
 
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+            let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
-            return try await KeysignPayloadFactory().buildTransfer(
+            let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
-                memo: tx.memo,
+                memo: tx.memo.isEmpty ? nil : tx.memo,
                 chainSpecific: chainSpecific,
+                wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault
             )
+
+            // Cosmos staking branch — when the per-flow builder produced a
+            // `cosmosStakingPayload`, swap the base payload's `signData` for
+            // a freshly-resolved `.signDirect(...)` carrying the proto-encoded
+            // MsgDelegate / MsgUndelegate / MsgBeginRedelegate /
+            // MsgWithdrawDelegatorReward bytes. The SignDoc is the contract
+            // the peer device sees; everything else on `KeysignPayload`
+            // becomes descriptive (verify-summary) only.
+            if tx.cosmosStakingPayload != nil {
+                let signDirect = try CosmosStakingSignDataResolver.resolve(
+                    sendTransaction: tx,
+                    chainSpecific: chainSpecific
+                )
+                return basePayload.withSignData(.signDirect(signDirect))
+            }
+
+            return basePayload
 
         } catch {
             // Handle UTXO-specific errors with more user-friendly messages

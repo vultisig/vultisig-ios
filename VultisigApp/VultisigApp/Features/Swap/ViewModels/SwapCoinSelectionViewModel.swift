@@ -17,14 +17,21 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
     let vault: Vault
     let selectedCoin: Coin
+    let isDestination: Bool
 
     private let logic: SwapCoinSelectionLogic
     private var cancellable: AnyCancellable?
 
-    init(vault: Vault, selectedCoin: Coin) {
+    @MainActor
+    init(vault: Vault, selectedCoin: Coin, isDestination: Bool) {
         self.vault = vault
         self.selectedCoin = selectedCoin
-        self.logic = SwapCoinSelectionLogic(vault: vault, selectedCoin: selectedCoin)
+        self.isDestination = isDestination
+        self.logic = SwapCoinSelectionLogic(
+            vault: vault,
+            selectedCoin: selectedCoin,
+            isDestination: isDestination
+        )
     }
 
     func setup() {
@@ -45,8 +52,8 @@ class SwapCoinSelectionViewModel: ObservableObject {
         do {
             let result = try await logic.fetchCoins(chain: chain)
             await MainActor.run {
-                self.tokens = result
-                self.filteredTokens = result
+                self.tokens = result.tokens
+                self.filteredTokens = result.tokens
                 isLoading = false
             }
         } catch {
@@ -68,24 +75,98 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
 // MARK: - SwapCoinSelectionLogic
 
+/// Result of a single `fetchCoins` call. `tokens` is the picker-ready list
+/// (preset + external + SwapKit, deduped, sorted).
+struct SwapCoinSelectionResult {
+    let tokens: [CoinMeta]
+}
+
 struct SwapCoinSelectionLogic {
     private let vault: Vault
     private let selectedCoin: Coin
-    private let service = TokenSearchService.shared
+    private let isDestination: Bool
+    private let service: TokenSearchService
+    private let registry: DestinationTokenRegistry
 
-    init(vault: Vault, selectedCoin: Coin) {
+    @MainActor
+    init(
+        vault: Vault,
+        selectedCoin: Coin,
+        isDestination: Bool,
+        service: TokenSearchService = .shared,
+        registry: DestinationTokenRegistry? = nil
+    ) {
         self.vault = vault
         self.selectedCoin = selectedCoin
+        self.isDestination = isDestination
+        self.service = service
+        // Defaults are resolved inside the body so the MainActor-isolated
+        // `.shared` singleton isn't referenced from a default-argument
+        // expression (which runs in the caller's context and would warn
+        // under Swift 6 strict concurrency). Same pattern as
+        // `TransactionHistoryViewModel.init` → `SwapTrackingRegistry.shared`.
+        self.registry = registry ?? DestinationTokenRegistry.shared
     }
 
-    func fetchCoins(chain: Chain) async throws -> [CoinMeta] {
+    func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
-        let tokens = ([nativeToken] + externalTokens).compactMap { $0 }
-        let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
-        return sort(tokens: uniqueTokens)
+        let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
+        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
+
+        // Destination-side picker pulls in tokens from every registered
+        // DestinationTokenProvider; source-side stays vault-bounded since
+        // SwapKit + sibling providers add no signal for tokens the user
+        // doesn't actually hold.
+        let externalBuckets: [DestinationTokenBucket]
+        if isDestination {
+            externalBuckets = await registry.tokens(for: chain)
+        } else {
+            externalBuckets = []
+        }
+
+        // Coins the vault actually holds for this chain — including user-added
+        // custom tokens that aren't in the curated TokensStore / search list.
+        // DeFi-only positions (e.g. staking) aren't swappable, so drop them.
+        // `vault`/`selectedCoin` are SwiftData @Model objects, so the reads
+        // (`vault.coins(for:)` and `sort`'s `vault.coin(for:)`) must run on the
+        // MainActor.
+        let vaultTokens = await MainActor.run {
+            vault.coins(for: chain).filter { !$0.isDefiOnly }.map { $0.toCoinMeta() }
+        }
+
+        let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
+        let withVault = Self.merge(base: merged, extra: vaultTokens)
+        let sorted = await MainActor.run { sort(tokens: withVault) }
+
+        return SwapCoinSelectionResult(tokens: sorted)
+    }
+
+    /// Pure-function merge — exposed for tests. Base list keeps its order;
+    /// novel tokens from each external bucket append after, deduped by
+    /// `CoinMeta.uniqueId` (chain + lowercased ticker + lowercased
+    /// contract). Same contract as the previous `mergeWithSwapKit`,
+    /// generalised over an arbitrary list of provider buckets.
+    static func mergeExternal(
+        base: [CoinMeta],
+        externals: [DestinationTokenBucket]
+    ) -> [CoinMeta] {
+        merge(base: base, extra: externals.flatMap { $0.tokens })
+    }
+
+    /// Appends `extra` tokens not already present in `base`, deduped by
+    /// `CoinMeta.uniqueId`. Base order is kept; novel tokens append in
+    /// `extra` order.
+    static func merge(base: [CoinMeta], extra: [CoinMeta]) -> [CoinMeta] {
+        var seen = Set(base.map { $0.uniqueId })
+        var result = base
+        for token in extra where !seen.contains(token.uniqueId) {
+            result.append(token)
+            seen.insert(token.uniqueId)
+        }
+        return result
     }
 
     func sort(tokens: [CoinMeta]) -> [CoinMeta] {

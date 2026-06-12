@@ -10,27 +10,29 @@ import SwiftUI
 struct SendRouter {
     private let viewBuilder = SendRouteBuilder()
 
+    @MainActor
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {
-        case .details(let coin, let hasPreselectedCoin, let tx, let vault):
-            viewBuilder.buildDetailsScreen(
-                coin: coin,
-                hasPreselectedCoin: hasPreselectedCoin,
+        case .details(let seed):
+            viewBuilder.buildDetailsScreen(seed: seed)
+        case .verify(let tx, let retrySignal, let vault, let prebuiltKeysignPayload):
+            viewBuilder.buildVerifyScreen(
                 tx: tx,
-                vault: vault
+                retrySignal: retrySignal,
+                vault: vault,
+                prebuiltKeysignPayload: prebuiltKeysignPayload
             )
-        case .verify(let tx, let vault):
-            viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
-        case .pairing(let vault, let tx, let keysignPayload, let fastVaultPassword):
+        case .pairing(let vault, let tx, let retrySignal, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
                 tx: tx,
+                retrySignal: retrySignal,
                 keysignPayload: keysignPayload,
                 fastVaultPassword: fastVaultPassword
             )
-        case .keysign(let input, let tx):
-            viewBuilder.buildKeysignScreen(input: input, tx: tx)
+        case .keysign(let input, let tx, let retrySignal):
+            viewBuilder.buildKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
         case .done(let vault, let hash, let chain, let tx, let keysignPayload):
             viewBuilder.buildDoneScreen(
                 vault: vault,
@@ -39,8 +41,6 @@ struct SendRouter {
                 tx: tx,
                 keysignPayload: keysignPayload
             )
-        case .coinPicker(let coins, let tx):
-            viewBuilder.buildCoinPickerScreen(coins: coins, tx: tx)
         case .transactionDetails(let input):
             viewBuilder.buildTransactionDetailsScreen(input: input)
         }

@@ -10,11 +10,11 @@ struct SwapVerifyScreen: View {
     let retrySignal: SwapRetrySignal
     let vault: Vault
 
-    @State var verifyViewModel: SwapVerifyViewModel
-    @StateObject var referredViewModel = ReferredViewModel()
+    @State private var verifyViewModel: SwapVerifyViewModel
+    @StateObject private var referredViewModel = ReferredViewModel()
 
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = .empty
+    @State private var fastPasswordPresented = false
+    @State private var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
     @State private var retryBannerText: String?
 
@@ -45,6 +45,23 @@ struct SwapVerifyScreen: View {
             }
         }
         .withBanner(text: $retryBannerText, style: .error)
+        // Surface build-side failures so the user doesn't see "nothing
+        // happens" after entering the FastVault password. `buildSwapKeysignPayload`
+        // catches errors into `verifyViewModel.error`; without this binding
+        // the catch becomes silent.
+        .alert(
+            "error".localized,
+            isPresented: Binding(
+                get: { verifyViewModel.error != nil },
+                set: { isShown in if !isShown { verifyViewModel.error = nil } }
+            ),
+            actions: {
+                Button("ok".localized, role: .cancel) {}
+            },
+            message: {
+                Text(verifyViewModel.error?.localizedDescription ?? "")
+            }
+        )
         .swapRefreshTick {
             Task {
                 await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
@@ -262,31 +279,23 @@ struct SwapVerifyScreen: View {
         }
     }
 
-    @ViewBuilder
     var signButton: some View {
-        if currentTransaction.isFastVault {
-            Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
-                .font(Theme.fonts.bodySMedium)
-
-            LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                fastPasswordPresented = true
-            } longPressAction: {
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: signButtonDisabled,
+            singleSignTitle: "signTransaction",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
                 fastVaultPassword = .empty
                 onSignPress()
             }
-            .disabled(signButtonDisabled)
-            .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                FastVaultEnterPasswordView(
-                    password: $fastVaultPassword,
-                    vault: vault,
-                    onSubmit: { onSignPress() }
-                )
-            }
-        } else {
-            PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                onSignPress()
-            }.disabled(signButtonDisabled)
+        )
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { onSignPress() }
+            )
         }
     }
 

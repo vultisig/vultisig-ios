@@ -18,11 +18,12 @@ struct SwapErrorTooltipView: View {
         circleIconSize + circleIconPadding * 2
     }
 
-    #if os(macOS)
-        private let tooltipGap: CGFloat = 30 // Slightly more offset on macOS
-    #else
-        private let tooltipGap: CGFloat = 24
-    #endif
+    // Margin between the bottom of the warning circle and the top of the
+    // tooltip's arrow tip.
+    private let tooltipGap: CGFloat = 6
+    // Fixed width so the tooltip wraps deterministically and its centered
+    // arrow tip stays anchored to the circle regardless of message length.
+    private let tooltipWidth: CGFloat = 240
 
     var body: some View {
         warningIcon
@@ -32,9 +33,10 @@ struct SwapErrorTooltipView: View {
                         title: errorTitle,
                         description: errorDescription,
                         arrowDirection: .up,
+                        maxWidth: tooltipWidth,
                         onDismiss: onDismissTooltip
                     )
-                    .fixedSize(horizontal: true, vertical: true)
+                    .frame(width: tooltipWidth)
                     .offset(y: circleSize + tooltipGap)
                     .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
                 }
@@ -44,7 +46,7 @@ struct SwapErrorTooltipView: View {
 
     var warningIcon: some View {
         Button {
-            showTooltip.toggle()
+            onDismissTooltip()
         } label: {
             Icon(named: "circle-warning", color: .white, size: circleIconSize)
                 .padding(circleIconPadding)
@@ -56,6 +58,9 @@ struct SwapErrorTooltipView: View {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorTitle
         }
+        if let normalized = normalizedSwapKitError {
+            return normalized.errorTitle
+        }
         return SwapCryptoLogic.Errors.unexpectedError.errorTitle
     }
 
@@ -63,7 +68,25 @@ struct SwapErrorTooltipView: View {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorDescription ?? error.localizedDescription
         }
+        if let normalized = normalizedSwapKitError {
+            return normalized.errorDescription ?? error.localizedDescription
+        }
         return error.localizedDescription
+    }
+
+    /// Map terminal SwapKit error cases onto the swap-flow's user-facing
+    /// error vocabulary so the tooltip shows a domain-appropriate title and
+    /// description instead of the generic "Unexpected Error" fallback. Only
+    /// covers cases that have a clear `SwapCryptoLogic.Errors` equivalent —
+    /// everything else flows through `error.localizedDescription` as before.
+    private var normalizedSwapKitError: SwapCryptoLogic.Errors? {
+        guard let swapKitError = error as? SwapKitError else { return nil }
+        switch swapKitError {
+        case .amountBelowProviderMinimum:
+            return .swapAmountTooSmall
+        default:
+            return nil
+        }
     }
 }
 

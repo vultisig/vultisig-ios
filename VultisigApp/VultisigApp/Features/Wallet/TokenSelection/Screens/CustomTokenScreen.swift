@@ -43,7 +43,8 @@ struct CustomTokenScreen: View {
                     HStack(spacing: 12) {
                         SearchTextField(
                             value: $contractAddress,
-                            showPasteButton: true
+                            showPasteButton: true,
+                            placeholder: searchPlaceholder
                         )
                         CircularAccessoryIconButton(icon: "search-menu") {
                             Task {
@@ -146,8 +147,8 @@ struct CustomTokenScreen: View {
     }
 
     /// Looks up token metadata for the current ``contractAddress`` by dispatching to the appropriate
-    /// chain-specific service (EVM, Solana, Tron, or TON). On success, populates the token preview;
-    /// on failure, sets the ``error`` state.
+    /// chain-specific service (THORChain bank denom, Cardano, EVM, Solana, Tron, or TON). On success,
+    /// populates the token preview; on failure, sets the ``error`` state.
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
 
@@ -162,7 +163,21 @@ struct CustomTokenScreen: View {
         error = nil
 
         do {
-            if chain == .cardano {
+            if chain == .thorChain {
+
+                // THORChain tokens are Cosmos bank denoms (e.g. `thor.lqdy`), resolved
+                // via the bank-denom metadata path — independent of any L1 pool. The
+                // resolver normalizes `THOR.{SYMBOL}` to the lowercase denom and prefers
+                // a curated TokensStore entry for the logo and price provider.
+                let coinMeta = try await ThorchainCustomTokenResolver.resolve(input: contractAddress)
+                self.token = coinMeta
+                self.tokenName = coinMeta.ticker
+                self.tokenSymbol = coinMeta.ticker
+                self.tokenDecimals = coinMeta.decimals
+                self.showTokenInfo = true
+                self.isLoading = false
+
+            } else if chain == .cardano {
 
                 let normalisedId = contractAddress.lowercased()
                 let metadata: CardanoTokenMetadata
@@ -279,14 +294,29 @@ struct CustomTokenScreen: View {
         }
     }
 
+    /// Chain-aware placeholder for the search field. THORChain tokens are referenced by a
+    /// `THOR.{SYMBOL}` bank-denom identifier rather than a contract address, so it gets a
+    /// dedicated hint; every other chain keeps the generic search placeholder.
+    private var searchPlaceholder: String {
+        chain == .thorChain
+            ? "findCustomTokenThorchainPlaceholder".localized
+            : "search".localized
+    }
+
     /// Validates whether the given input is a well-formed identifier for the current chain.
-    /// For Cardano, the input is a native-token asset id (`policy_id.asset_name` hex);
-    /// other chains validate the input as a contract/account address.
+    /// For Cardano, the input is a native-token asset id (`policy_id.asset_name` hex).
+    /// For THORChain, the input is a `THOR.{SYMBOL}` bank-denom identifier (THORChain
+    /// tokens are bank denoms, not pool assets), so we validate that shape rather than a
+    /// `thor1…` account address — the shared `AddressService.validateAddress` is reserved
+    /// for real send/receive addresses and must keep rejecting token identifiers.
+    /// Other chains validate the input as a contract/account address.
     /// Updates ``isValidAddress`` accordingly.
     /// - Parameter address: The raw input string.
     private func validateAddress(_ address: String) {
         if chain == .cardano {
             isValidAddress = (try? CardanoAssetId.parse(address)) != nil
+        } else if chain == .thorChain {
+            isValidAddress = ThorchainCustomTokenResolver.isValidInput(address)
         } else {
             isValidAddress = AddressService.validateAddress(address: address, chain: chain)
         }
@@ -300,7 +330,6 @@ struct CustomTokenScreen: View {
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
                 await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
-                try? await Task.sleep(for: .seconds(1)) // Small delay to improve UX
                 isAddingToken = false
                 dismiss()
             }

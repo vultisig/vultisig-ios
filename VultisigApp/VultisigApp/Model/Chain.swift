@@ -527,14 +527,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .zcash,
                 .mantle,
                 .hyperliquid,
-                .tron:
+                .tron,
+                .cardano,
+                .sui,
+                .ton,
+                .polygonV2:
             return true
-        case .polygonV2,
-            .cardano,
-            .sui,
-            .polkadot,
+        case .polkadot,
             .dydx,
-            .ton,
             .osmosis,
             .terra,
             .terraClassic,
@@ -544,6 +544,26 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .sei,
             .qbtc,
             .bittensor:
+            return false
+        }
+    }
+
+    /// Whether the fiat on-ramp (Buy) flow is offered for this chain. QBTC has
+    /// no on-ramp provider, so Buy is hidden; every other chain keeps the
+    /// existing behaviour.
+    var isBuyAvailable: Bool {
+        self != .qbtc
+    }
+
+    /// Cosmos-SDK native staking via delegate / undelegate / redelegate /
+    /// claim-rewards. Only the LUNA / LUNC chains today; other Cosmos
+    /// chains (gaia / kujira / osmosis / etc.) are out of scope for the
+    /// in-app staking UI.
+    var isCosmosStakingChain: Bool {
+        switch self {
+        case .terra, .terraClassic, .qbtc:
+            return true
+        default:
             return false
         }
     }
@@ -595,6 +615,22 @@ extension Chain {
             return true
         default:
             return false
+        }
+    }
+
+    /// Whether the Send flow's memo input should be exposed for this chain.
+    /// Currently every chain supports a memo at the protocol level except
+    /// Cardano — WalletCore doesn't yet expose CIP-20 auxiliary data fields,
+    /// so iOS Cardano signing silently drops anything the user types. Hiding
+    /// the input avoids the silent-drop bug until proper metadata support
+    /// lands. See #4326 (root) and #4377 (this mitigation); remove the
+    /// `.cardano` case here when #4326 closes.
+    var supportsMemo: Bool {
+        switch self {
+        case .cardano:
+            return false
+        default:
+            return true
         }
     }
 

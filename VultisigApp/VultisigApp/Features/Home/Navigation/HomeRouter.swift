@@ -10,13 +10,14 @@ import SwiftUI
 struct HomeRouter {
     private let viewBuilder = HomeRouteBuilder()
 
+    @MainActor
     @ViewBuilder
     func build(_ route: HomeRoute) -> some View {
         switch route {
         case .home(let showingVaultSelector):
             viewBuilder.buildHome(showingVaultSelector: showingVaultSelector)
-        case .vaultAction(let action, let sendTx, let vault):
-            viewBuilder.buildActionRoute(action: action, sendTx: sendTx, vault: vault)
+        case .vaultAction(let action, let vault):
+            viewBuilder.buildActionRoute(action: action, vault: vault)
         }
     }
 }

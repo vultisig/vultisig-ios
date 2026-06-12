@@ -18,6 +18,18 @@ protocol QuoteServiceProtocol {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> SwapQuote
+
+    /// Same fan-out as `fetchQuote`, but returns the full ranked candidate set
+    /// alongside the auto-selected winner so the provider-selection UI can offer
+    /// alternatives without a second fetch.
+    func fetchQuotes(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuotes
 }
 
 extension SwapService: QuoteServiceProtocol {}

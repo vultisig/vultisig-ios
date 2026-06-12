@@ -171,7 +171,20 @@ struct PeerDiscoveryScreen: View {
             Screen {
                 states
             }
-            .screenNavigationBarHidden()
+            .screenTitle("pair".localized)
+            .screenNavigationBarHidden(!selectedTab.hasOtherDevices)
+            .screenBackButtonHidden(hideBackButton)
+            .screenToolbar {
+                CustomToolbarItem(placement: .trailing) {
+                    if isShareButtonVisible {
+                        NavigationQRShareButton(
+                            vault: vault,
+                            type: .Keygen,
+                            viewModel: shareSheetViewModel
+                        )
+                    }
+                }
+            }
             .screenEdgeInsets(ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
             .screenBackground(.gradient)
             .onAppear {
@@ -188,20 +201,6 @@ struct PeerDiscoveryScreen: View {
             }
 #endif
         }
-        .if(viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices) {
-            $0.crossPlatformToolbar("", showsBackButton: !hideBackButton) {
-                CustomToolbarItem(placement: .trailing) {
-                    if isShareButtonVisible {
-                        NavigationQRShareButton(
-                            vault: vault,
-                            type: .Keygen,
-                            viewModel: shareSheetViewModel
-                        )
-                    }
-                }
-            }
-        }
-        .navigationBarBackButtonHidden(hideBackButton)
 #if os(iOS)
         .detectOrientation($orientation)
         .onChange(of: orientation) { _, _ in
@@ -442,11 +441,7 @@ struct PeerDiscoveryScreen: View {
     }
 
     func autoStartKeygenIfReady() {
-        guard isFixedDeviceMode,
-              viewModel.selections.count >= totalDeviceCount,
-              viewModel.status == .WaitingForDevices else {
-            return
-        }
+        guard viewModel.shouldAutoStartKeygen(totalDeviceCount: totalDeviceCount) else { return }
         viewModel.startKeygen()
     }
 

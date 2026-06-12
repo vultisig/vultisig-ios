@@ -9,25 +9,44 @@ import SwiftUI
 
 struct GroupedChainCellView: View {
     let chain: Chain
-    let vault: Vault
+    let address: String
     let fiatBalance: String
     let cryptoBalance: String
+    let assetCount: Int
+    /// When provided, replaces the default `N assets` / `cryptoBalance` subtitle.
+    /// Used by DeFi rows to render `"%d positions"` / "No positions found" instead
+    /// of wallet asset counts. The override is rendered with the small caption font
+    /// (matching multi-asset spacing).
+    var trailingSubtitleOverride: String?
     var onCopy: (() -> Void)?
 
-    @State private var trailingSubtitle: String = ""
-    @State private var fiatBalanceText: String = ""
-    @State private var hasLoaded: Bool = false
-    @State private var trailingSubtitleFont: Font = Theme.fonts.priceCaption
-
     @EnvironmentObject var homeViewModel: HomeViewModel
-
-    private var chainCoins: [Coin] { vault.coins(for: chain) }
-
-    private var address: String { vault.address(for: chain) ?? "" }
 
     private var truncatedAddress: String {
         guard address.count > 8 else { return address }
         return address.prefix(4) + "..." + address.suffix(4)
+    }
+
+    private var showAssetCount: Bool {
+        trailingSubtitleOverride == nil && assetCount > 1
+    }
+
+    private var trailingSubtitle: String {
+        if homeViewModel.hideVaultBalance {
+            return String.hideBalanceText
+        }
+        if let trailingSubtitleOverride {
+            return trailingSubtitleOverride
+        }
+        return showAssetCount ? "\(assetCount) \("assets".localized)" : cryptoBalance
+    }
+
+    private var trailingSubtitleFont: Font {
+        (showAssetCount && !homeViewModel.hideVaultBalance) ? Theme.fonts.priceCaption : Theme.fonts.caption12
+    }
+
+    private var fiatBalanceText: String {
+        homeViewModel.hideVaultBalance ? String.hideBalanceText : fiatBalance
     }
 
     var body: some View {
@@ -63,16 +82,18 @@ struct GroupedChainCellView: View {
                     Text(fiatBalanceText)
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
-                        .if(hasLoaded) {
-                            $0.contentTransition(.numericText())
-                        }
+                        .contentTransition(.numericText())
                     Text(trailingSubtitle)
                         .font(trailingSubtitleFont)
                         .foregroundStyle(Theme.colors.textTertiary)
-                        .if(hasLoaded) {
-                            $0.contentTransition(.numericText())
-                        }
+                        .contentTransition(.numericText())
                 }
+                // Drive the balance Texts' content transition only when the
+                // hide/show-balance toggle flips. Scoping the animation to
+                // `hideVaultBalance` keeps the row body un-animated on scroll
+                // and balance refresh (the projection's perf goal) while
+                // restoring the spring the pre-projection cell used on toggle.
+                .animation(.interpolatingSpring, value: homeViewModel.hideVaultBalance)
                 Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }
         }
@@ -80,50 +101,16 @@ struct GroupedChainCellView: View {
         .padding(.vertical, 12)
         .background(Theme.colors.bgSurface1)
         .buttonStyle(.plain)
-        .onLoad(perform: updateTexts)
-        .onChange(of: fiatBalance) { _, _ in
-            updateTexts()
-        }
-        .onChange(of: homeViewModel.hideVaultBalance) { _, _ in
-            updateTexts()
-        }
-    }
-}
-
-private extension GroupedChainCellView {
-    func updateTexts() {
-        updateTrailingSubtitle()
-        updateFiatBalanceText()
-
-        guard !hasLoaded else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            hasLoaded = true
-        }
-    }
-
-    func updateTrailingSubtitle() {
-        let count = chainCoins.count
-        let showPrice = count > 1
-        let trailingSubtitle = showPrice ? "\(count) \("assets".localized)" : cryptoBalance
-        withAnimation(.interpolatingSpring) {
-            self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
-            self.trailingSubtitleFont = (showPrice && !homeViewModel.hideVaultBalance) ? Theme.fonts.priceCaption : Theme.fonts.caption12
-        }
-    }
-
-    func updateFiatBalanceText() {
-        withAnimation(.interpolatingSpring) {
-            fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : fiatBalance
-        }
     }
 }
 
 #Preview {
     GroupedChainCellView(
         chain: .bitcoin,
-        vault: .example,
+        address: "",
         fiatBalance: "",
         cryptoBalance: "",
+        assetCount: 1,
         onCopy: {}
     ).environmentObject(HomeViewModel())
 }

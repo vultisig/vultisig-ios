@@ -139,8 +139,6 @@ class Endpoint {
         "https://gateway.liquify.com/chain/thorchain_api/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainNetworkInfoNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
-
     static func fetchThorchainDenomMetadata(denom: String) -> String {
         "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
@@ -150,8 +148,6 @@ class Endpoint {
     }
 
     static let thorchainNetworkInfo = "https://gateway.liquify.com/chain/thorchain_rpc/status".asUrl
-
-    static let fetchThorchainInboundAddressesNineRealms = "https://gateway.liquify.com/chain/thorchain_api/thorchain/inbound_addresses"
 
     /// Stagenet endpoints
     static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {
@@ -464,6 +460,26 @@ class Endpoint {
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
 
+    /// Base URL for the QBTC PLONK proof service (vultisig-proxied).
+    /// SDK default is `https://proof.qbtc.network`; we use the proxied URL
+    /// to match `vultisig-windows`. Endpoints under this base: `/health`,
+    /// `/prove`. See `QBTCProofServiceAPI`.
+    static let qbtcProofServiceBaseURL = "https://api.vultisig.com/qbtc-proof"
+
+    /// Base URL for the QBTC chain REST (Cosmos SDK gRPC-gateway).
+    /// Endpoints under this base: `/cosmos/auth/v1beta1/accounts/{addr}`,
+    /// `/cosmos/base/tendermint/v1beta1/blocks/latest`,
+    /// `/qbtc/v1/params/{name}`, `/cosmos/tx/v1beta1/txs`. See `QBTCChainAPI`.
+    static let qbtcRestBaseURL = "https://api.vultisig.com/qbtc-rpc"
+
+    static func getSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+    }
+
+    static func getStagenetSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
+    }
+
     static func thorchainNodeExplorerURL(_ address: String) -> String {
         return "https://thorchain.net/node/\(address)"
     }
@@ -642,7 +658,7 @@ class Endpoint {
         case .sei:
             return "https://seiscan.io/address/\(address)"
         case .qbtc:
-            return nil
+            return "https://explorer.qbtc.net/qbtc/account/\(address)"
         case .bittensor:
             return "https://taostats.io/account/\(address)"
         case .none:

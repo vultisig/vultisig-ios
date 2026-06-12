@@ -25,7 +25,17 @@ private struct SheetPresentedViewModifier: ViewModifier {
             .blur(radius: blurContent ? 6 : 0)
             .animation(.easeInOut(duration: 0.1), value: blurContent)
             .onReceive(sheetPresentedCounterManager.$counter) { newValue in
-                blurContent = newValue > 0
+                // Guard the write so an unchanged value never emits a graph
+                // mutation. The publisher lands on the runloop and can fire
+                // during a sheet's own animated transition commit; a no-op
+                // assignment mid-commit re-invalidates the laying-out root and
+                // triggers a reentrant AppKit constraint update that crashes on
+                // macOS. The counter changes more often than the boolean (every
+                // increment/decrement), so this guard collapses most ticks to
+                // no-ops.
+                let shouldBlur = newValue > 0
+                guard blurContent != shouldBlur else { return }
+                blurContent = shouldBlur
             }
             #if os(iOS)
             // Remove blur when enter background as the iOS dismisses sheet

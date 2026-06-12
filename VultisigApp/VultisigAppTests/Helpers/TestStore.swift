@@ -53,12 +53,14 @@ enum TestStore {
         let schema = Schema([
             Vault.self,
             Coin.self,
+            HiddenToken.self,
             DefiPositions.self,
             BondPosition.self,
             StakePosition.self,
             LPPosition.self,
             CirclePosition.self,
             DatabaseRate.self,
+            CustomRPCOverride.self,
             LimitOrder.self
         ])
         let configuration = ModelConfiguration(

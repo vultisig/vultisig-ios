@@ -15,6 +15,10 @@ struct ChainDetailScreen: View {
     var onAddressCopy: ((Coin) -> Void)?
 
     @StateObject var viewModel: ChainDetailViewModel
+    /// Drives the QBTC banner / Claim button visibility based on the
+    /// vault's BTC address actually having claimable UTXOs. Same checker
+    /// is used on both `.bitcoin` and `.qbtc` chain detail screens.
+    @StateObject private var qbtcEligibility: QBTCClaimEligibilityChecker
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
@@ -22,8 +26,12 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-
-    @StateObject var sendTx = SendTransaction()
+    /// Set when the user taps the QBTC promo banner without an MLDSA
+    /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
+    /// user lands back here with QBTC already added to the vault.
+    @State private var pendingQbtcAddAfterKeygen: Bool = false
+    @State private var addressCopyTask: Task<Void, Never>?
+    @State private var coinDetailTask: Task<Void, Never>?
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
@@ -32,6 +40,60 @@ struct ChainDetailScreen: View {
 
     var coins: [Coin] {
         vault.coins(for: nativeCoin.chain)
+    }
+
+    private var hasMLDSAKey: Bool {
+        let key = vault.publicKeyMLDSA44
+        return key != nil && !(key?.isEmpty ?? true)
+    }
+
+    private var hasQbtcChain: Bool {
+        vault.coins.contains { $0.chain == .qbtc }
+    }
+
+    /// QBTC promo banner is visible on the BTC chain detail screen when
+    /// the vault's BTC address has at least one claimable UTXO. This is
+    /// now independent of whether the QBTC chain is already enabled on
+    /// the vault — the eligibility checker drives both branches. Hidden
+    /// entirely when `QBTCConfig.isFeatureEnabled` is `false`.
+    private var showsQbtcBanner: Bool {
+        QBTCConfig.isFeatureEnabled
+            && nativeCoin.chain == .bitcoin
+            && qbtcEligibility.hasClaimableUtxos
+    }
+
+    /// QBTC chain detail's Claim button mirrors the same predicate: only
+    /// show it when there's actually something to claim. Hides the
+    /// 96pt reserved padding too so the list flows full-bleed otherwise.
+    /// Hidden entirely when `QBTCConfig.isFeatureEnabled` is `false`.
+    private var showsQbtcClaimButton: Bool {
+        QBTCConfig.isFeatureEnabled
+            && nativeCoin.chain == .qbtc
+            && qbtcEligibility.hasClaimableUtxos
+    }
+
+    /// Bottom clearance for the Claim button. macOS / iPadOS / iOS<26
+    /// use the legacy `VultiTabBar` overlay — its top edge sits at
+    /// roughly `40pt` (tab bar padding) + `64pt` (height) ≈ 104pt above
+    /// the screen edge, so the CTA needs to clear that plus a little
+    /// breathing room. iPhone iOS 26+ uses the system glass `TabView`
+    /// which already insets content.
+    private var claimButtonBottomInset: CGFloat {
+        #if os(macOS)
+        return 120
+        #else
+        if #available(iOS 26.0, *), !isIPadOS {
+            return 16
+        }
+        return 120
+        #endif
+    }
+
+    /// Bottom padding the scroll content reserves so its last row isn't
+    /// hidden under the Claim button overlay. Matches the button's
+    /// bottom inset + the button height (~64pt) + small breathing room.
+    private var claimButtonReservedHeight: CGFloat {
+        claimButtonBottomInset + 80
     }
 
     init(
@@ -45,7 +107,30 @@ struct ChainDetailScreen: View {
         self._refreshTrigger = refreshTrigger
         self.onAddressCopy = onAddressCopy
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
+        self._qbtcEligibility = StateObject(wrappedValue: QBTCClaimEligibilityChecker())
     }
+
+    #if DEBUG
+    /// Snapshot-test seam — injects a pre-seeded checker so tests can
+    /// render the screen in `.eligible` / `.ineligible` states without
+    /// touching the network. Never called from production code.
+    init(
+        nativeCoin: Coin,
+        vault: Vault,
+        refreshTrigger: Binding<Bool> = .constant(false),
+        onAddressCopy: ((Coin) -> Void)? = nil,
+        snapshotEligibilityState: QBTCClaimEligibilityChecker.State
+    ) {
+        self.nativeCoin = nativeCoin
+        self.vault = vault
+        self._refreshTrigger = refreshTrigger
+        self.onAddressCopy = onAddressCopy
+        self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
+        let checker = QBTCClaimEligibilityChecker()
+        checker.snapshotSeed(state: snapshotEligibilityState)
+        self._qbtcEligibility = StateObject(wrappedValue: checker)
+    }
+    #endif
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -55,6 +140,7 @@ struct ChainDetailScreen: View {
                         .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
                 }
+                .padding(.bottom, showsQbtcClaimButton ? claimButtonReservedHeight : 0)
                 .padding(.horizontal, 16)
                 .padding(.bottom, isMacOS ? 120 : 0)
             }
@@ -65,6 +151,15 @@ struct ChainDetailScreen: View {
         .refreshable {
             refresh()
         }
+        .overlay(alignment: .bottom) {
+            if showsQbtcClaimButton {
+                PrimaryButton(title: "claim".localized) {
+                    navigateToAction(action: .qbtcClaim(vault: vault))
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, claimButtonBottomInset)
+            }
+        }
         .background(MainBackgroundWithNotification())
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
@@ -74,7 +169,8 @@ struct ChainDetailScreen: View {
                 onShare: { showReceiveSheet = false },
                 onCopy: { coin in
                     showReceiveSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    addressCopyTask?.cancel()
+                    addressCopyTask = delayedTask(after: .milliseconds(350)) {
                         onAddressCopy?(coin)
                     }
                 }
@@ -100,7 +196,6 @@ struct ChainDetailScreen: View {
                 CoinDetailScreen(
                     coin: coin,
                     vault: vault,
-                    sendTx: sendTx,
                     isPresented: $showCoinDetail,
                     onCoinAction: onCoinAction
                 )
@@ -110,13 +205,15 @@ struct ChainDetailScreen: View {
             if newValue != nil {
                 #if os(macOS)
                 // Add a small delay on macOS to prevent state conflicts
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                coinDetailTask?.cancel()
+                coinDetailTask = delayedTask(after: .milliseconds(50)) {
                     showCoinDetail = true
                 }
                 #else
                 showCoinDetail = true
                 #endif
             } else {
+                coinDetailTask?.cancel()
                 showCoinDetail = false
             }
         }
@@ -127,6 +224,13 @@ struct ChainDetailScreen: View {
         }
         .onChange(of: coins) { _, _ in
             refresh()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .qbtcQuantumKeygenCompleted)) { note in
+            handleQuantumKeygenCompleted(note: note)
+        }
+        .onDisappear {
+            addressCopyTask?.cancel()
+            coinDetailTask?.cancel()
         }
     }
 
@@ -143,15 +247,16 @@ struct ChainDetailScreen: View {
                 onAction: onAction
             )
 
-            if viewModel.isTron {
-                TronResourcesCardView(
-                    availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
-                    totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
-                    availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
-                    totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
-                    isLoading: viewModel.tronLoader?.isLoading ?? false
-                )
-            }
+            ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
+                .showIf(showsQbtcBanner)
+
+            TronResourcesCardView(
+                availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
+                totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
+                availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
+                totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
+                isLoading: viewModel.tronLoader?.isLoading ?? false
+            ).showIf(viewModel.isTron)
         }
     }
 
@@ -234,6 +339,27 @@ private extension ChainDetailScreen {
                 await MainActor.run { viewModel.tronLoader?.load() }
             }
         }
+        refreshQbtcEligibility()
+    }
+
+    /// Kicks the QBTC eligibility check on entry / pull-to-refresh for
+    /// both `.bitcoin` and `.qbtc` chain detail screens. No-ops on other
+    /// chains so we don't fire network calls speculatively. Also no-ops
+    /// when the QBTC feature flag is off — flag-off users shouldn't burn
+    /// network budget on the eligibility check since the banner / button
+    /// it drives are hidden anyway.
+    func refreshQbtcEligibility() {
+        guard QBTCConfig.isFeatureEnabled else { return }
+        guard nativeCoin.chain == .bitcoin || nativeCoin.chain == .qbtc else { return }
+        let btcCoin: Coin?
+        if nativeCoin.chain == .bitcoin {
+            btcCoin = nativeCoin
+        } else {
+            btcCoin = vault.nativeCoin(for: .bitcoin)
+        }
+        guard let btcCoin else { return }
+        let vaultPubKey = vault.pubKeyECDSA
+        Task { await qbtcEligibility.check(btcCoin: btcCoin, vaultPubKeyECDSA: vaultPubKey) }
     }
 
     func updateBalances() async {
@@ -267,7 +393,6 @@ private extension ChainDetailScreen {
     }
 
     func onAction(_ action: CoinAction) {
-        sendTx.reset(coin: nativeCoin)
         var vaultAction: VaultAction?
         switch action {
         case .receive:
@@ -279,11 +404,6 @@ private extension ChainDetailScreen {
             guard let fromCoin = viewModel.tokens.first else { return }
             vaultAction = .swap(fromCoin: fromCoin)
         case .deposit, .bridge, .memo:
-            if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
-                sendTx.reset(coin: nativeCoin)
-            } else if let firstCoin = viewModel.tokens.first {
-                sendTx.reset(coin: firstCoin)
-            }
             vaultAction = .function(coin: nativeCoin)
         case .buy:
             vaultAction = .buy(
@@ -310,7 +430,39 @@ private extension ChainDetailScreen {
     }
 
     func navigateToAction(action: VaultAction) {
-        router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
+        router.navigate(to: HomeRoute.vaultAction(action: action, vault: vault))
+    }
+
+    func onClaimBannerTapped() {
+        if hasMLDSAKey {
+            navigateToAction(action: .qbtcClaim(vault: vault))
+        } else {
+            pendingQbtcAddAfterKeygen = true
+            router.navigate(to: KeygenRoute.quantumSecurityIntro(vault: vault))
+        }
+    }
+
+    func handleQuantumKeygenCompleted(note: Notification) {
+        guard QBTCConfig.isFeatureEnabled else { return }
+        guard pendingQbtcAddAfterKeygen else { return }
+        let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
+        guard completedPubKey == vault.pubKeyECDSA else { return }
+        pendingQbtcAddAfterKeygen = false
+        guard let qbtcAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .qbtc && $0.isNativeToken }) else {
+            return
+        }
+        Task { @MainActor in
+            let currentSelection = Set(vault.coins.map { $0.toCoinMeta() })
+            await CoinService.saveAssets(
+                for: vault,
+                selection: currentSelection.union([qbtcAsset])
+            )
+            refresh()
+            // Auto-continue into the claim flow after the QBTC chain is
+            // attached — matches Figma spec where tapping the BTC banner
+            // without a quantum key still ends up on the claim screen.
+            navigateToAction(action: .qbtcClaim(vault: vault))
+        }
     }
 }
 

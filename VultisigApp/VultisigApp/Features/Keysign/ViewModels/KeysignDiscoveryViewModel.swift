@@ -55,6 +55,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
             skipBroadcast: false,
             signData: nil
         )
@@ -72,6 +74,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         customMessagePayload: CustomMessagePayload?,
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
+        presetSession: KeysignSessionInfo? = nil,
         onFastKeysign: (() -> Void)?
     ) async {
         self.vault = vault
@@ -79,41 +82,80 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.customMessagePayload = customMessagePayload
         self.participantDiscovery = participantDiscovery
 
-        if self.sessionID.isEmpty {
-            self.sessionID = UUID().uuidString
-        }
-        if self.serviceName.isEmpty {
-            self.serviceName = "Vultisig-" + Int.random(in: 1 ... 1000).description
-        }
-        if !self.vault.localPartyID.isEmpty {
-            self.localPartyID = self.vault.localPartyID
+        if let presetSession {
+            self.sessionID = presetSession.sessionId
+            self.serviceName = presetSession.serviceName
+            self.localPartyID = presetSession.localPartyId
+            self.encryptionKeyHex = presetSession.encryptionKeyHex
+            self.serverAddr = presetSession.serverAddr
         } else {
-            self.localPartyID = Utils.getLocalDeviceIdentity()
+            if self.sessionID.isEmpty {
+                self.sessionID = UUID().uuidString
+            }
+            if self.serviceName.isEmpty {
+                self.serviceName = "Vultisig-" + Int.random(in: 1 ... 1000).description
+            }
+            if !self.vault.localPartyID.isEmpty {
+                self.localPartyID = self.vault.localPartyID
+            } else {
+                self.localPartyID = Utils.getLocalDeviceIdentity()
+            }
+            self.mediator.start(name: self.serviceName)
         }
         self.selections.insert(self.localPartyID)
-        // mediator server need to be
-        self.mediator.start(name: self.serviceName)
 
         var coin: Coin?
         if let keysignPayload {
-            do {
-                // Refresh Solana blockhash BEFORE generating messages to ensure both devices
-                // (including Fast Vault server) use the same fresh blockhash
-                var finalPayload = keysignPayload
-                if keysignPayload.coin.chain == .solana {
-                    finalPayload = try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload)
-                    self.keysignPayload = finalPayload
-                    logger.info("Refreshed Solana blockhash before generating keysign messages")
+            if keysignPayload.isQbtcClaim {
+                // QBTC claim flow uses a non-standard payload (skipBroadcast,
+                // empty utxos, zero amount) — the BTC ECDSA message hash is
+                // derived from `QBTCClaimHashes` by the orchestrator and the
+                // peer driver, not from a built BTC transaction. Compute it
+                // here so the standard "no messages" guard below passes and
+                // both devices share the same hash. The claimer's QBTC
+                // address comes from this device's own vault.
+                let btcCoin = keysignPayload.coin
+                if let qbtcCoin = vault.nativeCoin(for: .qbtc),
+                   let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) {
+                    do {
+                        let hashes = try QBTCClaimHashes.computeAll(
+                            btcAddress: btcCoin.address,
+                            compressedPubkey: compressedPubkey,
+                            qbtcAddress: qbtcCoin.address,
+                            chainId: QBTCClaimConfig.chainId
+                        )
+                        self.keysignMessages = [hashes.messageHash.toHexString()]
+                        coin = btcCoin
+                    } catch {
+                        self.logger.error("Failed to compute QBTC claim hash: \(error)")
+                        self.errorMessage = error.localizedDescription
+                        self.status = .FailToStart
+                    }
+                } else {
+                    self.logger.error("BTC compressed public key malformed or vault missing QBTC coin")
+                    self.errorMessage = "qbtcClaimErrorInvalidBtcPublicKey".localized
+                    self.status = .FailToStart
                 }
+            } else {
+                do {
+                    // Refresh Solana blockhash BEFORE generating messages to ensure both devices
+                    // (including Fast Vault server) use the same fresh blockhash
+                    var finalPayload = keysignPayload
+                    if keysignPayload.coin.chain == .solana {
+                        finalPayload = try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload)
+                        self.keysignPayload = finalPayload
+                        logger.info("Refreshed Solana blockhash before generating keysign messages")
+                    }
 
-                let keysignFactory = KeysignMessageFactory(payload: finalPayload)
-                let preSignedImageHash = try keysignFactory.getKeysignMessages()
-                self.keysignMessages = preSignedImageHash.sorted()
-                coin = keysignPayload.coin
-            } catch {
-                self.logger.error("Failed to get preSignedImageHash: \(error)")
-                self.errorMessage = error.localizedDescription
-                self.status = .FailToStart
+                    let keysignFactory = KeysignMessageFactory(payload: finalPayload)
+                    let preSignedImageHash = try keysignFactory.getKeysignMessages()
+                    self.keysignMessages = preSignedImageHash.sorted()
+                    coin = keysignPayload.coin
+                } catch {
+                    self.logger.error("Failed to get preSignedImageHash: \(error)")
+                    self.errorMessage = error.localizedDescription
+                    self.status = .FailToStart
+                }
             }
         }
 
@@ -145,7 +187,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     derivePath: coin.coinType.derivationPath(),
                     isECDSA: coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword,
-                    chain: coin.chain.name
+                    chain: coin.chain.name,
+                    isMldsa: coin.chain.signingKeyType == .MLDSA
                 )
                 self.logger.info("Fast Vault signing initiated successfully")
             } catch {

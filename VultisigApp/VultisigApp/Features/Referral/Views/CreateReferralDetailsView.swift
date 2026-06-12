@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct CreateReferralDetailsView: View {
-    @ObservedObject var sendTx: SendTransaction
-    @ObservedObject var referralViewModel: ReferralViewModel
-    var onNext: () -> Void
+    @Bindable var viewModel: ReferralDetailsViewModel
+    var onNext: (SendTransaction) -> Void
 
     @EnvironmentObject var homeViewModel: HomeViewModel
 
@@ -37,10 +36,10 @@ struct CreateReferralDetailsView: View {
         .onLoad {
             setData()
         }
-        .alert(isPresented: $referralViewModel.showReferralAlert) {
+        .alert(isPresented: $viewModel.showReferralAlert) {
             alert
         }
-        .onChange(of: referralViewModel.expireInCount) { _, _ in
+        .onChange(of: viewModel.expireInCount) { _, _ in
             calculateFees()
         }
     }
@@ -58,13 +57,13 @@ struct CreateReferralDetailsView: View {
     }
 
     var pickReferralCode: some View {
-        PickReferralCode(referralViewModel: referralViewModel)
+        PickReferralCode(viewModel: viewModel)
     }
 
     var setExpiration: some View {
         VStack(spacing: 8) {
             setExpirationTitle
-            CounterView(count: $referralViewModel.expireInCount, minimumValue: 1)
+            CounterView(count: $viewModel.expireInCount, minimumValue: 1)
             expirationDate
         }
     }
@@ -81,7 +80,7 @@ struct CreateReferralDetailsView: View {
             title: "expirationDate",
             description1: getExpirationDate(),
             description2: "",
-            isPlaceholder: referralViewModel.expireInCount == 0
+            isPlaceholder: viewModel.expireInCount == 0
         )
     }
 
@@ -89,16 +88,16 @@ struct CreateReferralDetailsView: View {
         VStack(spacing: 16) {
             getCell(
                 title: NSLocalizedString("registrationFee", comment: ""),
-                description1: "\(referralViewModel.getRegistrationFee()) RUNE",
-                description2: "\(referralViewModel.registrationFeeFiat)",
-                isPlaceholder: referralViewModel.isFeesLoading
+                description1: "\(viewModel.getRegistrationFee()) RUNE",
+                description2: "\(viewModel.registrationFeeFiat)",
+                isPlaceholder: viewModel.isFeesLoading
             )
 
             getCell(
                 title: NSLocalizedString("costs", comment: ""),
-                description1: "\(referralViewModel.getTotalFee()) RUNE",
-                description2: "\(referralViewModel.totalFeeFiat)",
-                isPlaceholder: referralViewModel.isTotalFeesLoading
+                description1: "\(viewModel.getTotalFee()) RUNE",
+                description2: "\(viewModel.totalFeeFiat)",
+                isPlaceholder: viewModel.isTotalFeesLoading
             )
         }
     }
@@ -110,20 +109,20 @@ struct CreateReferralDetailsView: View {
     var button: some View {
         PrimaryButton(title: "createReferralCode") {
             Task {
-                guard await referralViewModel.verifyReferralEntries(tx: sendTx) else {
+                guard let tx = await viewModel.verifyReferralEntries() else {
                     return
                 }
 
-                onNext()
+                onNext(tx)
             }
         }
-        .disabled(!referralViewModel.createReferralButtonEnabled)
+        .disabled(!viewModel.createReferralButtonEnabled)
     }
 
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
+            message: Text(NSLocalizedString(viewModel.referralAlertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -194,19 +193,19 @@ struct CreateReferralDetailsView: View {
 
     private func loadGas() {
         Task {
-            await referralViewModel.loadGasInfoForSending(tx: sendTx)
+            await viewModel.loadGasInfo()
         }
     }
 
     private func calculateFees() {
         Task {
-            await referralViewModel.calculateFees()
+            await viewModel.calculateFees()
         }
     }
 
     private func getExpirationDate() -> String {
         let currentDate = Date()
-        let oneYearLater = Calendar.current.date(byAdding: .year, value: referralViewModel.expireInCount, to: currentDate)
+        let oneYearLater = Calendar.current.date(byAdding: .year, value: viewModel.expireInCount, to: currentDate)
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
         formatter.locale = Locale(identifier: "en_US")
@@ -214,12 +213,4 @@ struct CreateReferralDetailsView: View {
         let formattedDate = formatter.string(from: oneYearLater ?? Date())
         return formattedDate
     }
-}
-
-#Preview {
-    CreateReferralDetailsView(
-        sendTx: SendTransaction(),
-        referralViewModel: ReferralViewModel(),
-        onNext: {}
-    )
 }

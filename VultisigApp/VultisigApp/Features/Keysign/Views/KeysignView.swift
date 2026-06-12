@@ -5,6 +5,8 @@
 import OSLog
 import SwiftUI
 
+private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
+
 struct KeysignView: View {
     let vault: Vault
     let keysignCommittee: [String]
@@ -27,9 +29,11 @@ struct KeysignView: View {
     var decodedFunctionArguments: String? = nil
     @StateObject var viewModel = KeysignViewModel()
 
-    @State var showAlert = false
     @State var showDoneText = false
     @State var showError = false
+
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
 
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
@@ -38,6 +42,16 @@ struct KeysignView: View {
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
+            // Observability hook for vultisig-ios#4327: the issue reporter sees
+            // the "Signing" screen unblock after backgrounding + foregrounding,
+            // which fingerprints iOS auto-resuming a suspended network session.
+            // The log line lets us correlate scene transitions with the status
+            // trail in `os_log` captures from a TestFlight repro.
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                let isSigning: [KeysignStatus] = [.CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA]
+                guard isSigning.contains(viewModel.status) else { return }
+                logger.info("scenePhase: \(String(describing: oldPhase), privacy: .public) → \(String(describing: newPhase), privacy: .public) while status=\(String(describing: viewModel.status), privacy: .public)")
+            }
         #if os(iOS)
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
@@ -68,14 +82,15 @@ struct KeysignView: View {
             case .KeysignFailed:
                 sendCryptoKeysignView
                     .padding(.horizontal, 16)
+            case .KeysignBroadcastUnconfirmed:
+                broadcastUnconfirmedView
+                    .padding(.horizontal, 16)
             case .KeysignRetryRequested:
                 retryRequestedView
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
                     .padding(.horizontal, 16)
             }
-
-            PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
         .onLoad {
             Task {
@@ -106,7 +121,7 @@ struct KeysignView: View {
     }
 
     var forJoinKeysign: some View {
-        JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
+        JoinKeysignDoneView(vault: vault, viewModel: viewModel)
             .onAppear {
                 globalStateViewModel.showKeysignDoneView = true
             }
@@ -132,6 +147,28 @@ struct KeysignView: View {
                 transferViewModel?.retryBroadcast(reason: reason)
             }
         )
+        .onAppear {
+            showError = true
+        }
+    }
+
+    /// Neutral terminal surface for a cancelled broadcast that could not be
+    /// positively confirmed on-chain. Shows the deterministic hash + explorer
+    /// link so the user can check for themselves, and deliberately does NOT
+    /// offer a one-tap re-broadcast (the tx may have landed — double-spend
+    /// risk). Never surfaces the internal "CancellationError" string.
+    var broadcastUnconfirmedView: some View {
+        ErrorView(
+            type: .warning,
+            title: "broadcastCouldNotConfirmTitle".localized,
+            description: "broadcastCouldNotConfirm".localized,
+            buttonTitle: "viewOnExplorer".localized
+        ) {
+            let urlString = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
+            if !urlString.isEmpty, let url = URL(string: urlString) {
+                openURL(url)
+            }
+        }
         .onAppear {
             showError = true
         }
@@ -173,6 +210,12 @@ struct KeysignView: View {
     }
 
     private func movetoDoneView() {
+        // Don't navigate to the success done-screen when the broadcast result is
+        // unconfirmed — the txid is set for display only, not as proof of a
+        // landed tx. The neutral in-place view handles that state.
+        guard viewModel.status != .KeysignBroadcastUnconfirmed else {
+            return
+        }
         guard let transferViewModel = transferViewModel, !viewModel.txid.isEmpty else {
             return
         }

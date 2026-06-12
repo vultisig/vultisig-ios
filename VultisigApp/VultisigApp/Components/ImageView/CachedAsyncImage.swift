@@ -7,13 +7,15 @@
 //
 //  Created by Lorenzo Fiamingo on 04/11/20.
 //
-
+// swiftlint:disable no_raw_urlrequest no_raw_urlsession
 import SwiftUI
 
-/// A view that asynchronously loads, cache and displays an image.
+// Forked from Apple's `AsyncImage`; `URLRequest` is part of the public API
+// for cache keys, custom headers, and `URLSession` integration. Does not
+// belong behind `HTTPClient`/`TargetType` (which are typed-JSON-API helpers).
+
 ///
 /// This view uses a custom default
-/// <doc://com.apple.documentation/documentation/Foundation/URLSession>
 /// instance to load an image from the specified URL, and then display it.
 /// For example, you can display an icon that's stored on a server:
 ///
@@ -68,10 +70,6 @@ import SwiftUI
 ///         }
 ///     }
 ///
-// swiftlint:disable no_raw_urlrequest
-// Forked from Apple's `AsyncImage`; `URLRequest` is part of the public API
-// for cache keys, custom headers, and `URLSession` integration. Does not
-// belong behind `HTTPClient`/`TargetType` (which are typed-JSON-API helpers).
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CachedAsyncImage<Content>: View where Content: View {
 
@@ -428,4 +426,4 @@ extension CachedAsyncImage {
     }
 }
 #endif
-// swiftlint:enable no_raw_urlrequest
+// swiftlint:enable no_raw_urlrequest no_raw_urlsession

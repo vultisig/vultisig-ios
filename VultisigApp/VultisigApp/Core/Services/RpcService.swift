@@ -15,8 +15,37 @@ enum RpcServiceError: LocalizedError {
     }
 }
 
-class RpcService {
+/// Validation for substrate `author_submitExtrinsic` broadcast results.
+///
+/// `RpcService.sendRPCRequest` returns a non-matched RPC `error.message` as a
+/// plain string (so the base client can surface duplicate-broadcast sentinels
+/// without throwing). For broadcasts that means a rejection like
+/// `"Invalid extrinsic"` arrives where a hash is expected. Polkadot and
+/// Bittensor route their result through this validator so an error string
+/// throws instead of being persisted and polled as a fake txid.
+enum SubstrateBroadcast {
+    /// Sentinel `RpcService.sendRPCRequest` returns when an extrinsic is
+    /// rejected as a duplicate (already known / already imported). Callers
+    /// downstream map it to the locally computed extrinsic hash.
+    static let alreadyBroadcastedSentinel = "Transaction already broadcasted."
 
+    /// Returns `result` when it is an accepted broadcast — the 32-byte extrinsic
+    /// hash (`0x` + 64 hex) or the duplicate sentinel — otherwise throws, since
+    /// any other value is an error message the node returned in place of a hash.
+    static func validatedHash(_ result: String) throws -> String {
+        if result == alreadyBroadcastedSentinel {
+            return result
+        }
+        let hash = result.stripHexPrefix()
+        if hash.count == 64, hash.allSatisfy(\.isHexDigit) {
+            return result
+        }
+        throw RpcServiceError.rpcError(code: 500, message: "Broadcast rejected: \(result)")
+    }
+}
+
+class RpcService {
+    // swiftlint:disable:next no_raw_urlsession
     private let session = URLSession.shared
 
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
@@ -28,7 +57,16 @@ class RpcService {
         }
     }
 
-    func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
+    /// Sends a JSON-RPC request. `endpoint` defaults to this service's baked-in
+    /// `rpcEndpoint` so existing callers are unchanged; subclasses that resolve a
+    /// custom RPC override (e.g. Polkadot / Bittensor) pass the resolved host.
+    func sendRPCRequest<T>(
+        method: String,
+        params: [Any],
+        endpoint: String? = nil,
+        decode: (Any) throws -> T
+    ) async throws -> T {
+        let endpoint = endpoint ?? rpcEndpoint
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": method,
@@ -36,8 +74,8 @@ class RpcService {
             "id": 1
         ]
 
-        guard let url = URL(string: rpcEndpoint) else {
-            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
+        guard let url = URL(string: endpoint) else {
+            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(endpoint)")
         }
 
         // Generic JSON-RPC client used across many chains; doesn't fit
@@ -49,6 +87,7 @@ class RpcService {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
 
         do {
+            // swiftlint:disable:next no_raw_urlsession
             let (data, _) = try await URLSession.shared.data(for: request)
 
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -84,8 +123,8 @@ class RpcService {
 
     }
 
-    func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
-        return try await sendRPCRequest(method: method, params: params) { result in
+    func intRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> BigInt {
+        return try await sendRPCRequest(method: method, params: params, endpoint: endpoint) { result in
 
             if let intValue = result as? Int64 {
                 return BigInt(intValue)
@@ -100,8 +139,8 @@ class RpcService {
         }
     }
 
-    func strRpcCall(method: String, params: [Any]) async throws -> String {
-        return try await sendRPCRequest(method: method, params: params) { result in
+    func strRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> String {
+        return try await sendRPCRequest(method: method, params: params, endpoint: endpoint) { result in
 
             print(result)
 

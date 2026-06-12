@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAdditionalSection: View {
-    @ObservedObject var tx: SendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
 
     @State var isMemoExpanded = false
 
@@ -18,10 +16,15 @@ struct SendDetailsAdditionalSection: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            addMemoField
+            // Memo input is gated by `Chain.supportsMemo` so per-chain
+            // capability lives in the model, not scattered across UI.
+            // Cardano currently returns false (see #4326 / #4377).
+            if viewModel.coin.chain.supportsMemo {
+                addMemoField
+            }
         }
         .onAppear {
-            if !tx.memo.isEmpty {
+            if !viewModel.memo.isEmpty {
                 isMemoExpanded = true
             }
         }
@@ -56,7 +59,7 @@ struct SendDetailsAdditionalSection: View {
                 addMemoTitle
             }
 
-            MemoTextField(memo: $tx.memo)
+            MemoTextField(memo: $viewModel.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
         }
@@ -72,13 +75,4 @@ struct SendDetailsAdditionalSection: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
     }
-}
-
-#Preview {
-    SendDetailsAdditionalSection(
-        tx: SendTransaction(),
-        viewModel: SendDetailsViewModel(),
-        sendCryptoViewModel: SendCryptoViewModel()
-    )
-    .environmentObject(AppViewModel())
 }

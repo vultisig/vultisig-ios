@@ -45,6 +45,15 @@ struct VultisigApp: App {
             exit(0) // Exit after printing version
         }
 #endif
+        // Register every swap-tracking provider with the shared registry so
+        // the tx-history viewmodel and the native status poller can route by
+        // `providerKind`. New providers register here.
+        SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+
+        // Register every destination-token provider with the shared registry
+        // so the swap coin picker can aggregate destination tokens from
+        // every source. New providers register here.
+        DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
     }
     var body: some Scene {
         WindowGroup {
@@ -79,6 +88,8 @@ struct VultisigApp: App {
             StoredPendingTransaction.self,
             VaultSettings.self,
             TransactionHistoryItem.self,
+            SwapTrackingMetadata.self,
+            CustomRPCOverride.self,
             LimitOrder.self
         ])
         let modelConfiguration = ModelConfiguration(
@@ -95,6 +106,11 @@ struct VultisigApp: App {
 
             return modelContainer
         } catch {
+            // NEVER wipe the store on migration failure — that destroys user
+            // vaults. SwiftData's lightweight migration handles all additive
+            // changes (new models, new optional relationships) automatically.
+            // If we ever need a destructive schema change, add an explicit
+            // SchemaMigrationPlan stage rather than silently nuking the DB.
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
@@ -160,8 +176,16 @@ extension VultisigApp {
                 switch scenePhase {
                 case .active:
                     continueLogin()
+                    appViewModel.refreshFastVaultEligibilityIfNeeded()
+                    Task { @MainActor in
+                        SwapTrackingRegistry.shared.setActiveOnAll(true)
+                        await SwapTrackingRegistry.shared.resumeAllInFlight()
+                    }
                 case .background:
                     resetLogin()
+                    Task { @MainActor in
+                        SwapTrackingRegistry.shared.setActiveOnAll(false)
+                    }
                 default:
                     break
                 }
@@ -176,6 +200,11 @@ extension VultisigApp {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
+                // Hydrate the custom-RPC in-memory mirror from SwiftData so
+                // overrides survive relaunch and the off-MainActor networking
+                // funnel can read them without touching @Model.
+                CustomRPCStore.shared.reloadFromStore()
+
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
                 }
@@ -189,6 +218,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    await SwapTrackingRegistry.shared.resumeAllInFlight()
                 }
             }
     }
@@ -219,6 +252,11 @@ extension VultisigApp {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
+                // Hydrate the custom-RPC in-memory mirror from SwiftData so
+                // overrides survive relaunch and the off-MainActor networking
+                // funnel can read them without touching @Model.
+                CustomRPCStore.shared.reloadFromStore()
+
                 NSWindow.allowsAutomaticWindowTabbing = false
                 continueLogin()
 
@@ -227,6 +265,10 @@ extension VultisigApp {
                     if pushNotificationManager.isPermissionGranted {
                         pushNotificationManager.registerForRemoteNotifications()
                     }
+                }
+
+                Task { @MainActor in
+                    await SwapTrackingRegistry.shared.resumeAllInFlight()
                 }
             }
     }

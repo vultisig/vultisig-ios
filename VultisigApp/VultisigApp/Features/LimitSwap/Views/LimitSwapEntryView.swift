@@ -291,7 +291,6 @@ struct LimitSwapEntryView: View {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            isFastVault: vault.isFastVault,
             feeCoin: limitFromCoin,
             limitContext: record
         )

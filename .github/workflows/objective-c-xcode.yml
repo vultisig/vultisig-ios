@@ -8,14 +8,31 @@ on:
   merge_group:
     branches: [ "main" ]
 
+# Cancel superseded runs on the same ref (e.g. rapid PR pushes) to free runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Scheme and project are fixed (defined in VultisigApp/project.yml), so there's
+# no need to discover them at runtime via `xcodebuild -list` (which can stall on
+# SPM resolution).
+env:
+  SCHEME: VultisigApp
+  PROJECT: VultisigApp.xcodeproj
+
 jobs:
-  build:
-    name: Build, analyse and test default scheme using xcodebuild command
+  # ---------------------------------------------------------------------------
+  # macOS: build + static analysis (native arm64 on the Apple-Silicon runner).
+  # ---------------------------------------------------------------------------
+  build-macos:
+    name: Build & analyze (macOS)
     runs-on: macos-26
-    
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # No authenticated git operations in this job — don't persist the token.
+          persist-credentials: false
 
       - name: Install XcodeGen
         # Idempotent: skip `brew install` if xcodegen is already on the runner.
@@ -24,8 +41,11 @@ jobs:
       - name: Generate Xcode project
         run: make generate
 
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+
       - name: Cache SwiftPM
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             VultisigApp/.build
@@ -33,63 +53,93 @@ jobs:
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
-      - name: Set Default Scheme
+
+      - name: Cache DerivedData (macOS)
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: VultisigApp/DerivedData
+          # New cache per commit; restore the most recent one for the same
+          # resolved dependency set so unchanged modules aren't recompiled.
+          key: ${{ runner.os }}-dd-macos-${{ hashFiles('**/Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-dd-macos-${{ hashFiles('**/Package.resolved') }}-
+            ${{ runner.os }}-dd-macos-
+
+      - name: Build & analyze for macOS
         working-directory: VultisigApp
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.2.app
-          mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode'"
-          xcrun --find xcodebuild
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
-          
-      - name: Build for macOS
-        working-directory: VultisigApp
-        env:
-          scheme: ${{ 'default' }}
-        run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
-          # Print environment info
-          echo "Xcode version:"
           xcodebuild -version
-          echo "Swift version:"
           swift --version
-          
-          # Clean, build and analyze for macOS
-          echo "Building and analyzing for macOS - scheme: $scheme"
-          xcodebuild clean build analyze \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=macOS,arch=x86_64' \
+
+          echo "Building & analyzing for macOS - scheme: $SCHEME"
+          # Note: no `clean` — DerivedData is cached/restored for incremental reuse.
+          # Native arm64 (ONLY_ACTIVE_ARCH) on the Apple-Silicon runner.
+          xcodebuild build analyze \
+            -scheme "$SCHEME" \
+            -project "$PROJECT" \
+            -destination 'platform=macOS' \
+            -derivedDataPath DerivedData \
+            -skipMacroValidation \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=YES \
             DEBUG_INFORMATION_FORMAT=dwarf \
-            SWIFT_COMPILATION_MODE=wholemodule \
-            OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
             ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
-      - name: Build and Test for iOS
+  # ---------------------------------------------------------------------------
+  # iOS: build + static analysis + unit tests (iOS Simulator). Runs in parallel
+  # with the macOS job.
+  # ---------------------------------------------------------------------------
+  build-and-test-ios:
+    name: Build, analyze & test (iOS)
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # No authenticated git operations in this job — don't persist the token.
+          persist-credentials: false
+
+      - name: Install XcodeGen
+        run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+
+      - name: Generate Xcode project
+        run: make generate
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+
+      - name: Cache SwiftPM
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            VultisigApp/.build
+            VultisigApp/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Cache DerivedData (iOS)
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: VultisigApp/DerivedData
+          key: ${{ runner.os }}-dd-ios-${{ hashFiles('**/Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-dd-ios-${{ hashFiles('**/Package.resolved') }}-
+            ${{ runner.os }}-dd-ios-
+
+      - name: Build, analyze & test for iOS
         working-directory: VultisigApp
-        env:
-          scheme: ${{ 'default' }}
         run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
-          # Build and test for iOS in one command
-          echo "Building and testing for iOS - scheme: $scheme"
+          echo "Building, analyzing & testing for iOS - scheme: $SCHEME"
           xcodebuild build analyze test \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.1' \
+            -scheme "$SCHEME" \
+            -project "$PROJECT" \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5' \
+            -derivedDataPath DerivedData \
+            -skipMacroValidation \
             -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \

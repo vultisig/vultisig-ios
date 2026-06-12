@@ -673,6 +673,9 @@ extension VSOneInchTransaction: @retroactive Codable {
         case gasPrice = "gas_price"
         case gas
         case swapFee = "swap_fee"
+        case swapFeeChain = "swap_fee_chain"
+        case swapFeeTokenID = "swap_fee_token_id"
+        case swapFeeDecimals = "swap_fee_decimals"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -683,6 +686,17 @@ extension VSOneInchTransaction: @retroactive Codable {
         try container.encode(gasPrice, forKey: .gasPrice)
         try container.encode(gas, forKey: .gas)
         try container.encode(swapFee, forKey: .swapFee)
+        // Optional proto fields with explicit presence: encode only when set
+        // so fixtures distinguish absent from present-but-empty.
+        if hasSwapFeeChain {
+            try container.encode(swapFeeChain, forKey: .swapFeeChain)
+        }
+        if hasSwapFeeTokenID {
+            try container.encode(swapFeeTokenID, forKey: .swapFeeTokenID)
+        }
+        if hasSwapFeeDecimals {
+            try container.encode(swapFeeDecimals, forKey: .swapFeeDecimals)
+        }
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -694,6 +708,15 @@ extension VSOneInchTransaction: @retroactive Codable {
         gasPrice = try container.decodeIfPresent(String.self, forKey: .gasPrice) ?? String()
         gas = try container.decode(Int64.self, forKey: .gas)
         swapFee = try container.decodeIfPresent(String.self, forKey: .swapFee) ?? String()
+        if let chain = try container.decodeIfPresent(String.self, forKey: .swapFeeChain) {
+            swapFeeChain = chain
+        }
+        if let tokenID = try container.decodeIfPresent(String.self, forKey: .swapFeeTokenID) {
+            swapFeeTokenID = tokenID
+        }
+        if let decimals = try container.decodeIfPresent(Int32.self, forKey: .swapFeeDecimals) {
+            swapFeeDecimals = decimals
+        }
     }
 }
 
@@ -820,6 +843,59 @@ extension VSKyberSwapPayload: @retroactive Codable {
         fromAmount = try container.decode(String.self, forKey: .fromAmount)
         toAmountDecimal = try container.decode(String.self, forKey: .toAmountDecimal)
         quote = try container.decode(VSKyberSwapQuote.self, forKey: .quote)
+    }
+}
+
+extension VSSwapKitSwapPayload: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case fromCoin = "from_coin"
+        case toCoin = "to_coin"
+        case fromAmount = "from_amount"
+        case toAmountDecimal = "to_amount_decimal"
+        case txType = "tx_type"
+        case txPayload = "tx_payload"
+        case targetAddress = "target_address"
+        case inboundAddress = "inbound_address"
+        case memo
+        case subProvider = "sub_provider"
+        case swapID = "swap_id"
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(fromCoin, forKey: .fromCoin)
+        try container.encode(toCoin, forKey: .toCoin)
+        try container.encode(fromAmount, forKey: .fromAmount)
+        try container.encode(toAmountDecimal, forKey: .toAmountDecimal)
+        try container.encode(txType, forKey: .txType)
+        try container.encode(txPayload, forKey: .txPayload)
+        try container.encode(targetAddress, forKey: .targetAddress)
+        if hasInboundAddress {
+            try container.encode(inboundAddress, forKey: .inboundAddress)
+        }
+        if hasMemo {
+            try container.encode(memo, forKey: .memo)
+        }
+        try container.encode(subProvider, forKey: .subProvider)
+        try container.encode(swapID, forKey: .swapID)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        fromCoin = try container.decode(VSCoin.self, forKey: .fromCoin)
+        toCoin = try container.decode(VSCoin.self, forKey: .toCoin)
+        fromAmount = try container.decode(String.self, forKey: .fromAmount)
+        toAmountDecimal = try container.decode(String.self, forKey: .toAmountDecimal)
+        txType = try container.decode(String.self, forKey: .txType)
+        txPayload = try container.decode(Data.self, forKey: .txPayload)
+        targetAddress = try container.decode(String.self, forKey: .targetAddress)
+        if let inbound = try container.decodeIfPresent(String.self, forKey: .inboundAddress) {
+            inboundAddress = inbound
+        }
+        if let memoValue = try container.decodeIfPresent(String.self, forKey: .memo) {
+            memo = memoValue
+        }
+        subProvider = try container.decode(String.self, forKey: .subProvider)
+        swapID = try container.decode(String.self, forKey: .swapID)
     }
 }
 
@@ -1007,6 +1083,8 @@ extension VSKeysignPayload: @retroactive Codable {
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("OneinchSwapPayload"))
         case .mayachainSwapPayload(let payload):
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("MayachainSwapPayload"))
+        case .swapkitSwapPayload(let payload):
+            try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("SwapkitSwapPayload"))
         case .none:
             print("No swap payload to encode")
         }
@@ -1255,16 +1333,10 @@ extension VSBitcoinInput: @retroactive Codable {
         try container.encode(amount, forKey: .amount)
         try container.encode(scriptPubKey, forKey: .scriptPubKey)
         try container.encode(scriptType, forKey: .scriptType)
-        if hasSighashType {
-            try container.encode(sighashType, forKey: .sighashType)
-        }
+        if hasSighashType { try container.encode(sighashType, forKey: .sighashType) }
         try container.encode(isOurs, forKey: .isOurs)
-        if hasRedeemScript {
-            try container.encode(redeemScript, forKey: .redeemScript)
-        }
-        if hasSequence {
-            try container.encode(sequence, forKey: .sequence)
-        }
+        if hasRedeemScript { try container.encode(redeemScript, forKey: .redeemScript) }
+        if hasSequence { try container.encode(sequence, forKey: .sequence) }
     }
 
     public init(from decoder: any Decoder) throws {
@@ -1275,15 +1347,15 @@ extension VSBitcoinInput: @retroactive Codable {
         amount = try container.decode(Int64.self, forKey: .amount)
         scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
         scriptType = try container.decode(String.self, forKey: .scriptType)
-        if let v = try container.decodeIfPresent(UInt32.self, forKey: .sighashType) {
-            sighashType = v
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sighashType) {
+            sighashType = value
         }
         isOurs = try container.decode(Bool.self, forKey: .isOurs)
-        if let v = try container.decodeIfPresent(String.self, forKey: .redeemScript) {
-            redeemScript = v
+        if let value = try container.decodeIfPresent(String.self, forKey: .redeemScript) {
+            redeemScript = value
         }
-        if let v = try container.decodeIfPresent(UInt32.self, forKey: .sequence) {
-            sequence = v
+        if let value = try container.decodeIfPresent(UInt32.self, forKey: .sequence) {
+            sequence = value
         }
     }
 }
@@ -1301,9 +1373,7 @@ extension VSBitcoinOutput: @retroactive Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(amount, forKey: .amount)
         try container.encode(address, forKey: .address)
-        if hasOpReturnData {
-            try container.encode(opReturnData, forKey: .opReturnData)
-        }
+        if hasOpReturnData { try container.encode(opReturnData, forKey: .opReturnData) }
         try container.encode(scriptPubKey, forKey: .scriptPubKey)
         try container.encode(isChange, forKey: .isChange)
     }
@@ -1313,8 +1383,8 @@ extension VSBitcoinOutput: @retroactive Codable {
         self.init()
         amount = try container.decode(Int64.self, forKey: .amount)
         address = try container.decode(String.self, forKey: .address)
-        if let v = try container.decodeIfPresent(String.self, forKey: .opReturnData) {
-            opReturnData = v
+        if let value = try container.decodeIfPresent(String.self, forKey: .opReturnData) {
+            opReturnData = value
         }
         scriptPubKey = try container.decode(String.self, forKey: .scriptPubKey)
         isChange = try container.decode(Bool.self, forKey: .isChange)

@@ -10,12 +10,12 @@ struct SwapDetailsScreen: View {
     let toCoin: Coin?
     let vault: Vault
 
-    @State var detailsViewModel = SwapDetailsViewModel()
-    @StateObject var referredViewModel = ReferredViewModel()
-    @StateObject var keyboardObserver = KeyboardObserver()
+    @State private var detailsViewModel = SwapDetailsViewModel()
+    @StateObject private var referredViewModel = ReferredViewModel()
+    @StateObject private var keyboardObserver = KeyboardObserver()
 
-    @State var buttonRotated = false
-    @State var showErrorTooltip = false
+    @State private var buttonRotated = false
+    @State private var showErrorTooltip = false
     /// Local Market/Limit tab state. The Limit branch lives entirely
     /// inside `LimitSwapModeBody` (which owns its own form view model and
     /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
@@ -81,7 +81,8 @@ struct SwapDetailsScreen: View {
                 vault: vault,
                 showSheet: $vm.showFromCoinSelector,
                 selectedCoin: $vm.fromCoin,
-                selectedChain: vm.fromChain
+                selectedChain: vm.fromChain,
+                isDestination: false
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -90,7 +91,8 @@ struct SwapDetailsScreen: View {
                 vault: vault,
                 showSheet: $vm.showToCoinSelector,
                 selectedCoin: $vm.toCoin,
-                selectedChain: vm.toChain
+                selectedChain: vm.toChain,
+                isDestination: true
             )
             .environmentObject(coinSelectionViewModel)
         }
@@ -101,10 +103,8 @@ struct SwapDetailsScreen: View {
             // `load(...)` seeds `detailsViewModel.fromCoin/toCoin`; no manual
             // re-assignment afterwards or `onChange` would re-fire the quote fetch.
             detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
+            detailsViewModel.warmDiscountTier(vault: vault)
             setData()
-        }
-        .task {
-            await detailsViewModel.loadFastVault(vault: vault)
         }
         .onDisappear {
             #if os(iOS)
@@ -139,17 +139,23 @@ struct SwapDetailsScreen: View {
         ZStack {
             amountFields
 
-            if let error = detailsViewModel.error {
-                SwapErrorTooltipView(
-                    error: error,
-                    showTooltip: $showErrorTooltip,
-                    onDismissTooltip: {
-                        showErrorTooltip = false
-                    }
-                )
-            } else {
-                swapButton
+            ZStack {
+                if let error = detailsViewModel.error {
+                    SwapErrorTooltipView(
+                        error: error,
+                        showTooltip: $showErrorTooltip,
+                        onDismissTooltip: {
+                            showErrorTooltip = false
+                            detailsViewModel.error = nil
+                        }
+                    )
+                    .transition(.opacity)
+                } else {
+                    swapButton
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
 
             filler.offset(x: -28)
             filler.offset(x: 28)
@@ -185,8 +191,8 @@ struct SwapDetailsScreen: View {
             title: "to",
             vault: vault,
             coin: detailsViewModel.toCoin,
-            fiatAmount: detailsViewModel.toFiatAmount,
-            amount: .constant(detailsViewModel.toAmountDecimal.formatForDisplay()),
+            fiatAmount: detailsViewModel.toFiatAmountDisplay,
+            amount: .constant(detailsViewModel.toAmountDisplayString),
             selectedChain: $vm.toChain,
             showNetworkSelectSheet: $vm.showToChainSelector,
             showCoinSelectSheet: $vm.showToCoinSelector,
@@ -229,13 +235,25 @@ struct SwapDetailsScreen: View {
 
     var summary: some View {
         SwapDetailsSummary(detailsViewModel: detailsViewModel)
-            .redacted(reason: detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            .redacted(reason: detailsViewModel.showsQuoteSkeleton ? .placeholder : [])
+            // First-load only: show the skeleton instantly (nil animation on the
+            // entering edge). On a refresh with a prior quote, stale-while-
+            // revalidate keeps the summary visible — no skeleton, no flicker.
+            .animation(
+                detailsViewModel.showsQuoteSkeleton ? nil : .easeInOut(duration: 0.25),
+                value: detailsViewModel.showsQuoteSkeleton
+            )
+            .animation(.easeInOut(duration: 0.25), value: detailsViewModel.totalFeeString)
     }
 
     @ViewBuilder
     var continueButton: some View {
         let isFormValid = detailsViewModel.validateForm()
-        let isDisabled = !isFormValid || detailsViewModel.isLoading
+        // Block Continue while the fee estimate is still in flight — the
+        // form already has a non-zero fee from the previous quote in that
+        // window, but using it advances with stale data. validateForm()
+        // doesn't see `isLoadingFees` since it's a screen-local concern.
+        let isDisabled = !isFormValid || detailsViewModel.isLoading || detailsViewModel.isLoadingFees
 
         if detailsViewModel.isLoadingTransaction {
             ButtonLoader()
@@ -256,14 +274,22 @@ struct SwapDetailsScreen: View {
         }
     }
 
+    @ViewBuilder
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
+        if detailsViewModel.showRefreshCounter {
+            SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
+        }
     }
 
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
+                    #if os(macOS)
+                    // Keep the error tooltip overlay above the later sibling
+                    // percentage buttons, which would otherwise paint on top.
+                    .zIndex(1)
+                    #endif
                 #if os(iOS)
                 summary
                 #else
@@ -292,7 +318,7 @@ struct SwapDetailsScreen: View {
                     Button {
                         hideKeyboard()
                     } label: {
-                        Text(NSLocalizedString("done", comment: "Done"))
+                        Text("done".localized)
                     }
                 }
             }
@@ -341,15 +367,15 @@ extension SwapDetailsScreen {
         case 25:
             let amount = (detailsViewModel.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 50:
             let amount = (detailsViewModel.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 75:
             let amount = (detailsViewModel.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
             detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         case 100:
             let fromCoin = detailsViewModel.fromCoin
             if fromCoin.isNativeToken {
@@ -362,7 +388,7 @@ extension SwapDetailsScreen {
                 let amount = fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
                 detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             }
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
         default:
             break
         }

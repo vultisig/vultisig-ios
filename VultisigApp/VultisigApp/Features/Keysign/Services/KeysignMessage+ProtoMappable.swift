@@ -122,6 +122,17 @@ extension KeysignPayload: ProtoMappable {
             self.tronTransferAssetContractPayload = nil
         }
 
+        // QBTC claim payload is local-only — never round-tripped through proto.
+        // The initiating device sets it; peer devices in a SecureVault flow
+        // see nil and simply sign the relayed message hashes without claim UX.
+        self.qbtcClaimPayload = nil
+
+        // `isQbtcClaim` round-trips: the peer needs to know this is a claim
+        // so it can derive the claimer's QBTC address from its own vault
+        // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash
+        // locally instead of blind-signing whatever the initiator sends.
+        self.isQbtcClaim = proto.isQbtcClaim
+
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
         if proto.hasDappMetadata {
@@ -167,6 +178,8 @@ extension KeysignPayload: ProtoMappable {
             } else if let tronTransferAssetContractPayload {
                 $0.contractPayload = .tronTransferAssetContractPayload(tronTransferAssetContractPayload.mapToProtobuff())
             }
+
+            $0.isQbtcClaim = isQbtcClaim
 
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
@@ -230,6 +243,10 @@ extension SwapPayload {
                 isAffiliate: value.isAffiliate
             ))
         case .oneinchSwapPayload(let value):
+            // `has*` guards distinguish "legacy sender, context unknown"
+            // (field absent → nil) from a populated value. Empty strings are
+            // normalized to nil so consumers have a single "unknown" shape.
+            let swapFeeTokenId = value.quote.tx.hasSwapFeeTokenID ? value.quote.tx.swapFeeTokenID.nilIfEmpty : nil
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
@@ -245,10 +262,13 @@ extension SwapPayload {
                         gasPrice: value.quote.tx.gasPrice,
                         gas: value.quote.tx.gas,
                         swapFee: value.quote.tx.swapFee,
-                        swapFeeTokenContract: ""
+                        swapFeeTokenContract: swapFeeTokenId ?? ""
                     )
                 ),
-                provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
+                provider: SwapProviderId.from(rawValue: value.provider),
+                swapFeeChain: value.quote.tx.hasSwapFeeChain ? value.quote.tx.swapFeeChain.nilIfEmpty : nil,
+                swapFeeTokenId: swapFeeTokenId,
+                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(
@@ -270,6 +290,20 @@ extension SwapPayload {
                     )
                 ),
                 provider: .kyberSwap
+            ))
+        case .swapkitSwapPayload(let value):
+            self = .swapkit(SwapKitSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                txType: value.txType,
+                txPayload: value.txPayload,
+                targetAddress: value.targetAddress,
+                inboundAddress: value.hasInboundAddress ? value.inboundAddress : nil,
+                memo: value.hasMemo ? value.memo : nil,
+                subProvider: value.subProvider,
+                swapID: value.swapID
             ))
         }
     }
@@ -323,10 +357,42 @@ extension SwapPayload {
                         $0.gas = payload.quote.tx.gas
                         if payload.quote.tx.swapFee != "0" {
                             $0.swapFee = payload.quote.tx.swapFee
+                            // Explicit presence matters: receivers treat
+                            // absent fields as "legacy sender → render no
+                            // fee", while a present-but-empty token id breaks
+                            // their coin-key lookup. Never set from nils so
+                            // re-encoded legacy payloads stay byte-stable.
+                            if let swapFeeChain = payload.swapFeeChain, !swapFeeChain.isEmpty {
+                                $0.swapFeeChain = swapFeeChain
+                            }
+                            if let swapFeeTokenId = payload.swapFeeTokenId, !swapFeeTokenId.isEmpty {
+                                $0.swapFeeTokenID = swapFeeTokenId
+                            }
+                            if let swapFeeDecimals = payload.swapFeeDecimals {
+                                $0.swapFeeDecimals = Int32(swapFeeDecimals)
+                            }
                         }
                     }
                 }
                 $0.provider = payload.provider.rawValue
+            })
+        case .swapkit(let payload):
+            return .swapkitSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.txType = payload.txType
+                $0.txPayload = payload.txPayload
+                $0.targetAddress = payload.targetAddress
+                if let inboundAddress = payload.inboundAddress {
+                    $0.inboundAddress = inboundAddress
+                }
+                if let memo = payload.memo {
+                    $0.memo = memo
+                }
+                $0.subProvider = payload.subProvider
+                $0.swapID = payload.swapID
             })
         }
     }
@@ -444,7 +510,10 @@ extension BlockChainSpecific {
 
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
-        case .UTXO(let byteFee, let sendMaxAmount):
+        case .UTXO(let byteFee, let sendMaxAmount, _):
+            // The live ZEC branch id is intentionally not carried by the proto:
+            // it is a network-global fact each device re-resolves at signing
+            // time (see JoinKeysignViewModel), so it never travels on the wire.
             return .utxoSpecific(.with {
                 $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount

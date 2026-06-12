@@ -2,144 +2,129 @@
 //  FunctionCallStake.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 24/10/24.
+//  TON stake (memo "d") sub-model. Form-VM rewrite per the
+//  FunctionCall sub-model rewrite workstream — owns `amount` and
+//  `nodeAddress` directly. Reads `selectedCoin` from the screen via
+//  `@Binding<Coin>` so the balance label updates when the active coin
+//  changes upstream. The matching `StakeFormView` is co-located.
+//
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-class FunctionCallStake: FunctionCallAddressable, ObservableObject {
-    @Published var amount: Decimal = 0
-    @Published var nodeAddress: String = ""
+@Observable
+@MainActor
+final class FunctionCallStake {
+    var amount: Decimal = 0
+    var nodeAddress: String = ""
+    var addressError: String?
+    var customErrorMessage: String?
 
-    // Internal
-    @Published var amountValid: Bool = false
-    @Published var nodeAddressValid: Bool = false
-    @Published var isTheFormValid: Bool = false
-    @Published var customErrorMessage: String? = nil
-
-    var addressFields: [String: String] {
-        get {
-            let fields = ["nodeAddress": nodeAddress]
-            return fields
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
-            }
-        }
+    init(initialAmount: Decimal = 0) {
+        self.amount = initialAmount
     }
 
-    private var cancellables = Set<AnyCancellable>()
-    private var tx: SendTransaction?
-
-    required init() {
+    func balance(for coin: Coin) -> String {
+        let balance = coin.balanceDecimal.formatForDisplay()
+        return String(format: "balanceInParentheses".localized, balance, coin.ticker.uppercased())
     }
 
-    convenience init(tx: SendTransaction) {
-        self.init()
-        self.tx = tx
-        self.amount = tx.coin.balanceDecimal
-    }
-
-    func initialize() {
-        setupValidation()
-    }
-
-    var balance: String {
-        guard let tx = tx else { return "( Balance: 0 TON )" }
-        let balance = tx.coin.balanceDecimal.formatForDisplay()
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
-    }
-
-    private func setupValidation() {
-        $amount
-            .removeDuplicates()
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.validateAmount()
-            }
-            .store(in: &cancellables)
-
-        Publishers.CombineLatest($amountValid, $nodeAddressValid)
-            .map { $0 && $1 && !self.amount.isZero }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-    }
-
-    private func validateAmount() {
-        guard let tx = tx else {
-            amountValid = false
-            customErrorMessage = "Transaction not available"
-            return
-        }
-
-        let balance = tx.coin.balanceDecimal
-        let isValidAmount = amount > 0 && amount <= balance
-        amountValid = isValidAmount
-
+    func validate(against coin: Coin) {
+        let balance = coin.balanceDecimal
         if amount <= 0 {
-            amountValid = false
-            self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when amount is invalid")
+            customErrorMessage = "enterValidAmount".localized
         } else if balance < amount {
-            amountValid = false
-            self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+            customErrorMessage = "insufficientBalanceForFunctions".localized
         } else {
-            self.customErrorMessage = nil
+            customErrorMessage = nil
         }
+    }
+
+    func isAmountValid(against coin: Coin) -> Bool {
+        amount > 0 && amount <= coin.balanceDecimal
+    }
+
+    /// Submit-time validity gate. The active coin must be passed in so
+    /// the amount-against-balance check is part of the same predicate
+    /// the screen reads — no separate no-arg shape can drift past it.
+    func isFormValid(for coin: Coin) -> Bool {
+        isAmountValid(against: coin) &&
+        FunctionCallAddressValidation.isValidThorMayaTON(nodeAddress)
+    }
+
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        nodeAddress = addressResult.address
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        return "d"
+        "d"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", self.nodeAddress)
-        dict.set("memo", self.toString())
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(VStack(alignment: .leading, spacing: 12) {
-            FunctionCallAddressTextField(
-                memo: self,
-                addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
-                )
-            )
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt
+    ) -> SendTransaction {
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: nodeAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .unspecified,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
+    }
+}
+
+struct StakeFormView: View {
+    @Bindable var model: FunctionCallStake
+    @Binding var selectedCoin: Coin
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            AddressTextField(
+                address: $model.nodeAddress,
+                label: "nodeAddress".localized,
+                coin: selectedCoin,
+                error: $model.addressError
+            ) { result in
+                model.handle(addressResult: result)
+            }
 
             VStack(alignment: .leading, spacing: 8) {
                 StyledFloatingPointField(
-                    label: NSLocalizedString("amount", comment: ""),
-                    placeholder: NSLocalizedString("enterAmount", comment: ""),
-                    value: Binding(
-                        get: { self.amount },
-                        set: { self.amount = $0 }
-                    ),
-                    isValid: Binding(
-                        get: { self.amountValid },
-                        set: { self.amountValid = $0 }
-                    ))
+                    label: "amount".localized,
+                    placeholder: "enterAmount".localized,
+                    value: $model.amount,
+                    isValid: .constant(true)
+                )
+                .onChange(of: model.amount) {
+                    model.validate(against: selectedCoin)
+                }
 
-                Text(balance)
+                Text(model.balance(for: selectedCoin))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
 
-                if let errorMessage = customErrorMessage {
+                if let errorMessage = model.customErrorMessage {
                     Text(errorMessage)
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                 }
             }
-        }.onAppear {
-            self.initialize()
-        })
+        }
     }
 }

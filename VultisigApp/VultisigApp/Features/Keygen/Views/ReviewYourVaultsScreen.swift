@@ -3,8 +3,11 @@
 //  VultisigApp
 //
 
+import OSLog
 import SwiftUI
 import RiveRuntime
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "review-your-vaults")
 
 struct ReviewYourVaultsScreen: View {
     let vault: Vault
@@ -16,12 +19,15 @@ struct ReviewYourVaultsScreen: View {
 
     @State private var animationVM: RiveViewModel?
     @State private var size: CGFloat?
+    @State private var showCommitError = false
+    @State private var commitErrorMessage = ""
     let animationHeight: CGFloat = 280
     var animationOffset: CGFloat {
         isMacOS ? -100 : 0
     }
 
     @Environment(\.router) var router
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         Screen {
@@ -41,6 +47,11 @@ struct ReviewYourVaultsScreen: View {
         .onAppear {
             animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
             animationVM?.fit = .fitWidth
+        }
+        .alert("error".localized, isPresented: $showCommitError) {
+            Button("ok".localized, role: .cancel) {}
+        } message: {
+            Text(commitErrorMessage)
         }
     }
 
@@ -110,6 +121,15 @@ struct ReviewYourVaultsScreen: View {
     }
 
     private func navigateToOverview() {
+        do {
+            try KeygenViewModel.commitVault(vault, context: modelContext)
+        } catch {
+            logger.error("Failed to persist vault on confirmation: \(error.localizedDescription)")
+            commitErrorMessage = error.localizedDescription
+            showCommitError = true
+            return
+        }
+
         router.navigate(to: KeygenRoute.keyImportOverview(
             tssType: tssType,
             vault: vault,

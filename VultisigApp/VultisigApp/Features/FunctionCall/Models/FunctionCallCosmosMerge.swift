@@ -2,76 +2,67 @@
 //  FunctionCallCosmosMerge.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
+//  RUJI MERGE sub-model. Form-VM rewrite per the FunctionCall
+//  sub-model rewrite workstream — owns token selection + amount +
+//  derived contract address directly. Cross-mutator: writes
+//  `selectedCoin` through a `@Binding<Coin>` from the token dropdown.
 //
 
-import SwiftUI
+import BigInt
 import Foundation
-import Combine
+import SwiftUI
 
-/**
- 
+/*
  3) THORCHAIN - FUNCTION: "EXECUTE CONTRACT"
- 
+
  UI Elements:
- •    Dropdown: Select action (only one for now: "RUJI MERGE")
- •    Amount Field: Enter amount to deposit
- 
+ • Dropdown: Select action (only one for now: "RUJI MERGE")
+ • Amount Field: Enter amount to deposit
+
  Action:
  → Call the RUJI Merge smart contract to deposit the specified amount
- 
- */
+*/
 
-class FunctionCallCosmosMerge: ObservableObject {
-    @Published var amount: Decimal = 0.0
-    @Published var destinationAddress: String = ""
-    @Published var fnCall: String = ""
+@Observable
+@MainActor
+final class FunctionCallCosmosMerge {
+    var amount: Decimal = 0.0
+    var destinationAddress: String = ""
+    var tokens: [IdentifiableString] = []
+    var selectedToken: IdentifiableString
+    var balanceLabel: String
 
-    @Published var amountValid: Bool = false
-    @Published var fnCallValid: Bool = true
+    @ObservationIgnored private let tokenPlaceholder: String
+    @ObservationIgnored private let vault: Vault
+    @ObservationIgnored private let sourceChain: Chain
+    @ObservationIgnored private let sourceTicker: String
+    @ObservationIgnored private let sourceIsNative: Bool
 
-    @Published var isTheFormValid: Bool = false
-
-    @Published var tokens: [IdentifiableString] = []
-    @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("selectTokenToMerge", comment: ""))
-
-    @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "")
-
-    @ObservedObject var tx: SendTransaction
-
-    private var vault: Vault
-
-    private var cancellables = Set<AnyCancellable>()
-
-    required init(
-        tx: SendTransaction, vault: Vault
-    ) {
-        self.tx = tx
+    init(coin: Coin, vault: Vault) {
+        let placeholder = "selectTokenToMerge".localized
+        self.tokenPlaceholder = placeholder
         self.vault = vault
+        self.sourceChain = coin.chain
+        self.sourceTicker = coin.ticker
+        self.sourceIsNative = coin.isNativeToken
+        self.selectedToken = .init(value: placeholder)
+        self.balanceLabel = "amountSelectToken".localized
 
-        if tx.coin.isNativeToken {
+        if coin.isNativeToken {
             self.amount = 0.0
         } else {
-            self.amount = tx.coin.balanceDecimal
+            self.amount = coin.balanceDecimal
         }
-    }
 
-    func initialize() {
-        setupValidation()
         loadTokens()
         preSelectToken()
     }
 
     private func loadTokens() {
-        let coinsInVault: Set<String> = Set(vault.coins.filter { $0.chain == tx.coin.chain }.map {
-            let normalized = $0.ticker.lowercased()
-            return normalized
-        })
-
+        let coinsInVault: Set<String> = Set(vault.coins.filter { $0.chain == sourceChain }.map { $0.ticker.lowercased() })
         for token in ThorchainMergeTokens.tokensToMerge {
-            let normalizedToken = token.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
-            if coinsInVault.contains(normalizedToken) {
+            let normalized = token.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
+            if coinsInVault.contains(normalized) {
                 tokens.append(.init(value: token.denom.uppercased()))
             }
         }
@@ -79,131 +70,108 @@ class FunctionCallCosmosMerge: ObservableObject {
 
     private func preSelectToken() {
         if let match = ThorchainMergeTokens.tokensToMerge.first(where: {
-            $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
+            $0.denom.lowercased() == "thor.\(sourceTicker.lowercased())"
         }) {
             selectedToken = .init(value: match.denom.uppercased())
-            tokenValid = true
             destinationAddress = match.wasmContractAddress
-            if let coin = selectedVaultCoin {
+            if let coin = selectedVaultCoin() {
                 amount = coin.balanceDecimal
-                balanceLabel = String(format: NSLocalizedString("amountBalance", comment: ""), amount.formatForDisplay(), coin.ticker.uppercased())
+                balanceLabel = String(format: "amountBalance".localized, amount.formatForDisplay(), coin.ticker.uppercased())
             }
         }
     }
 
-    var selectedVaultCoin: Coin? {
+    func selectedVaultCoin() -> Coin? {
         let ticker = selectedToken.value
             .lowercased()
             .replacingOccurrences(of: "thor.", with: "")
-
-        for coin in vault.coins {
-            if coin.chain == tx.coin.chain && coin.ticker.lowercased() == ticker {
-                return coin
-            }
+        for coin in vault.coins where coin.chain == sourceChain && coin.ticker.lowercased() == ticker {
+            return coin
         }
-
         return nil
     }
 
-    var balance: String {
-        if let coin = selectedVaultCoin {
-            let balance = coin.balanceDecimal.formatForDisplay()
-            return String(format: NSLocalizedString("amountBalance", comment: ""), balance, coin.ticker.uppercased())
-        } else {
-            return NSLocalizedString("amountSelectToken", comment: "")
-        }
+    var isTokenSelected: Bool {
+        selectedToken.value.lowercased() != tokenPlaceholder.lowercased()
     }
 
-    private func setupValidation() {
-        Publishers.CombineLatest($amountValid, $tokenValid)
-            .map { $0 && $1 }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+    /// Submit-time validity gate. Requires the active coin so the
+    /// amount-against-balance check rides in the same predicate the
+    /// Continue button reads. Merge cross-mutates the active coin via
+    /// the token dropdown, so the screen-side `selectedCoin` is the
+    /// correct source of truth for the balance bound.
+    func isFormValid(for coin: Coin) -> Bool {
+        isTokenSelected &&
+        amount > 0 &&
+        amount <= coin.balanceDecimal &&
+        !destinationAddress.isEmpty
     }
 
     var description: String {
-        return toString()
+        toString()
     }
 
     func toString() -> String {
-        let memo = "merge:\(selectedToken.value)"
-        return memo
+        "merge:\(selectedToken.value)"
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("destinationAddress", self.destinationAddress)
-        dict.set("memo", self.toString())
+        dict.set("destinationAddress", destinationAddress)
+        dict.set("memo", toString())
         return dict
     }
 
-    func getView() -> AnyView {
-        AnyView(FunctionCallCosmosMergeView(viewModel: self).onAppear {
-            self.initialize()
-        })
+    func toSendTransaction(
+        coin: Coin,
+        vault: Vault,
+        gas: BigInt
+    ) -> SendTransaction {
+        return SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: destinationAddress,
+            amount: amount.formatToDecimal(digits: coin.decimals),
+            memo: toString(),
+            gas: gas,
+            transactionType: .thorMerge,
+            memoFunctionDictionary: toDictionary().allItems()
+        )
     }
 }
 
-private struct FunctionCallCosmosMergeView: View {
-    @ObservedObject var viewModel: FunctionCallCosmosMerge
+struct CosmosMergeFormView: View {
+    @Bindable var model: FunctionCallCosmosMerge
+    @Binding var selectedCoin: Coin
 
     var body: some View {
         VStack {
-
             GenericSelectorDropDown(
-                items: Binding(
-                    get: { viewModel.tokens },
-                    set: { viewModel.tokens = $0 }
-                ),
-                selected: Binding(
-                    get: { viewModel.selectedToken },
-                    set: { viewModel.selectedToken = $0 }
-                ),
+                items: $model.tokens,
+                selected: $model.selectedToken,
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    viewModel.selectedToken = asset
-                    viewModel.tokenValid = asset.value.lowercased() != NSLocalizedString("selectTokenToMerge", comment: "").lowercased()
-                    viewModel.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
+                    model.selectedToken = asset
+                    model.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
 
-                    if let coin = viewModel.selectedVaultCoin {
-
-                        withAnimation {
-                            viewModel.balanceLabel = String(format: NSLocalizedString("amountBalance", comment: ""), coin.balanceDecimal.formatForDisplay(), coin.ticker.uppercased())
-                            viewModel.amount = coin.balanceDecimal
-
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                viewModel.tx.coin = coin
-                                viewModel.objectWillChange.send()
-                            }
-                        }
+                    if let coin = model.selectedVaultCoin() {
+                        model.balanceLabel = String(format: "amountBalance".localized, coin.balanceDecimal.formatForDisplay(), coin.ticker.uppercased())
+                        model.amount = coin.balanceDecimal
+                        selectedCoin = coin
                     } else {
-                        viewModel.balanceLabel = NSLocalizedString("amountSelectToken", comment: "")
-                        viewModel.objectWillChange.send()
+                        model.balanceLabel = "amountSelectToken".localized
                     }
                 }
             )
 
             StyledFloatingPointField(
-                label: viewModel.balanceLabel,
-                placeholder: viewModel.balanceLabel,
-                value: Binding(
-                    get: { viewModel.amount },
-                    set: {
-                        viewModel.amount = $0
-                        DispatchQueue.main.async {
-                            viewModel.objectWillChange.send()
-                        }
-                    }
-                ),
-                isValid: Binding(
-                    get: { viewModel.amountValid },
-                    set: { viewModel.amountValid = $0 }
-                )
+                label: model.balanceLabel,
+                placeholder: model.balanceLabel,
+                value: $model.amount,
+                isValid: .constant(true)
             )
-            .id("field-\(viewModel.selectedToken.value)")
+            .id("field-\(model.selectedToken.value)")
         }
     }
 }

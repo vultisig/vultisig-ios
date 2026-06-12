@@ -13,10 +13,9 @@ struct FunctionCallRouter {
     @ViewBuilder
     func build(_ route: FunctionCallRoute) -> some View {
         switch route {
-        case .details(let defaultCoin, let sendTx, let vault):
+        case .details(let defaultCoin, let vault):
             viewBuilder.buildDetailsScreen(
                 defaultCoin: defaultCoin,
-                sendTx: sendTx,
                 vault: vault
             )
         case .verify(let tx, let vault):
@@ -28,8 +27,8 @@ struct FunctionCallRouter {
                 keysignPayload: keysignPayload,
                 fastVaultPassword: fastVaultPassword
             )
-        case .keysign(let input, let tx):
-            viewBuilder.buildKeysignScreen(input: input, tx: tx)
+        case .keysign(let input, let tx, let retrySignal):
+            viewBuilder.buildKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
         case .functionTransaction(let vault, let transactionType):
             viewBuilder.buildFunctionTransactionScreen(
                 vault: vault,

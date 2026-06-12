@@ -32,6 +32,7 @@ struct NotificationBannerView: View {
     @State private var progress: Double = 0.0
     @Binding var isVisible: Bool
     @State var isVisibleInternal: Bool = false
+    @State private var dismissalTask: Task<Void, Never>?
 
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
     private let duration: Double = 1.3
@@ -80,24 +81,35 @@ struct NotificationBannerView: View {
             .opacity(isVisibleInternal ? 1.0 : 0.0)
             .animation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15), value: isVisibleInternal)
             .onAppear {
+                withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
+                    isVisibleInternal = true
+                }
                 progress = 1.0
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + duration + progressDelay) {
+                dismissalTask?.cancel()
+                dismissalTask = Task { @MainActor in
+                    let hideDelay = Int((duration + Double(progressDelay)) * 1000)
+                    do {
+                        try await Task.sleep(for: .milliseconds(hideDelay))
+                    } catch {
+                        return
+                    }
+                    guard !Task.isCancelled else { return }
                     withAnimation(animation) {
                         isVisibleInternal = false
                     }
-
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        isVisible = false
+                    do {
+                        try await Task.sleep(for: .milliseconds(200))
+                    } catch {
+                        return
                     }
+                    guard !Task.isCancelled else { return }
+                    isVisible = false
                 }
             }
         }
         .padding(.horizontal, 12)
-        .onAppear {
-            withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
-                isVisibleInternal = true
-            }
+        .onDisappear {
+            dismissalTask?.cancel()
         }
     }
 }

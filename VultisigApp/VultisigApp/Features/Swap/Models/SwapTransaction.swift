@@ -29,7 +29,6 @@ struct SwapTransaction: Hashable {
     let thorchainFee: BigInt
     let vultDiscountBps: Int
     let referralDiscountBps: Int
-    let isFastVault: Bool
 
     /// Native coin that pays for gas — `fromCoin` for native sources, the EVM-native
     /// sibling (e.g. ETH for an USDC source) otherwise. Precomputed at construction
@@ -64,7 +63,6 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
-            isFastVault: isFastVault,
             feeCoin: feeCoin,
             limitContext: limitContext
         )
@@ -80,7 +78,7 @@ extension SwapTransaction {
     private var fromAmountString: String { fromAmount.description }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
     }
 
     var amountInCoinDecimal: BigInt {
@@ -234,7 +232,6 @@ extension SwapTransaction {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            isFastVault: false,
             feeCoin: .example,
             limitContext: nil
         )

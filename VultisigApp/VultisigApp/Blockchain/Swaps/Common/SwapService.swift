@@ -14,8 +14,21 @@ struct SwapService {
     static let shared = SwapService()
 
     /// Fall back from rapid to streaming THORChain swap when rapid slippage
-    /// (`fees.total` share of output) exceeds this threshold. 300 bps = 3%.
-    static let streamingSlippageThresholdBps = 300
+    /// (`fees.total` share of output) exceeds this threshold. 100 bps = 1%.
+    /// Streaming typically drops slippage from ~41 bps to ~9 bps on trades
+    /// it covers; a 1% cutoff captures mid-size cross-chain swaps that
+    /// otherwise route via rapid despite being good streaming candidates.
+    /// Mirrored in `vultisig-sdk` (`THORCHAIN_STREAMING_SLIPPAGE_THRESHOLD_BPS`)
+    /// and `vultisig-android` (`STREAMING_SLIPPAGE_THRESHOLD_BPS`).
+    static let streamingSlippageThresholdBps = 100
+
+    /// Minimum-output tolerance (basis points) sent on every THORChain/Maya
+    /// quote request as `tolerance_bps`. The node bakes a real `LIM` into the
+    /// returned swap memo — `expected_amount_out × (1 − tolerance_bps/10_000)` —
+    /// so the signed memo carries a slippage floor instead of `LIM=0`
+    /// (unbounded). 100 bps (1%) is a conservative default aligned with the
+    /// streaming-upgrade threshold; there is no per-swap user slippage control.
+    static let defaultThorchainToleranceBps = 100
 
     func fetchQuote(
         amount: Decimal,
@@ -25,18 +38,40 @@ struct SwapService {
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
+        try await fetchQuotes(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            isAffiliate: isAffiliate,
+            referredCode: referredCode,
+            vultTierDiscount: vultTierDiscount
+        ).best
+    }
+
+    /// Fetch every eligible provider in parallel and return the full ranked set alongside the
+    /// auto-selected winner. The winner is still chosen by `selectBestQuote` (net output + banded
+    /// provider preference); `ranked` is the same candidate pool sorted best→worst by
+    /// `expectedNetToAmount` so the UI can surface alternatives without re-fetching.
+    ///
+    /// Returning on first success would honour the priority order baked into `resolveAllProviders`,
+    /// which is fine when only one provider is eligible but produces poor outcomes on same-chain
+    /// ERC20 routes where THORChain is listed first yet routes through its Router with a costly
+    /// `depositWithExpiry` deposit and a destination amount that's typically lower than what an
+    /// aggregator returns.
+    func fetchQuotes(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuotes {
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
 
         guard !providers.isEmpty else {
             throw SwapError.routeUnavailable
         }
 
-        // Fetch every eligible provider in parallel, then rank by net output. Returning on
-        // first success would honour the priority order baked into `resolveAllProviders`,
-        // which is fine when only one provider is eligible but produces poor outcomes on
-        // same-chain ERC20 routes where THORChain is listed first yet routes through its
-        // Router with a costly `depositWithExpiry` deposit and a destination amount that's
-        // typically lower than what an aggregator returns.
         let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
             for provider in providers {
                 group.addTask {
@@ -66,7 +101,10 @@ struct SwapService {
 
         let quotes = results.compactMap { try? $0.get() }
         if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
-            return best
+            let ranked = Self.rankedQuotes(quotes: quotes, toCoin: toCoin)
+            // Preserve the `best ∈ ranked` contract: if nothing is rankable (no
+            // comparable net amounts) but a best still exists, surface it.
+            return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
         let firstError = results.compactMap { result -> Error? in
@@ -77,10 +115,38 @@ struct SwapService {
         throw firstError ?? SwapError.routeUnavailable
     }
 
-    /// Pick the quote with the highest net output in `toCoin` units. Every provider in a
-    /// candidate set swaps to the same `toCoin`, so the destination amount is directly
-    /// comparable. Falls back to the first quote (priority order from `resolveAllProviders`)
-    /// when no quote produces a comparable amount.
+    /// All rankable quotes sorted best→worst by net output in `toCoin` units — the same metric
+    /// `selectBestQuote` ranks on, so the first element matches the winner on a pure-rate basis.
+    /// Quotes that can't produce a comparable net amount are dropped (they can't be ranked).
+    /// Provider preference (the banded layer in `selectBestQuote`) intentionally does *not* reorder
+    /// this list: the user-facing list shows raw rate order so the displayed amounts are monotonic.
+    static func rankedQuotes(quotes: [SwapQuote], toCoin: Coin) -> [SwapQuote] {
+        quotes
+            .compactMap { quote -> (SwapQuote, Decimal)? in
+                guard let value = quote.expectedNetToAmount(toCoin: toCoin) else { return nil }
+                return (quote, value)
+            }
+            .sorted { $0.1 > $1.1 }
+            .map { $0.0 }
+    }
+
+    /// Width of the priority band, as a fraction of the best net output. Quotes whose net
+    /// output lands within this band of the best are treated as effectively tied on rate, so
+    /// the higher-priority provider is preferred over a marginally larger raw output. 1%.
+    static let providerPreferenceBand: Decimal = 0.01
+
+    /// Pick the best quote across providers. The ranking metric is net output in `toCoin`
+    /// units (every provider in a candidate set swaps to the same `toCoin`, so the
+    /// destination amount is directly comparable). On top of that metric a banded
+    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (1%)
+    /// of the best net output, the highest-priority provider wins instead of the raw maximum.
+    /// This keeps near-tie routes on the more trusted/integrated provider without ever
+    /// trading away a materially better rate (anything outside the band loses on output).
+    /// Falls back to the first quote (priority order from `resolveAllProviders`) when no
+    /// quote produces a comparable amount.
+    ///
+    /// iOS is the cross-platform anchor for this rule; the canonical spec lives in
+    /// `vultisig-sdk` and other platforms mirror this implementation.
     static func selectBestQuote(
         quotes: [SwapQuote],
         toCoin: Coin
@@ -92,17 +158,51 @@ struct SwapService {
             return (quote, value)
         }
 
-        if let best = ranked.max(by: { $0.1 < $1.1 }) {
-            let summary = ranked
-                .map { "\($0.0.displayName ?? "?")=\($0.1)" }
-                .joined(separator: ", ")
-            let pickedName = best.0.displayName ?? "?"
-            logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] → \(pickedName, privacy: .public)")
-            return best.0
+        guard let best = ranked.max(by: { $0.1 < $1.1 }) else {
+            logger.warning("[swap-rank] no quote was rankable, returning first by priority")
+            return quotes.first
         }
 
-        logger.warning("[swap-rank] no quote was rankable, returning first by priority")
-        return quotes.first
+        // Quotes within the band of the best net output are treated as tied on rate; among
+        // those, prefer the higher-priority (lower index) provider. Tie-break inside the same
+        // priority by higher net output (defensive — a provider rarely appears twice).
+        let floor = best.1 * (1 - providerPreferenceBand)
+        let inBand = ranked.filter { $0.1 >= floor }
+        let picked = inBand.min { lhs, rhs in
+            let lhsPriority = priority(of: lhs.0)
+            let rhsPriority = priority(of: rhs.0)
+            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
+            return lhs.1 > rhs.1
+        } ?? best
+
+        let summary = ranked
+            .map { "\($0.0.displayName ?? "?")=\($0.1)" }
+            .joined(separator: ", ")
+        let inBandSummary = inBand
+            .map { "\($0.0.displayName ?? "?")=\($0.1)(p\(priority(of: $0.0)))" }
+            .joined(separator: ", ")
+        logger.info("[swap-rank] candidates=\(quotes.count, privacy: .public) [\(summary, privacy: .public)] best=\(best.0.displayName ?? "?", privacy: .public)=\(best.1, privacy: .public) floor=\(floor, privacy: .public) inBand=[\(inBandSummary, privacy: .public)] → \(picked.0.displayName ?? "?", privacy: .public)")
+        return picked.0
+    }
+
+    /// Provider preference order for the banded selection. Lower index = preferred. Keyed off
+    /// the enum case (not `displayName`, which can carry SwapKit sub-provider text). THORChain
+    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, LI.FI.
+    private static func priority(of quote: SwapQuote) -> Int {
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return 0
+        case .mayachain:
+            return 1
+        case .swapkit:
+            return 2
+        case .kyberswap:
+            return 3
+        case .oneinch:
+            return 4
+        case .lifi:
+            return 5
+        }
     }
 
     private func fetchQuoteForProvider(
@@ -192,6 +292,14 @@ struct SwapService {
                 toCoin: toCoin,
                 vultTierDiscount: vultTierDiscount
             )
+        case .swapkit:
+            return try await fetchSwapKitQuote(
+                service: SwapKitService.shared,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vultTierDiscount: vultTierDiscount
+            )
         }
     }
 }
@@ -218,6 +326,7 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
+                toleranceBps: Self.defaultThorchainToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -256,24 +365,11 @@ private extension SwapService {
                 return .thorchain(quote)
             }
         } catch let error as ThorchainSwapError {
-            print("❌ [COSMOS DEBUG] THORChain error: code=\(error.code), message=\(error.message)")
-            if error.code == 3 {
-                if error.message.contains("not enough asset to pay for fees") {
-                    throw SwapError.swapAmountTooSmall
-                } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
-                    error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                    error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                    error.message.localizedCaseInsensitiveContains("pool does not exist") {
-                    // This typically means no liquidity pool exists for this token pair
-                    throw SwapError.noLiquidityPool
-                } else {
-                    throw SwapError.serverError(message: error.message)
-                }
-            } else {
-                throw SwapError.routeUnavailable
-            }
+            logger.error("THORChain swap error: code=\(error.code, privacy: .public), message=\(error.message, privacy: .public)")
+            throw Self.mapThorchainSwapError(error)
         } catch let error as MayachainSwapError {
-            throw SwapError.serverError(message: error.error)
+            logger.error("MAYAChain swap error: code=\(error.code ?? -1, privacy: .public), message=\(error.error, privacy: .public)")
+            throw Self.mapMayachainSwapError(error)
         } catch let error as SwapError {
             throw error
         } catch {
@@ -341,6 +437,98 @@ private extension SwapService {
         print("LiFi Quote: \(response.quote)")
         return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
+
+    func fetchSwapKitQuote(
+        service: SwapKitService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuote {
+        // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
+        // doesn't enable. Fails open if the cache can't be loaded so we don't
+        // silently disable the aggregator on a bad network day.
+        let fromEnabled = await service.isChainEnabled(fromCoin.chain)
+        let toEnabled = await service.isChainEnabled(toCoin.chain)
+        guard fromEnabled, toEnabled else {
+            throw SwapKitError.providerNotEnabled
+        }
+        // Mirror Kyber's `vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount`
+        // shape via `max(0, ...)`, plus a defensive upper clamp at the
+        // documented SwapKit ceiling (10% = 1000 bps). The `min` is
+        // unreachable today because `vultTierDiscount` is bounded
+        // server-side, but the API allows up to 1000 and the clamp guards
+        // against any future loosening.
+        let affiliateBps = max(0, min(1000, 50 - vultTierDiscount))
+        guard let route = try await service.fetchBestRoute(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            amount: amount,
+            affiliateFeeBps: affiliateBps
+        ) else {
+            throw SwapKitError.routeFiltered
+        }
+        let response = try await service.buildSwapTx(
+            routeId: route.routeId,
+            sourceAddress: fromCoin.address,
+            destinationAddress: toCoin.address
+        )
+        return .swapkit(
+            response,
+            fee: service.inboundFee(from: response, fromCoin: fromCoin),
+            subProvider: response.subProvider
+        )
+    }
+}
+
+// MARK: - Upstream error mapping
+
+extension SwapService {
+    /// Substrings THORChain/MAYAChain emit when a chain or asset is paused
+    /// upstream (e.g. a protocol-wide trading halt after an incident). This is
+    /// a *temporary* condition the user can retry, distinct from a permanently
+    /// unsupported pair, so it gets its own user-facing message rather than the
+    /// generic "route not available" or a leaked raw upstream string.
+    private static let tradingHaltedMarkers = ["trading is halted", "trading halted"]
+
+    private static func isTradingHalted(_ message: String) -> Bool {
+        tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
+    }
+
+    /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
+    /// A trading halt is detected on any code so a paused chain surfaces as a
+    /// retryable message instead of `routeUnavailable`; otherwise the existing
+    /// code-3 classification (fees / unsupported pair / raw server message) and
+    /// the non-code-3 `routeUnavailable` fallback are preserved.
+    static func mapThorchainSwapError(_ error: ThorchainSwapError) -> SwapError {
+        if isTradingHalted(error.message) {
+            return .tradingHalted
+        }
+        if error.code == 3 {
+            if error.message.contains("not enough asset to pay for fees") {
+                return .swapAmountTooSmall
+            } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
+                error.message.localizedCaseInsensitiveContains("bad to asset") ||
+                error.message.localizedCaseInsensitiveContains("bad from asset") ||
+                error.message.localizedCaseInsensitiveContains("pool does not exist") {
+                // This typically means no liquidity pool exists for this token pair
+                return .noLiquidityPool
+            } else {
+                return .serverError(message: error.message)
+            }
+        }
+        return .routeUnavailable
+    }
+
+    /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.
+    /// A trading halt surfaces as the retryable message; any other error keeps
+    /// the previous behaviour of relaying the raw upstream string.
+    static func mapMayachainSwapError(_ error: MayachainSwapError) -> SwapError {
+        if isTradingHalted(error.error) {
+            return .tradingHalted
+        }
+        return .serverError(message: error.error)
+    }
 }
 
 // MARK: - THORChain anti-rekt streaming fallback
@@ -388,7 +576,7 @@ extension SwapService {
         switch provider {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
             return true
-        case .mayachain, .oneinch, .kyberswap, .lifi:
+        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit:
             return false
         }
     }
@@ -431,6 +619,7 @@ extension SwapService {
                 amount: amount,
                 interval: 1,
                 streamingQuantity: streamingQuantity,
+                toleranceBps: Self.defaultThorchainToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )

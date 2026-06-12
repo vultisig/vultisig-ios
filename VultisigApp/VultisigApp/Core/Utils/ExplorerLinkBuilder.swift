@@ -38,6 +38,11 @@ enum ExplorerLinkBuilder {
             return mayaTracker(txid: txHash)
         case .lifi:
             return lifiTracker(txid: txHash)
+        case .swapkit:
+            // Phase 1 ships the explorer-link fallback; `/track` polling is
+            // covered by the follow-up tx-history plan. `track.swapkit.dev`
+            // accepts on-chain hashes for the source chain.
+            return swapkitTracker(txid: txHash)
         case .oneinch, .kyberswap, .none:
             return getExplorerURL(chain: fromChain, txid: txHash)
         }
@@ -56,10 +61,19 @@ enum ExplorerLinkBuilder {
         case .mayachain:
             return mayaTracker(txid: txHash)
         case .generic(let payload):
-            if payload.provider == .lifi {
+            switch payload.provider {
+            case .lifi:
                 return lifiTracker(txid: txHash)
+            case .swapkit:
+                return swapkitTracker(txid: txHash)
+            case .oneInch, .kyberSwap, .unknown:
+                return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
             }
-            return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
+        case .swapkit:
+            // Phase 2 ships explorer-link fallback for BTC PSBT routes.
+            // `/track` polling integration is covered by the follow-up
+            // tx-history plan; track.swapkit.dev accepts the on-chain hash.
+            return swapkitTracker(txid: txHash)
         case .none:
             return nil
         }
@@ -82,6 +96,8 @@ enum ExplorerLinkBuilder {
             switch normalized {
             case "lifi":
                 return URL(string: lifiTracker(txid: txHash))
+            case "swapkit":
+                return URL(string: swapkitTracker(txid: txHash))
             case "maya", "mayachain", "mayaprotocol":
                 return URL(string: mayaTracker(txid: txHash))
             case "thorchainstagenet":
@@ -192,7 +208,7 @@ enum ExplorerLinkBuilder {
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
         case .qbtc:
-            return ""
+            return "https://explorer.qbtc.net/qbtc/tx/\(txid)"
         }
     }
 
@@ -281,7 +297,7 @@ enum ExplorerLinkBuilder {
         case .bittensor:
             return "https://taostats.io/account/\(address)"
         case .qbtc:
-            return nil
+            return "https://explorer.qbtc.net/qbtc/account/\(address)"
         }
     }
 
@@ -292,6 +308,10 @@ enum ExplorerLinkBuilder {
 
     private static func lifiTracker(txid: String) -> String {
         "https://scan.li.fi/tx/\(txid)"
+    }
+
+    private static func swapkitTracker(txid: String) -> String {
+        "https://track.swapkit.dev/?hash=\(txid)"
     }
 
     private static func mayaTracker(txid: String) -> String {

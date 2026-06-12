@@ -27,15 +27,18 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    @AppStorage("isDKLSEnabled") var isDKLSEnabled: Bool = false
-    @AppStorage("allowSwap") var allowSwap: Bool = false
-    @AppStorage("BuyEnabled") var buyEnabled: Bool = false
     @AppStorage("sepolia") var enableSepolia: Bool = false
     @AppStorage("thorchainChainnet") var enableThorchainChainnet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
-    @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
     @AppStorage("limitSwapEnabled") var limitSwapEnabled: Bool = false
+    /// Debug-only: force every swap quote through a single provider so a
+    /// tester can verify a specific signing path in isolation. Empty string
+    /// = no force (production ranking across all providers). Otherwise one
+    /// of: "swapkit", "oneInch", "kyberSwap", "lifi", "thorchain",
+    /// "mayachain". `Coin+Swaps.swapProviders` reads this and filters the
+    /// natural provider list down to the single forced provider.
+    @AppStorage("forcedSwapProvider") var forcedSwapProvider: String = ""
 
     init() {
         self.selectedCurrency = SettingsCurrency.current

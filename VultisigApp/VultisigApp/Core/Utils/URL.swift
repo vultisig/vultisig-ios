@@ -7,6 +7,20 @@
 
 import Foundation
 
+extension URL {
+    /// Builds a `URL` from a compile-time-constant string literal that is known
+    /// to be valid. A failure here is a programmer error (a malformed literal in
+    /// source), never a runtime/user-input condition, so it traps loudly rather
+    /// than force-unwrapping. Use only for hardcoded hosts the code controls;
+    /// never for user-supplied or runtime-resolved strings.
+    init(staticString: StaticString) {
+        guard let url = URL(string: "\(staticString)") else {
+            preconditionFailure("Invalid static URL string: \(staticString)")
+        }
+        self = url
+    }
+}
+
 class StaticURL {
     static let GithubVultisigURL = URL(string: "https://github.com/vultisig/vultisig-ios")!
     static let XVultisigURL = URL(string: "https://x.com/vultisig")!

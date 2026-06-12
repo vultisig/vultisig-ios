@@ -13,8 +13,7 @@ struct TronFreezeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-    @StateObject var tx = SendTransaction()
-    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @State private var sendInteractor: SendInteractor = DefaultSendInteractor.live
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var trxCoin: Coin?
@@ -184,10 +183,7 @@ struct TronFreezeView: View {
 
         await MainActor.run {
             self.trxCoin = coin
-            tx.reset(coin: coin)
         }
-
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
 
     func updatePercentage(from amountStr: String) async {
@@ -222,24 +218,18 @@ struct TronFreezeView: View {
 
         await MainActor.run { isLoading = true }
 
-        // Configure SendTransaction for the freeze operation
-        // The memo encodes the freeze operation type for TronHelper
+        // The memo encodes the freeze operation type for TronHelper.
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
 
         await MainActor.run {
-            tx.coin = coin
-            tx.fromAddress = coin.address
-            tx.toAddress = coin.address  // Freeze goes to self
-            tx.amount = amountDec.description
-            tx.memo = memo
-            tx.isStakingOperation = true
-        }
-
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-
-        await MainActor.run {
             isLoading = false
-            router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
+            let immutableTx = SendTransaction.empty(coin: coin, vault: vault).with(
+                toAddress: coin.address,  // Freeze goes to self
+                amount: amountDec.description,
+                memo: memo,
+                isStakingOperation: true
+            )
+            router.navigate(to: SendRoute.verify(tx: immutableTx, retrySignal: SendRetrySignal(), vault: vault))
         }
     }
 }

@@ -266,13 +266,13 @@ final class ExplorerLinkBuilderTests: XCTestCase {
 
     // MARK: - Chain coverage (regression guard)
 
-    /// Every Chain case must produce a non-empty transaction URL except `qbtc`,
-    /// which has no public explorer. This catches the case where a new Chain is
-    /// added to the enum without a corresponding `getExplorerURL` arm — previously
-    /// silent because the switch is exhaustive but a forgotten arm could return
-    /// the empty string and ship without complaint.
+    /// Every Chain case must produce a non-empty transaction URL. This catches
+    /// the case where a new Chain is added to the enum without a corresponding
+    /// `getExplorerURL` arm — previously silent because the switch is exhaustive
+    /// but a forgotten arm could return the empty string and ship without
+    /// complaint.
     func testGetExplorerURLProducesNonEmptyURLForEveryChain() {
-        for chain in Chain.allCases where chain != .qbtc {
+        for chain in Chain.allCases {
             let url = ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: txHash)
             XCTAssertFalse(
                 url.isEmpty,
@@ -281,13 +281,16 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         }
     }
 
-    func testGetExplorerURLReturnsEmptyForQbtc() {
-        XCTAssertEqual(ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash), "")
+    func testGetExplorerURLReturnsQbtcExplorerURL() {
+        XCTAssertEqual(
+            ExplorerLinkBuilder.getExplorerURL(chain: .qbtc, txid: txHash),
+            "https://explorer.qbtc.net/qbtc/tx/\(txHash)"
+        )
     }
 
     func testGetExplorerByAddressURLProducesNonEmptyURLForEveryChain() {
         let address = "test-address"
-        for chain in Chain.allCases where chain != .qbtc {
+        for chain in Chain.allCases {
             let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address)
             XCTAssertNotNil(url, "Chain \(chain.rawValue) returned nil for address URL")
             XCTAssertFalse(
@@ -297,7 +300,10 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         }
     }
 
-    func testGetExplorerByAddressURLReturnsNilForQbtc() {
-        XCTAssertNil(ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"))
+    func testGetExplorerByAddressURLReturnsQbtcExplorerURL() {
+        XCTAssertEqual(
+            ExplorerLinkBuilder.getExplorerByAddressURL(chain: .qbtc, address: "addr"),
+            "https://explorer.qbtc.net/qbtc/account/addr"
+        )
     }
 }

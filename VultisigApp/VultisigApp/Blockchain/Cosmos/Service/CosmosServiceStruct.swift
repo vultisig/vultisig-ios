@@ -117,6 +117,29 @@ struct CosmosServiceStruct {
         }
     }
 
+    // MARK: - Terra Classic Tax
+
+    /// Fetch Terra Classic's live `burn_tax_rate` from the `x/tax` module.
+    /// Fails **closed**: any network/decode failure returns the conservative
+    /// fallback rate so a transient LCD outage can't sign a zero-tax tx the
+    /// chain then rejects at broadcast.
+    func fetchTerraClassicBurnTaxRate() async -> Decimal {
+        guard let baseURL = config.baseURL else {
+            return TerraClassicTax.fallbackBurnTaxRate
+        }
+
+        do {
+            let response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .terraClassicTaxParams),
+                responseType: TerraClassicTaxParamsResponse.self
+            )
+            return TerraClassicTax.parseRate(response.data.params.burnTaxRate)
+        } catch {
+            logger.warning("Terra Classic burn tax rate fetch failed, using fallback: \(error.localizedDescription, privacy: .public)")
+            return TerraClassicTax.fallbackBurnTaxRate
+        }
+    }
+
     // MARK: - Account Operations
 
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {

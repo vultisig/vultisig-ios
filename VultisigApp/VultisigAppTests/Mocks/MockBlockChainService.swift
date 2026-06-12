@@ -8,7 +8,7 @@ import Foundation
 
 // swiftlint:disable async_without_await
 
-final class MockBlockChainService: BlockChainServiceProtocol, @unchecked Sendable {
+final class MockBlockChainService: BlockChainServiceProtocol {
     var stubbedResult: Result<BlockChainSpecific, Error>
     private(set) var fetchSwapCallCount = 0
     private(set) var lastFromCoin: Coin?

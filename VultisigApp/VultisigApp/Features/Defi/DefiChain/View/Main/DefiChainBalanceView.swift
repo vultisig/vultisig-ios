@@ -71,10 +71,39 @@ struct DefiChainBalanceView: View {
         }
     }
 
+    @ViewBuilder
     var imageView: some View {
-        Image(imageName)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+        switch chain {
+        case .terra, .terraClassic:
+            cosmosStakingIconOverlay(logo: "luna")
+        case .qbtc:
+            cosmosStakingIconOverlay(logo: "qbtc")
+        default:
+            Image(imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        }
+    }
+
+    private func cosmosStakingIconOverlay(logo: String) -> some View {
+        ZStack {
+            Image(logo)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 130, height: 130)
+                .clipShape(Circle())
+
+            Circle()
+                .stroke(Theme.colors.alertSuccess.opacity(0.4), lineWidth: 2.2)
+                .frame(width: 130, height: 130)
+
+            Circle()
+                .stroke(Theme.colors.alertSuccess.opacity(0.25), lineWidth: 1)
+                .frame(width: 160, height: 160)
+                .shadow(color: Color(red: 0, green: 0.6, blue: 0.92).opacity(0.27), radius: 13.33278, x: 0, y: 0)
+        }
+        .offset(x: 0, y: 30)
+        .opacity(0.6)
     }
 
     var gradientStyle: some ShapeStyle {

@@ -59,6 +59,14 @@ final class TransactionHistoryItem {
     // Error details
     var errorMessage: String?
 
+    /// Provider-agnostic swap-tracking state. `nil` for rows that aren't
+    /// routed through any tracked aggregator (native sends, approve txs,
+    /// legacy swap providers without tracker integration). The discriminator
+    /// inside (`providerKind`) selects the `SwapTrackingService` conformer
+    /// that owns polling for this row.
+    @Relationship(deleteRule: .cascade)
+    var swapTracking: SwapTrackingMetadata?
+
     init(
         id: UUID = UUID(),
         txHash: String,
@@ -87,7 +95,8 @@ final class TransactionHistoryItem {
         createdAt: Date = Date(),
         completedAt: Date? = nil,
         estimatedTime: String? = nil,
-        errorMessage: String? = nil
+        errorMessage: String? = nil,
+        swapTracking: SwapTrackingMetadata? = nil
     ) {
         self.id = id
         self.txHash = txHash
@@ -117,5 +126,6 @@ final class TransactionHistoryItem {
         self.completedAt = completedAt
         self.estimatedTime = estimatedTime
         self.errorMessage = errorMessage
+        self.swapTracking = swapTracking
     }
 }

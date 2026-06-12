@@ -24,8 +24,12 @@ settings:
     DEVELOPMENT_TEAM: 5BP27CHH4Y
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
-    MARKETING_VERSION: "1.36"
-    CURRENT_PROJECT_VERSION: "55"
+    MARKETING_VERSION: "1.39"
+    CURRENT_PROJECT_VERSION: "61"
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    DEAD_CODE_STRIPPING: YES
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
 
 configs:
   Debug: debug
@@ -53,7 +57,15 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    revision: 798af1557c0f2217ede66576b67b2afd22011dba
+    # Pinned to the main revision that added coin context for `swap_fee` on
+    # `OneInchTransaction` (commondata #87, merged 2026-06-03): optional
+    # `swap_fee_chain = 8`, `swap_fee_token_id = 9`, `swap_fee_decimals = 10`
+    # with explicit presence, so receivers can attribute the affiliate fee
+    # to the right coin (KyberSwap denominates it in the destination token).
+    # Deliberately NOT head: the next schema change adds a `sign_sui` case
+    # to the `KeysignPayload.sign_data` oneof, which our exhaustive
+    # `OneOf_SignData` switches would be forced to handle.
+    revision: 5a72a86cb061dade165d42ad426ba3639fb9a877
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19
@@ -99,6 +111,9 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Development"
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
 
@@ -118,6 +133,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: Vultisig-Logo
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
 
         # Runtime paths
         LD_RUNPATH_SEARCH_PATHS: "@executable_path/Frameworks"
@@ -210,6 +226,26 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+          # Exclude the fixture JSONs from the generic-sources scan; they're
+          # picked up explicitly below as a folder reference so they land at
+          # `__fixtures__/*.json` inside the bundle. Without this exclude,
+          # XcodeGen treats every `.json` under the tree as a flattened
+          # resource and collides with `ChainHelperTests.testChainHelpers`,
+          # which enumerates every top-level JSON in the bundle root.
+          - "Swap/SwapKit/__fixtures__/**"
+          - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
+      # Static fixture JSONs bundled with the test target as a *folder
+      # reference* (blue folder in Xcode) so they land at
+      # `__fixtures__/*.json` inside the bundle instead of flattening into
+      # the resource root. Flattening would collide with
+      # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
+      # JSON and decodes it as `[ChainHelperTestCase]`.
+      - path: VultisigAppTests/Swap/SwapKit/__fixtures__
+        type: folder
+        buildPhase: resources
+      - path: VultisigAppTests/Blockchain/Cosmos/Staking/CosmosStakingFixtures
+        type: folder
+        buildPhase: resources
 
     settings:
       base:
@@ -219,6 +255,9 @@ targets:
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp"
         BUNDLE_LOADER: "$(TEST_HOST)"
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
         DEAD_CODE_STRIPPING: YES
@@ -251,6 +290,9 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: VultisigApp
         TARGETED_DEVICE_FAMILY: "1,2"
+        # We don't support visionOS — hide "Apple Vision (Designed for iPad)"
+        # from Supported Destinations.
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         DEAD_CODE_STRIPPING: YES
         SWIFT_EMIT_LOC_STRINGS: NO
 

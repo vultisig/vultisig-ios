@@ -33,6 +33,10 @@ struct VaultMainScreen: View {
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
+    /// Chain asset the user tried to enable that requires an MLDSA key the
+    /// vault doesn't have yet (today: QBTC). Persisted across the keygen
+    /// hop so we can auto-add it on `qbtcQuantumKeygenCompleted`.
+    @State private var pendingQuantumChainAsset: CoinMeta?
 
     // Capture geometry width to avoid circular layout dependency during sheet presentation
     @State private var capturedGeometryWidth: CGFloat = 400
@@ -93,7 +97,8 @@ struct VaultMainScreen: View {
                 .crossPlatformSheet(isPresented: $showChainSelection) {
                     VaultSelectChainScreen(
                         vault: vault,
-                        isPresented: $showChainSelection
+                        isPresented: $showChainSelection,
+                        onRequireQuantumKeygen: onRequireQuantumKeygen
                     ) { refresh() }
                 }
                 .crossPlatformSheet(isPresented: $showReceiveList) {
@@ -127,6 +132,9 @@ struct VaultMainScreen: View {
                 refresh()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .qbtcQuantumKeygenCompleted)) { note in
+            handleQuantumKeygenCompleted(note: note)
+        }
     }
 
     func topContentSection(width: CGFloat) -> some View {
@@ -152,6 +160,11 @@ struct VaultMainScreen: View {
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
+            // Rebuild the carousel per vault so a banner dismissed on one vault
+            // (without being persisted, e.g. `.buyVult` below Silver tier) shows
+            // again when switching to another vault, instead of staying hidden by
+            // the carousel's cached internal banner state.
+            .id(vault.id)
         }
     }
 
@@ -317,6 +330,37 @@ struct VaultMainScreen: View {
 
     func onBannerClosed(_ banner: VaultBannerType) {
         viewModel.removeBanner(for: vault, banner: banner)
+    }
+
+    func onRequireQuantumKeygen(_ asset: CoinMeta) {
+        pendingQuantumChainAsset = asset
+        showChainSelection = false
+        // Wait for the sheet dismissal to settle before kicking off the
+        // route change — otherwise the navigation can race with the sheet
+        // and the destination screen ends up rendered behind it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            routeToPresent = .quantumSecurityIntro(vault: vault)
+        }
+    }
+
+    func handleQuantumKeygenCompleted(note: Notification) {
+        // Defense-in-depth: with the chain picker gated upstream, the
+        // pending quantum-chain asset cannot be set with the flag off.
+        // Guarding here too means any future code path that posts the
+        // `qbtcQuantumKeygenCompleted` notification still respects the flag.
+        guard QBTCConfig.isFeatureEnabled else { return }
+        guard let pendingAsset = pendingQuantumChainAsset else { return }
+        let completedPubKey = note.userInfo?[QuantumKeygenNotification.vaultPubKeyECDSAKey] as? String
+        guard completedPubKey == vault.pubKeyECDSA else { return }
+        pendingQuantumChainAsset = nil
+        Task { @MainActor in
+            let currentSelection = Set(vault.coins.map { $0.toCoinMeta() })
+            await CoinService.saveAssets(
+                for: vault,
+                selection: currentSelection.union([pendingAsset])
+            )
+            refresh()
+        }
     }
 }
 

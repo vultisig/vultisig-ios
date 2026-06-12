@@ -23,6 +23,9 @@ struct KeysignAnimationView: View {
             animationVM?.view()
         }
         .ignoresSafeArea()
+        .readSize { size in
+            animationVMInstance?.numberProperty(fromPath: "posXcircles")?.value = Float(size.width / 2)
+        }
         .onChange(of: connected) { _, newValue in
             animationVMInstance?.booleanProperty(fromPath: "Connected")?.value = newValue
         }
@@ -93,6 +96,7 @@ struct KeysignAnimationView: View {
             return cached.data
         }
         do {
+            // swiftlint:disable:next no_raw_urlsession
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
                 logger.warning("Non-success response for coin logo \(url.absoluteString, privacy: .public)")

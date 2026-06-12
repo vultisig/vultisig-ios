@@ -36,6 +36,9 @@ struct TransactionHistoryDetailSheet: View {
                 }
                 detailRows
                 explorerButton
+                if transaction.swapKitTrackerURL != nil {
+                    swapKitTrackerButton
+                }
             }
             .padding(16)
             .padding(.top, 20)
@@ -257,6 +260,15 @@ struct TransactionHistoryDetailSheet: View {
         .fixedSize()
     }
 
+    private var swapKitTrackerButton: some View {
+        PrimaryButton(title: "swapKitViewOnTracker", type: .secondary) {
+            if let url = transaction.swapKitTrackerURL {
+                openURL(url)
+            }
+        }
+        .fixedSize()
+    }
+
     // MARK: - Helpers
 
     private var statusText: String {
@@ -299,4 +311,5 @@ struct TransactionHistoryDetailSheet: View {
         guard address.count > 14 else { return address }
         return "\(address.prefix(8))...\(address.suffix(6))"
     }
+
 }

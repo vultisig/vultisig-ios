@@ -1,0 +1,27 @@
+{
+  "delegation_responses": [
+    {
+      "delegation": {
+        "delegator_address": "terra1delegator00000000000000000000000000ab",
+        "validator_address": "terravaloper1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "shares": "1000000.000000000000000000"
+      },
+      "balance": {
+        "denom": "uluna",
+        "amount": "1000000"
+      }
+    },
+    {
+      "delegation": {
+        "delegator_address": "terra1delegator00000000000000000000000000ab",
+        "validator_address": "terravaloper1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "shares": "500000.000000000000000000"
+      },
+      "balance": {
+        "denom": "uluna",
+        "amount": "500000"
+      }
+    }
+  ],
+  "pagination": { "next_key": null, "total": "2" }
+}

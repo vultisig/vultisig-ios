@@ -20,18 +20,6 @@ struct SettingsAdvancedView: View {
     var content: some View {
         VStack {
             SettingToggleCell(
-                title: "enableDKLS",
-                icon: "timelapse",
-                isEnabled: $settingsViewModel.isDKLSEnabled
-            )
-
-            SettingToggleCell(
-                title: "Swap",
-                icon: "arrow.2.squarepath",
-                isEnabled: $settingsViewModel.allowSwap
-            )
-
-            SettingToggleCell(
                 title: "ETH Testnet(Sepolia)",
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.enableSepolia
@@ -44,21 +32,9 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
-                title: "Buy",
-                icon: "creditcard",
-                isEnabled: $settingsViewModel.buyEnabled
-            )
-
-            SettingToggleCell(
                 title: "Sell",
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.sellEnabled
-            )
-
-            SettingToggleCell(
-                title: "MLDSA",
-                icon: "lock.shield",
-                isEnabled: $settingsViewModel.isMLDSAEnabled
             )
 
             SettingToggleCell(
@@ -72,6 +48,29 @@ struct SettingsAdvancedView: View {
                 icon: "arrow.up.right.square",
                 isEnabled: $settingsViewModel.limitSwapEnabled
             )
+
+            SettingPickerCell(
+                title: "settingsAdvancedForcedSwapProvider".localized,
+                icon: "arrow.triangle.branch",
+                options: [
+                    .init(value: "", label: "settingsAdvancedForcedSwapProviderAll".localized),
+                    .init(value: "swapkit", label: "SwapKit only"),
+                    .init(value: "oneInch", label: "1Inch only"),
+                    .init(value: "kyberSwap", label: "KyberSwap only"),
+                    .init(value: "lifi", label: "LI.FI only"),
+                    .init(value: "thorchain", label: "THORChain only"),
+                    .init(value: "mayachain", label: "Maya only")
+                ],
+                selection: $settingsViewModel.forcedSwapProvider
+            )
+
+            SettingActionCell(
+                title: "settingsAdvancedSwapKitClearTokensCache".localized,
+                icon: "arrow.clockwise",
+                buttonLabel: "settingsAdvancedClear".localized
+            ) {
+                SwapKitTokensCache.shared.clearCache()
+            }
         }
     }
 }
@@ -82,4 +81,5 @@ struct SettingsAdvancedView: View {
         SettingsAdvancedView()
     }
     .environmentObject(SettingsViewModel())
+    .environmentObject(AppViewModel.shared)
 }

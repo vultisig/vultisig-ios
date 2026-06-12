@@ -114,15 +114,28 @@ struct SwapFromToField: View {
 
     var fromToAmountField: some View {
         Group {
-            SwapCryptoAmountTextField(amount: $amount) { _ in
+            SwapCryptoAmountTextField(amount: $amount) { oldValue, newValue in
                 if title=="from" {
-                    detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode)
+                    // A multi-character jump (paste, autofill, or clearing the
+                    // field to a value) is a discrete action — fetch immediately
+                    // instead of waiting out the keystroke debounce. Single-char
+                    // edits stay debounced for free typing.
+                    let immediate = abs(newValue.count - oldValue.count) > 1
+                    detailsViewModel.updateFromAmount(
+                        vault: vault,
+                        referredCode: referredViewModel.savedReferredCode,
+                        immediate: immediate
+                    )
                     detailsViewModel.showAllPercentageButtons = true
                 }
             }
             .disabled(title=="to")
         }
-        .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+        // The "to" amount is never skeletoned: it always carries a value — the
+        // `~`-indicative estimate while the quote loads, replaced by the firm
+        // amount once it lands. Only the swap-details summary (provider, fees)
+        // shows the loading skeleton.
+        .animation(.easeInOut(duration: 0.25), value: amount)
     }
 
     var fiatBalance: some View {
@@ -131,7 +144,7 @@ struct SwapFromToField: View {
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
-            .redacted(reason: title == "to" && detailsViewModel.isLoadingQuotes ? .placeholder : [])
+            .animation(.easeInOut(duration: 0.25), value: fiatAmount)
     }
 
     private func isFiatVisible() -> Bool {

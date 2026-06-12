@@ -5,10 +5,13 @@
 //  Created by Enrique Souza on 2025-12-13.
 //
 
+import OSLog
 import SwiftUI
 import BigInt
 import WalletCore
 import VultisigCommonData
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "circle-withdraw")
 
 struct CircleWithdrawView: View {
     let vault: Vault
@@ -20,11 +23,6 @@ struct CircleWithdrawView: View {
     @State var percentage: Double = 0.0
     @State var isLoading = false
     @State var error: Error?
-    @State var isFastVault = false
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = ""
-
-    @StateObject var sendTransaction = SendTransaction()
 
     init(vault: Vault, model: CircleViewModel) {
         self.vault = vault
@@ -44,16 +42,6 @@ struct CircleWithdrawView: View {
         }
         .screenTitle("circleWithdrawTitle".localized)
         .withLoading(isLoading: $isLoading)
-        .task {
-            await loadFastVaultStatus()
-        }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { Task { await handleWithdraw() } }
-            )
-        }
     }
 
     var footerView: some View {
@@ -82,7 +70,7 @@ struct CircleWithdrawView: View {
         VStack(spacing: CircleConstants.Design.verticalSpacing) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("circleWithdrawAmount".localized)
+                    Text("circleWithdrawAmountLabel".localized)
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
 
@@ -163,28 +151,14 @@ struct CircleWithdrawView: View {
         abs(percentage - Double(value)) < 1.0
     }
 
-    @ViewBuilder
     var withdrawButton: some View {
-        if isFastVault {
-            VStack {
-                Text("holdForPairedSign".localized)
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: "circleWithdrawConfirm".localized) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    fastVaultPassword = ""
-                    Task { await handleWithdraw() }
-                }
-            }
-            .disabled(isButtonDisabled)
-        } else {
-            PrimaryButton(title: "circleWithdrawConfirm".localized) {
-                Task { await handleWithdraw() }
-            }
-            .disabled(isButtonDisabled)
+        // Builds the native-ETH MSCA payload, then routes to the shared verify
+        // screen, where the user confirms amount/recipient and chooses the
+        // fast/paired signing path.
+        PrimaryButton(title: "circleWithdrawConfirm".localized) {
+            Task { await handleWithdraw() }
         }
+        .disabled(isButtonDisabled)
     }
 
     var vaultEthBalance: Decimal {
@@ -194,15 +168,6 @@ struct CircleWithdrawView: View {
 
     var isButtonDisabled: Bool {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
-    }
-
-    func loadFastVaultStatus() async {
-        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        await MainActor.run {
-            isFastVault = isExist && !isLocalBackup
-        }
     }
 
     func updatePercentage(from amountStr: String) async {
@@ -254,7 +219,7 @@ struct CircleWithdrawView: View {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
 
-            // Use USDC coin for display purposes on success screen
+            // USDC coin drives the verify/done screens' amount + recipient display.
             guard let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "USDC coin not found"])
             }
@@ -277,7 +242,7 @@ struct CircleWithdrawView: View {
                             ethAddress: recipientCoin.address
                         )
                     } catch {
-                        print("Circle create wallet error: \(error.localizedDescription)")
+                        logger.error("Circle create wallet error: \(error.localizedDescription)")
                     }
                     payload = try await attemptPayload()
                 } else {
@@ -288,18 +253,21 @@ struct CircleWithdrawView: View {
             }
 
             await MainActor.run {
-                self.sendTransaction.reset(coin: usdcCoin)
-                self.sendTransaction.amount = amount
-                self.sendTransaction.toAddress = recipientCoin.address
-                self.sendTransaction.isFastVault = isFastVault
-                self.sendTransaction.fastVaultPassword = fastVaultPassword
-
+                // The USDC `tx` is for display only — it drives the verify
+                // summary's amount + recipient. The signed transaction is the
+                // pre-built native-ETH MSCA `execute(...)` payload, passed
+                // through verify verbatim so the withdraw is not re-derived as
+                // a USDC `transfer(MSCA, 0)` no-op.
+                let immutableTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
+                    toAddress: recipientCoin.address,
+                    amount: amount
+                )
                 router.navigate(
-                    to: SendRoute.pairing(
+                    to: SendRoute.verify(
+                        tx: immutableTx,
+                        retrySignal: SendRetrySignal(),
                         vault: vault,
-                        tx: sendTransaction,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
+                        prebuiltKeysignPayload: payload
                     )
                 )
 

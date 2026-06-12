@@ -9,42 +9,32 @@ import SwiftUI
 
 struct SendPairScreen: View {
     @Environment(\.router) var router
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     let vault: Vault
     let tx: SendTransaction
+    let retrySignal: SendRetrySignal
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
 
     var body: some View {
-        Screen {
-            KeysignDiscoveryView(
-                vault: vault,
-                keysignPayload: keysignPayload,
-                customMessagePayload: nil,
-                fastVaultPassword: fastVaultPassword,
-                shareSheetViewModel: shareSheetViewModel,
-                previewType: .Send,
-                contentPadding: 0
-            ) { input in
-                router.navigate(to: SendRoute.keysign(input: input, tx: tx))
-            }
+        PairScreen(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            fastVaultPassword: fastVaultPassword,
+            previewType: .Send,
+            sendPreviewOverride: sendPreviewOverride
+        ) { input in
+            router.navigate(to: SendRoute.keysign(input: input, tx: tx, retrySignal: retrySignal))
         }
-        .screenTitle("pair".localized)
-        .if(fastVaultPassword != nil) {
-            $0
-                .screenNavigationBarHidden(true)
-                .screenEdgeInsets(.zero)
-        }
-        .screenToolbar {
-            CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
-                .showIf(fastVaultPassword == nil)
-            }
-        }
+    }
+
+    /// When the signed payload's coin differs from the display `tx` coin, the
+    /// payload-derived pairing/QR preview ("0 ETH → MSCA" for a Circle USDC
+    /// withdraw) would mislead. In that case surface the display `tx`'s amount
+    /// + recipient instead, leaving the signed payload untouched. For every
+    /// regular send the coins match, so this stays `nil` and the preview keeps
+    /// reading from the payload.
+    private var sendPreviewOverride: SendPreviewOverride? {
+        SendPreviewOverride.makeIfNeeded(displayTx: tx, signedPayload: keysignPayload)
     }
 }

@@ -52,6 +52,104 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
     let completedAt: Date?
     let estimatedTime: String?
     let errorMessage: String?
+    /// Aggregator-agnostic tracking state. `nil` when the row isn't routed
+    /// through any tracked provider. `providerKind` selects which
+    /// `SwapTrackingService` conformer owns polling.
+    let swapTracking: SwapTrackingMetadataData?
+
+    // Explicit memberwise initializer — `swapTracking` defaults to `nil` so
+    // existing call sites that don't care (the recorder paths) can omit it.
+    init(
+        id: UUID,
+        txHash: String,
+        approveTxHash: String?,
+        pubKeyECDSA: String,
+        type: TransactionHistoryType,
+        status: TransactionHistoryStatus,
+        chainRawValue: String,
+        coinTicker: String,
+        coinLogo: String,
+        coinChainLogo: String?,
+        amountCrypto: String,
+        amountFiat: String,
+        fromAddress: String,
+        toAddress: String,
+        toCoinTicker: String?,
+        toCoinLogo: String?,
+        toCoinChainLogo: String?,
+        toAmountCrypto: String?,
+        toAmountFiat: String?,
+        swapProvider: String?,
+        feeCrypto: String,
+        feeFiat: String,
+        network: String,
+        explorerLink: String,
+        createdAt: Date,
+        completedAt: Date?,
+        estimatedTime: String?,
+        errorMessage: String?,
+        swapTracking: SwapTrackingMetadataData? = nil
+    ) {
+        self.id = id
+        self.txHash = txHash
+        self.approveTxHash = approveTxHash
+        self.pubKeyECDSA = pubKeyECDSA
+        self.type = type
+        self.status = status
+        self.chainRawValue = chainRawValue
+        self.coinTicker = coinTicker
+        self.coinLogo = coinLogo
+        self.coinChainLogo = coinChainLogo
+        self.amountCrypto = amountCrypto
+        self.amountFiat = amountFiat
+        self.fromAddress = fromAddress
+        self.toAddress = toAddress
+        self.toCoinTicker = toCoinTicker
+        self.toCoinLogo = toCoinLogo
+        self.toCoinChainLogo = toCoinChainLogo
+        self.toAmountCrypto = toAmountCrypto
+        self.toAmountFiat = toAmountFiat
+        self.swapProvider = swapProvider
+        self.feeCrypto = feeCrypto
+        self.feeFiat = feeFiat
+        self.network = network
+        self.explorerLink = explorerLink
+        self.createdAt = createdAt
+        self.completedAt = completedAt
+        self.estimatedTime = estimatedTime
+        self.errorMessage = errorMessage
+        self.swapTracking = swapTracking
+    }
+}
+
+extension TransactionHistoryData {
+    /// True when this row was routed through a swap aggregator with a
+    /// registered tracking service. Provider-agnostic — the registry
+    /// resolves the actual conformer from `swapTracking.providerKind`.
+    var isSwapRouted: Bool {
+        swapTracking != nil
+    }
+
+    /// The iOS UI state, derived from whatever tracking data has been
+    /// persisted. Falls back to `pending` when no poll has been recorded yet.
+    /// Today only SwapKit has a tracker integration, so the mapping table
+    /// lives in `SwapKitTrackingStatusMapper`; future providers add their
+    /// own mappers and a dispatch on `providerKind` will route here.
+    var swapTrackingUiStatus: SwapTrackingUiStatus {
+        SwapKitTrackingStatusMapper.map(trackingStatus: swapTracking?.latestTrackingStatus)
+    }
+
+    /// SwapKit's public block-explorer deep link. Only available for rows
+    /// routed through SwapKit (the detail-sheet button checks for this
+    /// specifically). Future providers add their own deep-link helpers.
+    var swapKitTrackerURL: URL? {
+        guard let tracking = swapTracking,
+              tracking.providerKind == SwapKitTrackingService.providerKind,
+              let hash = tracking.broadcastHash, !hash.isEmpty else {
+            return nil
+        }
+        return URL(string: "https://track.swapkit.dev/?hash=\(hash)")
+    }
 }
 
 // MARK: - Conversions
@@ -88,8 +186,10 @@ extension TransactionHistoryData {
         self.completedAt = item.completedAt
         self.estimatedTime = item.estimatedTime
         self.errorMessage = item.errorMessage
+        self.swapTracking = item.swapTracking.map { SwapTrackingMetadataData(model: $0) }
     }
 
+    @MainActor
     func toItem() -> TransactionHistoryItem {
         TransactionHistoryItem(
             id: id,
@@ -119,7 +219,8 @@ extension TransactionHistoryData {
             createdAt: createdAt,
             completedAt: completedAt,
             estimatedTime: estimatedTime,
-            errorMessage: errorMessage
+            errorMessage: errorMessage,
+            swapTracking: swapTracking?.toModel()
         )
     }
 }

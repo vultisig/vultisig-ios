@@ -26,30 +26,12 @@ struct StakeTransactionScreen: View {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            gasReservationInfo
+            EmptyView()
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
-        }
-    }
-
-    @ViewBuilder
-    var gasReservationInfo: some View {
-        if let message = viewModel.gasReservationMessage {
-            HStack(spacing: 8) {
-                Image(systemName: "info.circle")
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.caption12)
-                Text(message)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
-            }
-            .padding(12)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(8)
         }
     }
 }

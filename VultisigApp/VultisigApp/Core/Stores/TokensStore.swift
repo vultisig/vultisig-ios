@@ -1977,6 +1977,18 @@ class TokensStore {
             contractAddress: "thor.rkuji",
             isNativeToken: false
         ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "LQDY",
+            logo: "lqdy",
+            decimals: 8,
+            // THORChain fiat is fetched from the pool endpoint, not CoinGecko, so
+            // `priceProviderId` is a no-op here. LQDY has no L1 pool yet, so fiat
+            // shows $0.00 until one launches; the balance still displays.
+            priceProviderId: "",
+            contractAddress: "thor.lqdy",
+            isNativeToken: false
+        ),
         yrune,
         ytcy,
         CoinMeta(
@@ -2061,6 +2073,36 @@ class TokensStore {
         logo: "rune",
         decimals: 8,
         priceProviderId: "thorchain",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
+    static let luna: CoinMeta = CoinMeta(
+        chain: .terra,
+        ticker: "LUNA",
+        logo: "luna",
+        decimals: 6,
+        priceProviderId: "terra-luna-2",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
+    static let lunc: CoinMeta = CoinMeta(
+        chain: .terraClassic,
+        ticker: "LUNC",
+        logo: "lunc",
+        decimals: 6,
+        priceProviderId: "terra-luna",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
+    static let qbtc: CoinMeta = CoinMeta(
+        chain: .qbtc,
+        ticker: "QBTC",
+        logo: "qbtc",
+        decimals: 8,
+        priceProviderId: "",
         contractAddress: "",
         isNativeToken: true
     )

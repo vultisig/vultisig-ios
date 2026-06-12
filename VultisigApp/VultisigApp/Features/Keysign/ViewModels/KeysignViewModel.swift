@@ -19,6 +19,13 @@ enum KeysignStatus {
     case KeysignFailed
     case KeysignRetryRequested
     case KeysignVaultMismatch
+    /// Neutral terminal state: the broadcast was interrupted (the in-flight
+    /// HTTP call was cancelled) and we could NOT positively confirm the tx
+    /// on-chain. The tx may already have landed, so we surface the
+    /// deterministic hash + explorer link instead of a hard failure and
+    /// avoid pushing the user toward a one-tap re-broadcast (double-spend
+    /// risk). Distinct from `.KeysignFailed`, which is a confirmed failure.
+    case KeysignBroadcastUnconfirmed
 }
 enum TssKeysignError: Error {
     case keysignFail
@@ -49,6 +56,38 @@ class KeysignViewModel: ObservableObject {
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
+
+    /// Injectable seam for the on-chain hash lookup so tests can supply a fake
+    /// that returns `.confirmed` / `.notFound` / throws. Defaults to the
+    /// production singleton so runtime behaviour is unchanged.
+    var transactionStatusChecker: TransactionStatusChecking = TransactionStatusService.shared
+
+    /// Per-message stage budget. Each message's inbound poll already caps at
+    /// 60s per attempt (see the DKLS/Schnorr/Dilithium `pullInboundMessages`
+    /// loops); this adds headroom for the setup-message round-trips so a single
+    /// healthy-but-slow message doesn't trip the safety net.
+    private static let perMessageStageBudget: Duration = .seconds(90)
+
+    /// Fixed headroom on top of the per-message budget for the post-signing
+    /// broadcast (RPC submit + the on-chain verification backoff).
+    private static let broadcastStageHeadroom: Duration = .seconds(30)
+
+    /// Top-level timeout for a single keysign run (TSS exchange + broadcast).
+    /// Underlying poll loops can stall without producing a terminal status —
+    /// iOS suspending the network session in background, DKLS retry exhaustion,
+    /// a peer that never sent its share — so this is the safety net that flips
+    /// the UI into the retry-requested view. See vultisig-ios#4327.
+    ///
+    /// Messages are signed sequentially, so the budget scales with the message
+    /// count. A flat timeout fired on healthy multi-message ceremonies (e.g. a
+    /// UTXO send with several inputs), manufacturing the very retry-vs-orphan
+    /// race this guards against rather than catching a real hang.
+    var keysignStageTimeout: Duration {
+        let messageCount = max(messsageToSign.count, 1)
+        return Self.perMessageStageBudget * messageCount + Self.broadcastStageHeadroom
+    }
+
+    private struct KeysignStalledError: Error {}
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -217,15 +256,85 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
-
-        switch vault.libType {
-        case .GG20, .none:
-            await startKeysignGG20()
-        case .DKLS:
-            await startKeysignDKLS(isImport: false)
-        case .KeyImport:
-            await startKeysignDKLS(isImport: true)
+        // Snapshot the (message-count-scaled) budget before entering the group
+        // so the non-isolated sleeper closure stays Sendable-clean.
+        let stageTimeout = keysignStageTimeout
+        do {
+            // Race the keysign body against a stage-level timeout. If the body
+            // wins, `group.next()` returns void and `cancelAll()` retires the
+            // sleeper. If the sleeper wins, it throws `KeysignStalledError`
+            // and we flip the UI into the retry-requested state below.
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask { @MainActor [weak self] in
+                    guard let self else { return }
+                    switch self.vault.libType {
+                    case .GG20, .none:
+                        await self.startKeysignGG20()
+                    case .DKLS:
+                        await self.startKeysignDKLS(isImport: false)
+                    case .KeyImport:
+                        await self.startKeysignDKLS(isImport: true)
+                    }
+                }
+                group.addTask {
+                    try await Task.sleep(for: stageTimeout)
+                    throw KeysignStalledError()
+                }
+                try await group.next()
+                group.cancelAll()
+            }
+        } catch is KeysignStalledError {
+            // Body task may still be running; only intervene if it hasn't
+            // already reached a terminal status of its own. The existing
+            // `KeysignFinished` guards in startKeysignDKLS/GG20 already refuse
+            // to overwrite `KeysignRetryRequested`, so this write is sticky
+            // unless the keysign actually completes and sets a txid (in which
+            // case `KeysignView.onChange(of: txid)` will navigate away and the
+            // retry view is torn down — the correct behaviour).
+            guard !Self.isTerminalStatus(status) else { return }
+            logger.warning("keysign exceeded \(stageTimeout, privacy: .public) stage timeout — requesting retry")
+            self.retryReason = .other("KeysignStalled")
+            setStatus(.KeysignRetryRequested)
+        } catch {
+            logger.error("keysign stage race exited unexpectedly: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Wraps `status = newStatus` with a logger marker. The investigation for
+    /// vultisig-ios#4327 needs a TestFlight `os_log` capture to localise which
+    /// poll loop stalls; keeping the transition trail in one place gives every
+    /// status flip an `info`-level entry without scattering log lines across
+    /// the file.
+    private func setStatus(_ newStatus: KeysignStatus, file: String = #fileID, line: Int = #line) {
+        if status != newStatus {
+            logger.info("status: \(String(describing: self.status), privacy: .public) → \(String(describing: newStatus), privacy: .public) at \(file, privacy: .public):\(line, privacy: .public)")
+        }
+        self.status = newStatus
+    }
+
+    /// A terminal status that `broadcastTransaction`/`handleBroadcastError`
+    /// (or the stage-timeout race) may have already set. Callers must NOT
+    /// overwrite it with `.KeysignFinished` afterwards. `.KeysignBroadcastUnconfirmed`
+    /// is included so a cancelled-but-unconfirmed broadcast isn't masked as a
+    /// false success by the post-broadcast finish guard.
+    static func isTerminalStatus(_ status: KeysignStatus) -> Bool {
+        switch status {
+        case .KeysignFinished, .KeysignFailed, .KeysignVaultMismatch,
+             .KeysignRetryRequested, .KeysignBroadcastUnconfirmed:
+            return true
+        case .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
+            return false
+        }
+    }
+
+    /// Wraps `txid = newTxid` with a logger marker. Counterpart to `setStatus`
+    /// for vultisig-ios#4327 instrumentation. The hash itself is logged at
+    /// `info` so it shows up in `os_log` captures the reporter shares back.
+    private func setTxid(_ newTxid: String, file: String = #fileID, line: Int = #line) {
+        if txid != newTxid {
+            logger.info("txid set: \(newTxid, privacy: .public) at \(file, privacy: .public):\(line, privacy: .public)")
+        }
+        self.txid = newTxid
     }
 
     func startKeysignDKLS(isImport: Bool) async {
@@ -313,19 +422,31 @@ class KeysignViewModel: ObservableObject {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             }
+            // The body may have been cancelled mid-flight (stage timeout)
+            // without a poll loop observing it. Gate broadcast on the same
+            // terminal-status check the finish guard uses so an orphaned
+            // ceremony — whose status the timeout already flipped to
+            // .KeysignRetryRequested — can never broadcast.
+            guard !Self.isTerminalStatus(status), !Task.isCancelled else { return }
             await broadcastTransaction()
             if let customMessagePayload {
-                txid = customMessagePayload.message
+                setTxid(customMessagePayload.message)
             }
             // broadcastTransaction owns its terminal status — don't overwrite a
-            // failure (or retry request) set by handleBroadcastError.
-            if status != .KeysignFailed && status != .KeysignRetryRequested {
-                status = .KeysignFinished
+            // failure, retry request, or the neutral "couldn't confirm" state
+            // set by handleBroadcastError.
+            if !Self.isTerminalStatus(status) {
+                setStatus(.KeysignFinished)
             }
+        } catch is CancellationError {
+            // Stage-timeout cancellation: the timeout handler owns the terminal
+            // status (.KeysignRetryRequested). Do not overwrite it with a
+            // failure and do not broadcast.
+            logger.warning("DKLS keysign cancelled — leaving terminal status to the timeout handler")
         } catch {
-            logger.error("TSS keysign failed, error: \(error.localizedDescription)")
+            logger.error("TSS keysign failed, error: \(error.localizedDescription, privacy: .public)")
             keysignError = error.localizedDescription
-            status = .KeysignFailed
+            setStatus(.KeysignFailed)
         }
 
     }
@@ -335,23 +456,34 @@ class KeysignViewModel: ObservableObject {
             messagePuller?.stop()
         }
         for msg in messsageToSign {
+            // Cooperative cancellation: the stage-level timeout cancels this
+            // task group on a stall; bail before signing the next message so an
+            // abandoned ceremony can't proceed to broadcast.
+            if Task.isCancelled { return }
             do {
                 try await keysignOneMessageWithRetry(msg: msg, attempt: 1)
+            } catch is CancellationError {
+                return
             } catch {
-                logger.error("TSS keysign failed, error: \(error.localizedDescription)")
+                logger.error("TSS keysign failed, error: \(error.localizedDescription, privacy: .public)")
                 keysignError = error.localizedDescription
-                status = .KeysignFailed
+                setStatus(.KeysignFailed)
                 return
             }
         }
 
+        // The body may have been cancelled mid-flight (stage timeout) without a
+        // poll loop observing it. Gate broadcast on the same terminal-status
+        // check the finish guard uses so an orphaned ceremony — whose status the
+        // timeout already flipped to .KeysignRetryRequested — can never broadcast.
+        guard !Self.isTerminalStatus(status), !Task.isCancelled else { return }
         await broadcastTransaction()
 
         if let customMessagePayload {
-            txid = customMessagePayload.message
+            setTxid(customMessagePayload.message)
         }
-        if status != .KeysignFailed && status != .KeysignRetryRequested {
-            status = .KeysignFinished
+        if !Self.isTerminalStatus(status) {
+            setStatus(.KeysignFinished)
         }
     }
     // Return value bool indicate whether keysign should be retried
@@ -435,6 +567,9 @@ class KeysignViewModel: ObservableObject {
             try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
         } catch {
             self.messagePuller?.stop()
+            // A cancellation is not a signing failure — propagate so the
+            // abandoned ceremony unwinds instead of retrying.
+            if error is CancellationError { throw error }
             // Check whether the other party already have the signature
             logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
             let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
@@ -490,8 +625,7 @@ class KeysignViewModel: ObservableObject {
             case .generic(let payload):
                 switch keysignPayload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps()
-                    let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                    let transaction = try SolanaHelper.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
                     signedTransactions.append(transaction)
                 default:
                     let swaps = OneInchSwaps()
@@ -505,6 +639,85 @@ class KeysignViewModel: ObservableObject {
                 let swaps = THORChainSwaps()
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
+            case .swapkit(let payload):
+                // Dispatch on SwapKit's `meta.txType`. PSBT (BTC), SUI, and
+                // TRON have SwapKit-specific signers because their pre-built
+                // bytes drive transaction assembly directly. TON + CARDANO
+                // fall through to the per-chain helpers at the bottom of
+                // this method — the SwapKit builder already pointed
+                // `toAddress` / `toAmount` at the deposit address + amount.
+                switch payload.txType {
+                case "PSBT":
+                    let tx = try SwapKitBTCSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_DOGE":
+                    let tx = try SwapKitDogeSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_BCH":
+                    let tx = try SwapKitBCHSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_DASH":
+                    let tx = try SwapKitDashSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "PSBT_ZEC":
+                    let tx = try SwapKitZcashSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey,
+                        zcashBranchId: keysignPayload.chainSpecific.zcashBranchId
+                    )
+                    signedTransactions.append(tx)
+                case "SUI":
+                    let tx = try SwapKitSuiSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "TRON":
+                    let tx = try SwapKitTronSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: keysignPayload.coin.hexPublicKey
+                    )
+                    signedTransactions.append(tx)
+                case "CARDANO_PREBUILT":
+                    // Cardano signs with Ed25519 against the vault's EdDSA
+                    // public key — pass `vault.pubKeyEdDSA` (same convention
+                    // as the deposit-only send path in `CardanoHelper`).
+                    let tx = try SwapKitCardanoSigner.compileSignedTransaction(
+                        payload: payload,
+                        signatures: signatures,
+                        pubKeyHex: vault.pubKeyEdDSA
+                    )
+                    signedTransactions.append(tx)
+                case "TON", "CARDANO", "XRP":
+                    // Deposit-only flows fall through to the per-chain helper
+                    // at the bottom of this method — the SwapKit builder
+                    // already pointed `toAddress` / `toAmount` (and memo
+                    // for XRP destination tag) at the deposit.
+                    break
+                case "EVM", "SOLANA":
+                    throw SwapKitError.unsupportedTxType(payload.txType)
+                default:
+                    throw SwapKitError.unsupportedTxType(payload.txType)
+                }
             }
         }
 
@@ -589,7 +802,7 @@ class KeysignViewModel: ObservableObject {
         guard let keysignPayload else { return }
 
         guard !keysignPayload.skipBroadcast else {
-            print("Transaction not broadcasted, skipBroadcast is set to true")
+            logger.info("Transaction not broadcasted, skipBroadcast is set to true")
             self.txid = ""
             return
         }
@@ -600,6 +813,21 @@ class KeysignViewModel: ObservableObject {
             transactionType = try getSignedTransaction(keysignPayload: keysignPayload)
         } catch {
             return handleHelperError(err: error)
+        }
+
+        // Idempotency guard: if a prior attempt for this exact deterministic
+        // hash was already recorded (e.g. a previous broadcast that got
+        // cancelled mid-flight), short-circuit to success when the tx is on
+        // chain instead of broadcasting again. The deterministic hash is the
+        // same across attempts, so this protects every (re-)broadcast path from
+        // a double-spend. Gated on an existing record so first broadcasts pay no
+        // extra round-trip.
+        if hasPriorBroadcastAttempt(for: transactionType.transactionHash),
+           await isAlreadyOnChain(transactionType: transactionType) {
+            logger.info("idempotency guard: prior attempt for \(transactionType.transactionHash, privacy: .public) already on-chain — skipping re-broadcast")
+            await applyBroadcastSuccess(transactionType: transactionType)
+            savePendingTransaction()
+            return
         }
 
         do {
@@ -650,7 +878,7 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:
                     do {
-                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction)
+                        let transactionHash = try await UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction, expectedTxid: tx.transactionHash)
                         self.txid = transactionHash
                         // Fire-and-forget: don't block the broadcast confirmation on cache eviction.
                         Task { await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin) }
@@ -747,6 +975,19 @@ class KeysignViewModel: ObservableObject {
         savePendingTransaction()
     }
 
+    /// Whether a prior broadcast attempt for this deterministic hash was
+    /// already recorded. Used to gate the idempotency pre-broadcast check so it
+    /// only runs on retry paths, not on every first broadcast.
+    private func hasPriorBroadcastAttempt(for txHash: String) -> Bool {
+        guard !txHash.isEmpty else { return false }
+        do {
+            return try StoredPendingTransactionStorage.shared.get(txHash: txHash) != nil
+        } catch {
+            logger.warning("idempotency lookup failed for \(txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+    }
+
     private func savePendingTransaction() {
         guard let keysignPayload = keysignPayload,
               !txid.isEmpty,
@@ -770,22 +1011,44 @@ class KeysignViewModel: ObservableObject {
     }
 
     func customMessageSignature() -> String {
-        // currently keysign for custom message is using ETH , and the signature should be get signature with recoveryid
-        switch signatures.first?.value.getSignatureWithRecoveryID() {
-        case .success(let sig):
-            return sig.hexString
-        case .none, .failure:
-            return .empty
+        switch keysignType {
+        case .ECDSA:
+            guard let sig = signatures.first?.value else { return .empty }
+            switch sig.getSignatureWithRecoveryID() {
+            case .success(let data): return data.hexString
+            case .failure: return .empty
+            }
+        case .EdDSA:
+            guard let sig = signatures.first?.value else { return .empty }
+            switch sig.getSignature() {
+            case .success(let data): return data.hexString
+            case .failure: return .empty
+            }
+        case .MLDSA:
+            return dilithiumSignatures.first?.value.signature ?? .empty
         }
     }
 
     func handleBroadcastError(error: Error, transactionType: SignedTransactionType) async {
+        // (A) A cancellation is NOT conclusive evidence the broadcast failed.
+        // SwiftUI tears down the `.task`-backed Task on view teardown / scene
+        // change, which cancels the in-flight broadcast HTTP call — the tx may
+        // already have reached the mempool/proxy. Classify it as non-conclusive
+        // and route into detached verification instead of declaring failure.
+        // It is deliberately NOT treated as a `RetryableBroadcastError`: an
+        // auto-re-broadcast of a tx that may have landed risks a double-spend.
+        if Self.isCancellation(error) {
+            logger.warning("broadcast interrupted by cancellation — verifying on-chain before declaring failure")
+            await handleCancelledBroadcast(transactionType: transactionType)
+            return
+        }
+
         if let retryable = error as? RetryableBroadcastError,
            broadcastRetryCount < Self.maxBroadcastRetries {
             broadcastRetryCount += 1
             logger.warning("broadcast failed with retryable error (\(retryable.retryReason.userFacingMessage, privacy: .public)); requesting retry")
             self.retryReason = retryable.retryReason
-            self.status = .KeysignRetryRequested
+            setStatus(.KeysignRetryRequested)
             return
         }
 
@@ -799,7 +1062,7 @@ class KeysignViewModel: ObservableObject {
                 || message == "replacement transaction underpriced"
                 || message.contains("This transaction has already been processed") {
                 logger.info("the transaction already broadcast, code:\(code)")
-                self.txid = transactionType.transactionHash
+                setTxid(transactionType.transactionHash)
                 self.approveTxid = transactionType.approveTransactionHash
                 return
             }
@@ -808,7 +1071,7 @@ class KeysignViewModel: ObservableObject {
             // Check for Cardano "already broadcasted" errors
             if error.localizedDescription.contains("BadInputsUTxO") {
                 logger.info("Cardano transaction already broadcast - using hash from transactionType \(transactionType.transactionHash, privacy: .public)")
-                self.txid = transactionType.transactionHash
+                setTxid(transactionType.transactionHash)
                 self.approveTxid = transactionType.approveTransactionHash
                 return
             }
@@ -823,17 +1086,57 @@ class KeysignViewModel: ObservableObject {
         // hash so this works without per-chain string matching.
         if await isAlreadyOnChain(transactionType: transactionType) {
             logger.info("transaction already on-chain via peer broadcast — using hash \(transactionType.transactionHash, privacy: .public)")
-            self.txid = transactionType.transactionHash
-            self.approveTxid = transactionType.approveTransactionHash
-            if let coin = keysignPayload?.coin, coin.chainType == .UTXO {
-                await BlockchairService.shared.clearUTXOCache(for: coin)
-            }
+            await applyBroadcastSuccess(transactionType: transactionType)
             return
         }
 
         logger.error("\(errMessage, privacy: .public)")
         self.keysignError = errMessage
-        self.status = .KeysignFailed
+        setStatus(.KeysignFailed)
+    }
+
+    /// True for a Swift Concurrency cancellation or a URL-layer cancellation,
+    /// including the `URLError.cancelled` that `HTTPClient` re-throws as a fresh
+    /// `CancellationError` and any cancellation wrapped in `HTTPError`.
+    static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if (error as? URLError)?.code == .cancelled { return true }
+        if case let HTTPError.networkError(underlying) = error {
+            return isCancellation(underlying)
+        }
+        return false
+    }
+
+    /// (B) + (C) Handles a broadcast that was interrupted by cancellation.
+    /// The hash lookup runs detached so it does NOT inherit the cancelled
+    /// parent context (otherwise `HTTPClient`'s `Task.checkCancellation()`
+    /// short-circuits every RPC before any network I/O). If verification
+    /// positively confirms the tx, treat it as a success exactly like a normal
+    /// broadcast. Otherwise fall back to a neutral "couldn't confirm" state —
+    /// never a hard failure with a raw `CancellationError` string.
+    private func handleCancelledBroadcast(transactionType: SignedTransactionType) async {
+        if await isAlreadyOnChain(transactionType: transactionType) {
+            logger.info("cancelled broadcast confirmed on-chain — using hash \(transactionType.transactionHash, privacy: .public)")
+            await applyBroadcastSuccess(transactionType: transactionType)
+            return
+        }
+
+        logger.warning("cancelled broadcast could not be confirmed on-chain — neutral unconfirmed state for hash \(transactionType.transactionHash, privacy: .public)")
+        setTxid(transactionType.transactionHash)
+        self.approveTxid = transactionType.approveTransactionHash
+        self.keysignError = "broadcastCouldNotConfirm".localized
+        setStatus(.KeysignBroadcastUnconfirmed)
+    }
+
+    /// Mirrors the normal successful-broadcast bookkeeping: sets the txid +
+    /// approve txid and clears the UTXO cache. Status is left to the caller's
+    /// existing `KeysignFinished` guard (set txid → done).
+    private func applyBroadcastSuccess(transactionType: SignedTransactionType) async {
+        setTxid(transactionType.transactionHash)
+        self.approveTxid = transactionType.approveTransactionHash
+        if let coin = keysignPayload?.coin, coin.chainType == .UTXO {
+            await BlockchairService.shared.clearUTXOCache(for: coin)
+        }
     }
 
     /// Best-effort check that the signed tx is already accepted on the chain
@@ -844,35 +1147,52 @@ class KeysignViewModel: ObservableObject {
     /// (Cosmos LCD index lag is the worst offender), and a single early miss
     /// would otherwise show the user a "failed" screen for a tx that's already
     /// landing.
+    ///
+    /// The lookup runs in a detached task so it does not inherit a cancelled
+    /// parent context: `HTTPClient.request` checks `Task.checkCancellation()`
+    /// as its first statement, so under a cancelled parent every RPC — and the
+    /// backoff `Task.sleep` — would throw immediately, defeating the safety
+    /// net. Value-type inputs (chain + hash) are captured before detaching to
+    /// keep the closure Sendable-clean.
     private func isAlreadyOnChain(transactionType: SignedTransactionType) async -> Bool {
         guard let chain = keysignPayload?.coin.chain else { return false }
         let hash = transactionType.transactionHash
         guard !hash.isEmpty else { return false }
 
-        let maxAttempts = 3
-        let backoff: Duration = .seconds(2)
+        let checker = transactionStatusChecker
+        let log = logger
 
-        for attempt in 1...maxAttempts {
-            do {
-                let result = try await TransactionStatusService.shared.checkTransactionStatus(txHash: hash, chain: chain)
-                switch result.status {
-                case .confirmed, .pending:
-                    return true
-                case .failed:
-                    return false
-                case .notFound:
-                    break
+        return await Task.detached {
+            let maxAttempts = 3
+            let backoff: Duration = .seconds(2)
+
+            for attempt in 1...maxAttempts {
+                do {
+                    let result = try await checker.checkTransactionStatus(txHash: hash, chain: chain)
+                    switch result.status {
+                    case .confirmed, .pending:
+                        return true
+                    case .failed:
+                        return false
+                    case .notFound:
+                        break
+                    }
+                } catch {
+                    log.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
-            } catch {
-                logger.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+
+                if attempt < maxAttempts {
+                    do {
+                        try await Task.sleep(for: backoff)
+                    } catch {
+                        log.warning("hash-verify backoff interrupted: \(error.localizedDescription, privacy: .public)")
+                        return false
+                    }
+                }
             }
 
-            if attempt < maxAttempts {
-                try? await Task.sleep(for: backoff)
-            }
-        }
-
-        return false
+            return false
+        }.value
     }
 
     func handleHelperError(err: Error) {
@@ -884,11 +1204,12 @@ class KeysignViewModel: ObservableObject {
         default:
             errMessage = "Failed to get signed transaction,error:\(err.localizedDescription)"
         }
-        // since it failed to get transaction or failed to broadcast , go to failed page
-        DispatchQueue.main.async {
-            self.status = .KeysignFailed
-            self.keysignError = errMessage
-        }
+        // Class is @MainActor — assign directly. A previous `DispatchQueue.main.async`
+        // wrapper raced with `tssKeysign`'s post-broadcast `status = .KeysignFinished`
+        // guard: the dispatched block ran on the next runloop tick, after the guard
+        // had already overwritten the status. See vultisig-ios#4327.
+        self.keysignError = errMessage
+        setStatus(.KeysignFailed)
     }
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {

@@ -31,18 +31,24 @@ struct KyberSwapQuote: Codable, Hashable {
         return data.amountOut
     }
 
-    func gasForChain(_ chain: Chain) -> Int64 {
-        let baseGas = Int64(data.gas) ?? 600000
-        let gasMultiplierTimes10: Int64
+    /// Returns the gas-limit estimate from KyberSwap's `routeSummary.gas`.
+    /// KyberSwap pre-buffers this value to absorb pool-state shifts; no
+    /// additional client-side multiplier is applied. Matches the SDK /
+    /// Windows extension and Android KyberSwap mappings.
+    var gas: Int64 {
+        return Int64(data.gas) ?? Int64(EVMHelper.defaultETHSwapGasUnit)
+    }
 
-        switch chain {
-        case .ethereum, .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
-            gasMultiplierTimes10 = 20
-        default:
-            gasMultiplierTimes10 = 16
-        }
+    /// Fallback gas price (1 gwei) applied only when the aggregator's
+    /// `routeSummary.gasPrice` is missing or unparseable.
+    static let fallbackGasPriceWei = BigInt(1_000_000_000)
 
-        return (baseGas * gasMultiplierTimes10) / 10
+    /// Parses a KyberSwap-returned `gasPrice` string into wei. The fallback
+    /// applies only when the input is unparseable; valid sub-gwei responses
+    /// flow through unchanged.
+    static func parseGasPriceWei(_ raw: String?) -> BigInt {
+        guard let raw, let parsed = BigInt(raw) else { return fallbackGasPriceWei }
+        return parsed
     }
 
     var tx: Transaction {

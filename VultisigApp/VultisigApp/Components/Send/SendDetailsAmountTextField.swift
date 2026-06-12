@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct SendDetailsAmountTextField: View {
-    @ObservedObject var tx: SendTransaction
-    @ObservedObject var viewModel: SendDetailsViewModel
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Bindable var viewModel: SendDetailsViewModel
     @FocusState.Binding var focusedField: Field?
 
     @State var isCryptoSelected: Bool = true
@@ -24,7 +22,6 @@ struct SendDetailsAmountTextField: View {
         .frame(idealHeight: 100, maxHeight: 180)
         .animation(.easeInOut, value: isCryptoSelected)
         .onChange(of: focusedField) { _, newValue in
-            // Sync the visual state with the focus state
             if newValue == .amount {
                 isCryptoSelected = true
             } else if newValue == .amountInFiat {
@@ -66,7 +63,6 @@ struct SendDetailsAmountTextField: View {
     var cryptoSelector: some View {
         Button {
             isCryptoSelected = true
-            // Switch focus to crypto field when crypto is selected
             if focusedField == .amountInFiat {
                 focusedField = .amount
             }
@@ -78,7 +74,6 @@ struct SendDetailsAmountTextField: View {
     var fiatSelector: some View {
         Button {
             isCryptoSelected = false
-            // Switch focus to fiat field when fiat is selected
             if focusedField == .amount {
                 focusedField = .amountInFiat
             }
@@ -98,25 +93,23 @@ struct SendDetailsAmountTextField: View {
 
     var amountField: some View {
         SendCryptoAmountTextField(
-            amount: $tx.amount,
-            onChange: {
-                sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
-            },
-            onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
+            amount: $viewModel.amount,
+            onChange: { viewModel.convertToFiat(newValue: $0) },
+            onMaxPressed: { viewModel.setMaxAmount() }
         )
         .focused($focusedField, equals: .amount)
-        .onChange(of: tx.coin) { _, _ in
-            sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
+        .onChange(of: viewModel.coin) { _, _ in
+            viewModel.convertToFiat(newValue: viewModel.amount)
         }
     }
 
     var amountUnitField: some View {
-        getUnit(for: tx.coin.ticker)
+        getUnit(for: viewModel.coin.ticker)
     }
 
     var amountFiatDescription: some View {
-        getDescriptionText(for: tx.amountInFiat.formatToFiat())
-            .redacted(reason: tx.amountInFiat.isEmpty ? .placeholder : [])
+        getDescriptionText(for: viewModel.amountInFiat.formatToFiat())
+            .redacted(reason: viewModel.amountInFiat.isEmpty ? .placeholder : [])
     }
 
     // Fiat
@@ -130,8 +123,8 @@ struct SendDetailsAmountTextField: View {
 
     var textFiatField: some View {
         SendCryptoAmountTextField(
-            amount: $tx.amountInFiat,
-            onChange: { sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
+            amount: $viewModel.amountInFiat,
+            onChange: { viewModel.convertFiatToCoin(newValue: $0) }
         )
         .focused($focusedField, equals: .amountInFiat)
     }
@@ -141,8 +134,8 @@ struct SendDetailsAmountTextField: View {
     }
 
     var fiatAmountDescription: some View {
-        getDescriptionText(for: tx.amount.formatToDecimal(digits: 8) + " " + tx.coin.ticker)
-            .redacted(reason: tx.amount.isEmpty ? .placeholder : [])
+        getDescriptionText(for: viewModel.amount.formatToDecimal(digits: 8) + " " + viewModel.coin.ticker)
+            .redacted(reason: viewModel.amount.isEmpty ? .placeholder : [])
     }
 
     private func getUnit(for unit: String) -> some View {
@@ -164,9 +157,4 @@ struct SendDetailsAmountTextField: View {
             .foregroundColor(Theme.colors.textPrimary)
             .frame(width: 32, height: 32)
     }
-}
-
-#Preview {
-    @FocusState var focusedField: Field?
-    return SendDetailsAmountTextField(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel(), focusedField: $focusedField)
 }

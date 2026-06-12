@@ -12,7 +12,6 @@ struct SettingsCustomMessageView: View {
     @Environment(\.dismiss) var dismiss
 
     @StateObject var viewModel = SettingsCustomMessageViewModel()
-    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
     @State var method: String = .empty
@@ -20,7 +19,6 @@ struct SettingsCustomMessageView: View {
 
     @State var fastVaultPassword: String = .empty
     @State var fastPasswordPresented = false
-    @State var isFastVault = false
 
     let vault: Vault
     private let fastVaultService = FastVaultService.shared
@@ -30,7 +28,6 @@ struct SettingsCustomMessageView: View {
             Background()
             main
         }
-        .onLoad(perform: onLoad)
     }
 
     var view: some View {
@@ -44,6 +41,8 @@ struct SettingsCustomMessageView: View {
             switch viewModel.state {
             case .initial:
                 customMessage
+            case .verify:
+                verify
             case .pair:
                 pair
             case .keysign, .done:
@@ -59,10 +58,50 @@ struct SettingsCustomMessageView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
+                continueButton
+                    .padding(.bottom, isMacOS ? 40 : 0)
+            }
+        }
+    }
+
+    var verify: some View {
+        ScrollView {
+            verifyContent
+                .padding(.horizontal, 16)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if viewModel.state == .verify {
                 signButton
                     .padding(.bottom, isMacOS ? 40 : 0)
             }
         }
+    }
+
+    var verifyContent: some View {
+        VStack(spacing: 16) {
+            verifyRow(title: "signingMethod".localized, value: method)
+            verifyRow(title: "messageToSign".localized, value: message)
+        }
+        .padding(.top, 12)
+    }
+
+    private func verifyRow(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textTertiary)
+            Text(value)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Theme.colors.bgSurface2)
+                )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var keysign: some View {
@@ -90,12 +129,12 @@ struct SettingsCustomMessageView: View {
     }
 
     var pair: some View {
-        KeysignDiscoveryView(
+        PairScreen(
             vault: vault,
-            keysignPayload: nil,
             customMessagePayload: customMessagePayload,
             fastVaultPassword: fastVaultPassword.nilIfEmpty,
-            shareSheetViewModel: shareSheetViewModel
+            title: viewModel.state.title,
+            isShareButtonVisible: !vault.isFastVault
         ) { input in
             self.keysignView = KeysignView(
                 vault: input.vault,
@@ -111,16 +150,6 @@ struct SettingsCustomMessageView: View {
                 isInitiateDevice: input.isInitiateDevice
             )
             viewModel.moveToNextView()
-        }
-        .crossPlatformToolbar(viewModel.state.title) {
-            CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
-                .showIf(!isFastVault)
-            }
         }
     }
 
@@ -147,41 +176,33 @@ struct SettingsCustomMessageView: View {
                                     decodedMessage: nil)
     }
 
-    @ViewBuilder
-    var signButton: some View {
-        VStack(spacing: 16) {
-            if isFastVault {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    onSignPress()
-                }
-                .disabled(!signButtonEnabled)
-                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { onSignPress() }
-                    )
-                }
-            } else {
-                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    onSignPress()
-                }
-                .disabled(!signButtonEnabled)
-            }
+    var continueButton: some View {
+        PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+            viewModel.moveToNextView()
         }
+        .disabled(!signButtonEnabled)
         .padding(.horizontal, 16)
     }
 
-    func onLoad() {
-        Task { @MainActor in
-            isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
+    var signButton: some View {
+        SigningCTAButtons(
+            isFastVault: vault.isFastVault,
+            isDisabled: !signButtonEnabled,
+            singleSignTitle: "signTransaction",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
+                fastVaultPassword = .empty
+                onSignPress()
+            }
+        )
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { onSignPress() }
+            )
         }
+        .padding(.horizontal, 16)
     }
 
     func onSignPress() {
