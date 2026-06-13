@@ -246,7 +246,10 @@ enum BittensorHelper {
             callData: callData
         )
 
-        let transactionHash = Hash.blake2b(data: extrinsic, size: 32).toHexString()
+        // Prefix with `0x` to match the hash the node returns from
+        // `author_submitExtrinsic`, so the locally computed hash stays
+        // consistent whichever device broadcasts (vs. gets the duplicate).
+        let transactionHash = "0x" + Hash.blake2b(data: extrinsic, size: 32).toHexString()
         return SignedTransactionResult(
             rawTransaction: extrinsic.hexString,
             transactionHash: transactionHash
