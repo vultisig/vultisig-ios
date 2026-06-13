@@ -107,6 +107,7 @@
 "balanceAvailable" = "Verfügbares Guthaben:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Bevor Sie beginnen...";
+"belowExistentialDepositError" = "Diese Überweisung würde weniger als das Mindestguthaben (Existenzminimum) auf Ihrem Konto belassen, sodass das Netzwerk sie ablehnen würde. Verringern Sie den Betrag oder senden Sie das gesamte Guthaben.";
 "biometricsFastSigning" = "Biometrie schnell unterschreiben";
 "bond" = "Binden";
 "Bond" = "Bond";

@@ -115,6 +115,7 @@
 "balanceAvailable" = "사용 가능한 잔액:";
 "balanceInParentheses" = "( 잔액: %@ %@ )";
 "beforeYouStart" = "시작하기 전에...";
+"belowExistentialDepositError" = "이 전송은 계정에 최소 잔액(존재 보증금)보다 적은 금액을 남기게 되어 네트워크에서 거부됩니다. 금액을 줄이거나 전체 잔액을 보내세요.";
 "biometricsFastSigning" = "생체인식 빠른 서명";
 "bond" = "본드";
 "Bond" = "본드";

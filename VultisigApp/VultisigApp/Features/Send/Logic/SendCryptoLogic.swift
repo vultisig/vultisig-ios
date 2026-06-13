@@ -62,24 +62,35 @@ enum SendCryptoLogic {
         return amountRaw + feeToUse > balanceRaw
     }
 
+    /// Existential deposit for the coin's chain, or `.zero` for chains that
+    /// don't reap. Scoped by `chain`, NOT `chainType`: Bittensor (TAO) shares
+    /// `chainType == .Polkadot` with DOT but signs `transfer_allow_death`, so it
+    /// permits full-balance sends and has no enforced ED here.
+    static func existentialDeposit(for coin: Coin) -> BigInt {
+        switch coin.chain {
+        case .polkadot:
+            return PolkadotHelper.defaultExistentialDeposit
+        case .ripple:
+            return RippleHelper.defaultExistentialDeposit
+        default:
+            return .zero
+        }
+    }
+
     /// Polkadot + Ripple have an existential deposit: the chain reaps accounts
-    /// whose remaining balance falls below it. Other chains never reap.
+    /// whose remaining balance falls below it (and the app signs
+    /// `transfer_keep_alive` on DOT, which the chain rejects outright when it
+    /// would reap the sender). Other chains never reap. Returns true when the
+    /// requested send would leave the *sender* below the existential deposit.
     static func canBeReaped(coin: Coin, amount: String, gas: BigInt) -> Bool {
-        let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
-        guard tickers.contains(coin.ticker) else { return false }
+        let existentialDeposit = existentialDeposit(for: coin)
+        guard existentialDeposit > .zero else { return false }
 
         let totalBalance = BigInt(coin.rawBalance) ?? .zero
         let totalTransactionCost = amountInRaw(coin: coin, amount: amount) + gas
         let remainingBalance = totalBalance - totalTransactionCost
 
-        switch coin.chainType {
-        case .Polkadot:
-            return remainingBalance < PolkadotHelper.defaultExistentialDeposit
-        case .Ripple:
-            return remainingBalance < RippleHelper.defaultExistentialDeposit
-        default:
-            return false
-        }
+        return remainingBalance > .zero && remainingBalance < existentialDeposit
     }
 
     /// A send is a "deposit" (memo-bearing function call) iff the memo
@@ -132,7 +143,12 @@ enum SendCryptoLogic {
             // the live rate and revalidates before signing).
             maxValue = terraClassicMaxValue(coin: coin, baseGasFee: fee)
         } else {
-            maxValue = coin.getMaxValue(fee)
+            // Reserve the existential deposit on chains that reap the sender (DOT
+            // signs `transfer_keep_alive`, which fails outright if the send would
+            // drop the sender below ED). Reserved on top of the fee so max-send
+            // settles at `balance − fee − ED`. Zero for every other chain,
+            // including Bittensor/TAO (`transfer_allow_death`).
+            maxValue = coin.getMaxValue(fee + existentialDeposit(for: coin))
         }
         let digits = coin.decimals > 8 ? 8 : coin.decimals
         return formatAmountInput(maxValue, digits: digits)

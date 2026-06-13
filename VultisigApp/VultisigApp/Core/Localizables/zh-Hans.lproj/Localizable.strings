@@ -107,6 +107,7 @@
 "balanceAvailable" = "可用余额：";
 "balanceInParentheses" = "( 余额: %@ %@ )";
 "beforeYouStart" = "开始之前...";
+"belowExistentialDepositError" = "此次转账后您账户中的余额将低于最低留存额（生存性存款），网络将拒绝该交易。请减少金额或转出全部余额。";
 "biometricsFastSigning" = "生物识别快速签名";
 "bond" = "绑定";
 "Bond" = "绑定";

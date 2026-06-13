@@ -115,6 +115,7 @@
 "balanceAvailable" = "Balance available:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Before you start...";
+"belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
 "bond" = "Bond";
 "Bond" = "Bond";

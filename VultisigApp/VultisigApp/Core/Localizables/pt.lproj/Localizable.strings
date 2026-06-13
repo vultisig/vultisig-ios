@@ -107,6 +107,7 @@
 "balanceAvailable" = "Saldo disponível:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Antes de começar...";
+"belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor ou envie o saldo completo.";
 "biometricsFastSigning" = "Biometria assinatura rápida";
 "bond" = "Vincular";
 "Bond" = "Bond";

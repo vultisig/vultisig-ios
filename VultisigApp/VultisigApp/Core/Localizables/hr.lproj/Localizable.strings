@@ -107,6 +107,7 @@
 "balanceAvailable" = "Dostupan saldo:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Prije nego započnete...";
+"belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
 "bond" = "Veži";
 "Bond" = "Bond";
