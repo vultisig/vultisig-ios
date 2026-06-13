@@ -11,11 +11,11 @@ import Foundation
 ///
 /// Queries the Vultisig node RPC proxy (`https://api.vultisig.com/dot/`) — the
 /// same node `PolkadotService` broadcasts to — instead of an external indexer.
-/// `author_pendingExtrinsics` returns the extrinsics still sitting in the node's
-/// transaction pool, which is enough to tell a pending transfer from an included
-/// one without an API-key-gated indexer.
+/// Substrate nodes have no "get extrinsic by hash" RPC, so inclusion is proven
+/// by reading blocks (`chain_getBlock`) and matching the extrinsic hash; passing
+/// no block hash returns the current best-head block to start the walk from.
 enum PolkadotTransactionStatusAPI: TargetType {
-    case pendingExtrinsics
+    case getBlock(blockHash: String?)
 
     var baseURL: URL {
         URL(string: Endpoint.polkadotServiceRpc)!
@@ -31,12 +31,13 @@ enum PolkadotTransactionStatusAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .pendingExtrinsics:
+        case .getBlock(let blockHash):
+            let params: [Any] = blockHash.map { [$0] } ?? []
             let body: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
-                "method": "author_pendingExtrinsics",
-                "params": []
+                "method": "chain_getBlock",
+                "params": params
             ]
             return .requestParameters(body, .jsonEncoding)
         }
