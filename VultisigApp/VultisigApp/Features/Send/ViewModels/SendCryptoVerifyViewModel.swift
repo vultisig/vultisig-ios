@@ -85,7 +85,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
             if transaction.sendMaxAmount && transaction.coin.isNativeToken {
                 let balance = transaction.coin.rawBalance.toBigInt(decimals: transaction.coin.decimals)
-                let candidate = balance - feeResult.fee
+                // Reserve the existential deposit so a DOT max-send settles at
+                // `balance − fee − ED`; `transfer_keep_alive` rejects a transfer
+                // that would reap the sender. Zero for non-ED chains (incl. TAO).
+                let existentialDeposit = SendCryptoLogic.existentialDeposit(for: transaction.coin)
+                let candidate = balance - feeResult.fee - existentialDeposit
                 if candidate > 0 {
                     let decimals = transaction.coin.decimals
                     let amountDecimal = Decimal(string: String(candidate)) ?? 0

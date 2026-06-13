@@ -50,6 +50,7 @@
 "appUpToDate" = "Aplikacija je ažurirana";
 "apr" = "APR";
 "apy" = "APY";
+"arguments" = "Argumenti";
 "asset" = "Imovina";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
@@ -106,6 +107,7 @@
 "balanceAvailable" = "Dostupan saldo:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Prije nego započnete...";
+"belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
 "bond" = "Veži";
 "Bond" = "Bond";
@@ -127,6 +129,7 @@
 "buyVultBannerButtonTitle" = "Kupi $VULT";
 "buyVultBannerSubtitle" = "I uštedi na naknadama za swap";
 "buyVultBannerTitle" = "Kupi $VULT";
+"bytes" = "bajtovi";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
 "cacaoUnstakeMaturityUnknownMessage" = "Nije moguće provjeriti zrelost depozita. Pokušajte ponovno kasnije.";
@@ -205,6 +208,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Lanac %@ nije omogućen za ovaj uvezeni vault";
 "collectedRewards" = "Prikupljene nagrade";
+"commands" = "Naredbe";
 "commission" = "provizija";
 "compoundedCoin" = "%@ Složeno";
 "congratsExclamation" = "Čestitamo!";
@@ -299,6 +303,7 @@
 "deleteFolder" = "Izbriši mapu";
 "deleteVault" = "Trajno izbrišite vaš sef";
 "deleteVaultTitle" = "Izbriši sef";
+"dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
@@ -330,6 +335,7 @@
 "editReferral" = "Uredi preporuku";
 "editReferredCode" = "Uredi referalni kod";
 "editVaults" = "Uredi trezore";
+"elements" = "Elementi";
 "email" = "E-mail";
 "emailIsRequired" = "Potrebna je e -pošta.";
 "emailSentTo" = "Poslano na %@";
@@ -447,6 +453,9 @@
 "functionTransactionScreenErrorSubtitle" = "Došlo je do greške prilikom preusmjeravanja na funkciju";
 "functionTransactionScreenErrorTitle" = "Greška funkcije";
 "gas" = "Plin";
+"gasBudget" = "Proračun plina";
+"gasOwner" = "Vlasnik plina";
+"gasPrice" = "Cijena plina";
 "general" = "Općenito";
 "generatedMemo" = "Generated Memo:";
 "German" = "Njemački";
@@ -480,6 +489,9 @@
 "initializingScreenCapture" = "Pokretanje snimanja zaslona";
 "initiatingDevice" = "Pokrećući uređaj";
 "inProgress" = "U tijeku";
+"input" = "Ulaz";
+"inputPure" = "Čisto";
+"inputs" = "Ulazi";
 "insufficientBalance" = "Nedovoljno sredstava";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "insufficientGasTokenError" = "Nedovoljno %@ za pokrivanje naknada za plin za slanje %@";
@@ -563,6 +575,7 @@
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
+"makeMoveVec" = "Stvori Move Vec";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
 "managePositions" = "Upravljaj pozicijama";
@@ -570,6 +583,7 @@
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "Merge" = "Spoji";
+"mergeCoins" = "Spoji novčiće";
 "message" = "Poruka";
 "messageDeposit" = "%@ depozit poruke";
 "messageSigned" = "Poruka potpisana";
@@ -587,9 +601,11 @@
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
+"modules" = "Moduli";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
 "moreInfo" = "Više informacija";
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
+"moveCall" = "Move poziv";
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "myReferralCardBody" = "Upravljaj svojim kodom preporuke i prikupljaj nagrade.";
 "myReferralCardTitle" = "Moja preporuka";
@@ -732,6 +748,7 @@
 "psbtOutputs" = "Izlazi";
 "psbtSignedByThisDevice" = "Potpisano s ovog uređaja";
 "psbtTransactionDetails" = "Detalji transakcije (PSBT)";
+"publish" = "Objavi";
 "pushNotifications" = "Push obavijesti";
 "pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Tvoji Bitcoin UTXO-i trebaju više potvrda prije nego ih je moguće zahtijevati. Provjeri ponovno kasnije.";
@@ -914,6 +931,7 @@
 "self" = "Sam";
 "sell" = "Prodaj";
 "send" = "Pošalji";
+"sender" = "Pošiljatelj";
 "sendingRightAddressCheck" = "Šaljem na pravu adresu";
 "sendOverview" = "Pošaljite pregled";
 "sendTo" = "Pošalji na";
@@ -958,6 +976,7 @@
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "sourceValidator" = "Izvorni validator";
 "Spanish" = "Španjolski";
+"splitCoins" = "Podijeli novčiće";
 "stake" = "Uloži";
 "Stake" = "Ulog";
 "stakeCoin" = "Uloži %@";
@@ -975,6 +994,14 @@
 "success" = "Uspjeh";
 "successful" = "Uspješno";
 "successfully" = "uspješno";
+"suiMergeInto" = "Spoji u";
+"suiMutable" = "Promjenjivo";
+"suiObjectsTo" = "Objekti za";
+"suiReadOnly" = "Samo za čitanje";
+"suiResultOfCmd" = "Rezultat naredbe";
+"suiSplitFrom" = "Podijeli od";
+"suiTransaction" = "Sui transakcija";
+"suiTransactionSummary" = "Sažetak transakcije";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
@@ -1058,6 +1085,7 @@
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";
+"transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
 "transactionFailed" = "Transakcija nije uspjela";
@@ -1067,6 +1095,7 @@
 "transactionSuccessful" = "Transakcija uspješna";
 "transactionTrackingLink" = "Poveznica za praćenje transakcije";
 "transfer" = "Prijenos";
+"transferObjects" = "Prenesi objekte";
 "tronBandwidth" = "Propusnost";
 "tronBandwidthDescription" = "Bodovi propusnosti potrebni su za svaku transakciju na TRON-u, uključujući standardna slanja tokena i interakcije s pametnim ugovorima. Svaki TRON korisnik dnevno dobiva 600 besplatnih bodova propusnosti, koji mogu pokriti otprilike dva osnovna slanja. Dodatno, možete zaraditi dodatne bodove propusnosti stakingom TRX-a, povećavajući svoju dnevnu kvotu za podršku većem broju transakcija. Ako imate dovoljno bodova propusnosti, možete slati tokene, stakati TRX ili komunicirati s pametnim ugovorima bez plaćanja TRX-a za gas naknade.";
 "tronEnergy" = "Energija";
@@ -1099,6 +1128,7 @@
 "tronUnfreezeTitle" = "Odmrzni TRX";
 "tryAgain" = "Pokušajte ponovno";
 "txid" = "ID transakcije";
+"typeArguments" = "Argumenti tipa";
 "typeHere" = "Ovdje upišite";
 "ultimateSecurity" = "Krajnja Sigurnost";
 "unableToStartKeysignProcess" = "Nije moguće pokrenuti proces potpisa ključa zbog nedostatka informacija.";
@@ -1120,6 +1150,7 @@
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "unverifiedFunction" = "Neprovjerena funkcija";
 "updateNow" = "Ažuriraj sada";
+"upgrade" = "Nadogradi";
 "upgradeNow" = "Nadogradi sada";
 "upgradeYourVault" = "Nadogradi trezor";
 "upgradeYourVaultNow" = "Nadogradi svoj trezor sada";

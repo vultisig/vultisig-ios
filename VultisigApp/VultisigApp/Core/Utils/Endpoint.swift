@@ -565,7 +565,7 @@ class Endpoint {
         case .mantle:
             return "https://mantlescan.xyz/token/\(contractAddress)"
         case .hyperliquid:
-            return "https://liquidscan.io/token/\(contractAddress)"
+            return "https://hypurrscan.io/token/\(contractAddress)"
         case .sei:
             return "https://seiscan.io/token/\(contractAddress)"
         case .qbtc:
@@ -650,7 +650,7 @@ class Endpoint {
         case .mantle:
             return "https://mantlescan.xyz/address/\(address)"
         case .hyperliquid:
-            return "https://liquidscan.io/address/\(address)"
+            return "https://hypurrscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
         case .qbtc:

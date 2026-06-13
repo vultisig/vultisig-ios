@@ -100,6 +100,13 @@ struct SendCryptoVerifyLogic {
                     return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
                 }
             }
+
+            // Existential-deposit guard for chains that reap the *sender*
+            // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
+            // after the ceremony if the send would drop the sender below ED.
+            if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
+                return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
+            }
         } else if tx.coin.chain == .terraClassic
                     && TerraClassicTax.isBankDenom(
                         contractAddress: tx.coin.contractAddress,

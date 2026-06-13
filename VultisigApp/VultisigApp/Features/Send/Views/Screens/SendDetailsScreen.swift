@@ -100,8 +100,13 @@ struct SendDetailsScreen: View {
                         coin: viewModel.coin,
                         vault: vault,
                         gasLimit: viewModel.gasLimit,
+                        customGasLimit: viewModel.customGasLimit,
                         customByteFee: viewModel.customByteFee,
-                        selectedMode: viewModel.feeMode
+                        selectedMode: viewModel.feeMode,
+                        fromAddress: viewModel.fromAddress,
+                        toAddress: viewModel.toAddress,
+                        amount: viewModel.amountInRaw,
+                        memo: viewModel.memo.isEmpty ? nil : viewModel.memo
                     ),
                     output: self
                 )
