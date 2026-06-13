@@ -157,7 +157,10 @@ enum PolkadotHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try PolkadotSigningOutput(serializedBytes: compileWithSignature)
-        let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
+        // Prefix with `0x` to match the hash the node returns from
+        // `author_submitExtrinsic`, so the locally computed hash stays
+        // consistent whichever device broadcasts (vs. gets the duplicate).
+        let transactionHash = "0x" + Hash.blake2b(data: output.encoded, size: 32).toHexString()
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                              transactionHash: transactionHash)
         return result
