@@ -6,12 +6,21 @@
 //
 
 import Foundation
+import WalletCore
 
-/// Polkadot Transaction Status Logic:
-/// - Uses Subscan API for AssetHub Polkadot transaction status checking
-/// - Endpoint: https://assethub-polkadot.api.subscan.io/api/scan/extrinsic
-/// - Gets detailed status including success/failure from indexed data
-/// - Checks `pending` field before `success` to properly detect pending transactions
+/// Polkadot Asset Hub transaction status via node RPC.
+///
+/// A bare Substrate node does not index extrinsics by hash, so status is derived
+/// from the transaction pool: `author_pendingExtrinsics` returns the extrinsics
+/// still awaiting inclusion. The submitted extrinsic hash is the blake2b-256 of
+/// its SCALE-encoded bytes, so we hash each pending extrinsic and look for a match.
+///
+/// - Hash found in the pool → still `pending`.
+/// - Hash absent → it has left the pool (included in a block) → `confirmed`.
+///
+/// Node RPC cannot replay an already-included extrinsic's events, so on-chain
+/// dispatch failures are not distinguished here; the node rejects malformed or
+/// invalid extrinsics at broadcast time (`author_submitExtrinsic`) instead.
 struct PolkadotTransactionStatusProvider: TransactionStatusProvider {
     private let httpClient: HTTPClientProtocol
 
@@ -21,98 +30,35 @@ struct PolkadotTransactionStatusProvider: TransactionStatusProvider {
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         let response = try await httpClient.request(
-            PolkadotTransactionStatusAPI.getExtrinsicByHash(extrinsicHash: query.txHash),
+            PolkadotTransactionStatusAPI.pendingExtrinsics,
             responseType: PolkadotTransactionStatusResponse.self
+        ).data
+
+        if let error = response.error {
+            throw RpcServiceError.rpcError(code: error.code, message: error.message)
+        }
+
+        let pendingExtrinsics = response.result ?? []
+        let targetHash = query.txHash.stripHexPrefix().lowercased()
+
+        let isPending = pendingExtrinsics.contains { extrinsic in
+            extrinsicHash(forHex: extrinsic) == targetHash
+        }
+
+        return TransactionStatusResult(
+            status: isPending ? .pending : .confirmed,
+            blockNumber: nil,
+            confirmations: nil
         )
-
-        return processResponse(response: response.data)
     }
 
-    /// Process Subscan API response
-    private func processResponse(response: PolkadotTransactionStatusResponse) -> TransactionStatusResult {
-        // Check API response code
-        if response.code != 0 {
-            // Non-zero code means transaction not found in Subscan
-            return TransactionStatusResult(
-                status: .notFound,
-                blockNumber: nil,
-                confirmations: nil
-            )
+    /// blake2b-256 of the SCALE-encoded extrinsic bytes, lowercased and without
+    /// the `0x` prefix — the same value `author_submitExtrinsic` returns as the
+    /// extrinsic hash. Returns `nil` for hex that cannot be decoded.
+    private func extrinsicHash(forHex hex: String) -> String? {
+        guard let bytes = Data(hexString: hex.stripHexPrefix()) else {
+            return nil
         }
-
-        // Check if extrinsic data exists
-        guard let extrinsicData = response.data else {
-            // code: 0 with data: null means transaction not indexed yet (pending)
-            return TransactionStatusResult(
-                status: .pending,
-                blockNumber: nil,
-                confirmations: nil
-            )
-        }
-
-        let blockNumber = extrinsicData.block_num
-
-        // CRITICAL: Check pending field first!
-        // pending=true means transaction is still being processed
-        if let pending = extrinsicData.pending, pending {
-            return TransactionStatusResult(
-                status: .pending,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-        }
-
-        // Check if extrinsic is finalized (secondary check)
-        if let finalized = extrinsicData.finalized, !finalized {
-            return TransactionStatusResult(
-                status: .pending,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-        }
-
-        // Now check success/failure (only after confirming it's not pending)
-        if extrinsicData.success {
-            return TransactionStatusResult(
-                status: .confirmed,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-        } else {
-            // Only treat as failed if error exists or explicitly not pending
-            let failureReason = buildFailureReason(error: extrinsicData.error)
-            return TransactionStatusResult(
-                status: .failed(reason: failureReason),
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-        }
-    }
-
-    private func buildFailureReason(error: PolkadotTransactionStatusResponse.PolkadotExtrinsicError?) -> String {
-        guard let error = error else {
-            return "Transaction failed"
-        }
-
-        var reason = ""
-        if let module = error.module {
-            reason += module
-        }
-        if let name = error.name {
-            if !reason.isEmpty {
-                reason += "."
-            }
-            reason += name
-        }
-
-        if let doc = error.doc, !doc.isEmpty {
-            let docString = doc.joined(separator: " ")
-            if !reason.isEmpty {
-                reason += ": "
-            }
-            reason += docString
-        }
-
-        return reason.isEmpty ? "Transaction failed" : reason
+        return Hash.blake2b(data: bytes, size: 32).toHexString().lowercased()
     }
 }

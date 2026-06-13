@@ -7,31 +7,16 @@
 
 import Foundation
 
-/// Subscan API response for /api/scan/extrinsic
+/// JSON-RPC response for `author_pendingExtrinsics`.
+///
+/// `result` is the list of hex-encoded extrinsics currently in the node's
+/// transaction pool. `error` is populated when the node rejects the call.
 struct PolkadotTransactionStatusResponse: Codable {
-    let code: Int  // 0 = success, non-zero = error
-    let message: String  // "Success" or error message
-    let data: PolkadotExtrinsicData?
+    let result: [String]?
+    let error: PolkadotRPCError?
 
-    struct PolkadotExtrinsicData: Codable {
-        let extrinsic_hash: String?
-        let success: Bool  // true = successful, false = failed (only meaningful when pending = false)
-        let block_num: Int?  // Block number
-        let block_timestamp: Int?  // Unix timestamp
-        let call_module: String?  // e.g., "balances"
-        let call_module_function: String?  // e.g., "transfer"
-        let account_id: String?  // Sender address
-        let signature: String?
-        let nonce: Int?
-        let finalized: Bool?  // Whether the transaction is finalized
-        let pending: Bool?  // IMPORTANT: true = still being processed, false = completed
-        let error: PolkadotExtrinsicError?  // Present when success = false
-        let fee: String?
-    }
-
-    struct PolkadotExtrinsicError: Codable {
-        let module: String?
-        let name: String?
-        let doc: [String]?  // Error description
+    struct PolkadotRPCError: Codable {
+        let code: Int
+        let message: String
     }
 }

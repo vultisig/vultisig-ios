@@ -7,18 +7,22 @@
 
 import Foundation
 
-/// Polkadot Transaction Status API
-/// - Uses Subscan API format for AssetHub Polkadot
-/// - Endpoint: https://assethub-polkadot.api.subscan.io/api/scan/extrinsic
+/// Polkadot Asset Hub transaction status API.
+///
+/// Queries the Vultisig node RPC proxy (`https://api.vultisig.com/dot/`) — the
+/// same node `PolkadotService` broadcasts to — instead of an external indexer.
+/// `author_pendingExtrinsics` returns the extrinsics still sitting in the node's
+/// transaction pool, which is enough to tell a pending transfer from an included
+/// one without an API-key-gated indexer.
 enum PolkadotTransactionStatusAPI: TargetType {
-    case getExtrinsicByHash(extrinsicHash: String)
+    case pendingExtrinsics
 
     var baseURL: URL {
-        URL(string: Endpoint.polkadotTransactionStatusRpc)!
+        URL(string: Endpoint.polkadotServiceRpc)!
     }
 
     var path: String {
-        "api/scan/extrinsic"
+        ""
     }
 
     var method: HTTPMethod {
@@ -27,9 +31,12 @@ enum PolkadotTransactionStatusAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .getExtrinsicByHash(let extrinsicHash):
+        case .pendingExtrinsics:
             let body: [String: Any] = [
-                "hash": extrinsicHash
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "author_pendingExtrinsics",
+                "params": []
             ]
             return .requestParameters(body, .jsonEncoding)
         }
