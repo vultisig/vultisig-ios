@@ -57,9 +57,9 @@ final class LockedFeatureSheetViewModel: ObservableObject {
         "\(balance.formatForDisplay(skipAbbreviation: true)) VULT"
     }
 
-    func loadBalance(for vault: Vault) async {
-        balance = service.getVultToken(for: vault)?.balanceDecimal ?? 0
-        _ = await service.fetchDiscountTier(for: vault, cached: false)
+    /// Reads the already-cached $VULT balance from the vault's token — no network
+    /// refresh. The balance is kept current by the app's existing fetch paths.
+    func loadBalance(for vault: Vault) {
         balance = service.getVultToken(for: vault)?.balanceDecimal ?? 0
     }
 }

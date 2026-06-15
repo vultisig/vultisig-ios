@@ -50,7 +50,7 @@ struct LockedFeatureSheet: View {
         .presentationDetents([.height(460)])
         .presentationDragIndicator(.visible)
         .readSize { width = $0.width }
-        .task { await viewModel.loadBalance(for: vault) }
+        .onAppear { viewModel.loadBalance(for: vault) }
     }
 
     private var header: some View {
@@ -79,53 +79,58 @@ struct LockedFeatureSheet: View {
             )
     }
 
+    /// The `Get $VULT` footer sits *behind* `cardContent` (drawn first in the
+    /// ZStack) and is offset down so it peeks out below the card's rounded
+    /// bottom — mirroring the layered footer in `VultDiscountTierView`.
     private var requiresCard: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("customRPCsLockedRequires".localized)
+        ZStack(alignment: .bottom) {
+            getVultFooter
+            cardContent
+        }
+        .padding(.bottom, footerHeight)
+    }
+
+    private var cardContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("customRPCsLockedRequires".localized)
+                .font(Theme.fonts.priceFootnote)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 12) {
+                VultDiscountTierIcon(tier: viewModel.requiredTier, size: .small)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(
+                        String(
+                            format: "customRPCsLockedTierRequirement".localized,
+                            viewModel.requiredTier.name.localized
+                        )
+                    )
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    Text(
+                        String(
+                            format: "customRPCsLockedTierSubtitle".localized,
+                            viewModel.thresholdText
+                        )
+                    )
                     .font(Theme.fonts.priceFootnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                HStack(spacing: 12) {
-                    VultDiscountTierIcon(tier: viewModel.requiredTier, size: .small)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(
-                            String(
-                                format: "customRPCsLockedTierRequirement".localized,
-                                viewModel.requiredTier.name.localized
-                            )
-                        )
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        Text(
-                            String(
-                                format: "customRPCsLockedTierSubtitle".localized,
-                                viewModel.thresholdText
-                            )
-                        )
-                        .font(Theme.fonts.priceFootnote)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    }
-                    Spacer(minLength: 0)
                 }
-
-                balanceRow
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
 
-            getVultFooter
+            balanceRow
         }
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Theme.colors.bgSurface1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Theme.colors.borderLight, lineWidth: 1)
-        )
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(cardShape.fill(Theme.colors.bgSurface1))
+        .clipShape(cardShape)
+        .overlay(cardShape.stroke(Theme.colors.borderLight, lineWidth: 1))
+    }
+
+    private var cardShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: 20)
     }
 
     private var balanceRow: some View {
@@ -156,20 +161,23 @@ struct LockedFeatureSheet: View {
         )
     }
 
-    /// Gradient "Get $VULT" footer attached to the bottom of `requiresCard`,
-    /// mirroring the tier-card footer in `VultDiscountTierView`. Renders the
-    /// required tier's gradient (Silver) and dismisses into the unlock path.
+    /// Gradient "Get $VULT" footer, rendered behind `cardContent` and offset
+    /// down by `footerHeight` so it peeks below the card — mirroring the
+    /// tier-card footer in `VultDiscountTierView`. Renders the required tier's
+    /// gradient (Silver) and drives the unlock path.
     private var getVultFooter: some View {
         Text("customRPCsLockedGetVult".localized)
             .font(Theme.fonts.buttonSSemibold)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity)
-            .frame(height: footerHeight)
+            .frame(height: footerHeight, alignment: .bottom)
+            .padding(.bottom, 14)
             .background(footerGradient)
             .overlay(footerInnerShadow)
             .clipShape(
                 UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20)
             )
+            .offset(y: footerHeight)
             .contentShape(Rectangle())
             .onTapGesture { onUnlock() }
     }

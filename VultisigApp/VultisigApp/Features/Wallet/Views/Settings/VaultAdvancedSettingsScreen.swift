@@ -14,6 +14,7 @@ struct VaultAdvancedSettingsScreen: View {
     @Environment(\.router) var router
     @State private var showDilithiumAlreadyGenerated = false
     @State private var showCustomRPCLockedSheet = false
+    @State private var isLoading = false
     private let tierService = VultTierService()
 
     var body: some View {
@@ -31,6 +32,7 @@ struct VaultAdvancedSettingsScreen: View {
             }
         }
         .screenTitle("advanced".localized)
+        .withLoading(isLoading: $isLoading)
         .crossPlatformSheet(isPresented: $showDilithiumAlreadyGenerated) {
             DilithiumAlreadyGeneratedSheet(isPresented: $showDilithiumAlreadyGenerated)
         }
@@ -137,13 +139,22 @@ struct VaultAdvancedSettingsScreen: View {
 
     private func handleCustomRPCTap() {
         Task {
+            isLoading = true
+            defer { isLoading = false }
             await TierGatedTap.handle(
                 required: .silver,
                 show: lockedSheetBinding,
-                for: vault
-            ) {
-                router.navigate(to: VaultRoute.customRPC(vault: vault))
-            }
+                for: vault,
+                isUnlocked: { tier, vault in
+                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+                        return false
+                    }
+                    return cached >= tier
+                },
+                onUnlocked: {
+                    router.navigate(to: VaultRoute.customRPC(vault: vault))
+                }
+            )
         }
     }
 
