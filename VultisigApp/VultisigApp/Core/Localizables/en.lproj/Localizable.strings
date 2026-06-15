@@ -609,6 +609,7 @@
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "modules" = "Modules";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
+"moreComingSoon" = "More coming soon";
 "moreInfo" = "More info";
 "moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint";
 "moveCall" = "Move Call";
@@ -1150,6 +1151,7 @@
 "unbondRune" = "Unbond RUNE";
 "unknown" = "";
 "unlimited" = "Unlimited";
+"unlocked" = "Unlocked";
 "unlockTier" = "Unlock Tier";
 "unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";
@@ -1268,6 +1270,8 @@
 "Vote" = "Vote";
 "vult" = "$VULT";
 "vultDiscount" = "Discount: %dbps";
+"vultDiscountHeroSubtitle" = "receive a trading discount";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT Discount Tiers";
 "vultDiscountTiersDescription" = "Hold $VULT to unlock lower trading fees.";
 "vultiserverPassword" = "Vultiserver Password";

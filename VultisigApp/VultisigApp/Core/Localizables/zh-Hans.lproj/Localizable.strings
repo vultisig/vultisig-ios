@@ -603,6 +603,7 @@
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "modules" = "模块";
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";
+"moreComingSoon" = "更多即将推出";
 "moreInfo" = "更多信息";
 "moreInfoDescription" = "这是因为密码用于本地加密备份文件，类似于硬盘驱动器的加密方式。在下一步中，您可以选择添加提示";
 "moveCall" = "Move 调用";
@@ -1138,6 +1139,7 @@
 "unbondRune" = "解除绑定 RUNE";
 "unknown" = "未知";
 "unlimited" = "无限制";
+"unlocked" = "已解锁";
 "unlockTier" = "解锁等级";
 "unlockXTier" = "解锁 %@ 等级";
 "unlockXTierDescription" = "通过持有 %@ $VULT，您将解锁 %@ 等级并在所有交换中获得 %@ 个基点的交易费折扣";
@@ -1255,6 +1257,8 @@
 "Vote" = "投票";
 "vult" = "$VULT";
 "vultDiscount" = "折扣：%d 个基点";
+"vultDiscountHeroSubtitle" = "获享交易折扣";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT 折扣等级";
 "vultDiscountTiersDescription" = "持有 $VULT 以解锁较低的交易费用";
 "vultiserverPassword" = "Vultiserver 密码";
