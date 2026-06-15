@@ -603,6 +603,7 @@
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
+"moreComingSoon" = "Altro in arrivo";
 "moreInfo" = "Maggiori informazioni";
 "moreInfoDescription" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile a come viene crittografato un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
 "moveCall" = "Chiamata Move";
@@ -1138,6 +1139,7 @@
 "unbondRune" = "Scollega RUNE";
 "unknown" = "Sconosciuto";
 "unlimited" = "Illimitato";
+"unlocked" = "Sbloccato";
 "unlockTier" = "Sblocca livello";
 "unlockXTier" = "Sblocca livello %@";
 "unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli swap.";
@@ -1254,6 +1256,8 @@
 "Vote" = "Vota";
 "vult" = "$ VULT";
 "vultDiscount" = "Sconto: %dbps";
+"vultDiscountHeroSubtitle" = "ricevi uno sconto sul trading";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "Livelli di Sconto $VULT";
 "vultDiscountTiersDescription" = "Mantieni $VULT per sbloccare commissioni di trading più basse.";
 "vultiserverPassword" = "Password Vultiserver";

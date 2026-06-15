@@ -603,6 +603,7 @@
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
 "modules" = "Module";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
+"moreComingSoon" = "Demnächst mehr";
 "moreInfo" = "Mehr Infos";
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "moveCall" = "Move-Aufruf";
@@ -1138,6 +1139,7 @@
 "unbondRune" = "RUNE entbinden";
 "unknown" = "Unbekannt";
 "unlimited" = "Unbegrenzt";
+"unlocked" = "Freigeschaltet";
 "unlockTier" = "Stufe freischalten";
 "unlockXTier" = "%@ Stufe freischalten";
 "unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
@@ -1254,6 +1256,8 @@
 "Vote" = "Abstimmen";
 "vult" = "$ Vult";
 "vultDiscount" = "Rabatt: %dbps";
+"vultDiscountHeroSubtitle" = "erhalte einen Handelsrabatt";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT Rabattstufen";
 "vultDiscountTiersDescription" = "Halten Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
 "vultiserverPassword" = "Vultiserver-Passwort";

@@ -599,6 +599,7 @@
 "mnemonicPlaceholder" = "시드 문구의 12개 또는 24개 단어를 입력하세요";
 "modules" = "모듈";
 "monthlyBackupTitle" = "볼트 공유를 백업하고\n완전성을 확인하는 것을 잊지 마세요.";
+"moreComingSoon" = "곧 더 추가됩니다";
 "moreInfo" = "더 많은 정보";
 "moreInfoDescription" = "비밀번호는 하드 드라이브 암호화처럼 백업 파일을 로컬에서 암호화하는 데 사용됩니다. 다음 단계에서 힌트를 추가할 수 있습니다";
 "moveCall" = "Move 호출";
@@ -1117,6 +1118,7 @@
 "unbondRune" = "RUNE 본드 해제";
 "unknown" = "";
 "unlimited" = "무제한";
+"unlocked" = "잠금 해제됨";
 "unlockTier" = "티어 잠금 해제";
 "unlockUltimateTierDescription" = "%@ $VULT를 보유하면 Ultimate 티어를 잠금 해제하고 모든 스왑에서 Vultisig 수수료를 완전히 면제받을 수 있습니다.";
 "unlockUltimateTierDescriptionHighlighted" = "모든 스왑에서 Vultisig 수수료 완전 면제.";
@@ -1233,6 +1235,8 @@
 "Vote" = "투표";
 "vult" = "$VULT";
 "vultDiscount" = "할인: %dbps";
+"vultDiscountHeroSubtitle" = "거래 할인을 받으세요";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT 할인 티어";
 "vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
