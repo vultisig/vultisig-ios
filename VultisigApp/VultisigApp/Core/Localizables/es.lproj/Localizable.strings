@@ -50,6 +50,7 @@
 "appUpToDate" = "La aplicación está actualizada";
 "apr" = "TAE";
 "apy" = "APY";
+"arguments" = "Argumentos";
 "asset" = "Activo";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ no encontrado en el vault )";
@@ -106,6 +107,7 @@
 "balanceAvailable" = "Saldo disponible:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Antes de comenzar...";
+"belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
 "bond" = "Vincular";
 "Bond" = "Bond";
@@ -127,6 +129,7 @@
 "buyVultBannerButtonTitle" = "Comprar $VULT";
 "buyVultBannerSubtitle" = "Y ahorra en comisiones de swap";
 "buyVultBannerTitle" = "Comprar $VULT";
+"bytes" = "bytes";
 "cacaoPool" = "Pool de Cacao";
 "cacaoUnstakeMaturityMessage" = "%@ hasta que se alcance la madurez del depósito";
 "cacaoUnstakeMaturityUnknownMessage" = "No se pudo verificar la madurez del depósito. Inténtalo de nuevo más tarde.";
@@ -205,6 +208,7 @@
 "coinPool" = "Pool de %@";
 "coinServiceChainNotEnabledForKeyImport" = "La cadena %@ no está habilitada para esta bóveda importada";
 "collectedRewards" = "Recompensas recolectadas";
+"commands" = "Comandos";
 "commission" = "comisión";
 "compoundedCoin" = "%@ Compuesto";
 "congratsExclamation" = "¡Felicidades!";
@@ -299,6 +303,7 @@
 "deleteFolder" = "Eliminar carpeta";
 "deleteVault" = "Eliminar tu caja fuerte permanentemente";
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
+"dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
@@ -330,6 +335,7 @@
 "editReferral" = "Editar referido";
 "editReferredCode" = "Editar código de referido";
 "editVaults" = "Editar bóvedas";
+"elements" = "Elementos";
 "email" = "Сorreo electrónico";
 "emailIsRequired" = "Se requiere correo electrónico.";
 "emailSentTo" = "Enviado a %@";
@@ -447,6 +453,9 @@
 "functionTransactionScreenErrorSubtitle" = "Ocurrió un error al redirigir a la función";
 "functionTransactionScreenErrorTitle" = "Error de función";
 "gas" = "Gas";
+"gasBudget" = "Presupuesto de gas";
+"gasOwner" = "Propietario del gas";
+"gasPrice" = "Precio del gas";
 "general" = "General";
 "generatedMemo" = "Generated Memo:";
 "German" = "Alemán";
@@ -480,6 +489,9 @@
 "initializingScreenCapture" = "Inicializando captura de pantalla";
 "initiatingDevice" = "Dispositivo iniciador";
 "inProgress" = "En progreso";
+"input" = "Entrada";
+"inputPure" = "Puro";
+"inputs" = "Entradas";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
 "insufficientGasTokenError" = "No hay suficiente %@ para cubrir las tarifas de gas para enviar %@";
@@ -563,6 +575,7 @@
 "lpUnitsExceeded" = "Excede las unidades LP disponibles (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén para restaurarla más tarde";
+"makeMoveVec" = "Crear Move Vec";
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
 "manageNotificationsInSettings" = "Puedes gestionar las notificaciones en los ajustes del sistema.";
 "managePositions" = "Administrar posiciones";
@@ -570,6 +583,7 @@
 "memo" = "Memorándum";
 "memoLabel" = "Memo";
 "Merge" = "Fusionar";
+"mergeCoins" = "Fusionar monedas";
 "message" = "Mensaje";
 "messageDeposit" = "%@ depósito de mensaje";
 "messageSigned" = "Mensaje firmado";
@@ -587,9 +601,11 @@
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
+"modules" = "Módulos";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
 "moreInfo" = "Más información";
 "moreInfoDescription" = "Esto ocurre porque la contraseña se utiliza para cifrar localmente el archivo de copia de seguridad, de forma similar a cómo se cifra un disco duro. En el siguiente paso, tienes la opción de añadir una pista.";
+"moveCall" = "Llamada Move";
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
 "myReferralCardBody" = "Gestiona tu código de referido y recoge recompensas.";
 "myReferralCardTitle" = "Mi referido";
@@ -732,6 +748,7 @@
 "psbtOutputs" = "Salidas";
 "psbtSignedByThisDevice" = "Firmado por este dispositivo";
 "psbtTransactionDetails" = "Detalles de la transacción (PSBT)";
+"publish" = "Publicar";
 "pushNotifications" = "Notificaciones push";
 "pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Tus UTXOs de Bitcoin necesitan más confirmaciones antes de poder reclamarse. Vuelve a comprobarlo más tarde.";
@@ -914,6 +931,7 @@
 "self" = "Propio";
 "sell" = "Vender";
 "send" = "Enviar";
+"sender" = "Remitente";
 "sendingRightAddressCheck" = "Estoy enviando a la dirección correcta";
 "sendOverview" = "Enviar visión general";
 "sendTo" = "Enviar a";
@@ -958,6 +976,7 @@
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
 "sourceValidator" = "Validador origen";
 "Spanish" = "Español";
+"splitCoins" = "Dividir monedas";
 "stake" = "Hacer Staking";
 "Stake" = "Stake";
 "stakeCoin" = "Hacer Staking de %@";
@@ -975,6 +994,14 @@
 "success" = "Éxito";
 "successful" = "Exitosa";
 "successfully" = "exitosamente";
+"suiMergeInto" = "Fusionar en";
+"suiMutable" = "Mutable";
+"suiObjectsTo" = "Objetos a";
+"suiReadOnly" = "Solo lectura";
+"suiResultOfCmd" = "Resultado del cmd";
+"suiSplitFrom" = "Dividir de";
+"suiTransaction" = "Transacción Sui";
+"suiTransactionSummary" = "Resumen de transacción";
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
 "swap" = "Intercambio";
@@ -1058,6 +1085,7 @@
 "totalFee" = "Comisión total";
 "track" = "Rastrear";
 "transaction" = "Transacción";
+"transactionBytes" = "Bytes de la transacción";
 "transactionComplete" = "Hecho";
 "transactionDetails" = "Detalles de la transacción";
 "transactionFailed" = "Transacción fallida";
@@ -1067,6 +1095,7 @@
 "transactionSuccessful" = "Transacción exitosa";
 "transactionTrackingLink" = "Enlace de seguimiento de transacción";
 "transfer" = "Transferir";
+"transferObjects" = "Transferir objetos";
 "tronBandwidth" = "Ancho de Banda";
 "tronBandwidthDescription" = "Los Puntos de Ancho de Banda son necesarios para cada transacción en TRON, incluyendo envíos estándar de tokens e interacciones con contratos inteligentes. Cada usuario de TRON recibe 600 Puntos de Ancho de Banda gratuitos por día, que pueden cubrir aproximadamente dos envíos básicos. Además, puedes ganar Puntos de Ancho de Banda adicionales haciendo staking de TRX, aumentando tu cuota diaria para soportar más transacciones. Si tienes suficientes Puntos de Ancho de Banda, puedes enviar tokens, hacer staking de TRX o interactuar con contratos inteligentes sin pagar TRX en tarifas de gas.";
 "tronEnergy" = "Energía";
@@ -1099,6 +1128,7 @@
 "tronUnfreezeTitle" = "Descongelar TRX";
 "tryAgain" = "Intentar de Nuevo";
 "txid" = "ID de transacción";
+"typeArguments" = "Argumentos de tipo";
 "typeHere" = "Escribe aquí";
 "ultimateSecurity" = "Máxima Seguridad";
 "unableToStartKeysignProcess" = "No se pudo iniciar el proceso de firma de clave debido a información faltante.";
@@ -1120,6 +1150,7 @@
 "unsupportedFileTypeError" = "Tipo de archivo no soportado, inténtalo de nuevo";
 "unverifiedFunction" = "Función no verificada";
 "updateNow" = "Actualizar ahora";
+"upgrade" = "Actualizar";
 "upgradeNow" = "Actualizar ahora";
 "upgradeYourVault" = "Actualizar bóveda";
 "upgradeYourVaultNow" = "Actualiza tu bóveda ahora";

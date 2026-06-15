@@ -376,13 +376,9 @@ class Endpoint {
 
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
 
-    /// Polkadot RPC endpoint for JSON-RPC calls
+    /// Polkadot Asset Hub RPC endpoint for JSON-RPC calls (balance, broadcast,
+    /// transaction status via `author_pendingExtrinsics`).
     static let polkadotServiceRpc = "https://api.vultisig.com/dot/"
-
-    // Polkadot transaction status endpoint - AssetHub Polkadot (where DOT/USDT/USDC transactions happen)
-    // Using public Subscan API temporarily
-    // TODO: Switch to Vultisig proxy once ready: "https://api.vultisig.com/dot/"
-    static let polkadotTransactionStatusRpc = "https://assethub-polkadot.api.subscan.io"
 
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
@@ -569,7 +565,7 @@ class Endpoint {
         case .mantle:
             return "https://mantlescan.xyz/token/\(contractAddress)"
         case .hyperliquid:
-            return "https://liquidscan.io/token/\(contractAddress)"
+            return "https://hypurrscan.io/token/\(contractAddress)"
         case .sei:
             return "https://seiscan.io/token/\(contractAddress)"
         case .qbtc:
@@ -654,7 +650,7 @@ class Endpoint {
         case .mantle:
             return "https://mantlescan.xyz/address/\(address)"
         case .hyperliquid:
-            return "https://liquidscan.io/address/\(address)"
+            return "https://hypurrscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
         case .qbtc:

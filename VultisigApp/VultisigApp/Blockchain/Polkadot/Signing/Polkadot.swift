@@ -16,10 +16,13 @@ enum PolkadotHelper {
      */
 
     /*
-     https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-
-     Polkadot deletes your account if less than 1 DOT
+     Existential deposit: the chain reaps an account whose free balance falls
+     below this. On Polkadot Asset Hub — where this app signs (Balances pallet,
+     module 10, see getPreSignedInputData) — the native-DOT ED is 0.01 DOT.
+     (The relay chain used 1 DOT; that is not the chain we sign on.)
+     DOT has 10 decimals, so 0.01 DOT = 100_000_000 plancks.
      */
-    static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
+    static let defaultExistentialDeposit: BigInt = 100_000_000 // 0.01 DOT (Asset Hub)
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .polkadot else {
@@ -154,7 +157,10 @@ enum PolkadotHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try PolkadotSigningOutput(serializedBytes: compileWithSignature)
-        let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
+        // Prefix with `0x` to match the hash the node returns from
+        // `author_submitExtrinsic`, so the locally computed hash stays
+        // consistent whichever device broadcasts (vs. gets the duplicate).
+        let transactionHash = "0x" + Hash.blake2b(data: output.encoded, size: 32).toHexString()
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                              transactionHash: transactionHash)
         return result

@@ -56,6 +56,7 @@
 "apr1Week" = "1 Week";
 "apr1Year" = "1 Year";
 "apy" = "APY";
+"arguments" = "Arguments";
 "asset" = "Asset";
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ not found in vault )";
@@ -114,6 +115,7 @@
 "balanceAvailable" = "Balance available:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouStart" = "Before you start...";
+"belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
 "bond" = "Bond";
 "Bond" = "Bond";
@@ -135,6 +137,7 @@
 "buyVultBannerButtonTitle" = "Buy $VULT";
 "buyVultBannerSubtitle" = "And save on swap fees";
 "buyVultBannerTitle" = "Buy $VULT";
+"bytes" = "bytes";
 "cacaoPool" = "Cacao Pool";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
 "cacaoUnstakeMaturityUnknownMessage" = "Couldn't verify deposit maturity. Try again later.";
@@ -207,6 +210,7 @@
 "coinPool" = "%@ Pool";
 "coinServiceChainNotEnabledForKeyImport" = "Chain %@ is not enabled for this imported vault";
 "collectedRewards" = "Collected rewards";
+"commands" = "Commands";
 "commission" = "commission";
 "compoundedCoin" = "Compounded %@";
 "congratsExclamation" = "Congrats!";
@@ -301,6 +305,7 @@
 "deleteFolder" = "Delete Folder";
 "deleteVault" = "Delete your vault permanently";
 "deleteVaultTitle" = "Delete Vault";
+"dependencies" = "Dependencies";
 "destinationAddress" = "Destination Address";
 "destinationValidator" = "Destination Validator";
 "device" = "device";
@@ -336,6 +341,7 @@
 "editReferral" = "Edit referral";
 "editReferredCode" = "Edit referred code";
 "editVaults" = "Edit Vaults";
+"elements" = "Elements";
 "email" = "Email";
 "emailIsRequired" = "Email is required.";
 "emailSentTo" = "Sent to %@";
@@ -452,6 +458,9 @@
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "functionTransactionScreenErrorTitle" = "Function Error";
 "gas" = "Gas";
+"gasBudget" = "Gas Budget";
+"gasOwner" = "Gas Owner";
+"gasPrice" = "Gas Price";
 "general" = "General";
 "generatedMemo" = "Generated Memo:";
 "German" = "German";
@@ -486,6 +495,9 @@
 "initializingScreenCapture" = "Initializing Screen Capture";
 "initiatingDevice" = "Initiating Device";
 "inProgress" = "In progress";
+"input" = "Input";
+"inputPure" = "Pure";
+"inputs" = "Inputs";
 "insufficientBalance" = "Insufficient Balance";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
@@ -569,6 +581,7 @@
 "lpUnitsExceeded" = "Exceeds available LP units (%@)";
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "I have made a vault backup to restore later";
+"makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "manageNotificationsInSettings" = "You can manage notifications in system settings.";
 "managePositions" = "Manage Positions";
@@ -576,6 +589,7 @@
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "Merge" = "Merge";
+"mergeCoins" = "Merge Coins";
 "message" = "Message";
 "messageDeposit" = "%@ message deposit";
 "messageSigned" = "Message signed";
@@ -593,9 +607,11 @@
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
+"modules" = "Modules";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
 "moreInfo" = "More info";
 "moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint";
+"moveCall" = "Move Call";
 "mustAgreeTermsError" = "You must agree with the terms.";
 "myReferralCardBody" = "Manage your referral code and collect rewards.";
 "myReferralCardTitle" = "My Referral";
@@ -739,6 +755,7 @@
 "psbtOutputs" = "Outputs";
 "psbtSignedByThisDevice" = "Signed by this device";
 "psbtTransactionDetails" = "Transaction Details (PSBT)";
+"publish" = "Publish";
 "pushNotifications" = "Push notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Your Bitcoin UTXOs need more confirmations before they can be claimed. Please check back later.";
@@ -922,6 +939,7 @@
 "self" = "Self";
 "sell" = "Sell";
 "send" = "Send";
+"sender" = "Sender";
 "sendingRightAddressCheck" = "I’m sending to the correct address";
 "sendOverview" = "Send overview";
 "sendTo" = "Send to";
@@ -966,6 +984,7 @@
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "sourceValidator" = "Source Validator";
 "Spanish" = "Spanish";
+"splitCoins" = "Split Coins";
 "stake" = "Stake";
 "Stake" = "Stake";
 "stakeCoin" = "Stake %@";
@@ -983,6 +1002,14 @@
 "success" = "Success";
 "successful" = "Successful";
 "successfully" = "successfully";
+"suiMergeInto" = "Merge into";
+"suiMutable" = "Mutable";
+"suiObjectsTo" = "Objects to";
+"suiReadOnly" = "Read-only";
+"suiResultOfCmd" = "Result of cmd";
+"suiSplitFrom" = "Split from";
+"suiTransaction" = "Sui Transaction";
+"suiTransactionSummary" = "Transaction summary";
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";
@@ -1067,6 +1094,7 @@
 "track" = "Track";
 "transaction" = "Transaction";
 "transactionBroadcasted" = "Transaction broadcasted";
+"transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
 "transactionFailed" = "Transaction failed";
@@ -1079,6 +1107,7 @@
 "transactionSuccessfulHighlight" = "successful";
 "transactionTrackingLink" = "Transaction tracking link";
 "transfer" = "Transfer";
+"transferObjects" = "Transfer Objects";
 "tronBandwidth" = "Bandwidth";
 "tronBandwidthDescription" = "Bandwidth Points are required for every transaction on TRON, including both standard token sends and smart contract interactions. Every TRON user receives 600 free Bandwidth Points per day, which can cover approximately two basic sends. Additionally, you can earn extra Bandwidth Points by staking TRX, increasing your daily balance to support more transactions. If you have enough Bandwidth Points, you can send tokens, stake TRX, or interact with smart contracts without paying TRX in gas fees.";
 "tronEnergy" = "Energy";
@@ -1111,6 +1140,7 @@
 "tronUnfreezeTitle" = "Unfreeze TRX";
 "tryAgain" = "Try Again";
 "txid" = "Tx ID";
+"typeArguments" = "Type Arguments";
 "typeHere" = "Type here";
 "ultimateSecurity" = "Ultimate Security";
 "unableToStartKeysignProcess" = "Unable to start the keysign process due to missing information.";
@@ -1134,6 +1164,7 @@
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "unverifiedFunction" = "Unverified function";
 "updateNow" = "Update Now";
+"upgrade" = "Upgrade";
 "upgradeNow" = "Upgrade now";
 "upgradeYourVault" = "Upgrade your vault";
 "upgradeYourVaultNow" = "Upgrade your vault now";

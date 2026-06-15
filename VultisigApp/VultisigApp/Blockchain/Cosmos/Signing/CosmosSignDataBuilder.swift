@@ -51,7 +51,7 @@ enum CosmosSignDataBuilder {
                     }
                 }
             }
-        case .signSolana, .signTon, .signBitcoin:
+        case .signSolana, .signTon, .signBitcoin, .signSui:
             return nil
         }
     }

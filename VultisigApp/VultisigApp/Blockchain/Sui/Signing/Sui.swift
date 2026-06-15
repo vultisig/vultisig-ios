@@ -17,6 +17,21 @@ enum SuiHelper {
             throw HelperError.runtimeError("coin is not SUI")
         }
 
+        // dApp-supplied PTBs (Sui Wallet Standard) arrive already BCS-serialized
+        // in `signSui`. WalletCore signs them verbatim via `signDirectMessage`:
+        // coins, gas and recipients are baked into the bytes, so we never
+        // reconstruct a Pay / PaySui input. WalletCore hashes `unsignedTxMsg`
+        // under the transaction intent, exactly like the native path.
+        if let signSui = keysignPayload.signSui {
+            let input = SuiSigningInput.with {
+                $0.signer = keysignPayload.coin.address
+                $0.signDirectMessage = SuiSignDirect.with {
+                    $0.unsignedTxMsg = signSui.unsignedTxMsg
+                }
+            }
+            return try input.serializedData()
+        }
+
         guard case .Sui(let referenceGasPrice, let coins, let gasBudget) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC")
         }

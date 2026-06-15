@@ -57,15 +57,13 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the main revision that added coin context for `swap_fee` on
-    # `OneInchTransaction` (commondata #87, merged 2026-06-03): optional
-    # `swap_fee_chain = 8`, `swap_fee_token_id = 9`, `swap_fee_decimals = 10`
-    # with explicit presence, so receivers can attribute the affiliate fee
-    # to the right coin (KyberSwap denominates it in the destination token).
-    # Deliberately NOT head: the next schema change adds a `sign_sui` case
-    # to the `KeysignPayload.sign_data` oneof, which our exhaustive
-    # `OneOf_SignData` switches would be forced to handle.
-    revision: 5a72a86cb061dade165d42ad426ba3639fb9a877
+    # Pinned to the main revision that adds the `sign_sui` case to the
+    # `KeysignPayload.sign_data` oneof (commondata #89): a new `SignSui`
+    # message carrying `unsigned_tx_msg` (base64 TransactionData BCS bytes)
+    # so pre-built Sui Programmable Transaction Blocks (Sui Wallet Standard
+    # dApp signing) flow through the standard keysign pipeline. Generates the
+    # `signSui` case our exhaustive `OneOf_SignData` switches now handle.
+    revision: 86400c61e39790887ca03b98d82746ee4dc312f4
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.3.19

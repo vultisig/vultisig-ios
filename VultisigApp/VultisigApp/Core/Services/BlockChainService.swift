@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import OSLog
 import VultisigCommonData
 import WalletCore
 
@@ -15,6 +16,8 @@ struct BlockSpecificCacheItem {
     let date: Date
 }
 final class BlockChainService {
+
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockchain-service")
 
     static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
         return value * 2 + value / 2 // x2.5 fee
@@ -191,16 +194,33 @@ final class BlockChainService {
         isDeposit: Bool,
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
+        customGasLimit: BigInt?,
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> BlockChainSpecific {
-        try await fetchSpecific(
+        // EVM sends must size gas against the *real* recipient before the
+        // keysign ceremony. Contract recipients, long memos, and chains with
+        // higher intrinsic costs (Mantle, Base) all exceed the flat
+        // 23000/120000 request default and would otherwise revert on-chain with
+        // the keysign already spent. A user-set custom limit wins; non-EVM
+        // chains pass through untouched.
+        let resolvedGasLimit = await resolveEVMSendGasLimit(
+            coin: coin,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            amount: amount,
+            memo: memo,
+            requestedGasLimit: gasLimit,
+            customGasLimit: customGasLimit
+        )
+
+        return try await fetchSpecific(
             for: coin,
             action: .transfer,
             sendMaxAmount: sendMaxAmount,
             isDeposit: isDeposit,
             transactionType: transactionType,
-            gasLimit: gasLimit,
+            gasLimit: resolvedGasLimit,
             fromAddress: fromAddress,
             toAddress: toAddress,
             memo: memo,
@@ -294,6 +314,72 @@ final class BlockChainService {
                      quote: String?) -> String {
         let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
         return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode) -\(quote ?? "")"
+    }
+}
+
+extension BlockChainService {
+    /// Resolve the gas limit for an EVM send.
+    ///
+    /// A user-set `customGasLimit` is honored exactly — the Send form lets the
+    /// user override the limit and that choice must win over estimation. With no
+    /// override, run `eth_estimateGas` against the *real* recipient (so contract
+    /// receivers and long memos are sized correctly) and floor at the per-chain
+    /// default. The estimate is used as-is, not inflated; if it isn't enough the
+    /// user can raise the limit in the gas settings. Non-EVM chains pass
+    /// `requestedGasLimit` through unchanged; if estimation fails the send still
+    /// proceeds on the floor.
+    ///
+    /// Shared by the keysign-payload build (`fetchSendBlockChainSpecific`) and
+    /// the Send form's fee display (`calculateEVMFee`) so both size gas the same
+    /// way.
+    func resolveEVMSendGasLimit(
+        coin: Coin,
+        fromAddress: String,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        requestedGasLimit: BigInt?,
+        customGasLimit: BigInt?
+    ) async -> BigInt? {
+        if let customGasLimit {
+            return customGasLimit
+        }
+
+        guard coin.chainType == .EVM else {
+            return requestedGasLimit
+        }
+
+        let floor = max(normalizeGasLimit(coin: coin, action: .transfer), requestedGasLimit ?? .zero)
+
+        // Without a recipient (e.g. early Send-form fee preview) there's nothing
+        // to simulate against.
+        guard !toAddress.isEmpty else {
+            return floor
+        }
+
+        do {
+            let service = try EvmService.getService(forChain: coin.chain)
+            let estimated: BigInt
+            if coin.isNativeToken {
+                estimated = try await service.estimateGasForEthTransaction(
+                    senderAddress: fromAddress,
+                    recipientAddress: toAddress,
+                    value: amount,
+                    memo: memo
+                )
+            } else {
+                estimated = try await service.estimateGasForERC20Transfer(
+                    senderAddress: fromAddress,
+                    contractAddress: coin.contractAddress,
+                    recipientAddress: toAddress,
+                    value: amount
+                )
+            }
+            return max(estimated, floor)
+        } catch {
+            logger.warning("EVM send gas estimation failed for \(coin.chain.name, privacy: .public); using default gas limit")
+            return floor
+        }
     }
 }
 
@@ -397,7 +483,17 @@ private extension BlockChainService {
                        toAddress: String?,
                        memo: String?,
                        feeMode: FeeMode,
-                       amount: BigInt?) async throws -> BlockChainSpecific {
+                       amount: BigInt?,
+                       signData: SignData? = nil) async throws -> BlockChainSpecific {
+        // dApp-supplied Sui PTBs (`signSui`) arrive already fully built: coins,
+        // gas budget and reference gas price are baked into the BCS bytes that
+        // the signing pipeline forwards verbatim. There are no construction
+        // inputs to fetch, so return an empty SuiSpecific instead of hitting
+        // the RPC (`getAllCoins` / reference-gas-price).
+        if case .signSui = signData {
+            return .Sui(referenceGasPrice: 0, coins: [], gasBudget: 0)
+        }
+
         switch coin.chain {
         case .zcash:
             // Resolve the live ZIP-243 branch id at build time so it travels
