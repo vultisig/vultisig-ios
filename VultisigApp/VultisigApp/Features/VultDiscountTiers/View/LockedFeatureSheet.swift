@@ -15,7 +15,6 @@ struct LockedFeatureSheet: View {
     var onUnlock: () -> Void
 
     @StateObject private var viewModel: LockedFeatureSheetViewModel
-    @State private var width: CGFloat = 0
 
     private let footerHeight: CGFloat = 48
     private let footerCornerRadius: CGFloat = 24
@@ -45,17 +44,22 @@ struct LockedFeatureSheet: View {
         #if os(macOS)
         .applySheetSize(400, 460)
         #endif
-        .background(ModalBackgroundView(width: width))
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDetents([.height(460)])
         .presentationDragIndicator(.visible)
-        .readSize { width = $0.width }
         .onAppear { viewModel.loadBalance(for: vault) }
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented = false
+                }
+            }
+        }
     }
 
     private var header: some View {
         VStack(spacing: 32) {
-            iconBadge
+            VaultSetupStepIcon(state: .active, icon: viewModel.feature.icon)
             VStack(spacing: 16) {
                 Text(viewModel.feature.titleKey.localized)
                     .font(Theme.fonts.title2)
@@ -67,16 +71,6 @@ struct LockedFeatureSheet: View {
                     .multilineTextAlignment(.center)
             }
         }
-    }
-
-    private var iconBadge: some View {
-        Icon(named: viewModel.feature.icon, color: Theme.colors.primaryAccent4, size: 20)
-            .frame(width: 40, height: 40)
-            .background(Theme.colors.primaryAccent4.opacity(0.12))
-            .clipShape(Circle())
-            .overlay(
-                Circle().stroke(Theme.colors.primaryAccent4.opacity(0.5), lineWidth: 1)
-            )
     }
 
     /// The `Get $VULT` footer sits *behind* `cardContent` (drawn first in the

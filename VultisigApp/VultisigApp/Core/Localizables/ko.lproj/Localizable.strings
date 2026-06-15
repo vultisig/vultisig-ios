@@ -928,7 +928,7 @@
 "setPasswordHintTitle" = "선택적 힌트 추가";
 "settings" = "설정";
 "settingsAdvancedClear" = "지우기";
-"settingsAdvancedCustomRPC" = "사용자 지정 RPC 엔드포인트";
+"settingsAdvancedCustomRPC" = "사용자 지정 RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "관리";

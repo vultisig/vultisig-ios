@@ -951,7 +951,7 @@
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
 "settings" = "Impostazioni";
 "settingsAdvancedClear" = "Cancella";
-"settingsAdvancedCustomRPC" = "Endpoint RPC personalizzati";
+"settingsAdvancedCustomRPC" = "RPC personalizzati";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestisci";

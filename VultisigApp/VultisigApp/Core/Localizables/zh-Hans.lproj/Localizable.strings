@@ -951,7 +951,7 @@
 "setPasswordHintTitle" = "添加可选提示";
 "settings" = "设置";
 "settingsAdvancedClear" = "清除";
-"settingsAdvancedCustomRPC" = "自定义 RPC 端点";
+"settingsAdvancedCustomRPC" = "自定义 RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "管理";

@@ -16,6 +16,7 @@ struct VultTierBadge: View {
             .padding(.vertical, 4)
             .background(Theme.colors.primaryAccent4.opacity(0.12))
             .clipShape(Capsule())
+            .overlay(Capsule().stroke(Theme.colors.bgSurface2, lineWidth: 1))
     }
 }
 

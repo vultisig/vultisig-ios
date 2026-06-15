@@ -951,7 +951,7 @@
 "setPasswordHintTitle" = "Añadir una pista opcional";
 "settings" = "Configuración";
 "settingsAdvancedClear" = "Borrar";
-"settingsAdvancedCustomRPC" = "Endpoints RPC personalizados";
+"settingsAdvancedCustomRPC" = "RPCs personalizados";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Gestionar";

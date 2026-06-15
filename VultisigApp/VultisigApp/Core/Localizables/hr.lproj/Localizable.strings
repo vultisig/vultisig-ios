@@ -951,7 +951,7 @@
 "setPasswordHintTitle" = "Dodajte opcionalni podsjetnik";
 "settings" = "Postavke";
 "settingsAdvancedClear" = "Očisti";
-"settingsAdvancedCustomRPC" = "Prilagođeni RPC endpointi";
+"settingsAdvancedCustomRPC" = "Prilagođeni RPC-ovi";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Upravljaj";

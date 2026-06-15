@@ -127,13 +127,12 @@ struct VaultAdvancedSettingsScreen: View {
                 icon: "signal-tower",
                 title: "settingsAdvancedCustomRPC",
                 subtitle: "customRPCSubtitle".localized,
-                showSeparator: false
-            ) {
-                HStack(spacing: 8) {
-                    VultTierBadge()
+                showSeparator: false,
+                titleAccessory: { VultTierBadge() },
+                trailingView: {
                     Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
                 }
-            }
+            )
         }
     }
 

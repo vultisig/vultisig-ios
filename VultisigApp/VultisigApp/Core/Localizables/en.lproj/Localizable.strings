@@ -959,7 +959,7 @@
 "setPasswordHintTitle" = "Add an optional hint";
 "settings" = "Settings";
 "settingsAdvancedClear" = "Clear";
-"settingsAdvancedCustomRPC" = "Custom RPC Endpoints";
+"settingsAdvancedCustomRPC" = "Custom RPCs";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "Manage";
