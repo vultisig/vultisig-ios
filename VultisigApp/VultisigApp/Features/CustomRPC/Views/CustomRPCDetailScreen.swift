@@ -5,9 +5,14 @@
 
 import SwiftUI
 
+/// Per-chain custom RPC editor. New state (no override) shows the endpoint
+/// field and Save RPC. Edit state (override set) adds a read-only default
+/// endpoint card and Reset to Default. Save probes the endpoint first and only
+/// persists when it is reachable on the right chain.
 struct CustomRPCDetailScreen: View {
     @Environment(\.router) var router
     @StateObject private var viewModel: CustomRPCDetailViewModel
+    @FocusState private var fieldFocused: Bool
 
     init(chain: Chain) {
         _viewModel = StateObject(wrappedValue: CustomRPCDetailViewModel(chain: chain))
@@ -15,115 +20,111 @@ struct CustomRPCDetailScreen: View {
 
     var body: some View {
         Screen {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                urlField
-                testSection
+            VStack(alignment: .leading, spacing: 16) {
+                endpointField
+                if viewModel.hasOverride {
+                    defaultEndpointCard
+                }
                 Spacer()
                 actions
             }
         }
-        .screenTitle(viewModel.chain.name)
+        .screenTitle(viewModel.screenTitle)
         .onAppear {
             viewModel.load()
         }
     }
 
-    private var header: some View {
-        HStack(spacing: 12) {
-            AsyncImageView(
-                logo: viewModel.chain.logo,
-                size: CGSize(width: 40, height: 40),
-                ticker: viewModel.chain.ticker,
-                tokenChainLogo: viewModel.chain.logo
-            )
-            Text(viewModel.chain.name)
-                .font(Theme.fonts.title3)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Spacer()
-            CustomRPCStatusChip(isCustom: viewModel.hasOverride)
-        }
-    }
-
-    private var urlField: some View {
+    private var endpointField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            CommonTextField(
-                text: $viewModel.urlText,
-                label: "customRPCEndpointLabel".localized,
-                placeholder: "https://"
+            Text("customRPCEndpointSectionTitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            HStack(alignment: .top, spacing: 4) {
+                TextField("", text: $viewModel.urlText, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .focused($fieldFocused)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    #endif
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                Button(action: paste) {
+                    Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+            .frame(minHeight: 120, alignment: .topLeading)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.colors.bgSurface1)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
 
-            if !viewModel.urlText.isEmpty && !viewModel.isURLValid {
-                Text("customRPCInvalidURL".localized)
-                    .font(Theme.fonts.caption12)
+            if let saveError = viewModel.saveError {
+                Text(saveError)
+                    .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.alertError)
+            } else {
+                Text("customRPCEndpointHelper".localized)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
         }
     }
 
-    @ViewBuilder
-    private var testSection: some View {
-        switch viewModel.probeState {
-        case .idle:
-            EmptyView()
-        case .testing:
-            HStack(spacing: 8) {
-                ProgressView()
-                Text("customRPCTesting".localized)
-                    .font(Theme.fonts.bodySRegular)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-        case .result(let result):
-            probeResultView(result)
+    private var defaultEndpointCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("customRPCDefaultEndpointSectionTitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Text(viewModel.defaultEndpoint ?? "")
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    @ViewBuilder
-    private func probeResultView(_ result: RPCHealthResult) -> some View {
-        switch result {
-        case .ok(let latencyMs, let networkVerified):
-            label(
-                networkVerified
-                    ? String(format: "customRPCReachable".localized, latencyMs)
-                    : String(format: "customRPCReachableUnverified".localized, latencyMs),
-                color: networkVerified ? Theme.colors.alertSuccess : Theme.colors.alertWarning
-            )
-        case .unreachable:
-            label("customRPCUnreachable".localized, color: Theme.colors.alertError)
-        case .wrongChain(let expected, let got):
-            label(
-                String(format: "customRPCWrongChain".localized, expected, got),
-                color: Theme.colors.alertError
-            )
-        case .invalidResponse:
-            label("customRPCInvalidResponse".localized, color: Theme.colors.alertError)
-        }
-    }
-
-    private func label(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(color)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Theme.colors.bgSurface1)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 
     private var actions: some View {
         VStack(spacing: 12) {
-            PrimaryButton(title: "customRPCTest".localized, type: .secondary) {
-                Task { await viewModel.test() }
-            }
-            .disabled(!viewModel.isURLValid || viewModel.isProbing)
-
-            PrimaryButton(title: "save".localized) {
-                viewModel.save()
-                router.navigateBack()
+            PrimaryButton(title: "customRPCSaveButton".localized, isLoading: viewModel.isSaving) {
+                Task {
+                    if await viewModel.save() {
+                        router.navigateBack()
+                    }
+                }
             }
             .disabled(!viewModel.canSave)
 
-            if viewModel.canReset {
+            if viewModel.hasOverride {
                 PrimaryButton(title: "customRPCResetToDefault".localized, type: .secondary) {
                     viewModel.reset()
                 }
+                .disabled(!viewModel.canReset)
             }
         }
+    }
+
+    private func paste() {
+        guard let pasted = ClipboardManager.pasteFromClipboard() else { return }
+        viewModel.urlText = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
