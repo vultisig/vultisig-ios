@@ -137,24 +137,24 @@ struct VaultAdvancedSettingsScreen: View {
     }
 
     private func handleCustomRPCTap() {
-//        Task {
-//            isLoading = true
-//            defer { isLoading = false }
-//            await TierGatedTap.handle(
-//                required: .silver,
-//                show: lockedSheetBinding,
-//                for: vault,
-//                isUnlocked: { tier, vault in
-//                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
-//                        return false
-//                    }
-//                    return cached >= tier
-//                },
-//                onUnlocked: {
+        Task {
+            isLoading = true
+            defer { isLoading = false }
+            await TierGatedTap.handle(
+                required: .silver,
+                show: lockedSheetBinding,
+                for: vault,
+                isUnlocked: { tier, vault in
+                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+                        return false
+                    }
+                    return cached >= tier
+                },
+                onUnlocked: {
                     router.navigate(to: VaultRoute.customRPC(vault: vault))
-//                }
-//            )
-//        }
+                }
+            )
+        }
     }
 
     /// Bridges the boolean sheet flag to the `VultDiscountTier?` binding
