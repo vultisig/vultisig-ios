@@ -1068,8 +1068,6 @@
 "swapKitStatusFailedReason" = "Zamjena nije uspjela na SwapKit pratiocu";
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
-"swapModeLimit" = "Limit";
-"swapModeMarket" = "Tržište";
 "swapOverview" = "Pregled zamjene";
 "swapProviderRecommended" = "Preporučeno";
 "swapProvidersSheetTitle" = "Odaberite davatelja";

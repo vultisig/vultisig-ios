@@ -36,10 +36,6 @@ final class SwapDetailsViewModel {
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
 
-    /// Active swap-mode tab. Market is the only executable mode today; Limit is
-    /// surfaced per design but order-execution is out of scope.
-    var swapMode: SwapMode = .market
-
     /// Per-swap advanced settings (slippage / gas limit / external recipient).
     /// Reset to `.default` between swaps so a custom slippage never sticks.
     var advancedSettings: SwapAdvancedSettings = .default

@@ -1068,8 +1068,6 @@
 "swapKitStatusFailedReason" = "A troca falhou no rastreador do SwapKit";
 "swapKitStatusRefundedReason" = "A troca foi reembolsada para seu endereço de origem";
 "swapKitViewOnTracker" = "Ver no SwapKit Tracker";
-"swapModeLimit" = "Limite";
-"swapModeMarket" = "Mercado";
 "swapOverview" = "Visão geral da troca";
 "swapProviderRecommended" = "Recomendado";
 "swapProvidersSheetTitle" = "Selecionar provedor";

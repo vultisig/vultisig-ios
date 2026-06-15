@@ -266,12 +266,6 @@ struct SwapDetailsScreen: View {
         }
     }
 
-    var modeTabs: some View {
-        @Bindable var vm = detailsViewModel
-        return SwapModeTabs(selected: $vm.swapMode)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     @ViewBuilder
     var advancedSettingsLink: some View {
         Button {
@@ -299,7 +293,6 @@ struct SwapDetailsScreen: View {
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
-                modeTabs
                 swapContent
                     #if os(macOS)
                     // Keep the error tooltip overlay above the later sibling

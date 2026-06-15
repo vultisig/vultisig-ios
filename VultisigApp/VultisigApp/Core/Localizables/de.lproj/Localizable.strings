@@ -1068,8 +1068,6 @@
 "swapKitStatusFailedReason" = "Tausch im SwapKit-Tracker fehlgeschlagen";
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
-"swapModeLimit" = "Limit";
-"swapModeMarket" = "Markt";
 "swapOverview" = "Tauschübersicht";
 "swapProviderRecommended" = "Empfohlen";
 "swapProvidersSheetTitle" = "Anbieter auswählen";

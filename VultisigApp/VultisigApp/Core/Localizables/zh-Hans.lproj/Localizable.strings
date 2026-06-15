@@ -1068,8 +1068,6 @@
 "swapKitStatusFailedReason" = "交换在 SwapKit 跟踪器上失败";
 "swapKitStatusRefundedReason" = "交换已退款至您的源地址";
 "swapKitViewOnTracker" = "在 SwapKit 跟踪器中查看";
-"swapModeLimit" = "限价";
-"swapModeMarket" = "市价";
 "swapOverview" = "交换概览";
 "swapProviderRecommended" = "推荐";
 "swapProvidersSheetTitle" = "选择提供商";

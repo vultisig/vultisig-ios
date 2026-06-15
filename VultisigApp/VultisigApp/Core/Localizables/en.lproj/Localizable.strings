@@ -1076,8 +1076,6 @@
 "swapKitStatusFailedReason" = "Swap failed on the SwapKit tracker";
 "swapKitStatusRefundedReason" = "Swap was refunded to your source address";
 "swapKitViewOnTracker" = "View on SwapKit Tracker";
-"swapModeLimit" = "Limit";
-"swapModeMarket" = "Market";
 "swapOverview" = "Swap overview";
 "swapProviderRecommended" = "Recommended";
 "swapProvidersSheetTitle" = "Select provider";
