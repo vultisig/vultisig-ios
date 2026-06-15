@@ -20,19 +20,20 @@ struct VultDiscountTierView: View {
     private let topCornerRadius: CGFloat = 24
     private let bottomCornerRadius: CGFloat = 20
     private let footerCornerRadius: CGFloat = 24
+    private let footerHeight: CGFloat = 48
 
     var holdAmountText: String {
         "\(tier.balanceToUnlock.formatForDisplay(skipAbbreviation: true)) $VULT"
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            cardBody
+        ZStack(alignment: .bottom) {
             footer
-                .showIf(isExpanded)
+            cardBody
+                .clipShape(cardShape)
+                .contentShape(cardShape)
         }
-        .clipShape(cardShape)
-        .contentShape(cardShape)
+        .padding(.bottom, isExpanded ? footerHeight : 0)
         .onTapGesture { toggleExpansion() }
         .onLoad { animate(isActive: isActive) }
         .onChange(of: isActive) { _, newValue in
@@ -60,7 +61,6 @@ private extension VultDiscountTierView {
         .padding(.bottom, isExpanded ? 16 : 24)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSurface1)
-        .overlay(accentBorder, alignment: .bottom)
     }
 
     var headerRow: some View {
@@ -127,12 +127,14 @@ private extension VultDiscountTierView {
     /// lower tiers show a non-interactive "✓ Unlocked".
     var footer: some View {
         footerContent
-            .frame(maxWidth: .infinity)
-            .padding(.top, 16)
+            .frame(maxWidth: .infinity, alignment: .bottom)
+            .frame(height: footerHeight, alignment: .bottom)
             .padding(.bottom, 14)
             .background(footerGradient)
             .overlay(footerInnerShadow)
-            .contentShape(Rectangle())
+            .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
+            .offset(y: isExpanded ? 48 : 2)
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.colors.borderLight, lineWidth: 1))
             .onTapGesture {
                 if isUnlockTappable {
                     onUnlock()
@@ -153,6 +155,7 @@ private extension VultDiscountTierView {
                     .font(Theme.fonts.buttonSSemibold)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
+            .transaction { $0.animation = nil }
         }
     }
 
@@ -160,8 +163,12 @@ private extension VultDiscountTierView {
     var footerGradient: some View {
         switch tier {
         case .ultimate:
-            Image("vult-ultimate-box-overlay")
-                .resizable()
+            LinearGradient(
+                colors: [Color(hex: "FFC25C"), Color(hex: "0F4594"), Color(hex: "041022")],
+                startPoint: .init(x: 1, y: -3),
+                endPoint: .init(x: 0, y: 0.5)
+            )
+
         default:
             LinearGradient(
                 colors: [tier.secondaryColor, tier.primaryColor],
@@ -231,4 +238,5 @@ private extension VultDiscountTierView {
         }
         .padding()
     }
+    .background(Theme.colors.bgPrimary)
 }

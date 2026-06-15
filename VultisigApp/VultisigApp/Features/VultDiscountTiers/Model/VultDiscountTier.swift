@@ -65,22 +65,26 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
         case .platinum:
             Color(hex: "33E6BF")
         case .diamond:
-            Color(hex: "9747FF")
+            Color(hex: "00CCFF")
         case .ultimate:
-            .black
+            Color(hex: "0F4594")
         }
     }
 
     var secondaryColor: Color {
         switch self {
-        case .bronze, .silver, .gold:
-            Color(hex: "3377D9").opacity(0.21)
+        case .bronze:
+            Color(hex: "993B1F")
+        case .silver:
+            Color(hex: "7D8B9E")
+        case .gold:
+            Color(hex: "997437")
         case .platinum:
             Color(hex: "4879FD")
         case .diamond:
-            Color(hex: "00CCFF")
+            Color(hex: "9747FF")
         case .ultimate:
-            .clear
+            Color(hex: "E8B762")
         }
     }
 
