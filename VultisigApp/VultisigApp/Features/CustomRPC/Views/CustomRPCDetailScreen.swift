@@ -55,7 +55,7 @@ struct CustomRPCDetailScreen: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Button(action: paste) {
-                    Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
+                    Icon(named: "copy-2", color: Theme.colors.textPrimary, size: 20)
                 }
                 .buttonStyle(.plain)
             }

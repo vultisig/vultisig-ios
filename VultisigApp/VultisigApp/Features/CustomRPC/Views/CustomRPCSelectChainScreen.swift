@@ -114,23 +114,24 @@ private struct CustomRPCChainGridCell: View {
     private var overrideBorder: some View {
         if hasOverride {
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Theme.colors.borderLight, lineWidth: 1.5)
+                .inset(by: 1)
+                .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }
 
     private var pencilBadge: some View {
-        Icon(named: "pencil", color: Theme.colors.textPrimary, size: 12)
+        Icon(named: "pencil", color: Theme.colors.textPrimary, size: 8)
             .padding(8)
             .background(
                 UnevenRoundedRectangle(
                     cornerRadii: .init(
-                        topLeading: 40,
+                        topLeading: 24,
                         bottomLeading: 0,
                         bottomTrailing: 24,
                         topTrailing: 0
                     )
                 )
-                .fill(Theme.colors.borderLight)
+                .fill(Theme.colors.border)
             )
     }
 }
