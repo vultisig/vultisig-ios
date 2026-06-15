@@ -285,12 +285,12 @@
 "customRPCReachableUnverified" = "可访问 · %d ms — 网络身份未验证";
 "customRPCResetToDefault" = "重置为默认";
 "customRPCsLockedBack" = "返回";
-"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedGetVult" = "获取 $VULT";
 "customRPCsLockedRequires" = "需要";
 "customRPCsLockedSubtitle" = "将 Vultisig 指向您自己的节点。每条链上更快的查询、更高的速率限制和完全的隐私。";
 "customRPCsLockedTierRequirement" = "$VULT %@ 等级或以上";
 "customRPCsLockedTierSubtitle" = "在您的金库中持有至少 %@";
-"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedTitle" = "自定义 RPC";
 "customRPCsLockedYourBalance" = "您的余额";
 "customRPCTagCustom" = "自定义";
 "customRPCTagDefault" = "默认";

@@ -285,12 +285,12 @@
 "customRPCReachableUnverified" = "Raggiungibile · %d ms — identità di rete non verificata";
 "customRPCResetToDefault" = "Ripristina predefinito";
 "customRPCsLockedBack" = "Indietro";
-"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedGetVult" = "Ottieni $VULT";
 "customRPCsLockedRequires" = "Richiede";
 "customRPCsLockedSubtitle" = "Punta Vultisig sui tuoi nodi. Query più veloci, limiti più alti e piena privacy per ogni catena.";
-"customRPCsLockedTierRequirement" = "$VULT %@ Tier o superiore";
+"customRPCsLockedTierRequirement" = "$VULT %@ livello o superiore";
 "customRPCsLockedTierSubtitle" = "Detieni almeno %@ nella tua cassaforte";
-"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedTitle" = "RPC personalizzati";
 "customRPCsLockedYourBalance" = "Il tuo saldo";
 "customRPCTagCustom" = "personalizzato";
 "customRPCTagDefault" = "predefinito";

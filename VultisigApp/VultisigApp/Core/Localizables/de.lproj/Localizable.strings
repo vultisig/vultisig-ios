@@ -285,12 +285,12 @@
 "customRPCReachableUnverified" = "Erreichbar · %d ms — Netzwerkidentität nicht verifiziert";
 "customRPCResetToDefault" = "Auf Standard zurücksetzen";
 "customRPCsLockedBack" = "Zurück";
-"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedGetVult" = "$VULT holen";
 "customRPCsLockedRequires" = "Erforderlich";
 "customRPCsLockedSubtitle" = "Richte Vultisig auf deine eigenen Nodes aus. Schnellere Abfragen, höhere Ratenlimits und volle Privatsphäre pro Chain.";
-"customRPCsLockedTierRequirement" = "$VULT %@ Tier oder höher";
+"customRPCsLockedTierRequirement" = "$VULT %@ Stufe oder höher";
 "customRPCsLockedTierSubtitle" = "Halte mindestens %@ in deinem Tresor";
-"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedTitle" = "Eigene RPCs";
 "customRPCsLockedYourBalance" = "Dein Guthaben";
 "customRPCTagCustom" = "eigen";
 "customRPCTagDefault" = "standard";

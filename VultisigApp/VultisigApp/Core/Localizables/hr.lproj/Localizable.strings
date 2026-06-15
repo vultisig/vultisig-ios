@@ -285,12 +285,12 @@
 "customRPCReachableUnverified" = "Dostupno · %d ms — mrežni identitet nije potvrđen";
 "customRPCResetToDefault" = "Vrati na zadano";
 "customRPCsLockedBack" = "Natrag";
-"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedGetVult" = "Nabavi $VULT";
 "customRPCsLockedRequires" = "Zahtijeva";
 "customRPCsLockedSubtitle" = "Usmjeri Vultisig na vlastite čvorove. Brži upiti, viša ograničenja i potpuna privatnost po lancu.";
 "customRPCsLockedTierRequirement" = "$VULT %@ razina ili viša";
 "customRPCsLockedTierSubtitle" = "Drži barem %@ u svom trezoru";
-"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedTitle" = "Prilagođeni RPC-ovi";
 "customRPCsLockedYourBalance" = "Tvoj saldo";
 "customRPCTagCustom" = "prilagođeno";
 "customRPCTagDefault" = "zadano";
