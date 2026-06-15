@@ -603,6 +603,7 @@
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
 "modules" = "Módulos";
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
+"moreComingSoon" = "Em breve mais";
 "moreInfo" = "Mais informações";
 "moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
 "moveCall" = "Chamada Move";
@@ -1254,6 +1255,8 @@
 "Vote" = "Votar";
 "vult" = "$ VULT";
 "vultDiscount" = "Desconto: %dbps";
+"vultDiscountHeroSubtitle" = "receba um desconto de negociação";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "Níveis de Desconto $VULT";
 "vultDiscountTiersDescription" = "Mantenha $VULT para desbloquear taxas de negociação mais baixas.";
 "vultiserverPassword" = "Senha do Vultiserver";

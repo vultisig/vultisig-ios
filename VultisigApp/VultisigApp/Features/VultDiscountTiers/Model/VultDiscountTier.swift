@@ -84,6 +84,18 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
         }
     }
 
+    /// Localized perk-pill copy driven by the tier's discount data.
+    /// `.ultimate`'s `bpsDiscount` is `Int.max` (a sentinel), so it renders the
+    /// fee-waiver copy instead of a numeric bps value.
+    var discountPerkText: String {
+        switch self {
+        case .ultimate:
+            "noFee".localized
+        default:
+            String(format: "vultDiscount".localized, bpsDiscount)
+        }
+    }
+
     /// Returns the tier matching the given BPS discount, or nil if no match
     static func from(bpsDiscount: Int) -> VultDiscountTier? {
         allCases.first { $0.bpsDiscount == bpsDiscount }

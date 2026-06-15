@@ -603,6 +603,7 @@
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
+"moreComingSoon" = "Uskoro više";
 "moreInfo" = "Više informacija";
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
 "moveCall" = "Move poziv";
@@ -1254,6 +1255,8 @@
 "Vote" = "Glasaj";
 "vult" = "$ VOLT";
 "vultDiscount" = "Popust: %dbps";
+"vultDiscountHeroSubtitle" = "ostvari popust na trgovanje";
+"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT Razine Popusta";
 "vultDiscountTiersDescription" = "Držite $VULT da biste otključali niže naknade za trgovanje.";
 "vultiserverPassword" = "Vultiserver lozinka";

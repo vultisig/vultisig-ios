@@ -30,4 +30,18 @@ final class VultDiscountTierComparableTests: XCTestCase {
         let shuffled: [VultDiscountTier] = [.diamond, .bronze, .gold, .ultimate, .silver, .platinum]
         XCTAssertEqual(shuffled.sorted(), VultDiscountTier.allCases)
     }
+
+    func test_discountPerkText_numericTiers_includeBps() {
+        XCTAssertTrue(VultDiscountTier.bronze.discountPerkText.contains("5"))
+        XCTAssertTrue(VultDiscountTier.silver.discountPerkText.contains("10"))
+        XCTAssertTrue(VultDiscountTier.gold.discountPerkText.contains("20"))
+        XCTAssertTrue(VultDiscountTier.platinum.discountPerkText.contains("25"))
+        XCTAssertTrue(VultDiscountTier.diamond.discountPerkText.contains("35"))
+    }
+
+    func test_discountPerkText_ultimate_neverPrintsSentinel() {
+        let text = VultDiscountTier.ultimate.discountPerkText
+        XCTAssertFalse(text.contains("\(Int.max)"))
+        XCTAssertEqual(text, "noFee".localized)
+    }
 }
