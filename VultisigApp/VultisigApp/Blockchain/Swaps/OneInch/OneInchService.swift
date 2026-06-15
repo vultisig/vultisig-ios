@@ -45,9 +45,13 @@ struct OneInchService {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
 
-        // 1inch takes slippage as a percent string. `Auto` (nil) keeps the
-        // existing 0.5% default; a custom value converts bps → percent.
-        let slippageValue = slippageBps.map { Self.percentString(fromBps: $0) } ?? "0.5"
+        // 1inch takes slippage as a percent string and accepts only 0–50%
+        // (0–5000 bps). `Auto` (nil) keeps the existing 0.5% default; a custom
+        // value is clamped into range before bps → percent conversion so an
+        // out-of-bounds input never triggers an avoidable quote failure.
+        let slippageValue = slippageBps
+            .map { min(max($0, 0), 5000) }
+            .map { Self.percentString(fromBps: $0) } ?? "0.5"
 
         let params = OneInchAPI.SwapParams(
             source: sourceAddress,

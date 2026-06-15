@@ -21,8 +21,18 @@ struct SwapAdvancedSettings: Equatable, Hashable {
 
     /// Final destination for the swapped funds. `nil` means "send to my own
     /// vault address" (today's behavior). When set, it MUST be surfaced on the
-    /// verify screen before signing.
-    var externalRecipient: String?
+    /// verify screen before signing. Blank/whitespace-only input normalizes to
+    /// `nil` so an empty recipient never marks the settings active or leaks
+    /// downstream.
+    var externalRecipient: String? {
+        get { _externalRecipient }
+        set {
+            let trimmed = newValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+            _externalRecipient = (trimmed?.isEmpty == false) ? trimmed : nil
+        }
+    }
+
+    private var _externalRecipient: String?
 
     static let `default` = SwapAdvancedSettings()
 

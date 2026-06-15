@@ -28,10 +28,9 @@ struct GasLimitSettingsView: View {
                     Icon(named: "circle-info", color: Theme.colors.textTertiary, size: 16)
                 }
 
-                TextField("auto".localized, text: $text)
+                numberField
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
-                    .keyboardType(.numberPad)
                     .padding(16)
                     .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -48,6 +47,18 @@ struct GasLimitSettingsView: View {
         .onLoad {
             text = gasLimit.map(String.init) ?? .empty
         }
+    }
+
+    /// Numeric input. `keyboardType` is iOS-only, so it's applied behind a
+    /// platform guard; macOS uses the bare field.
+    @ViewBuilder
+    private var numberField: some View {
+        let field = TextField("auto".localized, text: $text)
+        #if os(iOS)
+        field.keyboardType(.numberPad)
+        #else
+        field
+        #endif
     }
 
     /// Persist the entered limit. Empty / unparseable / zero clears the override

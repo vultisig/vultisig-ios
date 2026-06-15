@@ -50,6 +50,26 @@ final class SwapAdvancedSettingsTests: XCTestCase {
         XCTAssertTrue(settings.isActive)
     }
 
+    func testBlankExternalRecipientNormalizesToNil() {
+        var settings = SwapAdvancedSettings.default
+        settings.externalRecipient = "   "
+        XCTAssertNil(settings.externalRecipient)
+        XCTAssertFalse(settings.isActive)
+
+        settings.externalRecipient = ""
+        XCTAssertNil(settings.externalRecipient)
+
+        settings.externalRecipient = "\n\t"
+        XCTAssertNil(settings.externalRecipient)
+    }
+
+    func testExternalRecipientIsTrimmed() {
+        var settings = SwapAdvancedSettings.default
+        settings.externalRecipient = "  0xabc  "
+        XCTAssertEqual(settings.externalRecipient, "0xabc")
+        XCTAssertTrue(settings.isActive)
+    }
+
     // MARK: - SwapTransaction recipient surfacing (verify screen)
 
     func testRecipientDefaultsToToCoinAddressWithoutExternalRecipient() {
@@ -69,8 +89,18 @@ final class SwapAdvancedSettingsTests: XCTestCase {
     private func makeTransaction(externalRecipient: String?) -> SwapTransaction {
         var settings = SwapAdvancedSettings.default
         settings.externalRecipient = externalRecipient
-        var transaction = SwapTransaction.example
-        transaction.advancedSettings = settings
-        return transaction
+        let example = SwapTransaction.example
+        return SwapTransaction(
+            fromCoin: example.fromCoin,
+            toCoin: example.toCoin,
+            fromAmount: example.fromAmount,
+            quote: example.quote,
+            gas: example.gas,
+            thorchainFee: example.thorchainFee,
+            vultDiscountBps: example.vultDiscountBps,
+            referralDiscountBps: example.referralDiscountBps,
+            feeCoin: example.feeCoin,
+            advancedSettings: settings
+        )
     }
 }

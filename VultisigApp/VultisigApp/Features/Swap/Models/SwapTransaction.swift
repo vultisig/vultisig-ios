@@ -36,7 +36,7 @@ struct SwapTransaction: Hashable {
     /// Per-swap advanced settings (slippage / gas-limit override / external
     /// recipient) captured at hand-off. The external recipient MUST be surfaced
     /// on the verify screen before signing.
-    var advancedSettings: SwapAdvancedSettings = .default
+    let advancedSettings: SwapAdvancedSettings
 
     /// Final destination for the swapped funds: the user-set external recipient
     /// when present, otherwise the user's own address on the destination chain
@@ -239,7 +239,8 @@ extension SwapTransaction {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: .example
+            feeCoin: .example,
+            advancedSettings: .default
         )
     }()
 }

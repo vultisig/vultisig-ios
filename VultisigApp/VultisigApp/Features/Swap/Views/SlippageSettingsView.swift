@@ -70,11 +70,10 @@ struct SlippageSettingsView: View {
                     .font(Theme.fonts.bodySRegular)
                     .foregroundStyle(Theme.colors.textSecondary)
 
-                TextField("0.00%", text: $customText)
+                customField
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .focused($customFocused)
-                    .keyboardType(.decimalPad)
                     .frame(width: 64)
                     .onChange(of: customText) { _, _ in applyCustom() }
 
@@ -85,6 +84,18 @@ struct SlippageSettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// Custom slippage input. `keyboardType` is iOS-only, so it's applied behind
+    /// a platform guard; macOS uses the bare field.
+    @ViewBuilder
+    private var customField: some View {
+        let field = TextField("0.00%", text: $customText)
+        #if os(iOS)
+        field.keyboardType(.decimalPad)
+        #else
+        field
+        #endif
     }
 
     private func radioRow(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
