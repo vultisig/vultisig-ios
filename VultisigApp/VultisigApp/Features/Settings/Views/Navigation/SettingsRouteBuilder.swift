@@ -72,16 +72,6 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildCustomRPCListScreen() -> some View {
-        CustomRPCListScreen()
-    }
-
-    @ViewBuilder
-    func buildCustomRPCDetailScreen(chain: Chain) -> some View {
-        CustomRPCDetailScreen(chain: chain)
-    }
-
-    @ViewBuilder
     func buildVaultDetailQRCodeScreen(vault: Vault) -> some View {
         VaultDetailQRCodeView(vault: vault)
     }

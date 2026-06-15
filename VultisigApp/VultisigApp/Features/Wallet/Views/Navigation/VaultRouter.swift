@@ -55,6 +55,10 @@ struct VaultRouter {
             viewBuilder.buildAdvancedSettingsScreen(vault: vault)
         case .customMessage(let vault):
             viewBuilder.buildCustomMessageScreen(vault: vault)
+        case .customRPC(let vault):
+            viewBuilder.buildCustomRPCScreen(vault: vault)
+        case .customRPCDetail(let chain):
+            viewBuilder.buildCustomRPCDetailScreen(chain: chain)
         case .onChainSecurity:
             viewBuilder.buildOnChainSecurityScreen()
         case .chainDetail(let chain, let vault):

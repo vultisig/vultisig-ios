@@ -9,10 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct VaultAdvancedSettingsScreen: View {
-    let vault: Vault
+    @ObservedObject var vault: Vault
 
     @Environment(\.router) var router
     @State private var showDilithiumAlreadyGenerated = false
+    @State private var showCustomRPCLockedSheet = false
+    private let tierService = VultTierService()
 
     var body: some View {
         Screen {
@@ -23,6 +25,7 @@ struct VaultAdvancedSettingsScreen: View {
                         dilithiumKeygenRow
                         customMessageRow
                         onChainSecurityRow
+                        customRPCRow
                     }
                 }
             }
@@ -30,6 +33,20 @@ struct VaultAdvancedSettingsScreen: View {
         .screenTitle("advanced".localized)
         .crossPlatformSheet(isPresented: $showDilithiumAlreadyGenerated) {
             DilithiumAlreadyGeneratedSheet(isPresented: $showDilithiumAlreadyGenerated)
+        }
+        .crossPlatformSheet(isPresented: $showCustomRPCLockedSheet) {
+            LockedFeatureSheet(
+                feature: .customRPC,
+                vault: vault,
+                isPresented: $showCustomRPCLockedSheet
+            ) {
+                showCustomRPCLockedSheet = false
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: tierService.getVultToken(for: vault),
+                    vault: vault
+                ))
+            }
         }
     }
 
@@ -95,9 +112,48 @@ struct VaultAdvancedSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: "folder-lock",
                 title: "vaultSettingsSecurityTitle".localized,
-                subtitle: "vaultSettingsSecuritySubtitle".localized,
-                showSeparator: false
+                subtitle: "vaultSettingsSecuritySubtitle".localized
             )
         }
+    }
+
+    var customRPCRow: some View {
+        Button {
+            handleCustomRPCTap()
+        } label: {
+            SettingsOptionView(
+                icon: "signal-tower",
+                title: "settingsAdvancedCustomRPC",
+                subtitle: "customRPCSubtitle".localized,
+                showSeparator: false
+            ) {
+                HStack(spacing: 8) {
+                    VultTierBadge()
+                    Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+                }
+            }
+        }
+    }
+
+    private func handleCustomRPCTap() {
+        Task {
+            await TierGatedTap.handle(
+                required: .silver,
+                show: lockedSheetBinding,
+                for: vault
+            ) {
+                router.navigate(to: VaultRoute.customRPC(vault: vault))
+            }
+        }
+    }
+
+    /// Bridges the boolean sheet flag to the `VultDiscountTier?` binding
+    /// `TierGatedTap` expects: any non-nil tier means "locked", which we surface
+    /// as the single `LockedFeatureSheet(.customRPC)`.
+    private var lockedSheetBinding: Binding<VultDiscountTier?> {
+        Binding(
+            get: { showCustomRPCLockedSheet ? .silver : nil },
+            set: { showCustomRPCLockedSheet = $0 != nil }
+        )
     }
 }
