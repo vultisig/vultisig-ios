@@ -43,7 +43,7 @@ struct CosmosServiceConfig {
         case .dydx:
             return URL(string: "https://dydx-rest.publicnode.com")
         case .kujira:
-            return URL(string: "https://kujira-rest.publicnode.com")
+            return URL(string: "https://kujira-api.polkachu.com")
         case .osmosis:
             return URL(string: "https://osmosis-rest.publicnode.com")
         case .terra:
