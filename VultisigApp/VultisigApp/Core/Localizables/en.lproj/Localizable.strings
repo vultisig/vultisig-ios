@@ -286,6 +286,14 @@
 "customRPCReachable" = "Reachable · %d ms";
 "customRPCReachableUnverified" = "Reachable · %d ms — network identity not verified";
 "customRPCResetToDefault" = "Reset to default";
+"customRPCsLockedBack" = "Back";
+"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedRequires" = "Requires";
+"customRPCsLockedSubtitle" = "Point Vultisig at your own nodes. Faster queries, higher rate limits, and full privacy per chain.";
+"customRPCsLockedTierRequirement" = "$VULT %@ Tier or above";
+"customRPCsLockedTierSubtitle" = "Hold at least %@ in your vault";
+"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedYourBalance" = "Your balance";
 "customRPCTagCustom" = "custom";
 "customRPCTagDefault" = "default";
 "customRPCTest" = "Test";

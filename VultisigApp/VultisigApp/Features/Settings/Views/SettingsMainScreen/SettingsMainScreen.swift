@@ -19,6 +19,8 @@ struct SettingsMainScreen: View {
     @State var showReferralBannerSheet = false
     @State private var customRPCTierSheet: VultDiscountTier?
 
+    private let tierService = VultTierService()
+
     var groups: [SettingsOptionGroup] {
         var generalOptions: [SettingsOption] = [
             .notifications,
@@ -102,7 +104,23 @@ struct SettingsMainScreen: View {
                 showReferralBannerSheet = false
             }.presentationDetents([.height(400)])
         }
-        .tierGated(presentedTier: $customRPCTierSheet, vault: vault)
+        .crossPlatformSheet(item: $customRPCTierSheet) { tier in
+            CustomRPCLockedSheet(
+                vault: vault,
+                requiredTier: tier,
+                isPresented: Binding(
+                    get: { customRPCTierSheet != nil },
+                    set: { _ in customRPCTierSheet = nil }
+                )
+            ) {
+                customRPCTierSheet = nil
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: tierService.getVultToken(for: vault),
+                    vault: vault
+                ))
+            }
+        }
     }
 
     func groupView(for group: SettingsOptionGroup) -> some View {

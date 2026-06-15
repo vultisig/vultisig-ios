@@ -279,6 +279,14 @@
 "customRPCReachable" = "연결 가능 · %d ms";
 "customRPCReachableUnverified" = "연결 가능 · %d ms — 네트워크 신원 미확인";
 "customRPCResetToDefault" = "기본값으로 재설정";
+"customRPCsLockedBack" = "뒤로";
+"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedRequires" = "필요 조건";
+"customRPCsLockedSubtitle" = "Vultisig를 직접 운영하는 노드로 연결하세요. 더 빠른 조회, 더 높은 속도 제한, 체인별 완전한 프라이버시.";
+"customRPCsLockedTierRequirement" = "$VULT %@ 등급 이상";
+"customRPCsLockedTierSubtitle" = "볼트에 최소 %@ 보유";
+"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedYourBalance" = "내 잔액";
 "customRPCTagCustom" = "사용자 지정";
 "customRPCTagDefault" = "기본";
 "customRPCTest" = "테스트";

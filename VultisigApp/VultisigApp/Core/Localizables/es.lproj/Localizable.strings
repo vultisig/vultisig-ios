@@ -284,6 +284,14 @@
 "customRPCReachable" = "Accesible · %d ms";
 "customRPCReachableUnverified" = "Accesible · %d ms — identidad de red no verificada";
 "customRPCResetToDefault" = "Restablecer a predeterminado";
+"customRPCsLockedBack" = "Atrás";
+"customRPCsLockedGetVult" = "Get $VULT";
+"customRPCsLockedRequires" = "Requiere";
+"customRPCsLockedSubtitle" = "Apunta Vultisig a tus propios nodos. Consultas más rápidas, mayores límites de tasa y privacidad total por cadena.";
+"customRPCsLockedTierRequirement" = "$VULT %@ Tier o superior";
+"customRPCsLockedTierSubtitle" = "Mantén al menos %@ en tu bóveda";
+"customRPCsLockedTitle" = "Custom RPCs";
+"customRPCsLockedYourBalance" = "Tu saldo";
 "customRPCTagCustom" = "personalizado";
 "customRPCTagDefault" = "predeterminado";
 "customRPCTest" = "Probar";
