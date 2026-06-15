@@ -23,6 +23,10 @@ enum LiFiAPI: TargetType {
         /// Fee rate (e.g. "0.005") appended alongside `integrator`; both must
         /// be set together to register the fee with LI.FI.
         let fee: String?
+        /// Slippage as a decimal fraction in [0,1] (e.g. "0.005" = 0.5%).
+        /// Only attached when the user picks a custom slippage; `nil` lets
+        /// LI.FI apply its own default instead of sending an empty/zero value.
+        let slippage: String?
     }
 
     private static let lifiBaseURL = URL(string: "https://li.quest")!
@@ -50,6 +54,9 @@ enum LiFiAPI: TargetType {
             }
             if let fee = params.fee {
                 query["fee"] = fee
+            }
+            if let slippage = params.slippage {
+                query["slippage"] = slippage
             }
             return .requestParameters(query, .urlEncoding)
         }

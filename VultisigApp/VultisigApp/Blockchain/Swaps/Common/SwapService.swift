@@ -308,7 +308,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .swapkit:
             return try await fetchSwapKitQuote(
@@ -462,16 +463,17 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
         )
-        print("LiFi Quote: \(response.quote)")
         return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
 
