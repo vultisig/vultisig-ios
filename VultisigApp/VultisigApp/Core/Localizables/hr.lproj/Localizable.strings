@@ -282,6 +282,7 @@
 "customRPCEndpointSectionTitle" = "RPC KRAJNJA TOČKA";
 "customRPCInvalidResponse" = "Nevažeći odgovor";
 "customRPCInvalidURL" = "Unesite valjani http(s) URL";
+"customRPCModifiedSuccess" = "%@ RPC uspješno izmijenjen";
 "customRPCResetToDefault" = "Vrati na zadano";
 "customRPCSaveButton" = "Spremi RPC";
 "customRPCScreenTitle" = "%@ RPC";

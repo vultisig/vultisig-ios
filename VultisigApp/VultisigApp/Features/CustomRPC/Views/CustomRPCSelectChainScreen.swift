@@ -27,6 +27,9 @@ struct CustomRPCSelectChainScreen: View {
             }
         }
         .screenTitle("settingsAdvancedCustomRPC".localized)
+        .onAppear {
+            viewModel.refresh()
+        }
         .onDisappear {
             viewModel.searchText = ""
         }
@@ -101,37 +104,31 @@ private struct CustomRPCChainGridCell: View {
             RoundedRectangle(cornerRadius: 24)
                 .fill(Theme.colors.bgSurface1)
         )
-        .overlay(overrideBorder)
-        .overlay(alignment: .bottomTrailing) {
-            if hasOverride {
-                pencilBadge
-            }
-        }
+        .overlay(hasOverride ? editedOverlay : nil)
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 
-    @ViewBuilder
-    private var overrideBorder: some View {
-        if hasOverride {
+    /// Matches `AssetSelectionGridCell`'s selected treatment: the corner badge is
+    /// drawn first and the inset border on top, so the border stays continuous
+    /// around the badge instead of being broken by it.
+    private var editedOverlay: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Icon(named: "pencil", color: Theme.colors.textPrimary, size: 8)
+                .padding(8)
+                .background(
+                    UnevenRoundedRectangle(
+                        cornerRadii: .init(
+                            topLeading: 24,
+                            bottomLeading: 0,
+                            bottomTrailing: 24,
+                            topTrailing: 0
+                        )
+                    )
+                    .fill(Theme.colors.border)
+                )
             RoundedRectangle(cornerRadius: 24)
                 .inset(by: 1)
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
-    }
-
-    private var pencilBadge: some View {
-        Icon(named: "pencil", color: Theme.colors.textPrimary, size: 8)
-            .padding(8)
-            .background(
-                UnevenRoundedRectangle(
-                    cornerRadii: .init(
-                        topLeading: 24,
-                        bottomLeading: 0,
-                        bottomTrailing: 24,
-                        topTrailing: 0
-                    )
-                )
-                .fill(Theme.colors.border)
-            )
     }
 }

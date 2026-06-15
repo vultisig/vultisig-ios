@@ -282,6 +282,7 @@
 "customRPCEndpointSectionTitle" = "RPC 端点";
 "customRPCInvalidResponse" = "无效响应";
 "customRPCInvalidURL" = "请输入有效的 http(s) URL";
+"customRPCModifiedSuccess" = "%@ RPC 修改成功";
 "customRPCResetToDefault" = "重置为默认";
 "customRPCSaveButton" = "保存 RPC";
 "customRPCScreenTitle" = "%@ RPC";

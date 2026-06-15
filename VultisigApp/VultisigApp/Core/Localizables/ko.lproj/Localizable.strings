@@ -277,6 +277,7 @@
 "customRPCEndpointSectionTitle" = "RPC 엔드포인트";
 "customRPCInvalidResponse" = "잘못된 응답";
 "customRPCInvalidURL" = "유효한 http(s) URL을 입력하세요";
+"customRPCModifiedSuccess" = "%@ RPC가 성공적으로 수정되었습니다";
 "customRPCResetToDefault" = "기본값으로 재설정";
 "customRPCSaveButton" = "RPC 저장";
 "customRPCScreenTitle" = "%@ RPC";

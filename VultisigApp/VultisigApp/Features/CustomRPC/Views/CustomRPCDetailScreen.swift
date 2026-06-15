@@ -13,6 +13,7 @@ struct CustomRPCDetailScreen: View {
     @Environment(\.router) var router
     @StateObject private var viewModel: CustomRPCDetailViewModel
     @FocusState private var fieldFocused: Bool
+    @State private var bannerText: String?
 
     init(chain: Chain) {
         _viewModel = StateObject(wrappedValue: CustomRPCDetailViewModel(chain: chain))
@@ -33,6 +34,7 @@ struct CustomRPCDetailScreen: View {
         .onAppear {
             viewModel.load()
         }
+        .withBanner(text: $bannerText)
     }
 
     private var endpointField: some View {
@@ -108,6 +110,11 @@ struct CustomRPCDetailScreen: View {
             PrimaryButton(title: "customRPCSaveButton".localized, isLoading: viewModel.isSaving) {
                 Task {
                     if await viewModel.save() {
+                        bannerText = String(
+                            format: "customRPCModifiedSuccess".localized,
+                            viewModel.chain.name
+                        )
+                        try? await Task.sleep(for: .seconds(1.2))
                         router.navigateBack()
                     }
                 }

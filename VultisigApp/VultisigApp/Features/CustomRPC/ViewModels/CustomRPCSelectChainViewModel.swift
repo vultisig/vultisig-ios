@@ -11,11 +11,18 @@ import Foundation
 @MainActor
 final class CustomRPCSelectChainViewModel: ObservableObject {
     @Published var searchText: String = ""
+    @Published private(set) var overriddenChains: Set<Chain> = []
 
     private let store: CustomRPCStore
 
     init(store: CustomRPCStore = .shared) {
         self.store = store
+    }
+
+    /// Re-reads which chains carry an override. Call on appear so the grid
+    /// reflects edits made in the per-chain editor after navigating back.
+    func refresh() {
+        overriddenChains = Set(CustomRPCSupportedChains.all.filter { store.url(for: $0) != nil })
     }
 
     /// Supported chains narrowed by `searchText`, matched case-insensitively
@@ -32,7 +39,8 @@ final class CustomRPCSelectChainViewModel: ObservableObject {
     }
 
     /// `true` when the chain carries a user override — drives the pencil badge.
+    /// Reads the `@Published` set so the grid re-renders after `refresh()`.
     func hasOverride(_ chain: Chain) -> Bool {
-        store.url(for: chain) != nil
+        overriddenChains.contains(chain)
     }
 }

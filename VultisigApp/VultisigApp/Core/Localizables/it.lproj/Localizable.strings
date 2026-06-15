@@ -282,6 +282,7 @@
 "customRPCEndpointSectionTitle" = "ENDPOINT RPC";
 "customRPCInvalidResponse" = "Risposta non valida";
 "customRPCInvalidURL" = "Inserisci un URL http(s) valido";
+"customRPCModifiedSuccess" = "RPC di %@ modificato correttamente";
 "customRPCResetToDefault" = "Ripristina predefinito";
 "customRPCSaveButton" = "Salva RPC";
 "customRPCScreenTitle" = "RPC di %@";
