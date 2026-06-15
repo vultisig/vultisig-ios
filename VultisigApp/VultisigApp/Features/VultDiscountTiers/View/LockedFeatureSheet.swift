@@ -17,6 +17,9 @@ struct LockedFeatureSheet: View {
     @StateObject private var viewModel: LockedFeatureSheetViewModel
     @State private var width: CGFloat = 0
 
+    private let footerHeight: CGFloat = 48
+    private let footerCornerRadius: CGFloat = 24
+
     init(
         feature: LockedFeature,
         vault: Vault,
@@ -35,17 +38,16 @@ struct LockedFeatureSheet: View {
         VStack(spacing: 20) {
             header
             requiresCard
-            buttons
         }
         .padding(.top, 40)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
         #if os(macOS)
-        .applySheetSize(400, 540)
+        .applySheetSize(400, 460)
         #endif
         .background(ModalBackgroundView(width: width))
         .presentationBackground(Theme.colors.bgSurface1)
-        .presentationDetents([.height(540)])
+        .presentationDetents([.height(460)])
         .presentationDragIndicator(.visible)
         .readSize { width = $0.width }
         .task { await viewModel.loadBalance(for: vault) }
@@ -78,43 +80,48 @@ struct LockedFeatureSheet: View {
     }
 
     private var requiresCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("customRPCsLockedRequires".localized)
-                .font(Theme.fonts.priceFootnote)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 12) {
-                VultDiscountTierIcon(tier: viewModel.requiredTier, size: .small)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(
-                        String(
-                            format: "customRPCsLockedTierRequirement".localized,
-                            viewModel.requiredTier.name.localized
-                        )
-                    )
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    Text(
-                        String(
-                            format: "customRPCsLockedTierSubtitle".localized,
-                            viewModel.thresholdText
-                        )
-                    )
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("customRPCsLockedRequires".localized)
                     .font(Theme.fonts.priceFootnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                }
-                Spacer(minLength: 0)
-            }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            balanceRow
+                HStack(spacing: 12) {
+                    VultDiscountTierIcon(tier: viewModel.requiredTier, size: .small)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(
+                            String(
+                                format: "customRPCsLockedTierRequirement".localized,
+                                viewModel.requiredTier.name.localized
+                            )
+                        )
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        Text(
+                            String(
+                                format: "customRPCsLockedTierSubtitle".localized,
+                                viewModel.thresholdText
+                            )
+                        )
+                        .font(Theme.fonts.priceFootnote)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                balanceRow
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+
+            getVultFooter
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Theme.colors.bgSurface1)
         )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
@@ -149,15 +156,51 @@ struct LockedFeatureSheet: View {
         )
     }
 
-    private var buttons: some View {
-        VStack(spacing: 12) {
-            PrimaryButton(title: "customRPCsLockedGetVult".localized) {
-                onUnlock()
-            }
-            PrimaryButton(title: "customRPCsLockedBack".localized, type: .secondary) {
-                isPresented = false
-            }
-        }
+    /// Gradient "Get $VULT" footer attached to the bottom of `requiresCard`,
+    /// mirroring the tier-card footer in `VultDiscountTierView`. Renders the
+    /// required tier's gradient (Silver) and dismisses into the unlock path.
+    private var getVultFooter: some View {
+        Text("customRPCsLockedGetVult".localized)
+            .font(Theme.fonts.buttonSSemibold)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .frame(maxWidth: .infinity)
+            .frame(height: footerHeight)
+            .background(footerGradient)
+            .overlay(footerInnerShadow)
+            .clipShape(
+                UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20)
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { onUnlock() }
+    }
+
+    /// Tier-colored footer gradient, matching the non-ultimate branch of
+    /// `VultDiscountTierView.footerGradient` for the required tier.
+    private var footerGradient: some View {
+        LinearGradient(
+            colors: [viewModel.requiredTier.secondaryColor, viewModel.requiredTier.primaryColor],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    /// Soft top highlight on the footer, matching
+    /// `VultDiscountTierView.footerInnerShadow`.
+    private var footerInnerShadow: some View {
+        RoundedRectangle(cornerRadius: footerCornerRadius)
+            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            .blur(radius: 1)
+            .mask(
+                RoundedRectangle(cornerRadius: footerCornerRadius)
+                    .fill(
+                        LinearGradient(
+                            colors: [.white, .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            )
+            .allowsHitTesting(false)
     }
 }
 

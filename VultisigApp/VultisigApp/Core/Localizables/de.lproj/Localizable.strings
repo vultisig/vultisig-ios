@@ -286,7 +286,6 @@
 "customRPCSaveButton" = "RPC speichern";
 "customRPCScreenTitle" = "%@ RPC";
 "customRPCSelectChain" = "Chain auswählen";
-"customRPCsLockedBack" = "Zurück";
 "customRPCsLockedGetVult" = "$VULT holen";
 "customRPCsLockedRequires" = "Erforderlich";
 "customRPCsLockedSubtitle" = "Richte Vultisig auf deine eigenen Nodes aus. Schnellere Abfragen, höhere Ratenlimits und volle Privatsphäre pro Chain.";

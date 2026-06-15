@@ -286,7 +286,6 @@
 "customRPCSaveButton" = "Spremi RPC";
 "customRPCScreenTitle" = "%@ RPC";
 "customRPCSelectChain" = "Odaberi lanac";
-"customRPCsLockedBack" = "Natrag";
 "customRPCsLockedGetVult" = "Nabavi $VULT";
 "customRPCsLockedRequires" = "Zahtijeva";
 "customRPCsLockedSubtitle" = "Usmjeri Vultisig na vlastite čvorove. Brži upiti, viša ograničenja i potpuna privatnost po lancu.";

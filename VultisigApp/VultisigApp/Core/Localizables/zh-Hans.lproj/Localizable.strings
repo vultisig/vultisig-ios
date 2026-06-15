@@ -286,7 +286,6 @@
 "customRPCSaveButton" = "保存 RPC";
 "customRPCScreenTitle" = "%@ RPC";
 "customRPCSelectChain" = "选择链";
-"customRPCsLockedBack" = "返回";
 "customRPCsLockedGetVult" = "获取 $VULT";
 "customRPCsLockedRequires" = "需要";
 "customRPCsLockedSubtitle" = "将 Vultisig 指向您自己的节点。每条链上更快的查询、更高的速率限制和完全的隐私。";

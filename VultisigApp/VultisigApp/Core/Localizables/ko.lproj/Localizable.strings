@@ -281,7 +281,6 @@
 "customRPCSaveButton" = "RPC 저장";
 "customRPCScreenTitle" = "%@ RPC";
 "customRPCSelectChain" = "체인 선택";
-"customRPCsLockedBack" = "뒤로";
 "customRPCsLockedGetVult" = "$VULT 받기";
 "customRPCsLockedRequires" = "필요 조건";
 "customRPCsLockedSubtitle" = "Vultisig를 직접 운영하는 노드로 연결하세요. 더 빠른 조회, 더 높은 속도 제한, 체인별 완전한 프라이버시.";

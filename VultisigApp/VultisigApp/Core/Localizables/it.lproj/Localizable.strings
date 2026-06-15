@@ -286,7 +286,6 @@
 "customRPCSaveButton" = "Salva RPC";
 "customRPCScreenTitle" = "RPC di %@";
 "customRPCSelectChain" = "Seleziona catena";
-"customRPCsLockedBack" = "Indietro";
 "customRPCsLockedGetVult" = "Ottieni $VULT";
 "customRPCsLockedRequires" = "Richiede";
 "customRPCsLockedSubtitle" = "Punta Vultisig sui tuoi nodi. Query più veloci, limiti più alti e piena privacy per ogni catena.";

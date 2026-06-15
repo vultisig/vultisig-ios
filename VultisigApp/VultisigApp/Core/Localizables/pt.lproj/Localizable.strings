@@ -286,7 +286,6 @@
 "customRPCSaveButton" = "Guardar RPC";
 "customRPCScreenTitle" = "RPC de %@";
 "customRPCSelectChain" = "Selecionar cadeia";
-"customRPCsLockedBack" = "Voltar";
 "customRPCsLockedGetVult" = "Obter $VULT";
 "customRPCsLockedRequires" = "Requer";
 "customRPCsLockedSubtitle" = "Aponte o Vultisig para os seus próprios nós. Consultas mais rápidas, limites maiores e total privacidade por cadeia.";
