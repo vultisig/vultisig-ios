@@ -41,7 +41,7 @@ enum CosmosTransactionStatusAPI: TargetType {
         case .gaiaChain:
             return "https://cosmos-rest.publicnode.com"
         case .kujira:
-            return "https://kujira-rest.publicnode.com"
+            return "https://kujira-api.polkachu.com"
         case .osmosis:
             return "https://osmosis-rest.publicnode.com"
         case .terra:
