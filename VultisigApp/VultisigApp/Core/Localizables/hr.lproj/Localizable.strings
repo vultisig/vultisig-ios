@@ -1139,6 +1139,7 @@
 "unbondRune" = "Odveži RUNE";
 "unknown" = "Nepoznato";
 "unlimited" = "Neograničeno";
+"unlocked" = "Otključano";
 "unlockTier" = "Otključaj razinu";
 "unlockXTier" = "Otključaj %@ razinu";
 "unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";

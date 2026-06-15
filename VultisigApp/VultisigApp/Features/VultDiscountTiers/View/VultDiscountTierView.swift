@@ -115,8 +115,16 @@ private extension VultDiscountTierView {
         }
     }
 
+    /// Whether the footer should fire the unlock action on tap. Only tiers the
+    /// user can actually buy into (non-active and `canUnlock`) are interactive;
+    /// already-covered lower tiers render a non-tappable "✓ Unlocked" label.
+    var isUnlockTappable: Bool {
+        !isActiveInternal && canUnlock
+    }
+
     /// The full-width gradient footer bar. Active tiers show "✓ Active";
-    /// expanded non-active tiers show "Unlock Tier".
+    /// expanded unlockable tiers show a tappable "Unlock Tier"; already-covered
+    /// lower tiers show a non-interactive "✓ Unlocked".
     var footer: some View {
         footerContent
             .frame(maxWidth: .infinity)
@@ -126,7 +134,7 @@ private extension VultDiscountTierView {
             .overlay(footerInnerShadow)
             .contentShape(Rectangle())
             .onTapGesture {
-                if !isActiveInternal {
+                if isUnlockTappable {
                     onUnlock()
                 }
             }
@@ -134,17 +142,17 @@ private extension VultDiscountTierView {
 
     @ViewBuilder
     var footerContent: some View {
-        if isActiveInternal {
-            HStack(spacing: 5) {
-                Icon(named: "check", color: Theme.colors.textPrimary, size: 14)
-                Text("active".localized)
-                    .font(Theme.fonts.buttonSSemibold)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
-        } else {
+        if isUnlockTappable {
             Text("unlockTier".localized)
                 .font(Theme.fonts.buttonSSemibold)
                 .foregroundStyle(Theme.colors.textPrimary)
+        } else {
+            HStack(spacing: 5) {
+                Icon(named: "check", color: Theme.colors.textPrimary, size: 14)
+                Text((isActiveInternal ? "active" : "unlocked").localized)
+                    .font(Theme.fonts.buttonSSemibold)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
         }
     }
 

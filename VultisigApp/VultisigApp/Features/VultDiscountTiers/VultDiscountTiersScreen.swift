@@ -131,13 +131,7 @@ private extension VultDiscountTiersScreen {
     }
 
     func canUnlock(tier: VultDiscountTier) -> Bool {
-        let tiers = VultDiscountTier.allCases.sorted { $0.balanceToUnlock < $1.balanceToUnlock }
-        guard let currentIndex = tiers.firstIndex(where: { $0 == activeTier }) else {
-            return true
-        }
-
-        let tierIndex = tiers.firstIndex(where: { $0 == tier }) ?? 0
-        return tierIndex > currentIndex
+        VultDiscountTier.canUnlock(tier, active: activeTier)
     }
 }
 

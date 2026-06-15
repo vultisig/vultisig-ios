@@ -1139,6 +1139,7 @@
 "unbondRune" = "Scollega RUNE";
 "unknown" = "Sconosciuto";
 "unlimited" = "Illimitato";
+"unlocked" = "Sbloccato";
 "unlockTier" = "Sblocca livello";
 "unlockXTier" = "Sblocca livello %@";
 "unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli swap.";

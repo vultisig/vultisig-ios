@@ -44,4 +44,27 @@ final class VultDiscountTierComparableTests: XCTestCase {
         XCTAssertFalse(text.contains("\(Int.max)"))
         XCTAssertEqual(text, "noFee".localized)
     }
+
+    func test_canUnlock_noActiveTier_allUnlockable() {
+        for tier in VultDiscountTier.allCases {
+            XCTAssertTrue(
+                VultDiscountTier.canUnlock(tier, active: nil),
+                "\(tier) should be unlockable when no tier is active"
+            )
+        }
+    }
+
+    func test_canUnlock_aboveActive_isUnlockable() {
+        XCTAssertTrue(VultDiscountTier.canUnlock(.platinum, active: .gold))
+        XCTAssertTrue(VultDiscountTier.canUnlock(.ultimate, active: .bronze))
+    }
+
+    func test_canUnlock_activeTier_isNotUnlockable() {
+        XCTAssertFalse(VultDiscountTier.canUnlock(.gold, active: .gold))
+    }
+
+    func test_canUnlock_belowActive_isNotUnlockable() {
+        XCTAssertFalse(VultDiscountTier.canUnlock(.bronze, active: .gold))
+        XCTAssertFalse(VultDiscountTier.canUnlock(.silver, active: .gold))
+    }
 }

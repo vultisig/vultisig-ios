@@ -101,6 +101,19 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
         allCases.first { $0.bpsDiscount == bpsDiscount }
     }
 
+    /// Whether `tier` is unlockable given the vault's currently `active` tier.
+    /// Tiers are ranked by `balanceToUnlock` ascending. With no active tier the
+    /// user can buy into any tier; otherwise only tiers strictly above the
+    /// active one are unlockable — at-or-below tiers are already covered.
+    static func canUnlock(_ tier: VultDiscountTier, active: VultDiscountTier?) -> Bool {
+        let ranked = allCases.sorted { $0.balanceToUnlock < $1.balanceToUnlock }
+        guard let active, let activeIndex = ranked.firstIndex(of: active) else {
+            return true
+        }
+        let tierIndex = ranked.firstIndex(of: tier) ?? 0
+        return tierIndex > activeIndex
+    }
+
     /// Ordering follows the `CaseIterable` declaration order
     /// (bronze < silver < gold < platinum < diamond < ultimate), which is the
     /// ascending unlock order. Used by the shared tier gate to compare a

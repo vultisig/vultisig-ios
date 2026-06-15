@@ -1139,6 +1139,7 @@
 "unbondRune" = "RUNE entbinden";
 "unknown" = "Unbekannt";
 "unlimited" = "Unbegrenzt";
+"unlocked" = "Freigeschaltet";
 "unlockTier" = "Stufe freischalten";
 "unlockXTier" = "%@ Stufe freischalten";
 "unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
