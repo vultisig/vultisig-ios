@@ -18,6 +18,7 @@ struct LockedFeatureSheet: View {
 
     private let footerHeight: CGFloat = 48
     private let footerCornerRadius: CGFloat = 24
+    private let cardCornerRadius: CGFloat = 20
 
     init(
         feature: LockedFeature,
@@ -73,15 +74,17 @@ struct LockedFeatureSheet: View {
         }
     }
 
-    /// The `Get $VULT` footer sits *behind* `cardContent` (drawn first in the
-    /// ZStack) and is offset down so it peeks out below the card's rounded
-    /// bottom — mirroring the layered footer in `VultDiscountTierView`.
+    /// `cardContent` sits on top (`zIndex`) with the `Get $VULT` gradient footer
+    /// tucked behind its rounded bottom and peeking below — mirroring the layered
+    /// footer in `VultDiscountTierView`. Both are real layout elements (a VStack,
+    /// not an offset overlay) so the footer's peek stays reliably tappable.
     private var requiresCard: some View {
-        ZStack(alignment: .bottom) {
-            getVultFooter
+        VStack(spacing: 0) {
             cardContent
+                .zIndex(1)
+            getVultFooter
+                .padding(.top, -cardCornerRadius)
         }
-        .padding(.bottom, footerHeight)
     }
 
     private var cardContent: some View {
@@ -124,7 +127,7 @@ struct LockedFeatureSheet: View {
     }
 
     private var cardShape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: 20)
+        RoundedRectangle(cornerRadius: cardCornerRadius)
     }
 
     private var balanceRow: some View {
@@ -155,25 +158,29 @@ struct LockedFeatureSheet: View {
         )
     }
 
-    /// Gradient "Get $VULT" footer, rendered behind `cardContent` and offset
-    /// down by `footerHeight` so it peeks below the card — mirroring the
-    /// tier-card footer in `VultDiscountTierView`. Renders the required tier's
-    /// gradient (Silver) and drives the unlock path.
+    /// Gradient "Get $VULT" footer tucked behind `cardContent`'s rounded bottom
+    /// and peeking below — mirroring the tier-card footer in `VultDiscountTierView`.
+    /// A `Button` (not `onTapGesture` on an offset view) so the peek is reliably
+    /// tappable. Renders the required tier's gradient (Silver).
     private var getVultFooter: some View {
-        Text("customRPCsLockedGetVult".localized)
-            .font(Theme.fonts.buttonSSemibold)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .frame(maxWidth: .infinity)
-            .frame(height: footerHeight, alignment: .bottom)
-            .padding(.bottom, 14)
-            .background(footerGradient)
-            .overlay(footerInnerShadow)
-            .clipShape(
-                UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20)
-            )
-            .offset(y: footerHeight)
-            .contentShape(Rectangle())
-            .onTapGesture { onUnlock() }
+        Button(action: onUnlock) {
+            Text("customRPCsLockedGetVult".localized)
+                .font(Theme.fonts.buttonSSemibold)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(height: footerHeight, alignment: .bottom)
+                .padding(.bottom, 14)
+                .background(footerGradient)
+                .overlay(footerInnerShadow)
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        bottomLeadingRadius: cardCornerRadius,
+                        bottomTrailingRadius: cardCornerRadius
+                    )
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// Tier-colored footer gradient, matching the non-ultimate branch of
