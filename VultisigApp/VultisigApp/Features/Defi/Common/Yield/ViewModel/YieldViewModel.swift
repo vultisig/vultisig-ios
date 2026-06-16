@@ -39,10 +39,26 @@ final class YieldViewModel: ObservableObject, Hashable, Equatable {
         self.provider = DefiYieldProviderFactory.make(providerID)
     }
 
+    var presentation: YieldPresentation { provider.presentation }
+
     /// Providers without an account-setup step (Noon, direct EOA) are always
     /// "ready"; account-gated providers (Circle MSCA) require a resolved address.
     var hasAccount: Bool {
         !provider.requiresAccountSetup || (accountAddress?.isEmpty == false)
+    }
+
+    /// Provisions the provider's account (Circle MSCA). On success the resolved
+    /// address flips `hasAccount`, swapping the setup card for the dashboard.
+    func createAccount(vault: Vault) async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let address = try await provider.createAccount(vault: vault)
+            provider.persistAccountAddress(address, vault: vault)
+            accountAddress = address
+        } catch {
+            self.error = error
+        }
     }
 
     var claimableRedemption: YieldRedemption? {

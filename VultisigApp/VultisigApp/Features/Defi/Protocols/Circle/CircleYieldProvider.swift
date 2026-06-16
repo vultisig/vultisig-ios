@@ -25,6 +25,33 @@ struct CircleYieldProvider: DefiYieldProvider {
     var requiresAccountSetup: Bool { true }
     var depositsEnabled: Bool { CircleConstants.depositsEnabled }
     var hasWindowedRedemption: Bool { false }
+    var assetDecimals: Int { 6 }
+    // Circle deposits are disabled (funded via MSCA, not a vault call), so this
+    // recipient is never reached; the USDC contract is a safe placeholder.
+    var depositRecipient: String { assetContract }
+
+    var presentation: YieldPresentation {
+        YieldPresentation(
+            titleKey: "circleTitle",
+            dashboardTitleKey: "circleDashboardDeposited",
+            dashboardDescriptionKey: "circleDashboardDepositDescription",
+            depositedLabelKey: "circleUSDCDeposited",
+            depositButtonKey: "circleDashboardDeposit",
+            withdrawButtonKey: "circleDashboardWithdraw",
+            depositTitleKey: "circleDepositTitle",
+            withdrawTitleKey: "circleWithdrawTitle",
+            withdrawAmountLabelKey: "circleWithdrawAmountLabel",
+            withdrawBalanceAvailableKey: "circleDepositBalanceAvailable",
+            withdrawConfirmKey: "circleWithdrawConfirm",
+            ethRequiredKey: "circleDashboardETHRequired",
+            ethereumRequiredTitleKey: "circleEthereumRequired",
+            ethereumRequiredDescriptionKey: "circleEthereumRequiredDescription",
+            apyLabelKey: "circleAPYLabel",
+            sharesTicker: "USDC",
+            showsRedemptionRows: false,
+            staticApyText: "1%"
+        )
+    }
 
     // MARK: - Account lifecycle
 
@@ -37,6 +64,14 @@ struct CircleYieldProvider: DefiYieldProvider {
 
     func createAccount(vault: Vault) async throws -> String {
         try await logic.createWallet(vault: vault)
+    }
+
+    /// Stores the resolved MSCA address so the DeFi row, gating, and refresh path
+    /// can read it back. Runs on the main actor (the vault is a SwiftData model).
+    @MainActor
+    func persistAccountAddress(_ address: String, vault: Vault) {
+        guard !address.isEmpty else { return }
+        vault.circleWalletAddress = address
     }
 
     // MARK: - Reads
@@ -62,11 +97,23 @@ struct CircleYieldProvider: DefiYieldProvider {
 
     func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
         // Circle is instant — a redemption request is just the withdraw.
-        try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+        try await withdrawalPayload(vault: vault, recipient: recipient, amount: amount)
     }
 
     func buildWithdrawPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
-        try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+        try await withdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+    }
+
+    /// Builds the MSCA withdrawal payload, deploying the wallet on demand: a
+    /// first-time withdraw can hit an undeployed MSCA, so on `walletNotDeployed`
+    /// we provision it via the proxy and retry once.
+    private func withdrawalPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
+        do {
+            return try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+        } catch CircleServiceError.walletNotDeployed {
+            _ = try? await CircleApiService.shared.createWallet(ethAddress: recipient)
+            return try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+        }
     }
 
     // The remaining requirements are intentionally trivial for Circle: it has

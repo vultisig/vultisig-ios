@@ -48,6 +48,36 @@ struct YieldVaultPosition: Hashable {
     }
 }
 
+/// Provider-specific copy and display flags for the shared yield screens, so the
+/// generic shells render each vault's labels (Circle vs Noon) without branching
+/// on the id. Strings are localization keys, resolved at the view via `.localized`.
+struct YieldPresentation {
+    /// Screen title for the dashboard / deposit / withdraw screens.
+    let titleKey: String
+    let dashboardTitleKey: String
+    let dashboardDescriptionKey: String
+    let depositedLabelKey: String
+    let depositButtonKey: String
+    let withdrawButtonKey: String
+    let depositTitleKey: String
+    let withdrawTitleKey: String
+    let withdrawAmountLabelKey: String
+    let withdrawBalanceAvailableKey: String
+    let withdrawConfirmKey: String
+    let ethRequiredKey: String
+    let ethereumRequiredTitleKey: String
+    let ethereumRequiredDescriptionKey: String
+    /// Label for the APY row.
+    let apyLabelKey: String
+    /// Share-token ticker shown in the shares row, e.g. "naccUSDC".
+    let sharesTicker: String
+    /// Show the "Next redemption" + "Shares ticker" rows (windowed vaults only).
+    let showsRedemptionRows: Bool
+    /// Static APY string for vaults without a live feed (Circle "1%"); `nil`
+    /// when the APY comes from the provider's feed.
+    let staticApyText: String?
+}
+
 /// The seam both Circle and Noon ride. Hides the two encoding models (Circle
 /// MSCA `execute()`-wrap vs Noon direct-EOA ERC-7540) behind a uniform payload
 /// builder surface; every builder returns a signable `KeysignPayload` whose coin
@@ -61,13 +91,24 @@ protocol DefiYieldProvider {
     /// Circle provisions an MSCA via the Vultisig proxy; Noon is a direct EOA.
     var requiresAccountSetup: Bool { get }
     var depositsEnabled: Bool { get }
+    /// Decimals of the deposited asset (USDC = 6). Used by the shared forms to
+    /// convert human amounts to base units.
+    var assetDecimals: Int { get }
+    /// Contract a deposit targets, shown as the recipient on the display-only tx.
+    var depositRecipient: String { get }
     /// Whether redemptions go through a settlement window (Noon) or are instant
     /// (Circle). Drives the Withdraw-vs-Claim copy.
     var hasWindowedRedemption: Bool { get }
+    /// Display copy + flags for the shared yield screens.
+    var presentation: YieldPresentation { get }
 
     // Account lifecycle — Circle SCA setup; Noon is a no-op.
     func resolveAccountAddress(vault: Vault) async throws -> String?
     func createAccount(vault: Vault) async throws -> String
+    /// Persists a resolved account address onto the vault (Circle stores its MSCA
+    /// address). Called on the main actor by the shell after `resolveAccountAddress`
+    /// / `createAccount`; the default is a no-op for account-less providers.
+    @MainActor func persistAccountAddress(_ address: String, vault: Vault)
 
     // Reads
     func refreshPosition(vault: Vault) async throws -> YieldVaultPosition
@@ -91,4 +132,9 @@ protocol DefiYieldProvider {
     /// and a queued `requestRedeem`. Providers without instant liquidity return
     /// `false` and always queue.
     func canWithdrawInstantly(vault: Vault, amount: BigInt) async -> Bool
+}
+
+extension DefiYieldProvider {
+    /// Account-less providers (Noon, direct EOA) have nothing to persist.
+    @MainActor func persistAccountAddress(_: String, vault _: Vault) {}
 }

@@ -38,6 +38,31 @@ struct NoonYieldProvider: DefiYieldProvider {
     var requiresAccountSetup: Bool { false }
     var depositsEnabled: Bool { true }
     var hasWindowedRedemption: Bool { true }
+    var assetDecimals: Int { NoonConstants.assetDecimals }
+    var depositRecipient: String { NoonConstants.vaultAddress }
+
+    var presentation: YieldPresentation {
+        YieldPresentation(
+            titleKey: "noonTitle",
+            dashboardTitleKey: "noonDashboardTitle",
+            dashboardDescriptionKey: "noonDashboardDescription",
+            depositedLabelKey: "noonUSDCDeposited",
+            depositButtonKey: "noonDeposit",
+            withdrawButtonKey: "noonWithdraw",
+            depositTitleKey: "noonDepositTitle",
+            withdrawTitleKey: "noonWithdrawTitle",
+            withdrawAmountLabelKey: "noonWithdrawAmountLabel",
+            withdrawBalanceAvailableKey: "noonWithdrawBalanceAvailable",
+            withdrawConfirmKey: "noonWithdrawConfirm",
+            ethRequiredKey: "noonDashboardETHRequired",
+            ethereumRequiredTitleKey: "noonEthereumRequired",
+            ethereumRequiredDescriptionKey: "noonEthereumRequiredDescription",
+            apyLabelKey: "noonAPYLabel",
+            sharesTicker: "naccUSDC",
+            showsRedemptionRows: true,
+            staticApyText: nil
+        )
+    }
 
     // MARK: - Account lifecycle (no-op — direct EOA)
 
@@ -145,25 +170,35 @@ struct NoonYieldProvider: DefiYieldProvider {
     }
 
     func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload {
-        let assets = Self.baseUnits(redemption.amount, decimals: NoonConstants.assetDecimals)
+        let assets = try await claimableAssets(vault: vault, fallback: redemption.amount)
         let data = try service.encodeWithdraw(assets: assets, receiver: recipient, owner: recipient)
         return try await makePayload(vault: vault, to: NoonConstants.vaultAddress, data: data)
     }
 
-    /// Converts a human-readable decimal amount into integer base units. Goes
-    /// through the string form (matching the Circle withdraw path) so floating
-    /// `Decimal` scaling never produces a fractional remainder.
+    /// Re-reads `maxWithdraw(user)` at claim time so yield that accrues between
+    /// the position read and signing is included in the withdraw. Falls back to
+    /// the redemption's cached amount if the read fails.
+    private func claimableAssets(vault: Vault, fallback: Decimal) async throws -> BigInt {
+        let fallbackUnits = Self.baseUnits(fallback, decimals: NoonConstants.assetDecimals)
+        guard let user = userAddress(vault: vault) else { return fallbackUnits }
+        do {
+            let fresh = try await reads.maxWithdraw(user: user)
+            return fresh > 0 ? fresh : fallbackUnits
+        } catch {
+            logger.warning("Noon claim maxWithdraw re-read failed, using cached amount: \(error.localizedDescription)")
+            return fallbackUnits
+        }
+    }
+
+    /// Converts a human-readable decimal amount into integer base units.
     static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt {
-        let scaled = amount * pow(Decimal(10), decimals)
-        let whole = scaled.description.components(separatedBy: ".").first ?? scaled.description
-        return BigInt(whole) ?? .zero
+        YieldAmount.baseUnits(amount, decimals: decimals)
     }
 
     /// Converts integer base units into a human-readable decimal (the inverse of
     /// `baseUnits`), e.g. 97_617_839 / 10^6 = 97.617839.
     static func humanAmount(_ value: BigInt, decimals: Int) -> Decimal {
-        guard let decimal = Decimal(string: value.description) else { return .zero }
-        return decimal / pow(Decimal(10), decimals)
+        YieldAmount.humanAmount(value, decimals: decimals)
     }
 
     // MARK: - Redemption state machine

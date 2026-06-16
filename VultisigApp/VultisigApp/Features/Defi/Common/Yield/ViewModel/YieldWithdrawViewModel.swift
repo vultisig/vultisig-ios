@@ -50,7 +50,7 @@ final class YieldWithdrawViewModel: ObservableObject {
     func updateAmount(from percent: Double) {
         guard availableBalance > 0 else { return }
         let amountDec = availableBalance * Decimal(percent) / 100
-        amount = amountDec.truncated(toPlaces: NoonConstants.assetDecimals).description
+        amount = amountDec.truncated(toPlaces: provider.assetDecimals).description
     }
 
     /// Builds the withdraw payload, picking instant vs queued by liquidity.
@@ -58,7 +58,7 @@ final class YieldWithdrawViewModel: ObservableObject {
     /// queued `requestRedeem`).
     func buildPayload() async -> (payload: KeysignPayload, recipient: String, isInstant: Bool)? {
         guard let recipient = vault.nativeCoin(for: provider.chain)?.address else { return nil }
-        let amountUnits = NoonYieldProvider.baseUnits(amountDecimal, decimals: NoonConstants.assetDecimals)
+        let amountUnits = YieldAmount.baseUnits(amountDecimal, decimals: provider.assetDecimals)
 
         isLoading = true
         defer { isLoading = false }

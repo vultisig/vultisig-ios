@@ -22,7 +22,7 @@ struct YieldDepositView: View {
         ZStack {
             if let coinMeta = viewModel.coinMeta {
                 AmountFunctionTransactionScreen(
-                    title: "noonDepositTitle".localized,
+                    title: viewModel.provider.presentation.depositTitleKey.localized,
                     coin: coinMeta,
                     availableAmount: viewModel.availableAmount,
                     percentageSelected: $percentageSelected,

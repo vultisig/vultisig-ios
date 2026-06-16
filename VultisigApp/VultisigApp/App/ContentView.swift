@@ -54,7 +54,6 @@ struct ContentView: View {
             .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
             .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
             .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
-            .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
             .navigationDestination(for: YieldRoute.self) { router.yieldRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
             .navigationDestination(for: TransactionHistoryRoute.self) { router.transactionHistoryRouter.build($0) }

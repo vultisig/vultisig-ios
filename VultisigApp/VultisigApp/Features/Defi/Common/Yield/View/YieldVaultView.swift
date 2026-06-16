@@ -9,12 +9,14 @@ import BigInt
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-vault-view")
 
-/// Generic yield-vault dashboard, parameterized by a `DefiYieldProvider`.
-/// Renders the deposited balance, APY / next-redemption / shares-ticker rows,
-/// Deposit / Withdraw actions, and the windowed-redemption state (pending copy
-/// + a Claim CTA when a redemption has settled).
+/// Generic yield-vault dashboard, parameterized by a `DefiYieldProvider`. Both
+/// Circle (MSCA, account-gated, instant) and Noon (direct-EOA, windowed) render
+/// through this one screen; provider-specific copy comes from `presentation` and
+/// account-gated providers show an "Open Account" setup card until their account
+/// resolves. Renders the deposited balance, APY / next-redemption / shares rows,
+/// Deposit / Withdraw actions, and the windowed-redemption state.
 struct YieldVaultView: View {
-    let vault: Vault
+    @ObservedObject var vault: Vault
 
     @StateObject private var model: YieldViewModel
     @Environment(\.router) private var router
@@ -23,6 +25,8 @@ struct YieldVaultView: View {
         self.vault = vault
         _model = StateObject(wrappedValue: YieldViewModel(providerID: providerID))
     }
+
+    private var presentation: YieldPresentation { model.presentation }
 
     var body: some View {
         Screen {
@@ -36,7 +40,7 @@ struct YieldVaultView: View {
                 dashboard
             }
         }
-        .screenTitle("noonTitle".localized)
+        .screenTitle(presentation.titleKey.localized)
         .onLoad {
             Task { await onAppear() }
         }
@@ -46,13 +50,17 @@ struct YieldVaultView: View {
 
     private var dashboard: some View {
         ScrollView {
-            VStack(spacing: NoonConstants.Design.verticalSpacing) {
+            VStack(spacing: YieldDesign.verticalSpacing) {
                 headerDescription
-                positionCard
+                if model.hasAccount {
+                    positionCard
+                } else {
+                    setupCard
+                }
             }
-            .padding(.top, NoonConstants.Design.mainViewTopPadding)
-            .padding(.bottom, NoonConstants.Design.mainViewBottomPadding)
-            .padding(.horizontal, NoonConstants.Design.horizontalPadding)
+            .padding(.top, YieldDesign.mainViewTopPadding)
+            .padding(.bottom, YieldDesign.mainViewBottomPadding)
+            .padding(.horizontal, YieldDesign.horizontalPadding)
         }
         .background(VaultMainScreenBackground())
         #if os(iOS)
@@ -62,10 +70,10 @@ struct YieldVaultView: View {
 
     private var headerDescription: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("noonDashboardTitle".localized)
+            Text(presentation.dashboardTitleKey.localized)
                 .font(Theme.fonts.bodyLMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text("noonDashboardDescription".localized)
+            Text(presentation.dashboardDescriptionKey.localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -87,7 +95,7 @@ struct YieldVaultView: View {
                 claimableRedemptionSection(claimable)
             }
         }
-        .padding(NoonConstants.Design.cardPadding)
+        .padding(YieldDesign.cardPadding)
         .background(cardBackground)
     }
 
@@ -99,7 +107,7 @@ struct YieldVaultView: View {
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("noonUSDCDeposited".localized)
+                Text(presentation.depositedLabelKey.localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textSecondary)
                 HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
@@ -115,22 +123,24 @@ struct YieldVaultView: View {
         VStack(spacing: 12) {
             infoRow(
                 icon: "divide.circle",
-                label: "noonAPYLabel".localized,
+                label: presentation.apyLabelKey.localized,
                 value: apyText,
                 valueColor: Theme.colors.alertSuccess
             )
-            infoRow(
-                icon: "calendar",
-                label: "noonNextRedemption".localized,
-                value: nextRedemptionText,
-                valueColor: Theme.colors.textPrimary
-            )
-            infoRow(
-                icon: "dollarsign.circle",
-                label: "noonSharesTicker".localized,
-                value: "naccUSDC",
-                valueColor: Theme.colors.textPrimary
-            )
+            if presentation.showsRedemptionRows {
+                infoRow(
+                    icon: "calendar",
+                    label: "noonNextRedemption".localized,
+                    value: nextRedemptionText,
+                    valueColor: Theme.colors.textPrimary
+                )
+                infoRow(
+                    icon: "dollarsign.circle",
+                    label: "noonSharesTicker".localized,
+                    value: presentation.sharesTicker,
+                    valueColor: Theme.colors.textPrimary
+                )
+            }
         }
     }
 
@@ -152,7 +162,7 @@ struct YieldVaultView: View {
     private var actionButtons: some View {
         HStack(spacing: 0) {
             DefiButton(
-                title: "noonWithdraw".localized,
+                title: presentation.withdrawButtonKey.localized,
                 icon: "minus.circle",
                 type: .outline,
                 isSystemIcon: true,
@@ -163,13 +173,54 @@ struct YieldVaultView: View {
             Spacer()
 
             DefiButton(
-                title: "noonDeposit".localized,
+                title: presentation.depositButtonKey.localized,
                 icon: "plus.circle",
                 isSystemIcon: true,
                 action: { router.navigate(to: YieldRoute.deposit(vault: vault, providerID: model.providerID)) }
             )
             .disabled(!model.provider.depositsEnabled)
         }
+    }
+
+    // MARK: - Setup card (account-gated providers, e.g. Circle MSCA)
+
+    private var setupCard: some View {
+        VStack(spacing: YieldDesign.cardPadding) {
+            HStack(spacing: 12) {
+                Image("usdc")
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("circleSetupAccountBalance".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                    Text(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
+                        .font(Theme.fonts.priceBodyL)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                Spacer()
+            }
+
+            PrimaryButton(
+                title: setupButtonTitle,
+                isLoading: model.isLoading,
+                type: .primary,
+                size: .medium
+            ) {
+                Task { await model.createAccount(vault: vault) }
+            }
+            .disabled(model.isLoading || !model.provider.depositsEnabled)
+        }
+        .padding(YieldDesign.cardPadding)
+        .background(cardBackground)
+    }
+
+    private var setupButtonTitle: String {
+        model.isLoading
+            ? "circleCreatingAccount".localized
+            : "circleSetupOpenAccount".localized
     }
 
     // MARK: - Redemption states
@@ -209,7 +260,7 @@ struct YieldVaultView: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: NoonConstants.Design.cornerRadius)
+        RoundedRectangle(cornerRadius: YieldDesign.cornerRadius)
             .inset(by: 0.5)
             .stroke(Color(hex: "34E6BF").opacity(0.17))
             .fill(
@@ -230,10 +281,10 @@ struct YieldVaultView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(Theme.colors.alertWarning)
-            Text("noonEthereumRequired".localized)
+            Text(presentation.ethereumRequiredTitleKey.localized)
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text("noonEthereumRequiredDescription".localized)
+            Text(presentation.ethereumRequiredDescriptionKey.localized)
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -246,6 +297,9 @@ struct YieldVaultView: View {
     // MARK: - Derived text
 
     private var apyText: String {
+        if let staticApy = presentation.staticApyText {
+            return staticApy
+        }
         guard let apy = model.apy else { return "--" }
         return "\(apy.formatted(.number.precision(.fractionLength(0...2))))%"
     }
@@ -268,9 +322,14 @@ struct YieldVaultView: View {
 
     // MARK: - Actions
 
+    @MainActor
     private func onAppear() async {
+        try? YieldPositionStorageService().migrateCirclePositionIfNeeded(for: vault)
+
         do {
-            model.accountAddress = try await model.provider.resolveAccountAddress(vault: vault)
+            let resolved = try await model.provider.resolveAccountAddress(vault: vault)
+            if let resolved { model.provider.persistAccountAddress(resolved, vault: vault) }
+            model.accountAddress = resolved
             model.missingEth = false
         } catch {
             logger.error("Yield account resolve failed: \(error.localizedDescription)")
@@ -279,36 +338,38 @@ struct YieldVaultView: View {
         model.hasCheckedAccount = true
 
         model.seed(from: YieldPositionStorageService().position(for: vault, providerID: model.providerID))
-        await refresh()
+        if model.hasAccount {
+            await refresh()
+        }
         await model.loadApy(vault: vault)
     }
 
+    @MainActor
     private func refresh() async {
         await model.refresh(vault: vault)
     }
 
+    @MainActor
     private func handleClaim(_ redemption: YieldRedemption) async {
         guard let recipient = vault.nativeCoin(for: model.provider.chain)?.address else { return }
         guard let usdcCoin = vault.coins.first(where: { $0.chain == model.provider.chain && $0.ticker == "USDC" }) else { return }
 
         do {
             let payload = try await model.provider.buildClaimPayload(vault: vault, recipient: recipient, redemption: redemption)
-            await MainActor.run {
-                let displayTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
-                    toAddress: recipient,
-                    amount: redemption.amount.description
+            let displayTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
+                toAddress: recipient,
+                amount: redemption.amount.description
+            )
+            router.navigate(
+                to: SendRoute.verify(
+                    tx: displayTx,
+                    retrySignal: SendRetrySignal(),
+                    vault: vault,
+                    prebuiltKeysignPayload: payload
                 )
-                router.navigate(
-                    to: SendRoute.verify(
-                        tx: displayTx,
-                        retrySignal: SendRetrySignal(),
-                        vault: vault,
-                        prebuiltKeysignPayload: payload
-                    )
-                )
-            }
+            )
         } catch {
-            await MainActor.run { model.error = error }
+            model.error = error
         }
     }
 }

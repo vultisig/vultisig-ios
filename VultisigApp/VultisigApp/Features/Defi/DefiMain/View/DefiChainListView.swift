@@ -65,7 +65,7 @@ struct DefiChainListView: View {
         switch item {
         case .circle:
             guard enableUsdcIfNeeded() else { return }
-            router.navigate(to: CircleRoute.main(vault: vault))
+            router.navigate(to: YieldRoute.main(vault: vault, providerID: .circle))
         case .noon:
             guard enableUsdcIfNeeded() else { return }
             router.navigate(to: YieldRoute.main(vault: vault, providerID: .noon))

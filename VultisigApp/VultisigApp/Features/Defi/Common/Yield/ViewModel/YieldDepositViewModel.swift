@@ -60,7 +60,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
 
     private var amountBaseUnits: BigInt {
         guard let amount = Decimal(string: amountField.value) else { return .zero }
-        return NoonYieldProvider.baseUnits(amount, decimals: NoonConstants.assetDecimals)
+        return YieldAmount.baseUnits(amount, decimals: provider.assetDecimals)
     }
 
     /// Builds the next payload to sign: an `approve` when allowance is short,
@@ -90,7 +90,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
     func displayTransaction() -> SendTransaction? {
         guard let usdcCoin else { return nil }
         return SendTransaction.empty(coin: usdcCoin, vault: vault).with(
-            toAddress: NoonConstants.vaultAddress,
+            toAddress: provider.depositRecipient,
             amount: amountField.value
         )
     }

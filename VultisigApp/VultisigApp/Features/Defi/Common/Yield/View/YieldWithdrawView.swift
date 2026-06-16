@@ -27,6 +27,8 @@ struct YieldWithdrawView: View {
         )
     }
 
+    private var presentation: YieldPresentation { viewModel.provider.presentation }
+
     var body: some View {
         Screen {
             VStack(spacing: 0) {
@@ -34,15 +36,15 @@ struct YieldWithdrawView: View {
                 footerView
             }
         }
-        .screenTitle("noonWithdrawTitle".localized)
+        .screenTitle(presentation.withdrawTitleKey.localized)
         .withLoading(isLoading: $viewModel.isLoading)
     }
 
     private var scrollableContent: some View {
-        VStack(spacing: NoonConstants.Design.verticalSpacing) {
+        VStack(spacing: YieldDesign.verticalSpacing) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("noonWithdrawAmountLabel".localized)
+                    Text(presentation.withdrawAmountLabelKey.localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                     Divider()
@@ -69,10 +71,10 @@ struct YieldWithdrawView: View {
 
                 Spacer()
 
-                VStack(spacing: NoonConstants.Design.verticalSpacing) {
+                VStack(spacing: YieldDesign.verticalSpacing) {
                     percentageCheckpoints
                     HStack {
-                        Text("noonWithdrawBalanceAvailable".localized)
+                        Text(presentation.withdrawBalanceAvailableKey.localized)
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textSecondary)
                         Spacer()
@@ -83,14 +85,14 @@ struct YieldWithdrawView: View {
                     }
                 }
             }
-            .padding(NoonConstants.Design.cardPadding)
+            .padding(YieldDesign.cardPadding)
             .overlay(
-                RoundedRectangle(cornerRadius: NoonConstants.Design.cornerRadius)
+                RoundedRectangle(cornerRadius: YieldDesign.cornerRadius)
                     .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
             )
-            .padding(.horizontal, NoonConstants.Design.horizontalPadding)
+            .padding(.horizontal, YieldDesign.horizontalPadding)
         }
-        .padding(.top, NoonConstants.Design.verticalSpacing)
+        .padding(.top, YieldDesign.verticalSpacing)
         .frame(maxHeight: .infinity)
     }
 
@@ -116,24 +118,26 @@ struct YieldWithdrawView: View {
                     .foregroundStyle(Theme.colors.alertError)
                     .font(.caption)
             }
-            Text("noonRedemptionWindowNote".localized)
-                .font(.caption)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            if viewModel.provider.hasWindowedRedemption {
+                Text("noonRedemptionWindowNote".localized)
+                    .font(.caption)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if viewModel.nativeGasBalance <= 0 {
-                Text("noonDashboardETHRequired".localized)
+                Text(presentation.ethRequiredKey.localized)
                     .font(.caption)
                     .foregroundStyle(Theme.colors.alertWarning)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            PrimaryButton(title: "noonWithdrawConfirm".localized) {
+            PrimaryButton(title: presentation.withdrawConfirmKey.localized) {
                 Task { await handleWithdraw() }
             }
             .disabled(viewModel.isButtonDisabled)
         }
-        .padding(NoonConstants.Design.horizontalPadding)
+        .padding(YieldDesign.horizontalPadding)
         .background(Theme.colors.bgPrimary)
     }
 
