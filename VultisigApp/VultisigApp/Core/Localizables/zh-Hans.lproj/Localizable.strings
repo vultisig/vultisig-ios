@@ -172,11 +172,13 @@
 "circleDepositAmount" = "金额";
 "circleDepositBalanceAvailable" = "可用余额：";
 "circleDepositContinue" = "继续";
+"circleDepositsDisabled" = "Circle 存款已禁用";
 "circleDepositTitle" = "存入 USDC";
 "circleErrorInvalidDetails" = "无效详情";
 "circleErrorWalletNotDeployed" = "Circle 钱包尚未部署。请稍后再试。";
 "circleEthereumRequired" = "需要以太坊";
 "circleEthereumRequiredDescription" = "请在您的保险库中添加以太坊才能使用 Circle。";
+"circleNoSeparateClaimStep" = "Circle 没有单独的领取步骤";
 "circleOverviewTooltipBody" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleOverviewTooltipTitle" = "免责声明";
 "circleRewardsDescription" = "奖励会自动计入您的余额。";
@@ -190,6 +192,7 @@
 "circleSetupDeposited" = "已存入";
 "circleSetupInfoText" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleSetupOpenAccount" = "开设账户";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle 美元";
 "circleUSDCDeposited" = "USDC 已存入";
 "circleWithdraw" = "提现";

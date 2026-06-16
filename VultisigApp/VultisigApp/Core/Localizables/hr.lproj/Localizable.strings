@@ -172,11 +172,13 @@
 "circleDepositAmount" = "Iznos";
 "circleDepositBalanceAvailable" = "Dostupni saldo:";
 "circleDepositContinue" = "Nastavi";
+"circleDepositsDisabled" = "Circle uplate su onemogućene";
 "circleDepositTitle" = "Položi USDC";
 "circleErrorInvalidDetails" = "Nevažeći detalji";
 "circleErrorWalletNotDeployed" = "Circle novčanik još nije postavljen. Molimo pokušajte kasnije.";
 "circleEthereumRequired" = "Ethereum Potreban";
 "circleEthereumRequiredDescription" = "Molimo dodajte Ethereum u vaš trezor za korištenje Circle-a.";
+"circleNoSeparateClaimStep" = "Circle nema zaseban korak preuzimanja";
 "circleOverviewTooltipBody" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
 "circleOverviewTooltipTitle" = "Izjava o odricanju";
 "circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
@@ -190,6 +192,7 @@
 "circleSetupDeposited" = "Deponirano";
 "circleSetupInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
 "circleSetupOpenAccount" = "Otvori Račun";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle američki dolar";
 "circleUSDCDeposited" = "USDC deponiran";
 "circleWithdraw" = "Povuci";

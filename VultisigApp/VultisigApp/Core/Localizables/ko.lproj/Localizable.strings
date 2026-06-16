@@ -179,11 +179,13 @@
 "circleDepositAmount" = "금액";
 "circleDepositBalanceAvailable" = "사용 가능한 잔액:";
 "circleDepositContinue" = "계속";
+"circleDepositsDisabled" = "Circle 입금이 비활성화되어 있습니다";
 "circleDepositTitle" = "USDC 입금";
 "circleErrorInvalidDetails" = "유효하지 않은 세부 정보";
 "circleErrorWalletNotDeployed" = "Circle 지갑이 아직 배포되지 않았습니다. 나중에 다시 시도하세요.";
 "circleEthereumRequired" = "이더리움 필요";
 "circleEthereumRequiredDescription" = "Circle을 사용하려면 볼트에 이더리움을 추가하세요.";
+"circleNoSeparateClaimStep" = "Circle에는 별도의 청구 단계가 없습니다";
 "circleOverviewTooltipBody" = "자금은 볼트의 완전한 통제 하에 있습니다. Circle 계정은 자체 보관이며 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
 "circleOverviewTooltipTitle" = "면책 조항";
 "circleRewardsDescription" = "보상은 자동으로 잔액에 적립됩니다.";
@@ -197,6 +199,7 @@
 "circleSetupDeposited" = "입금됨";
 "circleSetupInfoText" = "자금은 볼트의 완전한 통제 하에 있습니다. Circle 계정은 자체 보관이며 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
 "circleSetupOpenAccount" = "계정 개설";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC 입금됨";
 "circleWithdrawAmountLabel" = "금액";

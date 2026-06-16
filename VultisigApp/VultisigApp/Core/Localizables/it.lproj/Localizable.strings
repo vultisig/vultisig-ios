@@ -172,13 +172,15 @@
 "circleDepositAmount" = "Importo";
 "circleDepositBalanceAvailable" = "Saldo disponibile:";
 "circleDepositContinue" = "Continua";
+"circleDepositsDisabled" = "I depositi Circle sono disabilitati";
 "circleDepositTitle" = "Deposita USDC";
 "circleErrorInvalidDetails" = "Dettagli non validi";
 "circleErrorWalletNotDeployed" = "Wallet Circle non ancora distribuito. Per favore riprova più tardi.";
 "circleEthereumRequired" = "Ethereum Richiesto";
 "circleEthereumRequiredDescription" = "Per favore aggiungi Ethereum al tuo vault per usare Circle.";
+"circleNoSeparateClaimStep" = "Circle non ha un passaggio di riscatto separato";
 "circleOverviewTooltipBody" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
-"circleOverviewTooltipTitle" = "Disclaimer";
+"circleOverviewTooltipTitle" = "Avviso legale";
 "circleRewardsDescription" = "I premi vengono automaticamente accreditati sul tuo saldo.";
 "circleRewardsTitle" = "Premi";
 "circleRowCreateWallet" = "Crea Portafoglio";
@@ -190,6 +192,7 @@
 "circleSetupDeposited" = "Depositato";
 "circleSetupInfoText" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
 "circleSetupOpenAccount" = "Apri Account";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle U.S. Dollar";
 "circleUSDCDeposited" = "USDC depositato";
 "circleWithdraw" = "Preleva";
@@ -671,7 +674,7 @@
 "noonEthereumRequiredDescription" = "Aggiungi Ethereum al tuo vault per usare Noon.";
 "noonNextRedemption" = "Prossimo rimborso";
 "noonOverviewTooltipBody" = "I fondi rimangono completamente sotto il tuo controllo, sebbene siano soggetti al rischio operativo dell'operatore. Il rendimento Noon viene generato attraverso tesorerie sicure off-chain.";
-"noonOverviewTooltipTitle" = "Disclaimer";
+"noonOverviewTooltipTitle" = "Avviso legale";
 "noonRedemptionClaimable" = "La finestra di rimborso è chiusa. I tuoi USDC sono pronti per essere prelevati nel tuo vault.";
 "noonRedemptionPending" = "La tua richiesta è stata inviata. I fondi saranno riscuotibili dopo la chiusura della finestra di rimborso.";
 "noonRedemptionWindowNote" = "I rimborsi vengono elaborati nella prossima finestra. Richiedi prima della scadenza per essere incluso.";

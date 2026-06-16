@@ -172,11 +172,13 @@
 "circleDepositAmount" = "Quantidade";
 "circleDepositBalanceAvailable" = "Saldo disponível:";
 "circleDepositContinue" = "Continuar";
+"circleDepositsDisabled" = "Os depósitos da Circle estão desativados";
 "circleDepositTitle" = "Depositar USDC";
 "circleErrorInvalidDetails" = "Detalhes inválidos";
 "circleErrorWalletNotDeployed" = "Carteira Circle ainda não implantada. Por favor tente novamente mais tarde.";
 "circleEthereumRequired" = "Ethereum Necessário";
 "circleEthereumRequiredDescription" = "Por favor adicione Ethereum ao seu cofre para usar o Circle.";
+"circleNoSeparateClaimStep" = "A Circle não tem uma etapa de reivindicação separada";
 "circleOverviewTooltipBody" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
 "circleOverviewTooltipTitle" = "Aviso legal";
 "circleRewardsDescription" = "As recompensas são creditadas automaticamente no seu saldo.";
@@ -190,6 +192,7 @@
 "circleSetupDeposited" = "Depositado";
 "circleSetupInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
 "circleSetupOpenAccount" = "Abrir Conta";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle U.S. Dollar";
 "circleUSDCDeposited" = "USDC depositado";
 "circleWithdraw" = "Sacar";
