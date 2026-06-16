@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-select-chain")
 
 @MainActor
 class DefiSelectChainViewModel: ObservableObject {
@@ -13,6 +16,7 @@ class DefiSelectChainViewModel: ObservableObject {
     @Published var searchText: String = .empty
     @Published var selection = Set<Chain>()
     @Published var isCircleEnabled: Bool = true
+    @Published var isNoonEnabled: Bool = false
 
     /// Indicates if Ethereum is available in the vault (required for Circle)
     private var hasEthereum: Bool = false
@@ -53,6 +57,18 @@ class DefiSelectChainViewModel: ObservableObject {
                "usdc".contains(searchText.lowercased())
     }
 
+    /// Returns true if Noon should be visible. Unlike Circle, Noon is a direct
+    /// EOA vault with no account-provisioning gate, so it is a clean toggle for
+    /// any Ethereum-enabled vault.
+    var shouldShowNoon: Bool {
+        guard hasEthereum else { return false }
+
+        guard !searchText.isEmpty else { return true }
+        let noonTitle = NSLocalizedString("noonTitle", comment: "Noon")
+        return noonTitle.lowercased().contains(searchText.lowercased()) ||
+               "usdc".contains(searchText.lowercased())
+    }
+
     func setData(for vault: Vault) {
         setupChains(for: vault)
         checkSelected(for: vault)
@@ -62,6 +78,7 @@ class DefiSelectChainViewModel: ObservableObject {
         // Filter Defi enabled chains for selection
         selection = Set(vault.defiChains)
         isCircleEnabled = vault.isCircleEnabled
+        isNoonEnabled = vault.isNoonEnabled
     }
 
     private func setupChains(for vault: Vault) {
@@ -91,6 +108,10 @@ class DefiSelectChainViewModel: ObservableObject {
         isCircleEnabled = isSelected
     }
 
+    func handleNoonSelection(isSelected: Bool) {
+        isNoonEnabled = isSelected
+    }
+
     func save(for vault: Vault) async {
         do {
             let coinsMeta = TokensStore.TokenSelectionAssets
@@ -106,12 +127,13 @@ class DefiSelectChainViewModel: ObservableObject {
             vault.defiChains = Array(selection)
                 .filter { CoinAction.defiChains.contains($0) }
 
-            // Save Circle enabled state
+            // Save Circle + Noon enabled state
             vault.isCircleEnabled = isCircleEnabled
+            vault.isNoonEnabled = isNoonEnabled
 
             try Storage.shared.save()
         } catch {
-            print("Error while saving defi chains", error.localizedDescription)
+            logger.error("Error while saving defi chains: \(error.localizedDescription)")
         }
     }
 }

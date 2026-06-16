@@ -10,12 +10,15 @@ import SwiftUI
 /// Represents a selectable item in the DeFi chain selection screen
 enum DefiSelectableItem: Hashable, Identifiable {
     case circle
+    case noon
     case chain(Chain)
 
     var id: String {
         switch self {
         case .circle:
             return "circle"
+        case .noon:
+            return "noon"
         case .chain(let chain):
             return chain.rawValue
         }
@@ -37,6 +40,11 @@ struct DefiSelectChainScreen: View {
         // Add Circle if it matches the search filter
         if viewModel.shouldShowCircle {
             items.append(.circle)
+        }
+
+        // Add Noon if it matches the search filter
+        if viewModel.shouldShowNoon {
+            items.append(.noon)
         }
 
         // Add filtered chains
@@ -74,6 +82,11 @@ struct DefiSelectChainScreen: View {
                 viewModel: viewModel,
                 onSelection: onCircleSelection
             )
+        case .noon:
+            DefiNoonSelectionGridCell(
+                viewModel: viewModel,
+                onSelection: onNoonSelection
+            )
         case .chain(let chain):
             DefiChainSelectionGridCell(
                 chain: chain,
@@ -103,6 +116,10 @@ private extension DefiSelectChainScreen {
 
     func onCircleSelection(_ isSelected: Bool) {
         viewModel.handleCircleSelection(isSelected: isSelected)
+    }
+
+    func onNoonSelection(_ isSelected: Bool) {
+        viewModel.handleNoonSelection(isSelected: isSelected)
     }
 
     func saveAssets() async {

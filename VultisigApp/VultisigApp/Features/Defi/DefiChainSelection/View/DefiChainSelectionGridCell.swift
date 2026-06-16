@@ -56,6 +56,31 @@ struct DefiCircleSelectionGridCell: View {
     }
 }
 
+// MARK: - Noon Selection Cell
+
+struct DefiNoonSelectionGridCell: View {
+    @ObservedObject var viewModel: DefiSelectChainViewModel
+    var onSelection: (Bool) -> Void
+
+    @State var isSelected = false
+
+    var body: some View {
+        AssetSelectionGridCell(
+            name: NSLocalizedString("noonTitle", comment: "Noon"),
+            ticker: "USDC",
+            logo: "usdc",
+            isSelected: $isSelected
+        ) {
+            onSelection(isSelected)
+        }
+        .onAppear(perform: onAppear)
+    }
+
+    func onAppear() {
+        isSelected = viewModel.isNoonEnabled
+    }
+}
+
 #Preview {
     DefiChainSelectionGridCell(
         chain: .thorChain,

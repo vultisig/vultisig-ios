@@ -54,6 +54,8 @@ struct DefiChainListView: View {
         switch item {
         case .circle:
             DefiCircleRow(vault: vault)
+        case .noon:
+            DefiNoonRow(vault: vault)
         case .chain(let chain):
             DefiChainCellView(chain: chain, vault: vault)
         }
@@ -64,6 +66,9 @@ struct DefiChainListView: View {
         case .circle:
             guard enableUsdcIfNeeded() else { return }
             router.navigate(to: CircleRoute.main(vault: vault))
+        case .noon:
+            guard enableUsdcIfNeeded() else { return }
+            router.navigate(to: YieldRoute.main(vault: vault, providerID: .noon))
         case .chain(let chain):
             switch chain {
             case .thorChain, .mayaChain, .terra, .terraClassic, .qbtc:
