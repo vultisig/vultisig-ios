@@ -473,6 +473,8 @@
 "goToWallet" = "Ir para a carteira";
 "governance" = "Governança";
 "governanceActiveProposals" = "Propostas ativas";
+"governanceCastVote" = "Registre seu voto";
+"governanceChangeVote" = "Alterar seu voto";
 "governanceEmptySubtitle" = "Não há propostas de governança para mostrar no momento.";
 "governanceEmptyTitle" = "Sem propostas";
 "governanceErrorSubtitle" = "Puxe para atualizar e tentar novamente.";
@@ -493,6 +495,7 @@
 "governanceTimeRemaining" = "Tempo restante";
 "governanceUntitledProposal" = "Proposta sem título";
 "governanceVoteAbstain" = "Abstenção";
+"governanceVoteAction" = "Votar";
 "governanceVoteNo" = "Não";
 "governanceVoteNoWithVeto" = "Não com veto";
 "governanceVoteYes" = "Sim";

@@ -164,7 +164,12 @@ struct DefiChainMainScreen: View {
                     emptyStateView: { emptyStateView }
                 )
             case .governance:
-                QBTCGovernanceView(viewModel: governanceViewModel)
+                QBTCGovernanceView(
+                    viewModel: governanceViewModel,
+                    onVote: { proposal, choice in
+                        onGovernanceVote(proposal: proposal, choice: choice)
+                    }
+                )
             }
         }
         .transition(.opacity)
@@ -295,6 +300,27 @@ struct DefiChainMainScreen: View {
             coin = TokensStore.rune
         }
         return coin
+    }
+
+    /// Builds a single-option QBTC governance vote tx straight from the
+    /// proposal + chosen option and pushes it to the existing verify → ML-DSA
+    /// keysign flow. The memo (`QBTC_VOTE:<OPTION>:<ID>`) is what
+    /// `QBTCHelper.buildMsgVote` consumes; the dictionary is display-only so
+    /// verify reads "Vote <OPTION> on Proposal #N" rather than the raw memo.
+    func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
+        guard let nativeCoin else { return }
+        let memo = "QBTC_VOTE:\(choice.memoToken):\(proposal.id)"
+        let displayDictionary: [String: String] = [
+            "action": "governanceVoteAction".localized,
+            "vote": choice.displayTitle,
+            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
+        ]
+        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
+            memo: memo,
+            transactionType: .vote,
+            memoFunctionDictionary: displayDictionary
+        )
+        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {

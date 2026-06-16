@@ -13,6 +13,10 @@ import SwiftUI
 
 struct QBTCGovernanceView: View {
     @ObservedObject var viewModel: QBTCGovernanceViewModel
+    /// Builds + launches the single-option vote flow for a chosen proposal +
+    /// option. The parent assembles the `QBTC_VOTE:` tx and navigates to
+    /// verify → ML-DSA keysign.
+    var onVote: (CosmosGovProposal, CosmosGovVoteChoice) -> Void
 
     @State private var selectedProposal: CosmosGovProposal?
 
@@ -35,7 +39,11 @@ struct QBTCGovernanceView: View {
                 proposal: proposal,
                 tally: viewModel.tally(for: proposal),
                 params: viewModel.params,
-                myVote: viewModel.myVote(for: proposal)
+                myVote: viewModel.myVote(for: proposal),
+                onVote: { choice in
+                    selectedProposal = nil
+                    onVote(proposal, choice)
+                }
             )
         }
     }

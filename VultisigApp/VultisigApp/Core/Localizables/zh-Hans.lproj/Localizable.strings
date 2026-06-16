@@ -473,6 +473,8 @@
 "goToWallet" = "前往钱包";
 "governance" = "治理";
 "governanceActiveProposals" = "进行中的提案";
+"governanceCastVote" = "投出您的票";
+"governanceChangeVote" = "更改您的投票";
 "governanceEmptySubtitle" = "当前没有可显示的治理提案。";
 "governanceEmptyTitle" = "暂无提案";
 "governanceErrorSubtitle" = "下拉刷新以重试。";
@@ -493,6 +495,7 @@
 "governanceTimeRemaining" = "剩余时间";
 "governanceUntitledProposal" = "无标题提案";
 "governanceVoteAbstain" = "弃权";
+"governanceVoteAction" = "投票";
 "governanceVoteNo" = "反对";
 "governanceVoteNoWithVeto" = "反对并否决";
 "governanceVoteYes" = "赞成";

@@ -473,6 +473,8 @@
 "goToWallet" = "Idi na novčanik";
 "governance" = "Upravljanje";
 "governanceActiveProposals" = "Aktivni prijedlozi";
+"governanceCastVote" = "Glasujte";
+"governanceChangeVote" = "Promijenite glas";
 "governanceEmptySubtitle" = "Trenutno nema prijedloga za prikaz.";
 "governanceEmptyTitle" = "Nema prijedloga";
 "governanceErrorSubtitle" = "Povucite za osvježavanje da pokušate ponovno.";
@@ -493,6 +495,7 @@
 "governanceTimeRemaining" = "Preostalo vrijeme";
 "governanceUntitledProposal" = "Prijedlog bez naslova";
 "governanceVoteAbstain" = "Suzdržan";
+"governanceVoteAction" = "Glasuj";
 "governanceVoteNo" = "Ne";
 "governanceVoteNoWithVeto" = "Ne s vetom";
 "governanceVoteYes" = "Da";

@@ -17,6 +17,10 @@ struct GovernanceProposalDetailScreen: View {
     let tally: CosmosGovTallyResult
     let params: CosmosGovParams?
     let myVote: CosmosGovVote?
+    /// Single-option vote chosen from the sheet. The parent builds the
+    /// `QBTC_VOTE:` tx and launches verify → ML-DSA keysign. Nil disables the
+    /// vote controls (read-only contexts / previews).
+    var onVote: ((CosmosGovVoteChoice) -> Void)?
 
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -36,6 +40,9 @@ struct GovernanceProposalDetailScreen: View {
                 votingWindowSection
                 if !proposal.messageTypes.isEmpty {
                     messagesSection
+                }
+                if proposal.status.isActive, let onVote {
+                    voteSection(onVote: onVote)
                 }
             }
             .padding(20)
@@ -124,6 +131,25 @@ struct GovernanceProposalDetailScreen: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                         .lineLimit(1)
                         .truncationMode(.middle)
+                }
+            }
+        }
+    }
+
+    /// Vote controls for an active proposal. Re-voting is allowed while the
+    /// voting period is open (Cosmos lets a voter change their vote), so the
+    /// header switches to "Change your vote" once a recorded vote exists.
+    private func voteSection(onVote: @escaping (CosmosGovVoteChoice) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(myVote == nil ? "governanceCastVote".localized : "governanceChangeVote".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textSecondary)
+            ForEach(CosmosGovVoteChoice.allCases) { choice in
+                PrimaryButton(
+                    title: choice.displayTitle,
+                    type: choice == .yes ? .primary : .secondary
+                ) {
+                    onVote(choice)
                 }
             }
         }

@@ -469,6 +469,8 @@
 "goToWallet" = "지갑으로 이동";
 "governance" = "거버넌스";
 "governanceActiveProposals" = "진행 중인 제안";
+"governanceCastVote" = "투표하기";
+"governanceChangeVote" = "투표 변경";
 "governanceEmptySubtitle" = "현재 표시할 거버넌스 제안이 없습니다.";
 "governanceEmptyTitle" = "제안 없음";
 "governanceErrorSubtitle" = "당겨서 새로고침하여 다시 시도하세요.";
@@ -489,6 +491,7 @@
 "governanceTimeRemaining" = "남은 시간";
 "governanceUntitledProposal" = "제목 없는 제안";
 "governanceVoteAbstain" = "기권";
+"governanceVoteAction" = "투표";
 "governanceVoteNo" = "반대";
 "governanceVoteNoWithVeto" = "거부권 반대";
 "governanceVoteYes" = "찬성";
