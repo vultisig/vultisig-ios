@@ -656,6 +656,8 @@
 "nodeAtMaxCapacity" = "Node has reached maximum capacity (8/8)";
 "noFee" = "No Fee";
 "nOfTotal" = "%d of %@";
+"noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
+"noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "noonAPYLabel" = "APY (7d)";
 "noonClaim" = "Claim";
 "noonClaimAvailableInDays" = "Claim available in %d days";
@@ -679,8 +681,6 @@
 "noonWithdrawBalanceAvailable" = "Balance available:";
 "noonWithdrawConfirm" = "Continue";
 "noonWithdrawTitle" = "Withdraw USDC";
-"noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
-"noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "No positions found";
 "noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
