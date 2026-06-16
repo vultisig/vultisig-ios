@@ -28,6 +28,7 @@ final class Vault: ObservableObject, Codable {
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
     var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
+    var isNoonEnabled: Bool = false   // Controls Noon yield-vault visibility in DeFi section
 
     // FastVault eligibility cache — populated by FastVaultEligibilityRefresher on
     // app foreground + vault switch. Reads are sync; refresh happens at planned
@@ -48,6 +49,10 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     @Relationship(deleteRule: .cascade) var circlePosition: CirclePosition?
+    // Generalized yield-vault position cache (Circle + Noon), keyed
+    // (providerID, pubKeyECDSA). `circlePosition` is retained for the one-time
+    // migration backfill of pre-existing Circle rows; new reads/writes go here.
+    @Relationship(deleteRule: .cascade) var yieldPositions: [YieldPosition] = []
     @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
 
     enum CodingKeys: CodingKey {
@@ -64,6 +69,7 @@ final class Vault: ObservableObject, Codable {
         case libType
         case defiChains
         case isCircleEnabled
+        case isNoonEnabled
         case defiPositions
         case activeBondedNodes
         case stakePositions
@@ -86,6 +92,7 @@ final class Vault: ObservableObject, Codable {
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .DKLS
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
+        isNoonEnabled = try container.decodeIfPresent(Bool.self, forKey: .isNoonEnabled) ?? false
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
@@ -133,6 +140,7 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
         try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
+        try container.encodeIfPresent(isNoonEnabled, forKey: .isNoonEnabled)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }

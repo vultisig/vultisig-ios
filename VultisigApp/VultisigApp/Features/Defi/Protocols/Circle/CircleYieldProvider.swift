@@ -1,0 +1,95 @@
+//
+//  CircleYieldProvider.swift
+//  VultisigApp
+//
+
+import Foundation
+import BigInt
+import VultisigCommonData
+
+/// Adapts the existing Circle MSCA withdraw/deposit flow to `DefiYieldProvider`.
+///
+/// Behavior-preserving: withdraws still build the native-ETH MSCA
+/// `execute(USDC, 0, transfer(vault, amount))` payload (calldata in `memo`),
+/// so the verify/keysign path is unchanged. Circle redemptions are instant —
+/// there is no queue — so `buildRequestRedeemPayload` maps to `withdraw` and
+/// there is no separate claim step.
+struct CircleYieldProvider: DefiYieldProvider {
+    let id: DefiYieldProviderID = .circle
+
+    private let logic = CircleViewLogic()
+    private let storage = YieldPositionStorageService()
+
+    var chain: Chain { CircleViewLogic.getChainDetails().chain }
+    var assetContract: String { CircleViewLogic.getChainDetails().usdcContract }
+    var requiresAccountSetup: Bool { true }
+    var depositsEnabled: Bool { CircleConstants.depositsEnabled }
+    var hasWindowedRedemption: Bool { false }
+
+    // MARK: - Account lifecycle
+
+    func resolveAccountAddress(vault: Vault) async throws -> String? {
+        if let existing = vault.circleWalletAddress, !existing.isEmpty {
+            return existing
+        }
+        return try await logic.checkExistingWallet(vault: vault)
+    }
+
+    func createAccount(vault: Vault) async throws -> String {
+        try await logic.createWallet(vault: vault)
+    }
+
+    // MARK: - Reads
+
+    func refreshPosition(vault: Vault) async throws -> YieldVaultPosition {
+        let (usdcBalance, ethBalance) = try await logic.refresh(vault: vault)
+        try await MainActor.run {
+            try storage.upsert(
+                providerID: id,
+                depositedBalance: usdcBalance,
+                nativeGasBalance: ethBalance,
+                redemptions: [],
+                for: vault
+            )
+        }
+        return YieldVaultPosition(
+            depositedBalance: usdcBalance,
+            nativeGasBalance: ethBalance,
+            redemptions: [],
+            lastUpdated: .now
+        )
+    }
+
+    func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
+        // Circle is instant — a redemption request is just the withdraw.
+        try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+    }
+
+    func buildWithdrawPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
+        try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
+    }
+
+    // The remaining requirements are intentionally trivial for Circle: it has
+    // no public APY/TVL feed, withdraws are synchronous MSCA transfers (always
+    // instant), deposits flow through MSCA creation rather than a vault call,
+    // and there is no separate claim step.
+    // swiftlint:disable unused_parameter async_without_await
+
+    func apy(vault: Vault) async throws -> Decimal? { nil }
+
+    func tvl() async throws -> Decimal? { nil }
+
+    func canWithdrawInstantly(vault: Vault, amount: BigInt) async -> Bool { true }
+
+    func buildApprovePayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload? { nil }
+
+    func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload {
+        throw CircleServiceError.keysignError("Circle deposits are disabled")
+    }
+
+    func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload {
+        throw CircleServiceError.keysignError("Circle has no separate claim step")
+    }
+
+    // swiftlint:enable unused_parameter async_without_await
+}

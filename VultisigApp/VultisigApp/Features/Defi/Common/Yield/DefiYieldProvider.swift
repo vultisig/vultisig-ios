@@ -1,0 +1,94 @@
+//
+//  DefiYieldProvider.swift
+//  VultisigApp
+//
+
+import Foundation
+import BigInt
+
+/// One value-type id per USDC-yield-vault provider. Drives the DeFi list, the
+/// navigation route, and the persisted position key.
+enum DefiYieldProviderID: String, Hashable, CaseIterable, Codable {
+    case circle
+    case noon
+}
+
+/// Read model for a single redemption. Circle redemptions are always instant
+/// (no queue → `claimableAt == nil`); Noon redemptions are windowed.
+struct YieldRedemption: Identifiable, Hashable {
+    enum Status: String, Hashable {
+        // swiftlint:disable:next discouraged_none_name
+        case none
+        case pending
+        case claimable
+        case settled
+    }
+
+    let id: String
+    let amount: Decimal
+    let requestedAt: Date
+    /// `nil` ⇒ instant (no settlement wait).
+    let claimableAt: Date?
+    let status: Status
+
+    var isClaimable: Bool {
+        claimableAt.map { Date() >= $0 } ?? true
+    }
+}
+
+/// Value snapshot of a vault position, passed across actor boundaries.
+struct YieldVaultPosition: Hashable {
+    let depositedBalance: Decimal
+    let nativeGasBalance: Decimal
+    let redemptions: [YieldRedemption]
+    let lastUpdated: Date
+
+    static func empty() -> YieldVaultPosition {
+        YieldVaultPosition(depositedBalance: .zero, nativeGasBalance: .zero, redemptions: [], lastUpdated: .now)
+    }
+}
+
+/// The seam both Circle and Noon ride. Hides the two encoding models (Circle
+/// MSCA `execute()`-wrap vs Noon direct-EOA ERC-7540) behind a uniform payload
+/// builder surface; every builder returns a signable `KeysignPayload` whose coin
+/// is the chain's native coin (calldata travels in `memo`), routed through the
+/// shared Send verify/fee pipeline.
+protocol DefiYieldProvider {
+    var id: DefiYieldProviderID { get }
+    var chain: Chain { get }
+    /// USDC contract on `chain`.
+    var assetContract: String { get }
+    /// Circle provisions an MSCA via the Vultisig proxy; Noon is a direct EOA.
+    var requiresAccountSetup: Bool { get }
+    var depositsEnabled: Bool { get }
+    /// Whether redemptions go through a settlement window (Noon) or are instant
+    /// (Circle). Drives the Withdraw-vs-Claim copy.
+    var hasWindowedRedemption: Bool { get }
+
+    // Account lifecycle — Circle SCA setup; Noon is a no-op.
+    func resolveAccountAddress(vault: Vault) async throws -> String?
+    func createAccount(vault: Vault) async throws -> String
+
+    // Reads
+    func refreshPosition(vault: Vault) async throws -> YieldVaultPosition
+    func apy(vault: Vault) async throws -> Decimal?
+    func tvl() async throws -> Decimal?
+
+    // Write builders — all return a signable `KeysignPayload`.
+
+    /// Optional prior `approve` when allowance < amount. `nil` when no approval
+    /// is needed (or the provider does not gate deposits on allowance).
+    func buildApprovePayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload?
+    func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload
+    /// Queued redemption request. For Circle (instant) this maps to `withdraw`.
+    func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload
+    /// Instant withdraw. For Noon, used when `maxWithdraw(user) >= amount`.
+    func buildWithdrawPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload
+    /// Collect a settled redemption (Noon). Circle has no separate claim step.
+    func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload
+
+    /// Reads liquidity (`maxWithdraw`) to decide between an instant `withdraw`
+    /// and a queued `requestRedeem`. Providers without instant liquidity return
+    /// `false` and always queue.
+    func canWithdrawInstantly(vault: Vault, amount: BigInt) async -> Bool
+}
