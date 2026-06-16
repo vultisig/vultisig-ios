@@ -58,7 +58,10 @@ final class YieldWithdrawViewModel: ObservableObject {
     /// queued `requestRedeem`).
     func buildPayload() async -> (payload: KeysignPayload, recipient: String, isInstant: Bool)? {
         guard let recipient = vault.nativeCoin(for: provider.chain)?.address else { return nil }
-        let amountUnits = YieldAmount.baseUnits(amountDecimal, decimals: provider.assetDecimals)
+        guard let amountUnits = YieldAmount.baseUnits(amountDecimal, decimals: provider.assetDecimals) else {
+            error = DefiYieldError.invalidAmount
+            return nil
+        }
 
         isLoading = true
         defer { isLoading = false }

@@ -179,6 +179,15 @@ struct NoonYieldProvider: DefiYieldProvider {
     }
 
     func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload {
+        // Only a `.claimable` redemption may be claimed. A claimable row's `amount`
+        // is in ASSET units, which is what `claimableAssets`/`encodeWithdraw`
+        // expect; a `.pending` row's `amount` is in SHARE units, so converting it
+        // through assetDecimals would build a wrong-denominator withdraw. (Today
+        // assetDecimals == shareDecimals == 6 so the units coincide — this guards
+        // the invariant against a future divergence.)
+        guard redemption.status == .claimable else {
+            throw NoonServiceError.keysignError("Only a claimable redemption can be claimed")
+        }
         let assets = try await claimableAssets(vault: vault, fallback: redemption.amount)
         let data = try service.encodeWithdraw(assets: assets, receiver: recipient, owner: recipient)
         return try await makePayload(vault: vault, to: NoonConstants.vaultAddress, data: data)
@@ -188,19 +197,25 @@ struct NoonYieldProvider: DefiYieldProvider {
     /// the position read and signing is included in the withdraw. Falls back to
     /// the redemption's cached amount if the read fails.
     private func claimableAssets(vault: Vault, fallback: Decimal) async throws -> BigInt {
-        let fallbackUnits = Self.baseUnits(fallback, decimals: NoonConstants.assetDecimals)
-        guard let user = userAddress(vault: vault) else { return fallbackUnits }
-        do {
-            let fresh = try await reads.maxWithdraw(user: user)
-            return fresh > 0 ? fresh : fallbackUnits
-        } catch {
-            logger.warning("Noon claim maxWithdraw re-read failed, using cached amount: \(error.localizedDescription)")
-            return fallbackUnits
+        if let user = userAddress(vault: vault) {
+            do {
+                let fresh = try await reads.maxWithdraw(user: user)
+                if fresh > 0 { return fresh }
+            } catch {
+                logger.warning("Noon claim maxWithdraw re-read failed, using cached amount: \(error.localizedDescription)")
+            }
         }
+        // Fail closed: never sign a zero-amount claim if the cached amount can't
+        // be converted to base units.
+        guard let fallbackUnits = Self.baseUnits(fallback, decimals: NoonConstants.assetDecimals) else {
+            throw NoonServiceError.readError("Cannot resolve claimable amount")
+        }
+        return fallbackUnits
     }
 
-    /// Converts a human-readable decimal amount into integer base units.
-    static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt {
+    /// Converts a human-readable decimal amount into integer base units. `nil`
+    /// when the amount can't be represented as base units (see `YieldAmount`).
+    static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt? {
         YieldAmount.baseUnits(amount, decimals: decimals)
     }
 

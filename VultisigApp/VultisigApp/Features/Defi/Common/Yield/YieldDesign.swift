@@ -27,10 +27,14 @@ enum YieldDesign {
 /// string form (matching the Circle withdraw path) so floating `Decimal` scaling
 /// never produces a fractional remainder.
 enum YieldAmount {
-    static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt {
+    /// Converts a human-readable amount into integer base units. Returns `nil`
+    /// (rather than coercing to `0`) when the scaled value doesn't parse, so a
+    /// bad conversion can't silently become a zero-amount transaction — callers
+    /// must block request construction on `nil`.
+    static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt? {
         let scaled = amount * pow(Decimal(10), decimals)
         let whole = scaled.description.components(separatedBy: ".").first ?? scaled.description
-        return BigInt(whole) ?? .zero
+        return BigInt(whole)
     }
 
     static func humanAmount(_ value: BigInt, decimals: Int) -> Decimal {

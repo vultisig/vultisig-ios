@@ -65,6 +65,34 @@ final class NoonYieldProviderTests: XCTestCase {
         XCTAssertTrue(redemption.isClaimable)
     }
 
+    // MARK: - Claim guard
+
+    @MainActor
+    func testBuildClaimPayloadRejectsPendingRedemption() async {
+        // A pending redemption's `amount` is in SHARE units; claiming it would
+        // mis-denominate the withdraw, so the guard must reject it before any
+        // network read or signed-bytes construction.
+        let provider = NoonYieldProvider()
+        let pending = YieldRedemption(
+            id: "noon_pending",
+            amount: Decimal(string: "98.333202") ?? .zero,
+            requestedAt: Date(),
+            claimableAt: nil,
+            status: .pending
+        )
+
+        do {
+            _ = try await provider.buildClaimPayload(
+                vault: .example,
+                recipient: "0x0000000000000000000000000000000000000001",
+                redemption: pending
+            )
+            XCTFail("buildClaimPayload must reject a non-claimable redemption")
+        } catch {
+            // Expected — the guard throws up front.
+        }
+    }
+
     // MARK: - Settlement date
 
     func testNextSettlementDateIsWednesdayPlusSettlementWindowUtc() throws {

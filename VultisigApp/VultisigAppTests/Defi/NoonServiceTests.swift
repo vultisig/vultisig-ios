@@ -85,9 +85,23 @@ final class NoonServiceTests: XCTestCase {
 
 final class NoonReadServiceTests: XCTestCase {
 
-    func testDecodeUIntFromHexWord() {
+    func testDecodeUIntFromHexWord() throws {
         let raw = "0x0000000000000000000000000000000000000000000000000000000005f5e100"
-        XCTAssertEqual(NoonReadService.decodeUInt(raw), BigInt(100_000_000))
+        XCTAssertEqual(try NoonReadService.decodeUInt(raw), BigInt(100_000_000))
+    }
+
+    func testDecodeUIntFailsClosedOnEmptyPayload() {
+        // A reverted / empty `eth_call` must surface as an error, never decode to 0.
+        XCTAssertThrowsError(try NoonReadService.decodeUInt("0x"))
+    }
+
+    func testDecodeUIntFailsClosedOnGarbagePayload() {
+        XCTAssertThrowsError(try NoonReadService.decodeUInt("0xZZZZ"))
+    }
+
+    func testAbiWordsFailsClosedOnMisalignedPayload() {
+        // 1 byte (not a whole 32-byte word) must throw, not yield [].
+        XCTAssertThrowsError(try NoonReadService.abiWords("0x01"))
     }
 
     func testDecodeStateReadsMaxWithdrawRedeemSharesAndPending() throws {

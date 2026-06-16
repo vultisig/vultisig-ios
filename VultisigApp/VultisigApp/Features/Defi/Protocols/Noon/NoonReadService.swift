@@ -142,7 +142,7 @@ struct NoonReadService {
 
     private func callUInt(to: String, data: String, service: EvmService) async throws -> BigInt {
         let raw = try await service.callContract(to: to, data: data)
-        return Self.decodeUInt(raw)
+        return try Self.decodeUInt(raw)
     }
 
     // MARK: - Encoding / decoding helpers
@@ -156,9 +156,14 @@ struct NoonReadService {
     }
 
     /// Decodes a single ABI uint256 word from a `0x`-prefixed return string.
-    static func decodeUInt(_ raw: String) -> BigInt {
+    /// Fails closed: an empty (reverted/empty `eth_call`) or unparseable payload
+    /// throws rather than coercing to `0`, so a bad read can't masquerade as a
+    /// valid zero state driving redemption / minimum logic.
+    static func decodeUInt(_ raw: String) throws -> BigInt {
         let hex = raw.stripHexPrefix()
-        guard !hex.isEmpty, let value = BigInt(hex, radix: 16) else { return .zero }
+        guard !hex.isEmpty, let value = BigInt(hex, radix: 16) else {
+            throw NoonServiceError.readError("Malformed uint256 read payload")
+        }
         return value
     }
 
@@ -166,9 +171,9 @@ struct NoonReadService {
     /// uint256 words); `maxWithdraw` is word 1, `redeemShares` is word 3, and
     /// `pendingRedeemRequest` is the final (10th) word.
     static func decodeState(_ raw: String) throws -> NoonVaultState {
-        let words = abiWords(raw)
+        let words = try abiWords(raw)
         guard words.count >= 10 else {
-            throw NoonServiceError.keysignError("Unexpected getState response")
+            throw NoonServiceError.readError("Unexpected getState response")
         }
         return NoonVaultState(
             maxWithdraw: words[1],
@@ -177,16 +182,24 @@ struct NoonReadService {
         )
     }
 
-    /// Splits raw ABI return data into 32-byte uint256 words.
-    static func abiWords(_ raw: String) -> [BigInt] {
+    /// Splits raw ABI return data into 32-byte uint256 words. Fails closed: a
+    /// length that isn't a whole number of 32-byte words, or a word that doesn't
+    /// parse as hex, throws rather than yielding `[]` / `0`-padded words, so a
+    /// truncated or garbage `eth_call` payload can't decode to a bogus state.
+    static func abiWords(_ raw: String) throws -> [BigInt] {
         let hex = raw.stripHexPrefix()
-        guard hex.count % 64 == 0 else { return [] }
+        guard !hex.isEmpty, hex.count % 64 == 0 else {
+            throw NoonServiceError.readError("Misaligned ABI read payload")
+        }
         var words: [BigInt] = []
         var index = hex.startIndex
         while index < hex.endIndex {
             let next = hex.index(index, offsetBy: 64)
             let word = String(hex[index..<next])
-            words.append(BigInt(word, radix: 16) ?? .zero)
+            guard let value = BigInt(word, radix: 16) else {
+                throw NoonServiceError.readError("Malformed ABI word in read payload")
+            }
+            words.append(value)
             index = next
         }
         return words

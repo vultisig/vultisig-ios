@@ -58,8 +58,11 @@ final class YieldDepositViewModel: ObservableObject, Form {
         usdcCoin = vault.coins.first { $0.chain == provider.chain && $0.ticker == "USDC" }
     }
 
-    private var amountBaseUnits: BigInt {
-        guard let amount = Decimal(string: amountField.value) else { return .zero }
+    /// `nil` ⇒ the entered amount doesn't convert to integer base units; the
+    /// caller must block payload construction rather than fall through to a
+    /// zero-amount transaction.
+    private var amountBaseUnits: BigInt? {
+        guard let amount = Decimal(string: amountField.value) else { return nil }
         return YieldAmount.baseUnits(amount, decimals: provider.assetDecimals)
     }
 
@@ -67,8 +70,12 @@ final class YieldDepositViewModel: ObservableObject, Form {
     /// otherwise the `deposit`. The caller routes to verify and re-enters for the
     /// deposit once the approve confirms.
     func makeNextPayload() async -> (payload: KeysignPayload, isApprove: Bool)? {
-        let amount = amountBaseUnits
-        guard amount > 0 else { return nil }
+        guard let amount = amountBaseUnits, amount > 0 else {
+            if !amountField.value.isEmpty {
+                error = DefiYieldError.invalidAmount
+            }
+            return nil
+        }
 
         isLoading = true
         defer { isLoading = false }

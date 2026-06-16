@@ -12,6 +12,7 @@ enum NoonServiceError: Error {
     case belowMinimum(label: String, minimum: String)
     case missingCoin(String)
     case keysignError(String)
+    case readError(String)
 }
 
 extension NoonServiceError: LocalizedError {
@@ -24,6 +25,8 @@ extension NoonServiceError: LocalizedError {
         case .missingCoin(let message):
             return message
         case .keysignError(let message):
+            return message
+        case .readError(let message):
             return message
         }
     }

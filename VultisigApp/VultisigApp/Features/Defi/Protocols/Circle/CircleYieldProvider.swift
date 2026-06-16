@@ -49,7 +49,7 @@ struct CircleYieldProvider: DefiYieldProvider {
             apyLabelKey: "circleAPYLabel",
             sharesTicker: "USDC",
             showsRedemptionRows: false,
-            staticApyText: "1%",
+            staticApyText: "circleStaticApy".localized,
             providerNameKey: "circleTitle",
             bannerLogoAsset: "circle-logo",
             infoBannerKey: "circleDashboardInfoText",
@@ -120,7 +120,10 @@ struct CircleYieldProvider: DefiYieldProvider {
         do {
             return try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
         } catch CircleServiceError.walletNotDeployed {
-            _ = try? await CircleApiService.shared.createWallet(ethAddress: recipient)
+            // Provision the MSCA, then retry once. A real provisioning failure
+            // now surfaces to the user instead of a confusing second
+            // `walletNotDeployed`.
+            _ = try await CircleApiService.shared.createWallet(ethAddress: recipient)
             return try await logic.getWithdrawalPayload(vault: vault, recipient: recipient, amount: amount)
         }
     }
@@ -140,11 +143,11 @@ struct CircleYieldProvider: DefiYieldProvider {
     func buildApprovePayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload? { nil }
 
     func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload {
-        throw CircleServiceError.keysignError("Circle deposits are disabled")
+        throw CircleServiceError.keysignError("circleDepositsDisabled".localized)
     }
 
     func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload {
-        throw CircleServiceError.keysignError("Circle has no separate claim step")
+        throw CircleServiceError.keysignError("circleNoSeparateClaimStep".localized)
     }
 
     // swiftlint:enable unused_parameter async_without_await
