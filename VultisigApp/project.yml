@@ -147,7 +147,7 @@ targets:
         # Info.plist keys (merged at build time because GENERATE_INFOPLIST_FILE=YES)
         INFOPLIST_KEY_CFBundleDisplayName: Vultisig
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
-        INFOPLIST_KEY_NSCameraUsageDescription: We need to scan QR Codes.
+        INFOPLIST_KEY_NSCameraUsageDescription: Vultisig uses the camera to scan QR codes so you can pair devices for vault setup, import vaults and wallet addresses, and confirm transaction details when signing.
         INFOPLIST_KEY_NSFaceIDUsageDescription: Secure your Vault using Face ID
         INFOPLIST_KEY_NSFileProviderDomainUsageDescription: We need to access your files.
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
