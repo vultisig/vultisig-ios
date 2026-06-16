@@ -68,7 +68,7 @@ struct DefiNoonSelectionGridCell: View {
         AssetSelectionGridCell(
             name: NSLocalizedString("noonTitle", comment: "Noon"),
             ticker: "USDC",
-            logo: "usdc",
+            logo: "noon-logo",
             isSelected: $isSelected
         ) {
             onSelection(isSelected)

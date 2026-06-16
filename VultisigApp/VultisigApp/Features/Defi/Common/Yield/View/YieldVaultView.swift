@@ -11,19 +11,31 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-vaul
 
 /// Generic yield-vault dashboard, parameterized by a `DefiYieldProvider`. Both
 /// Circle (MSCA, account-gated, instant) and Noon (direct-EOA, windowed) render
-/// through this one screen; provider-specific copy comes from `presentation` and
-/// account-gated providers show an "Open Account" setup card until their account
-/// resolves. Renders the deposited balance, APY / next-redemption / shares rows,
-/// Deposit / Withdraw actions, and the windowed-redemption state.
+/// through this one screen; provider-specific copy / logo / chrome come from
+/// `presentation` and account-gated providers show an "Open Account" setup card
+/// until their account resolves. Renders the top banner (provider + USD value +
+/// logo), the underlined "Deposited" tab + description, a dismissible info
+/// banner, the position card, APY / next-redemption / shares rows with info
+/// tooltips, Deposit / Withdraw actions, and the windowed-redemption state.
 struct YieldVaultView: View {
     @ObservedObject var vault: Vault
 
     @StateObject private var model: YieldViewModel
     @Environment(\.router) private var router
 
+    @State private var openTooltip: YieldTooltipID?
+    @State private var showOverviewTooltip = false
+
+    /// Per-vault, per-provider persisted dismissal for the empty-state info banner.
+    @AppStorage private var infoBannerDismissed: Bool
+
     init(vault: Vault, providerID: DefiYieldProviderID) {
         self.vault = vault
         _model = StateObject(wrappedValue: YieldViewModel(providerID: providerID))
+        _infoBannerDismissed = AppStorage(
+            wrappedValue: false,
+            "yieldInfoBannerDismissed_\(providerID.rawValue)_\(vault.pubKeyECDSA)"
+        )
     }
 
     private var presentation: YieldPresentation { model.presentation }
@@ -41,6 +53,15 @@ struct YieldVaultView: View {
             }
         }
         .screenTitle(presentation.titleKey.localized)
+        .screenToolbar {
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "circle-info") {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showOverviewTooltip.toggle()
+                    }
+                }
+            }
+        }
         .onLoad {
             Task { await onAppear() }
         }
@@ -51,7 +72,14 @@ struct YieldVaultView: View {
     private var dashboard: some View {
         ScrollView {
             VStack(spacing: YieldDesign.verticalSpacing) {
+                topBanner
+                if showOverviewTooltip {
+                    overviewTooltip
+                }
                 headerDescription
+                if !model.hasAccount, !infoBannerDismissed {
+                    infoBanner
+                }
                 if model.hasAccount {
                     positionCard
                 } else {
@@ -63,22 +91,50 @@ struct YieldVaultView: View {
             .padding(.horizontal, YieldDesign.horizontalPadding)
         }
         .background(VaultMainScreenBackground())
+        .onTapGesture { openTooltip = nil }
         #if os(iOS)
         .refreshable { await refresh() }
         #endif
     }
 
+    private var topBanner: some View {
+        YieldTopBanner(
+            providerName: presentation.providerNameKey.localized,
+            usdValue: model.depositedBalance.formatToFiat(),
+            logoAsset: presentation.bannerLogoAsset,
+            tabTitle: presentation.dashboardTitleKey.localized
+        )
+    }
+
+    private var overviewTooltip: some View {
+        InfoTooltip(
+            title: presentation.overviewTooltipTitleKey.localized,
+            description: presentation.overviewTooltipBodyKey.localized,
+            arrowDirection: .up,
+            arrowXFraction: 0.9,
+            maxWidth: .infinity,
+            onDismiss: { showOverviewTooltip = false }
+        )
+        .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
+    }
+
     private var headerDescription: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(presentation.dashboardTitleKey.localized)
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Text(presentation.dashboardDescriptionKey.localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text(presentation.dashboardDescriptionKey.localized)
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var infoBanner: some View {
+        InfoBannerView(
+            description: presentation.infoBannerKey.localized,
+            type: .info,
+            leadingIcon: nil,
+            onClose: {
+                withAnimation { infoBannerDismissed = true }
+            }
+        )
     }
 
     private var positionCard: some View {
@@ -94,25 +150,47 @@ struct YieldVaultView: View {
             if let claimable = model.claimableRedemption {
                 claimableRedemptionSection(claimable)
             }
+            if showsWindowedNote {
+                windowedNoteSection
+            }
         }
         .padding(YieldDesign.cardPadding)
         .background(cardBackground)
+    }
+
+    /// Windowed vaults with a balance but no in-flight redemption show the
+    /// "request before the cutoff" note (the withdraw action queues the request).
+    private var showsWindowedNote: Bool {
+        presentation.showsRedemptionRows
+            && model.depositedBalance > 0
+            && model.pendingRedemption == nil
+            && model.claimableRedemption == nil
+    }
+
+    private var windowedNoteSection: some View {
+        VStack(spacing: 12) {
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+            redemptionBanner("noonRedemptionWindowNote".localized, color: Theme.colors.alertWarning)
+        }
     }
 
     private var depositedSection: some View {
         HStack(spacing: 12) {
             Image("usdc")
                 .resizable()
-                .frame(width: 40, height: 40)
+                .frame(width: 48, height: 48)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(presentation.depositedLabelKey.localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textSecondary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
+                HiddenBalanceText(model.depositedBalance.formatToFiat())
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             Spacer()
         }
@@ -121,12 +199,21 @@ struct YieldVaultView: View {
 
     private var infoRows: some View {
         VStack(spacing: 12) {
-            infoRow(
-                icon: "divide.circle",
-                label: presentation.apyLabelKey.localized,
-                value: apyText,
-                valueColor: Theme.colors.alertSuccess
-            )
+            HStack(spacing: 0) {
+                YieldInfoLabel(
+                    icon: "divide.circle",
+                    isSystemIcon: true,
+                    label: presentation.apyLabelKey.localized,
+                    tooltipID: .apy,
+                    tooltipTitle: presentation.apyTooltipTitleKey.localized,
+                    tooltipBody: presentation.apyTooltipBodyKey.localized,
+                    openTooltip: $openTooltip
+                )
+                Spacer()
+                Text(apyText)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            }
             if presentation.showsRedemptionRows {
                 infoRow(
                     icon: "calendar",
@@ -160,7 +247,7 @@ struct YieldVaultView: View {
     }
 
     private var actionButtons: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 16) {
             DefiButton(
                 title: presentation.withdrawButtonKey.localized,
                 icon: "minus.circle",
@@ -169,8 +256,6 @@ struct YieldVaultView: View {
                 action: { router.navigate(to: YieldRoute.withdraw(vault: vault, providerID: model.providerID, model: model)) }
             )
             .disabled(model.depositedBalance <= 0)
-
-            Spacer()
 
             DefiButton(
                 title: presentation.depositButtonKey.localized,
@@ -228,29 +313,28 @@ struct YieldVaultView: View {
     private func pendingRedemptionSection(_ redemption: YieldRedemption) -> some View {
         VStack(spacing: 12) {
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            redemptionBanner("noonRedemptionPending".localized)
+            redemptionBanner("noonRedemptionPending".localized, color: Theme.colors.alertWarning)
             Text(claimAvailabilityText(redemption))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(Theme.colors.textButtonDisabled)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 
     private func claimableRedemptionSection(_ redemption: YieldRedemption) -> some View {
         VStack(spacing: 12) {
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            redemptionBanner("noonRedemptionClaimable".localized)
-            PrimaryButton(title: "noonClaim".localized) {
+            redemptionBanner("noonRedemptionClaimable".localized, color: Theme.colors.alertSuccess)
+            PrimaryButton(title: claimButtonTitle(redemption)) {
                 Task { await handleClaim(redemption) }
             }
             .disabled(model.nativeGasBalance <= 0)
         }
     }
 
-    private func redemptionBanner(_ text: String) -> some View {
+    private func redemptionBanner(_ text: String, color: Color) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "info.circle")
-                .foregroundStyle(Theme.colors.textTertiary)
+            Icon(named: "circle-info", color: color, size: 16)
             Text(text)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
@@ -260,19 +344,10 @@ struct YieldVaultView: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: YieldDesign.cornerRadius)
+        RoundedRectangle(cornerRadius: 24)
             .inset(by: 0.5)
-            .stroke(Color(hex: "34E6BF").opacity(0.17))
-            .fill(
-                LinearGradient(
-                    stops: [
-                        Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
-                        Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00)
-                    ],
-                    startPoint: UnitPoint(x: 0.5, y: 0),
-                    endPoint: UnitPoint(x: 0.5, y: 1)
-                ).opacity(0.09)
-            )
+            .fill(Theme.colors.bgSurface1)
+            .stroke(Theme.colors.borderLight, lineWidth: 1)
     }
 
     private var missingEthState: some View {
@@ -310,6 +385,11 @@ struct YieldVaultView: View {
         formatter.dateFormat = "d MMM"
         formatter.timeZone = TimeZone(identifier: "UTC")
         return "\(formatter.string(from: date)) · 23:00 UTC"
+    }
+
+    private func claimButtonTitle(_ redemption: YieldRedemption) -> String {
+        let amount = AmountFormatter.formatCryptoAmount(value: redemption.amount, ticker: "USDC")
+        return String(format: "noonClaimAmount".localized, amount)
     }
 
     private func claimAvailabilityText(_ redemption: YieldRedemption) -> String {

@@ -49,7 +49,16 @@ struct CircleYieldProvider: DefiYieldProvider {
             apyLabelKey: "circleAPYLabel",
             sharesTicker: "USDC",
             showsRedemptionRows: false,
-            staticApyText: "1%"
+            staticApyText: "1%",
+            providerNameKey: "circleTitle",
+            bannerLogoAsset: "circle-logo",
+            infoBannerKey: "circleDashboardInfoText",
+            apyTooltipTitleKey: "circleAPYTooltipTitle",
+            apyTooltipBodyKey: "circleAPYTooltipBody",
+            rewardsTooltipTitleKey: "circleRewardsTitle",
+            rewardsTooltipBodyKey: "circleRewardsDescription",
+            overviewTooltipTitleKey: "circleOverviewTooltipTitle",
+            overviewTooltipBodyKey: "circleOverviewTooltipBody"
         )
     }
 
