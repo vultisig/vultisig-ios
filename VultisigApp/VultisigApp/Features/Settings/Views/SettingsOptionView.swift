@@ -13,12 +13,13 @@ enum SettingsOptionViewType {
     case alert
 }
 
-struct SettingsOptionView<TrailingView: View>: View {
+struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
     let icon: String?
     let title: String
     let subtitle: String?
     let type: SettingsOptionViewType
     let showSeparator: Bool
+    let titleAccessory: () -> TitleAccessory
     let trailingView: () -> TrailingView
 
     init(
@@ -27,6 +28,7 @@ struct SettingsOptionView<TrailingView: View>: View {
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
         showSeparator: Bool = true,
+        @ViewBuilder titleAccessory: @escaping () -> TitleAccessory,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self.icon = icon
@@ -34,6 +36,7 @@ struct SettingsOptionView<TrailingView: View>: View {
         self.subtitle = subtitle
         self.type = type
         self.showSeparator = showSeparator
+        self.titleAccessory = titleAccessory
         self.trailingView = trailingView
     }
 
@@ -74,9 +77,12 @@ struct SettingsOptionView<TrailingView: View>: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title.localized)
-                        .font(Theme.fonts.footnote)
-                        .foregroundStyle(fontColor)
+                    HStack(spacing: 8) {
+                        Text(title.localized)
+                            .font(Theme.fonts.footnote)
+                            .foregroundStyle(fontColor)
+                        titleAccessory()
+                    }
 
                     if let subtitle {
                         Text(subtitle)
@@ -97,5 +103,26 @@ struct SettingsOptionView<TrailingView: View>: View {
             GradientListSeparator()
                 .showIf(showSeparator)
         }
+    }
+}
+
+extension SettingsOptionView where TitleAccessory == EmptyView {
+    init(
+        icon: String?,
+        title: String,
+        subtitle: String? = nil,
+        type: SettingsOptionViewType = .normal,
+        showSeparator: Bool = true,
+        @ViewBuilder trailingView: @escaping () -> TrailingView
+    ) {
+        self.init(
+            icon: icon,
+            title: title,
+            subtitle: subtitle,
+            type: type,
+            showSeparator: showSeparator,
+            titleAccessory: { EmptyView() },
+            trailingView: trailingView
+        )
     }
 }

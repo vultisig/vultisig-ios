@@ -17,19 +17,15 @@ struct SettingsMainScreen: View {
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showReferralBannerSheet = false
-    @State private var customRPCTierSheet: VultDiscountTier?
 
     var groups: [SettingsOptionGroup] {
-        var generalOptions: [SettingsOption] = [
+        let generalOptions: [SettingsOption] = [
             .notifications,
             .referralCode,
             .language,
             .currency,
             .addressBook
         ]
-        if CustomRPCConfig.isFeatureEnabled {
-            generalOptions.append(.customRPC)
-        }
 
         return [
             SettingsOptionGroup(
@@ -102,7 +98,6 @@ struct SettingsMainScreen: View {
                 showReferralBannerSheet = false
             }.presentationDetents([.height(400)])
         }
-        .tierGated(presentedTier: $customRPCTierSheet, vault: vault)
     }
 
     func groupView(for group: SettingsOptionGroup) -> some View {
@@ -171,22 +166,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.faq)
         case .checkForUpdates:
             router.navigate(to: SettingsRoute.checkForUpdates)
-        case .customRPC:
-            handleCustomRPCTap()
         default:
             break
-        }
-    }
-
-    private func handleCustomRPCTap() {
-        Task {
-            await TierGatedTap.handle(
-                required: .silver,
-                show: $customRPCTierSheet,
-                for: vault
-            ) {
-                router.navigate(to: SettingsRoute.customRPC)
-            }
         }
     }
 
