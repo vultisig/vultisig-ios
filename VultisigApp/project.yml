@@ -147,12 +147,12 @@ targets:
         # Info.plist keys (merged at build time because GENERATE_INFOPLIST_FILE=YES)
         INFOPLIST_KEY_CFBundleDisplayName: Vultisig
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
-        INFOPLIST_KEY_NSCameraUsageDescription: We need to scan QR Codes.
+        INFOPLIST_KEY_NSCameraUsageDescription: Allow access to your camera to scan QR codes so you can pair devices for vault setup, import vaults and wallet addresses, and confirm transaction details when signing.
         INFOPLIST_KEY_NSFaceIDUsageDescription: Secure your Vault using Face ID
-        INFOPLIST_KEY_NSFileProviderDomainUsageDescription: We need to access your files.
+        INFOPLIST_KEY_NSFileProviderDomainUsageDescription: Allow access to your files to back up your vault to and restore it from your chosen file storage.
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: We need access to the local network to discover services.
-        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: We need access to your photo library to save photos.
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: Allow access to your local network to discover and connect to your other devices on the same Wi-Fi so they can pair and sign transactions together.
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Allow access to your photo library to save vault backup QR codes and select saved QR code images to import vaults or addresses.
         "INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]": "Vultisig needs screen recording permission to scan QR codes displayed on your screen."
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": YES
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": YES
