@@ -19,6 +19,7 @@ final class VultisigRouter: ObservableObject {
     let settingsRouter: SettingsRouter
     let homeRouter: HomeRouter
     let circleRouter: CircleRouter
+    let yieldRouter: YieldRouter
     let tronRouter: TronRouter
     let transactionHistoryRouter: TransactionHistoryRouter
     let qbtcClaimRouter: QBTCClaimRouter
@@ -35,6 +36,7 @@ final class VultisigRouter: ObservableObject {
         self.settingsRouter = SettingsRouter()
         self.homeRouter = HomeRouter()
         self.circleRouter = CircleRouter()
+        self.yieldRouter = YieldRouter()
         self.tronRouter = TronRouter()
         self.transactionHistoryRouter = TransactionHistoryRouter()
         self.qbtcClaimRouter = QBTCClaimRouter()
