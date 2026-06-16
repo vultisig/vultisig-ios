@@ -168,6 +168,9 @@ struct DefiChainMainScreen: View {
                     viewModel: governanceViewModel,
                     onVote: { proposal, choice in
                         onGovernanceVote(proposal: proposal, choice: choice)
+                    },
+                    onWeightedVote: { proposal, options in
+                        onGovernanceWeightedVote(proposal: proposal, options: options)
                     }
                 )
             }
@@ -321,6 +324,45 @@ struct DefiChainMainScreen: View {
             memoFunctionDictionary: displayDictionary
         )
         router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+    }
+
+    /// Builds a weighted QBTC governance vote tx from per-option weights and
+    /// pushes it to verify → ML-DSA keysign. The memo
+    /// (`QBTC_VOTEW:<ID>:OPT=W,...`) is what `QBTCHelper.buildMsgVoteWeighted`
+    /// consumes; weights are passed as plain decimals and the helper
+    /// canonicalizes them to the 18-decimal `cosmos.Dec` form.
+    func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
+        guard let nativeCoin, !options.isEmpty else { return }
+        let optionsPart = options
+            .map { "\($0.option.memoToken)=\(Self.weightString($0.weight))" }
+            .joined(separator: ",")
+        let memo = "QBTC_VOTEW:\(proposal.id):\(optionsPart)"
+        let displayValue = options
+            .map { "\($0.option.displayTitle) \(Self.weightPercentString($0.weight))" }
+            .joined(separator: ", ")
+        let displayDictionary: [String: String] = [
+            "action": "governanceVoteAction".localized,
+            "vote": displayValue,
+            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
+        ]
+        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
+            memo: memo,
+            transactionType: .vote,
+            memoFunctionDictionary: displayDictionary
+        )
+        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+    }
+
+    /// Plain decimal string for a weight fraction (e.g. 0.7 -> "0.7"), fed to
+    /// the memo. `QBTCHelper` re-pads it to the canonical `cosmos.Dec` form.
+    static func weightString(_ weight: Decimal) -> String {
+        NSDecimalNumber(decimal: weight).stringValue
+    }
+
+    /// Percentage label for the verify summary (e.g. 0.7 -> "70%").
+    static func weightPercentString(_ weight: Decimal) -> String {
+        let percent = NSDecimalNumber(decimal: weight * 100).intValue
+        return "\(percent)%"
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {

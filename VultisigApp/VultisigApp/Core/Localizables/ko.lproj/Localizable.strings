@@ -486,6 +486,7 @@
 "governanceStatusRejected" = "거부됨";
 "governanceStatusUnspecified" = "알 수 없음";
 "governanceStatusVoting" = "투표 중";
+"governanceSubmitWeightedVote" = "투표 제출";
 "governanceSummary" = "요약";
 "governanceTally" = "집계";
 "governanceTimeRemaining" = "남은 시간";
@@ -494,12 +495,15 @@
 "governanceVoteAction" = "투표";
 "governanceVoteNo" = "반대";
 "governanceVoteNoWithVeto" = "거부권 반대";
+"governanceVoteWithWeights" = "가중 투표";
 "governanceVoteYes" = "찬성";
 "governanceVotingEnd" = "종료";
 "governanceVotingEnded" = "투표 종료";
 "governanceVotingEndsIn" = "%@ 후 종료";
 "governanceVotingStart" = "시작";
 "governanceVotingWindow" = "투표 기간";
+"governanceWeightedTotal" = "합계";
+"governanceWeightedVoteTitle" = "가중 투표";
 "governanceYouVoted" = "%@ 투표함";
 "hashCopied" = "해시 복사됨";
 "hideBalance" = "잔액 숨기기";

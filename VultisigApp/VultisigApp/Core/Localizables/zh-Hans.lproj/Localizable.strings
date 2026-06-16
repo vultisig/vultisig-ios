@@ -490,6 +490,7 @@
 "governanceStatusRejected" = "已否决";
 "governanceStatusUnspecified" = "未知";
 "governanceStatusVoting" = "投票中";
+"governanceSubmitWeightedVote" = "提交投票";
 "governanceSummary" = "摘要";
 "governanceTally" = "计票";
 "governanceTimeRemaining" = "剩余时间";
@@ -498,12 +499,15 @@
 "governanceVoteAction" = "投票";
 "governanceVoteNo" = "反对";
 "governanceVoteNoWithVeto" = "反对并否决";
+"governanceVoteWithWeights" = "按权重投票";
 "governanceVoteYes" = "赞成";
 "governanceVotingEnd" = "结束";
 "governanceVotingEnded" = "投票已结束";
 "governanceVotingEndsIn" = "%@后结束";
 "governanceVotingStart" = "开始";
 "governanceVotingWindow" = "投票时间";
+"governanceWeightedTotal" = "合计";
+"governanceWeightedVoteTitle" = "加权投票";
 "governanceYouVoted" = "您投了%@";
 "hashCopied" = "哈希已复制";
 "hideBalance" = "隐藏余额";

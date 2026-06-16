@@ -21,6 +21,11 @@ struct GovernanceProposalDetailScreen: View {
     /// `QBTC_VOTE:` tx and launches verify → ML-DSA keysign. Nil disables the
     /// vote controls (read-only contexts / previews).
     var onVote: ((CosmosGovVoteChoice) -> Void)?
+    /// Weighted vote (per-option weights summing to 1.0). The parent builds
+    /// the `QBTC_VOTEW:` tx. Nil hides the weighted-vote entry point.
+    var onWeightedVote: (([CosmosGovVoteOption]) -> Void)?
+
+    @State private var showWeightedSheet = false
 
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -46,6 +51,12 @@ struct GovernanceProposalDetailScreen: View {
                 }
             }
             .padding(20)
+        }
+        .crossPlatformSheet(isPresented: $showWeightedSheet) {
+            GovernanceWeightedVoteSheet(proposal: proposal) { options in
+                showWeightedSheet = false
+                onWeightedVote?(options)
+            }
         }
     }
 
@@ -151,6 +162,18 @@ struct GovernanceProposalDetailScreen: View {
                 ) {
                     onVote(choice)
                 }
+            }
+            if onWeightedVote != nil {
+                Button {
+                    showWeightedSheet = true
+                } label: {
+                    Text("governanceVoteWithWeights".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.primaryAccent4)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
             }
         }
     }

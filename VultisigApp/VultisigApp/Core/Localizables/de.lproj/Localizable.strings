@@ -490,6 +490,7 @@
 "governanceStatusRejected" = "Abgelehnt";
 "governanceStatusUnspecified" = "Unbekannt";
 "governanceStatusVoting" = "Abstimmung";
+"governanceSubmitWeightedVote" = "Stimme absenden";
 "governanceSummary" = "Zusammenfassung";
 "governanceTally" = "Auszählung";
 "governanceTimeRemaining" = "Verbleibende Zeit";
@@ -498,12 +499,15 @@
 "governanceVoteAction" = "Abstimmen";
 "governanceVoteNo" = "Nein";
 "governanceVoteNoWithVeto" = "Nein mit Veto";
+"governanceVoteWithWeights" = "Gewichtet abstimmen";
 "governanceVoteYes" = "Ja";
 "governanceVotingEnd" = "Ende";
 "governanceVotingEnded" = "Abstimmung beendet";
 "governanceVotingEndsIn" = "Endet in %@";
 "governanceVotingStart" = "Beginn";
 "governanceVotingWindow" = "Abstimmungszeitraum";
+"governanceWeightedTotal" = "Gesamt";
+"governanceWeightedVoteTitle" = "Gewichtete Abstimmung";
 "governanceYouVoted" = "Du hast %@ gestimmt";
 "hashCopied" = "Hash kopiert";
 "hideBalance" = "Guthaben ausblenden";

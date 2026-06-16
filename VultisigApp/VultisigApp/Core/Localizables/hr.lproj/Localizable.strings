@@ -490,6 +490,7 @@
 "governanceStatusRejected" = "Odbijeno";
 "governanceStatusUnspecified" = "Nepoznato";
 "governanceStatusVoting" = "Glasovanje";
+"governanceSubmitWeightedVote" = "Pošalji glas";
 "governanceSummary" = "Sažetak";
 "governanceTally" = "Rezultat";
 "governanceTimeRemaining" = "Preostalo vrijeme";
@@ -498,12 +499,15 @@
 "governanceVoteAction" = "Glasuj";
 "governanceVoteNo" = "Ne";
 "governanceVoteNoWithVeto" = "Ne s vetom";
+"governanceVoteWithWeights" = "Glasuj s težinama";
 "governanceVoteYes" = "Da";
 "governanceVotingEnd" = "Kraj";
 "governanceVotingEnded" = "Glasovanje završeno";
 "governanceVotingEndsIn" = "Završava za %@";
 "governanceVotingStart" = "Početak";
 "governanceVotingWindow" = "Razdoblje glasovanja";
+"governanceWeightedTotal" = "Ukupno";
+"governanceWeightedVoteTitle" = "Ponderirano glasovanje";
 "governanceYouVoted" = "Glasali ste %@";
 "hashCopied" = "Hash kopiran";
 "hideBalance" = "Sakrij saldo";

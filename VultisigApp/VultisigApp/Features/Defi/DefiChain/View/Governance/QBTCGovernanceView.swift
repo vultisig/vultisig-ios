@@ -17,6 +17,8 @@ struct QBTCGovernanceView: View {
     /// option. The parent assembles the `QBTC_VOTE:` tx and navigates to
     /// verify → ML-DSA keysign.
     var onVote: (CosmosGovProposal, CosmosGovVoteChoice) -> Void
+    /// Builds + launches the weighted-vote flow (`QBTC_VOTEW:` tx).
+    var onWeightedVote: (CosmosGovProposal, [CosmosGovVoteOption]) -> Void
 
     @State private var selectedProposal: CosmosGovProposal?
 
@@ -43,6 +45,10 @@ struct QBTCGovernanceView: View {
                 onVote: { choice in
                     selectedProposal = nil
                     onVote(proposal, choice)
+                },
+                onWeightedVote: { options in
+                    selectedProposal = nil
+                    onWeightedVote(proposal, options)
                 }
             )
         }

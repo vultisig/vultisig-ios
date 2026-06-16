@@ -495,6 +495,7 @@
 "governanceStatusRejected" = "Rejected";
 "governanceStatusUnspecified" = "Unknown";
 "governanceStatusVoting" = "Voting";
+"governanceSubmitWeightedVote" = "Submit vote";
 "governanceSummary" = "Summary";
 "governanceTally" = "Tally";
 "governanceTimeRemaining" = "Time remaining";
@@ -503,12 +504,15 @@
 "governanceVoteAction" = "Vote";
 "governanceVoteNo" = "No";
 "governanceVoteNoWithVeto" = "No with Veto";
+"governanceVoteWithWeights" = "Vote with weights";
 "governanceVoteYes" = "Yes";
 "governanceVotingEnd" = "End";
 "governanceVotingEnded" = "Voting ended";
 "governanceVotingEndsIn" = "Ends in %@";
 "governanceVotingStart" = "Start";
 "governanceVotingWindow" = "Voting Window";
+"governanceWeightedTotal" = "Total";
+"governanceWeightedVoteTitle" = "Weighted vote";
 "governanceYouVoted" = "You voted %@";
 "hashCopied" = "Hash copied";
 "hideBalance" = "Hide balance";
