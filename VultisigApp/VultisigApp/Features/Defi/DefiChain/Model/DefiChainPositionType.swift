@@ -9,6 +9,7 @@ enum DefiChainPositionType: String, CaseIterable, Hashable, Identifiable {
     case bond
     case stake
     case liquidityPool
+    case governance
 
     var id: String { rawValue }
 
@@ -20,6 +21,8 @@ enum DefiChainPositionType: String, CaseIterable, Hashable, Identifiable {
             "staked".localized
         case .liquidityPool:
             "lps".localized
+        case .governance:
+            "governance".localized
         }
     }
 
@@ -31,6 +34,8 @@ enum DefiChainPositionType: String, CaseIterable, Hashable, Identifiable {
             "stake".localized
         case .liquidityPool:
             "liquidityPools".localized
+        case .governance:
+            "governance".localized
         }
     }
 }

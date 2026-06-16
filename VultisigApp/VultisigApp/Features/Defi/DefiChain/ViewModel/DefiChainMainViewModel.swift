@@ -87,12 +87,17 @@ final class DefiChainMainViewModel: ObservableObject {
             [.bond, .stake, .liquidityPool]
         case .mayaChain:
             [.bond, .stake, .liquidityPool]
-        case .terra, .terraClassic, .qbtc:
-            // Stake-only segment for Cosmos-SDK staking on LUNA / LUNC / QBTC.
+        case .terra, .terraClassic:
+            // Stake-only segment for Cosmos-SDK staking on LUNA / LUNC.
             // These chains route to `CosmosStakeDefiView` (see
             // `DefiChainMainScreen.cosmosStakeView`); the polished
             // position-card UI lands in a follow-up.
             [.stake]
+        case .qbtc:
+            // QBTC adds an in-app governance proposals segment alongside
+            // staking. Governance is not a selectable asset, so it is
+            // always present here and skips `setupSelectablePositions()`.
+            [.stake, .governance]
         default:
             []
         }

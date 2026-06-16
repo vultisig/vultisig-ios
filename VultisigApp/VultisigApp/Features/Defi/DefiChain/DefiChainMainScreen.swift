@@ -17,6 +17,7 @@ struct DefiChainMainScreen: View {
     @StateObject private var lpsViewModel: DefiChainLPsViewModel
     @StateObject private var stakeViewModel: DefiChainStakeViewModel
     @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
+    @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -31,6 +32,7 @@ struct DefiChainMainScreen: View {
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
+        self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
     }
 
     private var nativeCoin: Coin? {
@@ -161,6 +163,8 @@ struct DefiChainMainScreen: View {
                     },
                     emptyStateView: { emptyStateView }
                 )
+            case .governance:
+                QBTCGovernanceView(viewModel: governanceViewModel)
             }
         }
         .transition(.opacity)
@@ -373,7 +377,8 @@ private extension DefiChainMainScreen {
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
         async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh)
+        async let governanceRefresh: Void = refreshGovernanceIfNeeded()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh, governanceRefresh)
     }
 
     /// Conditional refresh for the cosmos staking VM — only fires when the
@@ -383,6 +388,13 @@ private extension DefiChainMainScreen {
         guard CosmosStakingConfig.isStakingSupported(chain) else { return }
         guard let nativeCoin else { return }
         await cosmosStakeViewModel.refresh(address: nativeCoin.address, decimals: nativeCoin.decimals)
+    }
+
+    /// Conditional refresh for the QBTC governance VM — only fires on QBTC,
+    /// the one chain with the governance segment. Quiet no-op elsewhere.
+    func refreshGovernanceIfNeeded() async {
+        guard chain == .qbtc else { return }
+        await governanceViewModel.refresh(voterAddress: nativeCoin?.address)
     }
 
     func update(vault: Vault) {
