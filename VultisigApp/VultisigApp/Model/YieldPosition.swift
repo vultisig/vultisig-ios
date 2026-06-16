@@ -9,6 +9,7 @@ import SwiftData
 /// Persisted cache of a DeFi yield-vault position, keyed `(providerID, pubKeyECDSA)`.
 /// Generalizes the former `CirclePosition` so Circle and Noon share one cache;
 /// extended with redemption rows for windowed (Noon) redemptions.
+@MainActor
 @Model
 final class YieldPosition {
     @Attribute(.unique) var id: String
@@ -48,6 +49,7 @@ final class YieldPosition {
 
 /// One windowed-redemption row attached to a `YieldPosition`. Circle positions
 /// carry none (instant withdraw); Noon carries pending/claimable rows.
+@MainActor
 @Model
 final class YieldRedemptionRecord {
     @Attribute(.unique) var id: String

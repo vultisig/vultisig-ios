@@ -64,7 +64,7 @@ class DefiSelectChainViewModel: ObservableObject {
         guard hasEthereum else { return false }
 
         guard !searchText.isEmpty else { return true }
-        let noonTitle = NSLocalizedString("noonTitle", comment: "Noon")
+        let noonTitle = "noonTitle".localized
         return noonTitle.lowercased().contains(searchText.lowercased()) ||
                "usdc".contains(searchText.lowercased())
     }
@@ -112,7 +112,7 @@ class DefiSelectChainViewModel: ObservableObject {
         isNoonEnabled = isSelected
     }
 
-    func save(for vault: Vault) async {
+    func save(for vault: Vault) async throws {
         do {
             let coinsMeta = TokensStore.TokenSelectionAssets
                 .filter { $0.isNativeToken && selection.contains($0.chain) }
@@ -133,7 +133,10 @@ class DefiSelectChainViewModel: ObservableObject {
 
             try Storage.shared.save()
         } catch {
+            // Surface the failure so the caller can keep the sheet open instead of
+            // silently dropping the user's chain / Circle / Noon toggle changes.
             logger.error("Error while saving defi chains: \(error.localizedDescription)")
+            throw error
         }
     }
 }

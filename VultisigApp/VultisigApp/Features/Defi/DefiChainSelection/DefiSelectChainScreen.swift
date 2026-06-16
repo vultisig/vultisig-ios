@@ -31,6 +31,7 @@ struct DefiSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
+    @State private var error: HelperError?
 
     @StateObject var viewModel = DefiSelectChainViewModel()
 
@@ -72,6 +73,13 @@ struct DefiSelectChainScreen: View {
         .onAppear {
             viewModel.setData(for: vault)
         }
+        .alert(item: $error) { error in
+            Alert(
+                title: Text("error".localized),
+                message: Text(error.localizedDescription),
+                dismissButton: .default(Text("ok".localized))
+            )
+        }
     }
 
     @ViewBuilder
@@ -101,11 +109,20 @@ private extension DefiSelectChainScreen {
     func onSaveInternal() {
         isLoading = true
         Task {
-            await saveAssets()
-            await MainActor.run {
-                isLoading = false
-                onSave()
-                isPresented.toggle()
+            do {
+                try await viewModel.save(for: vault)
+                await MainActor.run {
+                    isLoading = false
+                    onSave()
+                    isPresented.toggle()
+                }
+            } catch {
+                // Keep the sheet open so the user can retry instead of losing
+                // their selection to a silently-dropped save.
+                await MainActor.run {
+                    isLoading = false
+                    self.error = .runtimeError(error.localizedDescription)
+                }
             }
         }
     }
@@ -120,10 +137,6 @@ private extension DefiSelectChainScreen {
 
     func onNoonSelection(_ isSelected: Bool) {
         viewModel.handleNoonSelection(isSelected: isSelected)
-    }
-
-    func saveAssets() async {
-        await viewModel.save(for: vault)
     }
 }
 

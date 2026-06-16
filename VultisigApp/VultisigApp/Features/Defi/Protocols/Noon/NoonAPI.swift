@@ -11,8 +11,21 @@ enum NoonAPI: TargetType {
     case vaults
     case loan(loanAddress: String)
 
-    private static let noonBackBaseURL = URL(string: "https://back.noon.capital")!
-    private static let accountableBaseURL = URL(string: "https://yield.accountable.capital")!
+    private static let noonBackBaseURL = makeBaseURL(host: "back.noon.capital")
+    private static let accountableBaseURL = makeBaseURL(host: "yield.accountable.capital")
+
+    /// Assembles an `https` base URL from a fixed host. Built via `URLComponents`
+    /// so a valid compile-time host can never produce a wrong request; an invalid
+    /// host is a programmer error and traps loudly rather than failing silently.
+    private static func makeBaseURL(host: String) -> URL {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = host
+        guard let url = components.url else {
+            preconditionFailure("Invalid Noon base URL host: \(host)")
+        }
+        return url
+    }
 
     private static let browserUserAgent =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"

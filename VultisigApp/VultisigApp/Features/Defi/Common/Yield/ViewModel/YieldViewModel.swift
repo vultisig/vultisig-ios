@@ -69,6 +69,15 @@ final class YieldViewModel: ObservableObject, Hashable, Equatable {
         redemptions.first { $0.status == .pending }
     }
 
+    /// Windowed vaults with a balance but no in-flight redemption show the
+    /// "request before the cutoff" note (the withdraw action queues the request).
+    var showsWindowedNote: Bool {
+        presentation.showsRedemptionRows
+            && depositedBalance > 0
+            && pendingRedemption == nil
+            && claimableRedemption == nil
+    }
+
     func seed(from position: YieldPosition?) {
         guard let position else { return }
         depositedBalance = position.depositedBalance

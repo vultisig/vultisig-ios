@@ -150,21 +150,12 @@ struct YieldVaultView: View {
             if let claimable = model.claimableRedemption {
                 claimableRedemptionSection(claimable)
             }
-            if showsWindowedNote {
+            if model.showsWindowedNote {
                 windowedNoteSection
             }
         }
         .padding(YieldDesign.cardPadding)
         .background(cardBackground)
-    }
-
-    /// Windowed vaults with a balance but no in-flight redemption show the
-    /// "request before the cutoff" note (the withdraw action queues the request).
-    private var showsWindowedNote: Bool {
-        presentation.showsRedemptionRows
-            && model.depositedBalance > 0
-            && model.pendingRedemption == nil
-            && model.claimableRedemption == nil
     }
 
     private var windowedNoteSection: some View {

@@ -74,6 +74,9 @@ struct YieldTopBanner: View {
     }
 
     private var gradient: some ShapeStyle {
+        // Figma banner gradient (no Theme token): a faint blue-purple top fading
+        // to a fully-transparent light-blue bottom. The bottom stop is
+        // `.opacity(0)`, so only the fade direction (not its RGB) is visible.
         LinearGradient(
             stops: [
                 Gradient.Stop(color: bannerTint.opacity(0.09), location: 0),
@@ -96,8 +99,8 @@ struct YieldTopBanner: View {
         .fixedSize(horizontal: true, vertical: false)
     }
 
-    /// Figma banner gradient/border base — `#4B4C9D` (a blue-purple), distinct
-    /// from the teal used elsewhere on the DeFi tab.
+    /// Figma banner gradient (no Theme token) — `#4B4C9D` (a blue-purple),
+    /// distinct from the teal/royal-blue tokens used elsewhere on the DeFi tab.
     private var bannerTint: Color {
         Color(red: 0.294, green: 0.298, blue: 0.616)
     }
