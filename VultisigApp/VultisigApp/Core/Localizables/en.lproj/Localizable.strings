@@ -143,6 +143,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "Couldn't verify deposit maturity. Try again later.";
 "cancel" = "Cancel";
 "canLoseFundsPrompt" = "I am aware that I can lose funds";
+"cardanoMinimumSendAmountError" = "Minimum send amount is %@ ADA. Cardano requires this to prevent the network from dropping your transaction.";
 "cardanoOutputBelowMinAda" = "Not enough ADA to cover the network fee and Cardano's minimum-UTXO requirement (~1.4 ADA per output). Send more ADA into this vault first.";
 "chain" = "Chain";
 "chainNotAdded" = "Chain Not Added";

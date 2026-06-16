@@ -653,6 +653,15 @@ final class SendDetailsViewModel {
             }
         }
 
+        // Cardano enforces a protocol minimum UTXO value on every output; a
+        // native-ADA send below it is silently dropped by the node. Match
+        // Android by blocking it here before the keysign ceremony.
+        if SendCryptoLogic.isBelowCardanoMinimum(coin: coin, amount: amount) {
+            let minAmount = CardanoHelper.defaultMinUTXOValue.toADAString
+            setAmountError(message: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
+            return false
+        }
+
         return validateERC20GasBalance()
     }
 

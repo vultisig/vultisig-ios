@@ -93,6 +93,21 @@ enum SendCryptoLogic {
         return remainingBalance > .zero && remainingBalance < existentialDeposit
     }
 
+    /// Cardano enforces a protocol minimum UTXO value (~1.4 ADA) on every
+    /// output. A native-ADA send below this floor is accepted by the wallet but
+    /// silently dropped by the node, so block it here — before the keysign
+    /// ceremony — to match Android. Token (CNT) sends carry their own ADA floor
+    /// on the bundled output and are exempt. `amount` is the recipient output in
+    /// both cases — for MAX sends `computeMaxAmount` already nets out the fee —
+    /// so this also blocks a MAX send when the whole vault holds less than the
+    /// floor.
+    static func isBelowCardanoMinimum(coin: Coin, amount: String) -> Bool {
+        guard coin.chain == .cardano, coin.isNativeToken else {
+            return false
+        }
+        return amountInRaw(coin: coin, amount: amount) < CardanoHelper.defaultMinUTXOValue
+    }
+
     /// A send is a "deposit" (memo-bearing function call) iff the memo
     /// dictionary carries entries AND the chain supports memos. UTXO, Ripple,
     /// and Solana sends never carry function-call memos in this flow.

@@ -135,6 +135,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "Nije moguće provjeriti zrelost depozita. Pokušajte ponovno kasnije.";
 "cancel" = "Otkaži";
 "canLoseFundsPrompt" = "Svjestan sam da mogu izgubiti sredstva";
+"cardanoMinimumSendAmountError" = "Najmanji iznos za slanje je %@ ADA. Cardano to zahtijeva kako mreža ne bi odbacila tvoju transakciju.";
 "cardanoOutputBelowMinAda" = "Nema dovoljno ADA za pokrivanje mrežne naknade i Cardanovog minimalnog UTXO zahtjeva (~1,4 ADA po izlazu). Najprije pošalji više ADA u ovaj vault.";
 "chain" = "Lanac";
 "chainNotAdded" = "Lanac Nije Dodan";
