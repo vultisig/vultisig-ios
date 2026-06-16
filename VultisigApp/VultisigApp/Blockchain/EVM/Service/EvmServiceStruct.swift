@@ -224,6 +224,14 @@ struct EvmServiceStruct {
         return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
 
+    /// Generic read-only `eth_call` returning the raw hex result. Callers decode
+    /// the ABI-encoded return data themselves (used by ERC-7540 vault reads that
+    /// return tuples / multiple words).
+    func callContract(to: String, data: String) async throws -> String {
+        let params: [Any] = [["to": to, "data": data], "latest"]
+        return try await rpcService.strRpcCall(method: "eth_call", params: params)
+    }
+
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
         do {
             // Define ABI for ERC20 functions
