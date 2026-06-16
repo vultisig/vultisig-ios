@@ -218,26 +218,26 @@ final class SendValidationTests: XCTestCase {
         XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: xrp, amount: amount("10.999"), gas: BigInt(1)))
     }
 
-    // MARK: - isBelowCardanoMinimum
+    // MARK: - isBelowMinimumSendAmount
 
     func testIsBelowCardanoMinimumTrueWhenNativeAdaBelowFloor() {
         let ada = makeCoin(.cardano, ticker: "ADA", decimals: 6, isNative: true,
                            rawBalance: "10000000") // 10 ADA
         // 1.0 ADA < 1.4 ADA protocol minimum UTXO floor.
-        XCTAssertTrue(SendCryptoLogic.isBelowCardanoMinimum(coin: ada, amount: "1"))
+        XCTAssertTrue(SendCryptoLogic.isBelowMinimumSendAmount(coin: ada, amount: "1"))
     }
 
     func testIsBelowCardanoMinimumFalseAtFloor() {
         let ada = makeCoin(.cardano, ticker: "ADA", decimals: 6, isNative: true,
                            rawBalance: "10000000") // 10 ADA
         // Exactly 1.4 ADA meets the minimum.
-        XCTAssertFalse(SendCryptoLogic.isBelowCardanoMinimum(coin: ada, amount: "1.4"))
+        XCTAssertFalse(SendCryptoLogic.isBelowMinimumSendAmount(coin: ada, amount: amount("1.4")))
     }
 
     func testIsBelowCardanoMinimumFalseAboveFloor() {
         let ada = makeCoin(.cardano, ticker: "ADA", decimals: 6, isNative: true,
                            rawBalance: "10000000")
-        XCTAssertFalse(SendCryptoLogic.isBelowCardanoMinimum(coin: ada, amount: "2"))
+        XCTAssertFalse(SendCryptoLogic.isBelowMinimumSendAmount(coin: ada, amount: "2"))
     }
 
     func testIsBelowCardanoMinimumTrueForMaxSendBelowFloor() {
@@ -248,7 +248,7 @@ final class SendValidationTests: XCTestCase {
                            rawBalance: "1300000") // 1.3 ADA total
         let fee = BigInt(170_000) // ~0.17 ADA
         let maxAmount = SendCryptoLogic.computeMaxAmount(coin: ada, fee: fee) // ~1.13 ADA
-        XCTAssertTrue(SendCryptoLogic.isBelowCardanoMinimum(coin: ada, amount: maxAmount))
+        XCTAssertTrue(SendCryptoLogic.isBelowMinimumSendAmount(coin: ada, amount: maxAmount))
     }
 
     func testIsBelowCardanoMinimumFalseForMaxSendAboveFloor() {
@@ -256,7 +256,7 @@ final class SendValidationTests: XCTestCase {
                            rawBalance: "10000000") // 10 ADA total
         let fee = BigInt(170_000)
         let maxAmount = SendCryptoLogic.computeMaxAmount(coin: ada, fee: fee) // ~9.83 ADA
-        XCTAssertFalse(SendCryptoLogic.isBelowCardanoMinimum(coin: ada, amount: maxAmount))
+        XCTAssertFalse(SendCryptoLogic.isBelowMinimumSendAmount(coin: ada, amount: maxAmount))
     }
 
     func testIsBelowCardanoMinimumFalseForNonNativeToken() {
@@ -264,13 +264,13 @@ final class SendValidationTests: XCTestCase {
         // output and are exempt from the native-ADA minimum.
         let cnt = makeCoin(.cardano, ticker: "SNEK", decimals: 0, isNative: false,
                            rawBalance: "1000")
-        XCTAssertFalse(SendCryptoLogic.isBelowCardanoMinimum(coin: cnt, amount: "1"))
+        XCTAssertFalse(SendCryptoLogic.isBelowMinimumSendAmount(coin: cnt, amount: "1"))
     }
 
     func testIsBelowCardanoMinimumFalseForOtherChains() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true,
                            rawBalance: "100000000")
-        XCTAssertFalse(SendCryptoLogic.isBelowCardanoMinimum(coin: btc, amount: "0.00001"))
+        XCTAssertFalse(SendCryptoLogic.isBelowMinimumSendAmount(coin: btc, amount: "0.00001"))
     }
 
     // MARK: - isDeposit

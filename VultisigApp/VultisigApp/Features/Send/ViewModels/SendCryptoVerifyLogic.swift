@@ -108,11 +108,13 @@ struct SendCryptoVerifyLogic {
                 return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }
 
-            // Cardano protocol minimum UTXO floor (~1.4 ADA): a native-ADA send
-            // below it is silently dropped by the node. Mirror the Details-screen
-            // guard so the ceremony never starts on an amount the node rejects.
-            if SendCryptoLogic.isBelowCardanoMinimum(coin: tx.coin, amount: tx.amount) {
-                let minAmount = CardanoHelper.defaultMinUTXOValue.toADAString
+            // Protocol minimum send floor (e.g. Cardano's ~1.4 ADA UTXO): a
+            // native send below it is silently dropped by the node. Mirror the
+            // Details-screen guard so the ceremony never starts on an amount the
+            // node rejects.
+            if SendCryptoLogic.isBelowMinimumSendAmount(coin: tx.coin, amount: tx.amount),
+               let minimum = tx.coin.chain.minimumSendAmount {
+                let minAmount = tx.coin.decimal(for: minimum).description
                 return BalanceValidationResult(isValid: false, errorMessage: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
             }
         } else if tx.coin.chain == .terraClassic
