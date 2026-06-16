@@ -90,10 +90,12 @@ final class CustomRPCDetailViewModel: ObservableObject {
         isSaving = true
         defer { isSaving = false }
 
-        let result = await probe.probe(urlString: urlText, chain: chain)
+        let normalized = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let result = await probe.probe(urlString: normalized, chain: chain)
         switch result {
         case .ok:
-            store.set(urlText, for: chain)
+            store.set(normalized, for: chain)
+            urlText = normalized
             hasOverride = true
             return true
         case .unreachable:

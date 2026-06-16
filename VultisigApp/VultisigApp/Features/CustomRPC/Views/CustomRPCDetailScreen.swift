@@ -60,6 +60,7 @@ struct CustomRPCDetailScreen: View {
                     Icon(named: "copy-2", color: Theme.colors.textPrimary, size: 20)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("paste".localized)
             }
             .padding(16)
             .frame(minHeight: 120, alignment: .topLeading)
