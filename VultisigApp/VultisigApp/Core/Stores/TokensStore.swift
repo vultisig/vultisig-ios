@@ -1073,6 +1073,15 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .ethereum,
+            ticker: "sVULT",
+            logo: "vult",
+            decimals: 18,
+            priceProviderId: "vultisig",
+            contractAddress: "0x11113d7311FB8584a6e82BB126aA11D92e5fB39B",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .ethereum,
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,

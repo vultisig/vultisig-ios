@@ -38,24 +38,48 @@ struct DefiBalanceService {
         }
     }
 
-    /// USDC yield-vault positions are stored as `YieldPosition` rows rather than
+    /// Yield-vault positions are stored as `YieldPosition` rows rather than
     /// per-chain coins, so they're summed into the DeFi total separately. Each
-    /// `depositedBalance` is in USDC; convert at the USDC coin's fiat rate. Gated
-    /// on the per-provider toggle so a disabled provider's stale cache can't
-    /// inflate the total.
+    /// provider's `depositedBalance` is priced in its own asset (USDC for Circle,
+    /// VULT for staking). Gated on the per-provider toggle so a disabled
+    /// provider's stale cache can't inflate the total.
     @MainActor
     func yieldTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) else {
-            return .zero
-        }
         let storage = YieldPositionStorageService()
         var total = Decimal.zero
-        for providerID in DefiYieldProviderID.allCases where vault.isDefiProviderEnabled(providerID) {
-            guard let position = storage.position(for: vault, providerID: providerID) else { continue }
-            total += usdc.fiat(decimal: position.depositedBalance)
+
+        // Circle deposits are USDC-denominated — price at the USDC rate.
+        if let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) {
+            if vault.isDefiProviderEnabled(.circle), let circle = storage.position(for: vault, providerID: .circle) {
+                total += usdc.fiat(decimal: circle.depositedBalance)
+            }
         }
+
+        // VULT staking (sVULT) is VULT-denominated (1:1) — price at the VULT rate,
+        // never USDC. The staked balance is stored in VULT units.
+        if vault.isDefiProviderEnabled(.vult), let vult = storage.position(for: vault, providerID: .vult) {
+            total += RateProvider.shared.fiatBalance(value: vult.depositedBalance, coin: Self.vultCoinMeta)
+        }
+
         return total
     }
+
+    /// VULT metadata for pricing the staked sVULT balance at the VULT rate. Sourced
+    /// from `TokensStore` so the contract/`priceProviderId` stay in one place.
+    @MainActor
+    private static let vultCoinMeta: CoinMeta = {
+        TokensStore.TokenSelectionAssets.first {
+            $0.chain == .ethereum && $0.ticker == VultConstants.underlyingTicker
+        } ?? CoinMeta(
+            chain: .ethereum,
+            ticker: VultConstants.underlyingTicker,
+            logo: "vult",
+            decimals: VultConstants.assetDecimals,
+            priceProviderId: VultConstants.priceProviderId,
+            contractAddress: VultConstants.underlyingVult,
+            isNativeToken: false
+        )
+    }()
 
     /// Number of DeFi positions with a non-zero balance for `chain`. Mirrors
     /// `positionsWithBalanceCount` on Windows (`useDefiChainPortfolios`):
