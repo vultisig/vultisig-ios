@@ -1,5 +1,5 @@
 //
-//  YieldVaultView.swift
+//  YieldVaultScreen.swift
 //  VultisigApp
 //
 
@@ -17,7 +17,7 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-vaul
 /// logo), the underlined "Deposited" tab + description, a dismissible info
 /// banner, the position card, APY / next-redemption / shares rows, Deposit /
 /// Withdraw actions, and the windowed-redemption state.
-struct YieldVaultView: View {
+struct YieldVaultScreen: View {
     @ObservedObject var vault: Vault
 
     @StateObject private var model: YieldViewModel

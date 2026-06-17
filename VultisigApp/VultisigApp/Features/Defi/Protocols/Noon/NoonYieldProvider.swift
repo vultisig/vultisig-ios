@@ -62,7 +62,7 @@ struct NoonYieldProvider: DefiYieldProvider {
             showsRedemptionRows: true,
             staticApyText: nil,
             providerNameKey: "noonTitle",
-            bannerLogoAsset: "noon-logo",
+            bannerLogoAsset: "noon-defi-banner",
             infoBannerKey: "noonDashboardInfoText"
         )
     }

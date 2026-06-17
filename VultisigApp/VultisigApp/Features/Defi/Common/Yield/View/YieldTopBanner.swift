@@ -7,9 +7,9 @@ import SwiftUI
 
 /// Shared "DeFi Banners" header card for the yield screens (Figma 343×158, the
 /// 118-tall gradient card + the underlined "Deposited" tab below it). Provider
-/// name + current USD value on the left, the provider logo (concentric-ring
-/// form) overlaid on the right. Both Noon and Circle render this; the name,
-/// logo, and tab title come from the provider's `YieldPresentation`.
+/// name + current USD value on the left, the provider's full-bleed banner image
+/// overlaid on the right. Both Noon and Circle render this; the name, banner
+/// image, and tab title come from the provider's `YieldPresentation`.
 struct YieldTopBanner: View {
     let providerName: String
     let usdValue: String
@@ -35,8 +35,8 @@ struct YieldTopBanner: View {
                 .contentTransition(.numericText())
                 .animation(.interpolatingSpring, value: usdValue)
         }
-        .frame(maxWidth: .infinity, minHeight: 118, alignment: .leading)
-        .padding(16)
+        .frame(height: 118)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(background)
     }
 
@@ -49,28 +49,15 @@ struct YieldTopBanner: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    /// Provider badge centered inside two concentric rings, mirroring the Figma
-    /// "Frame 1000005808" motif. Drawn in SwiftUI (rings as strokes) so it
-    /// composites cleanly over the gradient instead of baking a dark backplate.
+    /// Provider's full-bleed banner artwork, overlaid on the gradient card's
+    /// trailing edge (Figma "Frame 1000005808"). The image already bakes the
+    /// ring motif, so it renders directly instead of being composited in SwiftUI.
     private var logo: some View {
-        ZStack {
-            Circle()
-                .stroke(bannerTint.opacity(0.5), lineWidth: 1)
-                .frame(width: 145, height: 145)
-
-            Circle()
-                .stroke(bannerTint.opacity(0.3), lineWidth: 1)
-                .frame(width: 119, height: 119)
-
-            Image(logoAsset)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80)
-                .clipShape(Circle())
-        }
-        .frame(width: 200, height: 206)
-        .offset(x: 40, y: 0)
-        .allowsHitTesting(false)
+        Image(logoAsset)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 200)
+            .offset(x: 0, y: 20)
     }
 
     private var gradient: some ShapeStyle {
@@ -110,7 +97,7 @@ struct YieldTopBanner: View {
     YieldTopBanner(
         providerName: "Noon",
         usdValue: "$2,240.50",
-        logoAsset: "noon-logo",
+        logoAsset: "noon-defi-banner",
         tabTitle: "Deposited"
     )
     .padding()

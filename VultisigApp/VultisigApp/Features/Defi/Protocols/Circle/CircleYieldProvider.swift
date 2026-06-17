@@ -51,7 +51,7 @@ struct CircleYieldProvider: DefiYieldProvider {
             showsRedemptionRows: false,
             staticApyText: "circleStaticApy".localized,
             providerNameKey: "circleTitle",
-            bannerLogoAsset: "circle-logo",
+            bannerLogoAsset: "circle-defi-banner",
             infoBannerKey: "circleDashboardInfoText"
         )
     }

@@ -22,7 +22,7 @@ struct DefiNoonRow: View {
     var body: some View {
         HStack {
             HStack(spacing: 12) {
-                Image("noon-logo")
+                Image("noon")
                     .resizable()
                     .frame(width: 36, height: 36)
                     .clipShape(Circle())

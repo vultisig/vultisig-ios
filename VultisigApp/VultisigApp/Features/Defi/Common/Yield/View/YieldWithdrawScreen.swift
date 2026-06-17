@@ -1,5 +1,5 @@
 //
-//  YieldWithdrawView.swift
+//  YieldWithdrawScreen.swift
 //  VultisigApp
 //
 
@@ -12,7 +12,7 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-with
 /// Generic withdraw form for a yield vault. Builds the withdraw/requestRedeem
 /// payload (chosen by liquidity) and routes to the shared verify screen with a
 /// display-only USDC transaction.
-struct YieldWithdrawView: View {
+struct YieldWithdrawScreen: View {
     @StateObject private var viewModel: YieldWithdrawViewModel
     @Environment(\.router) private var router
 

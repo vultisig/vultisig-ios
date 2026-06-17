@@ -1,5 +1,5 @@
 //
-//  YieldDepositView.swift
+//  YieldDepositScreen.swift
 //  VultisigApp
 //
 
@@ -8,7 +8,7 @@ import SwiftUI
 /// Deposit form for a yield vault. Reuses the shared amount screen; on continue
 /// it builds a prebuilt EVM payload (approve-then-deposit) and routes to the
 /// shared verify screen.
-struct YieldDepositView: View {
+struct YieldDepositScreen: View {
     @StateObject private var viewModel: YieldDepositViewModel
     @Environment(\.router) private var router
 
