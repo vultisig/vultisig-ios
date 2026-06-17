@@ -59,7 +59,7 @@ struct YieldVaultScreen: View {
 
     private var dashboard: some View {
         ScrollView {
-            VStack(spacing: YieldDesign.verticalSpacing) {
+            VStack(spacing: 16) {
                 topBanner
                 headerDescription
                 if !model.hasAccount, !infoBannerDismissed {
@@ -71,9 +71,8 @@ struct YieldVaultScreen: View {
                     setupCard
                 }
             }
-            .padding(.top, YieldDesign.mainViewTopPadding)
-            .padding(.bottom, YieldDesign.mainViewBottomPadding)
-            .padding(.horizontal, YieldDesign.horizontalPadding)
+            .padding(.top, dashboardTopPadding)
+            .padding(.bottom, 32)
         }
         .background(VaultMainScreenBackground())
         #if os(iOS)
@@ -126,7 +125,7 @@ struct YieldVaultScreen: View {
                 windowedNoteSection
             }
         }
-        .padding(YieldDesign.cardPadding)
+        .padding(16)
         .background(cardBackground)
     }
 
@@ -231,7 +230,7 @@ struct YieldVaultScreen: View {
     // MARK: - Setup card (account-gated providers, e.g. Circle MSCA)
 
     private var setupCard: some View {
-        VStack(spacing: YieldDesign.cardPadding) {
+        VStack(spacing: 16) {
             HStack(spacing: 12) {
                 Image("usdc")
                     .resizable()
@@ -259,7 +258,7 @@ struct YieldVaultScreen: View {
             }
             .disabled(model.isLoading || !model.provider.depositsEnabled)
         }
-        .padding(YieldDesign.cardPadding)
+        .padding(16)
         .background(cardBackground)
     }
 
@@ -302,6 +301,15 @@ struct YieldVaultScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
+    }
+
+    /// Extra top inset on macOS to clear the window title bar.
+    private var dashboardTopPadding: CGFloat {
+        #if os(macOS)
+        60
+        #else
+        16
+        #endif
     }
 
     private var cardBackground: some View {

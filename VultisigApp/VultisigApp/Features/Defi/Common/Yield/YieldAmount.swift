@@ -1,27 +1,10 @@
 //
-//  YieldDesign.swift
+//  YieldAmount.swift
 //  VultisigApp
 //
 
 import Foundation
 import BigInt
-
-/// Shared layout tokens for the generic yield-vault screens, so the shells don't
-/// depend on any one provider's constants.
-enum YieldDesign {
-    static let horizontalPadding: CGFloat = 20
-    static let cardPadding: CGFloat = 16
-    static let verticalSpacing: CGFloat = 16
-    static let cornerRadius: CGFloat = 16
-
-    #if os(macOS)
-    static let mainViewTopPadding: CGFloat = 60
-    #else
-    static let mainViewTopPadding: CGFloat = 16
-    #endif
-
-    static let mainViewBottomPadding: CGFloat = 32
-}
 
 /// Decimal ⇄ base-unit conversion shared by the yield forms. Goes through the
 /// string form (matching the Circle withdraw path) so floating `Decimal` scaling
