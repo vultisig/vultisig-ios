@@ -151,6 +151,48 @@ final class NoonYieldProviderTests: XCTestCase {
         XCTAssertTrue(redemption.isClaimable)
     }
 
+    // MARK: - Redeem share denomination (assets → shares)
+
+    /// The withdraw form is denominated in USDC (assets) but requestRedeem burns
+    /// SHARES. A FULL withdraw must redeem the exact share balance — never the
+    /// (larger, appreciated) asset value, which would ask to burn more shares
+    /// than the owner holds and revert during gas estimation. Regression guard
+    /// for the reverted withdraw.
+    func testFullWithdrawRedeemsShareBalanceNotAssets() {
+        let shareBalance = BigInt(96_000_000)
+        let positionAssets = BigInt(97_617_839)   // appreciated: assets > shares
+        XCTAssertEqual(
+            NoonYieldProvider.sharesToRedeem(assets: positionAssets, shareBalance: shareBalance, positionAssets: positionAssets),
+            shareBalance
+        )
+    }
+
+    func testOverWithdrawClampsToShareBalance() {
+        let shareBalance = BigInt(96_000_000)
+        let positionAssets = BigInt(97_617_839)
+        XCTAssertEqual(
+            NoonYieldProvider.sharesToRedeem(assets: BigInt(200_000_000), shareBalance: shareBalance, positionAssets: positionAssets),
+            shareBalance,
+            "an amount above the position value can never redeem more than the balance"
+        )
+    }
+
+    func testPartialWithdrawRedeemsProportionalShares() {
+        // sharePrice 2.0 for an exact split: half the assets ⇒ half the shares.
+        XCTAssertEqual(
+            NoonYieldProvider.sharesToRedeem(assets: BigInt(50_000_000), shareBalance: BigInt(50_000_000), positionAssets: BigInt(100_000_000)),
+            BigInt(25_000_000),
+            "redeeming half the asset value redeems half the shares"
+        )
+    }
+
+    func testWithdrawWithZeroShareBalanceRedeemsNothing() {
+        XCTAssertEqual(
+            NoonYieldProvider.sharesToRedeem(assets: BigInt(100_000_000), shareBalance: BigInt(0), positionAssets: BigInt(0)),
+            BigInt(0)
+        )
+    }
+
     // MARK: - Claim guard
 
     @MainActor

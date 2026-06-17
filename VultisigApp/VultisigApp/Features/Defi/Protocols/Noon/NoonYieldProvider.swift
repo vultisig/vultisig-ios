@@ -185,11 +185,37 @@ struct NoonYieldProvider: DefiYieldProvider {
     }
 
     func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
+        // `amount` arrives in ASSET units (USDC) from the withdraw form, but
+        // requestRedeem burns SHARES (naccUSDC). Redeem the owner's full share
+        // balance on a max withdraw and the proportional amount otherwise, so a
+        // request can never ask to burn more shares than they hold — which
+        // reverts during gas estimation (and silently over-redeems otherwise,
+        // since shares appreciate against assets).
+        let shares = try await redeemShares(owner: recipient, assets: amount)
         let minimum = await resolvedMinimum(.redeem)
-        try service.assertRedeemMinimum(shares: amount, minimum: minimum)
+        try service.assertRedeemMinimum(shares: shares, minimum: minimum)
 
-        let data = try service.encodeRequestRedeem(shares: amount, receiver: recipient, owner: recipient)
+        let data = try service.encodeRequestRedeem(shares: shares, receiver: recipient, owner: recipient)
         return try await makePayload(vault: vault, to: NoonConstants.vaultAddress, data: data)
+    }
+
+    /// Converts an asset-denominated withdraw `amount` into the vault shares to
+    /// redeem, reading the owner's share balance and its asset value on-chain.
+    private func redeemShares(owner: String, assets: BigInt) async throws -> BigInt {
+        let shareBalance = try await reads.shareBalance(owner: owner)
+        guard shareBalance > 0 else { return .zero }
+        let positionAssets = try await reads.convertToAssets(shares: shareBalance)
+        return Self.sharesToRedeem(assets: assets, shareBalance: shareBalance, positionAssets: positionAssets)
+    }
+
+    /// Pure assets→shares mapping for a redeem request. A full withdraw
+    /// (`assets >= positionAssets`) redeems the entire `shareBalance` exactly; a
+    /// partial withdraw redeems the proportional, floored share amount, clamped
+    /// to the balance. Pure so the share-denomination invariant is unit-testable.
+    static func sharesToRedeem(assets: BigInt, shareBalance: BigInt, positionAssets: BigInt) -> BigInt {
+        guard shareBalance > 0 else { return .zero }
+        guard positionAssets > 0, assets < positionAssets else { return shareBalance }
+        return min(assets * shareBalance / positionAssets, shareBalance)
     }
 
     func buildWithdrawPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {

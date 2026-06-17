@@ -107,6 +107,13 @@ struct NoonReadService {
         return try await callUInt(to: vault, data: data, service: service)
     }
 
+    /// The owner's vault share balance (naccUSDC) — `balanceOf(owner)` on the
+    /// vault token. Used to denominate a redeem request in shares.
+    func shareBalance(owner: String) async throws -> BigInt {
+        let service = try EvmService.getService(forChain: chain)
+        return try await service.fetchERC20TokenBalance(contractAddress: vault, walletAddress: owner)
+    }
+
     func allowance(owner: String) async throws -> BigInt {
         let service = try EvmService.getService(forChain: chain)
         return try await service.fetchAllowance(contractAddress: usdc, owner: owner, spender: vault)
