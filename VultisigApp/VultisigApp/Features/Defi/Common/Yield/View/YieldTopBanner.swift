@@ -36,6 +36,7 @@ struct YieldTopBanner: View {
                 .animation(.interpolatingSpring, value: usdValue)
         }
         .frame(height: 118)
+        .padding(.leading, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(background)
     }
@@ -49,15 +50,12 @@ struct YieldTopBanner: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    /// Provider's full-bleed banner artwork, overlaid on the gradient card's
-    /// trailing edge (Figma "Frame 1000005808"). The image already bakes the
-    /// ring motif, so it renders directly instead of being composited in SwiftUI.
     private var logo: some View {
         Image(logoAsset)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(height: 200)
-            .offset(x: 0, y: 20)
+            .frame(width: 200, height: 200)
+            .offset(x: 35, y: -10)
     }
 
     private var gradient: some ShapeStyle {
