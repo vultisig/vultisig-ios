@@ -14,6 +14,7 @@ struct SlippageSettingsView: View {
     let onBack: () -> Void
 
     @State private var customText: String = .empty
+    @State private var didClampCustom = false
     @FocusState private var customFocused: Bool
 
     var body: some View {
@@ -50,6 +51,14 @@ struct SlippageSettingsView: View {
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .padding(.horizontal, 16)
+
+            if didClampCustom {
+                Text(String(format: "slippageMaxNote".localized, SwapSlippage.format(bps: SwapSlippage.maxCustomBps)))
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
 
             Spacer(minLength: 0)
         }
@@ -135,13 +144,26 @@ struct SlippageSettingsView: View {
 
     /// Parse the custom-percent text into basis points and write it back. Empty
     /// or unparseable input falls back to `Auto` so we never persist a bogus value.
+    /// The basis-points value is clamped to `SwapSlippage.maxCustomBps` (50%) so an
+    /// absurd tolerance never reaches a provider; when the entered value exceeds the
+    /// cap the field is rewritten to the clamped percent and an inline note shows.
     private func applyCustom() {
         let trimmed = customText.replacingOccurrences(of: "%", with: "").trimmingCharacters(in: .whitespaces)
         guard let percent = Decimal(string: trimmed), percent > 0 else {
+            didClampCustom = false
             if customFocused { slippage = .auto }
             return
         }
-        let bps = (percent * 100 as NSDecimalNumber).intValue
+        let rawBps = (percent * 100 as NSDecimalNumber).intValue
+        let bps = SwapSlippage.clampCustomBps(rawBps)
+        if bps != rawBps {
+            didClampCustom = true
+            // Reflect the enforced cap back into the field so the displayed value
+            // matches what's actually applied.
+            customText = SwapSlippage.format(bps: bps).replacingOccurrences(of: "%", with: "")
+        } else {
+            didClampCustom = false
+        }
         slippage = .custom(bps: bps)
     }
 }

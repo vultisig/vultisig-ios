@@ -988,6 +988,7 @@
 "skip" = "Saltar";
 "slippage" = "Deslizamiento";
 "slippageHelperText" = "Limita cuánto puede cambiar el precio antes de cancelar la ejecución.";
+"slippageMaxNote" = "El slippage está limitado a %@.";
 "slippageTolerance" = "Tolerancia de slippage";
 "somethingsWrong" = "Algo está mal";
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
@@ -1071,6 +1072,7 @@
 "swapOverview" = "Resumen del intercambio";
 "swapProviderRecommended" = "Recomendado";
 "swapProvidersSheetTitle" = "Seleccionar proveedor";
+"swapRecipientRouteNotAvailable" = "No hay ninguna ruta hacia un destinatario externo disponible para este par. Quita el destinatario o elige otro par.";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swaps" = "Intercambios";
 "swapTrackingLink" = "Enlace de seguimiento del intercambio";

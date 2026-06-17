@@ -212,6 +212,12 @@ final class SwapDetailsViewModel {
     // MARK: - User actions
 
     func switchCoins(vault: Vault, referredCode: String) {
+        // Flipping the pair is a new swap — a custom slippage / gas limit /
+        // external recipient must never leak across it. In particular the
+        // recipient was validated for the OLD destination chain, which is now the
+        // source, so carrying it over could misroute funds (Phase 5 reset
+        // semantics).
+        resetAdvancedSettings()
         let oldFrom = fromCoin
         fromCoin = toCoin
         toCoin = oldFrom
@@ -291,6 +297,11 @@ final class SwapDetailsViewModel {
             fromChain != fromCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
         else { return }
+        // Switching the source chain starts a fresh swap — drop any custom
+        // slippage / gas limit / external recipient so it can't leak into the
+        // next quote. A gas-limit override is meaningless against a different
+        // source chain (Phase 5 reset semantics).
+        resetAdvancedSettings()
         fromCoin = coin
         // Source changed via chain switch — keep `toCoins` / `toCoin` consistent
         // so the destination picker doesn't show stale options.
@@ -303,6 +314,10 @@ final class SwapDetailsViewModel {
             toChain != toCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: toChain, vault: vault)
         else { return }
+        // A new destination chain invalidates a recipient validated for the old
+        // one — reset the advanced settings so it can't carry over (Phase 5 reset
+        // semantics).
+        resetAdvancedSettings()
         toCoin = coin
     }
 

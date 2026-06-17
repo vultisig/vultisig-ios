@@ -988,6 +988,7 @@
 "skip" = "Preskoči";
 "slippage" = "Skliznuće";
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
+"slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
 "somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
@@ -1071,6 +1072,7 @@
 "swapOverview" = "Pregled zamjene";
 "swapProviderRecommended" = "Preporučeno";
 "swapProvidersSheetTitle" = "Odaberite davatelja";
+"swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";

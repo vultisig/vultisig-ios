@@ -9,6 +9,7 @@ import Foundation
 
 enum SwapError: Error, LocalizedError {
     case routeUnavailable
+    case recipientRouteUnavailable
     case noLiquidityPool
     case tradingHalted
     case swapAmountTooSmall
@@ -19,6 +20,8 @@ enum SwapError: Error, LocalizedError {
         switch self {
         case .routeUnavailable:
             return "swapRouteNotAvailable".localized
+        case .recipientRouteUnavailable:
+            return "swapRecipientRouteNotAvailable".localized
         case .noLiquidityPool:
             return "noLiquidityPool".localized
         case .tradingHalted:

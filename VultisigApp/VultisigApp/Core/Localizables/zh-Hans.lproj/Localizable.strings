@@ -988,6 +988,7 @@
 "skip" = "跳过";
 "slippage" = "滑点";
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
+"slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
 "somethingsWrong" = "有问题";
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
@@ -1071,6 +1072,7 @@
 "swapOverview" = "交换概览";
 "swapProviderRecommended" = "推荐";
 "swapProvidersSheetTitle" = "选择提供商";
+"swapRecipientRouteNotAvailable" = "此交易对没有可用的外部接收方路由。请移除接收方或选择其他交易对。";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
 "swapTrackingLink" = "交换跟踪链接";

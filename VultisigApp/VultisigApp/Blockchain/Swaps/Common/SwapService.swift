@@ -70,10 +70,26 @@ struct SwapService {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes {
-        let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+        let resolvedProviders = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+
+        guard !resolvedProviders.isEmpty else {
+            throw SwapError.routeUnavailable
+        }
+
+        // When an external recipient is set, only routes that actually deliver to
+        // that address (THORChain/Maya, via the memo destination) may be ranked.
+        // Aggregators build the swap tx with the user's own address and silently
+        // ignore the recipient, so letting `selectBestQuote` pick one would send
+        // funds to self while the verify screen shows the external recipient
+        // (silent fund-misdirection). Filtering the candidate pool up front keeps
+        // the no-recipient path byte-identical (no recipient → no filtering).
+        let providers = Self.providersHonoringRecipient(resolvedProviders, recipientAddress: recipientAddress)
 
         guard !providers.isEmpty else {
-            throw SwapError.routeUnavailable
+            // An external recipient was requested but no recipient-honouring route
+            // exists for this pair — surface a clear error instead of silently
+            // routing to self.
+            throw SwapError.recipientRouteUnavailable
         }
 
         let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
@@ -119,6 +135,24 @@ struct SwapService {
         }.first
 
         throw firstError ?? SwapError.routeUnavailable
+    }
+
+    /// Restrict the candidate provider set so a quote can never be ranked/selected
+    /// for a route that won't honour the external recipient. With no external
+    /// recipient (`nil`/blank) the input set is returned unchanged — the
+    /// no-recipient quote path stays byte-identical. With an external recipient
+    /// set, only `honorsExternalRecipient` providers (THORChain/Maya) survive; the
+    /// aggregators are dropped because they'd silently send the swap output to the
+    /// user's own address.
+    static func providersHonoringRecipient(
+        _ providers: [SwapProvider],
+        recipientAddress: String?
+    ) -> [SwapProvider] {
+        let hasExternalRecipient = recipientAddress?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty == false
+        guard hasExternalRecipient else { return providers }
+        return providers.filter { $0.honorsExternalRecipient }
     }
 
     /// All rankable quotes sorted best→worst by net output in `toCoin` units — the same metric

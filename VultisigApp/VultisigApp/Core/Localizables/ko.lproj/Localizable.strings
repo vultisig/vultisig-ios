@@ -965,6 +965,7 @@
 "skip" = "건너뛰기";
 "slippage" = "슬리피지";
 "slippageHelperText" = "실행이 취소되기 전에 가격이 변동할 수 있는 한도를 제한합니다.";
+"slippageMaxNote" = "슬리피지는 %@로 제한됩니다.";
 "slippageTolerance" = "슬리피지 허용치";
 "somethingsWrong" = "문제가 발생했습니다";
 "somethingWentWrongTryAgain" = "오류가 발생했습니다. 다시 시도하세요.";
@@ -1047,6 +1048,7 @@
 "swapOverview" = "스왑 개요";
 "swapProviderRecommended" = "추천";
 "swapProvidersSheetTitle" = "공급자 선택";
+"swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
 "swapTrackingLink" = "스왑 추적 링크";

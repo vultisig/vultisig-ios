@@ -988,6 +988,7 @@
 "skip" = "Überspringen";
 "slippage" = "Gleitverlust";
 "slippageHelperText" = "Begrenzt, wie stark sich der Preis ändern darf, bevor die Ausführung abgebrochen wird.";
+"slippageMaxNote" = "Slippage ist auf %@ begrenzt.";
 "slippageTolerance" = "Slippage-Toleranz";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
@@ -1071,6 +1072,7 @@
 "swapOverview" = "Tauschübersicht";
 "swapProviderRecommended" = "Empfohlen";
 "swapProvidersSheetTitle" = "Anbieter auswählen";
+"swapRecipientRouteNotAvailable" = "Für dieses Paar ist keine Route zu einem externen Empfänger verfügbar. Entfernen Sie den Empfänger oder wählen Sie ein anderes Paar.";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";

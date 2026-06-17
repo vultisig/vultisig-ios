@@ -996,6 +996,7 @@
 "skip" = "Skip";
 "slippage" = "Slippage";
 "slippageHelperText" = "Limits how much the price can change before execution is canceled.";
+"slippageMaxNote" = "Slippage is capped at %@.";
 "slippageTolerance" = "Slippage Tolerance";
 "somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
@@ -1079,6 +1080,7 @@
 "swapOverview" = "Swap overview";
 "swapProviderRecommended" = "Recommended";
 "swapProvidersSheetTitle" = "Select provider";
+"swapRecipientRouteNotAvailable" = "No route to an external recipient is available for this pair. Remove the recipient or choose a different pair.";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Swap tracking link";
