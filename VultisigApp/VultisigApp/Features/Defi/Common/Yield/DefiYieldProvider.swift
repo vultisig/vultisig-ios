@@ -301,8 +301,8 @@ protocol DefiYieldProvider {
 }
 
 extension DefiYieldProvider {
-    /// Cancel is opt-in: providers without a cancel action (e.g. Circle) inherit
-    /// this default, which throws rather than silently building a no-op tx.
+    // Cancel is opt-in: providers without a cancel action (e.g. Circle) inherit
+    // this default, which throws rather than silently building a no-op tx.
     // swiftlint:disable:next async_without_await
     func buildCancelUnstakePayload(vault _: Vault, recipient _: String, redemption _: YieldRedemption) async throws -> KeysignPayload {
         throw DefiYieldError.unsupportedOperation
