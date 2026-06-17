@@ -292,7 +292,7 @@
 "customRPCsLockedRequires" = "需要";
 "customRPCsLockedSubtitle" = "将 Vultisig 指向您自己的节点。每条链上更快的查询、更高的速率限制和完全的隐私。";
 "customRPCsLockedTierRequirement" = "$VULT %@ 等级或以上";
-"customRPCsLockedTierSubtitle" = "在您的金库中持有至少 %@";
+"customRPCsLockedTierSubtitle" = "至少质押 %@";
 "customRPCsLockedTitle" = "自定义 RPC";
 "customRPCsLockedYourBalance" = "您的余额";
 "customRPCSubtitle" = "为每条链使用您自己的节点";
@@ -1175,8 +1175,9 @@
 "unlimited" = "无限制";
 "unlocked" = "已解锁";
 "unlockTier" = "解锁等级";
+"unlockUltimateTierDescription" = "通过质押 %@ $VULT，您将解锁 Ultimate 等级并在所有交换中获得 Vultisig 费用的完全豁免";
 "unlockXTier" = "解锁 %@ 等级";
-"unlockXTierDescription" = "通过持有 %@ $VULT，您将解锁 %@ 等级并在所有交换中获得 %@ 个基点的交易费折扣";
+"unlockXTierDescription" = "通过质押 %@ $VULT，您将解锁 %@ 等级并在所有交换中获得 %@ 个基点的交易费折扣";
 "unlockXTierDescriptionHighlighted" = "%@ 个基点交易费折扣";
 "unrelatedQRCode" = "无关的二维码";
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
@@ -1297,9 +1298,9 @@
 "vultCooldownNote" = "取消质押会启动冷却期。冷却期结束后即可领取您的 VULT。";
 "vultDiscount" = "折扣：%d 个基点";
 "vultDiscountHeroSubtitle" = "获享交易折扣";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "$VULT 折扣等级";
-"vultDiscountTiersDescription" = "持有 $VULT 以解锁较低的交易费用";
+"vultDiscountTiersDescription" = "质押 $VULT 以解锁较低的交易费用";
 "vultEthereumRequired" = "需要以太坊";
 "vultEthereumRequiredDescription" = "将以太坊地址添加到您的保险库以质押 VULT。";
 "vultiserverPassword" = "Vultiserver 密码";

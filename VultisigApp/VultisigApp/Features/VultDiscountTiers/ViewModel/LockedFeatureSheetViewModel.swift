@@ -5,18 +5,19 @@
 
 import Foundation
 
-/// Drives the generic tier-locked feature sheet: resolves the live $VULT balance
-/// for the vault and exposes whether it clears the feature's required tier
-/// threshold.
+/// Drives the generic tier-locked feature sheet: resolves the live staked $VULT
+/// balance for the vault and exposes whether it clears the feature's required
+/// tier threshold.
 ///
 /// The required tier, its threshold amount, and the balance comparison are all
 /// sourced from the existing tier system (`VultDiscountTier` / `VultTierService`)
-/// via the `LockedFeature` descriptor — never from the design mock.
+/// via the `LockedFeature` descriptor — never from the design mock. Tiers are
+/// unlocked by staking, so the balance is the staked sVULT balance.
 @MainActor
 final class LockedFeatureSheetViewModel: ObservableObject {
     let feature: LockedFeature
 
-    /// Live $VULT balance held by the vault, refreshed on appear.
+    /// Live staked $VULT balance held by the vault, refreshed on appear.
     @Published private(set) var balance: Decimal = 0
 
     private let service: VultTierService
@@ -57,9 +58,10 @@ final class LockedFeatureSheetViewModel: ObservableObject {
         "\(balance.formatForDisplay(skipAbbreviation: true)) VULT"
     }
 
-    /// Reads the already-cached $VULT balance from the vault's token — no network
-    /// refresh. The balance is kept current by the app's existing fetch paths.
+    /// Reads the already-cached staked $VULT (sVULT) balance from the vault's
+    /// token — no network refresh. The balance is kept current by the app's
+    /// existing fetch paths.
     func loadBalance(for vault: Vault) {
-        balance = service.getVultToken(for: vault)?.balanceDecimal ?? 0
+        balance = service.getStakedVultToken(for: vault)?.balanceDecimal ?? 0
     }
 }

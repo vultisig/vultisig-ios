@@ -292,7 +292,7 @@
 "customRPCsLockedRequires" = "Erforderlich";
 "customRPCsLockedSubtitle" = "Richte Vultisig auf deine eigenen Nodes aus. Schnellere Abfragen, höhere Ratenlimits und volle Privatsphäre pro Chain.";
 "customRPCsLockedTierRequirement" = "$VULT %@ Stufe oder höher";
-"customRPCsLockedTierSubtitle" = "Halte mindestens %@ in deinem Tresor";
+"customRPCsLockedTierSubtitle" = "Stake mindestens %@";
 "customRPCsLockedTitle" = "Eigene RPCs";
 "customRPCsLockedYourBalance" = "Dein Guthaben";
 "customRPCSubtitle" = "Nutze eigene Nodes pro Chain";
@@ -1175,8 +1175,9 @@
 "unlimited" = "Unbegrenzt";
 "unlocked" = "Freigeschaltet";
 "unlockTier" = "Stufe freischalten";
+"unlockUltimateTierDescription" = "Durch das Staken von %@ $VULT schalten Sie die Ultimate Stufe frei und erhalten einen vollständigen Erlass der Vultisig-Gebühren auf alle Swaps.";
 "unlockXTier" = "%@ Stufe freischalten";
-"unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
+"unlockXTierDescription" = "Durch das Staken von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
 "unlockXTierDescriptionHighlighted" = "%@ bps Handelsgebührenrabatt";
 "unrelatedQRCode" = "Unbekannter QR-Code";
 "unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
@@ -1296,9 +1297,9 @@
 "vultCooldownNote" = "Das Entstaken startet eine Wartezeit. Dein VULT wird nach deren Ablauf beanspruchbar.";
 "vultDiscount" = "Rabatt: %dbps";
 "vultDiscountHeroSubtitle" = "erhalte einen Handelsrabatt";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "$VULT Rabattstufen";
-"vultDiscountTiersDescription" = "Halten Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
+"vultDiscountTiersDescription" = "Staken Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
 "vultEthereumRequired" = "Ethereum erforderlich";
 "vultEthereumRequiredDescription" = "Füge deiner Vault eine Ethereum-Adresse hinzu, um VULT zu staken.";
 "vultiserverPassword" = "Vultiserver-Passwort";

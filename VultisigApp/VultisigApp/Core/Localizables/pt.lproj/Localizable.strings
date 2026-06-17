@@ -292,7 +292,7 @@
 "customRPCsLockedRequires" = "Requer";
 "customRPCsLockedSubtitle" = "Aponte o Vultisig para os seus próprios nós. Consultas mais rápidas, limites maiores e total privacidade por cadeia.";
 "customRPCsLockedTierRequirement" = "$VULT %@ nível ou superior";
-"customRPCsLockedTierSubtitle" = "Mantenha pelo menos %@ no seu cofre";
+"customRPCsLockedTierSubtitle" = "Faça staking de pelo menos %@";
 "customRPCsLockedTitle" = "RPCs personalizados";
 "customRPCsLockedYourBalance" = "Seu saldo";
 "customRPCSubtitle" = "Use os seus próprios nós por cadeia";
@@ -1175,8 +1175,9 @@
 "unlimited" = "Ilimitado";
 "unlocked" = "Desbloqueado";
 "unlockTier" = "Desbloquear nível";
+"unlockUltimateTierDescription" = "Ao fazer staking de %@ $VULT, você desbloqueará o nível Ultimate e receberá uma isenção completa das taxas da Vultisig em todos os swaps.";
 "unlockXTier" = "Desbloquear nível %@";
-"unlockXTierDescription" = "Ao manter %@ $VULT, você desbloqueará o nível %@ e receberá um desconto de %@ bps nas taxas de negociação em todos os swaps.";
+"unlockXTierDescription" = "Ao fazer staking de %@ $VULT, você desbloqueará o nível %@ e receberá um desconto de %@ bps nas taxas de negociação em todos os swaps.";
 "unlockXTierDescriptionHighlighted" = "desconto de %@ bps nas taxas de negociação";
 "unrelatedQRCode" = "Código QR não relacionado";
 "unrelatedQRCodeMessage" = "Foi escaneado um código QR não relacionado.";
@@ -1296,9 +1297,9 @@
 "vultCooldownNote" = "O unstake inicia um período de espera. Seu VULT poderá ser reivindicado ao terminar.";
 "vultDiscount" = "Desconto: %dbps";
 "vultDiscountHeroSubtitle" = "receba um desconto de negociação";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "Níveis de Desconto $VULT";
-"vultDiscountTiersDescription" = "Mantenha $VULT para desbloquear taxas de negociação mais baixas.";
+"vultDiscountTiersDescription" = "Faça staking de $VULT para desbloquear taxas de negociação mais baixas.";
 "vultEthereumRequired" = "Ethereum necessário";
 "vultEthereumRequiredDescription" = "Adicione um endereço Ethereum ao seu cofre para fazer stake de VULT.";
 "vultiserverPassword" = "Senha do Vultiserver";

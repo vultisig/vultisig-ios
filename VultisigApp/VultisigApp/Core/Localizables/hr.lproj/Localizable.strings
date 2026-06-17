@@ -292,7 +292,7 @@
 "customRPCsLockedRequires" = "Zahtijeva";
 "customRPCsLockedSubtitle" = "Usmjeri Vultisig na vlastite čvorove. Brži upiti, viša ograničenja i potpuna privatnost po lancu.";
 "customRPCsLockedTierRequirement" = "$VULT %@ razina ili viša";
-"customRPCsLockedTierSubtitle" = "Drži barem %@ u svom trezoru";
+"customRPCsLockedTierSubtitle" = "Uloži barem %@";
 "customRPCsLockedTitle" = "Prilagođeni RPC-ovi";
 "customRPCsLockedYourBalance" = "Tvoj saldo";
 "customRPCSubtitle" = "Koristi vlastite čvorove po lancu";
@@ -1175,8 +1175,9 @@
 "unlimited" = "Neograničeno";
 "unlocked" = "Otključano";
 "unlockTier" = "Otključaj razinu";
+"unlockUltimateTierDescription" = "Ulaganjem %@ $VULT otključat ćete Ultimate razinu i primiti potpuno oslobođenje od Vultisig naknada na svim swapovima.";
 "unlockXTier" = "Otključaj %@ razinu";
-"unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";
+"unlockXTierDescription" = "Ulaganjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";
 "unlockXTierDescriptionHighlighted" = "popust od %@ bps na naknade za trgovanje";
 "unrelatedQRCode" = "Nepovezani QR kod";
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
@@ -1296,9 +1297,9 @@
 "vultCooldownNote" = "Unstake pokreće razdoblje čekanja. VULT možeš preuzeti nakon što istekne.";
 "vultDiscount" = "Popust: %dbps";
 "vultDiscountHeroSubtitle" = "ostvari popust na trgovanje";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "$VULT Razine Popusta";
-"vultDiscountTiersDescription" = "Držite $VULT da biste otključali niže naknade za trgovanje.";
+"vultDiscountTiersDescription" = "Uložite $VULT da biste otključali niže naknade za trgovanje.";
 "vultEthereumRequired" = "Potreban Ethereum";
 "vultEthereumRequiredDescription" = "Dodaj Ethereum adresu u svoj sef za stakeanje VULT-a.";
 "vultiserverPassword" = "Vultiserver lozinka";

@@ -292,7 +292,7 @@
 "customRPCsLockedRequires" = "Requiere";
 "customRPCsLockedSubtitle" = "Apunta Vultisig a tus propios nodos. Consultas más rápidas, mayores límites de tasa y privacidad total por cadena.";
 "customRPCsLockedTierRequirement" = "$VULT %@ Nivel o superior";
-"customRPCsLockedTierSubtitle" = "Mantén al menos %@ en tu bóveda";
+"customRPCsLockedTierSubtitle" = "Haz staking de al menos %@";
 "customRPCsLockedTitle" = "RPCs personalizados";
 "customRPCsLockedYourBalance" = "Tu saldo";
 "customRPCSubtitle" = "Usa tus propios nodos por cadena";
@@ -1175,8 +1175,9 @@
 "unlimited" = "Ilimitado";
 "unlocked" = "Desbloqueado";
 "unlockTier" = "Desbloquear Nivel";
+"unlockUltimateTierDescription" = "Al hacer staking de %@ $VULT, desbloquearás el Nivel Ultimate y recibirás una exención completa de las comisiones de Vultisig en todos los swaps.";
 "unlockXTier" = "Desbloquear Nivel %@";
-"unlockXTierDescription" = "Al mantener %@ $VULT, desbloquearás el Nivel %@ y recibirás un descuento de %@ bps en comisiones de trading en todos los swaps.";
+"unlockXTierDescription" = "Al hacer staking de %@ $VULT, desbloquearás el Nivel %@ y recibirás un descuento de %@ bps en comisiones de trading en todos los swaps.";
 "unlockXTierDescriptionHighlighted" = "descuento de %@ bps en comisiones de trading";
 "unrelatedQRCode" = "Código QR no relacionado";
 "unrelatedQRCodeMessage" = "Se escaneó un código QR no relacionado.";
@@ -1296,9 +1297,9 @@
 "vultCooldownNote" = "El retiro inicia un periodo de espera. Tu VULT podrá reclamarse al finalizar.";
 "vultDiscount" = "Descuento: %dbps";
 "vultDiscountHeroSubtitle" = "recibe un descuento de trading";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "Niveles de Descuento $VULT";
-"vultDiscountTiersDescription" = "Mantén $VULT para desbloquear comisiones de trading más bajas.";
+"vultDiscountTiersDescription" = "Haz staking de $VULT para desbloquear comisiones de trading más bajas.";
 "vultEthereumRequired" = "Se requiere Ethereum";
 "vultEthereumRequiredDescription" = "Añade una dirección de Ethereum a tu bóveda para hacer staking de VULT.";
 "vultiserverPassword" = "Contraseña de Vultiserver";

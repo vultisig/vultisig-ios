@@ -136,8 +136,8 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     private func hasReachedSilverTier(vault: Vault) -> Bool {
-        let vultBalance = VultTierService().getVultToken(for: vault)?.balanceDecimal ?? 0
-        return vultBalance >= VultDiscountTier.silver.balanceToUnlock
+        let stakedVultBalance = VultTierService().getStakedVultToken(for: vault)?.balanceDecimal ?? 0
+        return stakedVultBalance >= VultDiscountTier.silver.balanceToUnlock
     }
 }
 

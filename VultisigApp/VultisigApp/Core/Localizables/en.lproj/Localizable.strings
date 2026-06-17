@@ -294,7 +294,7 @@
 "customRPCsLockedRequires" = "Requires";
 "customRPCsLockedSubtitle" = "Point Vultisig at your own nodes. Faster queries, higher rate limits, and full privacy per chain.";
 "customRPCsLockedTierRequirement" = "$VULT %@ Tier or above";
-"customRPCsLockedTierSubtitle" = "Hold at least %@ in your vault";
+"customRPCsLockedTierSubtitle" = "Stake at least %@";
 "customRPCsLockedTitle" = "Custom RPCs";
 "customRPCsLockedYourBalance" = "Your balance";
 "customRPCSubtitle" = "Use your own nodes per chain";
@@ -1187,10 +1187,10 @@
 "unlimited" = "Unlimited";
 "unlocked" = "Unlocked";
 "unlockTier" = "Unlock Tier";
-"unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
+"unlockUltimateTierDescription" = "By staking %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";
 "unlockXTier" = "Unlock %@ Tier";
-"unlockXTierDescription" = "By holding %@ $VULT, you’ll unlock the %@ Tier and receive a %@ bps trading fee discount on all swaps.";
+"unlockXTierDescription" = "By staking %@ $VULT, you’ll unlock the %@ Tier and receive a %@ bps trading fee discount on all swaps.";
 "unlockXTierDescriptionHighlighted" = "%@ bps trading fee discount";
 "unrelatedQRCode" = "Unrelated QR Code";
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
@@ -1310,9 +1310,9 @@
 "vultCooldownNote" = "Unstaking starts a cooldown. Your VULT becomes claimable once it ends.";
 "vultDiscount" = "Discount: %dbps";
 "vultDiscountHeroSubtitle" = "receive a trading discount";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "$VULT Discount Tiers";
-"vultDiscountTiersDescription" = "Hold $VULT to unlock lower trading fees.";
+"vultDiscountTiersDescription" = "Stake $VULT to unlock lower trading fees.";
 "vultEthereumRequired" = "Ethereum required";
 "vultEthereumRequiredDescription" = "Add an Ethereum address to your vault to stake VULT.";
 "vultiserverPassword" = "Vultiserver Password";

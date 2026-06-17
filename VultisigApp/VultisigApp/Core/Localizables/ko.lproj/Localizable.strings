@@ -287,7 +287,7 @@
 "customRPCsLockedRequires" = "필요 조건";
 "customRPCsLockedSubtitle" = "Vultisig를 직접 운영하는 노드로 연결하세요. 더 빠른 조회, 더 높은 속도 제한, 체인별 완전한 프라이버시.";
 "customRPCsLockedTierRequirement" = "$VULT %@ 등급 이상";
-"customRPCsLockedTierSubtitle" = "볼트에 최소 %@ 보유";
+"customRPCsLockedTierSubtitle" = "최소 %@ 스테이킹";
 "customRPCsLockedTitle" = "사용자 지정 RPC";
 "customRPCsLockedYourBalance" = "내 잔액";
 "customRPCSubtitle" = "체인별로 직접 운영하는 노드 사용";
@@ -1154,10 +1154,10 @@
 "unlimited" = "무제한";
 "unlocked" = "잠금 해제됨";
 "unlockTier" = "티어 잠금 해제";
-"unlockUltimateTierDescription" = "%@ $VULT를 보유하면 Ultimate 티어를 잠금 해제하고 모든 스왑에서 Vultisig 수수료를 완전히 면제받을 수 있습니다.";
+"unlockUltimateTierDescription" = "%@ $VULT를 스테이킹하면 Ultimate 티어를 잠금 해제하고 모든 스왑에서 Vultisig 수수료를 완전히 면제받을 수 있습니다.";
 "unlockUltimateTierDescriptionHighlighted" = "모든 스왑에서 Vultisig 수수료 완전 면제.";
 "unlockXTier" = "%@ 티어 잠금 해제";
-"unlockXTierDescription" = "%@ $VULT를 보유하면 %@ 티어를 잠금 해제하고 모든 스왑에서 %@ bps 거래 수수료 할인을 받을 수 있습니다.";
+"unlockXTierDescription" = "%@ $VULT를 스테이킹하면 %@ 티어를 잠금 해제하고 모든 스왑에서 %@ bps 거래 수수료 할인을 받을 수 있습니다.";
 "unlockXTierDescriptionHighlighted" = "%@ bps 거래 수수료 할인";
 "unrelatedQRCode" = "관련 없는 QR 코드";
 "unrelatedQRCodeMessage" = "관련 없는 QR 코드가 스캔되었습니다.";
@@ -1275,9 +1275,9 @@
 "vultCooldownNote" = "언스테이킹은 대기 기간을 시작합니다. 기간이 끝나면 VULT를 청구할 수 있습니다.";
 "vultDiscount" = "할인: %dbps";
 "vultDiscountHeroSubtitle" = "거래 할인을 받으세요";
-"vultDiscountHeroTitle" = "Hold $VULT";
+"vultDiscountHeroTitle" = "Stake $VULT";
 "vultDiscountTiers" = "$VULT 할인 티어";
-"vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
+"vultDiscountTiersDescription" = "$VULT를 스테이킹하여 더 낮은 거래 수수료를 잠금 해제하세요.";
 "vultEthereumRequired" = "이더리움 필요";
 "vultEthereumRequiredDescription" = "VULT를 스테이킹하려면 볼트에 이더리움 주소를 추가하세요.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
