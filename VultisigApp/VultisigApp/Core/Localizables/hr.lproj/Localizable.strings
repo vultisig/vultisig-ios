@@ -47,7 +47,6 @@
 "approvalTXHash" = "Hash odobrenja transakcije";
 "approve" = "Odobri";
 "approveAndSwap" = "Odobri i zamijeni";
-"approveSpending" = "Odobri potrošnju";
 "appUpToDate" = "Aplikacija je ažurirana";
 "apr" = "APR";
 "apy" = "APY";
@@ -1327,6 +1326,7 @@
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldMinimumDeposit" = "Minimalni polog je %@ %@.";
+"yieldVerifyApproveCheck" = "Razumijem da će prvo biti potpisana i emitirana zasebna transakcija odobrenja.";
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";

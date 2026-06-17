@@ -48,7 +48,6 @@
 "approvalTXHash" = "Approval Tx Hash";
 "approve" = "Approve";
 "approveAndSwap" = "Approve and Swap";
-"approveSpending" = "Approve Spending";
 "appUpToDate" = "Application is up to date.";
 "apr" = "APR";
 "apr100Days" = "100 Days";
@@ -1341,6 +1340,7 @@
 "yes" = "Yes";
 "yesterday" = "Yesterday";
 "yieldMinimumDeposit" = "Minimum deposit is %@ %@.";
+"yieldVerifyApproveCheck" = "I understand a separate approval transaction will be signed and broadcast first.";
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";

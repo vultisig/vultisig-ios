@@ -47,7 +47,6 @@
 "approvalTXHash" = "授权交易哈希";
 "approve" = "批准";
 "approveAndSwap" = "授权并交换";
-"approveSpending" = "批准支出";
 "appUpToDate" = "应用程序已是最新版本";
 "apr" = "年化利率";
 "apy" = "年化收益率";
@@ -1328,6 +1327,7 @@
 "yes" = "是";
 "yesterday" = "昨天";
 "yieldMinimumDeposit" = "最低存款为 %@ %@。";
+"yieldVerifyApproveCheck" = "我了解将首先签署并广播一笔单独的授权交易。";
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";

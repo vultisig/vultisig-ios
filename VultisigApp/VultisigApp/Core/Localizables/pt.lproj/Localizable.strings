@@ -47,7 +47,6 @@
 "approvalTXHash" = "Hash da transação de aprovação";
 "approve" = "Aprovar";
 "approveAndSwap" = "Aprovar e trocar";
-"approveSpending" = "Aprovar gasto";
 "appUpToDate" = "Aplicativo está atualizado";
 "apr" = "APR";
 "apy" = "APY";
@@ -1327,6 +1326,7 @@
 "yes" = "Sim";
 "yesterday" = "Ontem";
 "yieldMinimumDeposit" = "O depósito mínimo é %@ %@.";
+"yieldVerifyApproveCheck" = "Entendo que uma transação de aprovação separada será assinada e transmitida primeiro.";
 "youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "youAreInLocalMode" = "Você está no modo local";

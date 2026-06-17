@@ -66,6 +66,49 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertFalse(vm.isValidForm)
     }
 
+    // MARK: - isApproveRequired / approve checkbox gating
+
+    /// A normal send has no pre-built payload ⇒ no bundled approve ⇒ the approve
+    /// checkbox never appears and `isValidForm` stays the two-checkbox gate.
+    func testIsApproveRequiredFalseForNormalSend() throws {
+        let vm = SendCryptoVerifyViewModel(transaction: try makeTransaction())
+        XCTAssertFalse(vm.isApproveRequired)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+        XCTAssertTrue(vm.isValidForm, "without a bundled approve, two checks must still be enough")
+    }
+
+    /// Circle withdraw supplies a pre-built payload whose `approvePayload` is nil
+    /// (a withdraw never bundles an approve) ⇒ no approve checkbox, gating unchanged.
+    func testIsApproveRequiredFalseWhenPrebuiltPayloadHasNoApprove() throws {
+        let vm = SendCryptoVerifyViewModel(
+            transaction: try makeTransaction(),
+            prebuiltKeysignPayload: makePrebuiltPayload(approvePayload: nil)
+        )
+        XCTAssertFalse(vm.isApproveRequired)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+        XCTAssertTrue(vm.isValidForm, "a Circle-withdraw payload (no approve) must not require the third check")
+    }
+
+    /// A first-time Noon deposit bundles a USDC approve ⇒ `isApproveRequired` is
+    /// true ⇒ `isValidForm` additionally requires `isApproveCorrect`.
+    func testIsApproveRequiredTrueWhenPrebuiltPayloadBundlesApprove() throws {
+        let approve = ERC20ApprovePayload(amount: BigInt(100_000_000), spender: "0xVault")
+        let vm = SendCryptoVerifyViewModel(
+            transaction: try makeTransaction(),
+            prebuiltKeysignPayload: makePrebuiltPayload(approvePayload: approve)
+        )
+        XCTAssertTrue(vm.isApproveRequired)
+
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+        XCTAssertFalse(vm.isValidForm, "the bundled approve must gate signing on the third checkbox")
+
+        vm.isApproveCorrect = true
+        XCTAssertTrue(vm.isValidForm, "all three checks satisfied ⇒ form valid")
+    }
+
     // MARK: - signButtonDisabled gating
 
     func testSignButtonDisabledWhenInvalidForm() throws {
@@ -729,6 +772,34 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             coin.contractAddress = contractAddress
         }
         return coin
+    }
+
+    /// A minimal native-ETH pre-built payload, optionally carrying a bundled
+    /// ERC-20 approve (the Noon first-deposit case) or none (Circle withdraw).
+    private func makePrebuiltPayload(approvePayload: ERC20ApprovePayload?) -> KeysignPayload {
+        let nativeEth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                                 rawBalance: "1000000000000000000")
+        return KeysignPayload(
+            coin: nativeEth,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            toAmount: BigInt(0),
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: "0x6e553f65",
+            swapPayload: nil,
+            approvePayload: approvePayload,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
     }
 
     private func makeTransaction(

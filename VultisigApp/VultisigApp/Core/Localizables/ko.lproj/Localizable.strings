@@ -48,7 +48,6 @@
 "approvalTXHash" = "승인 Tx 해시";
 "approve" = "승인";
 "approveAndSwap" = "승인 및 스왑";
-"approveSpending" = "지출 승인";
 "appUpToDate" = "앱이 최신 버전입니다.";
 "apr" = "APR";
 "apr100Days" = "100일";
@@ -1306,6 +1305,7 @@
 "yes" = "예";
 "yesterday" = "어제";
 "yieldMinimumDeposit" = "최소 입금액은 %@ %@입니다.";
+"yieldVerifyApproveCheck" = "별도의 승인 트랜잭션이 먼저 서명되어 전송된다는 것을 이해합니다.";
 "youAreEnteringAnewEra" = "새로운 시대로 접어들어 오래된 시드 문구를 뒤로하고 있습니다. 필요한 것:";
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";
