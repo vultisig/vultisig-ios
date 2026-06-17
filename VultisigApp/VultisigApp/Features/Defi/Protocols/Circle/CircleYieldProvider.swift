@@ -52,7 +52,10 @@ struct CircleYieldProvider: DefiYieldProvider {
             staticApyText: "circleStaticApy".localized,
             providerNameKey: "circleTitle",
             bannerLogoAsset: "circle-defi-banner",
-            infoBannerKey: "circleDashboardInfoText"
+            infoBannerKey: "circleDashboardInfoText",
+            rowLogoAsset: "circle-logo",
+            rowTitleKey: "circleTitle",
+            rowSubtitleKey: "circleRowYieldAccount"
         )
     }
 
@@ -75,6 +78,11 @@ struct CircleYieldProvider: DefiYieldProvider {
     func persistAccountAddress(_ address: String, vault: Vault) {
         guard !address.isEmpty else { return }
         vault.circleWalletAddress = address
+    }
+
+    @MainActor
+    func isAccountProvisioned(vault: Vault) -> Bool {
+        vault.circleWalletAddress?.isEmpty == false
     }
 
     // MARK: - Reads

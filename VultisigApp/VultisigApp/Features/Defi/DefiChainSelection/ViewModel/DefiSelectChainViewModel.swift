@@ -15,58 +15,39 @@ class DefiSelectChainViewModel: ObservableObject {
 
     @Published var searchText: String = .empty
     @Published var selection = Set<Chain>()
-    @Published var isCircleEnabled: Bool = true
-    @Published var isNoonEnabled: Bool = false
-
-    /// Indicates if Ethereum is available in the vault (required for Circle)
-    private var hasEthereum: Bool = false
-
-    /// Whether the vault already has a Circle account. Circle can no longer be
-    /// enabled from this list, so it only appears for vaults that already
-    /// created an account, letting them hide it from their DeFi portfolio.
-    private var hasCircleAccount: Bool = false
-
+    /// Yield providers enabled in this sheet (committed to the vault on save).
+    @Published var enabledProviders = Set<DefiYieldProviderID>()
     @Published var chains: [Chain] = []
+
+    /// Providers eligible for this vault (Ethereum present + account provisioned),
+    /// recomputed in `setData`; `visibleProviders` applies the search filter.
+    @Published private var eligibleProviders: [DefiYieldProviderID] = []
 
     var filteredChains: [Chain] {
         if searchText.isEmpty {
             return chains.sorted(by: { $0.name < $1.name })
         } else {
-            let assets = chains
-                .filter { chain in
-                    chain.name.lowercased().contains(searchText.lowercased())
-                }
+            return chains
+                .filter { $0.name.lowercased().contains(searchText.lowercased()) }
                 .sorted(by: { $0.name < $1.name })
-
-            return assets
         }
     }
 
-    /// Returns true if Circle should be visible (vault has Ethereum and matches search filter)
-    var shouldShowCircle: Bool {
-        // Circle can no longer be newly enabled; only show it for vaults that
-        // already created a Circle account so they can still hide it.
-        guard hasCircleAccount else { return false }
-
-        // Circle requires Ethereum chain in the vault
-        guard hasEthereum else { return false }
-
-        guard !searchText.isEmpty else { return true }
-        let circleTitle = NSLocalizedString("circleTitle", comment: "Circle")
-        return circleTitle.lowercased().contains(searchText.lowercased()) ||
-               "usdc".contains(searchText.lowercased())
+    /// Eligible yield providers matching the current search text.
+    var visibleProviders: [DefiYieldProviderID] {
+        eligibleProviders.filter { matchesSearch($0) }
     }
 
-    /// Returns true if Noon should be visible. Unlike Circle, Noon is a direct
-    /// EOA vault with no account-provisioning gate, so it is a clean toggle for
-    /// any Ethereum-enabled vault.
-    var shouldShowNoon: Bool {
-        guard hasEthereum else { return false }
+    func isEnabled(_ id: DefiYieldProviderID) -> Bool {
+        enabledProviders.contains(id)
+    }
 
-        guard !searchText.isEmpty else { return true }
-        let noonTitle = "noonTitle".localized
-        return noonTitle.lowercased().contains(searchText.lowercased()) ||
-               "usdc".contains(searchText.lowercased())
+    func setEnabled(_ id: DefiYieldProviderID, _ isOn: Bool) {
+        if isOn {
+            enabledProviders.insert(id)
+        } else {
+            enabledProviders.remove(id)
+        }
     }
 
     func setData(for vault: Vault) {
@@ -75,25 +56,23 @@ class DefiSelectChainViewModel: ObservableObject {
     }
 
     private func checkSelected(for vault: Vault) {
-        // Filter Defi enabled chains for selection
         selection = Set(vault.defiChains)
-        isCircleEnabled = vault.isCircleEnabled
-        isNoonEnabled = vault.isNoonEnabled
+        enabledProviders = Set(DefiYieldProviderID.allCases.filter { vault.isDefiProviderEnabled($0) })
     }
 
     private func setupChains(for vault: Vault) {
-        chains = vault.availableDefiChains
-            .sorted(by: { $0.name < $1.name })
+        chains = vault.availableDefiChains.sorted(by: { $0.name < $1.name })
 
-        // Check if vault has Ethereum (required for Circle)
-        hasEthereum = vault.chains.contains(.ethereum)
-
-        // Circle only remains available to vaults with an existing account
-        hasCircleAccount = vault.circleWalletAddress?.isEmpty == false
+        // A yield provider is eligible when the vault has Ethereum and the
+        // provider's account is provisioned (account-less providers always are).
+        let hasEthereum = vault.chains.contains(.ethereum)
+        eligibleProviders = DefiYieldProviderID.allCases.filter { id in
+            hasEthereum && DefiYieldProviderFactory.make(id).isAccountProvisioned(vault: vault)
+        }
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
-        return selection.contains(asset.chain)
+        selection.contains(asset.chain)
     }
 
     func handleSelection(isSelected: Bool, chain: Chain) {
@@ -102,14 +81,6 @@ class DefiSelectChainViewModel: ObservableObject {
         } else {
             selection.remove(chain)
         }
-    }
-
-    func handleCircleSelection(isSelected: Bool) {
-        isCircleEnabled = isSelected
-    }
-
-    func handleNoonSelection(isSelected: Bool) {
-        isNoonEnabled = isSelected
     }
 
     func save(for vault: Vault) async throws {
@@ -127,16 +98,24 @@ class DefiSelectChainViewModel: ObservableObject {
             vault.defiChains = Array(selection)
                 .filter { CoinAction.defiChains.contains($0) }
 
-            // Save Circle + Noon enabled state
-            vault.isCircleEnabled = isCircleEnabled
-            vault.isNoonEnabled = isNoonEnabled
+            // Persist each yield provider's enabled state into the provider array.
+            for id in DefiYieldProviderID.allCases {
+                vault.setDefiProvider(id, enabled: enabledProviders.contains(id))
+            }
 
             try Storage.shared.save()
         } catch {
             // Surface the failure so the caller can keep the sheet open instead of
-            // silently dropping the user's chain / Circle / Noon toggle changes.
+            // silently dropping the user's chain / provider toggle changes.
             logger.error("Error while saving defi chains: \(error.localizedDescription)")
             throw error
         }
+    }
+
+    private func matchesSearch(_ id: DefiYieldProviderID) -> Bool {
+        guard !searchText.isEmpty else { return true }
+        let name = DefiYieldProviderFactory.make(id).presentation.providerNameKey.localized
+        return name.localizedCaseInsensitiveContains(searchText)
+            || "usdc".localizedCaseInsensitiveContains(searchText)
     }
 }

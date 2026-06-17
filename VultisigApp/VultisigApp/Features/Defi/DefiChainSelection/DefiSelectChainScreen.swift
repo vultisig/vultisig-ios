@@ -9,16 +9,13 @@ import SwiftUI
 
 /// Represents a selectable item in the DeFi chain selection screen
 enum DefiSelectableItem: Hashable, Identifiable {
-    case circle
-    case noon
+    case yield(DefiYieldProviderID)
     case chain(Chain)
 
     var id: String {
         switch self {
-        case .circle:
-            return "circle"
-        case .noon:
-            return "noon"
+        case .yield(let provider):
+            return provider.rawValue
         case .chain(let chain):
             return chain.rawValue
         }
@@ -36,21 +33,8 @@ struct DefiSelectChainScreen: View {
     @StateObject var viewModel = DefiSelectChainViewModel()
 
     var selectableItems: [DefiSelectableItem] {
-        var items: [DefiSelectableItem] = []
-
-        // Add Circle if it matches the search filter
-        if viewModel.shouldShowCircle {
-            items.append(.circle)
-        }
-
-        // Add Noon if it matches the search filter
-        if viewModel.shouldShowNoon {
-            items.append(.noon)
-        }
-
-        // Add filtered chains
+        var items: [DefiSelectableItem] = viewModel.visibleProviders.map { .yield($0) }
         items.append(contentsOf: viewModel.filteredChains.map { .chain($0) })
-
         return items
     }
 
@@ -85,19 +69,13 @@ struct DefiSelectChainScreen: View {
     @ViewBuilder
     func cellBuilder(item: DefiSelectableItem, sectionType _: Int) -> some View {
         switch item {
-        case .circle:
+        case .yield(let providerID):
+            let presentation = DefiYieldProviderFactory.make(providerID).presentation
             DefiYieldSelectionGridCell(
-                name: "circleTitle".localized,
-                logo: "circle-logo",
-                isEnabled: viewModel.isCircleEnabled,
-                onSelection: onCircleSelection
-            )
-        case .noon:
-            DefiYieldSelectionGridCell(
-                name: "noonTitle".localized,
-                logo: "noon",
-                isEnabled: viewModel.isNoonEnabled,
-                onSelection: onNoonSelection
+                name: presentation.providerNameKey.localized,
+                logo: presentation.rowLogoAsset,
+                isEnabled: viewModel.isEnabled(providerID),
+                onSelection: { viewModel.setEnabled(providerID, $0) }
             )
         case .chain(let chain):
             DefiChainSelectionGridCell(
@@ -133,14 +111,6 @@ private extension DefiSelectChainScreen {
 
     func onSelection(_ chainSelection: DefiChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, chain: chainSelection.chain)
-    }
-
-    func onCircleSelection(_ isSelected: Bool) {
-        viewModel.handleCircleSelection(isSelected: isSelected)
-    }
-
-    func onNoonSelection(_ isSelected: Bool) {
-        viewModel.handleNoonSelection(isSelected: isSelected)
     }
 }
 

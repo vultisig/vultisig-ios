@@ -70,7 +70,10 @@ struct NoonYieldProvider: DefiYieldProvider {
             staticApyText: nil,
             providerNameKey: "noonTitle",
             bannerLogoAsset: "noon-defi-banner",
-            infoBannerKey: "noonDashboardInfoText"
+            infoBannerKey: "noonDashboardInfoText",
+            rowLogoAsset: "noon",
+            rowTitleKey: "noonVaultsRowTitle",
+            rowSubtitleKey: nil
         )
     }
 

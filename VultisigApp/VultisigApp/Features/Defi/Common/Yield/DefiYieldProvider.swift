@@ -85,6 +85,16 @@ struct YieldPresentation {
     let bannerLogoAsset: String
     /// Closable info banner body shown on the empty/setup state.
     let infoBannerKey: String
+
+    // MARK: - DeFi list row
+
+    /// Logo asset for the DeFi-tab list row (circle-clipped).
+    let rowLogoAsset: String
+    /// Title shown in the DeFi-tab list row ("Noon Vaults" / "Circle").
+    let rowTitleKey: String
+    /// Optional secondary line under the row title (Circle's "Yield Account");
+    /// `nil` hides it.
+    let rowSubtitleKey: String?
 }
 
 /// The seam both Circle and Noon ride. Hides the two encoding models (Circle
@@ -114,6 +124,10 @@ protocol DefiYieldProvider {
     var hasWindowedRedemption: Bool { get }
     /// Display copy + flags for the shared yield screens.
     var presentation: YieldPresentation { get }
+
+    /// Whether the provider's account is ready (Circle MSCA created). Account-less
+    /// providers are always provisioned. Gates the DeFi-list row visibility.
+    @MainActor func isAccountProvisioned(vault: Vault) -> Bool
 
     // Account lifecycle — Circle SCA setup; Noon is a no-op.
     func resolveAccountAddress(vault: Vault) async throws -> String?
@@ -151,6 +165,9 @@ protocol DefiYieldProvider {
 extension DefiYieldProvider {
     /// Account-less providers (Noon, direct EOA) have nothing to persist.
     @MainActor func persistAccountAddress(_: String, vault _: Vault) {}
+
+    /// Account-less providers are always provisioned; account-gated ones override.
+    @MainActor func isAccountProvisioned(vault _: Vault) -> Bool { true }
 
     /// Most providers have no product minimum; the form gates only on balance.
     var minDepositAmount: Decimal { 0 }
