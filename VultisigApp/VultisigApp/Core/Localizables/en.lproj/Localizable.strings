@@ -1339,6 +1339,8 @@
 "x" = "X (Twitter)";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
+"yieldEstMonthly" = "Est. monthly";
+"yieldEstYearly" = "Est. yearly";
 "yieldMinimumDeposit" = "Minimum deposit is %@ %@.";
 "yieldVerifyApproveCheck" = "I understand a separate approval transaction will be signed and broadcast first.";
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";

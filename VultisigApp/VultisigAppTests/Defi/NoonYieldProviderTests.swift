@@ -227,6 +227,38 @@ final class NoonYieldProviderTests: XCTestCase {
         XCTAssertNoThrow(try validator.validate(value: ""))
     }
 
+    // MARK: - Estimated-yield preview math
+
+    /// APY is reported as a PERCENT (`ir.7d.net.apy_pct`), so the projection must
+    /// divide by 100: yearly = amount × apy/100, monthly = yearly / 12.
+    func testYieldEstimateConvertsApyPercentToFraction() throws {
+        // 1000 USDC at 12% APY ⇒ 120 / year, 10 / month.
+        let estimate = try XCTUnwrap(
+            YieldEstimate.make(amount: Decimal(1_000), apyPercent: Decimal(12))
+        )
+        XCTAssertEqual(estimate.yearly, Decimal(120), "yearly = amount × apy/100")
+        XCTAssertEqual(estimate.monthly, Decimal(10), "monthly = yearly / 12")
+    }
+
+    func testYieldEstimateHandlesFractionalApy() throws {
+        // 250 USDC at 8.4% APY ⇒ 21 / year, 1.75 / month.
+        let estimate = try XCTUnwrap(
+            YieldEstimate.make(amount: Decimal(250), apyPercent: Decimal(string: "8.4"))
+        )
+        XCTAssertEqual(estimate.yearly, Decimal(21))
+        XCTAssertEqual(estimate.monthly, Decimal(string: "1.75"))
+    }
+
+    func testYieldEstimateNilWhenAmountMissingOrZero() {
+        XCTAssertNil(YieldEstimate.make(amount: nil, apyPercent: Decimal(12)))
+        XCTAssertNil(YieldEstimate.make(amount: Decimal(0), apyPercent: Decimal(12)))
+    }
+
+    func testYieldEstimateNilWhenApyMissingOrZero() {
+        XCTAssertNil(YieldEstimate.make(amount: Decimal(1_000), apyPercent: nil))
+        XCTAssertNil(YieldEstimate.make(amount: Decimal(1_000), apyPercent: Decimal(0)))
+    }
+
     // MARK: - Settlement date
 
     func testNextSettlementDateIsWednesdayPlusSettlementWindowUtc() throws {

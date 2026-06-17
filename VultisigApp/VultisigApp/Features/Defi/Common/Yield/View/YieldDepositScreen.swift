@@ -33,7 +33,7 @@ struct YieldDepositScreen: View {
                 ) {
                     Task { await handleVerify() }
                 } customView: {
-                    minimumDepositBanner
+                    customView
                 }
             }
         }
@@ -41,6 +41,44 @@ struct YieldDepositScreen: View {
         .task {
             await viewModel.onLoad()
         }
+    }
+
+    private var customView: some View {
+        VStack(spacing: 12) {
+            yieldPreview
+            minimumDepositBanner
+        }
+    }
+
+    /// Estimated-yield preview: the entered amount projected over a month and a
+    /// year at the provider's 7d-net APY. Hidden until both an amount and an APY
+    /// are available.
+    @ViewBuilder
+    private var yieldPreview: some View {
+        if viewModel.showsYieldPreview {
+            VStack(spacing: 8) {
+                yieldPreviewRow(label: "yieldEstMonthly", value: viewModel.estimatedMonthlyText)
+                yieldPreviewRow(label: "yieldEstYearly", value: viewModel.estimatedYearlyText)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.colors.bgSurface1)
+            )
+        }
+    }
+
+    private func yieldPreviewRow(label: String, value: String) -> some View {
+        HStack(spacing: 4) {
+            Text(label.localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            Text(value)
+                .font(Theme.fonts.priceBodyS)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Non-closable info banner stating the product minimum (e.g. "Minimum deposit

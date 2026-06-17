@@ -1325,6 +1325,8 @@
 "x" = "x";
 "yes" = "Ja";
 "yesterday" = "Gestern";
+"yieldEstMonthly" = "Geschätzt monatlich";
+"yieldEstYearly" = "Geschätzt jährlich";
 "yieldMinimumDeposit" = "Mindesteinzahlung beträgt %@ %@.";
 "yieldVerifyApproveCheck" = "Ich verstehe, dass zuerst eine separate Genehmigungstransaktion signiert und gesendet wird.";
 "youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";

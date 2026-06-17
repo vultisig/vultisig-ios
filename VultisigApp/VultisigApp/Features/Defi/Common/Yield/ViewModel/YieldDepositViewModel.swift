@@ -26,8 +26,17 @@ final class YieldDepositViewModel: ObservableObject, Form {
         validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
     )
 
+    /// 7d-net APY for the provider, expressed as a PERCENT (e.g. `12.5` ⇒ 12.5%),
+    /// fetched once on load. `nil` until fetched or when the read fails — the
+    /// preview then renders `--`.
+    @Published private(set) var apyPercent: Decimal?
+    /// Re-published whenever the entered amount changes so the preview rows track
+    /// the keystroke. Driven by `amountField.$value`.
+    @Published private(set) var enteredAmount: Decimal?
+
     private(set) lazy var form: [FormField] = [amountField]
     var formCancellable: AnyCancellable?
+    private var amountCancellable: AnyCancellable?
 
     init(vault: Vault, providerID: DefiYieldProviderID) {
         self.vault = vault
@@ -67,9 +76,41 @@ final class YieldDepositViewModel: ObservableObject, Form {
         NSDecimalNumber(decimal: minDepositAmount).stringValue
     }
 
+    // MARK: - Estimated-yield preview
+
+    /// Pure projection of the entered amount over a month/year at the current
+    /// APY, or `nil` when either input is missing/non-positive.
+    private var estimate: YieldEstimate? {
+        YieldEstimate.make(amount: enteredAmount, apyPercent: apyPercent)
+    }
+
+    /// Whether the estimated-yield rows should render: a positive amount and a
+    /// known APY. Otherwise the deposit screen hides the preview entirely.
+    var showsYieldPreview: Bool {
+        estimate != nil
+    }
+
+    /// Formatted "<value> USDC" monthly estimate, or `--` when unavailable.
+    var estimatedMonthlyText: String {
+        format(yield: estimate?.monthly)
+    }
+
+    /// Formatted "<value> USDC" yearly estimate, or `--` when unavailable.
+    var estimatedYearlyText: String {
+        format(yield: estimate?.yearly)
+    }
+
+    private func format(yield value: Decimal?) -> String {
+        guard let value else { return "--" }
+        return AmountFormatter.formatCryptoAmount(value: value, ticker: depositTicker)
+    }
+
     func onLoad() async {
         isLoading = true
         defer { isLoading = false }
+
+        observeAmount()
+        await fetchApy()
 
         guard let usdcCoin else { return }
         await BalanceService.shared.updateBalance(for: usdcCoin)
@@ -81,6 +122,25 @@ final class YieldDepositViewModel: ObservableObject, Form {
         }
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: usdcCoin.balanceDecimal))
+    }
+
+    /// Mirrors the entered amount into `enteredAmount` so the preview recomputes
+    /// as the user types. Kept on its own cancellable so it doesn't disturb the
+    /// `Form` validation pipeline (`formCancellable`).
+    private func observeAmount() {
+        enteredAmount = Decimal(string: amountField.value)
+        amountCancellable = amountField.$value
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] value in
+                self?.enteredAmount = Decimal(string: value)
+            }
+    }
+
+    /// Loads the provider's 7d-net APY (a percent). A failed read leaves the
+    /// preview showing `--` rather than surfacing an error on the deposit form.
+    private func fetchApy() async {
+        apyPercent = try? await provider.apy(vault: vault)
     }
 
     private func fetchUsdcCoin() {

@@ -1325,6 +1325,8 @@
 "x" = "x";
 "yes" = "Sim";
 "yesterday" = "Ontem";
+"yieldEstMonthly" = "Est. mensal";
+"yieldEstYearly" = "Est. anual";
 "yieldMinimumDeposit" = "O depósito mínimo é %@ %@.";
 "yieldVerifyApproveCheck" = "Entendo que uma transação de aprovação separada será assinada e transmitida primeiro.";
 "youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";

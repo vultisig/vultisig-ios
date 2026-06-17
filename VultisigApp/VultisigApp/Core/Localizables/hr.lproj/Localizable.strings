@@ -1325,6 +1325,8 @@
 "x" = "x";
 "yes" = "Da";
 "yesterday" = "Jučer";
+"yieldEstMonthly" = "Procj. mjesečno";
+"yieldEstYearly" = "Procj. godišnje";
 "yieldMinimumDeposit" = "Minimalni polog je %@ %@.";
 "yieldVerifyApproveCheck" = "Razumijem da će prvo biti potpisana i emitirana zasebna transakcija odobrenja.";
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
