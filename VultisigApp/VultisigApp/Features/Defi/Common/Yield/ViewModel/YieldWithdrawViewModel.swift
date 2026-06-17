@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Combine
 import BigInt
 
 /// Withdraw form for a yield vault. Picks the path by liquidity: an instant
@@ -11,15 +12,23 @@ import BigInt
 /// Both build a prebuilt native-coin payload routed through the shared verify
 /// pipeline with a display-only USDC transaction.
 @MainActor
-final class YieldWithdrawViewModel: ObservableObject {
+final class YieldWithdrawViewModel: ObservableObject, Form {
     let vault: Vault
     let provider: DefiYieldProvider
     let availableBalance: Decimal
 
-    @Published var amount: String = ""
-    @Published var percentage: Double = 0
+    @Published var percentageSelected: Double? = 100
+    @Published var validForm: Bool = false
     @Published var isLoading = false
     @Published var error: Error?
+    @Published var amountField = FormField(
+        label: "amount".localized,
+        placeholder: "0",
+        validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
+    )
+
+    private(set) lazy var form: [FormField] = [amountField]
+    var formCancellable: AnyCancellable?
 
     init(vault: Vault, providerID: DefiYieldProviderID, availableBalance: Decimal) {
         self.vault = vault
@@ -27,38 +36,29 @@ final class YieldWithdrawViewModel: ObservableObject {
         self.availableBalance = availableBalance
     }
 
+    var coinMeta: CoinMeta? {
+        usdcCoin?.toCoinMeta()
+    }
+
     var nativeGasBalance: Decimal {
         vault.nativeCoin(for: provider.chain)?.balanceDecimal ?? 0
     }
 
-    var amountDecimal: Decimal {
-        Decimal(string: amount) ?? 0
-    }
-
-    var isButtonDisabled: Bool {
-        amount.isEmpty || amountDecimal <= 0 || amountDecimal > availableBalance || nativeGasBalance <= 0 || isLoading
-    }
-
-    func updatePercentage(from amountStr: String) {
-        guard let amountDec = Decimal(string: amountStr), availableBalance > 0 else { return }
-        let percent = min(Double(truncating: ((amountDec / availableBalance) * 100) as NSNumber), 100)
-        if abs(percentage - percent) > 0.1 {
-            percentage = percent
-        }
-    }
-
-    func updateAmount(from percent: Double) {
-        guard availableBalance > 0 else { return }
-        let amountDec = availableBalance * Decimal(percent) / 100
-        amount = amountDec.truncated(toPlaces: provider.assetDecimals).description
+    /// Defaults the form to a full (100%) withdraw and installs the balance
+    /// validator. The shared `AmountTextField` fills the amount from the 100%
+    /// selection, so the form opens pre-filled with the whole position.
+    func onLoad() {
+        setupForm()
+        amountField.validators.append(AmountBalanceValidator(balance: availableBalance))
+        percentageSelected = 100
     }
 
     /// Builds the withdraw payload, picking instant vs queued by liquidity.
-    /// Returns the payload and whether it is an instant withdraw (false ⇒
-    /// queued `requestRedeem`).
+    /// Returns the payload, recipient, and whether it is an instant withdraw
+    /// (false ⇒ queued `requestRedeem`).
     func buildPayload() async -> (payload: KeysignPayload, recipient: String, isInstant: Bool)? {
         guard let recipient = vault.nativeCoin(for: provider.chain)?.address else { return nil }
-        guard let amountUnits = YieldAmount.baseUnits(amountDecimal, decimals: provider.assetDecimals) else {
+        guard let amountUnits = YieldAmount.baseUnits(amountField.value.toDecimal(), decimals: provider.assetDecimals) else {
             error = DefiYieldError.invalidAmount
             return nil
         }
@@ -82,9 +82,11 @@ final class YieldWithdrawViewModel: ObservableObject {
     }
 
     func displayTransaction(recipient: String) -> SendTransaction? {
-        guard let usdcCoin = vault.coins.first(where: { $0.chain == provider.chain && $0.ticker == "USDC" }) else {
-            return nil
-        }
-        return SendTransaction.empty(coin: usdcCoin, vault: vault).with(toAddress: recipient, amount: amount)
+        guard let usdcCoin else { return nil }
+        return SendTransaction.empty(coin: usdcCoin, vault: vault).with(toAddress: recipient, amount: amountField.value)
+    }
+
+    private var usdcCoin: Coin? {
+        vault.coins.first { $0.chain == provider.chain && $0.ticker == "USDC" }
     }
 }

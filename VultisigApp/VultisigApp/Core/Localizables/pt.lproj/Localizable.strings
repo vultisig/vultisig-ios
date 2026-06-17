@@ -667,7 +667,7 @@
 "noonNextRedemption" = "Próximo resgate";
 "noonRedemptionClaimable" = "A janela de resgate foi encerrada. Seus USDC estão prontos para serem sacados para o seu cofre.";
 "noonRedemptionPending" = "Sua solicitação foi enviada. Os fundos estarão disponíveis para resgate após o encerramento da janela de resgate.";
-"noonRedemptionWindowNote" = "Os resgates são processados na próxima janela. Solicite antes do prazo para ser incluído.";
+"noonRedemptionWindowNote" = "Os teus fundos estarão disponíveis para resgatar assim que o período de resgate terminar.";
 "noonSharesTicker" = "Símbolo da cota";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC depositado";

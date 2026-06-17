@@ -3,20 +3,16 @@
 //  VultisigApp
 //
 
-import OSLog
 import SwiftUI
-import BigInt
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-withdraw-view")
-
-/// Generic withdraw form for a yield vault. Builds the withdraw/requestRedeem
-/// payload (chosen by liquidity) and routes to the shared verify screen with a
-/// display-only USDC transaction.
+/// Generic withdraw form for a yield vault, built on the shared
+/// `AmountFunctionTransactionScreen` (slider amount entry, defaulting to 100%).
+/// Builds the withdraw/requestRedeem payload (chosen by liquidity) and routes to
+/// the shared verify screen with a display-only USDC transaction.
 struct YieldWithdrawScreen: View {
     @StateObject private var viewModel: YieldWithdrawViewModel
     @Environment(\.router) private var router
 
-    @MainActor
     init(vault: Vault, providerID: DefiYieldProviderID, model: YieldViewModel) {
         _viewModel = StateObject(
             wrappedValue: YieldWithdrawViewModel(
@@ -30,115 +26,49 @@ struct YieldWithdrawScreen: View {
     private var presentation: YieldPresentation { viewModel.provider.presentation }
 
     var body: some View {
-        Screen {
-            VStack(spacing: 0) {
-                scrollableContent
-                footerView
-            }
-        }
-        .screenTitle(presentation.withdrawTitleKey.localized)
-        .withLoading(isLoading: $viewModel.isLoading)
-    }
-
-    private var scrollableContent: some View {
-        VStack(spacing: YieldDesign.verticalSpacing) {
-            VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(presentation.withdrawAmountLabelKey.localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                    Divider()
-                        .background(Theme.colors.textTertiary.opacity(0.2))
-                }
-
-                Spacer()
-
-                VStack(spacing: 8) {
-                    HStack(spacing: 4) {
-                        SendCryptoAmountTextField(
-                            amount: $viewModel.amount,
-                            onChange: { viewModel.updatePercentage(from: $0) }
-                        )
-                        .fixedSize()
-                        Text("USDC")
-                            .font(Theme.fonts.bodyLMedium)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                    }
-                    Text("\(Int(min(viewModel.percentage, 100)))%")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                }
-
-                Spacer()
-
-                VStack(spacing: YieldDesign.verticalSpacing) {
-                    percentageCheckpoints
-                    HStack {
-                        Text(presentation.withdrawBalanceAvailableKey.localized)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                        Spacer()
-                        Text("\(viewModel.availableBalance.formatted()) USDC")
-                            .font(Theme.fonts.caption12)
-                            .bold()
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
-                }
-            }
-            .padding(YieldDesign.cardPadding)
-            .overlay(
-                RoundedRectangle(cornerRadius: YieldDesign.cornerRadius)
-                    .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
-            )
-            .padding(.horizontal, YieldDesign.horizontalPadding)
-        }
-        .padding(.top, YieldDesign.verticalSpacing)
-        .frame(maxHeight: .infinity)
-    }
-
-    private var percentageCheckpoints: some View {
-        HStack(spacing: 8) {
-            ForEach([25, 50, 75, 100], id: \.self) { value in
-                PrimaryButton(
-                    title: "\(value)%",
-                    type: abs(viewModel.percentage - Double(value)) < 1 ? .primary : .secondary,
-                    size: .mini
+        ZStack {
+            if let coinMeta = viewModel.coinMeta {
+                AmountFunctionTransactionScreen(
+                    title: presentation.withdrawTitleKey.localized,
+                    coin: coinMeta,
+                    availableAmount: viewModel.availableBalance,
+                    percentageSelected: $viewModel.percentageSelected,
+                    percentageFieldType: .slider,
+                    amountField: viewModel.amountField,
+                    validForm: $viewModel.validForm,
+                    customViewPosition: .bottom
                 ) {
-                    viewModel.percentage = Double(value)
-                    viewModel.updateAmount(from: Double(value))
+                    Task { await handleWithdraw() }
+                } customView: {
+                    customView
                 }
             }
         }
+        .withLoading(isLoading: $viewModel.isLoading)
+        .onLoad { viewModel.onLoad() }
     }
 
-    private var footerView: some View {
+    @ViewBuilder
+    private var customView: some View {
         VStack(spacing: 12) {
             if let error = viewModel.error {
-                Text(error.localizedDescription)
-                    .foregroundStyle(Theme.colors.alertError)
-                    .font(.caption)
+                InfoBannerView(description: error.localizedDescription, type: .error, leadingIcon: "triangle-alert")
             }
             if viewModel.provider.hasWindowedRedemption {
-                Text("noonRedemptionWindowNote".localized)
-                    .font(.caption)
-                    .foregroundStyle(Theme.colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                InfoBannerView(
+                    description: "noonRedemptionWindowNote".localized,
+                    type: .info,
+                    leadingIcon: "circle-info"
+                )
             }
             if viewModel.nativeGasBalance <= 0 {
-                Text(presentation.ethRequiredKey.localized)
-                    .font(.caption)
-                    .foregroundStyle(Theme.colors.alertWarning)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                InfoBannerView(
+                    description: presentation.ethRequiredKey.localized,
+                    type: .warning,
+                    leadingIcon: "triangle-alert"
+                )
             }
-            PrimaryButton(title: presentation.withdrawConfirmKey.localized) {
-                Task { await handleWithdraw() }
-            }
-            .disabled(viewModel.isButtonDisabled)
         }
-        .padding(YieldDesign.horizontalPadding)
-        .background(Theme.colors.bgPrimary)
     }
 
     private func handleWithdraw() async {

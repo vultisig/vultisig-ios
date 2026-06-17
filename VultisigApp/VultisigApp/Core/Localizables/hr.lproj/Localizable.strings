@@ -667,7 +667,7 @@
 "noonNextRedemption" = "Sljedeći otkup";
 "noonRedemptionClaimable" = "Prozor za otkup je zatvoren. Tvoj USDC spreman je za povlačenje u tvoj trezor.";
 "noonRedemptionPending" = "Tvoj zahtjev je poslan. Sredstva će biti dostupna za preuzimanje nakon zatvaranja prozora za otkup.";
-"noonRedemptionWindowNote" = "Otkupi se obrađuju u sljedećem prozoru. Zatraži prije roka da budeš uključen.";
+"noonRedemptionWindowNote" = "Tvoja sredstva bit će dostupna za naplatu nakon završetka razdoblja otkupa.";
 "noonSharesTicker" = "Oznaka udjela";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC deponiran";

@@ -667,7 +667,7 @@
 "noonNextRedemption" = "下次赎回";
 "noonRedemptionClaimable" = "赎回窗口已关闭。您的 USDC 已可提取至您的金库。";
 "noonRedemptionPending" = "您的请求已提交。赎回窗口关闭后即可领取资金。";
-"noonRedemptionWindowNote" = "赎回将在下一个窗口处理。请在截止前提交申请以被纳入。";
+"noonRedemptionWindowNote" = "赎回期结束后，你的资金将可供领取。";
 "noonSharesTicker" = "份额代号";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC 已存入";

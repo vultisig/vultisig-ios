@@ -674,7 +674,7 @@
 "noonNextRedemption" = "Next redemption";
 "noonRedemptionClaimable" = "The redemption window has closed. Your USDC is ready to be withdrawn to your vault.";
 "noonRedemptionPending" = "Your request has been submitted. Funds will be claimable after the redemption window closes.";
-"noonRedemptionWindowNote" = "Redemptions are processed at the next window. Request before the cutoff to be included.";
+"noonRedemptionWindowNote" = "Your funds will be available to claim once the redemption period ends.";
 "noonSharesTicker" = "Shares ticker";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC deposited";

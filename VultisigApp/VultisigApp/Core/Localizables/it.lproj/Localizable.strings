@@ -667,7 +667,7 @@
 "noonNextRedemption" = "Prossimo rimborso";
 "noonRedemptionClaimable" = "La finestra di rimborso è chiusa. I tuoi USDC sono pronti per essere prelevati nel tuo vault.";
 "noonRedemptionPending" = "La tua richiesta è stata inviata. I fondi saranno riscuotibili dopo la chiusura della finestra di rimborso.";
-"noonRedemptionWindowNote" = "I rimborsi vengono elaborati nella prossima finestra. Richiedi prima della scadenza per essere incluso.";
+"noonRedemptionWindowNote" = "I tuoi fondi saranno disponibili per il riscatto al termine del periodo di rimborso.";
 "noonSharesTicker" = "Simbolo della quota";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC depositato";

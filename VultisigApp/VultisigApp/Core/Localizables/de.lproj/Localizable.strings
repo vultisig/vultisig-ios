@@ -667,7 +667,7 @@
 "noonNextRedemption" = "Nächste Einlösung";
 "noonRedemptionClaimable" = "Das Einlösefenster wurde geschlossen. Dein USDC kann in deinen Tresor abgehoben werden.";
 "noonRedemptionPending" = "Deine Anfrage wurde übermittelt. Die Mittel sind nach Schließung des Einlösefensters beanspruchbar.";
-"noonRedemptionWindowNote" = "Einlösungen werden im nächsten Fenster verarbeitet. Stelle deine Anfrage vor dem Stichtag, um berücksichtigt zu werden.";
+"noonRedemptionWindowNote" = "Deine Gelder stehen zur Auszahlung bereit, sobald der Einlösungszeitraum endet.";
 "noonSharesTicker" = "Anteils-Ticker";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC eingezahlt";

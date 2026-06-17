@@ -667,7 +667,7 @@
 "noonNextRedemption" = "Próxima redención";
 "noonRedemptionClaimable" = "La ventana de redención se ha cerrado. Tus USDC están listos para retirarse a tu bóveda.";
 "noonRedemptionPending" = "Tu solicitud ha sido enviada. Los fondos podrán reclamarse cuando cierre la ventana de redención.";
-"noonRedemptionWindowNote" = "Las redenciones se procesan en la próxima ventana. Solicita antes del cierre para ser incluido.";
+"noonRedemptionWindowNote" = "Tus fondos estarán disponibles para reclamar una vez que termine el período de redención.";
 "noonSharesTicker" = "Símbolo de participación";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC depositado";
