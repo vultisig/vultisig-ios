@@ -135,6 +135,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "Einzahlungsreife konnte nicht überprüft werden. Bitte später erneut versuchen.";
 "cancel" = "Abbrechen";
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
+"cardanoMinimumSendAmountError" = "Der Mindestsendebetrag beträgt %@ ADA. Cardano benötigt dies, damit das Netzwerk deine Transaktion nicht verwirft.";
 "cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
 "chain" = "Blockchain";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";

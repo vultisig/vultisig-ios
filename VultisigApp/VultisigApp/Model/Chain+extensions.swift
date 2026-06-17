@@ -6,6 +6,22 @@
 //
 
 import Foundation
+import BigInt
+
+extension Chain {
+    /// Protocol-enforced minimum value (in the chain's base units) that every
+    /// native output must carry, or `nil` when the chain imposes no such floor.
+    /// Cardano requires ~1.4 ADA per UTXO; a smaller output is accepted by the
+    /// wallet but silently dropped by the node.
+    var minimumSendAmount: BigInt? {
+        switch self {
+        case .cardano:
+            return CardanoHelper.defaultMinUTXOValue
+        default:
+            return nil
+        }
+    }
+}
 
 extension Chain {
     init?(name: String) {
