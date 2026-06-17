@@ -15,19 +15,6 @@ final class NoonYieldProviderTests: XCTestCase {
 
     private let sampleUser = "0x8b937c5395d95a8c8948c7c5b844e1541798d90c"
 
-    private func usdcCoin() -> Coin {
-        let asset = CoinMeta(
-            chain: .ethereum,
-            ticker: "USDC",
-            logo: "usdc",
-            decimals: NoonConstants.assetDecimals,
-            priceProviderId: "usd-coin",
-            contractAddress: NoonConstants.usdcMainnet,
-            isNativeToken: false
-        )
-        return Coin(asset: asset, address: sampleUser, hexPublicKey: "HexPublicKeyExample")
-    }
-
     private func hex(_ data: Data) -> String {
         "0x" + data.map { String(format: "%02x", $0) }.joined()
     }
@@ -43,6 +30,11 @@ final class NoonYieldProviderTests: XCTestCase {
             payload.spender.lowercased(),
             NoonConstants.vaultAddress.lowercased(),
             "the approve spender must be the vault"
+        )
+        XCTAssertEqual(
+            payload.token.lowercased(),
+            NoonConstants.usdcMainnet.lowercased(),
+            "the deposit keysign coin is native ETH, so the approve must explicitly target the USDC token"
         )
     }
 
@@ -69,34 +61,19 @@ final class NoonYieldProviderTests: XCTestCase {
         )
     }
 
-    // MARK: - Generic deposit payload (calldata in quote.tx)
+    // MARK: - Deposit calldata (now carried in `memo` on the native coin)
 
-    func testGenericDepositPayloadCarriesDepositCalldataByteEqual() throws {
+    /// The deposit is a native-coin (ETH) EVM call with the `deposit(assets,
+    /// receiver)` calldata in `memo`. That calldata must stay byte-equal to the
+    /// SDK golden vector — selector 0x6e553f65, args [assets, receiver=user].
+    func testDepositCalldataMatchesGoldenVector() throws {
         let amount = BigInt(100_000_000)
         let depositData = try NoonService.shared.encodeDeposit(assets: amount, receiver: sampleUser)
-        let depositHex = hex(depositData)
 
-        let payload = NoonYieldProvider.makeGenericDepositPayload(
-            usdcCoin: usdcCoin(),
-            sender: sampleUser,
-            depositDataHex: depositHex,
-            depositAmount: amount,
-            gasPrice: BigInt(20_000_000_000),
-            gasLimit: BigInt(300_000)
-        )
-
-        // The deposit call rides quote.tx, byte-equal to the SDK golden vector.
         XCTAssertEqual(
-            payload.quote.tx.data,
+            hex(depositData),
             "0x6e553f650000000000000000000000000000000000000000000000000000000005f5e1000000000000000000000000008b937c5395d95a8c8948c7c5b844e1541798d90c"
         )
-        XCTAssertEqual(payload.quote.tx.to.lowercased(), NoonConstants.vaultAddress.lowercased())
-        XCTAssertEqual(payload.quote.tx.value, "0", "a Noon deposit sends no ETH value")
-        XCTAssertEqual(payload.quote.tx.gasPrice, "20000000000")
-        XCTAssertEqual(payload.quote.tx.gas, Int64(300_000))
-        XCTAssertEqual(payload.fromCoin.ticker, "USDC")
-        XCTAssertEqual(payload.fromAmount, amount)
-        XCTAssertEqual(payload.provider, .oneInch)
     }
 
     // MARK: - Redemption derivation

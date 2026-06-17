@@ -91,7 +91,12 @@ class THORChainSwaps {
                     $0.spender = approvePayload.spender
                 }
             }
-            $0.toAddress = keysignPayload.coin.contractAddress
+            // An explicit approve token targets that contract; an empty token
+            // falls back to the keysign coin's contract (the swap-approve case,
+            // where `coin` is already the token being approved). This keeps swap
+            // approve bytes byte-identical while letting a native-coin keysign
+            // (Noon deposit: coin = ETH) approve a different token (USDC).
+            $0.toAddress = approvePayload.token.isEmpty ? keysignPayload.coin.contractAddress : approvePayload.token
         }
         let inputData = try EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,

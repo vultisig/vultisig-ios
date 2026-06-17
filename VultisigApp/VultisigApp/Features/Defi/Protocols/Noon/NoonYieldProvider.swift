@@ -149,18 +149,15 @@ struct NoonYieldProvider: DefiYieldProvider {
 
     /// Builds the first-deposit payload: a single keysign ceremony that, when the
     /// USDC allowance is short, signs+broadcasts `approve(vault, amount)` at nonce
-    /// N then `deposit(assets, receiver)` at nonce N+1. The deposit rides the
-    /// generic-swap path (`SwapPayload.generic`) carrying the `deposit` call in
-    /// `quote.tx`; the bundled `approvePayload` is what makes the existing signer
-    /// emit two transactions (mirrors the THORChain LP-add construction). When the
-    /// allowance already covers `amount`, `approvePayload` is nil and this is a
-    /// single deposit transaction — still routed through `.generic`.
+    /// N then `deposit(assets, receiver)` at nonce N+1. The deposit is an ordinary
+    /// native-coin EVM contract call (`coin = ETH`, calldata in `memo`); the
+    /// bundled `approvePayload` — whose `token` is the USDC contract — is what
+    /// makes the signer emit the prior `approve` and bump the deposit to N+1. When
+    /// the allowance already covers `amount`, `approvePayload` is nil and this is a
+    /// single deposit transaction.
     func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload {
         guard let user = userAddress(vault: vault) else {
             throw NoonServiceError.missingCoin("No Ethereum address in vault")
-        }
-        guard let usdcCoin = usdcCoin(vault: vault) else {
-            throw NoonServiceError.missingCoin("Missing USDC coin for \(chain.name)")
         }
         let minimum = await resolvedMinimum(.deposit)
         try service.assertDepositMinimum(assets: amount, minimum: minimum)
@@ -176,12 +173,9 @@ struct NoonYieldProvider: DefiYieldProvider {
         let approvePayload = Self.depositApprovePayload(allowance: allowance, amount: amount)
         let needsApprove = approvePayload != nil
 
-        return try await makeBundledDepositPayload(
+        return try await makeDepositPayload(
             vault: vault,
-            usdcCoin: usdcCoin,
-            sender: user,
-            depositData: depositData,
-            depositAmount: amount,
+            data: depositData,
             approvePayload: approvePayload,
             approvePending: needsApprove
         )
@@ -344,13 +338,6 @@ struct NoonYieldProvider: DefiYieldProvider {
         vault.coins.first { $0.chain == chain && $0.isNativeToken }?.address
     }
 
-    /// The USDC ERC-20 coin on the vault chain. The bundled deposit signs from
-    /// this coin so the approve targets USDC's contract (`coin.contractAddress`)
-    /// and the deposit signs from the same EOA — both share the user's address.
-    private func usdcCoin(vault: Vault) -> Coin? {
-        vault.coins.first { $0.chain == chain && $0.ticker == "USDC" }
-    }
-
     private func nativeGasBalance(vault: Vault) -> Decimal {
         vault.coins.first { $0.chain == chain && $0.isNativeToken }?.balanceDecimal ?? .zero
     }
@@ -386,43 +373,35 @@ struct NoonYieldProvider: DefiYieldProvider {
         }
     }
 
-    /// Assembles the bundled approve+deposit payload. The deposit `deposit(...)`
-    /// call is carried in `GenericSwapPayload.quote.tx` and signed by the existing
-    /// `OneInchSwaps` generic-swap path; the optional `approvePayload` is what the
-    /// signer turns into a prior `approve` at nonce N (the deposit then signs at
-    /// nonce N+1). The keysign coin is USDC so the approve targets USDC's
-    /// contract; the deposit's target is `quote.tx.to` (the vault) regardless.
-    private func makeBundledDepositPayload(
+    /// Assembles the deposit payload: a native-coin (ETH) EVM contract call with
+    /// the `deposit(...)` calldata in `memo` and `to = vault`. The optional
+    /// `approvePayload` (token = USDC) is what the signer turns into a prior
+    /// `approve` at nonce N — the deposit then signs at nonce N+1 and the bundle
+    /// broadcasts approve→deposit. With no approve this is a lone deposit tx.
+    private func makeDepositPayload(
         vault: Vault,
-        usdcCoin: Coin,
-        sender: String,
-        depositData: Data,
-        depositAmount: BigInt,
+        data: Data,
         approvePayload: ERC20ApprovePayload?,
         approvePending: Bool
     ) async throws -> KeysignPayload {
-        let service = try EvmService.getService(forChain: chain)
+        guard let nativeCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+            throw NoonServiceError.missingCoin("Missing native coin for \(chain.name)")
+        }
 
-        var depositDataHex = depositData.hexString
-        if !depositDataHex.hasPrefix("0x") {
-            depositDataHex = "0x" + depositDataHex
+        let service = try EvmService.getService(forChain: chain)
+        let sender = nativeCoin.address
+
+        var dataHex = data.hexString
+        if !dataHex.hasPrefix("0x") {
+            dataHex = "0x" + dataHex
         }
 
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: sender, mode: .fast)
         let gasLimit = try await depositGasLimit(
             service: service,
             sender: sender,
-            depositDataHex: depositDataHex,
+            depositDataHex: dataHex,
             approvePending: approvePending
-        )
-
-        let genericPayload = Self.makeGenericDepositPayload(
-            usdcCoin: usdcCoin,
-            sender: sender,
-            depositDataHex: depositDataHex,
-            depositAmount: depositAmount,
-            gasPrice: gasPrice,
-            gasLimit: gasLimit
         )
 
         let chainSpecific = BlockChainSpecific.Ethereum(
@@ -433,53 +412,29 @@ struct NoonYieldProvider: DefiYieldProvider {
         )
 
         return try await KeysignPayloadFactory().buildTransfer(
-            coin: usdcCoin,
+            coin: nativeCoin,
             toAddress: NoonConstants.vaultAddress,
-            amount: depositAmount,
-            memo: nil,
+            amount: BigInt(0),
+            memo: dataHex,
             chainSpecific: chainSpecific,
-            swapPayload: .generic(genericPayload),
+            swapPayload: nil,
             approvePayload: approvePayload,
             vault: vault
         )
     }
 
-    /// The approve to bundle with a deposit: `approve(vault, amount)` when the
-    /// current allowance can't cover `amount`, else `nil` (allowance already
-    /// sufficient → single deposit tx). Pure so the gating is unit-testable.
+    /// The approve to bundle with a deposit: `approve(vault, amount)` on the USDC
+    /// token when the current allowance can't cover `amount`, else `nil` (allowance
+    /// already sufficient → single deposit tx). The `token` is set to USDC's
+    /// contract because the deposit keysign coin is the NATIVE coin (ETH), so the
+    /// approve leg must explicitly target USDC rather than fall back to the coin's
+    /// (empty) contract. Pure so the gating is unit-testable.
     static func depositApprovePayload(allowance: BigInt, amount: BigInt) -> ERC20ApprovePayload? {
         guard allowance < amount else { return nil }
-        return ERC20ApprovePayload(amount: amount, spender: NoonConstants.vaultAddress)
-    }
-
-    /// Pure construction of the generic-swap payload that carries the deposit
-    /// call. Kept side-effect-free (no RPC) so the calldata-in-quote invariant is
-    /// unit-testable. Gas/gasPrice travel in `quote.tx` (no longer sourced from
-    /// the verify screen) and are forced up to `chainSpecific` at sign time by
-    /// `OneInchSwaps`.
-    static func makeGenericDepositPayload(
-        usdcCoin: Coin,
-        sender: String,
-        depositDataHex: String,
-        depositAmount: BigInt,
-        gasPrice: BigInt,
-        gasLimit: BigInt
-    ) -> GenericSwapPayload {
-        let quoteTx = EVMQuote.Transaction(
-            from: sender,
-            to: NoonConstants.vaultAddress,
-            data: depositDataHex,
-            value: "0",
-            gasPrice: String(gasPrice),
-            gas: Int64(clamping: gasLimit)
-        )
-        return GenericSwapPayload(
-            fromCoin: usdcCoin,
-            toCoin: usdcCoin,
-            fromAmount: depositAmount,
-            toAmountDecimal: humanAmount(depositAmount, decimals: NoonConstants.assetDecimals),
-            quote: EVMQuote(dstAmount: depositAmount.description, tx: quoteTx),
-            provider: .oneInch
+        return ERC20ApprovePayload(
+            amount: amount,
+            spender: NoonConstants.vaultAddress,
+            token: NoonConstants.usdcMainnet
         )
     }
 

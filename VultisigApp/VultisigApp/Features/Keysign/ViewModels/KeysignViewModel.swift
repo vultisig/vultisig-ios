@@ -614,6 +614,21 @@ class KeysignViewModel: ObservableObject {
             signedTransactions.append(transaction)
         }
 
+        // Non-swap approve bundle (e.g. Noon deposit): an approve with NO swap
+        // payload on a native EVM coin. The approve was appended above at nonce
+        // N; append the main `memo`-call tx at nonce N+1 so the result is
+        // [approve@N, call@N+1] → `.regularWithApprove`. Mirrors the hash branch
+        // in `KeysignMessageFactory`; without it the gate below would build a
+        // lone-approve `.regular` and the main call would never broadcast.
+        if keysignPayload.approvePayload != nil,
+           keysignPayload.swapPayload == nil,
+           keysignPayload.coin.chain.chainType == .EVM,
+           keysignPayload.coin.isNativeToken {
+            let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+            let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, incrementNonce: true)
+            signedTransactions.append(transaction)
+        }
+
         if let swapPayload = keysignPayload.swapPayload {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
