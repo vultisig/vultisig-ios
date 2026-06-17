@@ -43,6 +43,30 @@ final class YieldDepositViewModel: ObservableObject, Form {
         usdcCoin?.toCoinMeta()
     }
 
+    /// Product minimum deposit in human units (e.g. 100 USDC for Noon). `0` ⇒ no
+    /// minimum.
+    var minDepositAmount: Decimal {
+        provider.minDepositAmount
+    }
+
+    var hasMinimumDeposit: Bool {
+        minDepositAmount > 0
+    }
+
+    /// Localized "Minimum deposit is 100 USDC." copy for the info banner / error.
+    var minimumDepositText: String {
+        String(format: "yieldMinimumDeposit".localized, minimumDepositDisplay, depositTicker)
+    }
+
+    private var depositTicker: String {
+        usdcCoin?.ticker ?? "USDC"
+    }
+
+    /// The minimum rendered without trailing zeros (100, not 100.0000).
+    private var minimumDepositDisplay: String {
+        NSDecimalNumber(decimal: minDepositAmount).stringValue
+    }
+
     func onLoad() async {
         isLoading = true
         defer { isLoading = false }
@@ -50,6 +74,11 @@ final class YieldDepositViewModel: ObservableObject, Form {
         guard let usdcCoin else { return }
         await BalanceService.shared.updateBalance(for: usdcCoin)
 
+        if hasMinimumDeposit {
+            amountField.validators.append(
+                MinAmountValidator(minimum: minDepositAmount, errorMessage: minimumDepositText)
+            )
+        }
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: usdcCoin.balanceDecimal))
     }

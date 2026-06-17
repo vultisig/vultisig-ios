@@ -41,6 +41,13 @@ struct NoonYieldProvider: DefiYieldProvider {
     var assetDecimals: Int { NoonConstants.assetDecimals }
     var depositRecipient: String { NoonConstants.vaultAddress }
 
+    /// 100 USDC — the product floor, in human units, for the deposit form. The
+    /// build-time guard re-confirms it from the loan API (`resolvedMinimum`); this
+    /// is the static value the form validator and banner use.
+    var minDepositAmount: Decimal {
+        Self.humanAmount(NoonConstants.fallbackMinimums.minDeposit, decimals: NoonConstants.assetDecimals)
+    }
+
     var presentation: YieldPresentation {
         YieldPresentation(
             titleKey: "noonTitle",
@@ -152,7 +159,7 @@ struct NoonYieldProvider: DefiYieldProvider {
         guard let usdcCoin = usdcCoin(vault: vault) else {
             throw NoonServiceError.missingCoin("Missing USDC coin for \(chain.name)")
         }
-        let minimum = try await resolvedMinimum(fallback: NoonConstants.minDepositAssets)
+        let minimum = await resolvedMinimum(.deposit)
         try service.assertDepositMinimum(assets: amount, minimum: minimum)
 
         // Deposit calldata stays byte-equal to the SDK golden vector — selector
@@ -178,7 +185,7 @@ struct NoonYieldProvider: DefiYieldProvider {
     }
 
     func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
-        let minimum = try await resolvedMinimum(fallback: NoonConstants.minRedeemShares)
+        let minimum = await resolvedMinimum(.redeem)
         try service.assertRedeemMinimum(shares: amount, minimum: minimum)
 
         let data = try service.encodeRequestRedeem(shares: amount, receiver: recipient, owner: recipient)
@@ -319,14 +326,34 @@ struct NoonYieldProvider: DefiYieldProvider {
         vault.coins.first { $0.chain == chain && $0.isNativeToken }?.balanceDecimal ?? .zero
     }
 
-    private func resolvedMinimum(fallback: String) async throws -> BigInt {
-        let fallbackValue = BigInt(fallback) ?? .zero
+    /// Which product floor a build is enforcing.
+    enum MinimumKind {
+        case deposit
+        case redeem
+    }
+
+    /// The product minimum (100 USDC deposit / 95 naccUSDC redeem) sourced from
+    /// the loan terms (`on_chain_loan.loan.loan`), falling back to the
+    /// `NoonConstants` values when the loan API can't be read. Never returns the
+    /// vault's `MIN_AMOUNT_WEI` dust floor — that read let a sub-100-USDC deposit
+    /// through and revert on-chain.
+    private func resolvedMinimum(_ kind: MinimumKind) async -> BigInt {
+        let minimums = await loanMinimums()
+        switch kind {
+        case .deposit:
+            return minimums.minDeposit
+        case .redeem:
+            return minimums.minRedeem
+        }
+    }
+
+    private func loanMinimums() async -> NoonMinimums {
+        let fallback = NoonConstants.fallbackMinimums
         do {
-            let onChain = try await reads.minAmountWei()
-            return onChain > 0 ? onChain : fallbackValue
+            return try await api.fetchMinimums(fallback: fallback)
         } catch {
-            logger.warning("Noon MIN_AMOUNT_WEI read failed, using fallback: \(error.localizedDescription)")
-            return fallbackValue
+            logger.warning("Noon loan minimums read failed, using fallback: \(error.localizedDescription)")
+            return fallback
         }
     }
 

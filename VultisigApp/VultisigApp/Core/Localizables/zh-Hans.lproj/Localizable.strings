@@ -1327,6 +1327,7 @@
 "x" = "X（推特）";
 "yes" = "是";
 "yesterday" = "昨天";
+"yieldMinimumDeposit" = "最低存款为 %@ %@。";
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";

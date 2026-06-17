@@ -1340,6 +1340,7 @@
 "x" = "X (Twitter)";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
+"yieldMinimumDeposit" = "Minimum deposit is %@ %@.";
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import BigInt
 
 enum NoonApiError: Error {
     case loanNotFound
@@ -24,6 +25,15 @@ extension NoonApiError: LocalizedError {
 struct NoonVaultMetrics {
     let apy7dNetPercent: Decimal
     let tvlInUsd: Decimal
+}
+
+/// Product minimums in base units (6 dp), as reported by the loan terms:
+/// deposit ≥ `minDeposit` (USDC), redeem ≥ `minRedeem` (naccUSDC). These are the
+/// SDK-authoritative floors — NOT the vault's on-chain `MIN_AMOUNT_WEI` dust
+/// floor.
+struct NoonMinimums: Equatable {
+    let minDeposit: BigInt
+    let minRedeem: BigInt
 }
 
 /// Fetches APY (`back.noon.capital`) and TVL (`yield.accountable.capital`).
@@ -66,6 +76,19 @@ struct NoonApiService {
         return NoonVaultMetrics(apy7dNetPercent: try await apyTask, tvlInUsd: try await tvlTask)
     }
 
+    /// The product minimums from the loan terms (`on_chain_loan.loan.loan`). The
+    /// `fallback` is used for either field the payload omits, so a partial
+    /// response can't drop a floor to zero. This is the authoritative deposit /
+    /// redeem floor — the vault's `MIN_AMOUNT_WEI` is only a dust floor and is
+    /// NOT used here.
+    func fetchMinimums(fallback: NoonMinimums) async throws -> NoonMinimums {
+        let response = try await httpClient.request(
+            NoonAPI.loan(loanAddress: loanAddress),
+            responseType: NoonLoanResponse.self
+        )
+        return Self.minimums(from: response.data, fallback: fallback)
+    }
+
     // MARK: - Decoding
 
     /// Filters the vaults list by `loan_address` and reads `ir.7d.net.apy_pct`.
@@ -79,6 +102,17 @@ struct NoonApiService {
             throw NoonApiError.missingField("ir.7d.net.apy_pct")
         }
         return apy
+    }
+
+    /// Reads `on_chain_loan.loan.loan.minDeposit` / `.minRedeem`, falling back to
+    /// `fallback` per-field when the response omits it. Pure so the fallback
+    /// behaviour is unit-testable.
+    static func minimums(from response: NoonLoanResponse, fallback: NoonMinimums) -> NoonMinimums {
+        let loan = response.onChainLoan?.loan?.loan
+        return NoonMinimums(
+            minDeposit: loan?.minDeposit?.value ?? fallback.minDeposit,
+            minRedeem: loan?.minRedeem?.value ?? fallback.minRedeem
+        )
     }
 }
 
@@ -120,9 +154,11 @@ struct NoonRateValue: Decodable {
 
 struct NoonLoanResponse: Decodable {
     let loanComputed: NoonLoanComputed
+    let onChainLoan: NoonOnChainLoan?
 
     enum CodingKeys: String, CodingKey {
         case loanComputed = "loan_computed"
+        case onChainLoan = "on_chain_loan"
     }
 }
 
@@ -131,5 +167,40 @@ struct NoonLoanComputed: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case tvlInUsd = "tvl_in_usd"
+    }
+}
+
+/// Nested loan terms: `on_chain_loan.loan.loan`. The inner `loan.loan` mirrors the
+/// SDK's hardcoded `minDepositAssets`/`minRedeem` floors.
+struct NoonOnChainLoan: Decodable {
+    let loan: NoonLoanWrapper?
+}
+
+struct NoonLoanWrapper: Decodable {
+    let loan: NoonLoanTerms?
+}
+
+struct NoonLoanTerms: Decodable {
+    let minDeposit: NoonBaseUnits?
+    let minRedeem: NoonBaseUnits?
+}
+
+/// A base-unit integer that the API may encode as either a JSON number or a
+/// numeric string. Decodes to `BigInt` either way; a non-numeric value yields
+/// `nil` (the caller then uses its fallback rather than trapping).
+struct NoonBaseUnits: Decodable {
+    let value: BigInt
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let string = try? container.decode(String.self), let parsed = BigInt(string) {
+            value = parsed
+            return
+        }
+        if let number = try? container.decode(Int64.self) {
+            value = BigInt(number)
+            return
+        }
+        throw NoonApiError.missingField("on_chain_loan.loan.loan minimum")
     }
 }

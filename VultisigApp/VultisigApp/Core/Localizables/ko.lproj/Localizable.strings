@@ -1305,6 +1305,7 @@
 "x" = "X (Twitter)";
 "yes" = "예";
 "yesterday" = "어제";
+"yieldMinimumDeposit" = "최소 입금액은 %@ %@입니다.";
 "youAreEnteringAnewEra" = "새로운 시대로 접어들어 오래된 시드 문구를 뒤로하고 있습니다. 필요한 것:";
 "youAreEnteringAnewEraHighlight" = "오래된 시드 문구를 뒤로하고 있습니다.";
 "youAreInLocalMode" = "로컬 모드입니다";

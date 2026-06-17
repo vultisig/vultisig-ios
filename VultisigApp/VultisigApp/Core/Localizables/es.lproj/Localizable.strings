@@ -1326,6 +1326,7 @@
 "x" = "x";
 "yes" = "Sí";
 "yesterday" = "Ayer";
+"yieldMinimumDeposit" = "El depósito mínimo es %@ %@.";
 "youAreEnteringAnewEra" = "Estás entrando en una nueva era, dejando atrás las viejas frases semilla. Necesitarás:";
 "youAreEnteringAnewEraHighlight" = "dejando atrás las viejas frases semilla.";
 "youAreInLocalMode" = "Estás en modo local";

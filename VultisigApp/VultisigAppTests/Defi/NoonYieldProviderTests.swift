@@ -179,6 +179,54 @@ final class NoonYieldProviderTests: XCTestCase {
         }
     }
 
+    // MARK: - Deposit form minimum (100 USDC, not MIN_AMOUNT_WEI)
+
+    func testProviderExposesHundredUsdcDepositMinimum() {
+        let provider = NoonYieldProvider()
+        XCTAssertEqual(
+            provider.minDepositAmount,
+            Decimal(100),
+            "the deposit form must enforce the 100 USDC product minimum, not the 0.01 USDC dust floor"
+        )
+    }
+
+    /// The deposit form's `validForm` maps `amountField.validate()` to a bool, so a
+    /// throwing validate ⇒ `validForm == false`. Build the field with the same
+    /// validators `YieldDepositViewModel.onLoad` installs and confirm a sub-100
+    /// amount fails while 100 (and above) passes.
+    private func makeDepositAmountField() -> FormField {
+        let field = FormField(
+            label: "amount",
+            placeholder: "0",
+            validators: [RequiredValidator(errorMessage: "required")]
+        )
+        field.validators.append(MinAmountValidator(minimum: Decimal(100), errorMessage: "min"))
+        field.validators.append(AmountBalanceValidator(balance: Decimal(1_000)))
+        return field
+    }
+
+    func testDepositFormInvalidBelowMinimum() {
+        let field = makeDepositAmountField()
+        field.value = "50"
+        XCTAssertThrowsError(try field.validate(), "a sub-100 USDC amount must make validForm false")
+    }
+
+    func testDepositFormValidAtAndAboveMinimum() {
+        let atMin = makeDepositAmountField()
+        atMin.value = "100"
+        XCTAssertNoThrow(try atMin.validate(), "exactly 100 USDC must be accepted")
+
+        let aboveMin = makeDepositAmountField()
+        aboveMin.value = "250"
+        XCTAssertNoThrow(try aboveMin.validate(), "above the minimum must be accepted")
+    }
+
+    func testMinAmountValidatorPassesEmptyValue() {
+        // Empty defers to RequiredValidator; the min validator must not throw on it.
+        let validator = MinAmountValidator(minimum: Decimal(100), errorMessage: "min")
+        XCTAssertNoThrow(try validator.validate(value: ""))
+    }
+
     // MARK: - Settlement date
 
     func testNextSettlementDateIsWednesdayPlusSettlementWindowUtc() throws {

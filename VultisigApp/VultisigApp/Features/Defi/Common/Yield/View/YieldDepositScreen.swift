@@ -28,17 +28,31 @@ struct YieldDepositScreen: View {
                     percentageSelected: $percentageSelected,
                     percentageFieldType: .button,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm
+                    validForm: $viewModel.validForm,
+                    customViewPosition: .bottom
                 ) {
                     Task { await handleVerify() }
                 } customView: {
-                    EmptyView()
+                    minimumDepositBanner
                 }
             }
         }
         .withLoading(isLoading: $viewModel.isLoading)
         .task {
             await viewModel.onLoad()
+        }
+    }
+
+    /// Non-closable info banner stating the product minimum (e.g. "Minimum deposit
+    /// is 100 USDC."). Shown only for providers that declare a minimum.
+    @ViewBuilder
+    private var minimumDepositBanner: some View {
+        if viewModel.hasMinimumDeposit {
+            InfoBannerView(
+                description: viewModel.minimumDepositText,
+                type: .info,
+                leadingIcon: "circle-info"
+            )
         }
     }
 

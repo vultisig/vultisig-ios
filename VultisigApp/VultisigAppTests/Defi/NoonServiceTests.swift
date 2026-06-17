@@ -185,4 +185,51 @@ final class NoonApiServiceTests: XCTestCase {
         let response = try JSONDecoder().decode(NoonLoanResponse.self, from: Data(json.utf8))
         XCTAssertEqual(response.loanComputed.tvlInUsd, 151009.73819945095)
     }
+
+    // MARK: - Product minimums (the authoritative deposit/redeem floor)
+
+    func testMinimumsReadFromOnChainLoanTerms() throws {
+        // Mirrors the live loan payload: the product floors live at
+        // on_chain_loan.loan.loan.minDeposit / .minRedeem — NOT MIN_AMOUNT_WEI.
+        let json = """
+        {
+          "loan_computed": { "tvl_in_usd": 151009.0 },
+          "on_chain_loan": { "loan": { "loan": { "minDeposit": 100000000, "minRedeem": 95000000 } } }
+        }
+        """
+        let response = try JSONDecoder().decode(NoonLoanResponse.self, from: Data(json.utf8))
+        // A deliberately wrong fallback proves the parsed values win.
+        let minimums = NoonApiService.minimums(
+            from: response,
+            fallback: NoonMinimums(minDeposit: BigInt(1), minRedeem: BigInt(1))
+        )
+        XCTAssertEqual(minimums.minDeposit, BigInt(100_000_000), "deposit floor must be 100 USDC")
+        XCTAssertEqual(minimums.minRedeem, BigInt(95_000_000), "redeem floor must be 95 naccUSDC")
+    }
+
+    func testMinimumsParseStringEncodedValues() throws {
+        // The API may serialize the base-unit integers as strings.
+        let json = """
+        {
+          "loan_computed": { "tvl_in_usd": 1.0 },
+          "on_chain_loan": { "loan": { "loan": { "minDeposit": "100000000", "minRedeem": "95000000" } } }
+        }
+        """
+        let response = try JSONDecoder().decode(NoonLoanResponse.self, from: Data(json.utf8))
+        let minimums = NoonApiService.minimums(from: response, fallback: NoonConstants.fallbackMinimums)
+        XCTAssertEqual(minimums.minDeposit, BigInt(100_000_000))
+        XCTAssertEqual(minimums.minRedeem, BigInt(95_000_000))
+    }
+
+    func testMinimumsFallBackWhenLoanTermsAbsent() throws {
+        // No on_chain_loan ⇒ use the NoonConstants product floors, never zero and
+        // never MIN_AMOUNT_WEI.
+        let json = """
+        { "loan_computed": { "tvl_in_usd": 1.0 } }
+        """
+        let response = try JSONDecoder().decode(NoonLoanResponse.self, from: Data(json.utf8))
+        let minimums = NoonApiService.minimums(from: response, fallback: NoonConstants.fallbackMinimums)
+        XCTAssertEqual(minimums.minDeposit, BigInt(NoonConstants.minDepositAssets))
+        XCTAssertEqual(minimums.minRedeem, BigInt(NoonConstants.minRedeemShares))
+    }
 }

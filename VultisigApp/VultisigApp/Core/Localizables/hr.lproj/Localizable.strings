@@ -1326,6 +1326,7 @@
 "x" = "x";
 "yes" = "Da";
 "yesterday" = "Jučer";
+"yieldMinimumDeposit" = "Minimalni polog je %@ %@.";
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";

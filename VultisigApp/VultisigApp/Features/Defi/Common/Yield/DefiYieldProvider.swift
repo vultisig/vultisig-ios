@@ -105,6 +105,10 @@ protocol DefiYieldProvider {
     var assetDecimals: Int { get }
     /// Contract a deposit targets, shown as the recipient on the display-only tx.
     var depositRecipient: String { get }
+    /// Product minimum deposit in human (asset) units, e.g. `100` USDC for Noon.
+    /// `0` means "no product minimum" (the form gates only on balance). Drives the
+    /// deposit form's min-amount validator and info banner.
+    var minDepositAmount: Decimal { get }
     /// Whether redemptions go through a settlement window (Noon) or are instant
     /// (Circle). Drives the Withdraw-vs-Claim copy.
     var hasWindowedRedemption: Bool { get }
@@ -147,4 +151,7 @@ protocol DefiYieldProvider {
 extension DefiYieldProvider {
     /// Account-less providers (Noon, direct EOA) have nothing to persist.
     @MainActor func persistAccountAddress(_: String, vault _: Vault) {}
+
+    /// Most providers have no product minimum; the form gates only on balance.
+    var minDepositAmount: Decimal { 0 }
 }

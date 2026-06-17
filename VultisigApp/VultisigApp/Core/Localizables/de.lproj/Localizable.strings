@@ -1326,6 +1326,7 @@
 "x" = "x";
 "yes" = "Ja";
 "yesterday" = "Gestern";
+"yieldMinimumDeposit" = "Mindesteinzahlung beträgt %@ %@.";
 "youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "youAreInLocalMode" = "Du bist im lokalen Modus";

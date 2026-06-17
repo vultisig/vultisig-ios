@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import BigInt
 
 /// Single source of truth for the Noon "sUSN Delta-Neutral" USDC yield vault.
 ///
@@ -29,11 +30,21 @@ enum NoonConstants {
     static let assetDecimals = 6
     static let shareDecimals = 6
 
-    /// Product minimums in base units (6 dp). Read on-chain via `minDeposit` /
-    /// `minRedeem` (`MIN_AMOUNT_WEI`) with these as a hardcoded fallback because
-    /// the loan terms can update.
+    /// Product minimums in base units (6 dp), sourced from the loan terms
+    /// (`on_chain_loan.loan.loan.minDeposit` / `.minRedeem`) with these as a
+    /// hardcoded fallback because the loan terms can update. These mirror the
+    /// SDK's hardcoded floors and are the authoritative deposit / redeem minimum.
+    /// They are NOT the vault's on-chain `MIN_AMOUNT_WEI` (a 0.01 USDC dust floor).
     static let minDepositAssets = BigIntFallback.minDeposit
     static let minRedeemShares = BigIntFallback.minRedeem
+
+    /// The fallback minimums as a single value, for the loan-API min source.
+    static var fallbackMinimums: NoonMinimums {
+        NoonMinimums(
+            minDeposit: BigInt(minDepositAssets) ?? .zero,
+            minRedeem: BigInt(minRedeemShares) ?? .zero
+        )
+    }
 
     enum BigIntFallback {
         // 100 USDC

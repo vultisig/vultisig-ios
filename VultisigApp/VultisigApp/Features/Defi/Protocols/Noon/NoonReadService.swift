@@ -57,7 +57,6 @@ struct NoonReadService {
         static let convertToAssets = "07a2d13a"  // convertToAssets(uint256)
         static let maxWithdraw = "ce96cb77"       // maxWithdraw(address)
         static let getState = "1bab58f5"          // getState(address)
-        static let minAmountWei = "39919981"      // MIN_AMOUNT_WEI()
     }
 
     init(
@@ -116,14 +115,6 @@ struct NoonReadService {
     func convertToAssets(shares: BigInt) async throws -> BigInt {
         let service = try EvmService.getService(forChain: chain)
         return try await convertToAssets(shares: shares, service: service)
-    }
-
-    /// On-chain minimum (`MIN_AMOUNT_WEI`) with a hardcoded fallback because the
-    /// loan terms can update.
-    func minAmountWei() async throws -> BigInt {
-        let service = try EvmService.getService(forChain: chain)
-        let data = "0x" + Selector.minAmountWei
-        return try await callUInt(to: vault, data: data, service: service)
     }
 
     // MARK: - Private
