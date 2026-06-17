@@ -15,16 +15,13 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-vaul
 /// `presentation` and account-gated providers show an "Open Account" setup card
 /// until their account resolves. Renders the top banner (provider + USD value +
 /// logo), the underlined "Deposited" tab + description, a dismissible info
-/// banner, the position card, APY / next-redemption / shares rows with info
-/// tooltips, Deposit / Withdraw actions, and the windowed-redemption state.
+/// banner, the position card, APY / next-redemption / shares rows, Deposit /
+/// Withdraw actions, and the windowed-redemption state.
 struct YieldVaultView: View {
     @ObservedObject var vault: Vault
 
     @StateObject private var model: YieldViewModel
     @Environment(\.router) private var router
-
-    @State private var openTooltip: YieldTooltipID?
-    @State private var showOverviewTooltip = false
 
     /// Per-vault, per-provider persisted dismissal for the empty-state info banner.
     @AppStorage private var infoBannerDismissed: Bool
@@ -53,15 +50,6 @@ struct YieldVaultView: View {
             }
         }
         .screenTitle(presentation.titleKey.localized)
-        .screenToolbar {
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "circle-info") {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        showOverviewTooltip.toggle()
-                    }
-                }
-            }
-        }
         .onLoad {
             Task { await onAppear() }
         }
@@ -73,9 +61,6 @@ struct YieldVaultView: View {
         ScrollView {
             VStack(spacing: YieldDesign.verticalSpacing) {
                 topBanner
-                if showOverviewTooltip {
-                    overviewTooltip
-                }
                 headerDescription
                 if !model.hasAccount, !infoBannerDismissed {
                     infoBanner
@@ -91,7 +76,6 @@ struct YieldVaultView: View {
             .padding(.horizontal, YieldDesign.horizontalPadding)
         }
         .background(VaultMainScreenBackground())
-        .onTapGesture { openTooltip = nil }
         #if os(iOS)
         .refreshable { await refresh() }
         #endif
@@ -104,18 +88,6 @@ struct YieldVaultView: View {
             logoAsset: presentation.bannerLogoAsset,
             tabTitle: presentation.dashboardTitleKey.localized
         )
-    }
-
-    private var overviewTooltip: some View {
-        InfoTooltip(
-            title: presentation.overviewTooltipTitleKey.localized,
-            description: presentation.overviewTooltipBodyKey.localized,
-            arrowDirection: .up,
-            arrowXFraction: 0.9,
-            maxWidth: .infinity,
-            onDismiss: { showOverviewTooltip = false }
-        )
-        .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
     }
 
     private var headerDescription: some View {
@@ -191,15 +163,12 @@ struct YieldVaultView: View {
     private var infoRows: some View {
         VStack(spacing: 12) {
             HStack(spacing: 0) {
-                YieldInfoLabel(
-                    icon: "divide.circle",
-                    isSystemIcon: true,
-                    label: presentation.apyLabelKey.localized,
-                    tooltipID: .apy,
-                    tooltipTitle: presentation.apyTooltipTitleKey.localized,
-                    tooltipBody: presentation.apyTooltipBodyKey.localized,
-                    openTooltip: $openTooltip
-                )
+                HStack(spacing: 6) {
+                    Image(systemName: "divide.circle")
+                    Text(presentation.apyLabelKey.localized)
+                        .font(Theme.fonts.bodySMedium)
+                }
+                .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
                 Text(apyText)
                     .font(Theme.fonts.bodyMMedium)

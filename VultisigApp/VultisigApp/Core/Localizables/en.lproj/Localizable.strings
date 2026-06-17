@@ -167,8 +167,6 @@
 "chooseTokens" = "Choose Tokens";
 "chooseVaultsForNotifications" = "Choose vaults for notifications";
 "circleAPYLabel" = "APY (Approx.)";
-"circleAPYTooltipBody" = "The approximate annualized yield on your deposit. Yield is generated securely and can vary over time.";
-"circleAPYTooltipTitle" = "APY (Approx.)";
 "circleCreatingAccount" = "Creating account...";
 "circleDashboardDeposit" = "Deposit";
 "circleDashboardDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
@@ -186,10 +184,6 @@
 "circleEthereumRequired" = "Ethereum Required";
 "circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
 "circleNoSeparateClaimStep" = "Circle has no separate claim step";
-"circleOverviewTooltipBody" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
-"circleOverviewTooltipTitle" = "Disclaimer";
-"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
-"circleRewardsTitle" = "Rewards";
 "circleRowCreateWallet" = "Create Wallet";
 "circleRowGetStarted" = "Get Started";
 "circleRowYieldAccount" = "Yield Account";
@@ -666,8 +660,6 @@
 "noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
 "noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "noonAPYLabel" = "APY (7d)";
-"noonAPYTooltipBody" = "The annualized yield earned over the last 7 days. Yield is generated through secure off-chain treasuries and can vary over time.";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "Claim";
 "noonClaimAmount" = "Claim %@";
 "noonClaimAvailableInDays" = "Claim available in %d Days";
@@ -680,13 +672,9 @@
 "noonEthereumRequired" = "Ethereum Required";
 "noonEthereumRequiredDescription" = "Please add Ethereum to your vault to use Noon.";
 "noonNextRedemption" = "Next redemption";
-"noonOverviewTooltipBody" = "Funds remain fully under your control, though are subject to the operational risk of the operator. Noon yield is generated through secure off-chain treasuries.";
-"noonOverviewTooltipTitle" = "Disclaimer";
 "noonRedemptionClaimable" = "The redemption window has closed. Your USDC is ready to be withdrawn to your vault.";
 "noonRedemptionPending" = "Your request has been submitted. Funds will be claimable after the redemption window closes.";
 "noonRedemptionWindowNote" = "Redemptions are processed at the next window. Request before the cutoff to be included.";
-"noonRewardsTooltipBody" = "The total yield your deposit has earned so far. Rewards accrue automatically and are added to your balance.";
-"noonRewardsTooltipTitle" = "Total rewards earned";
 "noonSharesTicker" = "Shares ticker";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC deposited";

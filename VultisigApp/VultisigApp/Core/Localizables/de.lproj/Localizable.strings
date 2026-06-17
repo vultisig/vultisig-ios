@@ -159,8 +159,6 @@
 "chooseTokens" = "Tokens wählen";
 "chooseVaultsForNotifications" = "Tresore für Benachrichtigungen auswählen";
 "circleAPYLabel" = "APY (ca.)";
-"circleAPYTooltipBody" = "Der ungefähre annualisierte Ertrag Ihrer Einzahlung. Erträge werden sicher generiert und können im Laufe der Zeit variieren.";
-"circleAPYTooltipTitle" = "APY (ca.)";
 "circleBalance" = "Guthaben";
 "circleCreatingAccount" = "Konto wird erstellt...";
 "circleDashboardDepositDescription" = "Zahlen Sie Ihre $USDC auf ein Circle-Konto ein und verdienen Sie sicher in Ihrem Vultisig-Tresor.";
@@ -179,10 +177,6 @@
 "circleEthereumRequired" = "Ethereum erforderlich";
 "circleEthereumRequiredDescription" = "Bitte fügen Sie Ethereum zu Ihrem Tresor hinzu, um Circle zu verwenden.";
 "circleNoSeparateClaimStep" = "Circle hat keinen separaten Beanspruchungsschritt";
-"circleOverviewTooltipBody" = "Das Guthaben bleibt vollständig unter der Kontrolle Ihres Tresors. Circle-Konten sind selbstverwahrt und Erträge werden durch sichere Off-Chain-Treasuries generiert.";
-"circleOverviewTooltipTitle" = "Haftungsausschluss";
-"circleRewardsDescription" = "Belohnungen werden automatisch Ihrem Guthaben gutgeschrieben.";
-"circleRewardsTitle" = "Belohnungen";
 "circleRowCreateWallet" = "Wallet erstellen";
 "circleRowGetStarted" = "Loslegen";
 "circleRowYieldAccount" = "Ertragskonto";
@@ -659,8 +653,6 @@
 "noGasTokenFoundError" = "Kein Gas-Token für %@ Chain gefunden. Bitte füge den nativen Token zu deinem Vault hinzu.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
 "noonAPYLabel" = "APY (7T)";
-"noonAPYTooltipBody" = "Der annualisierte Ertrag der letzten 7 Tage. Erträge werden durch sichere Off-Chain-Treasuries generiert und können im Laufe der Zeit variieren.";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "Beanspruchen";
 "noonClaimAmount" = "%@ beanspruchen";
 "noonClaimAvailableInDays" = "Beanspruchbar in %d Tagen";
@@ -673,13 +665,9 @@
 "noonEthereumRequired" = "Ethereum erforderlich";
 "noonEthereumRequiredDescription" = "Bitte füge Ethereum zu deinem Tresor hinzu, um Noon zu nutzen.";
 "noonNextRedemption" = "Nächste Einlösung";
-"noonOverviewTooltipBody" = "Das Guthaben bleibt vollständig unter Ihrer Kontrolle, unterliegt jedoch dem operativen Risiko des Betreibers. Noon-Erträge werden durch sichere Off-Chain-Treasuries generiert.";
-"noonOverviewTooltipTitle" = "Haftungsausschluss";
 "noonRedemptionClaimable" = "Das Einlösefenster wurde geschlossen. Dein USDC kann in deinen Tresor abgehoben werden.";
 "noonRedemptionPending" = "Deine Anfrage wurde übermittelt. Die Mittel sind nach Schließung des Einlösefensters beanspruchbar.";
 "noonRedemptionWindowNote" = "Einlösungen werden im nächsten Fenster verarbeitet. Stelle deine Anfrage vor dem Stichtag, um berücksichtigt zu werden.";
-"noonRewardsTooltipBody" = "Der gesamte Ertrag, den deine Einzahlung bisher erzielt hat. Belohnungen werden automatisch gutgeschrieben und deinem Guthaben hinzugefügt.";
-"noonRewardsTooltipTitle" = "Gesamte erzielte Belohnungen";
 "noonSharesTicker" = "Anteils-Ticker";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC eingezahlt";

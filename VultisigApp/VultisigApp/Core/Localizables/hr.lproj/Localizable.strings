@@ -159,8 +159,6 @@
 "chooseTokens" = "Odaberite tokene";
 "chooseVaultsForNotifications" = "Odaberite trezore za obavijesti";
 "circleAPYLabel" = "APY (Približno)";
-"circleAPYTooltipBody" = "Približni godišnji prinos na tvoj depozit. Prinos se generira sigurno i može varirati tijekom vremena.";
-"circleAPYTooltipTitle" = "APY (Približno)";
 "circleBalance" = "Stanje";
 "circleCreatingAccount" = "Kreiranje računa...";
 "circleDashboardDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
@@ -179,10 +177,6 @@
 "circleEthereumRequired" = "Ethereum Potreban";
 "circleEthereumRequiredDescription" = "Molimo dodajte Ethereum u vaš trezor za korištenje Circle-a.";
 "circleNoSeparateClaimStep" = "Circle nema zaseban korak preuzimanja";
-"circleOverviewTooltipBody" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
-"circleOverviewTooltipTitle" = "Izjava o odricanju";
-"circleRewardsDescription" = "Nagrade se automatski pripisuju vašem saldu.";
-"circleRewardsTitle" = "Nagrade";
 "circleRowCreateWallet" = "Izradi novčanik";
 "circleRowGetStarted" = "Započni";
 "circleRowYieldAccount" = "Račun za prinos";
@@ -659,8 +653,6 @@
 "noGasTokenFoundError" = "Nije pronađen token za plin za %@ lanac. Molimo dodajte nativni token u vaš trezor.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
 "noonAPYLabel" = "APY (7d)";
-"noonAPYTooltipBody" = "Godišnji prinos ostvaren u posljednjih 7 dana. Prinos se generira kroz sigurne off-chain riznice i može varirati tijekom vremena.";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "Preuzmi";
 "noonClaimAmount" = "Preuzmi %@";
 "noonClaimAvailableInDays" = "Dostupno za preuzimanje za %d Dana";
@@ -673,13 +665,9 @@
 "noonEthereumRequired" = "Ethereum Potreban";
 "noonEthereumRequiredDescription" = "Dodaj Ethereum u svoj trezor za korištenje Noona.";
 "noonNextRedemption" = "Sljedeći otkup";
-"noonOverviewTooltipBody" = "Sredstva ostaju potpuno pod tvojom kontrolom, no podložna su operativnom riziku operatora. Noon prinos se generira kroz sigurne off-chain riznice.";
-"noonOverviewTooltipTitle" = "Izjava o odricanju";
 "noonRedemptionClaimable" = "Prozor za otkup je zatvoren. Tvoj USDC spreman je za povlačenje u tvoj trezor.";
 "noonRedemptionPending" = "Tvoj zahtjev je poslan. Sredstva će biti dostupna za preuzimanje nakon zatvaranja prozora za otkup.";
 "noonRedemptionWindowNote" = "Otkupi se obrađuju u sljedećem prozoru. Zatraži prije roka da budeš uključen.";
-"noonRewardsTooltipBody" = "Ukupni prinos koji je tvoj depozit do sada ostvario. Nagrade se automatski pripisuju i dodaju tvom saldu.";
-"noonRewardsTooltipTitle" = "Ukupno ostvarene nagrade";
 "noonSharesTicker" = "Oznaka udjela";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC deponiran";

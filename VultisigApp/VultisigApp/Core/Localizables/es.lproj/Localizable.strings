@@ -159,8 +159,6 @@
 "chooseTokens" = "Elegir Tokens";
 "chooseVaultsForNotifications" = "Elegir bóvedas para notificaciones";
 "circleAPYLabel" = "APY (Aprox.)";
-"circleAPYTooltipBody" = "El rendimiento anualizado aproximado de su depósito. El rendimiento se genera de forma segura y puede variar con el tiempo.";
-"circleAPYTooltipTitle" = "APY (Aprox.)";
 "circleBalance" = "Saldo";
 "circleCreatingAccount" = "Creando cuenta...";
 "circleDashboardDepositDescription" = "Deposite sus $USDC en una cuenta Circle y gane rendimiento de forma segura dentro de su bóveda Vultisig.";
@@ -179,10 +177,6 @@
 "circleEthereumRequired" = "Ethereum Requerido";
 "circleEthereumRequiredDescription" = "Por favor añada Ethereum a su bóveda para usar Circle.";
 "circleNoSeparateClaimStep" = "Circle no tiene un paso de reclamación separado";
-"circleOverviewTooltipBody" = "Los fondos permanecen totalmente bajo el control de su bóveda. Las cuentas Circle son de auto-custodia y el rendimiento se genera a través de tesorerías seguras fuera de la cadena.";
-"circleOverviewTooltipTitle" = "Aviso legal";
-"circleRewardsDescription" = "Las recompensas se acreditan automáticamente en tu saldo.";
-"circleRewardsTitle" = "Recompensas";
 "circleRowCreateWallet" = "Crear Billetera";
 "circleRowGetStarted" = "Empezar";
 "circleRowYieldAccount" = "Cuenta de Rendimiento";
@@ -659,8 +653,6 @@
 "noGasTokenFoundError" = "No se encontró token de gas para la cadena %@. Por favor agrega el token nativo a tu vault.";
 "noLiquidityPool" = "No hay pool de liquidez disponible para este par de tokens. Este activo puede no estar soportado.";
 "noonAPYLabel" = "APY (7d)";
-"noonAPYTooltipBody" = "El rendimiento anualizado obtenido durante los últimos 7 días. El rendimiento se genera a través de tesorerías seguras fuera de la cadena y puede variar con el tiempo.";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "Reclamar";
 "noonClaimAmount" = "Reclamar %@";
 "noonClaimAvailableInDays" = "Disponible para reclamar en %d Días";
@@ -673,13 +665,9 @@
 "noonEthereumRequired" = "Ethereum Requerido";
 "noonEthereumRequiredDescription" = "Añade Ethereum a tu bóveda para usar Noon.";
 "noonNextRedemption" = "Próxima redención";
-"noonOverviewTooltipBody" = "Los fondos permanecen totalmente bajo su control, aunque están sujetos al riesgo operativo del operador. El rendimiento de Noon se genera a través de tesorerías seguras fuera de la cadena.";
-"noonOverviewTooltipTitle" = "Aviso legal";
 "noonRedemptionClaimable" = "La ventana de redención se ha cerrado. Tus USDC están listos para retirarse a tu bóveda.";
 "noonRedemptionPending" = "Tu solicitud ha sido enviada. Los fondos podrán reclamarse cuando cierre la ventana de redención.";
 "noonRedemptionWindowNote" = "Las redenciones se procesan en la próxima ventana. Solicita antes del cierre para ser incluido.";
-"noonRewardsTooltipBody" = "El rendimiento total que ha obtenido su depósito hasta ahora. Las recompensas se acumulan automáticamente y se añaden a su saldo.";
-"noonRewardsTooltipTitle" = "Total de recompensas obtenidas";
 "noonSharesTicker" = "Símbolo de participación";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC depositado";

@@ -63,13 +63,7 @@ struct NoonYieldProvider: DefiYieldProvider {
             staticApyText: nil,
             providerNameKey: "noonTitle",
             bannerLogoAsset: "noon-logo",
-            infoBannerKey: "noonDashboardInfoText",
-            apyTooltipTitleKey: "noonAPYTooltipTitle",
-            apyTooltipBodyKey: "noonAPYTooltipBody",
-            rewardsTooltipTitleKey: "noonRewardsTooltipTitle",
-            rewardsTooltipBodyKey: "noonRewardsTooltipBody",
-            overviewTooltipTitleKey: "noonOverviewTooltipTitle",
-            overviewTooltipBodyKey: "noonOverviewTooltipBody"
+            infoBannerKey: "noonDashboardInfoText"
         )
     }
 

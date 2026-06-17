@@ -52,13 +52,7 @@ struct CircleYieldProvider: DefiYieldProvider {
             staticApyText: "circleStaticApy".localized,
             providerNameKey: "circleTitle",
             bannerLogoAsset: "circle-logo",
-            infoBannerKey: "circleDashboardInfoText",
-            apyTooltipTitleKey: "circleAPYTooltipTitle",
-            apyTooltipBodyKey: "circleAPYTooltipBody",
-            rewardsTooltipTitleKey: "circleRewardsTitle",
-            rewardsTooltipBodyKey: "circleRewardsDescription",
-            overviewTooltipTitleKey: "circleOverviewTooltipTitle",
-            overviewTooltipBodyKey: "circleOverviewTooltipBody"
+            infoBannerKey: "circleDashboardInfoText"
         )
     }
 

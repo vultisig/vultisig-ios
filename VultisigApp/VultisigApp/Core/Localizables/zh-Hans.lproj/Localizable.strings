@@ -159,8 +159,6 @@
 "chooseTokens" = "选择代币";
 "chooseVaultsForNotifications" = "选择接收通知的保险库";
 "circleAPYLabel" = "APY（大约）";
-"circleAPYTooltipBody" = "您存款的大约年化收益。收益安全生成，可能随时间变化。";
-"circleAPYTooltipTitle" = "APY（大约）";
 "circleBalance" = "余额";
 "circleCreatingAccount" = "正在创建账户...";
 "circleDashboardDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
@@ -179,10 +177,6 @@
 "circleEthereumRequired" = "需要以太坊";
 "circleEthereumRequiredDescription" = "请在您的保险库中添加以太坊才能使用 Circle。";
 "circleNoSeparateClaimStep" = "Circle 没有单独的领取步骤";
-"circleOverviewTooltipBody" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
-"circleOverviewTooltipTitle" = "免责声明";
-"circleRewardsDescription" = "奖励会自动计入您的余额。";
-"circleRewardsTitle" = "奖励";
 "circleRowCreateWallet" = "创建钱包";
 "circleRowGetStarted" = "开始";
 "circleRowYieldAccount" = "收益账户";
@@ -659,8 +653,6 @@
 "noGasTokenFoundError" = "未找到 %@ 链的燃料代币。请将原生代币添加到您的保险库";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
 "noonAPYLabel" = "年化收益率 (7天)";
-"noonAPYTooltipBody" = "过去 7 天所赚取的年化收益。收益通过安全的链下金库生成，可能随时间变化。";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "领取";
 "noonClaimAmount" = "领取 %@";
 "noonClaimAvailableInDays" = "%d 天后可领取";
@@ -673,13 +665,9 @@
 "noonEthereumRequired" = "需要以太坊";
 "noonEthereumRequiredDescription" = "请向您的金库添加以太坊以使用 Noon。";
 "noonNextRedemption" = "下次赎回";
-"noonOverviewTooltipBody" = "资金完全由您控制，但需承担运营方的运营风险。Noon 收益通过安全的链下金库生成。";
-"noonOverviewTooltipTitle" = "免责声明";
 "noonRedemptionClaimable" = "赎回窗口已关闭。您的 USDC 已可提取至您的金库。";
 "noonRedemptionPending" = "您的请求已提交。赎回窗口关闭后即可领取资金。";
 "noonRedemptionWindowNote" = "赎回将在下一个窗口处理。请在截止前提交申请以被纳入。";
-"noonRewardsTooltipBody" = "您的存款迄今为止赚取的总收益。奖励会自动累积并计入您的余额。";
-"noonRewardsTooltipTitle" = "已赚取的总奖励";
 "noonSharesTicker" = "份额代号";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC 已存入";

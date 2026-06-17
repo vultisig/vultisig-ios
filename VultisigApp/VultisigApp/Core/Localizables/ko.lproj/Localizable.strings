@@ -167,8 +167,6 @@
 "chooseTokens" = "토큰 선택";
 "chooseVaultsForNotifications" = "알림을 위한 볼트 선택";
 "circleAPYLabel" = "APY (예상)";
-"circleAPYTooltipBody" = "예치금에 대한 대략적인 연환산 수익률입니다. 수익은 안전하게 생성되며 시간에 따라 변동될 수 있습니다.";
-"circleAPYTooltipTitle" = "APY (대략)";
 "circleCreatingAccount" = "계정 생성 중...";
 "circleDashboardDeposit" = "입금";
 "circleDashboardDepositDescription" = "Circle 계정에 $USDC를 입금하고 Vultisig 볼트 내에서 안전하게 수익을 창출하세요.";
@@ -186,10 +184,6 @@
 "circleEthereumRequired" = "이더리움 필요";
 "circleEthereumRequiredDescription" = "Circle을 사용하려면 볼트에 이더리움을 추가하세요.";
 "circleNoSeparateClaimStep" = "Circle에는 별도의 청구 단계가 없습니다";
-"circleOverviewTooltipBody" = "자금은 볼트의 완전한 통제 하에 있습니다. Circle 계정은 자체 보관이며 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
-"circleOverviewTooltipTitle" = "면책 조항";
-"circleRewardsDescription" = "보상은 자동으로 잔액에 적립됩니다.";
-"circleRewardsTitle" = "보상";
 "circleRowCreateWallet" = "지갑 생성";
 "circleRowGetStarted" = "시작하기";
 "circleRowYieldAccount" = "수익 계정";
@@ -656,8 +650,6 @@
 "noGasTokenFoundError" = "%@ 체인에 대한 가스 토큰을 찾을 수 없습니다. 볼트에 네이티브 토큰을 추가하세요.";
 "noLiquidityPool" = "이 토큰 쌍에 사용할 수 있는 유동성 풀이 없습니다. 이 자산은 지원되지 않을 수 있습니다.";
 "noonAPYLabel" = "APY (7일)";
-"noonAPYTooltipBody" = "최근 7일간 발생한 연환산 수익률입니다. 수익은 안전한 오프체인 금고를 통해 생성되며 시간에 따라 변동될 수 있습니다.";
-"noonAPYTooltipTitle" = "APY (7d)";
 "noonClaim" = "수령";
 "noonClaimAmount" = "%@ 수령";
 "noonClaimAvailableInDays" = "%d일 후 수령 가능";
@@ -670,13 +662,9 @@
 "noonEthereumRequired" = "이더리움 필요";
 "noonEthereumRequiredDescription" = "Noon을 사용하려면 볼트에 이더리움을 추가하세요.";
 "noonNextRedemption" = "다음 상환";
-"noonOverviewTooltipBody" = "자금은 완전히 귀하의 통제 하에 있지만 운영자의 운영 위험에 노출됩니다. Noon 수익은 안전한 오프체인 금고를 통해 생성됩니다.";
-"noonOverviewTooltipTitle" = "면책 조항";
 "noonRedemptionClaimable" = "상환 창이 마감되었습니다. USDC를 볼트로 출금할 준비가 되었습니다.";
 "noonRedemptionPending" = "요청이 제출되었습니다. 상환 창이 마감되면 자금을 수령할 수 있습니다.";
 "noonRedemptionWindowNote" = "상환은 다음 창에서 처리됩니다. 포함되려면 마감 전에 요청하세요.";
-"noonRewardsTooltipBody" = "예치금이 지금까지 적립한 총 수익입니다. 보상은 자동으로 적립되어 잔액에 추가됩니다.";
-"noonRewardsTooltipTitle" = "총 적립 보상";
 "noonSharesTicker" = "지분 티커";
 "noonTitle" = "Noon";
 "noonUSDCDeposited" = "USDC 예치됨";

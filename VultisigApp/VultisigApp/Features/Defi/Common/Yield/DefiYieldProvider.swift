@@ -77,7 +77,7 @@ struct YieldPresentation {
     /// when the APY comes from the provider's feed.
     let staticApyText: String?
 
-    // MARK: - Chrome (top banner / tooltips / list row)
+    // MARK: - Chrome (top banner / info banner)
 
     /// Provider name shown small/secondary at the top of the banner ("Noon" / "Circle").
     let providerNameKey: String
@@ -85,15 +85,6 @@ struct YieldPresentation {
     let bannerLogoAsset: String
     /// Closable info banner body shown on the empty/setup state.
     let infoBannerKey: String
-    /// Tooltip copy for the APY (7d) info icon.
-    let apyTooltipTitleKey: String
-    let apyTooltipBodyKey: String
-    /// Tooltip copy for the "Total rewards earned" info icon.
-    let rewardsTooltipTitleKey: String
-    let rewardsTooltipBodyKey: String
-    /// Tooltip copy for the top-right (i) overview button.
-    let overviewTooltipTitleKey: String
-    let overviewTooltipBodyKey: String
 }
 
 /// The seam both Circle and Noon ride. Hides the two encoding models (Circle
