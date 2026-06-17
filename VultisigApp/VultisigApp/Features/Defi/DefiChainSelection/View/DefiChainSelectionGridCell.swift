@@ -31,53 +31,29 @@ struct DefiChainSelectionGridCell: View {
     }
 }
 
-// MARK: - Circle Selection Cell
+// MARK: - Yield Provider Selection Cell (Circle / Noon)
 
-struct DefiCircleSelectionGridCell: View {
-    @ObservedObject var viewModel: DefiSelectChainViewModel
+/// One selection cell for a USDC yield provider (Circle, Noon). The bits that
+/// differ between providers — display name, logo, and current enabled state —
+/// are passed in, so a single cell serves every provider.
+struct DefiYieldSelectionGridCell: View {
+    let name: String
+    let logo: String
+    let isEnabled: Bool
     var onSelection: (Bool) -> Void
 
     @State var isSelected = false
 
     var body: some View {
         AssetSelectionGridCell(
-            name: NSLocalizedString("circleTitle", comment: "Circle"),
+            name: name,
             ticker: "USDC",
-            logo: "circle-logo",
+            logo: logo,
             isSelected: $isSelected
         ) {
             onSelection(isSelected)
         }
-        .onAppear(perform: onAppear)
-    }
-
-    func onAppear() {
-        isSelected = viewModel.isCircleEnabled
-    }
-}
-
-// MARK: - Noon Selection Cell
-
-struct DefiNoonSelectionGridCell: View {
-    @ObservedObject var viewModel: DefiSelectChainViewModel
-    var onSelection: (Bool) -> Void
-
-    @State var isSelected = false
-
-    var body: some View {
-        AssetSelectionGridCell(
-            name: "noonTitle".localized,
-            ticker: "USDC",
-            logo: "noon",
-            isSelected: $isSelected
-        ) {
-            onSelection(isSelected)
-        }
-        .onAppear(perform: onAppear)
-    }
-
-    func onAppear() {
-        isSelected = viewModel.isNoonEnabled
+        .onAppear { isSelected = isEnabled }
     }
 }
 

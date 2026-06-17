@@ -86,13 +86,17 @@ struct DefiSelectChainScreen: View {
     func cellBuilder(item: DefiSelectableItem, sectionType _: Int) -> some View {
         switch item {
         case .circle:
-            DefiCircleSelectionGridCell(
-                viewModel: viewModel,
+            DefiYieldSelectionGridCell(
+                name: "circleTitle".localized,
+                logo: "circle-logo",
+                isEnabled: viewModel.isCircleEnabled,
                 onSelection: onCircleSelection
             )
         case .noon:
-            DefiNoonSelectionGridCell(
-                viewModel: viewModel,
+            DefiYieldSelectionGridCell(
+                name: "noonTitle".localized,
+                logo: "noon",
+                isEnabled: viewModel.isNoonEnabled,
                 onSelection: onNoonSelection
             )
         case .chain(let chain):
