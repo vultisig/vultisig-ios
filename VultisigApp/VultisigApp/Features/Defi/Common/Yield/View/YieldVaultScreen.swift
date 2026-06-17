@@ -208,14 +208,15 @@ struct YieldVaultScreen: View {
 
     private var actionButtons: some View {
         HStack(spacing: 16) {
-            DefiButton(
-                title: presentation.withdrawButtonKey.localized,
-                icon: "minus.circle",
-                type: .outline,
-                isSystemIcon: true,
-                action: { router.navigate(to: YieldRoute.withdraw(vault: vault, providerID: model.providerID, model: model)) }
-            )
-            .disabled(model.depositedBalance <= 0)
+            if model.depositedBalance > 0 {
+                DefiButton(
+                    title: presentation.withdrawButtonKey.localized,
+                    icon: "minus.circle",
+                    type: .outline,
+                    isSystemIcon: true,
+                    action: { router.navigate(to: YieldRoute.withdraw(vault: vault, providerID: model.providerID, model: model)) }
+                )
+            }
 
             DefiButton(
                 title: presentation.depositButtonKey.localized,
