@@ -47,6 +47,7 @@
 "approvalTXHash" = "Genehmigungs-Transaktions-Hash";
 "approve" = "Genehmigen";
 "approveAndSwap" = "Genehmigen und tauschen";
+"approveSpending" = "Ausgaben genehmigen";
 "appUpToDate" = "Anwendung ist auf dem neuesten Stand";
 "apr" = "APR";
 "apy" = "APY";

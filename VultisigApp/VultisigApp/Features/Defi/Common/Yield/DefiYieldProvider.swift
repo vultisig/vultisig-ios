@@ -126,9 +126,10 @@ protocol DefiYieldProvider {
 
     // Write builders — all return a signable `KeysignPayload`.
 
-    /// Optional prior `approve` when allowance < amount. `nil` when no approval
-    /// is needed (or the provider does not gate deposits on allowance).
-    func buildApprovePayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload?
+    /// Deposit. When the provider gates deposits on an ERC-20 allowance and the
+    /// current allowance is short, the returned payload bundles a prior `approve`
+    /// (via `KeysignPayload.approvePayload`) so a first-time deposit signs
+    /// approve→deposit in one keysign ceremony.
     func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload
     /// Queued redemption request. For Circle (instant) this maps to `withdraw`.
     func buildRequestRedeemPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload

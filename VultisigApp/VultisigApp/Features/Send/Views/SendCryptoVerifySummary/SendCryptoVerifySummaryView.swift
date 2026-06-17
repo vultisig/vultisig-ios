@@ -74,6 +74,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.toAddress.isNotEmpty)
 
+            if let approve = approveDisplay {
+                getValueCell(
+                    for: "approveSpending",
+                    with: approve.amount,
+                    bracketValue: approve.spender
+                )
+                Separator()
+            }
+
             if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
                 getValueCell(
                     for: "amount",
@@ -323,6 +332,18 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
             }
         }
+    }
+
+    /// The bundled ERC-20 approval, if any. A first-time yield deposit signs an
+    /// `approve(spender, amount)` before the deposit; surface it (amount + spender)
+    /// so the signer can sanity-check what spending they're authorizing.
+    var approveDisplay: (amount: String, spender: String)? {
+        guard let approve = input.keysignPayload?.approvePayload,
+              let coin = input.keysignPayload?.coin else {
+            return nil
+        }
+        let amount = "\(coin.decimal(for: approve.amount).formatForDisplay()) \(coin.ticker)"
+        return (amount: amount, spender: approve.spender)
     }
 
     /// True when the hero doesn't already show a resolved amount/coin, so the

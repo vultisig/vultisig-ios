@@ -47,6 +47,7 @@
 "approvalTXHash" = "Hash odobrenja transakcije";
 "approve" = "Odobri";
 "approveAndSwap" = "Odobri i zamijeni";
+"approveSpending" = "Odobri potrošnju";
 "appUpToDate" = "Aplikacija je ažurirana";
 "apr" = "APR";
 "apy" = "APY";

@@ -46,6 +46,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// `transaction` would instead sign `transfer(MSCA, 0)` — a no-op.
     private let prebuiltKeysignPayload: KeysignPayload?
 
+    /// Exposes the pre-built payload to the verify summary so it can surface
+    /// payload-only context the display `transaction` doesn't carry — e.g. a
+    /// bundled ERC-20 `approve` on a first-time yield deposit.
+    var verifyKeysignPayload: KeysignPayload? { prebuiltKeysignPayload }
+
     init(
         transaction: SendTransaction,
         interactor: SendInteractor = DefaultSendInteractor.live,

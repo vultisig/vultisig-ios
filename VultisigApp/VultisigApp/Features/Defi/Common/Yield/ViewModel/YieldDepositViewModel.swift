@@ -7,9 +7,10 @@ import Foundation
 import Combine
 import BigInt
 
-/// Deposit form for a yield vault. Builds the deposit (and, when allowance is
-/// short, a prior USDC approve) as prebuilt EVM payloads routed through the
-/// shared verify pipeline.
+/// Deposit form for a yield vault. Produces ONE deposit payload that internally
+/// bundles the USDC approve (when the allowance is short) so a first-time deposit
+/// is a single keysign ceremony signing approve→deposit. The prebuilt payload is
+/// routed through the shared verify pipeline.
 @MainActor
 final class YieldDepositViewModel: ObservableObject, Form {
     let vault: Vault
@@ -17,7 +18,6 @@ final class YieldDepositViewModel: ObservableObject, Form {
 
     @Published var validForm: Bool = false
     @Published var isLoading = false
-    @Published var needsApproval = false
     @Published var error: Error?
     @Published private(set) var usdcCoin: Coin?
     @Published var amountField = FormField(
@@ -66,10 +66,11 @@ final class YieldDepositViewModel: ObservableObject, Form {
         return YieldAmount.baseUnits(amount, decimals: provider.assetDecimals)
     }
 
-    /// Builds the next payload to sign: an `approve` when allowance is short,
-    /// otherwise the `deposit`. The caller routes to verify and re-enters for the
-    /// deposit once the approve confirms.
-    func makeNextPayload() async -> (payload: KeysignPayload, isApprove: Bool)? {
+    /// Builds the single deposit payload. The provider bundles the USDC approve
+    /// into it when the allowance is short, so the caller routes once to verify
+    /// and the ceremony signs approve→deposit (or just deposit when allowance is
+    /// sufficient).
+    func makeDepositPayload() async -> KeysignPayload? {
         guard let amount = amountBaseUnits, amount > 0 else {
             if !amountField.value.isEmpty {
                 error = DefiYieldError.invalidAmount
@@ -81,13 +82,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
         defer { isLoading = false }
 
         do {
-            if let approve = try await provider.buildApprovePayload(vault: vault, amount: amount) {
-                needsApproval = true
-                return (approve, true)
-            }
-            let deposit = try await provider.buildDepositPayload(vault: vault, amount: amount)
-            needsApproval = false
-            return (deposit, false)
+            return try await provider.buildDepositPayload(vault: vault, amount: amount)
         } catch {
             self.error = error
             return nil

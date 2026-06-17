@@ -6,8 +6,8 @@
 import SwiftUI
 
 /// Deposit form for a yield vault. Reuses the shared amount screen; on continue
-/// it builds a prebuilt EVM payload (approve-then-deposit) and routes to the
-/// shared verify screen.
+/// it builds ONE prebuilt EVM payload that bundles the approve+deposit and routes
+/// to the shared verify screen.
 struct YieldDepositScreen: View {
     @StateObject private var viewModel: YieldDepositViewModel
     @Environment(\.router) private var router
@@ -43,7 +43,7 @@ struct YieldDepositScreen: View {
     }
 
     private func handleVerify() async {
-        guard let result = await viewModel.makeNextPayload(),
+        guard let payload = await viewModel.makeDepositPayload(),
               let displayTx = viewModel.displayTransaction() else { return }
 
         await MainActor.run {
@@ -52,7 +52,7 @@ struct YieldDepositScreen: View {
                     tx: displayTx,
                     retrySignal: SendRetrySignal(),
                     vault: viewModel.vault,
-                    prebuiltKeysignPayload: result.payload
+                    prebuiltKeysignPayload: payload
                 )
             )
         }

@@ -115,7 +115,8 @@ struct SendVerifyScreen: View {
                 isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
-                coinTicker: tx.coin.ticker
+                coinTicker: tx.coin.ticker,
+                keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload
             ),
             securityScannerState: $sendCryptoVerifyViewModel.securityScannerState
         ) {

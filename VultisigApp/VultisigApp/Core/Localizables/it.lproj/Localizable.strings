@@ -47,6 +47,7 @@
 "approvalTXHash" = "Hash transazione di approvazione";
 "approve" = "Approva";
 "approveAndSwap" = "Approva e scambia";
+"approveSpending" = "Approva spesa";
 "appUpToDate" = "L'applicazione è aggiornata";
 "apr" = "APR";
 "apy" = "APY";

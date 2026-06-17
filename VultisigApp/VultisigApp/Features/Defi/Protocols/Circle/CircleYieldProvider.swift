@@ -134,8 +134,6 @@ struct CircleYieldProvider: DefiYieldProvider {
 
     func canWithdrawInstantly(vault: Vault, amount: BigInt) async -> Bool { true }
 
-    func buildApprovePayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload? { nil }
-
     func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload {
         throw CircleServiceError.keysignError("circleDepositsDisabled".localized)
     }

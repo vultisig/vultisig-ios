@@ -48,6 +48,7 @@
 "approvalTXHash" = "승인 Tx 해시";
 "approve" = "승인";
 "approveAndSwap" = "승인 및 스왑";
+"approveSpending" = "지출 승인";
 "appUpToDate" = "앱이 최신 버전입니다.";
 "apr" = "APR";
 "apr100Days" = "100일";

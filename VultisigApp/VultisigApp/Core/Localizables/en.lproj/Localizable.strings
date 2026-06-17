@@ -48,6 +48,7 @@
 "approvalTXHash" = "Approval Tx Hash";
 "approve" = "Approve";
 "approveAndSwap" = "Approve and Swap";
+"approveSpending" = "Approve Spending";
 "appUpToDate" = "Application is up to date.";
 "apr" = "APR";
 "apr100Days" = "100 Days";
