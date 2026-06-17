@@ -8,11 +8,13 @@
 import Foundation
 
 struct DefiBalanceService {
+    @MainActor
     func totalBalanceInFiatString(for chains: [Chain], vault: Vault) -> String {
-        let totalBalance = chains
+        let chainsBalance = chains
             .filter { CoinAction.defiChains.contains($0) }
             .map { totalBalanceInFiat(for: $0, vault: vault) }
             .reduce(Decimal.zero, +)
+        let totalBalance = chainsBalance + yieldTotalBalanceFiatDecimal(for: vault)
         return totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -34,6 +36,27 @@ struct DefiBalanceService {
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
+    }
+
+    /// USDC yield-vault positions (Circle, Noon) are stored as `YieldPosition`
+    /// rows rather than per-chain coins, so they're summed into the DeFi total
+    /// separately. Each `depositedBalance` is in USDC; convert at the USDC coin's
+    /// fiat rate. Gated on the per-provider toggle so a disabled provider's stale
+    /// cache can't inflate the total.
+    @MainActor
+    func yieldTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        guard let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) else {
+            return .zero
+        }
+        let storage = YieldPositionStorageService()
+        var total = Decimal.zero
+        if vault.isDefiProviderEnabled(.circle), let circle = storage.position(for: vault, providerID: .circle) {
+            total += usdc.fiat(decimal: circle.depositedBalance)
+        }
+        if vault.isDefiProviderEnabled(.noon), let noon = storage.position(for: vault, providerID: .noon) {
+            total += usdc.fiat(decimal: noon.depositedBalance)
+        }
+        return total
     }
 
     /// Number of DeFi positions with a non-zero balance for `chain`. Mirrors

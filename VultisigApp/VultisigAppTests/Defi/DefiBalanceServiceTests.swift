@@ -122,6 +122,87 @@ final class DefiBalanceServiceTests: XCTestCase {
         return coin
     }
 
+    // MARK: - Yield positions (Circle / Noon) in the DeFi total
+
+    func testNoonYieldBalanceSummedIntoYieldTotal() throws {
+        vault.coins = [makeUsdcCoin()]
+        vault.setDefiProvider(.noon, enabled: true)
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1)
+        ])
+        try YieldPositionStorageService().upsert(
+            providerID: .noon, depositedBalance: 250, nativeGasBalance: 0, redemptions: [], for: vault
+        )
+
+        XCTAssertEqual(
+            service.yieldTotalBalanceFiatDecimal(for: vault),
+            250,
+            "An enabled Noon position's deposited USDC must be added to the DeFi total at the USDC rate."
+        )
+    }
+
+    func testYieldBalanceSumsBothProviders() throws {
+        vault.coins = [makeUsdcCoin()]
+        vault.setDefiProvider(.noon, enabled: true)
+        vault.setDefiProvider(.circle, enabled: true)
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1)
+        ])
+        let storage = YieldPositionStorageService()
+        try storage.upsert(providerID: .noon, depositedBalance: 250, nativeGasBalance: 0, redemptions: [], for: vault)
+        try storage.upsert(providerID: .circle, depositedBalance: 100, nativeGasBalance: 0, redemptions: [], for: vault)
+
+        XCTAssertEqual(service.yieldTotalBalanceFiatDecimal(for: vault), 350, "Circle + Noon balances both count toward the total.")
+    }
+
+    func testYieldBalanceExcludedWhenProviderDisabled() throws {
+        vault.coins = [makeUsdcCoin()]
+        vault.isNoonEnabled = false
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1)
+        ])
+        try YieldPositionStorageService().upsert(
+            providerID: .noon, depositedBalance: 250, nativeGasBalance: 0, redemptions: [], for: vault
+        )
+
+        XCTAssertEqual(
+            service.yieldTotalBalanceFiatDecimal(for: vault),
+            .zero,
+            "A disabled provider's cached position must not inflate the DeFi total."
+        )
+    }
+
+    private func makeUsdcCoin() -> Coin {
+        let meta = CoinMeta.make(chain: .ethereum, ticker: "USDC", decimals: 6, isNativeToken: false)
+        let coin = Coin(asset: meta, address: "0xUSDCtestAddress", hexPublicKey: "")
+        coin.priceProviderId = "usd-coin"
+        return coin
+    }
+
+    // MARK: - Provider-array migration
+
+    func testLegacyFlagsMigrateIntoProviderArray() {
+        // A pre-refactor Circle user: isCircleEnabled true (default), unmigrated.
+        XCTAssertFalse(vault.didMigrateDefiProviders)
+        XCTAssertTrue(vault.isDefiProviderEnabled(.circle), "reads fall back to the legacy flag before backfill")
+        XCTAssertFalse(vault.isDefiProviderEnabled(.noon))
+
+        XCTAssertTrue(vault.migrateLegacyDefiProvidersIfNeeded())
+        XCTAssertTrue(vault.didMigrateDefiProviders)
+        XCTAssertEqual(vault.enabledDefiProviders, [DefiYieldProviderID.circle.rawValue], "the enabled Circle flag carries into the array")
+        XCTAssertFalse(vault.migrateLegacyDefiProvidersIfNeeded(), "migration runs exactly once")
+    }
+
+    func testSetDefiProviderTogglesArrayAndMigrates() {
+        vault.setDefiProvider(.noon, enabled: true)
+        XCTAssertTrue(vault.didMigrateDefiProviders)
+        XCTAssertTrue(vault.isDefiProviderEnabled(.noon))
+
+        vault.setDefiProvider(.noon, enabled: false)
+        XCTAssertFalse(vault.isDefiProviderEnabled(.noon))
+        XCTAssertFalse(vault.enabledDefiProviders.contains(DefiYieldProviderID.noon.rawValue))
+    }
+
     // MARK: - Position counts (Windows parity)
 
     func testPositionCountZeroForEmptyVault() {

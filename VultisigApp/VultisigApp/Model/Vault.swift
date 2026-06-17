@@ -27,8 +27,16 @@ final class Vault: ObservableObject, Codable {
     var libType: LibType? = LibType.GG20
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
-    var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
-    var isNoonEnabled: Bool = false   // Controls Noon yield-vault visibility in DeFi section
+    /// Yield providers (Circle, Noon, …) the user enabled in the DeFi tab, stored
+    /// as raw `DefiYieldProviderID` values so adding a provider needs no new
+    /// column. Use `isDefiProviderEnabled(_:)` / `setDefiProvider(_:enabled:)`.
+    var enabledDefiProviders: [String] = []
+    /// Set once `enabledDefiProviders` has been backfilled from the legacy flags.
+    var didMigrateDefiProviders: Bool = false
+    // Legacy per-provider toggles — superseded by `enabledDefiProviders`; retained
+    // as the migration source and for backup back-compat, not read by feature code.
+    var isCircleEnabled: Bool = true
+    var isNoonEnabled: Bool = false
 
     // FastVault eligibility cache — populated by FastVaultEligibilityRefresher on
     // app foreground + vault switch. Reads are sync; refresh happens at planned
@@ -70,6 +78,7 @@ final class Vault: ObservableObject, Codable {
         case defiChains
         case isCircleEnabled
         case isNoonEnabled
+        case enabledDefiProviders
         case defiPositions
         case activeBondedNodes
         case stakePositions
@@ -93,6 +102,15 @@ final class Vault: ObservableObject, Codable {
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
         isNoonEnabled = try container.decodeIfPresent(Bool.self, forKey: .isNoonEnabled) ?? false
+        if let providers = try container.decodeIfPresent([String].self, forKey: .enabledDefiProviders) {
+            enabledDefiProviders = providers
+            didMigrateDefiProviders = true
+        } else {
+            // Legacy backup (pre-array): the flags above drive reads until the
+            // one-time backfill runs.
+            enabledDefiProviders = []
+            didMigrateDefiProviders = false
+        }
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
@@ -139,14 +157,59 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(circleWalletAddress, forKey: .circleWalletAddress)
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
-        try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
-        try container.encodeIfPresent(isNoonEnabled, forKey: .isNoonEnabled)
+        // Encode the effective (post-migration) state under the legacy keys so
+        // older app versions importing this backup still read the right toggles.
+        try container.encode(isDefiProviderEnabled(.circle), forKey: .isCircleEnabled)
+        try container.encode(isDefiProviderEnabled(.noon), forKey: .isNoonEnabled)
+        try container.encode(enabledDefiProviders, forKey: .enabledDefiProviders)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 
     func setOrder(_ index: Int) {
         order = index
+    }
+
+    // MARK: - DeFi yield providers
+
+    /// Whether the user enabled a yield provider in the DeFi tab. Reads the
+    /// migrated array, falling back to the legacy flags until the backfill runs.
+    func isDefiProviderEnabled(_ id: DefiYieldProviderID) -> Bool {
+        currentDefiProviders().contains(id.rawValue)
+    }
+
+    /// Enables or disables a yield provider, migrating the legacy flags into the
+    /// array on first write.
+    func setDefiProvider(_ id: DefiYieldProviderID, enabled: Bool) {
+        var providers = currentDefiProviders()
+        providers.removeAll { $0 == id.rawValue }
+        if enabled {
+            providers.append(id.rawValue)
+        }
+        enabledDefiProviders = providers
+        didMigrateDefiProviders = true
+    }
+
+    /// One-time backfill of `enabledDefiProviders` from the legacy per-provider
+    /// flags. Returns `true` when it performed the migration so the caller can
+    /// persist. Idempotent.
+    @discardableResult
+    func migrateLegacyDefiProvidersIfNeeded() -> Bool {
+        guard !didMigrateDefiProviders else { return false }
+        enabledDefiProviders = legacyDefiProviders()
+        didMigrateDefiProviders = true
+        return true
+    }
+
+    private func currentDefiProviders() -> [String] {
+        didMigrateDefiProviders ? enabledDefiProviders : legacyDefiProviders()
+    }
+
+    private func legacyDefiProviders() -> [String] {
+        var providers: [String] = []
+        if isCircleEnabled { providers.append(DefiYieldProviderID.circle.rawValue) }
+        if isNoonEnabled { providers.append(DefiYieldProviderID.noon.rawValue) }
+        return providers
     }
 
     func getThreshold() -> Int {
