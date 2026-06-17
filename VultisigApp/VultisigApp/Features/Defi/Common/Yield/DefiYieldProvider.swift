@@ -11,6 +11,7 @@ import BigInt
 enum DefiYieldProviderID: String, Hashable, CaseIterable, Codable {
     case circle
     case noon
+    case vult
 }
 
 /// Read model for a single redemption. Circle redemptions are always instant
@@ -95,6 +96,124 @@ struct YieldPresentation {
     /// Optional secondary line under the row title (Circle's "Yield Account");
     /// `nil` hides it.
     let rowSubtitleKey: String?
+
+    // MARK: - Deposited-asset display (parameterized off the Noon/Circle USDC literals)
+
+    /// Ticker of the deposited asset shown in amounts ("USDC" for Circle/Noon,
+    /// "VULT" for staking). Drives the position-card and claim-button copy.
+    let assetTicker: String
+    /// Logo asset for the deposited-asset icon in the position/setup card
+    /// ("usdc" for Circle/Noon, "vult" for staking).
+    let assetLogoAsset: String
+
+    // MARK: - Redemption section copy (parameterized off the Noon literals)
+
+    /// Label for the "Next redemption" info row (windowed vaults).
+    let nextRedemptionLabelKey: String
+    /// Label for the shares-ticker info row.
+    let sharesTickerLabelKey: String
+    /// Note shown when a windowed vault has a balance but no in-flight redemption
+    /// (Noon's "request before the cutoff"; VULT's cooldown note).
+    let redemptionWindowNoteKey: String
+    /// Banner copy for a pending redemption.
+    let redemptionPendingKey: String
+    /// Banner copy for a claimable redemption.
+    let redemptionClaimableKey: String
+    /// Format string for the per-row Claim button title (one `%@` for the amount).
+    let claimAmountKey: String
+    /// Format string for "claimable in N days" (one `%d`).
+    let claimAvailableInDaysKey: String
+
+    // MARK: - Maturity source + cancel action (VULT extensions)
+
+    /// When `true`, the "Next redemption" date comes from the provider's computed
+    /// weekly settlement window (Noon). When `false`, the screen reads each
+    /// redemption's own on-chain `claimableAt` (VULT — per-request maturity).
+    let usesComputedSettlementWindow: Bool
+    /// When `true`, each pending redemption row shows a Cancel button (VULT's
+    /// `cancelUnstake`). Default `false` — Circle/Noon have no cancel action.
+    let supportsCancel: Bool
+    /// Format string for the per-row Cancel button title (one `%@` for the amount).
+    let cancelRequestKey: String
+
+    /// Memberwise initializer with defaults for the parameterized fields so the
+    /// existing Circle/Noon call sites stay USDC-shaped without restating every
+    /// new key; staking overrides the VULT-specific ones.
+    init(
+        titleKey: String,
+        dashboardTitleKey: String,
+        dashboardDescriptionKey: String,
+        depositedLabelKey: String,
+        depositButtonKey: String,
+        withdrawButtonKey: String,
+        depositTitleKey: String,
+        withdrawTitleKey: String,
+        withdrawAmountLabelKey: String,
+        withdrawBalanceAvailableKey: String,
+        withdrawConfirmKey: String,
+        ethRequiredKey: String,
+        ethereumRequiredTitleKey: String,
+        ethereumRequiredDescriptionKey: String,
+        apyLabelKey: String,
+        sharesTicker: String,
+        showsRedemptionRows: Bool,
+        staticApyText: String?,
+        providerNameKey: String,
+        bannerLogoAsset: String,
+        infoBannerKey: String,
+        rowLogoAsset: String,
+        rowTitleKey: String,
+        rowSubtitleKey: String?,
+        assetTicker: String = "USDC",
+        assetLogoAsset: String = "usdc",
+        nextRedemptionLabelKey: String = "noonNextRedemption",
+        sharesTickerLabelKey: String = "noonSharesTicker",
+        redemptionWindowNoteKey: String = "noonRedemptionWindowNote",
+        redemptionPendingKey: String = "noonRedemptionPending",
+        redemptionClaimableKey: String = "noonRedemptionClaimable",
+        claimAmountKey: String = "noonClaimAmount",
+        claimAvailableInDaysKey: String = "noonClaimAvailableInDays",
+        usesComputedSettlementWindow: Bool = true,
+        supportsCancel: Bool = false,
+        cancelRequestKey: String = "vultCancelRequestAmount"
+    ) {
+        self.titleKey = titleKey
+        self.dashboardTitleKey = dashboardTitleKey
+        self.dashboardDescriptionKey = dashboardDescriptionKey
+        self.depositedLabelKey = depositedLabelKey
+        self.depositButtonKey = depositButtonKey
+        self.withdrawButtonKey = withdrawButtonKey
+        self.depositTitleKey = depositTitleKey
+        self.withdrawTitleKey = withdrawTitleKey
+        self.withdrawAmountLabelKey = withdrawAmountLabelKey
+        self.withdrawBalanceAvailableKey = withdrawBalanceAvailableKey
+        self.withdrawConfirmKey = withdrawConfirmKey
+        self.ethRequiredKey = ethRequiredKey
+        self.ethereumRequiredTitleKey = ethereumRequiredTitleKey
+        self.ethereumRequiredDescriptionKey = ethereumRequiredDescriptionKey
+        self.apyLabelKey = apyLabelKey
+        self.sharesTicker = sharesTicker
+        self.showsRedemptionRows = showsRedemptionRows
+        self.staticApyText = staticApyText
+        self.providerNameKey = providerNameKey
+        self.bannerLogoAsset = bannerLogoAsset
+        self.infoBannerKey = infoBannerKey
+        self.rowLogoAsset = rowLogoAsset
+        self.rowTitleKey = rowTitleKey
+        self.rowSubtitleKey = rowSubtitleKey
+        self.assetTicker = assetTicker
+        self.assetLogoAsset = assetLogoAsset
+        self.nextRedemptionLabelKey = nextRedemptionLabelKey
+        self.sharesTickerLabelKey = sharesTickerLabelKey
+        self.redemptionWindowNoteKey = redemptionWindowNoteKey
+        self.redemptionPendingKey = redemptionPendingKey
+        self.redemptionClaimableKey = redemptionClaimableKey
+        self.claimAmountKey = claimAmountKey
+        self.claimAvailableInDaysKey = claimAvailableInDaysKey
+        self.usesComputedSettlementWindow = usesComputedSettlementWindow
+        self.supportsCancel = supportsCancel
+        self.cancelRequestKey = cancelRequestKey
+    }
 }
 
 /// The seam both Circle and Noon ride. Hides the two encoding models (Circle
@@ -156,6 +275,11 @@ protocol DefiYieldProvider {
     /// Collect a settled redemption (Noon). Circle has no separate claim step.
     func buildClaimPayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload
 
+    /// Cancel an in-flight redemption request (VULT's `cancelUnstake`), restoring
+    /// the escrowed balance. Optional — the default throws "unsupported", so only
+    /// providers whose `presentation.supportsCancel` is true need to implement it.
+    func buildCancelUnstakePayload(vault: Vault, recipient: String, redemption: YieldRedemption) async throws -> KeysignPayload
+
     /// Reads liquidity (`maxWithdraw`) to decide between an instant `withdraw`
     /// and a queued `requestRedeem`. Providers without instant liquidity return
     /// `false` and always queue.
@@ -163,6 +287,13 @@ protocol DefiYieldProvider {
 }
 
 extension DefiYieldProvider {
+    /// Cancel is opt-in: providers without a cancel action (Circle, Noon) inherit
+    /// this default, which throws rather than silently building a no-op tx.
+    // swiftlint:disable:next async_without_await
+    func buildCancelUnstakePayload(vault _: Vault, recipient _: String, redemption _: YieldRedemption) async throws -> KeysignPayload {
+        throw DefiYieldError.unsupportedOperation
+    }
+
     /// Account-less providers (Noon, direct EOA) have nothing to persist.
     @MainActor func persistAccountAddress(_: String, vault _: Vault) {}
 

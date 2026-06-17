@@ -45,19 +45,44 @@ struct DefiBalanceService {
     /// cache can't inflate the total.
     @MainActor
     func yieldTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) else {
-            return .zero
-        }
         let storage = YieldPositionStorageService()
         var total = Decimal.zero
-        if vault.isDefiProviderEnabled(.circle), let circle = storage.position(for: vault, providerID: .circle) {
-            total += usdc.fiat(decimal: circle.depositedBalance)
+
+        // Circle + Noon deposits are USDC-denominated — price at the USDC rate.
+        if let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) {
+            if vault.isDefiProviderEnabled(.circle), let circle = storage.position(for: vault, providerID: .circle) {
+                total += usdc.fiat(decimal: circle.depositedBalance)
+            }
+            if vault.isDefiProviderEnabled(.noon), let noon = storage.position(for: vault, providerID: .noon) {
+                total += usdc.fiat(decimal: noon.depositedBalance)
+            }
         }
-        if vault.isDefiProviderEnabled(.noon), let noon = storage.position(for: vault, providerID: .noon) {
-            total += usdc.fiat(decimal: noon.depositedBalance)
+
+        // VULT staking (sVULT) is VULT-denominated (1:1) — price at the VULT rate,
+        // never USDC. The staked balance is stored in VULT units.
+        if vault.isDefiProviderEnabled(.vult), let vult = storage.position(for: vault, providerID: .vult) {
+            total += RateProvider.shared.fiatBalance(value: vult.depositedBalance, coin: Self.vultCoinMeta)
         }
+
         return total
     }
+
+    /// VULT metadata for pricing the staked sVULT balance at the VULT rate. Sourced
+    /// from `TokensStore` so the contract/`priceProviderId` stay in one place.
+    @MainActor
+    private static let vultCoinMeta: CoinMeta = {
+        TokensStore.TokenSelectionAssets.first {
+            $0.chain == .ethereum && $0.ticker == VultConstants.underlyingTicker
+        } ?? CoinMeta(
+            chain: .ethereum,
+            ticker: VultConstants.underlyingTicker,
+            logo: "vult",
+            decimals: VultConstants.assetDecimals,
+            priceProviderId: VultConstants.priceProviderId,
+            contractAddress: VultConstants.underlyingVult,
+            isNativeToken: false
+        )
+    }()
 
     /// Number of DeFi positions with a non-zero balance for `chain`. Mirrors
     /// `positionsWithBalanceCount` on Windows (`useDefiChainPortfolios`):

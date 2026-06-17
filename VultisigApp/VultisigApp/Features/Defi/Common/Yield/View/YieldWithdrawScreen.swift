@@ -56,7 +56,7 @@ struct YieldWithdrawScreen: View {
             }
             if viewModel.provider.hasWindowedRedemption {
                 InfoBannerView(
-                    description: "noonRedemptionWindowNote".localized,
+                    description: presentation.redemptionWindowNoteKey.localized,
                     type: .info,
                     leadingIcon: "circle-info"
                 )

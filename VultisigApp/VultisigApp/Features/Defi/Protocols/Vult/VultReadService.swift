@@ -86,6 +86,17 @@ struct VultReadService {
         return value != .zero
     }
 
+    /// VULT allowance the user has granted the sVULT wrapper (`approve` spender).
+    /// Drives whether the stake bundle needs a prior `approve`.
+    func allowance(owner: String) async throws -> BigInt {
+        let service = try EvmService.getService(forChain: chain)
+        return try await service.fetchAllowance(
+            contractAddress: VultConstants.underlyingVult,
+            owner: owner,
+            spender: stakedVult
+        )
+    }
+
     /// `underlying()` → the staked ERC-20 address. Used to confirm the VULT
     /// constant at runtime rather than trusting it blindly.
     func underlying() async throws -> String {
@@ -175,6 +186,27 @@ struct VultReadService {
     /// needs-reconcile marker rather than dropping a real pending request.
     func decodeUnstakeRequestedLog(receipt: [String: Any]) -> VultUnstakeRequestedLog? {
         Self.decodeUnstakeRequestedLog(receipt: receipt, contract: stakedVult)
+    }
+
+    /// Fetches a tx receipt by hash and decodes its `UnstakeRequested` log, if any.
+    /// Returns `nil` when the receipt isn't available yet or carries no matching
+    /// log. Reuses the `eth_getTransactionReceipt` path already used for tx status.
+    func fetchUnstakeRequestedLog(txHash: String) async -> VultUnstakeRequestedLog? {
+        do {
+            let config = try EvmServiceConfig.getConfig(forChain: chain)
+            let rpc = RpcEvmService(config.rpcEndpoint)
+            let receipt = try await rpc.sendRPCRequest(
+                method: "eth_getTransactionReceipt",
+                params: [txHash]
+            ) { result in
+                result as? [String: Any]
+            }
+            guard let receipt else { return nil }
+            return Self.decodeUnstakeRequestedLog(receipt: receipt, contract: stakedVult)
+        } catch {
+            logger.warning("Receipt fetch for \(txHash) failed: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     static func decodeUnstakeRequestedLog(receipt: [String: Any], contract: String) -> VultUnstakeRequestedLog? {

@@ -115,10 +115,10 @@ struct YieldVaultScreen: View {
             infoRows
             actionButtons
 
-            if let pending = model.pendingRedemption {
+            ForEach(model.pendingRedemptions) { pending in
                 pendingRedemptionSection(pending)
             }
-            if let claimable = model.claimableRedemption {
+            ForEach(model.claimableRedemptions) { claimable in
                 claimableRedemptionSection(claimable)
             }
             if model.showsWindowedNote {
@@ -132,13 +132,13 @@ struct YieldVaultScreen: View {
     private var windowedNoteSection: some View {
         VStack(spacing: 12) {
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            redemptionBanner("noonRedemptionWindowNote".localized, color: Theme.colors.alertWarning)
+            redemptionBanner(presentation.redemptionWindowNoteKey.localized, color: Theme.colors.alertWarning)
         }
     }
 
     private var depositedSection: some View {
         HStack(spacing: 12) {
-            Image("usdc")
+            Image(presentation.assetLogoAsset)
                 .resizable()
                 .frame(width: 48, height: 48)
                 .clipShape(Circle())
@@ -147,7 +147,7 @@ struct YieldVaultScreen: View {
                 Text(presentation.depositedLabelKey.localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
+                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: presentation.assetTicker))
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
                 HiddenBalanceText(model.depositedBalance.formatToFiat())
@@ -176,13 +176,13 @@ struct YieldVaultScreen: View {
             if presentation.showsRedemptionRows {
                 infoRow(
                     icon: "calendar",
-                    label: "noonNextRedemption".localized,
+                    label: presentation.nextRedemptionLabelKey.localized,
                     value: nextRedemptionText,
                     valueColor: Theme.colors.textPrimary
                 )
                 infoRow(
                     icon: "dollarsign.circle",
-                    label: "noonSharesTicker".localized,
+                    label: presentation.sharesTickerLabelKey.localized,
                     value: presentation.sharesTicker,
                     valueColor: Theme.colors.textPrimary
                 )
@@ -232,7 +232,7 @@ struct YieldVaultScreen: View {
     private var setupCard: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                Image("usdc")
+                Image(presentation.assetLogoAsset)
                     .resizable()
                     .frame(width: 32, height: 32)
                     .clipShape(Circle())
@@ -241,7 +241,7 @@ struct YieldVaultScreen: View {
                     Text("circleSetupAccountBalance".localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    Text(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
+                    Text(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: presentation.assetTicker))
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
@@ -273,23 +273,38 @@ struct YieldVaultScreen: View {
     private func pendingRedemptionSection(_ redemption: YieldRedemption) -> some View {
         VStack(spacing: 12) {
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            redemptionBanner("noonRedemptionPending".localized, color: Theme.colors.alertWarning)
+            redemptionBanner(presentation.redemptionPendingKey.localized, color: Theme.colors.alertWarning)
             Text(claimAvailabilityText(redemption))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textButtonDisabled)
                 .frame(maxWidth: .infinity, alignment: .center)
+            if presentation.supportsCancel {
+                cancelButton(redemption)
+            }
         }
     }
 
     private func claimableRedemptionSection(_ redemption: YieldRedemption) -> some View {
         VStack(spacing: 12) {
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            redemptionBanner("noonRedemptionClaimable".localized, color: Theme.colors.alertSuccess)
+            redemptionBanner(presentation.redemptionClaimableKey.localized, color: Theme.colors.alertSuccess)
             PrimaryButton(title: claimButtonTitle(redemption)) {
                 Task { await handleClaim(redemption) }
             }
             .disabled(model.nativeGasBalance <= 0)
+            if presentation.supportsCancel {
+                cancelButton(redemption)
+            }
         }
+    }
+
+    /// Per-pending-row Cancel action (VULT's `cancelUnstake`), restoring the
+    /// escrowed balance. Only rendered when the provider supports cancel.
+    private func cancelButton(_ redemption: YieldRedemption) -> some View {
+        PrimaryButton(title: cancelButtonTitle(redemption), type: .secondary) {
+            Task { await handleCancel(redemption) }
+        }
+        .disabled(model.nativeGasBalance <= 0)
     }
 
     private func redemptionBanner(_ text: String, color: Color) -> some View {
@@ -348,25 +363,45 @@ struct YieldVaultScreen: View {
         return "\(apy.formatted(.number.precision(.fractionLength(0...2))))%"
     }
 
+    /// Windowed-vault "Next redemption" value. Noon computes a weekly settlement
+    /// window; VULT reads each request's own on-chain maturity, so when the
+    /// provider doesn't use a computed window we fall back to the per-request
+    /// `claimableAt` (or "--" when there's no in-flight request).
     private var nextRedemptionText: String {
-        guard let date = NoonYieldProvider.nextSettlementDate() else { return "--" }
+        if presentation.usesComputedSettlementWindow {
+            guard let date = NoonYieldProvider.nextSettlementDate() else { return "--" }
+            return "\(Self.utcDayFormatter.string(from: date)) · 23:00 UTC"
+        }
+        let next = (model.pendingRedemptions + model.claimableRedemptions)
+            .compactMap(\.claimableAt)
+            .min()
+        guard let date = next else { return "--" }
+        return Self.utcDayFormatter.string(from: date)
+    }
+
+    private static let utcDayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMM"
         formatter.timeZone = TimeZone(identifier: "UTC")
-        return "\(formatter.string(from: date)) · 23:00 UTC"
-    }
+        return formatter
+    }()
 
     private func claimButtonTitle(_ redemption: YieldRedemption) -> String {
-        let amount = AmountFormatter.formatCryptoAmount(value: redemption.amount, ticker: "USDC")
-        return String(format: "noonClaimAmount".localized, amount)
+        let amount = AmountFormatter.formatCryptoAmount(value: redemption.amount, ticker: presentation.assetTicker)
+        return String(format: presentation.claimAmountKey.localized, amount)
+    }
+
+    private func cancelButtonTitle(_ redemption: YieldRedemption) -> String {
+        let amount = AmountFormatter.formatCryptoAmount(value: redemption.amount, ticker: presentation.assetTicker)
+        return String(format: presentation.cancelRequestKey.localized, amount)
     }
 
     private func claimAvailabilityText(_ redemption: YieldRedemption) -> String {
-        guard let claimableAt = redemption.claimableAt else {
-            return "noonRedemptionClaimable".localized
+        guard let claimableAt = redemption.claimableAt, Date() < claimableAt else {
+            return presentation.redemptionClaimableKey.localized
         }
         let days = max(0, Calendar.current.dateComponents([.day], from: Date(), to: claimableAt).day ?? 0)
-        return String(format: "noonClaimAvailableInDays".localized, days)
+        return String(format: presentation.claimAvailableInDaysKey.localized, days)
     }
 
     // MARK: - Actions
@@ -395,17 +430,49 @@ struct YieldVaultScreen: View {
 
     @MainActor
     private func refresh() async {
+        // VULT enumerates pending unstakes from our own tx receipts (no
+        // eth_getLogs): recover any uncaptured requestIds from history BEFORE the
+        // position refresh reads + reconciles the persisted set.
+        if model.providerID == .vult {
+            await VultPendingRequestReconciler().reconcile(vault: vault)
+        }
         await model.refresh(vault: vault)
+    }
+
+    /// The coin used for the display-only transaction on the verify screen — the
+    /// provider's deposited asset (USDC for Circle/Noon, VULT for staking).
+    private var displayCoin: Coin? {
+        vault.coins.first { $0.chain == model.provider.chain && $0.ticker == presentation.assetTicker }
+            ?? vault.coins.first { $0.chain == model.provider.chain && $0.ticker == "USDC" }
     }
 
     @MainActor
     private func handleClaim(_ redemption: YieldRedemption) async {
+        await routeRedemption(redemption) { provider, recipient in
+            try await provider.buildClaimPayload(vault: vault, recipient: recipient, redemption: redemption)
+        }
+    }
+
+    @MainActor
+    private func handleCancel(_ redemption: YieldRedemption) async {
+        await routeRedemption(redemption) { provider, recipient in
+            try await provider.buildCancelUnstakePayload(vault: vault, recipient: recipient, redemption: redemption)
+        }
+    }
+
+    /// Builds a redemption payload (claim or cancel) and routes to the shared
+    /// verify screen with a display-only transaction in the deposited asset.
+    @MainActor
+    private func routeRedemption(
+        _ redemption: YieldRedemption,
+        build: (DefiYieldProvider, String) async throws -> KeysignPayload
+    ) async {
         guard let recipient = vault.nativeCoin(for: model.provider.chain)?.address else { return }
-        guard let usdcCoin = vault.coins.first(where: { $0.chain == model.provider.chain && $0.ticker == "USDC" }) else { return }
+        guard let coin = displayCoin else { return }
 
         do {
-            let payload = try await model.provider.buildClaimPayload(vault: vault, recipient: recipient, redemption: redemption)
-            let displayTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
+            let payload = try await build(model.provider, recipient)
+            let displayTx = SendTransaction.empty(coin: coin, vault: vault).with(
                 toAddress: recipient,
                 amount: redemption.amount.description
             )

@@ -14,6 +14,8 @@ enum DefiYieldProviderFactory {
             return CircleYieldProvider()
         case .noon:
             return NoonYieldProvider()
+        case .vult:
+            return VultYieldProvider()
         }
     }
 }
