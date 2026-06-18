@@ -146,7 +146,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
                 } else {
-                    self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
+                    self.errorMsg = "joinKeysignCommitteeFailed".localized
                     self.status = .FailedToStart
                 }
             }
@@ -204,7 +204,7 @@ class JoinKeysignViewModel: ObservableObject {
                             self.logger.info("Keysign process has started successfully.")
                         }
                     } catch {
-                        self.errorMsg = "There was an issue processing the keysign start response. Please try again."
+                        self.errorMsg = "keysignStartResponseError".localized
                         self.status = .FailedToStart
                     }
                 }
@@ -214,7 +214,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.logger.info("Waiting for keysign to start. Please stand by.")
                 } else {
                     DispatchQueue.main.async {
-                        self.errorMsg = "Failed to verify keysign start. Error: \(error.localizedDescription)"
+                        self.errorMsg = String(format: "keysignStartVerifyFailed".localized, error.localizedDescription)
                         self.status = .FailedToStart
                     }
                 }
@@ -248,11 +248,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
-                self.errorMsg = "There is no messages to be signed"
+                self.errorMsg = "noMessagesToSign".localized
                 self.status = .FailedToStart
             }
         } catch {
-            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(error.localizedDescription)"
+            self.errorMsg = String(format: "prepareKeysignMessagesFailed".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -360,7 +360,7 @@ class JoinKeysignViewModel: ObservableObject {
                 Task { await driver.run() }
             }
         } catch {
-            self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeKeysignMessageError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -413,7 +413,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.keysignPayload = kp
             await self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
-            self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeKeysignMessageError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -433,7 +433,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.customMessagePayload = cmp
             self.prepareKeysignMessages(customMessagePayload: cmp)
         } catch {
-            self.errorMsg = "Error decoding custom message payload: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeCustomMessagePayloadError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }

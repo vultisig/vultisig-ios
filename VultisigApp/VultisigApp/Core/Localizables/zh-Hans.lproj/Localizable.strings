@@ -303,6 +303,8 @@
 "dappRequestFrom" = "请求来自";
 "date" = "日期";
 "decimalAmountError" = "金额必须为小数。";
+"decodeCustomMessagePayloadError" = "解码自定义消息负载时出错：%@";
+"decodeKeysignMessageError" = "解码 keysign 消息时出错：%@";
 "defiChainNoPositions" = "未找到任何持仓";
 "defiChainPositionsCount" = "%d 个持仓";
 "defiPortfolio" = "DeFi 投资组合";
@@ -520,6 +522,7 @@
 "joinKeygenViewDescription" = "从您在主设备上完成设置保险库的那一刻起，您的保险库将开始生成";
 "joinKeygenViewTitle" = "等待其他设备加入";
 "joinKeysign" = "加入密钥签名";
+"joinKeysignCommitteeFailed" = "加入 keysign 委员会失败。请检查网络连接后重试。";
 "joinReshare" = "加入重新共享";
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
@@ -559,6 +562,8 @@
 "keysign" = "密钥签名";
 "keysignDiscoveryDisclaimer" = "扫描二维码以签署交易";
 "keysignDiscoveryDisclaimerDevice" = "-需要设备扫描";
+"keysignStartResponseError" = "处理 keysign 启动响应时出现问题。请重试。";
+"keysignStartVerifyFailed" = "验证 keysign 启动失败。错误：%@";
 "Korean" = "韩语";
 "label" = "标签";
 "language" = "语言";
@@ -652,6 +657,7 @@
 "nOfTotal" = "%d / %@";
 "noGasTokenFoundError" = "未找到 %@ 链的燃料代币。请将原生代币添加到您的保险库";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
+"noMessagesToSign" = "没有需要签名的消息";
 "noPoolsAvailable" = "没有可用的资金池";
 "noPositionsFound" = "未找到任何持仓";
 "noPositionsSelectedSubtitle" = "您已禁用此链的所有仓位。启用至少一个仓位以查看余额并管理操作";
@@ -742,6 +748,7 @@
 "Portuguese" = "葡萄牙语";
 "position" = "仓位";
 "positiveAmountError" = "金额必须是正数。请重试";
+"prepareKeysignMessagesFailed" = "为 keysigning 准备消息失败。错误：%@";
 "preparingVaultText1" = "多因素安全，";
 "preparingVaultText2" = "消除单点故障";
 "previewKeygenDescription" = "使用设备扫描以加入保险库生成";
