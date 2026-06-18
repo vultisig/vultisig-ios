@@ -141,8 +141,21 @@ enum SwapCryptoLogic {
         fromCoin.shouldApprove && router(quote: quote) != nil
     }
 
+    /// True iff this is a native-source swap into THORChain or Maya — those
+    /// settle via Cosmos `MsgDeposit` on the swap chain itself rather than
+    /// a cross-chain `MsgSend` to an Asgard vault. Mirrors the SDK rule
+    /// (`areEqualCoins(fromCoin, chainFeeCoin[swapChain])`) — see
+    /// `vultisig-sdk/packages/core/mpc/keysign/swap/build.ts` and the
+    /// THORChain docs on `MsgDeposit` for RUNE source.
     static func isDeposit(fromCoin: Coin) -> Bool {
-        fromCoin.chain == .mayaChain
+        switch fromCoin.chain {
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
+            return fromCoin.isNativeToken
+        case .mayaChain:
+            return fromCoin.isNativeToken
+        default:
+            return false
+        }
     }
 
     // MARK: - Fee coin

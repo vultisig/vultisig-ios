@@ -109,7 +109,11 @@ struct SwapVerifyScreen: View {
                 summaryTitle
                 summaryFromTo
 
-                if let providerName = currentTransaction.quote.displayName {
+                if currentTransaction.isLimit {
+                    limitTargetPriceRow
+                }
+
+                if let providerName = currentTransaction.quote?.displayName {
                     separator
                     getValueCell(
                         for: "provider",
@@ -117,6 +121,12 @@ struct SwapVerifyScreen: View {
                         showIcon: true
                     )
                 }
+
+                separator
+                getValueCell(
+                    for: "vault",
+                    with: vault.name
+                )
 
                 if currentTransaction.showGas {
                     separator
@@ -145,16 +155,45 @@ struct SwapVerifyScreen: View {
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
-
-                separator
-                getValueCell(
-                    for: "vault",
-                    with: vault.name
-                )
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(
+                        currentTransaction.isLimit ? Theme.colors.alertSuccess : Color.clear,
+                        lineWidth: 1
+                    )
+            )
+        }
+    }
+
+    /// Row shown only on limit orders, between the from/to summary and the
+    /// vault row. Matches Figma 74341:117861:
+    /// "Target Price: 1 <toCoin> = <price> <fromCoin>"  ⏱  "<expiry>h"
+    @ViewBuilder
+    var limitTargetPriceRow: some View {
+        if let limit = currentTransaction.limitContext {
+            HStack(spacing: 4) {
+                Text(String(
+                    format: "limitSwap.verify.targetPrice".localized,
+                    currentTransaction.toCoin.ticker,
+                    limit.targetPrice.formatForDisplay(),
+                    currentTransaction.fromCoin.ticker
+                ))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "clock")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.colors.textSecondary)
+
+                Text("\(limit.expiryHours)h")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
         }
     }
 
@@ -214,7 +253,10 @@ struct SwapVerifyScreen: View {
     }
 
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreSwapping", comment: ""))
+        Text(NSLocalizedString(
+            currentTransaction.isLimit ? "limitSwap.verify.title" : "youreSwapping",
+            comment: ""
+        ))
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -224,9 +266,15 @@ struct SwapVerifyScreen: View {
         @Bindable var vm = verifyViewModel
         return VStack(spacing: 16) {
             Checkbox(isChecked: $vm.isAmountCorrect, text: "swapVerifyCheckbox1Description")
-            Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
-            if showApproveCheckmark {
-                Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
+            // Limit orders skip the fee/approve checkboxes — there's no
+            // market quote to compare against, and limit deposits don't
+            // need an ERC20 approve. Figma 74341:117861 shows a single
+            // checkbox row.
+            if !currentTransaction.isLimit {
+                Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
+                if showApproveCheckmark {
+                    Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
+                }
             }
         }
     }

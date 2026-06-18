@@ -52,6 +52,12 @@ final class SwapVerifyViewModel {
     }
 
     func isValidForm(shouldApprove: Bool) -> Bool {
+        // Limit orders only have the "amount is correct" checkbox — fee /
+        // approve checkboxes don't render for limit (no quote, no ERC20
+        // approve). Mirrors the verify-screen UI gate.
+        if transaction.isLimit {
+            return isAmountCorrect
+        }
         if shouldApprove {
             return isAmountCorrect && isFeeCorrect && isApproveCorrect
         } else {
@@ -133,6 +139,18 @@ final class SwapVerifyViewModel {
         defer { isLoadingTransaction = false }
 
         do {
+            // Limit orders take a different builder — no market quote, memo
+            // is pre-built on the entry screen. Everything else (route to
+            // pair → keysign → done) is shared with the market path.
+            if let limitContext = transaction.limitContext {
+                return try await buildLimitSwapKeysignPayload(
+                    sourceCoin: transaction.fromCoin,
+                    targetCoin: transaction.toCoin,
+                    sourceAmount: BigInt(limitContext.sourceAmount) ?? 0,
+                    memo: limitContext.memo,
+                    vault: vault
+                )
+            }
             return try await interactor.buildSwapKeysignPayload(transaction: transaction, vault: vault)
         } catch {
             self.error = error

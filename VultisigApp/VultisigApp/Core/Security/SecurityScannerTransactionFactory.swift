@@ -194,7 +194,12 @@ private extension SecurityScannerTransactionFactory {
 
 private extension SecurityScannerTransactionFactory {
     func createEVMSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
-        switch transaction.quote {
+        // Limit-swap orders are deposits with a memo; the EVM scanner
+        // path only handles the routed-swap providers below.
+        guard let quote = transaction.quote else {
+            throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
+        }
+        switch quote {
         case .oneinch(let quote, _), .lifi(let quote, _, _):
             return try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,

@@ -14,4 +14,8 @@ enum SwapRoute: Hashable {
     case pair(vaultPubKeyECDSA: String, transaction: SwapTransaction, retrySignal: SwapRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal)
     case done(vaultPubKeyECDSA: String, hash: String, approveHash: String?, chain: Chain, transaction: SwapTransaction, progressLink: String?)
+
+    // Limit-swap pipeline reuses these same routes — `SwapTransaction`
+    // carries a `limitContext: LimitOrderRecord?` that flips each shared
+    // screen into its limit-mode UI when non-nil.
 }

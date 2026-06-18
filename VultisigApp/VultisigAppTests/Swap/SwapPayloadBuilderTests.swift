@@ -381,7 +381,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: rune
+            feeCoin: rune,
+            limitContext: nil
         )
     }
 
@@ -397,7 +398,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: cacao
+            feeCoin: cacao,
+            limitContext: nil
         )
     }
 
@@ -413,7 +415,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth
+            feeCoin: eth,
+            limitContext: nil
         )
     }
 
@@ -454,7 +457,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth
+            feeCoin: eth,
+            limitContext: nil
         )
     }
 
@@ -470,7 +474,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth
+            feeCoin: eth,
+            limitContext: nil
         )
     }
 

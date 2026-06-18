@@ -16,16 +16,40 @@ struct SwapDetailsScreen: View {
 
     @State private var buttonRotated = false
     @State private var showErrorTooltip = false
+    /// Local Market/Limit tab state. The Limit branch lives entirely
+    /// inside `LimitSwapModeBody` (which owns its own form view model and
+    /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
+    /// renders the existing Market layout pixel-identical to pre-feature.
+    @State private var selectedSwapMode: SwapMode = .market
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
 
     var body: some View {
         @Bindable var vm = detailsViewModel
         Screen {
-            VStack {
-                fields
-                continueButton
+            VStack(alignment: .leading, spacing: 16) {
+                swapModeTabs
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .fixedSize()
+                    .showIf(settingsViewModel.limitSwapEnabled)
+
+                switch selectedSwapMode {
+                case .market:
+                    VStack {
+                        fields
+                        continueButton
+                    }
+                case .limit:
+                    LimitSwapEntryView(
+                        initialFromCoin: detailsViewModel.fromCoin,
+                        initialToCoin: detailsViewModel.toCoin,
+                        vault: vault
+                    )
+                    .environmentObject(coinSelectionViewModel)
+                }
             }
         }
         .screenTitle("swap".localized)
@@ -368,5 +392,40 @@ extension SwapDetailsScreen {
         default:
             break
         }
+    }
+
+    // MARK: - Market / Limit tabs
+
+    /// Toggle between Market and Limit swap modes. Limit is enabled only
+    /// when both selected coins live on a THORChain-routable chain. Tap-
+    /// changes are local; no router navigation here — the Limit branch
+    /// is hosted inline in `body` to feel like a tab, not a push.
+    var swapModeTabs: some View {
+        SegmentedControl(
+            selection: $selectedSwapMode,
+            items: [
+                SegmentedControlItem(
+                    value: SwapMode.market,
+                    title: "swap.tab.market".localized
+                ),
+                SegmentedControlItem(
+                    value: SwapMode.limit,
+                    title: "swap.tab.limit".localized,
+                    isEnabled: canCurrentPairUseLimitSwap
+                )
+            ]
+        )
+    }
+
+    /// Limit-mode availability is a vault-level question, not a pair-level
+    /// one: the user may currently be looking at a non-routable pair but
+    /// still have THORChain-routable chains enabled on the vault that they
+    /// can pick once they switch tabs. Disable Limit only when the vault
+    /// has zero routable chains at all — there's nothing to limit-swap.
+    /// The picker filter inside `LimitSwapEntryView` re-applies the
+    /// per-side routable filter (via `vm.supportedChains`) once Limit is
+    /// open.
+    private var canCurrentPairUseLimitSwap: Bool {
+        vault.chains.contains(where: { isThorchainRoutable(chain: $0) })
     }
 }

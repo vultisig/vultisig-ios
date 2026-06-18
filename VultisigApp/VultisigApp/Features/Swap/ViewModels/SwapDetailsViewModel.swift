@@ -316,7 +316,8 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            limitContext: nil
         )
     }
 }
