@@ -82,7 +82,7 @@ struct AdvancedSwapSheet: View {
 
             VStack(spacing: 0) {
                 AdvancedSwapMainRow(
-                    icon: "bolt.fill",
+                    icon: "slippage",
                     title: "slippageTolerance".localized,
                     value: settings.slippage.displayValue
                 ) {
@@ -92,7 +92,7 @@ struct AdvancedSwapSheet: View {
                 if isGasLimitSupported {
                     Separator()
                     AdvancedSwapMainRow(
-                        icon: "fuelpump.fill",
+                        icon: "gas",
                         title: "gasLimit".localized,
                         value: gasLimitValue
                     ) {
@@ -102,7 +102,7 @@ struct AdvancedSwapSheet: View {
 
                 Separator()
                 AdvancedSwapMainRow(
-                    icon: "person.2.fill",
+                    icon: "external-recipient",
                     title: "useExternalRecipient".localized,
                     value: externalRecipientValue
                 ) {
@@ -189,7 +189,7 @@ struct AdvancedSwapMainRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Icon(named: icon, color: Theme.colors.textPrimary, size: 16, isSystem: true)
+                Icon(named: icon, color: Theme.colors.textPrimary, size: 16, isSystem: false)
                 Text(title)
                     .font(Theme.fonts.bodySRegular)
                     .foregroundStyle(Theme.colors.textSecondary)
