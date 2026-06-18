@@ -1032,6 +1032,8 @@
 "swap.referral_discount" = "推荐 (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 豁免)";
+"swapAdvancedSettingsLockedSubtitle" = "为每次兑换精细调整滑点、Gas、路由和收款人。";
+"swapAdvancedSettingsLockedTitle" = "高级兑换设置";
 "swapAmountTooSmall" = "交换金额太小";
 "swapAmountTooSmallRecommended" = "交换金额太小。推荐金额 %@";
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";

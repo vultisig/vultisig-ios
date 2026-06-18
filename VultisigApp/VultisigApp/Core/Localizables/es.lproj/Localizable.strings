@@ -1032,6 +1032,8 @@
 "swap.referral_discount" = "Referido (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% exención)";
+"swapAdvancedSettingsLockedSubtitle" = "Ajusta el slippage, el gas, la ruta y el destinatario en cada swap.";
+"swapAdvancedSettingsLockedTitle" = "Ajustes avanzados de swap";
 "swapAmountTooSmall" = "Cantidad de intercambio demasiado pequeña";
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
 "swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";

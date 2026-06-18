@@ -1040,6 +1040,8 @@
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% waiver)";
+"swapAdvancedSettingsLockedSubtitle" = "Fine-tune slippage, gas, routing, and recipient for every swap.";
+"swapAdvancedSettingsLockedTitle" = "Advanced Swap Settings";
 "swapAmountTooSmall" = "Swap amount too small";
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";

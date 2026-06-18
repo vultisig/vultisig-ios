@@ -1009,6 +1009,8 @@
 "swap.referral_discount" = "추천 (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 면제)";
+"swapAdvancedSettingsLockedSubtitle" = "모든 스왑에 대해 슬리피지, 가스, 경로, 수신자를 세밀하게 조정하세요.";
+"swapAdvancedSettingsLockedTitle" = "고급 스왑 설정";
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";

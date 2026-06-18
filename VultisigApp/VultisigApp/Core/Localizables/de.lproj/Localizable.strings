@@ -1032,6 +1032,8 @@
 "swap.referral_discount" = "Empfehlung (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% Erlass)";
+"swapAdvancedSettingsLockedSubtitle" = "Feinabstimmung von Slippage, Gas, Routing und Empfänger für jeden Swap.";
+"swapAdvancedSettingsLockedTitle" = "Erweiterte Swap-Einstellungen";
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";

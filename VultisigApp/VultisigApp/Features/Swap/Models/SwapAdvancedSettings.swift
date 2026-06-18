@@ -35,10 +35,4 @@ struct SwapAdvancedSettings: Equatable, Hashable {
     private var _externalRecipient: String?
 
     static let `default` = SwapAdvancedSettings()
-
-    /// True when any setting deviates from its default — drives whether the
-    /// "Advanced Settings" link shows an active indicator.
-    var isActive: Bool {
-        slippage != .auto || gasLimit != nil || externalRecipient != nil
-    }
 }

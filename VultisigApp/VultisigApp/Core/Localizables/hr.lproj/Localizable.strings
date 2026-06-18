@@ -1032,6 +1032,8 @@
 "swap.referral_discount" = "Preporuka (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% oslobođenje)";
+"swapAdvancedSettingsLockedSubtitle" = "Precizno podesite slippage, gas, rutu i primatelja za svaku zamjenu.";
+"swapAdvancedSettingsLockedTitle" = "Napredne postavke zamjene";
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";

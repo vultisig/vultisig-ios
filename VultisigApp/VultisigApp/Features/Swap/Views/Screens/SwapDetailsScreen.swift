@@ -16,6 +16,9 @@ struct SwapDetailsScreen: View {
 
     @State private var buttonRotated = false
     @State private var showErrorTooltip = false
+    @State private var showAdvancedLockedSheet = false
+
+    private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
@@ -25,7 +28,6 @@ struct SwapDetailsScreen: View {
         Screen {
             VStack {
                 fields
-                advancedSettingsLink
                 continueButton
             }
         }
@@ -40,7 +42,24 @@ struct SwapDetailsScreen: View {
         }
         .screenToolbar {
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
+                advancedSettingsButton
+            }
+            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 refreshCounter
+            }
+        }
+        .crossPlatformSheet(isPresented: $showAdvancedLockedSheet) {
+            LockedFeatureSheet(
+                feature: .swapAdvancedSettings,
+                vault: vault,
+                isPresented: $showAdvancedLockedSheet
+            ) {
+                showAdvancedLockedSheet = false
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: tierService.getVultToken(for: vault),
+                    vault: vault
+                ))
             }
         }
         .crossPlatformSheet(isPresented: $vm.showFromChainSelector) {
@@ -266,28 +285,46 @@ struct SwapDetailsScreen: View {
         }
     }
 
-    @ViewBuilder
-    var advancedSettingsLink: some View {
+    var advancedSettingsButton: some View {
         Button {
-            detailsViewModel.showAdvancedSettingsSheet = true
+            handleAdvancedSettingsTap()
         } label: {
-            HStack(spacing: 6) {
-                Icon(named: "settings", color: Theme.colors.textPrimary, size: 16)
-                Text("advancedSettings".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                if detailsViewModel.advancedSettings.isActive {
-                    Circle()
-                        .fill(Theme.colors.primaryAccent4)
-                        .frame(width: 6, height: 6)
-                }
-                Spacer()
-                Icon(named: "chevron-right-small", color: Theme.colors.textTertiary, size: 20)
-            }
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
+            Icon(named: "sliders", color: Theme.colors.textPrimary, size: 20)
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(Theme.colors.bgSurface2))
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("advancedSettings".localized)
+    }
+
+    private func handleAdvancedSettingsTap() {
+        Task {
+            await TierGatedTap.handle(
+                required: .silver,
+                show: lockedSheetBinding,
+                for: vault,
+                isUnlocked: { tier, vault in
+                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+                        return false
+                    }
+                    return cached >= tier
+                },
+                onUnlocked: {
+                    detailsViewModel.showAdvancedSettingsSheet = true
+                }
+            )
+        }
+    }
+
+    /// Bridges the boolean sheet flag to the `VultDiscountTier?` binding
+    /// `TierGatedTap` expects: any non-nil tier means "locked", surfaced as the
+    /// single `LockedFeatureSheet(.swapAdvancedSettings)`.
+    private var lockedSheetBinding: Binding<VultDiscountTier?> {
+        Binding(
+            get: { showAdvancedLockedSheet ? .silver : nil },
+            set: { showAdvancedLockedSheet = $0 != nil }
+        )
     }
 
     var fields: some View {
