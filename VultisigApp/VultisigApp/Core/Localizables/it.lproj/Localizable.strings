@@ -135,6 +135,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "Impossibile verificare la maturità del deposito. Riprova più tardi.";
 "cancel" = "Annulla";
 "canLoseFundsPrompt" = "Sono consapevole che posso perdere fondi";
+"cardanoMinimumSendAmountError" = "L'importo minimo di invio è %@ ADA. Cardano lo richiede per evitare che la rete scarti la tua transazione.";
 "cardanoOutputBelowMinAda" = "ADA insufficienti per coprire la commissione di rete e il requisito minimo UTXO di Cardano (~1,4 ADA per output). Invia prima più ADA a questo vault.";
 "chain" = "Catena";
 "chainNotAdded" = "Catena Non Aggiunta";

@@ -107,6 +107,16 @@ struct SendCryptoVerifyLogic {
             if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
                 return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }
+
+            // Protocol minimum send floor (e.g. Cardano's ~1.4 ADA UTXO): a
+            // native send below it is silently dropped by the node. Mirror the
+            // Details-screen guard so the ceremony never starts on an amount the
+            // node rejects.
+            if SendCryptoLogic.isBelowMinimumSendAmount(coin: tx.coin, amount: tx.amount),
+               let minimum = tx.coin.chain.minimumSendAmount {
+                let minAmount = tx.coin.decimal(for: minimum).description
+                return BalanceValidationResult(isValid: false, errorMessage: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
+            }
         } else if tx.coin.chain == .terraClassic
                     && TerraClassicTax.isBankDenom(
                         contractAddress: tx.coin.contractAddress,

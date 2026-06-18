@@ -653,6 +653,16 @@ final class SendDetailsViewModel {
             }
         }
 
+        // Some chains enforce a protocol minimum value on every output; a
+        // native send below it is silently dropped by the node. Match Android
+        // by blocking it here before the keysign ceremony.
+        if SendCryptoLogic.isBelowMinimumSendAmount(coin: coin, amount: amount),
+           let minimum = coin.chain.minimumSendAmount {
+            let minAmount = coin.decimal(for: minimum).description
+            setAmountError(message: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
+            return false
+        }
+
         return validateERC20GasBalance()
     }
 
