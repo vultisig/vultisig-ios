@@ -475,10 +475,14 @@
 "governanceActiveProposals" = "Proposte attive";
 "governanceCastVote" = "Esprimi il tuo voto";
 "governanceChangeVote" = "Cambia il tuo voto";
+"governanceDurationDaysHours" = "%dd %dh";
+"governanceDurationHoursMinutes" = "%dh %dm";
+"governanceDurationMinutes" = "%dm";
 "governanceEmptySubtitle" = "Al momento non ci sono proposte di governance da mostrare.";
 "governanceEmptyTitle" = "Nessuna proposta";
 "governanceErrorSubtitle" = "Trascina per aggiornare e riprovare.";
 "governanceErrorTitle" = "Impossibile caricare le proposte";
+"governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Messaggi";
 "governanceNoVotesYet" = "Ancora nessun voto";
 "governancePastProposals" = "Proposte passate";

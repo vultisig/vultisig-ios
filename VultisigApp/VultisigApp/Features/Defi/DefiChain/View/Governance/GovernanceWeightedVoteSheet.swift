@@ -15,18 +15,7 @@ struct GovernanceWeightedVoteSheet: View {
     let proposal: CosmosGovProposal
     var onSubmit: ([CosmosGovVoteOption]) -> Void
 
-    /// Whole-percent weight per option (0...100). Defaults to an even 25 each.
-    @State private var weights: [CosmosGovVoteChoice: Int] = [
-        .yes: 25, .no: 25, .noWithVeto: 25, .abstain: 25
-    ]
-
-    private var total: Int {
-        CosmosGovVoteChoice.allCases.reduce(0) { $0 + (weights[$1] ?? 0) }
-    }
-
-    private var isValid: Bool {
-        total == 100
-    }
+    @StateObject private var viewModel = GovernanceWeightedVoteViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -34,9 +23,9 @@ struct GovernanceWeightedVoteSheet: View {
             optionRows
             totalRow
             PrimaryButton(title: "governanceSubmitWeightedVote".localized) {
-                onSubmit(buildOptions())
+                onSubmit(viewModel.buildOptions())
             }
-            .disabled(!isValid)
+            .disabled(!viewModel.isValid)
         }
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -74,19 +63,19 @@ struct GovernanceWeightedVoteSheet: View {
             Spacer()
             Stepper(
                 value: Binding(
-                    get: { weights[choice] ?? 0 },
-                    set: { weights[choice] = max(0, min(100, $0)) }
+                    get: { viewModel.weight(for: choice) },
+                    set: { viewModel.setWeight($0, for: choice) }
                 ),
                 in: 0...100,
                 step: 5
             ) {
-                Text("\(weights[choice] ?? 0)%")
+                Text("\(viewModel.weight(for: choice))%")
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .monospacedDigit()
             }
             .labelsHidden()
-            Text("\(weights[choice] ?? 0)%")
+            Text("\(viewModel.weight(for: choice))%")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .monospacedDigit()
@@ -105,23 +94,10 @@ struct GovernanceWeightedVoteSheet: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
             Spacer()
-            Text("\(total)%")
+            Text("\(viewModel.total)%")
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(isValid ? Theme.colors.alertSuccess : Theme.colors.alertError)
+                .foregroundStyle(viewModel.isValid ? Theme.colors.alertSuccess : Theme.colors.alertError)
                 .monospacedDigit()
-        }
-    }
-
-    /// Non-zero options with weights as fractions (e.g. 70% -> 0.7). Order
-    /// follows `CosmosGovVoteChoice.allCases` for a stable memo.
-    private func buildOptions() -> [CosmosGovVoteOption] {
-        CosmosGovVoteChoice.allCases.compactMap { choice in
-            let percent = weights[choice] ?? 0
-            guard percent > 0 else { return nil }
-            return CosmosGovVoteOption(
-                option: choice,
-                weight: Decimal(percent) / 100
-            )
         }
     }
 }

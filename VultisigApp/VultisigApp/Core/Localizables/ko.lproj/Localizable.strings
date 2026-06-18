@@ -471,10 +471,14 @@
 "governanceActiveProposals" = "진행 중인 제안";
 "governanceCastVote" = "투표하기";
 "governanceChangeVote" = "투표 변경";
+"governanceDurationDaysHours" = "%d일 %d시간";
+"governanceDurationHoursMinutes" = "%d시간 %d분";
+"governanceDurationMinutes" = "%d분";
 "governanceEmptySubtitle" = "현재 표시할 거버넌스 제안이 없습니다.";
 "governanceEmptyTitle" = "제안 없음";
 "governanceErrorSubtitle" = "당겨서 새로고침하여 다시 시도하세요.";
 "governanceErrorTitle" = "제안을 불러올 수 없습니다";
+"governanceLessThanOneMinute" = "1분 미만";
 "governanceMessages" = "메시지";
 "governanceNoVotesYet" = "아직 투표 없음";
 "governancePastProposals" = "지난 제안";

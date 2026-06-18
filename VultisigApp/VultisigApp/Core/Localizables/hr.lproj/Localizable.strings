@@ -475,10 +475,14 @@
 "governanceActiveProposals" = "Aktivni prijedlozi";
 "governanceCastVote" = "Glasujte";
 "governanceChangeVote" = "Promijenite glas";
+"governanceDurationDaysHours" = "%dd %dh";
+"governanceDurationHoursMinutes" = "%dh %dm";
+"governanceDurationMinutes" = "%dm";
 "governanceEmptySubtitle" = "Trenutno nema prijedloga za prikaz.";
 "governanceEmptyTitle" = "Nema prijedloga";
 "governanceErrorSubtitle" = "Povucite za osvježavanje da pokušate ponovno.";
 "governanceErrorTitle" = "Učitavanje prijedloga nije uspjelo";
+"governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Poruke";
 "governanceNoVotesYet" = "Još nema glasova";
 "governancePastProposals" = "Prošli prijedlozi";

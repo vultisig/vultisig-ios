@@ -475,10 +475,14 @@
 "governanceActiveProposals" = "进行中的提案";
 "governanceCastVote" = "投出您的票";
 "governanceChangeVote" = "更改您的投票";
+"governanceDurationDaysHours" = "%d天 %d时";
+"governanceDurationHoursMinutes" = "%d时 %d分";
+"governanceDurationMinutes" = "%d分";
 "governanceEmptySubtitle" = "当前没有可显示的治理提案。";
 "governanceEmptyTitle" = "暂无提案";
 "governanceErrorSubtitle" = "下拉刷新以重试。";
 "governanceErrorTitle" = "无法加载提案";
+"governanceLessThanOneMinute" = "<1分";
 "governanceMessages" = "消息";
 "governanceNoVotesYet" = "暂无投票";
 "governancePastProposals" = "历史提案";

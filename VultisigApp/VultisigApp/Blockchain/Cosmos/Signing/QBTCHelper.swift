@@ -301,7 +301,9 @@ struct QBTCHelper {
             throw HelperError.runtimeError("QBTC: invalid vote memo format, expected OPTION:PROPOSAL_ID")
         }
 
-        let option = voteOptionValue(from: String(components[0]))
+        guard let option = Self.voteOptionInt(from: String(components[0])) else {
+            throw HelperError.runtimeError("QBTC: invalid vote option '\(components[0])'")
+        }
 
         // MsgVote:
         //   field 1 = proposal_id (uint64)
@@ -312,10 +314,6 @@ struct QBTCHelper {
         msg.appendProtoString(fieldNumber: 2, value: keysignPayload.coin.address)
         msg.appendProtoVarint(fieldNumber: 3, value: option)
         return msg
-    }
-
-    private func voteOptionValue(from description: String) -> UInt64 {
-        Self.voteOptionInt(from: description)
     }
 
     // MARK: - Governance Weighted Vote (MsgVoteWeighted)
@@ -376,7 +374,9 @@ struct QBTCHelper {
             guard kv.count == 2 else {
                 throw HelperError.runtimeError("QBTC: invalid weighted-vote option '\(pair)'")
             }
-            let option = QBTCHelper.voteOptionInt(from: String(kv[0]))
+            guard let option = QBTCHelper.voteOptionInt(from: String(kv[0])) else {
+                throw HelperError.runtimeError("QBTC: invalid weighted-vote option '\(kv[0])'")
+            }
             guard let weight = QBTCHelper.legacyDecString(from: String(kv[1])) else {
                 throw HelperError.runtimeError("QBTC: invalid weighted-vote weight '\(kv[1])'")
             }
@@ -387,13 +387,15 @@ struct QBTCHelper {
 
     /// Maps a vote-option token (e.g. "YES", "NO_WITH_VETO") to the canonical
     /// proto enum integer. Shared by the single-option and weighted paths.
-    static func voteOptionInt(from description: String) -> UInt64 {
+    /// Returns `nil` for an unknown token so callers fail fast rather than
+    /// signing `VOTE_OPTION_UNSPECIFIED` for a malformed memo.
+    static func voteOptionInt(from description: String) -> UInt64? {
         switch description.uppercased() {
         case "YES": return 1
         case "ABSTAIN": return 2
         case "NO": return 3
         case "NO_WITH_VETO", "NOWITHVETO": return 4
-        default: return 0
+        default: return nil
         }
     }
 

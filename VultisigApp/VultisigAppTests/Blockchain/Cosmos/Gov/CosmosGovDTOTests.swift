@@ -97,6 +97,22 @@ final class CosmosGovDTOTests: XCTestCase {
         XCTAssertEqual(response.toProposals().first?.status, .unspecified)
     }
 
+    func testMissingStatusDecodesAndMapsToUnspecified() throws {
+        // A missing/null `status` must not fail decoding before the
+        // `.unspecified` fallback runs — only an unparseable `id` drops a
+        // proposal.
+        let json = """
+        { "proposals": [{ "id": "11" }] }
+        """
+        let response = try JSONDecoder().decode(
+            CosmosGovProposalsResponse.self,
+            from: Data(json.utf8)
+        )
+        let proposals = response.toProposals()
+        XCTAssertEqual(proposals.map(\.id), [11])
+        XCTAssertEqual(proposals.first?.status, .unspecified)
+    }
+
     func testProposalWithoutMessagesDecodesToEmptyTypes() throws {
         let json = """
         { "proposal": { "id": "9", "status": "PROPOSAL_STATUS_REJECTED",

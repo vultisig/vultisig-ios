@@ -122,7 +122,10 @@ final class QBTCGovernanceViewModel: ObservableObject {
     }
 
     private func resolveTallies(for proposals: [CosmosGovProposal]) async {
-        guard !proposals.isEmpty else { return }
+        guard !proposals.isEmpty else {
+            liveTallies = [:]
+            return
+        }
         let resolved = await withTaskGroup(of: (UInt64, CosmosGovTallyResult?).self) { group in
             for proposal in proposals {
                 group.addTask { [service, logger] in

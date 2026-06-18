@@ -480,10 +480,14 @@
 "governanceActiveProposals" = "Active Proposals";
 "governanceCastVote" = "Cast your vote";
 "governanceChangeVote" = "Change your vote";
+"governanceDurationDaysHours" = "%dd %dh";
+"governanceDurationHoursMinutes" = "%dh %dm";
+"governanceDurationMinutes" = "%dm";
 "governanceEmptySubtitle" = "There are no governance proposals to show right now.";
 "governanceEmptyTitle" = "No proposals";
 "governanceErrorSubtitle" = "Pull to refresh to try again.";
 "governanceErrorTitle" = "Couldn't load proposals";
+"governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Messages";
 "governanceNoVotesYet" = "No votes yet";
 "governancePastProposals" = "Past Proposals";

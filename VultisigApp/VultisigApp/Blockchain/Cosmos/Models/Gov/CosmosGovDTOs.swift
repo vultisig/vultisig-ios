@@ -134,7 +134,7 @@ struct CosmosGovProposal: Equatable, Sendable, Identifiable {
 struct CosmosGovProposalWire: Decodable {
     let id: String
     let messages: [WireMessage]?
-    let status: String
+    let status: String?
     let finalTallyResult: CosmosGovTallyWire?
     let submitTime: String?
     let depositEndTime: String?
@@ -181,7 +181,7 @@ struct CosmosGovProposalWire: Decodable {
             id: id,
             title: title ?? "",
             summary: summary ?? "",
-            status: CosmosGovProposalStatus(wire: status),
+            status: CosmosGovProposalStatus(wire: status ?? ""),
             messageTypes: (messages ?? []).map(\.type),
             finalTally: finalTallyResult?.toTally() ?? .zero,
             submitTime: submitTime.flatMap(CosmosStakingDateParser.parse),

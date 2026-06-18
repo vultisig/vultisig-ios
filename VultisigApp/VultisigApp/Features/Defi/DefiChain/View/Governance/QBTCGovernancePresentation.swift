@@ -62,22 +62,24 @@ enum QBTCGovernanceFormat {
     }
 
     /// Compact duration like "1d 4h", "4h 12m", "12m", "<1m" — two units max.
+    /// Unit tokens are localized so the countdown reads correctly in every
+    /// locale.
     static func shortDuration(_ interval: TimeInterval) -> String {
-        let totalMinutes = Int(interval / 60)
+        let totalMinutes = Int(max(interval, 0) / 60)
         let days = totalMinutes / (60 * 24)
         let hours = (totalMinutes % (60 * 24)) / 60
         let minutes = totalMinutes % 60
 
         if days > 0 {
-            return "\(days)d \(hours)h"
+            return String(format: "governanceDurationDaysHours".localized, days, hours)
         }
         if hours > 0 {
-            return "\(hours)h \(minutes)m"
+            return String(format: "governanceDurationHoursMinutes".localized, hours, minutes)
         }
         if minutes > 0 {
-            return "\(minutes)m"
+            return String(format: "governanceDurationMinutes".localized, minutes)
         }
-        return "<1m"
+        return "governanceLessThanOneMinute".localized
     }
 
     /// Short label for a wrapped message type URL — the trailing

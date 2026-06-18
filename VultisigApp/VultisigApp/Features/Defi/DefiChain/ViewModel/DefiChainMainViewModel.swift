@@ -37,14 +37,16 @@ final class DefiChainMainViewModel: ObservableObject {
     }
 
     func moveToNextPosition() {
-        let allPositions = DefiChainPositionType.allCases
+        let allPositions = positions.map(\.value)
+        guard !allPositions.isEmpty else { return }
         let currentIndex = allPositions.firstIndex(of: selectedPosition) ?? 0
         let nextIndex = (currentIndex + 1) % allPositions.count
         selectedPosition = allPositions[nextIndex]
     }
 
     func moveToPreviousPosition() {
-        let allPositions = DefiChainPositionType.allCases
+        let allPositions = positions.map(\.value)
+        guard !allPositions.isEmpty else { return }
         let currentIndex = allPositions.firstIndex(of: selectedPosition) ?? 0
         let previousIndex = currentIndex == 0 ? allPositions.count - 1 : currentIndex - 1
         selectedPosition = allPositions[previousIndex]
