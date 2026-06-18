@@ -93,6 +93,9 @@ private final class HoldingStubProtocol: URLProtocol {
     }
 
     static func reset() {
+        // Drain any leftover permits so a prior run's re-signaled `gate` can't
+        // let `startLoading()` skip its in-flight hold on the next test.
+        while gate.wait(timeout: .now()) == .success {}
         lock.lock()
         _startCount = 0
         released = false
