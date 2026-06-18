@@ -53,6 +53,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var keysignCommittee = [String]()
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
+    @Published var isJoiningCommittee = false
     @Published var keysignPayload: KeysignPayload? = nil
     /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
@@ -128,6 +129,8 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func joinKeysignCommittee() {
+        guard !isJoiningCommittee else { return }
+
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
         }
@@ -135,6 +138,7 @@ class JoinKeysignViewModel: ObservableObject {
             return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
 
+        isJoiningCommittee = true
         Utils.sendRequest(
             urlString: "\(serverURL)/\(sessionID)",
             method: "POST",
@@ -142,6 +146,7 @@ class JoinKeysignViewModel: ObservableObject {
             body: [localPartyID]
         ) { success in
             DispatchQueue.main.async {
+                self.isJoiningCommittee = false
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
