@@ -52,6 +52,9 @@ struct GovernanceProposalDetailScreen: View {
             }
             .padding(20)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.colors.bgPrimary)
+        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .crossPlatformSheet(isPresented: $showWeightedSheet) {
             GovernanceWeightedVoteSheet(proposal: proposal) { options in
                 showWeightedSheet = false
