@@ -303,6 +303,8 @@
 "dappRequestFrom" = "Zahtjev od";
 "date" = "Datum";
 "decimalAmountError" = "Iznos mora biti decimalan.";
+"decodeCustomMessagePayloadError" = "Pogreška pri dekodiranju sadržaja prilagođene poruke: %@";
+"decodeKeysignMessageError" = "Pogreška pri dekodiranju keysign poruke: %@";
 "defiChainNoPositions" = "Nema pronađenih pozicija";
 "defiChainPositionsCount" = "%d pozicija";
 "defiPortfolio" = "DeFi Portfelj";
@@ -520,6 +522,7 @@
 "joinKeygenViewDescription" = "Vaš trezor će se početi generirati čim dovršite postavljanje na svom glavnom uređaju.";
 "joinKeygenViewTitle" = "Čekanje na pridruživanje drugih uređaja";
 "joinKeysign" = "Pridružite se Keysign-u";
+"joinKeysignCommitteeFailed" = "Pridruživanje keysign odboru nije uspjelo. Provjeri vezu i pokušaj ponovno.";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
@@ -559,6 +562,8 @@
 "keysign" = "Potpis ključa";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
+"keysignStartResponseError" = "Došlo je do problema pri obradi odgovora za pokretanje keysigna. Pokušaj ponovno.";
+"keysignStartVerifyFailed" = "Provjera pokretanja keysigna nije uspjela. Pogreška: %@";
 "Korean" = "Korejski";
 "label" = "Označiti";
 "language" = "Jezik";
@@ -652,6 +657,7 @@
 "nOfTotal" = "%d od %@";
 "noGasTokenFoundError" = "Nije pronađen token za plin za %@ lanac. Molimo dodajte nativni token u vaš trezor.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
+"noMessagesToSign" = "Nema poruka za potpisivanje";
 "noPoolsAvailable" = "Nema dostupnih bazena";
 "noPositionsFound" = "Nema pronađenih pozicija";
 "noPositionsSelectedSubtitle" = "Onemogućili ste sve pozicije za ovaj lanac. Omogućite barem jednu poziciju za prikaz stanja i upravljanje akcijama.";
@@ -741,6 +747,7 @@
 "Portuguese" = "Portugalski";
 "position" = "Pozicija";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";
+"prepareKeysignMessagesFailed" = "Priprema poruka za keysigning nije uspjela. Pogreška: %@";
 "preparingVaultText1" = "Višefaktorska sigurnost, ";
 "preparingVaultText2" = "uklanjanje jedne točke neuspjeha";
 "previewKeygenDescription" = "Skenirajte s uređajima za pridruživanje generaciji trezora";

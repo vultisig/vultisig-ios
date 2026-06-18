@@ -52,9 +52,10 @@ struct KeysignSwapConfirmView: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "joinTransactionSigning") {
+        PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
             viewModel.joinKeysignCommittee()
         }
+        .disabled(viewModel.isJoiningCommittee)
         .padding(20)
     }
 

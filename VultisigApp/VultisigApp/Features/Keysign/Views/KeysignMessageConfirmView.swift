@@ -41,9 +41,10 @@ struct KeysignMessageConfirmView: View {
                     securityScannerState: $viewModel.securityScannerState
                 )
 
-                PrimaryButton(title: "joinTransactionSigning") {
+                PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
                 }
+                .disabled(viewModel.isJoiningCommittee)
             }
             .task {
                 async let thor: Void = viewModel.loadThorchainID()

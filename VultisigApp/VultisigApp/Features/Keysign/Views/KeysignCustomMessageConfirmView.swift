@@ -144,9 +144,10 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "joinKeysign") {
+        PrimaryButton(title: "joinKeysign", isLoading: viewModel.isJoiningCommittee) {
             viewModel.joinKeysignCommittee()
         }
+        .disabled(viewModel.isJoiningCommittee)
         .padding(20)
     }
 
