@@ -303,6 +303,8 @@
 "dappRequestFrom" = "Pedido de";
 "date" = "Data";
 "decimalAmountError" = "O valor deve ser decimal.";
+"decodeCustomMessagePayloadError" = "Erro ao descodificar o conteúdo da mensagem personalizada: %@";
+"decodeKeysignMessageError" = "Erro ao descodificar a mensagem de keysign: %@";
 "defiChainNoPositions" = "Nenhuma posição encontrada";
 "defiChainPositionsCount" = "%d posições";
 "defiPortfolio" = "Portfólio DeFi";
@@ -520,6 +522,7 @@
 "joinKeygenViewDescription" = "Seu cofre começará a ser gerado assim que você finalizar a configuração no seu dispositivo principal.";
 "joinKeygenViewTitle" = "Aguardando outros dispositivos para entrar";
 "joinKeysign" = "Participar do Keysign";
+"joinKeysignCommitteeFailed" = "Não foi possível entrar no comité de keysign. Verifica a tua ligação e tenta novamente.";
 "joinReshare" = "Juntar-se ao compartilhamento";
 "joinSend" = "Juntar-se ao Envio";
 "joinSwap" = "Participar da troca";
@@ -559,6 +562,8 @@
 "keysign" = "Assinatura de Chave";
 "keysignDiscoveryDisclaimer" = "Escaneie o código QR para assinar a transação.";
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
+"keysignStartResponseError" = "Ocorreu um problema ao processar a resposta de início do keysign. Tenta novamente.";
+"keysignStartVerifyFailed" = "Não foi possível verificar o início do keysign. Erro: %@";
 "Korean" = "Coreano";
 "label" = "Rótulo";
 "language" = "Idioma";
@@ -652,6 +657,7 @@
 "nOfTotal" = "%d de %@";
 "noGasTokenFoundError" = "Token de gas não encontrado para a cadeia %@. Por favor, adicione o token nativo ao seu vault.";
 "noLiquidityPool" = "Não há pool de liquidez disponível para este par de tokens. Este ativo pode não ser suportado.";
+"noMessagesToSign" = "Não há mensagens para assinar";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "Nenhuma posição encontrada";
 "noPositionsSelectedSubtitle" = "Você desabilitou todas as posições para esta cadeia. Habilite pelo menos uma posição para visualizar saldos e gerenciar ações.";
@@ -741,6 +747,7 @@
 "Portuguese" = "Português";
 "position" = "Posição";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";
+"prepareKeysignMessagesFailed" = "Não foi possível preparar as mensagens para o keysigning. Erro: %@";
 "preparingVaultText1" = "Segurança multifatorial, ";
 "preparingVaultText2" = "eliminando o ponto único de falha";
 "previewKeygenDescription" = "Digitalize com dispositivos para ingressar na geração do cofre";
