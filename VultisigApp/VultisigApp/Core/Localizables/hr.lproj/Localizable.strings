@@ -933,6 +933,8 @@
 "selectDestinationChain" = "Select the destination chain";
 "selectPositions" = "Odaberi pozicije";
 "selectPositionsSubtitle" = "Omogući barem jednu poziciju za prikaz stanja i upravljanje pozicijama.";
+"selectRoute" = "Odaberi rutu";
+"selectRouteHelper" = "Rute rangirane prema izlaznom iznosu. Odabir rute nadjačava automatski način.";
 "selectSecuredAssetToSeeBalance" = "Select a secured asset to see available balance.";
 "selectSecuredAssetToWithdraw" = "Select Secured Asset to Withdraw";
 "selectToken" = "Select Token";
@@ -1072,9 +1074,8 @@
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
-"swapProviderRecommended" = "Preporučeno";
-"swapProvidersSheetTitle" = "Odaberite davatelja";
 "swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
+"swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";

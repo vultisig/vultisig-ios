@@ -910,6 +910,8 @@
 "selectDestinationChain" = "목적지 체인 선택";
 "selectPositions" = "포지션 선택";
 "selectPositionsSubtitle" = "잔액을 보고 포지션을 관리하려면 하나 이상의 포지션을 활성화하세요.";
+"selectRoute" = "경로 선택";
+"selectRouteHelper" = "출력 금액 기준으로 정렬된 경로입니다. 경로를 선택하면 자동 설정이 재정의됩니다.";
 "selectSecuredAssetToSeeBalance" = "사용 가능한 잔액을 보려면 보안 자산을 선택하세요.";
 "selectSecuredAssetToWithdraw" = "출금할 보안 자산 선택";
 "selectToken" = "토큰 선택";
@@ -1048,9 +1050,8 @@
 "swapKitStatusRefundedReason" = "스왑이 원래 주소로 환불되었습니다";
 "swapKitViewOnTracker" = "SwapKit 추적기에서 보기";
 "swapOverview" = "스왑 개요";
-"swapProviderRecommended" = "추천";
-"swapProvidersSheetTitle" = "공급자 선택";
 "swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
+"swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
 "swapTrackingLink" = "스왑 추적 링크";

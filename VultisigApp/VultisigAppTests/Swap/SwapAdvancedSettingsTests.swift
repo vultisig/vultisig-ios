@@ -105,35 +105,12 @@ final class SwapAdvancedSettingsTests: XCTestCase {
         XCTAssertFalse(SwapProvider.swapkit.honorsExternalRecipient)
     }
 
-    // MARK: - SwapAdvancedSettings.isActive
-
-    func testDefaultSettingsAreInactive() {
-        XCTAssertFalse(SwapAdvancedSettings.default.isActive)
-    }
-
-    func testCustomSlippageMakesSettingsActive() {
-        var settings = SwapAdvancedSettings.default
-        settings.slippage = .preset(bps: 100)
-        XCTAssertTrue(settings.isActive)
-    }
-
-    func testGasLimitMakesSettingsActive() {
-        var settings = SwapAdvancedSettings.default
-        settings.gasLimit = BigUInt(300_000)
-        XCTAssertTrue(settings.isActive)
-    }
-
-    func testExternalRecipientMakesSettingsActive() {
-        var settings = SwapAdvancedSettings.default
-        settings.externalRecipient = "0xabc"
-        XCTAssertTrue(settings.isActive)
-    }
+    // MARK: - SwapAdvancedSettings external-recipient normalization
 
     func testBlankExternalRecipientNormalizesToNil() {
         var settings = SwapAdvancedSettings.default
         settings.externalRecipient = "   "
         XCTAssertNil(settings.externalRecipient)
-        XCTAssertFalse(settings.isActive)
 
         settings.externalRecipient = ""
         XCTAssertNil(settings.externalRecipient)
@@ -146,7 +123,6 @@ final class SwapAdvancedSettingsTests: XCTestCase {
         var settings = SwapAdvancedSettings.default
         settings.externalRecipient = "  0xabc  "
         XCTAssertEqual(settings.externalRecipient, "0xabc")
-        XCTAssertTrue(settings.isActive)
     }
 
     // MARK: - SwapTransaction recipient surfacing (verify screen)

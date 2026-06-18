@@ -933,6 +933,8 @@
 "selectDestinationChain" = "选择目标链";
 "selectPositions" = "选择仓位";
 "selectPositionsSubtitle" = "启用至少一个仓位以查看余额并管理仓位";
+"selectRoute" = "选择路由";
+"selectRouteHelper" = "按输出金额排序的路由。选择路由将覆盖自动选择。";
 "selectSecuredAssetToSeeBalance" = "选择担保资产以查看可用余额。";
 "selectSecuredAssetToWithdraw" = "选择要提取的担保资产";
 "selectToken" = "选择代币";
@@ -1072,9 +1074,8 @@
 "swapKitStatusRefundedReason" = "交换已退款至您的源地址";
 "swapKitViewOnTracker" = "在 SwapKit 跟踪器中查看";
 "swapOverview" = "交换概览";
-"swapProviderRecommended" = "推荐";
-"swapProvidersSheetTitle" = "选择提供商";
 "swapRecipientRouteNotAvailable" = "此交易对没有可用的外部接收方路由。请移除接收方或选择其他交易对。";
+"swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
 "swapTrackingLink" = "交换跟踪链接";

@@ -933,6 +933,8 @@
 "selectDestinationChain" = "Select the destination chain";
 "selectPositions" = "Seleccionar posiciones";
 "selectPositionsSubtitle" = "Habilita al menos una posición para ver saldos y administrar posiciones.";
+"selectRoute" = "Seleccionar ruta";
+"selectRouteHelper" = "Rutas ordenadas por cantidad de salida. Seleccionar una ruta anula el modo automático.";
 "selectSecuredAssetToSeeBalance" = "Select a secured asset to see available balance.";
 "selectSecuredAssetToWithdraw" = "Select Secured Asset to Withdraw";
 "selectToken" = "Select Token";
@@ -1072,9 +1074,8 @@
 "swapKitStatusRefundedReason" = "El intercambio fue reembolsado a tu dirección de origen";
 "swapKitViewOnTracker" = "Ver en SwapKit Tracker";
 "swapOverview" = "Resumen del intercambio";
-"swapProviderRecommended" = "Recomendado";
-"swapProvidersSheetTitle" = "Seleccionar proveedor";
 "swapRecipientRouteNotAvailable" = "No hay ninguna ruta hacia un destinatario externo disponible para este par. Quita el destinatario o elige otro par.";
+"swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swaps" = "Intercambios";
 "swapTrackingLink" = "Enlace de seguimiento del intercambio";

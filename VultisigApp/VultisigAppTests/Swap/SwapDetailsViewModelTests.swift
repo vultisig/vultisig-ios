@@ -221,13 +221,12 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromCoins = [vm.fromCoin]
         vm.advancedSettings.slippage = .custom(bps: 300)
         vm.advancedSettings.externalRecipient = "0xExternalRecipient"
-        XCTAssertTrue(vm.advancedSettings.isActive, "Precondition: settings are non-default")
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         // Empty amount keeps `fetchQuotes` from touching the network.
         vm.switchCoins(vault: makeVault(), referredCode: "")
 
         XCTAssertEqual(vm.advancedSettings, .default, "Flipping the pair must reset advanced settings")
-        XCTAssertFalse(vm.advancedSettings.isActive)
     }
 
     func testHandleFromChainUpdateResetsAdvancedSettings() {
@@ -237,7 +236,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromCoins = [vm.fromCoin]
         vm.advancedSettings.gasLimit = 300_000
         vm.advancedSettings.externalRecipient = "0xExternalRecipient"
-        XCTAssertTrue(vm.advancedSettings.isActive, "Precondition: settings are non-default")
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         // Drive a real source-chain switch: target THORChain, with a matching
         // native coin in the vault so `getDefaultCoin` resolves and the guard passes.
@@ -257,7 +256,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.advancedSettings.slippage = .preset(bps: 100)
         vm.advancedSettings.externalRecipient = "bc1qExternalRecipient"
-        XCTAssertTrue(vm.advancedSettings.isActive, "Precondition: settings are non-default")
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         let vault = makeVault()
         vault.coins.append(makeCoin(.thorChain, ticker: "RUNE"))

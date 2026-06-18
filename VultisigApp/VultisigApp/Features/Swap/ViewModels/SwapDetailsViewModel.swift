@@ -199,6 +199,22 @@ final class SwapDetailsViewModel {
         return toCoin.fiat(decimal: amount).formatToFiat()
     }
 
+    /// Provider/swap fee fiat for a route row (Select-route sub-sheet). Uses the
+    /// per-quote provider fee — the EVM swap fee or the THORChain/Maya inbound
+    /// fee — which is known for every candidate without the live network-gas
+    /// estimate (that only exists for the active quote). Empty when not derivable.
+    func routeFeeString(for candidate: SwapQuote) -> String {
+        SwapCryptoLogic.swapFeeString(quote: candidate, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    /// Estimated time-to-completion for a route row, e.g. "~30s". Only
+    /// THORChain/Maya quotes expose `totalSwapSeconds`; EVM aggregators don't,
+    /// so this returns empty for them and the row renders the fee alone.
+    func routeEtaString(for candidate: SwapQuote) -> String {
+        guard let seconds = candidate.totalSwapSeconds else { return .empty }
+        return String(format: "swapRouteEta".localized, seconds)
+    }
+
     func updateCoinLists() {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,

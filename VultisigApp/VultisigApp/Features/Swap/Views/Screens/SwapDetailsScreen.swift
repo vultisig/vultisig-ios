@@ -37,7 +37,8 @@ struct SwapDetailsScreen: View {
                 isPresented: $vm.showAdvancedSettingsSheet,
                 coin: detailsViewModel.toCoin,
                 isGasLimitSupported: detailsViewModel.isGasLimitSupported,
-                settings: $vm.advancedSettings
+                settings: $vm.advancedSettings,
+                detailsViewModel: detailsViewModel
             )
         }
         .screenToolbar {

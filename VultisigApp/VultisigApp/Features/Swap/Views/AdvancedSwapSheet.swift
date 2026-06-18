@@ -14,6 +14,7 @@ private enum AdvancedSwapSheetType: Equatable {
     case main
     case slippage
     case gasLimit
+    case selectRoute
     case externalRecipient
 }
 
@@ -22,9 +23,12 @@ struct AdvancedSwapSheet: View {
     let coin: Coin
     let isGasLimitSupported: Bool
     @Binding var settings: SwapAdvancedSettings
+    @Bindable var detailsViewModel: SwapDetailsViewModel
 
     @State private var sheetType: AdvancedSwapSheetType = .main
     @State private var shouldUseMoveTransition = true
+
+    private var vm: SwapDetailsViewModel { detailsViewModel }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,6 +44,11 @@ struct AdvancedSwapSheet: View {
                     .transition(transition(forward: true))
                 case .gasLimit:
                     GasLimitSettingsView(gasLimit: $settings.gasLimit) {
+                        updateSheet(.main)
+                    }
+                    .transition(transition(forward: true))
+                case .selectRoute:
+                    SelectRouteSettingsView(detailsViewModel: detailsViewModel) {
                         updateSheet(.main)
                     }
                     .transition(transition(forward: true))
@@ -64,14 +73,25 @@ struct AdvancedSwapSheet: View {
     private var detent: PresentationDetent {
         switch sheetType {
         case .main:
-            return .height(isGasLimitSupported ? 330 : 260)
+            return .height(mainDetentHeight)
         case .slippage:
             return .height(520)
         case .gasLimit:
             return .height(280)
+        case .selectRoute:
+            return .height(559)
         case .externalRecipient:
             return .height(330)
         }
+    }
+
+    /// Main-sheet height grows with the optional rows it renders: the Gas Limit
+    /// row (EVM only) and the Select route row (provider selection available).
+    private var mainDetentHeight: CGFloat {
+        var height: CGFloat = 260
+        if isGasLimitSupported { height += 70 }
+        if vm.canSelectProvider { height += 70 }
+        return height
     }
 
     private var mainView: some View {
@@ -100,6 +120,17 @@ struct AdvancedSwapSheet: View {
                     }
                 }
 
+                if vm.canSelectProvider {
+                    Separator()
+                    AdvancedSwapMainRow(
+                        icon: "route",
+                        title: "selectRoute".localized,
+                        value: selectRouteValue
+                    ) {
+                        updateSheet(.selectRoute)
+                    }
+                }
+
                 Separator()
                 AdvancedSwapMainRow(
                     icon: "external-recipient",
@@ -121,6 +152,13 @@ struct AdvancedSwapSheet: View {
 
     private var gasLimitValue: String {
         settings.gasLimit.map(String.init) ?? "auto".localized
+    }
+
+    /// "Auto" until the user manually overrides the route; then the picked
+    /// provider's name. A refresh clears the override, so this reverts to "Auto".
+    private var selectRouteValue: String {
+        guard let selected = vm.selectedQuote?.displayName else { return "auto".localized }
+        return selected
     }
 
     private var externalRecipientValue: String {
@@ -219,7 +257,8 @@ struct AdvancedSwapMainRow: View {
                         isPresented: $isPresented,
                         coin: .example,
                         isGasLimitSupported: true,
-                        settings: $settings
+                        settings: $settings,
+                        detailsViewModel: SwapDetailsViewModel()
                     )
                 }
         }
