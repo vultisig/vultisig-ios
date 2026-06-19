@@ -42,7 +42,11 @@ struct SwapDetailsScreen: View {
             )
         }
         .screenToolbar {
-            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
+            // Glass button (shared toolbar background) first, then the custom
+            // countdown pill (own background → shared hidden). The toolbar
+            // renders the glass group ahead of the plain group, so this order
+            // shows the advanced-settings button left of the countdown.
+            CustomToolbarItem(placement: .trailing) {
                 advancedSettingsButton
             }
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
