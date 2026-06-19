@@ -42,7 +42,7 @@ enum ExplorerLinkBuilder {
             // Phase 1 ships the explorer-link fallback; `/track` polling is
             // covered by the follow-up tx-history plan. `track.swapkit.dev`
             // accepts on-chain hashes for the source chain.
-            return swapkitTracker(txid: txHash)
+            return swapkitTracker(txid: txHash, chain: fromChain)
         case .oneinch, .kyberswap, .none:
             return getExplorerURL(chain: fromChain, txid: txHash)
         }
@@ -65,15 +65,15 @@ enum ExplorerLinkBuilder {
             case .lifi:
                 return lifiTracker(txid: txHash)
             case .swapkit:
-                return swapkitTracker(txid: txHash)
+                return swapkitTracker(txid: txHash, chain: payload.fromCoin.chain)
             case .oneInch, .kyberSwap, .unknown:
                 return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
             }
-        case .swapkit:
+        case .swapkit(let payload):
             // Phase 2 ships explorer-link fallback for BTC PSBT routes.
             // `/track` polling integration is covered by the follow-up
             // tx-history plan; track.swapkit.dev accepts the on-chain hash.
-            return swapkitTracker(txid: txHash)
+            return swapkitTracker(txid: txHash, chain: payload.fromCoin.chain)
         case .none:
             return nil
         }
@@ -97,7 +97,7 @@ enum ExplorerLinkBuilder {
             case "lifi":
                 return URL(string: lifiTracker(txid: txHash))
             case "swapkit":
-                return URL(string: swapkitTracker(txid: txHash))
+                return URL(string: swapkitTracker(txid: txHash, chain: Chain(rawValue: chainRawValue)))
             case "maya", "mayachain", "mayaprotocol":
                 return URL(string: mayaTracker(txid: txHash))
             case "thorchainstagenet":
@@ -310,8 +310,16 @@ enum ExplorerLinkBuilder {
         "https://scan.li.fi/tx/\(txid)"
     }
 
-    private static func swapkitTracker(txid: String) -> String {
-        "https://track.swapkit.dev/?hash=\(txid)"
+    /// `track.swapkit.dev` resolves a hash faster when it knows which chain
+    /// to look on, so we append the SwapKit chainId whenever the source chain
+    /// maps to one. Falls back to the hash-only link for chains outside the
+    /// SwapKit route catalogue.
+    private static func swapkitTracker(txid: String, chain: Chain?) -> String {
+        let base = "https://track.swapkit.dev/?hash=\(txid)"
+        guard let chain, let chainId = SwapKitChainIdentifier.chainId(for: chain) else {
+            return base
+        }
+        return "\(base)&chainId=\(chainId)"
     }
 
     private static func mayaTracker(txid: String) -> String {
