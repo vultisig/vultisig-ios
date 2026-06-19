@@ -15,6 +15,11 @@ struct SlippageSettingsView: View {
 
     @State private var customText: String = .empty
     @State private var didClampCustom = false
+    /// Set when `applyCustom` rewrites `customText` to the clamped value, so the
+    /// `onChange` that rewrite retriggers is skipped — otherwise a second
+    /// `applyCustom` pass would clear `didClampCustom` and the cap note would
+    /// flash away the instant clamping happened.
+    @State private var skipNextCustomChange = false
     @FocusState private var customFocused: Bool
 
     var body: some View {
@@ -84,7 +89,13 @@ struct SlippageSettingsView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .focused($customFocused)
                     .frame(width: 64)
-                    .onChange(of: customText) { _, _ in applyCustom() }
+                    .onChange(of: customText) { _, _ in
+                        guard !skipNextCustomChange else {
+                            skipNextCustomChange = false
+                            return
+                        }
+                        applyCustom()
+                    }
 
                 Spacer()
                 radioIndicator(isSelected: isCustom)
@@ -159,8 +170,13 @@ struct SlippageSettingsView: View {
         if bps != rawBps {
             didClampCustom = true
             // Reflect the enforced cap back into the field so the displayed value
-            // matches what's actually applied.
-            customText = SwapSlippage.format(bps: bps).replacingOccurrences(of: "%", with: "")
+            // matches what's actually applied. Guard the retriggered `onChange` so
+            // it doesn't run a second `applyCustom` pass that clears the note.
+            let clampedText = SwapSlippage.format(bps: bps).replacingOccurrences(of: "%", with: "")
+            if customText != clampedText {
+                skipNextCustomChange = true
+                customText = clampedText
+            }
         } else {
             didClampCustom = false
         }

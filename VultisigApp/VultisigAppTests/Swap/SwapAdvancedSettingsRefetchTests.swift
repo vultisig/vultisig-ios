@@ -51,19 +51,23 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         XCTAssertEqual(interactor.fetchQuoteCallCount, before + 1, "An external-recipient change must re-fetch on close (it changes provider eligibility)")
     }
 
-    func testNoChangeDoesNotRefetch() async {
+    func testNoChangeDoesNotRefetch() {
         let (vm, interactor) = makeVM()
         vm.snapshotAdvancedSettings()
         // Nothing changes while the sheet is open.
 
         let before = interactor.fetchQuoteCallCount
         vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
-        try? await Task.sleep(for: .milliseconds(50))
 
+        // `fetchQuotes` flips `isLoadingQuotes` true synchronously before it
+        // spawns its task, so a re-fetch — debounced or not — is observable
+        // immediately; no timed sleep needed. The no-change guard returns before
+        // touching either, so both stay put.
+        XCTAssertFalse(vm.isLoadingQuotes, "No relevant change must not start a fetch")
         XCTAssertEqual(interactor.fetchQuoteCallCount, before, "No relevant change must not re-fetch")
     }
 
-    func testRouteSelectionDoesNotTriggerRefetch() async {
+    func testRouteSelectionDoesNotTriggerRefetch() {
         let (vm, interactor) = makeVM()
         // Two quotes so a provider pick is possible.
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
@@ -78,8 +82,11 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
 
         let before = interactor.fetchQuoteCallCount
         vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
-        try? await Task.sleep(for: .milliseconds(50))
 
+        // Route selection isn't part of `advancedSettings`, so the close path's
+        // no-change guard returns synchronously — `isLoadingQuotes` would be true
+        // here had any fetch started, so checking it is deterministic.
+        XCTAssertFalse(vm.isLoadingQuotes, "Route selection must not start a fetch")
         XCTAssertEqual(interactor.fetchQuoteCallCount, before, "Route selection must NOT trigger a re-fetch")
         XCTAssertEqual(vm.selectedQuote, alt, "The route pick is preserved")
     }

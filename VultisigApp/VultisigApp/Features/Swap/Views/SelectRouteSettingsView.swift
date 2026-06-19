@@ -136,7 +136,7 @@ struct SelectRouteSettingsView: View {
                 .frame(width: 16, height: 16)
             if isSelected {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.alertSuccess)
             }
         }

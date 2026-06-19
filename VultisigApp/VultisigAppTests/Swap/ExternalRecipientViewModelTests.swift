@@ -92,8 +92,18 @@ final class ExternalRecipientViewModelTests: XCTestCase {
     }
 
     /// Awaits the debounced resolve task so assertions run after it settles.
+    /// Resolution is debounced, so `isResolving` is not yet true the instant a
+    /// trigger fires — waiting only `where vm.isResolving` could exit before the
+    /// task even starts. Instead wait for the full start→finish transition: once
+    /// we've observed resolving begin, return as soon as it ends.
     private func settle(_ vm: ExternalRecipientViewModel) async {
-        for _ in 0..<200 where vm.isResolving {
+        var didStart = false
+        for _ in 0..<200 {
+            if vm.isResolving {
+                didStart = true
+            } else if didStart {
+                return
+            }
             try? await Task.sleep(for: .milliseconds(10))
         }
     }

@@ -992,8 +992,8 @@
 "skip" = "Saltar";
 "slippage" = "Deslizamiento";
 "slippageHelperText" = "Limita cuánto puede cambiar el precio antes de cancelar la ejecución.";
-"slippageMaxNote" = "El slippage está limitado a %@.";
-"slippageTolerance" = "Tolerancia de slippage";
+"slippageMaxNote" = "El deslizamiento está limitado a %@.";
+"slippageTolerance" = "Tolerancia de deslizamiento";
 "somethingsWrong" = "Algo está mal";
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
 "sourceValidator" = "Validador origen";
@@ -1036,7 +1036,7 @@
 "swap.referral_discount" = "Referido (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% exención)";
-"swapAdvancedSettingsLockedSubtitle" = "Ajusta el slippage, el gas, la ruta y el destinatario en cada swap.";
+"swapAdvancedSettingsLockedSubtitle" = "Ajusta el deslizamiento, el gas, la ruta y el destinatario en cada swap.";
 "swapAdvancedSettingsLockedTitle" = "Ajustes avanzados de swap";
 "swapAmountTooSmall" = "Cantidad de intercambio demasiado pequeña";
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";

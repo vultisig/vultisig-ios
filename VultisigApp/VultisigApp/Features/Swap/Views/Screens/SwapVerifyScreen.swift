@@ -167,7 +167,7 @@ struct SwapVerifyScreen: View {
                     separator
                     getValueCell(
                         for: "recipient",
-                        with: currentTransaction.recipientAddress.truncatedAddress
+                        with: currentTransaction.recipientAddress
                     )
                 }
             }

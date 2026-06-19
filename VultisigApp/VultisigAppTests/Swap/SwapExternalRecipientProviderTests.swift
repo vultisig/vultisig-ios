@@ -66,9 +66,29 @@ final class SwapExternalRecipientProviderTests: XCTestCase {
         XCTAssertNoThrow(try SwapRecipientVerifier.verify(quote: quote, recipient: recipient))
     }
 
-    func testVerifierIsCaseInsensitiveOnMemo() throws {
-        let quote = SwapQuote.mayachain(makeThorQuote(memo: "=:BTC.BTC:BC1QEXAMPLE:0"))
-        XCTAssertNoThrow(try SwapRecipientVerifier.verify(quote: quote, recipient: "bc1qexample"))
+    func testVerifierIsCaseInsensitiveOnHexMemoDestination() throws {
+        // EVM addresses differ only by checksum casing, so a hex memo destination
+        // matches the recipient case-insensitively.
+        let quote = SwapQuote.mayachain(makeThorQuote(memo: "=:ETH.ETH:0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045:0"))
+        XCTAssertNoThrow(try SwapRecipientVerifier.verify(quote: quote, recipient: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"))
+    }
+
+    func testVerifierRequiresExactMatchForNonHexDestination() {
+        // Non-hex encodings (bech32, base58) are case-sensitive — two addresses
+        // differing only by case are NOT the same address, so a case-only
+        // difference must fail closed rather than false-pass.
+        let quote = SwapQuote.thorchain(makeThorQuote(memo: "=:BTC.BTC:BC1QEXAMPLE:0"))
+        XCTAssertThrowsError(try SwapRecipientVerifier.verify(quote: quote, recipient: "bc1qexample")) {
+            XCTAssertEqual($0 as? SwapError, .recipientVerificationFailed)
+        }
+    }
+
+    func testVerifierFailsWhenMemoIsMalformed() {
+        // A memo without a parseable DESTADDR field must fail closed, not pass.
+        let quote = SwapQuote.thorchain(makeThorQuote(memo: "garbage-no-colons"))
+        XCTAssertThrowsError(try SwapRecipientVerifier.verify(quote: quote, recipient: "bc1qexample")) {
+            XCTAssertEqual($0 as? SwapError, .recipientVerificationFailed)
+        }
     }
 
     func testVerifierFailsWhenThorMemoMissesRecipient() {

@@ -43,12 +43,13 @@ enum SwapRecipientVerifier {
              let .thorchainStagenet(thorQuote),
              let .mayachain(thorQuote):
             // THORChain/Maya bake the recipient into the swap memo's DESTADDR
-            // field; that memo is signed verbatim. Assert the node-returned memo
-            // actually carries the recipient. The memo is a colon-delimited
-            // string (`=:ASSET:DESTADDR:LIM/...`); a containment check is robust
-            // to address-case and the surrounding memo fields.
-            guard memo(thorQuote.memo, contains: recipient) else {
-                logger.error("[recipient-verify] THOR/Maya memo does not contain the recipient")
+            // field; that memo is signed verbatim. Parse DESTADDR explicitly (the
+            // 3rd colon-delimited field of `=:ASSET:DESTADDR:LIM/...`) and assert
+            // it equals the recipient — a substring check could false-pass on a
+            // recipient that merely appears elsewhere in the memo.
+            guard let destination = memoDestination(from: thorQuote.memo),
+                  addressesMatch(destination, recipient) else {
+                logger.error("[recipient-verify] THOR/Maya memo destination does not match the recipient")
                 throw SwapError.recipientVerificationFailed
             }
 
@@ -72,20 +73,35 @@ enum SwapRecipientVerifier {
         }
     }
 
-    /// Case-insensitive containment of `needle` inside a THOR/Maya memo, trimmed.
-    private static func memo(_ memo: String, contains needle: String) -> Bool {
-        let trimmedNeedle = needle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedNeedle.isEmpty else { return false }
-        return memo.range(of: trimmedNeedle, options: .caseInsensitive) != nil
+    /// Extract DESTADDR from a THOR/Maya swap memo (`=:ASSET:DESTADDR:LIM/...`):
+    /// the 3rd colon-delimited field. The ASSET field never contains a colon, so
+    /// splitting on `:` isolates the destination cleanly. Returns nil when the
+    /// memo is malformed or the field is empty.
+    private static func memoDestination(from memo: String) -> String? {
+        let parts = memo.split(separator: ":", omittingEmptySubsequences: false)
+        guard parts.count >= 3 else { return nil }
+        let destination = String(parts[2]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return destination.isEmpty ? nil : destination
     }
 
-    /// Case-insensitive, whitespace-trimmed address equality. EVM addresses are
-    /// case-insensitive (checksum-only casing); other chains echo verbatim, so a
-    /// trimmed case-insensitive compare is the safe superset.
+    /// Whitespace-trimmed address equality. Hex/EVM addresses differ only by
+    /// checksum casing, so they compare case-insensitively; every other encoding
+    /// (bech32, base58, …) is case-sensitive and must match exactly — a blanket
+    /// case-insensitive compare there could false-pass two distinct addresses.
     private static func addressesMatch(_ lhs: String, _ rhs: String) -> Bool {
         let l = lhs.trimmingCharacters(in: .whitespacesAndNewlines)
         let r = rhs.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !l.isEmpty, !r.isEmpty else { return false }
-        return l.compare(r, options: .caseInsensitive) == .orderedSame
+        if isHexAddress(l), isHexAddress(r) {
+            return l.compare(r, options: .caseInsensitive) == .orderedSame
+        }
+        return l == r
+    }
+
+    /// A 20-byte hex address (optional `0x` prefix + 40 hex digits) — the EVM
+    /// address shape whose casing is checksum-only and therefore safe to ignore.
+    private static func isHexAddress(_ value: String) -> Bool {
+        let raw = value.hasPrefix("0x") || value.hasPrefix("0X") ? String(value.dropFirst(2)) : value
+        return raw.count == 40 && raw.allSatisfy(\.isHexDigit)
     }
 }
