@@ -207,15 +207,19 @@ class ThorchainService: ThorchainSwapProvider {
         return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
     }
 
-    func fetchThorchainInboundAddress() async -> [InboundAddress] {
+    /// Fetch THORChain inbound addresses (halt flags + gas rates), cached 5 min.
+    /// Pass `bypassCache: true` for the sign-time halt re-check, which must never
+    /// read or write the cache — the decision needs a fresh, live value.
+    func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
         do {
             let cacheKey = "thorchain-inbound-address"
 
-            if let cachedData = Utils.getCachedData(
-                cacheKey: cacheKey,
-                cache: cacheInboundAddresses,
-                timeInSeconds: 60 * 5
-            ) {
+            if !bypassCache,
+               let cachedData = Utils.getCachedData(
+                   cacheKey: cacheKey,
+                   cache: cacheInboundAddresses,
+                   timeInSeconds: 60 * 5
+               ) {
                 return cachedData
             }
 
@@ -224,7 +228,9 @@ class ThorchainService: ThorchainSwapProvider {
                 responseType: [InboundAddress].self
             )
             let inboundAddresses = response.data
-            self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+            if !bypassCache {
+                self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+            }
             return inboundAddresses
         } catch {
             logger.warning("JSON decoding error: \(error.localizedDescription)")

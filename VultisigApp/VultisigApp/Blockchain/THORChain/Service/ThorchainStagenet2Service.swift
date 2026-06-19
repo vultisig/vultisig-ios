@@ -171,15 +171,16 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         return UInt64(response.data.native_tx_fee_rune) ?? 0
     }
 
-    func fetchThorchainInboundAddress() async -> [InboundAddress] {
+    func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
         do {
             let cacheKey = "thorchain-stagenet2-inbound-address"
 
-            if let cachedData = Utils.getCachedData(
-                cacheKey: cacheKey,
-                cache: cacheInboundAddresses,
-                timeInSeconds: 60 * 5
-            ) {
+            if !bypassCache,
+               let cachedData = Utils.getCachedData(
+                   cacheKey: cacheKey,
+                   cache: cacheInboundAddresses,
+                   timeInSeconds: 60 * 5
+               ) {
                 return cachedData
             }
 
@@ -187,7 +188,9 @@ class ThorchainStagenetService: ThorchainSwapProvider {
                 ThorchainStagenetAPI.inboundAddresses(env: env),
                 responseType: [InboundAddress].self
             )
-            self.cacheInboundAddresses.set(cacheKey, (data: response.data, timestamp: Date()))
+            if !bypassCache {
+                self.cacheInboundAddresses.set(cacheKey, (data: response.data, timestamp: Date()))
+            }
             return response.data
         } catch {
             return []

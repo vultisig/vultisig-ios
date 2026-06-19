@@ -111,6 +111,16 @@ struct SwapDetailsScreen: View {
         }
         .onChange(of: detailsViewModel.fromAmount) { _, _ in
             detailsViewModel.error = nil
+            applyHaltState()
+        }
+        .onChange(of: detailsViewModel.haltedChains) { _, _ in
+            applyHaltState()
+        }
+        .onChange(of: detailsViewModel.fromCoin) { _, _ in
+            applyHaltState()
+        }
+        .onChange(of: detailsViewModel.toCoin) { _, _ in
+            applyHaltState()
         }
         .ignoresSafeArea(.keyboard)
     }
@@ -326,6 +336,18 @@ struct SwapDetailsScreen: View {
         referredViewModel.setData()
         detailsViewModel.fromChain = detailsViewModel.fromCoin.chain
         detailsViewModel.toChain = detailsViewModel.toCoin.chain
+    }
+
+    /// Surface a halt error when the selected route's source/destination chain is
+    /// halted, so the route is dimmed (the fees/provider block hides on error) and
+    /// Continue is blocked before the user reaches verify. Idempotent: only sets
+    /// the halt error, and only clears it when it was the one showing.
+    private func applyHaltState() {
+        if detailsViewModel.isCurrentRouteHalted {
+            detailsViewModel.error = SwapError.tradingHalted
+        } else if (detailsViewModel.error as? SwapError) == .tradingHalted {
+            detailsViewModel.error = nil
+        }
     }
 
     private func handleSwapTap() {

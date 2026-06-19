@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SwapError: Error, LocalizedError {
+enum SwapError: Error, LocalizedError, Equatable {
     case routeUnavailable
     case noLiquidityPool
     case tradingHalted
