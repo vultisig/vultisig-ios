@@ -18,6 +18,8 @@ import SwiftUI
 final class SwapVerifyViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
     @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored private let thorchainService: ThorchainService
+    @ObservationIgnored private let mayachainService: MayachainService
     @ObservationIgnored private let securityScanViewModel = SecurityScannerViewModel()
     @ObservationIgnored private var securityScannerCancellable: AnyCancellable?
 
@@ -36,9 +38,16 @@ final class SwapVerifyViewModel {
     var isLoadingTransaction = false
     var timer: Int = 59
 
-    init(transaction: SwapTransaction, interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        transaction: SwapTransaction,
+        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        thorchainService: ThorchainService = .shared,
+        mayachainService: MayachainService = .shared
+    ) {
         self.transaction = transaction
         self.interactor = interactor
+        self.thorchainService = thorchainService
+        self.mayachainService = mayachainService
     }
 
     func onLoad() {
@@ -126,6 +135,28 @@ final class SwapVerifyViewModel {
             logger.warning("Refresh quote error: \(error.localizedDescription)")
             self.error = error
         }
+    }
+
+    /// Sign-time fund-safety gate: re-check the live inbound for the source chain
+    /// immediately before building the keysign payload, BYPASSING the 5-minute
+    /// cache. Returns `true` when it's safe to sign; on a halt it sets
+    /// `error = .tradingHalted` and returns `false` so the caller does NOT build
+    /// the payload or navigate. Fail-closed only on a confirmed live halt — a
+    /// fetch failure (empty inbound) does not block, matching the screen path's
+    /// fail-soft semantics. Routes are re-checked across BOTH native protocols.
+    func isSourceChainSafeToSign() async -> Bool {
+        let sourceChain = transaction.fromCoin.chain
+        async let thorInbound = thorchainService.fetchThorchainInboundAddress(bypassCache: true)
+        async let mayaInbound = mayachainService.fetchInboundAddress(bypassCache: true)
+        let thor = await thorInbound
+        let maya = await mayaInbound
+        let halted = SwapHaltGate.isHalted(chain: sourceChain, in: thor)
+            || SwapHaltGate.isHalted(chain: sourceChain, in: maya)
+        if halted {
+            error = SwapError.tradingHalted
+            return false
+        }
+        return true
     }
 
     func buildSwapKeysignPayload(vault: Vault) async -> KeysignPayload? {
