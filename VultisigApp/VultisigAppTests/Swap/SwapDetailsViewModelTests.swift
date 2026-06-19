@@ -367,8 +367,6 @@ private final class MockSwapInteractor: SwapInteractor {
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }
 
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool { false }
-
     func fetchChainSpecific(
         fromCoin: Coin,
         toCoin: Coin,

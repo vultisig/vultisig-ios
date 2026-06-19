@@ -198,16 +198,7 @@ struct AdvancedSwapSheetHeader: View {
                 .foregroundStyle(Theme.colors.textPrimary)
 
             HStack {
-                Button(action: onClose) {
-                    Icon(
-                        named: showBack ? "chevron.left" : "x",
-                        color: Theme.colors.textPrimary,
-                        size: 16,
-                        isSystem: showBack
-                    )
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(Theme.colors.bgSurface2))
-                }
+                ToolbarButton(image: showBack ? "chevron-left" : "x", type: .outline, action: onClose)
                 Spacer()
             }
         }

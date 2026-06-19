@@ -287,15 +287,9 @@ struct SwapDetailsScreen: View {
     }
 
     var advancedSettingsButton: some View {
-        Button {
+        ToolbarButton(image: "sliders", type: .outline) {
             handleAdvancedSettingsTap()
-        } label: {
-            Icon(named: "sliders", color: Theme.colors.textPrimary, size: 20)
-                .frame(width: 44, height: 44)
-                .background(Circle().fill(Theme.colors.bgSurface2))
-                .contentShape(Circle())
         }
-        .buttonStyle(.plain)
         .accessibilityLabel("advancedSettings".localized)
     }
 

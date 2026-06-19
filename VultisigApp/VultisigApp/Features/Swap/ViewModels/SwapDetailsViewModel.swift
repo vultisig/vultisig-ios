@@ -83,12 +83,6 @@ final class SwapDetailsViewModel {
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
 
-    /// Feature-flag (Settings → Advanced) AND Silver-tier entitlement, resolved
-    /// once on screen load. The provider-selection UI only renders/selects when
-    /// this is true. False → exactly today's behavior (best auto-selected, no
-    /// chevron, no sheet).
-    var isProviderSelectionEnabled = false
-
     // MARK: - UI state (details-screen-only)
 
     var error: Error?
@@ -137,35 +131,24 @@ final class SwapDetailsViewModel {
     /// Warm the per-session VULT discount-tier cache once on screen load so the
     /// quote path reads the cached tier (VULT balance + Thorguard NFT) instead of
     /// re-resolving it — and re-running the Thorguard eth_call — on every fetch.
-    /// The same resolved tier also gates provider selection (Silver+), so this
-    /// reuses the cached path rather than adding a second network hit.
+    /// This feeds the VULT fee-discount applied on the quote path.
     func warmDiscountTier(vault: Vault) {
         Task { [weak self] in
             guard let self else { return }
             await self.interactor.warmDiscountTier(for: vault)
-            await self.resolveProviderSelectionGate(vault: vault)
         }
     }
 
-    /// Provider selection requires a Silver `VultDiscountTier` (or above).
-    /// Resolved once on load off the cached tier (no extra network path); below
-    /// Silver the gate stays false and behavior is exactly today's.
-    func resolveProviderSelectionGate(vault: Vault) async {
-        isProviderSelectionEnabled = await interactor.isProviderSelectionUnlocked(for: vault)
-    }
-
-    /// True when the user can open the provider-selection sheet: the vault is
-    /// Silver `VultDiscountTier`+ and there's more than one quote to choose from.
-    /// The Provider row only becomes tappable (chevron) when this holds.
+    /// True when the user can open the provider-selection sheet: there's more
+    /// than one quote to choose from. The Provider row only becomes tappable
+    /// (chevron) when this holds. The advanced-settings entry point is already
+    /// silver-gated, so no additional tier gate is applied here.
     var canSelectProvider: Bool {
-        isProviderSelectionEnabled && allQuotes.count > 1
+        allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick. Ignored unless provider selection is enabled,
-    /// keeping the verify/sign path on the auto-selected best whenever the vault
-    /// is below Silver.
+    /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
-        guard isProviderSelectionEnabled else { return }
         selectedQuote = quote
     }
 

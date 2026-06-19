@@ -134,11 +134,4 @@ struct DefaultSwapInteractor: SwapInteractor {
     func warmDiscountTier(for vault: Vault) async {
         _ = await tierResolver.resolveTierForSession(for: vault)
     }
-
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool {
-        guard let tier = await tierResolver.resolveTierForSession(for: vault) else {
-            return false
-        }
-        return tier >= .silver
-    }
 }
