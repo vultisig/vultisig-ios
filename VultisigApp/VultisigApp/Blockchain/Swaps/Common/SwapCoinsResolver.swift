@@ -12,8 +12,18 @@ struct SwapCoinsResolver {
     private init() { }
 
     static func resolveFromCoins(allCoins: [Coin]) -> ([Coin], selected: Coin) {
+        resolveFromCoins(allCoins: allCoins, providers: { $0.swapProviders })
+    }
+
+    /// `providers` resolves a coin's swap-provider list. The default uses the
+    /// static `Coin.swapProviders`; the swap screen passes a closure backed by
+    /// the live-pool-augmented set so previously-hidden `Available` tokens show.
+    static func resolveFromCoins(
+        allCoins: [Coin],
+        providers: (Coin) -> [SwapProvider]
+    ) -> ([Coin], selected: Coin) {
         let coins = allCoins
-            .filter { $0.isSwapSupported }
+            .filter { !providers($0).isEmpty }
             .sorted()
 
         let selected = coins.first ?? .example
@@ -22,9 +32,18 @@ struct SwapCoinsResolver {
     }
 
     static func resolveToCoins(fromCoin: Coin, allCoins: [Coin], selectedToCoin: Coin) -> (coins: [Coin], selected: Coin) {
+        resolveToCoins(fromCoin: fromCoin, allCoins: allCoins, selectedToCoin: selectedToCoin, providers: { $0.swapProviders })
+    }
 
+    static func resolveToCoins(
+        fromCoin: Coin,
+        allCoins: [Coin],
+        selectedToCoin: Coin,
+        providers: (Coin) -> [SwapProvider]
+    ) -> (coins: [Coin], selected: Coin) {
+        let fromProviders = providers(fromCoin)
         let coins = allCoins
-            .filter { $0.swapProviders.contains(where: fromCoin.swapProviders.contains) }
+            .filter { providers($0).contains(where: fromProviders.contains) }
             .filter { $0 != fromCoin }
             .sorted()
 

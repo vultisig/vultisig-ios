@@ -18,6 +18,7 @@ import SwiftUI
 final class SwapDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
     @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored private let eligibilityCache: NativePoolEligibilityCache
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
@@ -95,24 +96,46 @@ final class SwapDetailsViewModel {
     var showToCoinSelector = false
     var showAllPercentageButtons = true
 
-    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        eligibilityCache: NativePoolEligibilityCache = .shared
+    ) {
         self.interactor = interactor
+        self.eligibilityCache = eligibilityCache
     }
 
     // MARK: - Loading
 
-    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault) {
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault) async {
         guard !dataLoaded else { return }
         let allCoins = vault.coins
         guard !allCoins.isEmpty else { return }
 
-        let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: allCoins)
+        // Refresh live `Available` pools for both native protocols so the picker
+        // surfaces tokens beyond the static fallback arrays (fetch-supersedes-by-
+        // UNION). Fail-open: nil snapshots fall back to the static set, so a
+        // no-network launch shows exactly today's set.
+        let thorPools = await eligibilityCache.pools(.thorchain)
+        let mayaPools = await eligibilityCache.pools(.mayachain)
+
+        // A pure per-coin provider lookup backed by the augmented set. The
+        // snapshots are value types captured here, so the closure stays
+        // synchronous and MainActor-safe.
+        let providers: (Coin) -> [SwapProvider] = { coin in
+            coin.swapProviders(thorPools: thorPools, mayaPools: mayaPools)
+        }
+
+        let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(
+            allCoins: allCoins,
+            providers: providers
+        )
         let resolvedFromCoin = initialFromCoin ?? defaultFromCoin
 
         let (resolvedToCoins, defaultToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: resolvedFromCoin,
             allCoins: allCoins,
-            selectedToCoin: initialToCoin ?? .example
+            selectedToCoin: initialToCoin ?? .example,
+            providers: providers
         )
 
         fromCoin = resolvedFromCoin
