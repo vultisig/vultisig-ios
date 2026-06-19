@@ -135,6 +135,18 @@ struct SwapDetailsScreen: View {
         .onChange(of: detailsViewModel.toChain) { _, _ in
             detailsViewModel.handleToChainUpdate(vault: vault)
         }
+        .onChange(of: detailsViewModel.showAdvancedSettingsSheet) { wasPresented, isPresented in
+            // On dismiss (true → false), re-fetch quotes if a quote-affecting
+            // setting changed (slippage / gas limit / external recipient). The
+            // VM no-ops when nothing relevant changed, and route selection is not
+            // part of the compared settings so it never triggers a re-fetch.
+            if wasPresented && !isPresented {
+                detailsViewModel.advancedSettingsSheetDidClose(
+                    vault: vault,
+                    referredCode: referredViewModel.savedReferredCode
+                )
+            }
+        }
         .onChange(of: detailsViewModel.error?.localizedDescription) { _, newError in
             showErrorTooltip = newError != nil
         }
@@ -310,6 +322,7 @@ struct SwapDetailsScreen: View {
                     return cached >= tier
                 },
                 onUnlocked: {
+                    detailsViewModel.snapshotAdvancedSettings()
                     detailsViewModel.showAdvancedSettingsSheet = true
                 }
             )

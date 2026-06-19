@@ -1077,6 +1077,7 @@
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
 "swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
+"swapRecipientVerificationFailed" = "Nije se moglo potvrditi da će zamjena biti isporučena odabranom primatelju te je zaustavljena prije potpisivanja. Pokušajte ponovno.";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";

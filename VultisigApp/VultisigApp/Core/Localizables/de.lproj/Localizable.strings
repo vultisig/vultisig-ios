@@ -1077,6 +1077,7 @@
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
 "swapOverview" = "Tauschübersicht";
 "swapRecipientRouteNotAvailable" = "Für dieses Paar ist keine Route zu einem externen Empfänger verfügbar. Entfernen Sie den Empfänger oder wählen Sie ein anderes Paar.";
+"swapRecipientVerificationFailed" = "Es konnte nicht bestätigt werden, dass der Swap an den gewählten Empfänger geht; er wurde vor dem Signieren gestoppt. Bitte versuchen Sie es erneut.";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";

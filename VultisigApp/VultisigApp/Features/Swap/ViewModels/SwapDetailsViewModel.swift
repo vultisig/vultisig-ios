@@ -40,6 +40,13 @@ final class SwapDetailsViewModel {
     /// Reset to `.default` between swaps so a custom slippage never sticks.
     var advancedSettings: SwapAdvancedSettings = .default
 
+    /// Snapshot of `advancedSettings` taken when the Advanced Settings sheet
+    /// opens, so the sheet-close path can tell whether slippage / gas limit /
+    /// external recipient changed and trigger a re-fetch only when one did.
+    /// Route/provider selection (`selectedQuote`) is deliberately NOT part of
+    /// this struct, so picking a route never triggers a re-fetch.
+    @ObservationIgnored private var advancedSettingsSnapshot: SwapAdvancedSettings = .default
+
     /// Whether to show the Advanced Settings sheet.
     var showAdvancedSettingsSheet = false
 
@@ -212,6 +219,28 @@ final class SwapDetailsViewModel {
         )
         toCoin = resolvedToCoin
         toCoins = resolvedToCoins
+    }
+
+    // MARK: - Advanced settings sheet lifecycle
+
+    /// Snapshot the settings that affect the quote/eligible-provider set when the
+    /// Advanced Settings sheet opens, so the close path can detect a real change.
+    func snapshotAdvancedSettings() {
+        advancedSettingsSnapshot = advancedSettings
+    }
+
+    /// On sheet dismiss, re-fetch quotes only when a quote-affecting setting
+    /// (slippage, gas limit, or external recipient) actually changed. These
+    /// change the quote and/or the eligible-provider set: slippage and gas limit
+    /// feed the quote request; the external recipient now changes provider
+    /// eligibility (`providersHonoringRecipient`) and the built tx. Route/provider
+    /// selection (`selectedQuote`) is not part of `advancedSettings`, so picking a
+    /// route never reaches here — it only chooses among the quotes already fetched.
+    /// No-op when nothing relevant changed (byte-identical to no interaction).
+    func advancedSettingsSheetDidClose(vault: Vault, referredCode: String) {
+        guard advancedSettings != advancedSettingsSnapshot else { return }
+        advancedSettingsSnapshot = advancedSettings
+        fetchQuotes(vault: vault, referredCode: referredCode, immediate: true)
     }
 
     // MARK: - User actions

@@ -1053,6 +1053,7 @@
 "swapKitViewOnTracker" = "SwapKit 추적기에서 보기";
 "swapOverview" = "스왑 개요";
 "swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
+"swapRecipientVerificationFailed" = "스왑이 선택한 수신자에게 전달되는지 확인할 수 없어 서명 전에 중단되었습니다. 다시 시도해 주세요.";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";

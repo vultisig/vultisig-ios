@@ -352,7 +352,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vultTierDiscount: vultTierDiscount,
-                slippageBps: slippageBps
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         }
     }
@@ -517,7 +518,8 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         vultTierDiscount: Int,
-        slippageBps: Int?
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
         // doesn't enable. Fails open if the cache can't be loaded so we don't
@@ -538,10 +540,17 @@ private extension SwapService {
         // NEAR Intents can negotiate its own per-route slippage; a custom value
         // converts bps → percent (e.g. 50 bps → 0.5).
         let slippagePercent = slippageBps.map { Double($0) / 100 }
+        // External recipient (when set) becomes SwapKit's `destinationAddress`
+        // for both `/v3/quote` (AML screening + route discovery) and `/v3/swap`
+        // (the build that pins where the bought asset is delivered). Defaults to
+        // the user's own destination address. The echoed `destinationAddress` is
+        // verified against the recipient before signing (`SwapRecipientVerifier`).
+        let destination = recipientAddress ?? toCoin.address
         guard let route = try await service.fetchBestRoute(
             fromCoin: fromCoin,
             toCoin: toCoin,
             amount: amount,
+            destinationAddress: destination,
             slippagePercent: slippagePercent,
             affiliateFeeBps: affiliateBps
         ) else {
@@ -550,7 +559,7 @@ private extension SwapService {
         let response = try await service.buildSwapTx(
             routeId: route.routeId,
             sourceAddress: fromCoin.address,
-            destinationAddress: toCoin.address
+            destinationAddress: destination
         )
         return .swapkit(
             response,

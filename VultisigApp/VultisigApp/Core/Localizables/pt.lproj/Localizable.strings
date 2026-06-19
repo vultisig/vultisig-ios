@@ -1077,6 +1077,7 @@
 "swapKitViewOnTracker" = "Ver no SwapKit Tracker";
 "swapOverview" = "Visão geral da troca";
 "swapRecipientRouteNotAvailable" = "Nenhuma rota para um destinatário externo está disponível para este par. Remova o destinatário ou escolha outro par.";
+"swapRecipientVerificationFailed" = "Não foi possível confirmar que a troca seria entregue ao destinatário escolhido e ela foi interrompida antes da assinatura. Tente novamente.";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";

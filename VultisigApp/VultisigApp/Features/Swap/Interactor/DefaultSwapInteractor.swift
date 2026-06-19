@@ -104,6 +104,12 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
+        // Safety net (HIGH tier): before building anything signable, verify the
+        // finalised quote's on-chain output target actually equals the intended
+        // external recipient. No-op when no external recipient is set. A mismatch
+        // (provider dropped/misused the recipient param) throws and stops signing.
+        try SwapRecipientVerifier.verify(transaction: transaction)
+
         let fetched = try await fetchChainSpecific(
             fromCoin: transaction.fromCoin,
             toCoin: transaction.toCoin,

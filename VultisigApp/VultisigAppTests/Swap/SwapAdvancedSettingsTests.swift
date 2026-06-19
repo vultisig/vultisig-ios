@@ -73,24 +73,27 @@ final class SwapAdvancedSettingsTests: XCTestCase {
         )
     }
 
-    func testRecipientFilterDropsAggregatorsWhenRecipientSet() {
+    func testRecipientFilterDropsUnverifiableAggregatorsWhenRecipientSet() {
         let filtered = SwapService.providersHonoringRecipient(allProviders, recipientAddress: "0xExternalRecipient")
-        XCTAssertEqual(filtered, [.thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain],
-                       "Only recipient-honouring routes survive when an external recipient is set")
+        // THOR/Maya bake the recipient into the signed memo; SwapKit passes it as
+        // `destinationAddress` and echoes it back (verified before signing). The
+        // pure aggregators bury it in opaque router calldata we can't verify.
+        XCTAssertEqual(filtered, [.thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit],
+                       "Only routes whose recipient we can verify on-device survive when an external recipient is set")
         XCTAssertFalse(filtered.contains(.oneinch(.ethereum)))
         XCTAssertFalse(filtered.contains(.kyberswap(.ethereum)))
         XCTAssertFalse(filtered.contains(.lifi))
-        XCTAssertFalse(filtered.contains(.swapkit))
+        XCTAssertTrue(filtered.contains(.swapkit))
     }
 
-    func testRecipientFilterYieldsEmptyWhenOnlyAggregatorsAvailable() {
-        // An EVM-only same-chain route (aggregators only): with a recipient set,
-        // nothing qualifies → empty, which `fetchQuotes` maps to a clear error
-        // rather than silently routing to self.
-        let aggregatorsOnly: [SwapProvider] = [.oneinch(.ethereum), .kyberswap(.ethereum), .lifi, .swapkit]
+    func testRecipientFilterYieldsEmptyWhenOnlyUnverifiableAggregatorsAvailable() {
+        // An EVM-only same-chain route reachable only by the un-verifiable
+        // aggregators: with a recipient set, nothing qualifies → empty, which
+        // `fetchQuotes` maps to a clear error rather than silently routing to self.
+        let unverifiableOnly: [SwapProvider] = [.oneinch(.ethereum), .kyberswap(.ethereum), .lifi]
         XCTAssertTrue(
-            SwapService.providersHonoringRecipient(aggregatorsOnly, recipientAddress: "0xExternalRecipient").isEmpty,
-            "No recipient-honouring route must yield an empty set so the caller can surface an error"
+            SwapService.providersHonoringRecipient(unverifiableOnly, recipientAddress: "0xExternalRecipient").isEmpty,
+            "No verifiable recipient route must yield an empty set so the caller can surface an error"
         )
     }
 
@@ -99,10 +102,10 @@ final class SwapAdvancedSettingsTests: XCTestCase {
         XCTAssertTrue(SwapProvider.thorchainChainnet.honorsExternalRecipient)
         XCTAssertTrue(SwapProvider.thorchainStagenet.honorsExternalRecipient)
         XCTAssertTrue(SwapProvider.mayachain.honorsExternalRecipient)
+        XCTAssertTrue(SwapProvider.swapkit.honorsExternalRecipient)
         XCTAssertFalse(SwapProvider.oneinch(.ethereum).honorsExternalRecipient)
         XCTAssertFalse(SwapProvider.kyberswap(.ethereum).honorsExternalRecipient)
         XCTAssertFalse(SwapProvider.lifi.honorsExternalRecipient)
-        XCTAssertFalse(SwapProvider.swapkit.honorsExternalRecipient)
     }
 
     // MARK: - SwapAdvancedSettings external-recipient normalization
