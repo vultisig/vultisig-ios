@@ -201,24 +201,33 @@ extension SwapKitService {
     /// row, the Total Fee (fiat), and the gas-coin sufficiency check in
     /// `SwapCryptoLogic.balanceError`.
     ///
-    /// EVM sources derive the fee from the realised `tx.gas × tx.gasPrice`
-    /// rather than the wire `inbound` `fees[]` entry. The `inbound` amount is a
-    /// per-provider estimate: ONEINCH reports a plausible gas figure there, but
-    /// FLASHNET-on-EVM returns a near-zero placeholder (~hundreds of wei) that
-    /// renders as garbage like `0.00000000000000013 ETH` and a `$0.00` total.
-    /// `gas × gasPrice` is the value the keysign path actually commits to
-    /// (`SwapPayloadBuilder.buildEVMQuoteFromSwapKit`), so the displayed fee
-    /// matches what the user is charged for every EVM sub-provider — the same
-    /// convention KyberSwap / 1inch / LI.FI use for their own `fee` BigInt.
+    /// EVM sources derive the fee from `tx.gas × tx.gasPrice` rather than the
+    /// wire `inbound` `fees[]` entry. The `inbound` amount is a per-provider
+    /// estimate: ONEINCH reports a plausible gas figure there, but FLASHNET-on-EVM
+    /// returns a near-zero placeholder (~hundreds of wei) that renders as garbage
+    /// like `0.00000000000000013 ETH` and a `$0.00` total. See `evmNetworkFee` for
+    /// the gas normalisation — the same `gas × gasPrice` convention KyberSwap /
+    /// 1inch / LI.FI use for their own `fee` BigInt.
+    ///
+    /// An ERC-20 source executes the swap as two signed transactions — a token
+    /// approval then the swap — and pays gas for both, so the approval's
+    /// `gasLimit × gasPrice` is added when SwapKit returns an `approvalTx`. Native
+    /// sources need no approval.
     ///
     /// Non-EVM sources keep the `inbound`-decimal path: the BTC PSBT, Solana,
     /// and TRON fixtures all report the real native miner/network fee there as
     /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
-        if case let .evm(tx) = response.tx {
-            return evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken)
+        guard case let .evm(tx) = response.tx else {
+            return inboundFeeFromWire(response: response, fromCoin: fromCoin)
         }
-        return inboundFeeFromWire(response: response, fromCoin: fromCoin)
+        guard let swapFee = evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken) else {
+            return nil
+        }
+        guard !fromCoin.isNativeToken, let approvalTx = response.approvalTx else {
+            return swapFee
+        }
+        return swapFee + approvalNetworkFee(from: approvalTx)
     }
 
     /// EVM network fee = `gasPrice × gas` in wei, parsing the hex `SwapKitEvmTx`
@@ -237,6 +246,15 @@ extension SwapKitService {
         let gas = parsedGas == .zero ? fallbackGas : parsedGas
         let fee = gasPrice * gas
         return fee == .zero ? nil : fee
+    }
+
+    /// Approval-leg network fee = `gasPrice × gasLimit` in wei. The approval tx
+    /// always carries an explicit `gasLimit` (unlike the swap tx's `gas`), so
+    /// there's no fallback — a missing/zero limit contributes nothing.
+    private func approvalNetworkFee(from tx: SwapKitApprovalTx) -> BigInt {
+        let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
+        let gasLimit = BigInt(tx.gasLimit.stripHexPrefix(), radix: 16) ?? .zero
+        return gasPrice * gasLimit
     }
 
     private func inboundFeeFromWire(response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {

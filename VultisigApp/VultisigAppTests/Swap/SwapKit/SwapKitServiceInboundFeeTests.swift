@@ -44,6 +44,8 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
         // Fixture tx: gas 0x55730 (350_000) × gasPrice 0x2aaa0b23 (715_787_043 wei)
         // = 250_525_465_050_000 wei. The wire `inbound` entry on this fixture is a
         // smaller estimate (0.000098846611703085 ETH); we deliberately ignore it.
+        // A native source pays no token approval, so the fixture's `approvalTx`
+        // is not added here.
         XCTAssertEqual(fee, BigInt("250525465050000"))
     }
 
@@ -61,9 +63,12 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
         // (18dp gas units), independent of the sell token's decimals.
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let fee = service.inboundFee(from: response, fromCoin: usdc)
-        // Fixture tx: gas 0x33450 (210_000) × gasPrice 0x3b9aca00 (1 gwei)
-        // = 210_000_000_000_000 wei (0.00021 ETH). NOT the 130-wei placeholder.
-        XCTAssertEqual(fee, BigInt("210000000000000"))
+        // ERC-20 source: swap + approval gas.
+        //   swap:     gas 0x33450 (210_000) × gasPrice 0x3b9aca00 (1 gwei) = 210_000_000_000_000
+        //   approval: gasLimit 0xbf28 (48_936) × 1 gwei                    =  48_936_000_000_000
+        //   total                                                          = 258_936_000_000_000 (0.000258936 ETH)
+        // NOT the 130-wei placeholder.
+        XCTAssertEqual(fee, BigInt("258936000000000"))
         XCTAssertNotEqual(fee, BigInt(130), "Must not regress to the inbound placeholder (~130 wei)")
     }
 
@@ -151,19 +156,23 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
         XCTAssertEqual(fee, BigInt(13_373_500))
     }
 
-    func testEvmFeeIsIndependentOfSellTokenDecimals() throws {
-        // The EVM fee is `tx.gas × tx.gasPrice` in wei — denominated in the
+    func testErc20SourceFeeIncludesApprovalGas() throws {
+        // An ERC-20 source executes the swap as two signed txs — a token approval
+        // then the swap — and pays gas for both. The fee is denominated in the
         // chain's native gas coin (ETH, 18dp) regardless of the sell token's
-        // decimals. An ERC-20 source (USDC, 6dp) must produce the identical fee
-        // as the native ETH source for the same fixture tx.
+        // decimals (USDC, 6dp).
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
             from: "v3-erc20-erc20-swap"
         )
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let fee = service.inboundFee(from: response, fromCoin: usdc)
-        // Same gas × gasPrice as testEvmFeeDerivedFromGasTimesGasPrice (native ETH source).
-        XCTAssertEqual(fee, BigInt("250525465050000"))
+        // swap:     gas 0x55730 (350_000) × gasPrice 0x2aaa0b23 (715_787_043) = 250_525_465_050_000
+        // approval: gasLimit 0xbf28 (48_936) × 0x2aaa0b23                     =  35_027_754_736_248
+        // total                                                              = 285_553_219_786_248
+        XCTAssertEqual(fee, BigInt("285553219786248"))
+        // Strictly greater than the swap-only fee a native source would pay.
+        XCTAssertGreaterThan(fee ?? .zero, BigInt("250525465050000"))
     }
 
     func testWrongChainPrefixDoesNotMatch() throws {
