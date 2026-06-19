@@ -13,6 +13,7 @@ class MayachainService: ThorchainSwapProvider {
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-service")
     private let httpClient: HTTPClientProtocol
+    private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
 
     /// Resolves the MayaChain custom RPC override. Injected so the API values
     /// are built from a dependency rather than a global reach-in; resolution
@@ -20,7 +21,7 @@ class MayachainService: ThorchainSwapProvider {
     /// picked up live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
-    private init(
+    init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         resolver: RPCEndpointResolving = CustomRPCStore.shared
     ) {
@@ -192,6 +193,36 @@ class MayachainService: ThorchainSwapProvider {
             return response.data.filter { $0.bondable }.map { $0.asset }
         } catch {
             logger.error("Error fetching MayaChain deposit assets: \(error.localizedDescription, privacy: .public)")
+            return []
+        }
+    }
+
+    /// Fetch MayaChain inbound addresses (halt flags + gas rates). Mirrors
+    /// `ThorchainService.fetchThorchainInboundAddress`: 5-minute cache, fail-soft
+    /// to an empty array on decode/network error. Pass `bypassCache: true` for the
+    /// sign-time halt re-check, which must never read or write the cache.
+    func fetchInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
+        let cacheKey = "mayachain-inbound-address"
+        if !bypassCache,
+           let cachedData = Utils.getCachedData(
+               cacheKey: cacheKey,
+               cache: cacheInboundAddresses,
+               timeInSeconds: 60 * 5
+           ) {
+            return cachedData
+        }
+        do {
+            let response = try await httpClient.request(
+                api(.inboundAddresses),
+                responseType: [InboundAddress].self
+            )
+            let inboundAddresses = response.data
+            if !bypassCache {
+                cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+            }
+            return inboundAddresses
+        } catch {
+            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }

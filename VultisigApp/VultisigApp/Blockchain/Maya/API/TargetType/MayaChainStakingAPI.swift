@@ -130,6 +130,8 @@ struct MayaPoolResponse: Codable {
     let cacaoDepth: String
     let liquidityUnits: String
     let bondable: Bool
+    /// "Available" | "Staged". Optional — additive to the existing decode sites.
+    let status: String?
 
     enum CodingKeys: String, CodingKey {
         case asset
@@ -137,5 +139,6 @@ struct MayaPoolResponse: Codable {
         case cacaoDepth = "balance_cacao"
         case liquidityUnits = "LP_units"
         case bondable
+        case status
     }
 }

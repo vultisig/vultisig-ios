@@ -687,6 +687,9 @@ struct THORChainPoolResponse: Codable {
     let balanceAsset: String
     let balanceRune: String
     let assetTorPrice: String
+    /// Per-pool trading-halt flag from thornode `/thorchain/pools`. Optional so
+    /// the single-pool `/thorchain/pool/{asset}` decode path stays unaffected.
+    let tradingHalted: Bool?
 
     enum CodingKeys: String, CodingKey {
         case status
@@ -695,6 +698,7 @@ struct THORChainPoolResponse: Codable {
         case balanceAsset = "balance_asset"
         case balanceRune = "balance_rune"
         case assetTorPrice = "asset_tor_price"
+        case tradingHalted = "trading_halted"
     }
 }
 

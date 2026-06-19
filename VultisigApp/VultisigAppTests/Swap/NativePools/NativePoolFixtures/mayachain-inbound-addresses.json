@@ -1,0 +1,30 @@
+[
+  {
+    "chain": "ETH",
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "router": "0xabcabcabcabcabcabcabcabcabcabcabcabcabca",
+    "halted": false,
+    "global_trading_paused": false,
+    "chain_trading_paused": false,
+    "chain_lp_actions_paused": false,
+    "gas_rate": "120",
+    "gas_rate_units": "gwei",
+    "dust_threshold": "0",
+    "outbound_fee": "240000",
+    "outbound_tx_size": "1"
+  },
+  {
+    "chain": "ARB",
+    "address": "0x000000000000000000000000000000000000dead",
+    "router": "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead",
+    "halted": true,
+    "global_trading_paused": false,
+    "chain_trading_paused": true,
+    "chain_lp_actions_paused": false,
+    "gas_rate": "100",
+    "gas_rate_units": "gwei",
+    "dust_threshold": "0",
+    "outbound_fee": "200000",
+    "outbound_tx_size": "1"
+  }
+]

@@ -231,6 +231,7 @@ targets:
           # resource and collides with `ChainHelperTests.testChainHelpers`,
           # which enumerates every top-level JSON in the bundle root.
           - "Swap/SwapKit/__fixtures__/**"
+          - "Swap/NativePools/NativePoolFixtures/**"
           - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
       # Static fixture JSONs bundled with the test target as a *folder
       # reference* (blue folder in Xcode) so they land at
@@ -239,6 +240,9 @@ targets:
       # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
       # JSON and decodes it as `[ChainHelperTestCase]`.
       - path: VultisigAppTests/Swap/SwapKit/__fixtures__
+        type: folder
+        buildPhase: resources
+      - path: VultisigAppTests/Swap/NativePools/NativePoolFixtures
         type: folder
         buildPhase: resources
       - path: VultisigAppTests/Blockchain/Cosmos/Staking/CosmosStakingFixtures

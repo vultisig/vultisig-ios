@@ -33,6 +33,7 @@ struct MayaChainAPI: TargetType {
         )
         case broadcast(body: Data)
         case pools
+        case inboundAddresses
     }
 
     let endpoint: Endpoint
@@ -58,12 +59,14 @@ struct MayaChainAPI: TargetType {
             return "/cosmos/tx/v1beta1/txs"
         case .pools:
             return "/mayachain/pools"
+        case .inboundAddresses:
+            return "/mayachain/inbound_addresses"
         }
     }
 
     var method: HTTPMethod {
         switch endpoint {
-        case .balances, .accountNumber, .swapQuote, .pools:
+        case .balances, .accountNumber, .swapQuote, .pools, .inboundAddresses:
             return .get
         case .broadcast:
             return .post
@@ -72,7 +75,7 @@ struct MayaChainAPI: TargetType {
 
     var task: HTTPTask {
         switch endpoint {
-        case .balances, .accountNumber, .pools:
+        case .balances, .accountNumber, .pools, .inboundAddresses:
             return .requestPlain
         case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps, let toleranceBps):
             var params: [String: Any] = [
