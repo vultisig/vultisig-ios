@@ -296,7 +296,9 @@ private final class MockSwapInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        thorPools: [NativePoolAsset]?,
+        mayaPools: [NativePoolAsset]?
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         guard let stubbedQuote else { return nil }

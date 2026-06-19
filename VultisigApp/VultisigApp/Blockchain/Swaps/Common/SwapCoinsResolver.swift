@@ -57,7 +57,22 @@ struct SwapCoinsResolver {
     }
 
     static func resolveAllProviders(fromCoin: Coin, toCoin: Coin) -> [SwapProvider] {
-        var commonProviders = fromCoin.swapProviders.filter { toCoin.swapProviders.contains($0) }
+        resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin, providers: { $0.swapProviders })
+    }
+
+    /// Parametric variant: `providers` resolves each coin's provider list. The
+    /// quote path passes a closure backed by the live-pool-augmented set (UNION
+    /// with the static fallback) so a token made eligible by a live `Available`
+    /// pool keeps its native provider through to quote/build — instead of being
+    /// dropped by the static `Coin.swapProviders` and surfacing `routeUnavailable`.
+    static func resolveAllProviders(
+        fromCoin: Coin,
+        toCoin: Coin,
+        providers: (Coin) -> [SwapProvider]
+    ) -> [SwapProvider] {
+        let fromProviders = providers(fromCoin)
+        let toProviders = providers(toCoin)
+        var commonProviders = fromProviders.filter { toProviders.contains($0) }
 
         // If either coin is thorchain stagenet, remove mainnet thorchain provider to avoid mixing networks
         if toCoin.chain == .thorChainChainnet || fromCoin.chain == .thorChainChainnet {

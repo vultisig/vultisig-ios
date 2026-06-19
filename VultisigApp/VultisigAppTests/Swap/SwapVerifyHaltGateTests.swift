@@ -41,7 +41,38 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         XCTAssertEqual(count, 2, "Each sign-time re-check must bypass the cache and refetch")
     }
 
+    // MARK: - Thread #4: aggregator routes skip the preflight
+
+    func testAggregatorRouteSkipsPreflightEvenOnHaltedChain() async {
+        // Even though the source chain's Maya inbound is halted, a 1inch route
+        // never deposits there — the preflight is skipped and signing proceeds.
+        let stub = PathStubClient(responses: ["/mayachain/inbound_addresses": haltedArbInbound])
+        let maya = MayachainService(httpClient: stub)
+        let vm = makeVM(maya: maya, quote: .oneinch(makeEVMQuote(), fee: nil))
+        let safe = await vm.isSourceChainSafeToSign()
+        XCTAssertTrue(safe, "Aggregator routes skip the native halt preflight")
+        XCTAssertNil(vm.error)
+        let count = await stub.requestCount
+        XCTAssertEqual(count, 0, "Aggregator routes must not fetch any inbound")
+    }
+
+    // MARK: - Thread #6: native routes fail CLOSED on an unverifiable fetch
+
+    func testNativeRouteFailsClosedWhenInboundFetchThrows() async {
+        // The Maya inbound endpoint returns a 501 (no stubbed response) → the
+        // throwing fetch propagates → the native route is BLOCKED, not allowed.
+        let maya = MayachainService(httpClient: PathStubClient(responses: [:]))
+        let vm = makeVM(maya: maya)
+        let safe = await vm.isSourceChainSafeToSign()
+        XCTAssertFalse(safe, "A native route must fail closed when the inbound re-check can't be verified")
+        XCTAssertEqual((vm.error as? SwapError), .tradingHalted)
+    }
+
     // MARK: - Fixtures
+
+    private func makeEVMQuote() -> EVMQuote {
+        EVMQuote(dstAmount: "1", tx: EVMQuote.Transaction(from: "0xfrom", to: "0xto", data: "0x", value: "0", gasPrice: "0", gas: 0))
+    }
 
     private var haltedArbInbound: Data {
         """
@@ -63,14 +94,14 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         makeVM(maya: MayachainService(httpClient: PathStubClient(responses: ["/mayachain/inbound_addresses": mayaInbound])))
     }
 
-    private func makeVM(maya: MayachainService) -> SwapVerifyViewModel {
+    private func makeVM(maya: MayachainService, quote: SwapQuote? = nil) -> SwapVerifyViewModel {
         let arb = makeCoin(.arbitrum, ticker: "ARB")
         let eth = makeCoin(.ethereum, ticker: "ETH")
         let tx = SwapTransaction(
             fromCoin: arb,
             toCoin: eth,
             fromAmount: 1,
-            quote: .mayachain(makeQuote()),
+            quote: quote ?? .mayachain(makeQuote()),
             gas: .zero,
             thorchainFee: .zero,
             vultDiscountBps: 0,

@@ -31,7 +31,9 @@ struct DefaultSwapInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        thorPools: [NativePoolAsset]?,
+        mayaPools: [NativePoolAsset]?
     ) async throws -> SwapQuoteResult? {
         guard !amount.isZero else { return nil }
         guard fromCoin != toCoin else {
@@ -60,7 +62,9 @@ struct DefaultSwapInteractor: SwapInteractor {
             toCoin: toCoin,
             isAffiliate: SwapCryptoLogic.isAffiliate,
             referredCode: referredCode,
-            vultTierDiscount: vultDiscountBps
+            vultTierDiscount: vultDiscountBps,
+            thorPools: thorPools,
+            mayaPools: mayaPools
         )
 
         return SwapQuoteResult(

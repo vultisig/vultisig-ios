@@ -139,24 +139,45 @@ final class SwapVerifyViewModel {
 
     /// Sign-time fund-safety gate: re-check the live inbound for the source chain
     /// immediately before building the keysign payload, BYPASSING the 5-minute
-    /// cache. Returns `true` when it's safe to sign; on a halt it sets
-    /// `error = .tradingHalted` and returns `false` so the caller does NOT build
-    /// the payload or navigate. Fail-closed only on a confirmed live halt — a
-    /// fetch failure (empty inbound) does not block, matching the screen path's
-    /// fail-soft semantics. Routes are re-checked across BOTH native protocols.
+    /// cache. Returns `true` when it's safe to sign; on a halt (or an
+    /// unverifiable fetch) it sets `error` and returns `false` so the caller does
+    /// NOT build the payload or navigate.
+    ///
+    /// Scoped to native routes (thread #4): an aggregator route
+    /// (1inch/LI.FI/KyberSwap/SwapKit) never deposits into a THOR/Maya inbound
+    /// vault, so it skips the preflight entirely. For a native route, only the
+    /// relevant protocol's inbound is fetched (THORChain vs Maya), and the fetch
+    /// is FAIL-CLOSED (thread #6): if the live re-check throws / can't be
+    /// verified, signing is blocked with a retryable error rather than failing
+    /// open on an empty list.
     func isSourceChainSafeToSign() async -> Bool {
+        let quote = transaction.quote
+        guard quote.isNativeProtocolRoute else { return true }
+
         let sourceChain = transaction.fromCoin.chain
-        async let thorInbound = thorchainService.fetchThorchainInboundAddress(bypassCache: true)
-        async let mayaInbound = mayachainService.fetchInboundAddress(bypassCache: true)
-        let thor = await thorInbound
-        let maya = await mayaInbound
-        let halted = SwapHaltGate.isHalted(chain: sourceChain, in: thor)
-            || SwapHaltGate.isHalted(chain: sourceChain, in: maya)
-        if halted {
-            error = SwapError.tradingHalted
+        do {
+            let inbound: [InboundAddress]
+            switch quote {
+            case .mayachain:
+                inbound = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+            case .thorchain, .thorchainChainnet, .thorchainStagenet:
+                inbound = try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .oneinch, .kyberswap, .lifi, .swapkit:
+                return true
+            }
+            if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {
+                error = SwapError.tradingHalted
+                return false
+            }
+            return true
+        } catch {
+            // Fail closed: an unverifiable inbound re-check must not let a native
+            // deposit proceed. Surface the retryable halt message (no new locale
+            // key per Decision 3) so the user can retry once the fetch recovers.
+            logger.warning("Sign-time halt re-check failed, blocking native route: \(error.localizedDescription, privacy: .public)")
+            self.error = SwapError.tradingHalted
             return false
         }
-        return true
     }
 
     func buildSwapKeysignPayload(vault: Vault) async -> KeysignPayload? {

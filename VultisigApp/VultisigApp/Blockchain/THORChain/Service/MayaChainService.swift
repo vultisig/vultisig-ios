@@ -202,6 +202,19 @@ class MayachainService: ThorchainSwapProvider {
     /// to an empty array on decode/network error. Pass `bypassCache: true` for the
     /// sign-time halt re-check, which must never read or write the cache.
     func fetchInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
+        do {
+            return try await fetchInboundAddressOrThrow(bypassCache: bypassCache)
+        } catch {
+            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
+            return []
+        }
+    }
+
+    /// Throwing variant of `fetchInboundAddress` for the sign-time fund-safety
+    /// gate, which must fail CLOSED: a transport/decode failure has to propagate
+    /// so a halt re-check can't be silently misread as "not halted". The fail-soft
+    /// `fetchInboundAddress` wraps this for screen-level callers.
+    func fetchInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
         let cacheKey = "mayachain-inbound-address"
         if !bypassCache,
            let cachedData = Utils.getCachedData(
@@ -211,20 +224,15 @@ class MayachainService: ThorchainSwapProvider {
            ) {
             return cachedData
         }
-        do {
-            let response = try await httpClient.request(
-                api(.inboundAddresses),
-                responseType: [InboundAddress].self
-            )
-            let inboundAddresses = response.data
-            if !bypassCache {
-                cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
-            }
-            return inboundAddresses
-        } catch {
-            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
-            return []
+        let response = try await httpClient.request(
+            api(.inboundAddresses),
+            responseType: [InboundAddress].self
+        )
+        let inboundAddresses = response.data
+        if !bypassCache {
+            cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
         }
+        return inboundAddresses
     }
 
     /// Legacy callback shim. Existing call sites in FunctionCall views still use this

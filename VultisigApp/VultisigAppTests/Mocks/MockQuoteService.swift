@@ -36,7 +36,9 @@ final class MockQuoteService: QuoteServiceProtocol {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        thorPools: [NativePoolAsset]?,
+        mayaPools: [NativePoolAsset]?
     ) async throws -> SwapQuotes {
         fetchQuoteCallCount += 1
         lastVultTierDiscount = vultTierDiscount

@@ -13,12 +13,18 @@ import Foundation
 protocol SwapInteractor {
     /// Aggregator quote fetch + discount-tier resolution. Returns nil when there's no
     /// amount to quote; throws `SwapCryptoLogic.Errors.sameAsset` when from/to coins match.
+    /// `thorPools`/`mayaPools` are the live `Available` pool snapshots threaded
+    /// from the swap screen so provider resolution at quote time matches the
+    /// picker (a token made eligible by a live pool keeps its native provider);
+    /// `nil` falls back to the static eligibility.
     func fetchQuote(
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        thorPools: [NativePoolAsset]?,
+        mayaPools: [NativePoolAsset]?
     ) async throws -> SwapQuoteResult?
 
     /// Chain-specific fee/nonce/blockhash data needed to assemble the keysign payload.
@@ -55,4 +61,26 @@ protocol SwapInteractor {
     /// provider selection. Reads the same cached tier `warmDiscountTier` warms,
     /// so it adds no extra network path.
     func isProviderSelectionUnlocked(for vault: Vault) async -> Bool
+}
+
+extension SwapInteractor {
+    /// Cold-start convenience: callers without live pool snapshots (e.g. the
+    /// verify-screen refresh) resolve providers off the static fallback.
+    func fetchQuote(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault,
+        referredCode: String
+    ) async throws -> SwapQuoteResult? {
+        try await fetchQuote(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            vault: vault,
+            referredCode: referredCode,
+            thorPools: nil,
+            mayaPools: nil
+        )
+    }
 }

@@ -212,30 +212,39 @@ class ThorchainService: ThorchainSwapProvider {
     /// read or write the cache — the decision needs a fresh, live value.
     func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
         do {
-            let cacheKey = "thorchain-inbound-address"
-
-            if !bypassCache,
-               let cachedData = Utils.getCachedData(
-                   cacheKey: cacheKey,
-                   cache: cacheInboundAddresses,
-                   timeInSeconds: 60 * 5
-               ) {
-                return cachedData
-            }
-
-            let response = try await httpClient.request(
-                mainnet(.inboundAddresses),
-                responseType: [InboundAddress].self
-            )
-            let inboundAddresses = response.data
-            if !bypassCache {
-                self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
-            }
-            return inboundAddresses
+            return try await fetchThorchainInboundAddressOrThrow(bypassCache: bypassCache)
         } catch {
             logger.warning("JSON decoding error: \(error.localizedDescription)")
             return []
         }
+    }
+
+    /// Throwing variant of `fetchThorchainInboundAddress` for the sign-time
+    /// fund-safety gate, which must fail CLOSED: a transport/decode failure has
+    /// to propagate so the gate can block signing instead of misreading an empty
+    /// list as "not halted". The fail-soft `fetchThorchainInboundAddress` wraps
+    /// this for screen-level / FunctionCall callers that prefer an empty fallback.
+    func fetchThorchainInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
+        let cacheKey = "thorchain-inbound-address"
+
+        if !bypassCache,
+           let cachedData = Utils.getCachedData(
+               cacheKey: cacheKey,
+               cache: cacheInboundAddresses,
+               timeInSeconds: 60 * 5
+           ) {
+            return cachedData
+        }
+
+        let response = try await httpClient.request(
+            mainnet(.inboundAddresses),
+            responseType: [InboundAddress].self
+        )
+        let inboundAddresses = response.data
+        if !bypassCache {
+            self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+        }
+        return inboundAddresses
     }
 
     func getTHORChainChainID() async throws -> String {

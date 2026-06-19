@@ -175,28 +175,34 @@ class ThorchainChainnetService: ThorchainSwapProvider {
 
     func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
         do {
-            let cacheKey = "thorchain-stagenet-inbound-address"
-
-            if !bypassCache,
-               let cachedData = Utils.getCachedData(
-                   cacheKey: cacheKey,
-                   cache: cacheInboundAddresses,
-                   timeInSeconds: 60 * 5
-               ) {
-                return cachedData
-            }
-
-            let response = try await httpClient.request(
-                ThorchainStagenetAPI.inboundAddresses(env: env),
-                responseType: [InboundAddress].self
-            )
-            if !bypassCache {
-                self.cacheInboundAddresses.set(cacheKey, (data: response.data, timestamp: Date()))
-            }
-            return response.data
+            return try await fetchThorchainInboundAddressOrThrow(bypassCache: bypassCache)
         } catch {
             return []
         }
+    }
+
+    /// Throwing variant for the sign-time fail-closed gate — see
+    /// `ThorchainService.fetchThorchainInboundAddressOrThrow`.
+    func fetchThorchainInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
+        let cacheKey = "thorchain-stagenet-inbound-address"
+
+        if !bypassCache,
+           let cachedData = Utils.getCachedData(
+               cacheKey: cacheKey,
+               cache: cacheInboundAddresses,
+               timeInSeconds: 60 * 5
+           ) {
+            return cachedData
+        }
+
+        let response = try await httpClient.request(
+            ThorchainStagenetAPI.inboundAddresses(env: env),
+            responseType: [InboundAddress].self
+        )
+        if !bypassCache {
+            self.cacheInboundAddresses.set(cacheKey, (data: response.data, timestamp: Date()))
+        }
+        return response.data
     }
 
     func getTHORChainChainID() async throws -> String {

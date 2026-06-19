@@ -79,4 +79,16 @@ final class SwapErrorMappingTests: XCTestCase {
         let error = MayachainSwapError(code: 2, error: "maya specific upstream detail")
         XCTAssertEqual(SwapService.mapMayachainSwapError(error).errorDescription, "maya specific upstream detail")
     }
+
+    // MARK: - Maya shares the native classification (no longer leaks as serverError)
+
+    func testMayachainZeroEmitAssetMapsToAmountTooSmall() {
+        let error = MayachainSwapError(code: 3, error: "swap produced a zero emit asset")
+        XCTAssertEqual(SwapService.mapMayachainSwapError(error).errorDescription, "swapAmountTooSmall".localized)
+    }
+
+    func testMayachainPoolMissingMapsToNoLiquidityPool() {
+        let error = MayachainSwapError(code: 3, error: "pool does not exist")
+        XCTAssertEqual(SwapService.mapMayachainSwapError(error).errorDescription, "noLiquidityPool".localized)
+    }
 }

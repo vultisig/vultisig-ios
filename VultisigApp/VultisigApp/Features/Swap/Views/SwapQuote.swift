@@ -18,6 +18,19 @@ enum SwapQuote: Hashable {
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
 
+    /// True for the native-protocol routes (THORChain on any network, MayaChain)
+    /// that deposit into a THOR/Maya inbound vault, so a source-chain halt can
+    /// strand funds. Aggregator routes (1inch/LI.FI/KyberSwap/SwapKit) never
+    /// deposit into those vaults, so the halt gate must not apply to them.
+    var isNativeProtocolRoute: Bool {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return true
+        case .oneinch, .kyberswap, .lifi, .swapkit:
+            return false
+        }
+    }
+
     var swapProviderId: SwapProviderId? {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:

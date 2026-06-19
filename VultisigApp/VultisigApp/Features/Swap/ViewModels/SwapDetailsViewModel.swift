@@ -31,6 +31,22 @@ final class SwapDetailsViewModel {
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
     @ObservationIgnored private var quotedAmount: String?
 
+    // Live `Available` pool snapshots fetched on `load`, retained so the
+    // recompute path (`updateCoinLists`) and the quote fetch resolve providers
+    // off the SAME live-pool-augmented set the picker used — otherwise a token
+    // made eligible by a live pool would be dropped at quote time and surface
+    // `routeUnavailable`. `nil` (cold start / fetch failure) falls back to the
+    // static eligibility, byte-identical to pre-dynamic behavior.
+    @ObservationIgnored private var thorPools: [NativePoolAsset]?
+    @ObservationIgnored private var mayaPools: [NativePoolAsset]?
+
+    /// A pure per-coin provider lookup backed by the retained live-pool sets.
+    @ObservationIgnored private var liveProviders: (Coin) -> [SwapProvider] {
+        let thor = thorPools
+        let maya = mayaPools
+        return { $0.swapProviders(thorPools: thor, mayaPools: maya) }
+    }
+
     // MARK: - Form fields (mutable while the user is editing)
 
     var fromAmount: String = .empty
@@ -126,15 +142,12 @@ final class SwapDetailsViewModel {
         // surfaces tokens beyond the static fallback arrays (fetch-supersedes-by-
         // UNION). Fail-open: nil snapshots fall back to the static set, so a
         // no-network launch shows exactly today's set.
-        let thorPools = await eligibilityCache.pools(.thorchain)
-        let mayaPools = await eligibilityCache.pools(.mayachain)
+        // Retain the snapshots on the VM so the recompute + quote paths reuse the
+        // same live-pool-augmented set the picker resolves against.
+        thorPools = await eligibilityCache.pools(.thorchain)
+        mayaPools = await eligibilityCache.pools(.mayachain)
 
-        // A pure per-coin provider lookup backed by the augmented set. The
-        // snapshots are value types captured here, so the closure stays
-        // synchronous and MainActor-safe.
-        let providers: (Coin) -> [SwapProvider] = { coin in
-            coin.swapProviders(thorPools: thorPools, mayaPools: mayaPools)
-        }
+        let providers = liveProviders
 
         let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(
             allCoins: allCoins,
@@ -172,10 +185,18 @@ final class SwapDetailsViewModel {
         )
     }
 
-    /// True when either side of the current pair is on a halted chain — the
-    /// screen dims the route and blocks Continue.
+    /// True when the active route is a native THORChain/Maya route whose source
+    /// or destination chain is halted — the screen dims it and blocks Continue.
+    /// Scoped to native routes: a halt on a chain only strands funds for a route
+    /// that deposits into the THOR/Maya inbound vault, so aggregator routes
+    /// (1inch/LI.FI/KyberSwap/SwapKit) on the same chain are never dimmed. Before
+    /// any quote lands (no provider known yet) the dim falls back to chain
+    /// membership so a confirmed-halted source chain is flagged pre-quote.
     var isCurrentRouteHalted: Bool {
-        haltedChains.contains(fromCoin.chain) || haltedChains.contains(toCoin.chain)
+        let chainHalted = haltedChains.contains(fromCoin.chain) || haltedChains.contains(toCoin.chain)
+        guard chainHalted else { return false }
+        guard let quote else { return true }
+        return quote.isNativeProtocolRoute
     }
 
     /// Warm the per-session VULT discount-tier cache once on screen load so the
@@ -247,7 +268,8 @@ final class SwapDetailsViewModel {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,
             allCoins: fromCoins,
-            selectedToCoin: toCoin
+            selectedToCoin: toCoin,
+            providers: liveProviders
         )
         toCoin = resolvedToCoin
         toCoins = resolvedToCoins
@@ -654,7 +676,9 @@ private extension SwapDetailsViewModel {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                thorPools: thorPools,
+                mayaPools: mayaPools
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.

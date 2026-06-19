@@ -50,6 +50,7 @@ extension NativePoolAsset {
         case "BSC": return .bscChain
         case "AVAX": return .avalanche
         case "BASE": return .base
+        case "OP": return .optimism
         default: return nil
         }
     }

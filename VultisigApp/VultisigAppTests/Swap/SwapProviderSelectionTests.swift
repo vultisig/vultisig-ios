@@ -286,7 +286,9 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        thorPools: [NativePoolAsset]?,
+        mayaPools: [NativePoolAsset]?
     ) async throws -> SwapQuoteResult? {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }

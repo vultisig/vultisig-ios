@@ -52,6 +52,45 @@ final class NativePoolEligibilityWiringTests: XCTestCase {
         XCTAssertTrue(moca.swapProviders(thorPools: nil, mayaPools: mayaPools).contains(.mayachain))
     }
 
+    // MARK: - Quote-path resolution (thread #1): the live pool reaches resolveAllProviders
+
+    /// Proves the headline feature end-to-end at the resolver the quote fetch
+    /// uses: CACAO → ETH.USDT must yield a `.mayachain` provider when the live
+    /// Maya pool makes USDT eligible — the static path drops it (routeUnavailable).
+    func testCacaoToEthUsdtResolvesMayaProviderAtQuoteTime() {
+        let cacao = makeCoin(.mayaChain, ticker: "CACAO")
+        let usdt = makeCoin(.ethereum, ticker: "USDT", contract: "0xdac17f958d2ee523a2206206994597c13d831ec7", isNative: false)
+
+        // Static (today's quote path): USDT lacks .mayachain → no common provider.
+        let staticProviders = SwapCoinsResolver.resolveAllProviders(fromCoin: cacao, toCoin: usdt)
+        XCTAssertFalse(staticProviders.contains(.mayachain), "Static path drops the native Maya route")
+
+        // Live-pool-augmented closure (what SwapService.fetchQuotes now passes):
+        let mayaPools = [
+            NativePoolAsset(poolChain: .ethereum, ticker: "USDT", contract: "0xdac17f958d2ee523a2206206994597c13d831ec7", isAvailable: true, isTradingHalted: false)
+        ]
+        let resolved = SwapCoinsResolver.resolveAllProviders(
+            fromCoin: cacao,
+            toCoin: usdt,
+            providers: { $0.swapProviders(thorPools: nil, mayaPools: mayaPools) }
+        )
+        XCTAssertTrue(resolved.contains(.mayachain), "Live Available Maya pool must reach the quote-path resolver")
+    }
+
+    /// Cold start (nil pools) at the quote-path resolver must equal the static
+    /// resolution — the byte-identical fallback invariant.
+    func testQuotePathResolverColdStartMatchesStatic() {
+        let cacao = makeCoin(.mayaChain, ticker: "CACAO")
+        let eth = makeCoin(.ethereum, ticker: "ETH")
+        let staticProviders = SwapCoinsResolver.resolveAllProviders(fromCoin: cacao, toCoin: eth)
+        let coldStart = SwapCoinsResolver.resolveAllProviders(
+            fromCoin: cacao,
+            toCoin: eth,
+            providers: { $0.swapProviders(thorPools: nil, mayaPools: nil) }
+        )
+        XCTAssertEqual(coldStart, staticProviders)
+    }
+
     // MARK: - Cold start parity (regression pin per chain)
 
     func testColdStartWithNoFetchMatchesStaticFallback() {
