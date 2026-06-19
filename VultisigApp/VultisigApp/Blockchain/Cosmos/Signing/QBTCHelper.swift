@@ -293,6 +293,12 @@ struct QBTCHelper {
 
     private func buildMsgVote(keysignPayload: KeysignPayload) throws -> Data {
         // Memo format: "QBTC_VOTE:OPTION:PROPOSAL_ID"
+        //
+        // The arg order (option before id) differs from the weighted memo
+        // ("QBTC_VOTEW:PROPOSAL_ID:OPTIONS", id first). This divergence is
+        // intentional and dictated by the QBTC chain's on-chain memo parser —
+        // each parser is internally consistent and realigning the order here
+        // would break parsing/consensus. Do not "fix" the ordering.
         let voteStr = keysignPayload.memo?.replacingOccurrences(of: "QBTC_VOTE:", with: "")
             .replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
         let components = voteStr.split(separator: ":")
@@ -329,6 +335,11 @@ struct QBTCHelper {
     private func buildMsgVoteWeighted(keysignPayload: KeysignPayload) throws -> Data {
         // Memo format: "QBTC_VOTEW:PROPOSAL_ID:OPTION=WEIGHT,OPTION=WEIGHT,..."
         // e.g. "QBTC_VOTEW:42:YES=0.7,ABSTAIN=0.3"
+        //
+        // Note the id-first order here vs. option-first in the single-vote
+        // memo ("QBTC_VOTE:OPTION:PROPOSAL_ID"). The divergence is intentional
+        // and chain-contract-defined: the QBTC on-chain parser expects each
+        // memo in its own order. Do not realign them — it would break parsing.
         let body = keysignPayload.memo?.replacingOccurrences(of: "QBTC_VOTEW:", with: "") ?? ""
         let firstColon = body.firstIndex(of: ":")
         guard let firstColon else {

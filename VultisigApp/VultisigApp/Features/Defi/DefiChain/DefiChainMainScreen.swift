@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 17/10/2025.
 //
 
+import BigInt
 import SwiftUI
 
 struct DefiChainMainScreen: View {
@@ -37,6 +38,24 @@ struct DefiChainMainScreen: View {
 
     private var nativeCoin: Coin? {
         vault.nativeCoin(for: chain)
+    }
+
+    /// Whether the native coin balance can cover a governance vote's flat tx
+    /// fee. A vote is an on-chain tx that costs gas, so a 0/dust-balance user
+    /// would otherwise walk verify → ML-DSA keysign only for the broadcast to
+    /// fail. We compare the raw balance against the chain's flat `min_tx_fee`
+    /// (`CosmosStakingConfig`, the single source of truth for QBTC fee). The
+    /// fee is the exact flat floor — `min_gas_price` is 0 on qbtc-testnet, so
+    /// gas is free and the fee doesn't vary by message — so this is a precise
+    /// pre-flight, not an approximation. Gates both vote entry points and
+    /// greys the vote controls with a hint.
+    var canCoverVoteFee: Bool {
+        guard let nativeCoin else { return false }
+        guard let feeAmount = try? CosmosStakingConfig.feeAmount(for: chain) else {
+            // No fee config for this chain — don't block (non-QBTC fallback).
+            return true
+        }
+        return nativeCoin.rawBalance.toBigInt() >= BigInt(feeAmount)
     }
 
     /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
@@ -171,7 +190,8 @@ struct DefiChainMainScreen: View {
                     },
                     onWeightedVote: { proposal, options in
                         onGovernanceWeightedVote(proposal: proposal, options: options)
-                    }
+                    },
+                    canVote: canCoverVoteFee
                 )
             }
         }
@@ -311,8 +331,8 @@ struct DefiChainMainScreen: View {
     /// `QBTCHelper.buildMsgVote` consumes; the dictionary is display-only so
     /// verify reads "Vote <OPTION> on Proposal #N" rather than the raw memo.
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
-        guard let nativeCoin else { return }
-        let memo = "QBTC_VOTE:\(choice.memoToken):\(proposal.id)"
+        guard let nativeCoin, canCoverVoteFee else { return }
+        let memo = QBTCGovVoteMemo.singleVote(proposalID: proposal.id, choice: choice)
         let displayDictionary: [String: String] = [
             "action": "governanceVoteAction".localized,
             "vote": choice.displayTitle,
@@ -332,14 +352,9 @@ struct DefiChainMainScreen: View {
     /// consumes; weights are passed as plain decimals and the helper
     /// canonicalizes them to the 18-decimal `cosmos.Dec` form.
     func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
-        guard let nativeCoin, !options.isEmpty else { return }
-        let optionsPart = options
-            .map { "\($0.option.memoToken)=\(Self.weightString($0.weight))" }
-            .joined(separator: ",")
-        let memo = "QBTC_VOTEW:\(proposal.id):\(optionsPart)"
-        let displayValue = options
-            .map { "\($0.option.displayTitle) \(Self.weightPercentString($0.weight))" }
-            .joined(separator: ", ")
+        guard let nativeCoin, canCoverVoteFee, !options.isEmpty else { return }
+        let memo = QBTCGovVoteMemo.weightedVote(proposalID: proposal.id, options: options)
+        let displayValue = QBTCGovVoteMemo.weightedDisplayValue(options: options)
         let displayDictionary: [String: String] = [
             "action": "governanceVoteAction".localized,
             "vote": displayValue,
@@ -351,18 +366,6 @@ struct DefiChainMainScreen: View {
             memoFunctionDictionary: displayDictionary
         )
         router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
-    }
-
-    /// Plain decimal string for a weight fraction (e.g. 0.7 -> "0.7"), fed to
-    /// the memo. `QBTCHelper` re-pads it to the canonical `cosmos.Dec` form.
-    static func weightString(_ weight: Decimal) -> String {
-        NSDecimalNumber(decimal: weight).stringValue
-    }
-
-    /// Percentage label for the verify summary (e.g. 0.7 -> "70%").
-    static func weightPercentString(_ weight: Decimal) -> String {
-        let percent = NSDecimalNumber(decimal: weight * 100).intValue
-        return "\(percent)%"
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {

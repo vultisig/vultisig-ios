@@ -483,6 +483,7 @@
 "governanceEmptyTitle" = "暂无提案";
 "governanceErrorSubtitle" = "下拉刷新以重试。";
 "governanceErrorTitle" = "无法加载提案";
+"governanceInsufficientBalanceForFee" = "QBTC 余额不足以支付投票交易费用。";
 "governanceLessThanOneMinute" = "<1分";
 "governanceMessages" = "消息";
 "governanceNoVotesYet" = "暂无投票";

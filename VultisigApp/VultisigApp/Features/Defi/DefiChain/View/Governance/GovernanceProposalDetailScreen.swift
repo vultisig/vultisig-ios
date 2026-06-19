@@ -17,6 +17,10 @@ struct GovernanceProposalDetailScreen: View {
     let tally: CosmosGovTallyResult
     let params: CosmosGovParams?
     let myVote: CosmosGovVote?
+    /// Whether the vault's native balance can cover the vote tx fee. When
+    /// `false` the vote controls are disabled and a hint explains why, so a
+    /// 0/dust-balance user can't start a flow that would fail at broadcast.
+    var canVote: Bool = true
     /// Single-option vote chosen from the sheet. The parent builds the
     /// `QBTC_VOTE:` tx and launches verify → ML-DSA keysign. Nil disables the
     /// vote controls (read-only contexts / previews).
@@ -165,6 +169,7 @@ struct GovernanceProposalDetailScreen: View {
                 ) {
                     onVote(choice)
                 }
+                .disabled(!canVote)
             }
             if onWeightedVote != nil {
                 Button {
@@ -177,8 +182,16 @@ struct GovernanceProposalDetailScreen: View {
                         .padding(.vertical, 8)
                 }
                 .buttonStyle(.plain)
+                .disabled(!canVote)
+            }
+            if !canVote {
+                Text("governanceInsufficientBalanceForFee".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.leading)
             }
         }
+        .opacity(canVote ? 1 : 0.5)
     }
 
     // MARK: - Reusable building blocks

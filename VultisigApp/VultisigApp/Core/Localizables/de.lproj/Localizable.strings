@@ -483,6 +483,7 @@
 "governanceEmptyTitle" = "Keine Anträge";
 "governanceErrorSubtitle" = "Zum Aktualisieren ziehen, um es erneut zu versuchen.";
 "governanceErrorTitle" = "Anträge konnten nicht geladen werden";
+"governanceInsufficientBalanceForFee" = "Nicht genügend QBTC, um die Transaktionsgebühr für die Abstimmung zu decken.";
 "governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Nachrichten";
 "governanceNoVotesYet" = "Noch keine Stimmen";

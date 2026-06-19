@@ -15,6 +15,18 @@
 //  pin that iOS's hand-rolled `buildMsgVoteWeighted` agrees byte-for-byte
 //  with what a cosmjs-based peer would sign.
 //
+//  PROVENANCE CAVEAT (tracked follow-up): unlike the single-vote cosign
+//  vector — whose AuthInfo/SignDoc bytes were recorded from the Windows/SDK
+//  (cosmjs) encoder in vultisig-windows — these weighted-vote literals were
+//  NOT yet regenerated from a committed external script/recording. The body
+//  encoding is canonical proto3 for `/cosmos.gov.v1beta1.MsgVoteWeighted`
+//  (cosmjs uses the same registry codec, see vultisig-windows
+//  `messageRegistry.ts`), so the SHAPE matches the contract; but until these
+//  bytes are reproduced from an external cosmjs/proto run, the byte-equality
+//  test is only a *regression* guard (it locks the current encoder output) and
+//  does NOT independently prove cross-platform agreement. Regenerate from the
+//  cosmjs encoder to make the gate non-circular.
+//
 //  Inputs:
 //    voter        = "qbtc1voter00000000000000000000000000000000"
 //    mldsaPubKey  = 0xAB x 1312

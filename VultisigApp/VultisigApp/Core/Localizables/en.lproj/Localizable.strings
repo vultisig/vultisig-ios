@@ -488,6 +488,7 @@
 "governanceEmptyTitle" = "No proposals";
 "governanceErrorSubtitle" = "Pull to refresh to try again.";
 "governanceErrorTitle" = "Couldn't load proposals";
+"governanceInsufficientBalanceForFee" = "Not enough QBTC to cover the voting transaction fee.";
 "governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Messages";
 "governanceNoVotesYet" = "No votes yet";

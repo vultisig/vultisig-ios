@@ -478,6 +478,7 @@
 "governanceEmptyTitle" = "제안 없음";
 "governanceErrorSubtitle" = "당겨서 새로고침하여 다시 시도하세요.";
 "governanceErrorTitle" = "제안을 불러올 수 없습니다";
+"governanceInsufficientBalanceForFee" = "투표 거래 수수료를 충당할 QBTC가 부족합니다.";
 "governanceLessThanOneMinute" = "1분 미만";
 "governanceMessages" = "메시지";
 "governanceNoVotesYet" = "아직 투표 없음";

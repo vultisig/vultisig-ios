@@ -483,6 +483,7 @@
 "governanceEmptyTitle" = "Nessuna proposta";
 "governanceErrorSubtitle" = "Trascina per aggiornare e riprovare.";
 "governanceErrorTitle" = "Impossibile caricare le proposte";
+"governanceInsufficientBalanceForFee" = "QBTC insufficiente per coprire la commissione della transazione di voto.";
 "governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Messaggi";
 "governanceNoVotesYet" = "Ancora nessun voto";

@@ -14,7 +14,7 @@
 import Foundation
 import OSLog
 
-protocol QBTCGovServiceProtocol {
+protocol QBTCGovServiceProtocol: Sendable {
     func fetchProposals(status: CosmosGovProposalStatus?) async throws -> [CosmosGovProposal]
     func fetchProposal(id: UInt64) async throws -> CosmosGovProposal?
     func fetchTally(id: UInt64) async throws -> CosmosGovTallyResult

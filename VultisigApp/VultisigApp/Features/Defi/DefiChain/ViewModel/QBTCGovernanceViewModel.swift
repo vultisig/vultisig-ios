@@ -37,6 +37,11 @@ final class QBTCGovernanceViewModel: ObservableObject {
     /// vault's native QBTC coin.
     private(set) var voterAddress: String?
 
+    /// How many of the most-recently-ended proposals to also resolve a
+    /// my-vote for, beyond the active ones. Bounds the per-refresh fan-out so
+    /// it scales with the active window rather than the full proposal list.
+    private static let myVoteRecentPastLimit = 10
+
     private let service: QBTCGovServiceProtocol
     private let logger = Logger(
         subsystem: "com.vultisig.app",
@@ -83,7 +88,14 @@ final class QBTCGovernanceViewModel: ObservableObject {
         pastProposals = past
 
         await resolveTallies(for: active)
-        await resolveMyVotes(for: proposals, voterAddress: voterAddress)
+        // Scope my-vote fan-out to the same window tallies use (active) plus a
+        // small recent-history slice, instead of one request per proposal.
+        // Querying my-vote for every proposal (up to `defaultProposalLimit`)
+        // would fire ~100 concurrent requests on each refresh on a populated
+        // chain; the badge only needs to cover what the user can act on or
+        // just acted on.
+        let recentPast = Array(past.prefix(Self.myVoteRecentPastLimit))
+        await resolveMyVotes(for: active + recentPast, voterAddress: voterAddress)
 
         if proposals.isEmpty {
             logger.info("No QBTC governance proposals returned")

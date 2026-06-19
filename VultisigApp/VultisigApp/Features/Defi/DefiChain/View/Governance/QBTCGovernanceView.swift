@@ -19,6 +19,9 @@ struct QBTCGovernanceView: View {
     var onVote: (CosmosGovProposal, CosmosGovVoteChoice) -> Void
     /// Builds + launches the weighted-vote flow (`QBTC_VOTEW:` tx).
     var onWeightedVote: (CosmosGovProposal, [CosmosGovVoteOption]) -> Void
+    /// Whether the vault's native balance can cover a vote's tx fee. When
+    /// `false` the detail-sheet vote controls are disabled with a hint.
+    var canVote: Bool = true
 
     @State private var selectedProposal: CosmosGovProposal?
 
@@ -29,6 +32,10 @@ struct QBTCGovernanceView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 32)
             } else if viewModel.loadFailed && viewModel.isEmpty {
+                // A refresh that fails *after* data already loaded keeps the
+                // last-good proposals on screen with no banner. Accepted for
+                // the PoC; a transient refresh-failure banner is a tracked
+                // follow-up rather than blocking here.
                 errorState
             } else if viewModel.isEmpty {
                 emptyState
@@ -42,6 +49,7 @@ struct QBTCGovernanceView: View {
                 tally: viewModel.tally(for: proposal),
                 params: viewModel.params,
                 myVote: viewModel.myVote(for: proposal),
+                canVote: canVote,
                 onVote: { choice in
                     selectedProposal = nil
                     onVote(proposal, choice)

@@ -483,6 +483,7 @@
 "governanceEmptyTitle" = "Nema prijedloga";
 "governanceErrorSubtitle" = "Povucite za osvježavanje da pokušate ponovno.";
 "governanceErrorTitle" = "Učitavanje prijedloga nije uspjelo";
+"governanceInsufficientBalanceForFee" = "Nema dovoljno QBTC-a za pokrivanje naknade za transakciju glasanja.";
 "governanceLessThanOneMinute" = "<1m";
 "governanceMessages" = "Poruke";
 "governanceNoVotesYet" = "Još nema glasova";
