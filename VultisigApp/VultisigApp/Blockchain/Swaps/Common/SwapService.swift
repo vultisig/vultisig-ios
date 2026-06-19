@@ -489,7 +489,13 @@ extension SwapService {
     /// a *temporary* condition the user can retry, distinct from a permanently
     /// unsupported pair, so it gets its own user-facing message rather than the
     /// generic "route not available" or a leaked raw upstream string.
-    private static let tradingHaltedMarkers = ["trading is halted", "trading halted"]
+    private static let tradingHaltedMarkers = [
+        "trading is halted",
+        "trading halted",
+        "trading paused",
+        "_trading_paused",
+        "is paused"
+    ]
 
     private static func isTradingHalted(_ message: String) -> Bool {
         tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
@@ -505,7 +511,11 @@ extension SwapService {
             return .tradingHalted
         }
         if error.code == 3 {
-            if error.message.contains("not enough asset to pay for fees") {
+            if error.message.contains("not enough asset to pay for fees") ||
+                error.message.localizedCaseInsensitiveContains("zero emit asset") {
+                // "zero emit asset" means the input is below the dust/fee
+                // threshold — the same class as "not enough asset to pay for
+                // fees", surfaced as the retry-with-more message.
                 return .swapAmountTooSmall
             } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
                 error.message.localizedCaseInsensitiveContains("bad to asset") ||
