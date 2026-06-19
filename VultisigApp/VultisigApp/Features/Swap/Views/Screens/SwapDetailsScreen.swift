@@ -364,10 +364,7 @@ struct SwapDetailsScreen: View {
             detailsViewModel.refreshData(vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .toolbar {
-            if !detailsViewModel.showFromChainSelector
-                && !detailsViewModel.showToChainSelector
-                && !detailsViewModel.showFromCoinSelector
-                && !detailsViewModel.showToCoinSelector {
+            if detailsViewModel.showPercentageButtons {
                 ToolbarItemGroup(placement: .keyboard) {
                     percentageButtons
 

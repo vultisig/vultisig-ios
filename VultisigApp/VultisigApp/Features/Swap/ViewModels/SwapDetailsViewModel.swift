@@ -108,6 +108,17 @@ final class SwapDetailsViewModel {
     var showToCoinSelector = false
     var showAllPercentageButtons = true
 
+    /// The keyboard percentage-button toolbar shows only when no selector or
+    /// sheet is covering the form — including the Advanced Settings sheet, so its
+    /// own input fields don't sit under the percentage row.
+    var showPercentageButtons: Bool {
+        !showFromChainSelector
+        && !showToChainSelector
+        && !showFromCoinSelector
+        && !showToCoinSelector
+        && !showAdvancedSettingsSheet
+    }
+
     init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
         self.interactor = interactor
     }

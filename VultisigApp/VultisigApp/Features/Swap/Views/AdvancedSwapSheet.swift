@@ -67,7 +67,7 @@ struct AdvancedSwapSheet: View {
         .presentationDragIndicator(.visible)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .background(Theme.colors.bgPrimary)
-        .animatedPresentationDetents(target: detent, alwaysAvailable: [.large])
+        .animatedPresentationDetents(target: detent, alwaysAvailable: [.medium])
     }
 
     private var detent: PresentationDetent {
@@ -203,7 +203,7 @@ struct AdvancedSwapSheetHeader: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
     }
 }
 
