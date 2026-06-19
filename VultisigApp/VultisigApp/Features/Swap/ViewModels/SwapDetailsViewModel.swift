@@ -125,6 +125,12 @@ final class SwapDetailsViewModel {
         toCoin = defaultToCoin
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
+        // Every swap session starts at default advanced settings. The screen owns
+        // a fresh VM per push so this is normally already `.default`, but resetting
+        // here makes the session start explicit and guaranteed even if the VM is
+        // reused. Guarded by `dataLoaded`, so it runs once per session, not on
+        // every re-render.
+        resetAdvancedSettings()
         dataLoaded = true
     }
 
@@ -296,11 +302,11 @@ final class SwapDetailsViewModel {
             fromChain != fromCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
         else { return }
-        // Switching the source chain starts a fresh swap — drop any custom
-        // slippage / gas limit / external recipient so it can't leak into the
-        // next quote. A gas-limit override is meaningless against a different
-        // source chain (Phase 5 reset semantics).
-        resetAdvancedSettings()
+        // A chain switch on its own does NOT reset the advanced settings: the
+        // reset is token-driven. Assigning `fromCoin` here fires the screen's
+        // `fromCoin` `onChange` → `updateFromCoin`, which performs the reset when
+        // the selected token actually changes. A chain change that doesn't change
+        // the token therefore leaves the settings intact (Phase 5 reset semantics).
         fromCoin = coin
         // Source changed via chain switch — keep `toCoins` / `toCoin` consistent
         // so the destination picker doesn't show stale options.
@@ -313,10 +319,11 @@ final class SwapDetailsViewModel {
             toChain != toCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: toChain, vault: vault)
         else { return }
-        // A new destination chain invalidates a recipient validated for the old
-        // one — reset the advanced settings so it can't carry over (Phase 5 reset
-        // semantics).
-        resetAdvancedSettings()
+        // A chain switch on its own does NOT reset the advanced settings — the
+        // reset is token-driven. Assigning `toCoin` here fires the screen's
+        // `toCoin` `onChange` → `updateToCoin`, which resets when the destination
+        // token actually changes. A chain change that leaves the token unchanged
+        // keeps the settings (Phase 5 reset semantics).
         toCoin = coin
     }
 
@@ -364,8 +371,10 @@ final class SwapDetailsViewModel {
         return resolved
     }
 
-    /// Reset advanced settings to defaults. Called when the swapped pair changes
-    /// so a custom slippage / gas limit / recipient never leaks across swaps.
+    /// Reset advanced settings to defaults. Called at session start (`load`) and
+    /// whenever a swapped TOKEN changes (from/to coin pick, flip) so a custom
+    /// slippage / gas limit / recipient never leaks across swaps. A chain switch
+    /// resets only via the resulting token change, never on its own.
     func resetAdvancedSettings() {
         advancedSettings = .default
     }

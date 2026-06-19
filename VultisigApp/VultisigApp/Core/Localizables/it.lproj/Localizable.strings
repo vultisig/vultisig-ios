@@ -812,6 +812,7 @@
 "rebondRequiresRune" = "REBOND richiede token RUNE su THORChain";
 "receive" = "Ricevi";
 "recipient" = "Destinatario";
+"recipientNameNotFound" = "Nome non trovato. Controlla il nome e riprova.";
 "redeem" = "Riscatta";
 "redeemCoin" = "Riscatta %@";
 "referral" = "Invito";
@@ -861,6 +862,7 @@
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareVault" = "Ricondividi la cassaforte con un nuovo comitato";
 "resharingLoaderTitle" = "Aggiungi dispositivi per includerli o escludili per rimuoverli dalla Cassaforte";
+"resolvingRecipientName" = "Risoluzione del nome…";
 "restart" = "Si prega di riavviare l'app per applicare le nuove impostazioni della lingua.";
 "retry" = "Riprova";
 "reviewYourVaultDevices" = "Controlla i dispositivi del tuo vault";

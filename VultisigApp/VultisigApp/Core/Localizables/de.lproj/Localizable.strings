@@ -812,6 +812,7 @@
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Empfangen";
 "recipient" = "Empfänger";
+"recipientNameNotFound" = "Name nicht gefunden. Überprüfen Sie den Namen und versuchen Sie es erneut.";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "referral" = "Empfehlung";
@@ -861,6 +862,7 @@
 "reshareLabelTitle" = "Teile deinen Tresor erneut";
 "reshareVault" = "Tresor mit neuen Geräten teilen";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
+"resolvingRecipientName" = "Name wird aufgelöst…";
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
 "retry" = "Erneut versuchen";
 "reviewYourVaultDevices" = "Überprüfe deine Tresor-Geräte";

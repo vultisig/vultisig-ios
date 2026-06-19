@@ -788,6 +788,7 @@
 "rebondRequiresRune" = "REBOND는 THORChain의 RUNE 토큰이 필요합니다";
 "receive" = "수신";
 "recipient" = "수신자";
+"recipientNameNotFound" = "이름을 찾을 수 없습니다. 이름을 확인하고 다시 시도해 주세요.";
 "redeem" = "상환";
 "redeemCoin" = "%@ 상환";
 "reEnterPassword" = "비밀번호 재입력";
@@ -838,6 +839,7 @@
 "reshareLabelTitle" = "볼트 재공유";
 "reshareVault" = "새 기기로 볼트 재공유";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
+"resolvingRecipientName" = "이름 확인 중…";
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";

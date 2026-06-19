@@ -819,6 +819,7 @@
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Receive";
 "recipient" = "Recipient";
+"recipientNameNotFound" = "Name not found. Check the name and try again.";
 "redeem" = "Redeem";
 "redeemCoin" = "Redeem %@";
 "reEnterPassword" = "Re-enter password";
@@ -869,6 +870,7 @@
 "reshareLabelTitle" = "Reshare your vault";
 "reshareVault" = "Reshare vault with new devices";
 "resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
+"resolvingRecipientName" = "Resolving name…";
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";

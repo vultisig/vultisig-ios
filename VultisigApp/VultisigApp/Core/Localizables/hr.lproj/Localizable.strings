@@ -812,6 +812,7 @@
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Primi";
 "recipient" = "Primatelj";
+"recipientNameNotFound" = "Naziv nije pronađen. Provjerite naziv i pokušajte ponovno.";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "referral" = "Preporuka";
@@ -861,6 +862,7 @@
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareVault" = "Ponovno podijelite sef s novim odborom";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
+"resolvingRecipientName" = "Razrješavanje naziva…";
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
 "retry" = "Pokušaj ponovo";
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";

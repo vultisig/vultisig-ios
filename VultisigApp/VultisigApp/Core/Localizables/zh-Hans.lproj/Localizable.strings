@@ -813,6 +813,7 @@
 "rebondRequiresRune" = "重新绑定需要在 THORChain 上有 RUNE 代币";
 "receive" = "接收";
 "recipient" = "接收方";
+"recipientNameNotFound" = "未找到名称。请检查名称后重试。";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "referral" = "推荐";
@@ -862,6 +863,7 @@
 "reshareLabelTitle" = "重新共享您的保险库";
 "reshareVault" = "使用新设备重新共享保险库";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
+"resolvingRecipientName" = "正在解析名称…";
 "restart" = "请重新启动应用程序以应用新的语言设置";
 "retry" = "重试";
 "reviewYourVaultDevices" = "检查你的保险库设备";
