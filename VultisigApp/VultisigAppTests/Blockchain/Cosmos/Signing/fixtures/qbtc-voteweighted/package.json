@@ -1,0 +1,15 @@
+{
+  "name": "qbtc-voteweighted-vector-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Independent cosmjs encoder that regenerates the QBTC weighted-vote cross-platform signing vector consumed by QBTCVoteWeightedVectorFixture.swift.",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "dependencies": {
+    "@cosmjs/crypto": "0.39.0",
+    "@cosmjs/encoding": "0.39.0",
+    "cosmjs-types": "0.11.0"
+  }
+}
