@@ -303,6 +303,8 @@
 "dappRequestFrom" = "Richiesta da";
 "date" = "Data";
 "decimalAmountError" = "L'importo deve essere decimale.";
+"decodeCustomMessagePayloadError" = "Errore durante la decodifica del payload del messaggio personalizzato: %@";
+"decodeKeysignMessageError" = "Errore durante la decodifica del messaggio di keysign: %@";
 "defiChainNoPositions" = "Nessuna posizione trovata";
 "defiChainPositionsCount" = "%d posizioni";
 "defiPortfolio" = "Portafoglio DeFi";
@@ -563,6 +565,7 @@
 "joinKeygenViewDescription" = "Il tuo vault inizierà a essere generato non appena completerai la configurazione sul tuo dispositivo principale.";
 "joinKeygenViewTitle" = "In attesa che altri dispositivi si uniscano";
 "joinKeysign" = "Partecipa a Keysign";
+"joinKeysignCommitteeFailed" = "Impossibile unirsi al comitato di keysign. Controlla la connessione e riprova.";
 "joinReshare" = "Unisciti alla ricondivisione";
 "joinSend" = "Unisciti a Invia";
 "joinSwap" = "Partecipa a Swap";
@@ -602,6 +605,8 @@
 "keysign" = "Firma Chiave";
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
+"keysignStartResponseError" = "Si è verificato un problema durante l'elaborazione della risposta di avvio del keysign. Riprova.";
+"keysignStartVerifyFailed" = "Impossibile verificare l'avvio del keysign. Errore: %@";
 "Korean" = "Coreano";
 "label" = "Etichetta";
 "language" = "Lingua";
@@ -695,6 +700,7 @@
 "nOfTotal" = "%d di %@";
 "noGasTokenFoundError" = "Token gas non trovato per la catena %@. Aggiungi il token nativo al tuo vault.";
 "noLiquidityPool" = "Nessun pool di liquidità disponibile per questa coppia di token. Questo asset potrebbe non essere supportato.";
+"noMessagesToSign" = "Non ci sono messaggi da firmare";
 "noPoolsAvailable" = "Nessuna pool disponibile";
 "noPositionsFound" = "Nessuna posizione trovata";
 "noPositionsSelectedSubtitle" = "Hai disabilitato tutte le posizioni per questa catena. Abilita almeno una posizione per visualizzare i saldi e gestire le azioni.";
@@ -784,6 +790,7 @@
 "Portuguese" = "Portoghese";
 "position" = "Posizione";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";
+"prepareKeysignMessagesFailed" = "Impossibile preparare i messaggi per il keysigning. Errore: %@";
 "preparingVaultText1" = "Sicurezza multifattoriale, ";
 "preparingVaultText2" = "eliminando il punto singolo di errore";
 "previewKeygenDescription" = "Scansiona con i dispositivi per unirsi alla generazione di Vault";

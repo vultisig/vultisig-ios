@@ -216,20 +216,25 @@ extension SwapKitService {
     /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
         if case let .evm(tx) = response.tx {
-            return evmNetworkFee(from: tx)
+            return evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken)
         }
         return inboundFeeFromWire(response: response, fromCoin: fromCoin)
     }
 
-    /// Realised EVM network fee = `gasPrice × gas` in wei, parsing the hex
-    /// `SwapKitEvmTx` fields exactly as the keysign path does. A zero/missing
-    /// `gas` falls back to `EVMHelper.defaultETHSwapGasUnit` so a route that
-    /// omits the limit still shows a representative fee instead of zero —
-    /// identical normalisation to `buildEVMQuoteFromSwapKit`.
-    func evmNetworkFee(from tx: SwapKitEvmTx) -> BigInt? {
+    /// EVM network fee = `gasPrice × gas` in wei, parsing the hex `SwapKitEvmTx`
+    /// fields. SwapKit's reported `tx.gas` is respected whenever it's present —
+    /// the same convention 1inch / Kyber / LI.FI use for their own `fee`. Only a
+    /// route that omits the limit (`gas == 0`) falls back to a default so the row
+    /// shows a representative fee instead of zero: native sources to the swap gas
+    /// unit, ERC-20 sources (which need a token approval) to the token-transfer
+    /// unit.
+    func evmNetworkFee(from tx: SwapKitEvmTx, isNativeSource: Bool) -> BigInt? {
         let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
         let parsedGas = BigInt(tx.gas.stripHexPrefix(), radix: 16) ?? .zero
-        let gas = parsedGas == .zero ? BigInt(EVMHelper.defaultETHSwapGasUnit) : parsedGas
+        let fallbackGas = isNativeSource
+            ? BigInt(EVMHelper.defaultETHSwapGasUnit)
+            : BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let gas = parsedGas == .zero ? fallbackGas : parsedGas
         let fee = gasPrice * gas
         return fee == .zero ? nil : fee
     }

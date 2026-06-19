@@ -305,6 +305,8 @@
 "dappRequestFrom" = "Request from";
 "date" = "Date";
 "decimalAmountError" = "The amount must be decimal.";
+"decodeCustomMessagePayloadError" = "Error decoding custom message payload: %@";
+"decodeKeysignMessageError" = "Error decoding keysign message: %@";
 "defiChainNoPositions" = "No positions found";
 "defiChainPositionsCount" = "%d positions";
 "defiPortfolio" = "DeFi Portfolio";
@@ -569,6 +571,7 @@
 "joinKeygenViewDescription" = "Your vault will start generating from the moment you finalize setting up your vault on your main device";
 "joinKeygenViewTitle" = "Waiting for other devices to join";
 "joinKeysign" = "Join Keysign";
+"joinKeysignCommitteeFailed" = "Failed to join the keysign committee. Please check your connection and try again.";
 "joinReshare" = "Join Reshare";
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
@@ -608,6 +611,8 @@
 "keysign" = "Keysign";
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
+"keysignStartResponseError" = "There was an issue processing the keysign start response. Please try again.";
+"keysignStartVerifyFailed" = "Failed to verify keysign start. Error: %@";
 "Korean" = "Korean";
 "label" = "Label";
 "language" = "Language";
@@ -702,6 +707,7 @@
 "nOfTotal" = "%d of %@";
 "noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
 "noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
+"noMessagesToSign" = "There are no messages to be signed";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "No positions found";
 "noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
@@ -791,6 +797,7 @@
 "Portuguese" = "Portuguese";
 "position" = "Position";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
+"prepareKeysignMessagesFailed" = "Failed to prepare messages for keysigning. Error: %@";
 "preparingVaultText1" = "Multi-factor security, ";
 "preparingVaultText2" = "removing the single-point of failure";
 "previewKeygenDescription" = "Scan with devices to join the vault generation";
