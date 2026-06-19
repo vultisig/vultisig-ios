@@ -86,7 +86,7 @@ enum CosmosStakingConfig {
         // balance preflight, validator bech32 preflight). `bondDenom` is
         // lowercase `qbtc` (8 decimals, NOT a micro-denom).
         //
-        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc-testnet are constant
+        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc are constant
         // / un-queryable ante values, so the fee floor is the flat `min_tx_fee`
         // (800) and the only dynamic dimension is the gas_limit. `gasLimit` is
         // 1_000_000: an on-device undelegate measured 401_486 gas (the prior
@@ -97,7 +97,7 @@ enum CosmosStakingConfig {
         // `feeAmount` is the 800 `min_tx_fee` floor (the prior 7_500 was the
         // carried-over generic Cosmos send default, ~9x the floor).
         .qbtc: Entry(
-            chainId: "qbtc-testnet",
+            chainId: QBTCChain.chainID,
             bondDenom: "qbtc",
             feeDenom: "qbtc",
             valoperHrp: "qbtcvaloper",
