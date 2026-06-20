@@ -38,6 +38,7 @@ struct SwapKitService {
         fromCoin: Coin,
         toCoin: Coin,
         amount: Decimal,
+        destinationAddress: String? = nil,
         slippagePercent: Double? = nil,
         affiliateFeeBps: Int
     ) async throws -> SwapKitRoute? {
@@ -69,12 +70,16 @@ struct SwapKitService {
         // Letting SwapKit pick the per-provider default works for every pair
         // we've spike-tested. Override only when surfacing a user-tuned
         // slippage tolerance through the UI in a later phase.
+        // Destination defaults to the user's own address; an external recipient
+        // (when set) is passed here so SwapKit AML-screens it at quote time and
+        // discovers routes that can deliver to it.
+        let resolvedDestination = destinationAddress ?? toCoin.address
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
             buyAsset: assetIdentifier(for: toCoin),
             sellAmount: Self.formatSellAmount(amount),
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
-            destinationAddress: toCoin.address.isEmpty ? nil : toCoin.address,
+            destinationAddress: resolvedDestination.isEmpty ? nil : resolvedDestination,
             slippage: slippagePercent,
             providers: nil,
             affiliateFee: affiliateFeeBps

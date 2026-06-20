@@ -206,6 +206,120 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.quote)
     }
 
+    // MARK: - Advanced-settings reset is TOKEN-driven, not chain-driven (leak prevention)
+    //
+    // A custom slippage / gas-limit / external recipient must never carry into
+    // the next swap. The reset fires on the TOKEN-level changes — a from/to coin
+    // pick and a flip. A chain switch does NOT reset on its own: it only resets
+    // via the resulting token change (the screen's fromCoin/toCoin `onChange` →
+    // updateFromCoin/updateToCoin). This avoids wiping a still-valid recipient
+    // when only the chain context changes without changing the selected token.
+
+    func testSwitchCoinsResetsAdvancedSettings() {
+        let vm = makeVM()
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromCoins = [vm.fromCoin]
+        vm.advancedSettings.slippage = .custom(bps: 300)
+        vm.advancedSettings.externalRecipient = "0xExternalRecipient"
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        // Empty amount keeps `fetchQuotes` from touching the network.
+        vm.switchCoins(vault: makeVault(), referredCode: "")
+
+        XCTAssertEqual(vm.advancedSettings, .default, "Flipping the pair must reset advanced settings")
+    }
+
+    func testUpdateFromCoinResetsAdvancedSettings() {
+        let vm = makeVM()
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromCoins = [vm.fromCoin]
+        vm.advancedSettings.gasLimit = 300_000
+        vm.advancedSettings.externalRecipient = "0xExternalRecipient"
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        // Picking a new source token resets — empty amount keeps it off-network.
+        vm.updateFromCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault(), referredCode: "")
+
+        XCTAssertEqual(vm.advancedSettings, .default, "Picking a new source token must reset advanced settings")
+    }
+
+    func testUpdateToCoinResetsAdvancedSettings() {
+        let vm = makeVM()
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.advancedSettings.slippage = .preset(bps: 100)
+        vm.advancedSettings.externalRecipient = "bc1qExternalRecipient"
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        // Picking a new destination token resets.
+        vm.updateToCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault(), referredCode: "")
+
+        XCTAssertEqual(vm.advancedSettings, .default, "Picking a new destination token must reset advanced settings")
+    }
+
+    func testHandleFromChainUpdateDoesNotResetAdvancedSettingsOnItsOwn() {
+        let vm = makeVM()
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromCoins = [vm.fromCoin]
+        var settings = SwapAdvancedSettings.default
+        settings.gasLimit = 300_000
+        settings.externalRecipient = "0xExternalRecipient"
+        vm.advancedSettings = settings
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        // Drive a real source-chain switch: target THORChain, with a matching
+        // native coin in the vault so `getDefaultCoin` resolves and the guard passes.
+        let vault = makeVault()
+        vault.coins.append(makeCoin(.thorChain, ticker: "RUNE"))
+        vm.fromChain = .thorChain
+
+        vm.handleFromChainUpdate(vault: vault)
+
+        XCTAssertEqual(vm.fromCoin.chain, .thorChain, "Precondition: the source chain actually changed")
+        // The handler must NOT reset on its own — the reset is token-driven and in
+        // the app fires via the resulting fromCoin `onChange` → updateFromCoin.
+        XCTAssertEqual(vm.advancedSettings, settings, "A chain switch alone must not reset advanced settings")
+    }
+
+    func testHandleToChainUpdateDoesNotResetAdvancedSettingsOnItsOwn() {
+        let vm = makeVM()
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        var settings = SwapAdvancedSettings.default
+        settings.slippage = .preset(bps: 100)
+        settings.externalRecipient = "bc1qExternalRecipient"
+        vm.advancedSettings = settings
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        let vault = makeVault()
+        vault.coins.append(makeCoin(.thorChain, ticker: "RUNE"))
+        vm.toChain = .thorChain
+
+        vm.handleToChainUpdate(vault: vault)
+
+        XCTAssertEqual(vm.toCoin.chain, .thorChain, "Precondition: the destination chain actually changed")
+        XCTAssertEqual(vm.advancedSettings, settings, "A chain switch alone must not reset advanced settings")
+    }
+
+    func testLoadResetsAdvancedSettingsAtSessionStart() {
+        let vm = makeVM()
+        var settings = SwapAdvancedSettings.default
+        settings.slippage = .custom(bps: 275)
+        settings.externalRecipient = "0xLeftoverRecipient"
+        vm.advancedSettings = settings
+        XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
+
+        let vault = makeVault()
+        vault.coins.append(makeCoin(.ethereum, ticker: "ETH", balance: "1"))
+
+        vm.load(initialFromCoin: nil, initialToCoin: nil, vault: vault)
+
+        XCTAssertEqual(vm.advancedSettings, .default, "A new swap session (load) must start at default advanced settings")
+    }
+
     // MARK: - Fixtures
 
     private func makeVM(interactor: SwapInteractor? = nil) -> SwapDetailsViewModel {
@@ -296,14 +410,14 @@ private final class MockSwapInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         guard let stubbedQuote else { return nil }
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }
-
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool { false }
 
     func fetchChainSpecific(
         fromCoin: Coin,

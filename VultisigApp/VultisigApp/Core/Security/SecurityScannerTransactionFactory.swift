@@ -41,6 +41,30 @@ struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProto
             throw SecurityScannerTransactionFactoryError.notSupported(chain: chain)
         }
     }
+
+    /// Build a scan that screens the swap's external recipient on the
+    /// DESTINATION chain (not the source-chain swap tx). Modelled as a native
+    /// transfer to the recipient so Blockaid flags a malicious/sanctioned
+    /// destination address. Only EVM destinations are modelled here — they are a
+    /// clean address-shaped scan; other chains rely on the provider's own
+    /// address screening (SwapKit AML; THOR/Maya require user-controlled
+    /// destinations). Throws `notSupported` when the destination chain can't be
+    /// screened this way so the caller can skip gracefully.
+    func createRecipientSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
+        let toCoin = transaction.toCoin
+        let chain = toCoin.chain
+        guard chain.chainType == .EVM else {
+            throw SecurityScannerTransactionFactoryError.notSupported(chain: chain)
+        }
+        return SecurityScannerTransaction(
+            chain: chain,
+            type: SecurityTransactionType.coinTransfer,
+            from: toCoin.address,
+            to: transaction.recipientAddress,
+            amount: BigInt.zero,
+            data: "0x"
+        )
+    }
 }
 
 // MARK: - Send Transactions

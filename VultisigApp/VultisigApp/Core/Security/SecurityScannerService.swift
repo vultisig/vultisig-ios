@@ -73,6 +73,10 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         return try await factory.createSecurityScanner(transaction: transaction)
     }
 
+    func createRecipientSecurityScannerTransaction(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
+        return try factory.createRecipientSecurityScanner(transaction: transaction)
+    }
+
     func getDisabledProviders() -> [String] {
         return Array(disabledProviderNames)
     }

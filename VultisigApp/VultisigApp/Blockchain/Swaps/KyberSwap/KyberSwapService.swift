@@ -20,9 +20,13 @@ struct KyberSwapService {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
 
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, affiliateBps: Int) async throws -> (quote: EVMQuote, fee: BigInt?) {
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, affiliateBps: Int, slippageBps: Int? = nil) async throws -> (quote: EVMQuote, fee: BigInt?) {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
+
+        // KyberSwap takes slippage in bps. `Auto` (nil) keeps the existing
+        // 100 bps (1%) default; a custom value is forwarded verbatim.
+        let slippageTolerance = slippageBps ?? Self.defaultSlippageToleranceBps
 
         let params = KyberSwapAPI.RouteParams(
             tokenIn: sourceAddress,
@@ -30,7 +34,7 @@ struct KyberSwapService {
             amountIn: amount,
             saveGas: false,
             gasInclude: true,
-            slippageTolerance: 100,
+            slippageTolerance: slippageTolerance,
             affiliateBps: affiliateBps,
             sourceIdentifier: affiliateBps > 0 ? KyberSwapService.sourceIdentifier : nil,
             referrerAddress: affiliateBps > 0 ? KyberSwapService.referrerAddress : nil
@@ -45,9 +49,14 @@ struct KyberSwapService {
             chain: chain,
             routeResponse: routeResponse,
             from: from,
-            affiliateBps: affiliateBps
+            affiliateBps: affiliateBps,
+            slippageTolerance: slippageTolerance
         )
     }
+
+    /// Default slippage tolerance (basis points) sent to KyberSwap when the user
+    /// keeps `Auto`. 100 bps = 1%.
+    static let defaultSlippageToleranceBps = 100
 
     /// Performs a request and routes the body through `decodeKyberResponse`.
     /// `KyberSwapAPI` only whitelists 200/400, so 5xx responses arrive as
@@ -98,7 +107,8 @@ struct KyberSwapService {
         chain: String,
         routeResponse: KyberSwapRouteResponse,
         from: String,
-        affiliateBps: Int
+        affiliateBps: Int,
+        slippageTolerance: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
         // First attempt with gas estimation enabled
         do {
@@ -107,7 +117,8 @@ struct KyberSwapService {
                 routeResponse: routeResponse,
                 from: from,
                 enableGasEstimation: true,
-                affiliateBps: affiliateBps
+                affiliateBps: affiliateBps,
+                slippageTolerance: slippageTolerance
             )
         } catch let KyberSwapError.transactionWillRevert(message) where message.contains("TransferHelper") {
             // TransferHelper error likely due to insufficient allowance during gas estimation
@@ -117,7 +128,8 @@ struct KyberSwapService {
                 routeResponse: routeResponse,
                 from: from,
                 enableGasEstimation: false,
-                affiliateBps: affiliateBps
+                affiliateBps: affiliateBps,
+                slippageTolerance: slippageTolerance
             )
         }
     }
@@ -127,13 +139,14 @@ struct KyberSwapService {
         routeResponse: KyberSwapRouteResponse,
         from: String,
         enableGasEstimation: Bool,
-        affiliateBps: Int
+        affiliateBps: Int,
+        slippageTolerance: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
         let buildPayload = KyberSwapBuildRequest(
             routeSummary: routeResponse.data.routeSummary,
             sender: from,
             recipient: from,
-            slippageTolerance: 100,
+            slippageTolerance: slippageTolerance,
             deadline: Int(Date().timeIntervalSince1970) + 1200,
             enableGasEstimation: enableGasEstimation,
             source: KyberSwapService.sourceIdentifier,

@@ -29,6 +29,8 @@
 "addVaultsToFolder" = "폴더에 추가할 볼트 선택";
 "advanced" = "고급";
 "advancedDescription" = "재공유, 보안 관리 또는 메시지 서명.";
+"advancedSettings" = "고급 설정";
+"advancedSwap" = "고급 스왑";
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
@@ -65,6 +67,7 @@
 "asymmetricDepositInfo" = "CACAO 또는 자산만 입금할 수 있습니다. Maya가 자동으로 포지션을 조정합니다.";
 "atLeastOneDevice" = "기기 최소 1개";
 "atLeastOneDeviceSubtitle" = "Vultisig를 실행할 수 있는 기기라면 모두 가능합니다.";
+"auto" = "자동";
 "autocompounderInfo" = "자동 복리 정보";
 "available" = "사용 가능";
 "availableLPUnits" = "사용 가능한 LP 단위";
@@ -459,6 +462,7 @@
 "functionTransactionScreenErrorTitle" = "함수 오류";
 "gas" = "가스";
 "gasBudget" = "가스 예산";
+"gasLimit" = "가스 한도";
 "gasOwner" = "가스 소유자";
 "gasPrice" = "가스 가격";
 "general" = "일반";
@@ -682,6 +686,7 @@
 "notWhitelistedOnNode" = "이 노드에서 화이트리스트에 등록되지 않았습니다";
 "noVaultsFoundInZip" = "ZIP 파일에서 볼트를 찾을 수 없습니다.";
 "of" = "/";
+"off" = "끄기";
 "ok" = "확인";
 "on" = "켜짐";
 "OnboardingCard1Text1" = "새로운 ";
@@ -789,6 +794,8 @@
 "rebondNote" = "참고: REBOND 트랜잭션은 0 RUNE을 전송해야 합니다. 위 금액은 메모에만 포함됩니다.";
 "rebondRequiresRune" = "REBOND는 THORChain의 RUNE 토큰이 필요합니다";
 "receive" = "수신";
+"recipient" = "수신자";
+"recipientNameNotFound" = "이름을 찾을 수 없습니다. 이름을 확인하고 다시 시도해 주세요.";
 "redeem" = "상환";
 "redeemCoin" = "%@ 상환";
 "reEnterPassword" = "비밀번호 재입력";
@@ -839,6 +846,7 @@
 "reshareLabelTitle" = "볼트 재공유";
 "reshareVault" = "새 기기로 볼트 재공유";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
+"resolvingRecipientName" = "이름 확인 중…";
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";
@@ -911,6 +919,8 @@
 "selectDestinationChain" = "목적지 체인 선택";
 "selectPositions" = "포지션 선택";
 "selectPositionsSubtitle" = "잔액을 보고 포지션을 관리하려면 하나 이상의 포지션을 활성화하세요.";
+"selectRoute" = "경로 선택";
+"selectRouteHelper" = "출력 금액 기준으로 정렬된 경로입니다. 경로를 선택하면 자동 설정이 재정의됩니다.";
 "selectSecuredAssetToSeeBalance" = "사용 가능한 잔액을 보려면 보안 자산을 선택하세요.";
 "selectSecuredAssetToWithdraw" = "출금할 보안 자산 선택";
 "selectToken" = "토큰 선택";
@@ -927,6 +937,7 @@
 "sendingRightAddressCheck" = "올바른 주소로 전송 중입니다";
 "sendOverview" = "전송 개요";
 "sendTo" = "보내기";
+"sendToDifferentAddress" = "다른 주소로 전송";
 "serverBackup" = "서버 백업";
 "serverBackupDescription" = "서버 볼트 공유를 다시 요청하세요.";
 "serverBackupTitle" = "서버 백업";
@@ -964,6 +975,9 @@
 "signTransaction" = "트랜잭션 서명";
 "skip" = "건너뛰기";
 "slippage" = "슬리피지";
+"slippageHelperText" = "실행이 취소되기 전에 가격이 변동할 수 있는 한도를 제한합니다.";
+"slippageMaxNote" = "슬리피지는 %@로 제한됩니다.";
+"slippageTolerance" = "슬리피지 허용치";
 "somethingsWrong" = "문제가 발생했습니다";
 "somethingWentWrongTryAgain" = "오류가 발생했습니다. 다시 시도하세요.";
 "sourceValidator" = "출발 검증인";
@@ -1000,11 +1014,14 @@
 "swap.duration.instant" = "즉시";
 "swap.outbound_fee" = "아웃바운드 수수료";
 "swap.price_impact" = "가격 영향";
+"swap.price_impact.average" = "보통";
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
 "swap.referral_discount" = "추천 (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 면제)";
+"swapAdvancedSettingsLockedSubtitle" = "모든 스왑에 대해 슬리피지, 가스, 경로, 수신자를 세밀하게 조정하세요.";
+"swapAdvancedSettingsLockedTitle" = "고급 스왑 설정";
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";
@@ -1042,8 +1059,9 @@
 "swapKitStatusRefundedReason" = "스왑이 원래 주소로 환불되었습니다";
 "swapKitViewOnTracker" = "SwapKit 추적기에서 보기";
 "swapOverview" = "스왑 개요";
-"swapProviderRecommended" = "추천";
-"swapProvidersSheetTitle" = "공급자 선택";
+"swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
+"swapRecipientVerificationFailed" = "스왑이 선택한 수신자에게 전달되는지 확인할 수 없어 서명 전에 중단되었습니다. 다시 시도해 주세요.";
+"swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
 "swapTrackingLink" = "스왑 추적 링크";
@@ -1164,6 +1182,7 @@
 "uploadQRCodeImageKeygen" = "키젠 참여를 위한 QR 코드 업로드";
 "uploadQRCodeImageKeysign" = "키사인 참여를 위한 QR 코드 업로드";
 "useDifferentEmail" = "다른 이메일 사용";
+"useExternalRecipient" = "외부 수신자 사용";
 "useLocalMode" = "로컬 모드 사용";
 "usePassword" = "비밀번호 사용";
 "useStandardMode" = "표준 모드 사용";

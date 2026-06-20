@@ -49,7 +49,15 @@ class SecurityScannerViewModel: ObservableObject {
     }
 
     func scan(transaction: SwapTransaction) async {
-        guard isScanningAvailable(for: transaction.fromCoin.chain) else { return }
+        guard isScanningAvailable(for: transaction.fromCoin.chain) else {
+            // The source-chain swap tx can't be scanned, but an external
+            // recipient on a screenable destination chain still must be — fall
+            // through to a recipient-only scan instead of returning unscanned.
+            if transaction.hasExternalRecipient {
+                await scanRecipientOnly(transaction: transaction)
+            }
+            return
+        }
         await scan(transactionType: .swap(transaction))
     }
 
@@ -64,7 +72,18 @@ class SecurityScannerViewModel: ObservableObject {
             }
             await update(state: .scanning)
 
-            let result = try await service.scanTransaction(tx)
+            var result = try await service.scanTransaction(tx)
+
+            // Safety net (HIGH tier): when an external recipient is set, also
+            // screen the recipient on the destination chain and keep the worse
+            // of the two results so a flagged recipient blocks signing even if
+            // the source-chain swap tx itself scans clean.
+            if case let .swap(swapTransaction) = transactionType,
+               swapTransaction.hasExternalRecipient,
+               let recipientResult = await scanRecipient(transaction: swapTransaction) {
+                result = Self.lessSecure(result, recipientResult)
+            }
+
             await update(state: .scanned(result))
         } catch {
             if case let SecurityScannerError.notScanned(provider) = error {
@@ -73,6 +92,41 @@ class SecurityScannerViewModel: ObservableObject {
                 await update(state: .idle)
             }
         }
+    }
+
+    /// Recipient-only scan path, used when the source-chain swap tx itself
+    /// isn't screenable but the external recipient's destination chain is.
+    private func scanRecipientOnly(transaction: SwapTransaction) async {
+        await update(state: .scanning)
+        guard let result = await scanRecipient(transaction: transaction) else {
+            await update(state: .idle)
+            return
+        }
+        await update(state: .scanned(result))
+    }
+
+    /// Screen the external recipient on the destination chain. Returns `nil`
+    /// (don't degrade the overall verdict) when the destination chain can't be
+    /// screened or the scan provider is unavailable — the provider-side AML
+    /// screening (SwapKit) and the on-device output-target verification remain
+    /// the backstops in that case.
+    private func scanRecipient(transaction: SwapTransaction) async -> SecurityScannerResult? {
+        guard isScanningAvailable(for: transaction.toCoin.chain) else { return nil }
+        do {
+            let tx = try service.createRecipientSecurityScannerTransaction(transaction: transaction)
+            return try await service.scanTransaction(tx)
+        } catch {
+            return nil
+        }
+    }
+
+    /// The less-secure of two scan results: an insecure result always wins, and
+    /// among insecure results the higher risk level wins.
+    static func lessSecure(_ lhs: SecurityScannerResult, _ rhs: SecurityScannerResult) -> SecurityScannerResult {
+        if lhs.isSecure != rhs.isSecure {
+            return lhs.isSecure ? rhs : lhs
+        }
+        return lhs.riskLevel.severity >= rhs.riskLevel.severity ? lhs : rhs
     }
 
     func isScanningAvailable(for chain: Chain) -> Bool {
