@@ -299,6 +299,8 @@
 "customTokenErrorSubtitle" = "가능한 이유: 잘못된 계약, 지원되지 않는 체인 또는 레지스트리에서 제거된 토큰.";
 "dappRequestFrom" = "요청 출처";
 "date" = "날짜";
+"decodeCustomMessagePayloadError" = "사용자 지정 메시지 페이로드를 디코딩하는 중 오류가 발생했습니다: %@";
+"decodeKeysignMessageError" = "Keysign 메시지를 디코딩하는 중 오류가 발생했습니다: %@";
 "defiChainNoPositions" = "포지션을 찾을 수 없습니다";
 "defiChainPositionsCount" = "포지션 %d개";
 "defiPortfolio" = "DeFi 포트폴리오";
@@ -519,6 +521,7 @@
 "joinKeygenViewDescription" = "메인 기기에서 볼트 설정을 완료하는 순간부터 볼트 생성이 시작됩니다";
 "joinKeygenViewTitle" = "다른 기기가 참여하기를 기다리는 중";
 "joinKeysign" = "키사인 참여";
+"joinKeysignCommitteeFailed" = "Keysign 위원회 참여에 실패했습니다. 연결을 확인한 후 다시 시도하세요.";
 "joinReshare" = "재공유 참여";
 "joinSend" = "전송 참여";
 "joinSwap" = "스왑 참여";
@@ -558,6 +561,8 @@
 "keysign" = "키사인";
 "keysignDiscoveryDisclaimer" = "QR 코드를 스캔하여 트랜잭션에 서명하세요. ";
 "keysignDiscoveryDisclaimerDevice" = "기기 스캔이 필요합니다.";
+"keysignStartResponseError" = "Keysign 시작 응답을 처리하는 중 문제가 발생했습니다. 다시 시도하세요.";
+"keysignStartVerifyFailed" = "Keysign 시작 확인에 실패했습니다. 오류: %@";
 "Korean" = "한국어";
 "label" = "라벨";
 "language" = "언어";
@@ -652,6 +657,7 @@
 "nOfTotal" = "%d / %@";
 "noGasTokenFoundError" = "%@ 체인에 대한 가스 토큰을 찾을 수 없습니다. 볼트에 네이티브 토큰을 추가하세요.";
 "noLiquidityPool" = "이 토큰 쌍에 사용할 수 있는 유동성 풀이 없습니다. 이 자산은 지원되지 않을 수 있습니다.";
+"noMessagesToSign" = "서명할 메시지가 없습니다";
 "noPoolsAvailable" = "사용 가능한 풀 없음";
 "noPositionsFound" = "포지션을 찾을 수 없습니다";
 "noPositionsSelectedSubtitle" = "이 체인의 모든 포지션을 비활성화했습니다. 잔액을 보고 작업을 관리하려면 하나 이상의 포지션을 활성화하세요.";
@@ -742,6 +748,7 @@
 "Portuguese" = "포르투갈어";
 "position" = "포지션";
 "positiveAmountError" = "금액은 양수여야 합니다. 다시 시도하세요.";
+"prepareKeysignMessagesFailed" = "Keysigning을 위한 메시지 준비에 실패했습니다. 오류: %@";
 "preparingVaultText1" = "다중 요소 보안, ";
 "preparingVaultText2" = "단일 실패 지점 제거";
 "previewKeygenDescription" = "기기로 스캔하여 볼트 생성에 참여";

@@ -30,11 +30,14 @@ struct TransactionStatusHeaderView: View {
             updateAnimation()
         }
         .onLoad {
-            pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
+            // `autoPlay: true` so each animation starts when its Rive view
+            // mounts — including the seed status, which never triggers
+            // `.onChange` and so would otherwise sit on a blank first frame.
+            pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: true)
             pendingAnimationVM?.fit = .contain
-            successAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: false)
+            successAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
             successAnimationVM?.fit = .contain
-            errorAnimationVM = RiveViewModel(fileName: "transaction_error", autoPlay: false)
+            errorAnimationVM = RiveViewModel(fileName: "transaction_error", autoPlay: true)
             errorAnimationVM?.fit = .contain
         }
     }

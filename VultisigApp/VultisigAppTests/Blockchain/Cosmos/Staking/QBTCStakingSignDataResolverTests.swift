@@ -30,7 +30,12 @@ final class QBTCStakingSignDataResolverTests: XCTestCase {
         static let denom = "qbtc"
         static let amount = "100000000" // 1 QBTC at 8 decimals
         static let delegatorAddress = "qbtc1delegator00000000000000000000000000000"
-        static let chainId = "qbtc-testnet"
+        // Tracks the production `CosmosStakingConfig` chain-id (QBTC mainnet).
+        // `testChainIdComesFromQBTCConfigEntry` asserts the resolved
+        // `signDirect.chainID` equals this; it is NOT a recorded signing vector
+        // (the SignDoc-hash tests derive their hash from `signDirect.chainID`
+        // directly, so they self-adjust).
+        static let chainId = "qbtc"
         static let mldsaPubKeyTypeURL = "/cosmos.crypto.mldsa.PubKey"
         // ~1312-byte ML-DSA-44 pubkey — far larger than secp256k1's 33 bytes;
         // a deterministic all-0xAB fill keeps the AuthInfo bytes stable.

@@ -138,6 +138,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "Einzahlungsreife konnte nicht überprüft werden. Bitte später erneut versuchen.";
 "cancel" = "Abbrechen";
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
+"cardanoMinimumSendAmountError" = "Der Mindestsendebetrag beträgt %@ ADA. Cardano benötigt dies, damit das Netzwerk deine Transaktion nicht verwirft.";
 "cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
 "chain" = "Blockchain";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";
@@ -305,6 +306,8 @@
 "dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
 "decimalAmountError" = "Der Betrag muss eine Dezimalzahl sein.";
+"decodeCustomMessagePayloadError" = "Fehler beim Dekodieren der benutzerdefinierten Nachrichten-Payload: %@";
+"decodeKeysignMessageError" = "Fehler beim Dekodieren der Keysign-Nachricht: %@";
 "defiChainNoPositions" = "Keine Positionen gefunden";
 "defiChainPositionsCount" = "%d Positionen";
 "defiPortfolio" = "DeFi Portfolio";
@@ -523,6 +526,7 @@
 "joinKeygenViewDescription" = "Dein Vault wird ab dem Moment generiert, in dem du die Einrichtung deines Vaults auf deinem Hauptgerät abschließt.";
 "joinKeygenViewTitle" = "Warten auf den Beitritt weiterer Geräte";
 "joinKeysign" = "Keysign beitreten";
+"joinKeysignCommitteeFailed" = "Beitritt zum Keysign-Komitee fehlgeschlagen. Bitte überprüfe deine Verbindung und versuche es erneut.";
 "joinReshare" = "Erneutem Teilen beitreten";
 "joinSend" = "Senden beitreten";
 "joinSwap" = "Tausch beitreten";
@@ -562,6 +566,8 @@
 "keysign" = "Schlüsselsignatur";
 "keysignDiscoveryDisclaimer" = "Scanne den QR-Code, um die Transaktion zu signieren.";
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
+"keysignStartResponseError" = "Bei der Verarbeitung der Keysign-Startantwort ist ein Problem aufgetreten. Bitte versuche es erneut.";
+"keysignStartVerifyFailed" = "Verifizierung des Keysign-Starts fehlgeschlagen. Fehler: %@";
 "Korean" = "Koreanisch";
 "label" = "Etikett";
 "language" = "Sprache";
@@ -655,6 +661,7 @@
 "nOfTotal" = "%d von %@";
 "noGasTokenFoundError" = "Kein Gas-Token für %@ Chain gefunden. Bitte füge den nativen Token zu deinem Vault hinzu.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
+"noMessagesToSign" = "Es gibt keine zu signierenden Nachrichten";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "Keine Positionen gefunden";
 "noPositionsSelectedSubtitle" = "Sie haben alle Positionen für diese Kette deaktiviert. Aktivieren Sie mindestens eine Position, um Guthaben anzuzeigen und Aktionen zu verwalten.";
@@ -745,6 +752,7 @@
 "Portuguese" = "Portugiesisch";
 "position" = "Position";
 "positiveAmountError" = "Die Menge muss eine positive Zahl sein. Versuche es erneut.";
+"prepareKeysignMessagesFailed" = "Vorbereiten der Nachrichten für das Keysigning fehlgeschlagen. Fehler: %@";
 "preparingVaultText1" = "Mehrfaktor-Sicherheit, ";
 "preparingVaultText2" = "eliminiert den Single Point of Failure";
 "previewKeygenDescription" = "Scannen Sie mit Geräten, um der Tresorgenerierung beizutreten";

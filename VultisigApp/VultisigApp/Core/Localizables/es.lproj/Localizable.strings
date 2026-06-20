@@ -138,6 +138,7 @@
 "cacaoUnstakeMaturityUnknownMessage" = "No se pudo verificar la madurez del depósito. Inténtalo de nuevo más tarde.";
 "cancel" = "Cancelar";
 "canLoseFundsPrompt" = "Soy consciente de que puedo perder fondos.";
+"cardanoMinimumSendAmountError" = "El importe mínimo de envío es %@ ADA. Cardano lo exige para evitar que la red descarte tu transacción.";
 "cardanoOutputBelowMinAda" = "No hay suficiente ADA para cubrir la tarifa de red y el requisito mínimo de UTXO de Cardano (~1,4 ADA por salida). Envía más ADA a este vault primero.";
 "chain" = "Cadena";
 "chainNotAdded" = "Cadena No Añadida";
@@ -305,6 +306,8 @@
 "dappRequestFrom" = "Solicitud de";
 "date" = "Fecha";
 "decimalAmountError" = "El monto debe ser decimal.";
+"decodeCustomMessagePayloadError" = "Error al decodificar el contenido del mensaje personalizado: %@";
+"decodeKeysignMessageError" = "Error al decodificar el mensaje de keysign: %@";
 "defiChainNoPositions" = "No se encontraron posiciones";
 "defiChainPositionsCount" = "%d posiciones";
 "defiPortfolio" = "Portafolio DeFi";
@@ -523,6 +526,7 @@
 "joinKeygenViewDescription" = "Tu vault comenzará a generarse en cuanto completes la configuración en tu dispositivo principal.";
 "joinKeygenViewTitle" = "Esperando que otros dispositivos se unan";
 "joinKeysign" = "Unirse a Keysign";
+"joinKeysignCommitteeFailed" = "No se pudo unir al comité de keysign. Comprueba tu conexión e inténtalo de nuevo.";
 "joinReshare" = "Unirse al compartir";
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
@@ -562,6 +566,8 @@
 "keysign" = "Firma de Clave";
 "keysignDiscoveryDisclaimer" = "Escanea el código QR para firmar la transacción.";
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
+"keysignStartResponseError" = "Hubo un problema al procesar la respuesta de inicio de keysign. Inténtalo de nuevo.";
+"keysignStartVerifyFailed" = "No se pudo verificar el inicio de keysign. Error: %@";
 "Korean" = "Coreano";
 "label" = "Etiqueta";
 "language" = "Idioma";
@@ -655,6 +661,7 @@
 "nOfTotal" = "%d de %@";
 "noGasTokenFoundError" = "No se encontró token de gas para la cadena %@. Por favor agrega el token nativo a tu vault.";
 "noLiquidityPool" = "No hay pool de liquidez disponible para este par de tokens. Este activo puede no estar soportado.";
+"noMessagesToSign" = "No hay mensajes para firmar";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "No se encontraron posiciones";
 "noPositionsSelectedSubtitle" = "Has deshabilitado todas las posiciones para esta cadena. Habilita al menos una posición para ver saldos y administrar acciones.";
@@ -745,6 +752,7 @@
 "Portuguese" = "Portugués";
 "position" = "Posición";
 "positiveAmountError" = "La cantidad debe ser un número positivo. Intenta de nuevo.";
+"prepareKeysignMessagesFailed" = "No se pudieron preparar los mensajes para el keysigning. Error: %@";
 "preparingVaultText1" = "Seguridad multifactor, ";
 "preparingVaultText2" = "eliminando el punto único de fallo";
 "previewKeygenDescription" = "Escanee con dispositivos para unirse a la generación de bóveda";

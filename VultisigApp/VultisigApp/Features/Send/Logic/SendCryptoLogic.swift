@@ -93,6 +93,21 @@ enum SendCryptoLogic {
         return remainingBalance > .zero && remainingBalance < existentialDeposit
     }
 
+    /// Some chains enforce a protocol minimum value on every output (e.g.
+    /// Cardano's ~1.4 ADA UTXO floor). A native send below the chain's floor is
+    /// accepted by the wallet but silently dropped by the node, so block it
+    /// here — before the keysign ceremony — to match Android. Token sends carry
+    /// their own floor on the bundled output and are exempt. `amount` is the
+    /// recipient output in both cases — for MAX sends `computeMaxAmount` already
+    /// nets out the fee — so this also blocks a MAX send when the whole vault
+    /// holds less than the floor.
+    static func isBelowMinimumSendAmount(coin: Coin, amount: String) -> Bool {
+        guard coin.isNativeToken, let minimum = coin.chain.minimumSendAmount else {
+            return false
+        }
+        return amountInRaw(coin: coin, amount: amount) < minimum
+    }
+
     /// A send is a "deposit" (memo-bearing function call) iff the memo
     /// dictionary carries entries AND the chain supports memos. UTXO, Ripple,
     /// and Solana sends never carry function-call memos in this flow.

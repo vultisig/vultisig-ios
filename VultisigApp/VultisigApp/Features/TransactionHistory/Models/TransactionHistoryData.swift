@@ -148,7 +148,14 @@ extension TransactionHistoryData {
               let hash = tracking.broadcastHash, !hash.isEmpty else {
             return nil
         }
-        return URL(string: "https://track.swapkit.dev/?hash=\(hash)")
+        // Append the SwapKit chainId so the tracker resolves the hash on the
+        // right chain; fall back to hash-only for chains it doesn't map.
+        let base = "https://track.swapkit.dev/?hash=\(hash)"
+        guard let chain = Chain(rawValue: chainRawValue),
+              let chainId = SwapKitChainIdentifier.chainId(for: chain) else {
+            return URL(string: base)
+        }
+        return URL(string: "\(base)&chainId=\(chainId)")
     }
 }
 
