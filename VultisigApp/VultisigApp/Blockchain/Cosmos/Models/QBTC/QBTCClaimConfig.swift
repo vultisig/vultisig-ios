@@ -8,8 +8,17 @@
 
 import Foundation
 
+/// Single source of truth for the QBTC Cosmos chain-id, shared by the claim,
+/// staking, and signing paths. QBTC reached mainnet, so the chain-id is `qbtc`
+/// (the prior `qbtc-testnet` value is no longer used in production). NOTE: this
+/// is the chain-**id**, distinct from the bech32 HRP / denom / logo string which
+/// is also `"qbtc"` but unrelated and defined elsewhere.
+enum QBTCChain {
+    static let chainID = "qbtc"
+}
+
 enum QBTCClaimConfig {
-    static let chainId = "qbtc-testnet"
+    static let chainId = QBTCChain.chainID
 
     static let msgClaimWithProofTypeURL = "/qbtc.qbtc.v1.MsgClaimWithProof"
     static let mldsaPubKeyTypeURL = "/cosmos.crypto.mldsa.PubKey"
