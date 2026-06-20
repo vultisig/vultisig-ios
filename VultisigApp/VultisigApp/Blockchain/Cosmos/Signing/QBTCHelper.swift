@@ -30,7 +30,7 @@ struct QBTCHelper {
 
     static func create() -> QBTCHelper {
         QBTCHelper(
-            chainID: "qbtc-testnet",
+            chainID: QBTCChain.chainID,
             denom: "qbtc",
             gasLimit: 300_000
         )

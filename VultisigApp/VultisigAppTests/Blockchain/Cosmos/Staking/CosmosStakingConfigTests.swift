@@ -82,7 +82,7 @@ final class CosmosStakingConfigTests: XCTestCase {
         XCTAssertEqual(entry.unbondingDays, 21)
     }
 
-    // MARK: - QBTC (qbtc-testnet) contract
+    // MARK: - QBTC (qbtc) contract
 
     func testIsStakingSupportedTrueForQBTC() {
         XCTAssertTrue(CosmosStakingConfig.isStakingSupported(.qbtc))
@@ -90,15 +90,15 @@ final class CosmosStakingConfigTests: XCTestCase {
 
     func testQBTCEntryMatchesContract() throws {
         let entry = try CosmosStakingConfig.entry(for: .qbtc)
-        XCTAssertEqual(entry.chainId, "qbtc-testnet")
+        XCTAssertEqual(entry.chainId, "qbtc")
         // `qbtc` is lowercase and NOT a micro-denom (8 decimals) — verified on
-        // the live qbtc-testnet LCD `staking/params.bond_denom`.
+        // the live qbtc LCD `staking/params.bond_denom`.
         XCTAssertEqual(entry.bondDenom, "qbtc")
         XCTAssertEqual(entry.feeDenom, "qbtc")
         XCTAssertEqual(entry.valoperHrp, "qbtcvaloper")
         // gasLimit 1_000_000: on-device undelegate measured 401_486 gas (the
         // prior 400_000 OoG'd it), redelegate is heavier, and block.max_gas is
-        // -1 (unlimited). feeAmount 800 is the qbtc-testnet `min_tx_fee` floor;
+        // -1 (unlimited). feeAmount 800 is the qbtc `min_tx_fee` floor;
         // since `min_gas_price` is 0 the higher gas budget does not raise the fee.
         XCTAssertEqual(entry.gasLimit, 1_000_000)
         XCTAssertEqual(entry.feeAmount, 800)
