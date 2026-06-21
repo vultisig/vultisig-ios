@@ -18,7 +18,7 @@ than a self-referential lock on iOS's own hand-rolled encoder.
 
 Semantic inputs are documented at the top of `generate.mjs` and mirror the
 fixture: proposal 42, voter `qbtc1voter0…`, YES=0.7 / ABSTAIN=0.3 (18-dec
-LegacyDec), ML-DSA-44 pubkey `0xAB × 1312`, chain `qbtc-testnet`,
+LegacyDec), ML-DSA-44 pubkey `0xAB × 1312`, chain `qbtc`,
 account 100, sequence 7, fee `800 qbtc`, gas 300000, SIGN_MODE_DIRECT, fake
 signature `deadbeef01020304`.
 

@@ -29,7 +29,7 @@
 //  Inputs:
 //    voter        = "qbtc1voter00000000000000000000000000000000"
 //    mldsaPubKey  = 0xAB x 1312
-//    chainId      = "qbtc-testnet"
+//    chainId      = "qbtc"  (QBTCChain.chainID — mainnet, per #4613/#4614)
 //    proposalId   = 42
 //    options      = YES=0.7, ABSTAIN=0.3  (canonical 18-dec LegacyDec strings)
 //    sequence     = 7, accountNumber = 100
@@ -38,14 +38,14 @@
 enum QBTCVoteWeightedVector {
     static let voter = "qbtc1voter00000000000000000000000000000000"
     static let mldsaPubKeyHex = String(repeating: "ab", count: 1312)
-    static let chainID = "qbtc-testnet"
+    static let chainID = "qbtc"
 
     /// The memo the weighted-vote UI emits for proposal 42, YES=0.7 ABSTAIN=0.3.
     static let memo = "QBTC_VOTEW:42:YES=0.7,ABSTAIN=0.3"
 
     static let bodyBytesB64 = "CokBCiMvY29zbW9zLmdvdi52MWJldGExLk1zZ1ZvdGVXZWlnaHRlZBJiCCoSKnFidGMxdm90ZXIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMBoYCAESFDAuNzAwMDAwMDAwMDAwMDAwMDAwGhgIAhIUMC4zMDAwMDAwMDAwMDAwMDAwMDA="
     static let authInfoBytesB64 = "Cs4KCsMKChsvY29zbW9zLmNyeXB0by5tbGRzYS5QdWJLZXkSowoKoAqrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urEgQKAggBGAcSEQoLCgRxYnRjEgM4MDAQ4KcS"
-    static let signDocSHA256Hex = "ccfd8e7c6455ce8fc4ae9918fdc83b7a1847e2b04082d2a69ca5ee7ce230af50"
+    static let signDocSHA256Hex = "09d6d99094783699d89945ed4134d58d75852467e0c8252229a37dc4bce43a86"
 
     static let signatureHex = "deadbeef01020304"
     static let txRawSHA256HexUpper = "CCA1FCB63FB842B9C00DCF932D261E9B666AFC5E1F71BAE303E7493F3439756C"

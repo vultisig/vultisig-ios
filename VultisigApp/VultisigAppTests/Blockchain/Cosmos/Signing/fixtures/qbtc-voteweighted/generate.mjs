@@ -38,7 +38,7 @@ import { Any } from 'cosmjs-types/google/protobuf/any'
 // Semantic inputs (see QBTCVoteWeightedVectorFixture.swift)
 // ---------------------------------------------------------------------------
 const VOTER = 'qbtc1voter00000000000000000000000000000000'
-const CHAIN_ID = 'qbtc-testnet'
+const CHAIN_ID = 'qbtc'
 const PROPOSAL_ID = 42n
 const ACCOUNT_NUMBER = 100n
 const SEQUENCE = 7n
