@@ -232,6 +232,12 @@ targets:
           # which enumerates every top-level JSON in the bundle root.
           - "Swap/SwapKit/__fixtures__/**"
           - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
+          # The QBTC weighted-vote vector generator is a committed Node/cosmjs
+          # tool (generate.mjs + package.json + README + node_modules), not test
+          # code or a bundled resource. Excluding it keeps its .js/.ts/.map
+          # files from being flattened into the test bundle root (which
+          # collides under "Multiple commands produce").
+          - "Blockchain/Cosmos/Signing/fixtures/qbtc-voteweighted/**"
       # Static fixture JSONs bundled with the test target as a *folder
       # reference* (blue folder in Xcode) so they land at
       # `__fixtures__/*.json` inside the bundle instead of flattening into
