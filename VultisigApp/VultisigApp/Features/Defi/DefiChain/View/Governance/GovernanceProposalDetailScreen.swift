@@ -162,28 +162,33 @@ struct GovernanceProposalDetailScreen: View {
             Text(myVote == nil ? "governanceCastVote".localized : "governanceChangeVote".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
-            ForEach(CosmosGovVoteChoice.allCases) { choice in
-                PrimaryButton(
-                    title: choice.displayTitle,
-                    type: choice == .yes ? .primary : .secondary
-                ) {
-                    onVote(choice)
+            // Dim only the interactive controls when voting is disabled so the
+            // insufficient-balance warning below stays at full opacity.
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(CosmosGovVoteChoice.allCases) { choice in
+                    PrimaryButton(
+                        title: choice.displayTitle,
+                        type: choice == .yes ? .primary : .secondary
+                    ) {
+                        onVote(choice)
+                    }
+                    .disabled(!canVote)
                 }
-                .disabled(!canVote)
-            }
-            if onWeightedVote != nil {
-                Button {
-                    showWeightedSheet = true
-                } label: {
-                    Text("governanceVoteWithWeights".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.primaryAccent4)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                if onWeightedVote != nil {
+                    Button {
+                        showWeightedSheet = true
+                    } label: {
+                        Text("governanceVoteWithWeights".localized)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.primaryAccent4)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canVote)
                 }
-                .buttonStyle(.plain)
-                .disabled(!canVote)
             }
+            .opacity(canVote ? 1 : 0.5)
             if !canVote {
                 Text("governanceInsufficientBalanceForFee".localized)
                     .font(Theme.fonts.caption12)
@@ -191,7 +196,6 @@ struct GovernanceProposalDetailScreen: View {
                     .multilineTextAlignment(.leading)
             }
         }
-        .opacity(canVote ? 1 : 0.5)
     }
 
     // MARK: - Reusable building blocks
