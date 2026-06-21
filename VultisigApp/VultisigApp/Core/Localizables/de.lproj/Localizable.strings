@@ -28,6 +28,8 @@
 "addVaultsToFolder" = "Wähle Tresore aus, die dem Ordner hinzugefügt werden sollen";
 "advanced" = "Erweitert";
 "advancedDescription" = "Umgestalten, Sicherheits- oder Zeichennachrichten verwalten.";
+"advancedSettings" = "Erweiterte Einstellungen";
+"advancedSwap" = "Erweiterter Swap";
 "allDevicesUpgradeTitle1" = "Stelle sicher, dass";
 "allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte vorhanden sind ";
 "allDevicesUpgradeTitle3" = "beim Upgrade";
@@ -57,6 +59,7 @@
 "assets" = "Vermögenswerte";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
+"auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder-Info";
 "available" = "Verfügbar";
 "availableLPUnits" = "Verfügbare LP-Einheiten";
@@ -464,6 +467,7 @@
 "functionTransactionScreenErrorTitle" = "Funktionsfehler";
 "gas" = "Gas";
 "gasBudget" = "Gas-Budget";
+"gasLimit" = "Gas-Limit";
 "gasOwner" = "Gas-Eigentümer";
 "gasPrice" = "Gas-Preis";
 "general" = "Allgemein";
@@ -729,6 +733,7 @@
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
 "of" = "von";
+"off" = "Aus";
 "ok" = "OK";
 "on" = "auf";
 "OnboardingCard1Text1" = "Sag Hallo zu ";
@@ -857,6 +862,8 @@
 "rebondNote" = "Hinweis: REBOND-Transaktionen müssen 0 RUNE senden. Der oben genannte Betrag geht nur in das Memo ein.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Empfangen";
+"recipient" = "Empfänger";
+"recipientNameNotFound" = "Name nicht gefunden. Überprüfen Sie den Namen und versuchen Sie es erneut.";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "referral" = "Empfehlung";
@@ -906,6 +913,7 @@
 "reshareLabelTitle" = "Teile deinen Tresor erneut";
 "reshareVault" = "Tresor mit neuen Geräten teilen";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
+"resolvingRecipientName" = "Name wird aufgelöst…";
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
 "retry" = "Erneut versuchen";
 "reviewYourVaultDevices" = "Überprüfe deine Tresor-Geräte";
@@ -978,6 +986,8 @@
 "selectDestinationChain" = "Select the destination chain";
 "selectPositions" = "Positionen auswählen";
 "selectPositionsSubtitle" = "Aktivieren Sie mindestens eine Position, um Guthaben anzuzeigen und Positionen zu verwalten.";
+"selectRoute" = "Route auswählen";
+"selectRouteHelper" = "Routen nach Ausgabebetrag sortiert. Die Auswahl einer Route überschreibt Auto.";
 "selectSecuredAssetToSeeBalance" = "Select a secured asset to see available balance.";
 "selectSecuredAssetToWithdraw" = "Select Secured Asset to Withdraw";
 "selectToken" = "Select Token";
@@ -994,6 +1004,7 @@
 "sendingRightAddressCheck" = "Ich sende an die richtige Adresse";
 "sendOverview" = "Übersicht senden";
 "sendTo" = "Senden an";
+"sendToDifferentAddress" = "An andere Adresse senden";
 "serverBackup" = "Serversicherung";
 "serverBackupDescription" = "Anfrage Server Vault Share erneut.";
 "serverBackupTitle" = "Serversicherung";
@@ -1031,6 +1042,9 @@
 "signTransaction" = "Transaktion signieren";
 "skip" = "Überspringen";
 "slippage" = "Gleitverlust";
+"slippageHelperText" = "Begrenzt, wie stark sich der Preis ändern darf, bevor die Ausführung abgebrochen wird.";
+"slippageMaxNote" = "Slippage ist auf %@ begrenzt.";
+"slippageTolerance" = "Slippage-Toleranz";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "sourceValidator" = "Quell-Validator";
@@ -1067,11 +1081,14 @@
 "swap.duration.instant" = "Sofort";
 "swap.outbound_fee" = "Ausgangsgebühr";
 "swap.price_impact" = "Preisauswirkung";
+"swap.price_impact.average" = "Mittel";
 "swap.price_impact.good" = "Gut";
 "swap.price_impact.high" = "Hoch";
 "swap.referral_discount" = "Empfehlung (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% Erlass)";
+"swapAdvancedSettingsLockedSubtitle" = "Feinabstimmung von Slippage, Gas, Routing und Empfänger für jeden Swap.";
+"swapAdvancedSettingsLockedTitle" = "Erweiterte Swap-Einstellungen";
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
@@ -1110,8 +1127,9 @@
 "swapKitStatusRefundedReason" = "Tausch wurde an deine Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
 "swapOverview" = "Tauschübersicht";
-"swapProviderRecommended" = "Empfohlen";
-"swapProvidersSheetTitle" = "Anbieter auswählen";
+"swapRecipientRouteNotAvailable" = "Für dieses Paar ist keine Route zu einem externen Empfänger verfügbar. Entfernen Sie den Empfänger oder wählen Sie ein anderes Paar.";
+"swapRecipientVerificationFailed" = "Es konnte nicht bestätigt werden, dass der Swap an den gewählten Empfänger geht; er wurde vor dem Signieren gestoppt. Bitte versuchen Sie es erneut.";
+"swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";
@@ -1227,6 +1245,7 @@
 "uploadQRCodeImageKeygen" = "QR-Code hochladen, um dem Keygen beizutreten";
 "uploadQRCodeImageKeysign" = "QR-Code hochladen, um dem Keysign beizutreten";
 "useDifferentEmail" = "Andere E-Mail verwenden";
+"useExternalRecipient" = "Externen Empfänger verwenden";
 "useLocalMode" = "Lokalen Modus verwenden";
 "usePassword" = "Passwort verwenden";
 "useStandardMode" = "Standardmodus verwenden";

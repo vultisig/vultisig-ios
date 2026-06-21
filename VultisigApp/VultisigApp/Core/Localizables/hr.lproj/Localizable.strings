@@ -28,6 +28,8 @@
 "addVaultsToFolder" = "Odaberite trezore za dodavanje u mapu";
 "advanced" = "Napredno";
 "advancedDescription" = "Popravite, upravljajte sigurnosnim ili potpisati poruke.";
+"advancedSettings" = "Napredne postavke";
+"advancedSwap" = "Napredni swap";
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
@@ -57,6 +59,7 @@
 "assets" = "Imovine";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
+"auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder informacije";
 "available" = "Dostupno";
 "availableLPUnits" = "Dostupne LP Jedinice";
@@ -464,6 +467,7 @@
 "functionTransactionScreenErrorTitle" = "Greška funkcije";
 "gas" = "Plin";
 "gasBudget" = "Proračun plina";
+"gasLimit" = "Gas limit";
 "gasOwner" = "Vlasnik plina";
 "gasPrice" = "Cijena plina";
 "general" = "Općenito";
@@ -729,6 +733,7 @@
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";
+"off" = "Isključeno";
 "ok" = "U redu";
 "on" = "na";
 "OnboardingCard1Text1" = "Pozdravite ";
@@ -857,6 +862,8 @@
 "rebondNote" = "Napomena: REBOND transakcije moraju poslati 0 RUNE. Iznos gore ide samo u memo.";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "receive" = "Primi";
+"recipient" = "Primatelj";
+"recipientNameNotFound" = "Naziv nije pronađen. Provjerite naziv i pokušajte ponovno.";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "referral" = "Preporuka";
@@ -906,6 +913,7 @@
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareVault" = "Ponovno podijelite sef s novim odborom";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
+"resolvingRecipientName" = "Razrješavanje naziva…";
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
 "retry" = "Pokušaj ponovo";
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
@@ -978,6 +986,8 @@
 "selectDestinationChain" = "Select the destination chain";
 "selectPositions" = "Odaberi pozicije";
 "selectPositionsSubtitle" = "Omogući barem jednu poziciju za prikaz stanja i upravljanje pozicijama.";
+"selectRoute" = "Odaberi rutu";
+"selectRouteHelper" = "Rute rangirane prema izlaznom iznosu. Odabir rute nadjačava automatski način.";
 "selectSecuredAssetToSeeBalance" = "Select a secured asset to see available balance.";
 "selectSecuredAssetToWithdraw" = "Select Secured Asset to Withdraw";
 "selectToken" = "Select Token";
@@ -994,6 +1004,7 @@
 "sendingRightAddressCheck" = "Šaljem na pravu adresu";
 "sendOverview" = "Pošaljite pregled";
 "sendTo" = "Pošalji na";
+"sendToDifferentAddress" = "Pošalji na drugu adresu";
 "serverBackup" = "Sigurnosna kopija poslužitelja";
 "serverBackupDescription" = "Zatražite da se poslužitelj trezori ponovo dijeli.";
 "serverBackupTitle" = "Sigurnosna kopija poslužitelja";
@@ -1031,6 +1042,9 @@
 "signTransaction" = "Potpiši transakciju";
 "skip" = "Preskoči";
 "slippage" = "Skliznuće";
+"slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
+"slippageMaxNote" = "Klizanje je ograničeno na %@.";
+"slippageTolerance" = "Tolerancija klizanja";
 "somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "sourceValidator" = "Izvorni validator";
@@ -1067,11 +1081,14 @@
 "swap.duration.instant" = "Trenutno";
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
+"swap.price_impact.average" = "Srednje";
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
 "swap.referral_discount" = "Preporuka (-%d bps)";
 "swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% oslobođenje)";
+"swapAdvancedSettingsLockedSubtitle" = "Precizno podesite slippage, gas, rutu i primatelja za svaku zamjenu.";
+"swapAdvancedSettingsLockedTitle" = "Napredne postavke zamjene";
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
@@ -1110,8 +1127,9 @@
 "swapKitStatusRefundedReason" = "Zamjena je vraćena na vašu izvornu adresu";
 "swapKitViewOnTracker" = "Pogledaj na SwapKit Trackeru";
 "swapOverview" = "Pregled zamjene";
-"swapProviderRecommended" = "Preporučeno";
-"swapProvidersSheetTitle" = "Odaberite davatelja";
+"swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
+"swapRecipientVerificationFailed" = "Nije se moglo potvrditi da će zamjena biti isporučena odabranom primatelju te je zaustavljena prije potpisivanja. Pokušajte ponovno.";
+"swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
@@ -1227,6 +1245,7 @@
 "uploadQRCodeImageKeygen" = "Prenesite QR kod za pridruživanje Keygen-u";
 "uploadQRCodeImageKeysign" = "Prenesite QR kod za pridruživanje Keysign-u";
 "useDifferentEmail" = "Koristite drugu e-mail adresu";
+"useExternalRecipient" = "Koristi vanjskog primatelja";
 "useLocalMode" = "Koristi lokalni način";
 "usePassword" = "Koristi lozinku";
 "useStandardMode" = "Koristi standardni način";

@@ -12,6 +12,8 @@ final class MockQuoteService: QuoteServiceProtocol {
     var stubbedResult: Result<SwapQuote, Error>
     private(set) var fetchQuoteCallCount = 0
     private(set) var lastVultTierDiscount: Int?
+    private(set) var lastSlippageBps: Int?
+    private(set) var lastRecipientAddress: String?
 
     init(stubbedResult: Result<SwapQuote, Error>) {
         self.stubbedResult = stubbedResult
@@ -36,10 +38,14 @@ final class MockQuoteService: QuoteServiceProtocol {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes {
         fetchQuoteCallCount += 1
         lastVultTierDiscount = vultTierDiscount
+        lastSlippageBps = slippageBps
+        lastRecipientAddress = recipientAddress
         let best = try stubbedResult.get()
         return SwapQuotes(best: best, ranked: [best])
     }

@@ -18,7 +18,9 @@ protocol SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult?
 
     /// Chain-specific fee/nonce/blockhash data needed to assemble the keysign payload.
@@ -50,9 +52,4 @@ protocol SwapInteractor {
     /// wallet once per session. Called on screen load to warm the cache so the per-quote
     /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
     func warmDiscountTier(for vault: Vault) async
-
-    /// Whether the vault meets the Silver `VultDiscountTier` minimum that gates
-    /// provider selection. Reads the same cached tier `warmDiscountTier` warms,
-    /// so it adds no extra network path.
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool
 }

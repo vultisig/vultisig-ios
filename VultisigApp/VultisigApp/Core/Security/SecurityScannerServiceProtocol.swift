@@ -29,6 +29,12 @@ protocol SecurityScannerServiceProtocol {
     /// - Returns: SecurityScannerTransaction ready for scanning
     func createSecurityScannerTransaction(transaction: SwapTransaction) async throws -> SecurityScannerTransaction
 
+    /// Create a SecurityScannerTransaction that screens the swap's external
+    /// recipient on the destination chain.
+    /// - Parameter transaction: The swap transaction whose recipient to screen
+    /// - Returns: SecurityScannerTransaction ready for scanning
+    func createRecipientSecurityScannerTransaction(transaction: SwapTransaction) throws -> SecurityScannerTransaction
+
     /// Get list of disabled provider names
     /// - Returns: Array of disabled provider names
     func getDisabledProviders() -> [String]
@@ -63,4 +69,10 @@ protocol SecurityScannerTransactionFactoryProtocol {
     /// - Parameter transaction: The swap transaction to convert
     /// - Returns: SecurityScannerTransaction ready for scanning
     func createSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction
+
+    /// Create a SecurityScannerTransaction screening the swap's external
+    /// recipient on the destination chain.
+    /// - Parameter transaction: The swap transaction whose recipient to screen
+    /// - Returns: SecurityScannerTransaction ready for scanning
+    func createRecipientSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction
 }

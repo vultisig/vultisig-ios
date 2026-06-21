@@ -36,6 +36,25 @@ final class SwapDetailsViewModel {
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
 
+    /// Per-swap advanced settings (slippage / gas limit / external recipient).
+    /// Reset to `.default` between swaps so a custom slippage never sticks.
+    var advancedSettings: SwapAdvancedSettings = .default
+
+    /// Snapshot of `advancedSettings` taken when the Advanced Settings sheet
+    /// opens, so the sheet-close path can tell whether slippage / gas limit /
+    /// external recipient changed and trigger a re-fetch only when one did.
+    /// Route/provider selection (`selectedQuote`) is deliberately NOT part of
+    /// this struct, so picking a route never triggers a re-fetch.
+    @ObservationIgnored private var advancedSettingsSnapshot: SwapAdvancedSettings = .default
+
+    /// Whether to show the Advanced Settings sheet.
+    var showAdvancedSettingsSheet = false
+
+    /// Gas-limit override applies only to EVM source chains.
+    var isGasLimitSupported: Bool {
+        fromCoin.chain.chainType == .EVM
+    }
+
     // MARK: - Quote state
     //
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
@@ -71,12 +90,6 @@ final class SwapDetailsViewModel {
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
 
-    /// Feature-flag (Settings → Advanced) AND Silver-tier entitlement, resolved
-    /// once on screen load. The provider-selection UI only renders/selects when
-    /// this is true. False → exactly today's behavior (best auto-selected, no
-    /// chevron, no sheet).
-    var isProviderSelectionEnabled = false
-
     // MARK: - UI state (details-screen-only)
 
     var error: Error?
@@ -94,6 +107,17 @@ final class SwapDetailsViewModel {
     var showFromCoinSelector = false
     var showToCoinSelector = false
     var showAllPercentageButtons = true
+
+    /// The keyboard percentage-button toolbar shows only when no selector or
+    /// sheet is covering the form — including the Advanced Settings sheet, so its
+    /// own input fields don't sit under the percentage row.
+    var showPercentageButtons: Bool {
+        !showFromChainSelector
+        && !showToChainSelector
+        && !showFromCoinSelector
+        && !showToCoinSelector
+        && !showAdvancedSettingsSheet
+    }
 
     init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
         self.interactor = interactor
@@ -119,41 +143,36 @@ final class SwapDetailsViewModel {
         toCoin = defaultToCoin
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
+        // Every swap session starts at default advanced settings. The screen owns
+        // a fresh VM per push so this is normally already `.default`, but resetting
+        // here makes the session start explicit and guaranteed even if the VM is
+        // reused. Guarded by `dataLoaded`, so it runs once per session, not on
+        // every re-render.
+        resetAdvancedSettings()
         dataLoaded = true
     }
 
     /// Warm the per-session VULT discount-tier cache once on screen load so the
     /// quote path reads the cached tier (VULT balance + Thorguard NFT) instead of
     /// re-resolving it — and re-running the Thorguard eth_call — on every fetch.
-    /// The same resolved tier also gates provider selection (Silver+), so this
-    /// reuses the cached path rather than adding a second network hit.
+    /// This feeds the VULT fee-discount applied on the quote path.
     func warmDiscountTier(vault: Vault) {
         Task { [weak self] in
             guard let self else { return }
             await self.interactor.warmDiscountTier(for: vault)
-            await self.resolveProviderSelectionGate(vault: vault)
         }
     }
 
-    /// Provider selection requires a Silver `VultDiscountTier` (or above).
-    /// Resolved once on load off the cached tier (no extra network path); below
-    /// Silver the gate stays false and behavior is exactly today's.
-    func resolveProviderSelectionGate(vault: Vault) async {
-        isProviderSelectionEnabled = await interactor.isProviderSelectionUnlocked(for: vault)
-    }
-
-    /// True when the user can open the provider-selection sheet: the vault is
-    /// Silver `VultDiscountTier`+ and there's more than one quote to choose from.
-    /// The Provider row only becomes tappable (chevron) when this holds.
+    /// True when the user can open the provider-selection sheet: there's more
+    /// than one quote to choose from. The Provider row only becomes tappable
+    /// (chevron) when this holds. The advanced-settings entry point is already
+    /// silver-gated, so no additional tier gate is applied here.
     var canSelectProvider: Bool {
-        isProviderSelectionEnabled && allQuotes.count > 1
+        allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick. Ignored unless provider selection is enabled,
-    /// keeping the verify/sign path on the auto-selected best whenever the vault
-    /// is below Silver.
+    /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
-        guard isProviderSelectionEnabled else { return }
         selectedQuote = quote
     }
 
@@ -187,6 +206,22 @@ final class SwapDetailsViewModel {
         return toCoin.fiat(decimal: amount).formatToFiat()
     }
 
+    /// Provider/swap fee fiat for a route row (Select-route sub-sheet). Uses the
+    /// per-quote provider fee — the EVM swap fee or the THORChain/Maya inbound
+    /// fee — which is known for every candidate without the live network-gas
+    /// estimate (that only exists for the active quote). Empty when not derivable.
+    func routeFeeString(for candidate: SwapQuote) -> String {
+        SwapCryptoLogic.swapFeeString(quote: candidate, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    }
+
+    /// Estimated time-to-completion for a route row, e.g. "~30s". Only
+    /// THORChain/Maya quotes expose `totalSwapSeconds`; EVM aggregators don't,
+    /// so this returns empty for them and the row renders the fee alone.
+    func routeEtaString(for candidate: SwapQuote) -> String {
+        guard let seconds = candidate.totalSwapSeconds else { return .empty }
+        return String(format: "swapRouteEta".localized, seconds)
+    }
+
     func updateCoinLists() {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,
@@ -197,9 +232,37 @@ final class SwapDetailsViewModel {
         toCoins = resolvedToCoins
     }
 
+    // MARK: - Advanced settings sheet lifecycle
+
+    /// Snapshot the settings that affect the quote/eligible-provider set when the
+    /// Advanced Settings sheet opens, so the close path can detect a real change.
+    func snapshotAdvancedSettings() {
+        advancedSettingsSnapshot = advancedSettings
+    }
+
+    /// On sheet dismiss, re-fetch quotes only when a quote-affecting setting
+    /// (slippage, gas limit, or external recipient) actually changed. These
+    /// change the quote and/or the eligible-provider set: slippage and gas limit
+    /// feed the quote request; the external recipient now changes provider
+    /// eligibility (`providersHonoringRecipient`) and the built tx. Route/provider
+    /// selection (`selectedQuote`) is not part of `advancedSettings`, so picking a
+    /// route never reaches here — it only chooses among the quotes already fetched.
+    /// No-op when nothing relevant changed (byte-identical to no interaction).
+    func advancedSettingsSheetDidClose(vault: Vault, referredCode: String) {
+        guard advancedSettings != advancedSettingsSnapshot else { return }
+        advancedSettingsSnapshot = advancedSettings
+        fetchQuotes(vault: vault, referredCode: referredCode, immediate: true)
+    }
+
     // MARK: - User actions
 
     func switchCoins(vault: Vault, referredCode: String) {
+        // Flipping the pair is a new swap — a custom slippage / gas limit /
+        // external recipient must never leak across it. In particular the
+        // recipient was validated for the OLD destination chain, which is now the
+        // source, so carrying it over could misroute funds (Phase 5 reset
+        // semantics).
+        resetAdvancedSettings()
         let oldFrom = fromCoin
         fromCoin = toCoin
         toCoin = oldFrom
@@ -218,6 +281,9 @@ final class SwapDetailsViewModel {
     }
 
     func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
+        // A new source pair starts fresh — a custom slippage / gas limit /
+        // recipient must never stick across swaps (Phase 5 reset semantics).
+        resetAdvancedSettings()
         fromCoin = coin
         fromChain = coin.chain
         // `toCoins` reflected the previous source's valid destinations —
@@ -228,6 +294,9 @@ final class SwapDetailsViewModel {
     }
 
     func updateToCoin(coin: Coin, vault: Vault, referredCode: String) {
+        // A new destination invalidates a chain-specific external recipient and
+        // resets the rest of the advanced settings (Phase 5 reset semantics).
+        resetAdvancedSettings()
         toCoin = coin
         toChain = coin.chain
         fetchQuotes(vault: vault, referredCode: referredCode)
@@ -273,6 +342,11 @@ final class SwapDetailsViewModel {
             fromChain != fromCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: fromChain, vault: vault)
         else { return }
+        // A chain switch on its own does NOT reset the advanced settings: the
+        // reset is token-driven. Assigning `fromCoin` here fires the screen's
+        // `fromCoin` `onChange` → `updateFromCoin`, which performs the reset when
+        // the selected token actually changes. A chain change that doesn't change
+        // the token therefore leaves the settings intact (Phase 5 reset semantics).
         fromCoin = coin
         // Source changed via chain switch — keep `toCoins` / `toCoin` consistent
         // so the destination picker doesn't show stale options.
@@ -285,6 +359,11 @@ final class SwapDetailsViewModel {
             toChain != toCoin.chain,
             let coin = SwapCryptoLogic.getDefaultCoin(for: toChain, vault: vault)
         else { return }
+        // A chain switch on its own does NOT reset the advanced settings — the
+        // reset is token-driven. Assigning `toCoin` here fires the screen's
+        // `toCoin` `onChange` → `updateToCoin`, which resets when the destination
+        // token actually changes. A chain change that leaves the token unchanged
+        // keeps the settings (Phase 5 reset semantics).
         toCoin = coin
     }
 
@@ -316,8 +395,28 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            advancedSettings: resolvedAdvancedSettings
         )
+    }
+
+    /// Advanced settings as they apply to the current pair: an external recipient
+    /// or gas-limit override only travels if it's valid for the destination/source
+    /// chain. Slippage always carries.
+    var resolvedAdvancedSettings: SwapAdvancedSettings {
+        var resolved = advancedSettings
+        if !isGasLimitSupported {
+            resolved.gasLimit = nil
+        }
+        return resolved
+    }
+
+    /// Reset advanced settings to defaults. Called at session start (`load`) and
+    /// whenever a swapped TOKEN changes (from/to coin pick, flip) so a custom
+    /// slippage / gas limit / recipient never leaks across swaps. A chain switch
+    /// resets only via the resulting token change, never on its own.
+    func resetAdvancedSettings() {
+        advancedSettings = .default
     }
 }
 
@@ -598,7 +697,9 @@ private extension SwapDetailsViewModel {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                slippageBps: advancedSettings.slippage.bps,
+                recipientAddress: advancedSettings.externalRecipient
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.

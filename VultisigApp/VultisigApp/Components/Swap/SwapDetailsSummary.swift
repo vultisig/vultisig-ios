@@ -12,7 +12,6 @@ struct SwapDetailsSummary: View {
     @Bindable var detailsViewModel: SwapDetailsViewModel
 
     @State private var showFees: Bool = true
-    @State private var showQuotesSheet: Bool = false
 
     private var vm: SwapDetailsViewModel { detailsViewModel }
 
@@ -40,7 +39,7 @@ struct SwapDetailsSummary: View {
         VStack(spacing: 16) {
             if isBlockVisible {
                 if let providerName = vm.quote?.displayName {
-                    providerRow(providerName: providerName)
+                    providerCell(providerName: providerName)
                 }
 
                 if vm.showTotalFees {
@@ -64,43 +63,11 @@ struct SwapDetailsSummary: View {
             }
         }
         .padding(.top, 8)
-        .crossPlatformSheet(isPresented: $showQuotesSheet) {
-            SwapQuotesPickerSheet(detailsViewModel: detailsViewModel, showSheet: $showQuotesSheet)
-        }
-    }
-
-    /// The Provider row. When provider selection is available (feature flag +
-    /// Silver+ AND more than one quote), it becomes tappable with a chevron that
-    /// opens the picker sheet. Otherwise it stays the static read-only row — the
-    /// exact behavior shipped today.
-    @ViewBuilder
-    private func providerRow(providerName: String) -> some View {
-        if vm.canSelectProvider {
-            Button {
-                #if os(iOS)
-                hideKeyboard()
-                #endif
-                showQuotesSheet = true
-            } label: {
-                HStack {
-                    providerCell(providerName: providerName)
-                    Icon(
-                        named: "chevron-down-small",
-                        color: Theme.colors.textSecondary,
-                        size: 12
-                    )
-                    .rotationEffect(.degrees(-90))
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        } else {
-            providerCell(providerName: providerName)
-        }
     }
 
     /// Provider summary cell — mirrors `getSummaryCell` but shows the provider's
-    /// brand logo to the left of the name.
+    /// brand logo to the left of the name. Read-only: route/provider selection
+    /// now lives in the Advanced Swap sheet's "Select route" sub-sheet.
     private func providerCell(providerName: String) -> some View {
         HStack(spacing: 8) {
             Text("provider".localized)

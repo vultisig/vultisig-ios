@@ -485,8 +485,12 @@ enum SwapCryptoLogic {
         formatter.negativePrefix = "-"
         guard let string = formatter.string(from: NSDecimalNumber(decimal: displayImpact)) else { return .empty }
 
+        // Three-tier quality rating aligned with `priceImpactColor`'s bands so
+        // the label and color always agree (Good / Average / High).
         if displayImpact > -0.01 {
             return "\(string) (\("swap.price_impact.good".localized))"
+        } else if displayImpact > -0.03 {
+            return "\(string) (\("swap.price_impact.average".localized))"
         } else {
             return "\(string) (\("swap.price_impact.high".localized))"
         }

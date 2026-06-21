@@ -32,6 +32,23 @@ struct SwapTransaction: Hashable {
     /// because the sibling-lookup needs access to the full source-chain coin list,
     /// which Verify/Done don't otherwise carry.
     let feeCoin: Coin
+
+    /// Per-swap advanced settings (slippage / gas-limit override / external
+    /// recipient) captured at hand-off. The external recipient MUST be surfaced
+    /// on the verify screen before signing.
+    let advancedSettings: SwapAdvancedSettings
+
+    /// Final destination for the swapped funds: the user-set external recipient
+    /// when present, otherwise the user's own address on the destination chain
+    /// (today's behavior). Surfaced on the verify screen.
+    var recipientAddress: String {
+        advancedSettings.externalRecipient ?? toCoin.address
+    }
+
+    /// Whether an external recipient (different from the user's own address) is set.
+    var hasExternalRecipient: Bool {
+        advancedSettings.externalRecipient != nil
+    }
 }
 
 extension SwapTransaction {
@@ -53,7 +70,8 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
-            feeCoin: feeCoin
+            feeCoin: feeCoin,
+            advancedSettings: advancedSettings
         )
     }
 }
@@ -221,7 +239,8 @@ extension SwapTransaction {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: .example
+            feeCoin: .example,
+            advancedSettings: .default
         )
     }()
 }

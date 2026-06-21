@@ -14,12 +14,15 @@ import Foundation
 /// mock. Add a case here to gate a new feature behind the same upsell sheet.
 enum LockedFeature: Hashable {
     case customRPC
+    case swapAdvancedSettings
 
     /// Asset-catalog icon rendered in the badge above the title.
     var icon: String {
         switch self {
         case .customRPC:
             return "signal-tower"
+        case .swapAdvancedSettings:
+            return "sliders"
         }
     }
 
@@ -28,6 +31,8 @@ enum LockedFeature: Hashable {
         switch self {
         case .customRPC:
             return "customRPCsLockedTitle"
+        case .swapAdvancedSettings:
+            return "swapAdvancedSettingsLockedTitle"
         }
     }
 
@@ -36,6 +41,8 @@ enum LockedFeature: Hashable {
         switch self {
         case .customRPC:
             return "customRPCsLockedSubtitle"
+        case .swapAdvancedSettings:
+            return "swapAdvancedSettingsLockedSubtitle"
         }
     }
 
@@ -44,6 +51,8 @@ enum LockedFeature: Hashable {
     var requiredTier: VultDiscountTier {
         switch self {
         case .customRPC:
+            return .silver
+        case .swapAdvancedSettings:
             return .silver
         }
     }
