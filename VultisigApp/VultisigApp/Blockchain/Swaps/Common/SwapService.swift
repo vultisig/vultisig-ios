@@ -129,12 +129,35 @@ struct SwapService {
             return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
-        let firstError = results.compactMap { result -> Error? in
+        let errors = results.compactMap { result -> Error? in
             if case .failure(let error) = result { return error }
             return nil
-        }.first
+        }
 
-        throw firstError ?? SwapError.routeUnavailable
+        throw Self.surfacedQuoteError(from: errors) ?? SwapError.routeUnavailable
+    }
+
+    /// Pick which provider error to surface once every eligible provider failed
+    /// to produce a usable quote.
+    ///
+    /// SwapKit is an *optional* aggregator layered on top of the core routing
+    /// providers (THORChain/Maya/1inch/KyberSwap/LI.FI). Its failures must never
+    /// degrade the experience versus not having SwapKit at all. The motivating
+    /// case: SwapKit's `/v3/quote` AML screening intermittently returns
+    /// `addressScreeningFailed` ("Address screening failed — contact support")
+    /// when its screening provider has an outage. The providers run in parallel
+    /// and each failure is collected independently, so when that transient error
+    /// wins the task-completion race it gets surfaced as the user-facing error —
+    /// making a pair that routes fine elsewhere (e.g. ETH→GRT via KyberSwap) look
+    /// permanently broken and telling the user to "contact support".
+    ///
+    /// So prefer any non-SwapKit error: those come from the core providers and
+    /// describe the real routing outcome (no route, amount too small, etc.). Fall
+    /// back to a SwapKit error only when SwapKit was the sole provider attempted
+    /// (e.g. TON/Cardano/Sui pairs), where it's the only signal available.
+    static func surfacedQuoteError(from errors: [Error]) -> Error? {
+        let coreProviderErrors = errors.filter { !($0 is SwapKitError) }
+        return coreProviderErrors.first ?? errors.first
     }
 
     /// Restrict the candidate provider set so a quote can never be ranked/selected
