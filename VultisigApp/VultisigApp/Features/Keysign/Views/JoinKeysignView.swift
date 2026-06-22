@@ -144,7 +144,7 @@ struct JoinKeysignView: View {
     }
 
     var wrongVaultTypeErrorView: some View {
-        errorView(.vaultNotLoaded) {
+        errorView(.vaultTypeMismatch) {
             appViewModelLegacy.set(selectedVault: appViewModelLegacy.selectedVault, showingVaultSelector: true)
         }
     }

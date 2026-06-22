@@ -388,8 +388,6 @@
 "erc20ApprovalRequired" = "ERC20 승인 필요";
 "erc20ApprovalRequiredMessage" = "이 ERC20 토큰은 민팅 전에 승인이 필요합니다. 두 개의 트랜잭션이 서명됩니다:";
 "error" = "오류";
-"errorCameraPermissionDescription" = "계속하려면 카메라 권한이 필요합니다. 설정에서 활성화해 주세요.";
-"errorCameraPermissionTitle" = "카메라 권한이 부여되지 않음";
 "errorCopy" = "복사";
 "errorLoadingBalance" = "잔액 로딩 오류";
 "errorMessageTitle" = "오류 메시지";
@@ -1152,7 +1150,7 @@
 "transactionComplete" = "완료";
 "transactionDetails" = "트랜잭션 세부 정보";
 "transactionFailed" = "트랜잭션 실패";
-"transactionFailedDescription" = "기기 중 하나가 제때 응답하지 않았습니다. 연결을 확인하고 다시 시도해 주세요.";
+"transactionFailedDescription" = "문제가 발생했습니다. 다시 시도해 주세요.";
 "transactionFailedHighlight" = "실패";
 "transactionHash" = "트랜잭션 해시";
 "transactionHistory" = "트랜잭션 기록";

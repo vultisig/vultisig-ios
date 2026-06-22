@@ -392,8 +392,6 @@
 "erc20ApprovalRequired" = "需要 ERC20 批准";
 "erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "error" = "错误";
-"errorCameraPermissionDescription" = "需要相机权限才能继续。请在设置中启用。";
-"errorCameraPermissionTitle" = "相机权限未授予";
 "errorCopy" = "复制";
 "errorLoadingBalance" = "加载余额出错";
 "errorMessageTitle" = "错误信息";
@@ -1177,7 +1175,7 @@
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
 "transactionFailed" = "交易失败";
-"transactionFailedDescription" = "您的某个设备未及时响应。请检查您的连接并重试。";
+"transactionFailedDescription" = "出了点问题，请重试。";
 "transactionHash" = "交易哈希";
 "transactionHistory" = "交易历史";
 "transactionID" = "交易 ID";

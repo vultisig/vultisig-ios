@@ -26,11 +26,10 @@ struct ErrorPresentation: Equatable {
         case transactionFailed
         case networkUnstable
         case insufficientFunds
-        case cameraPermission
         case sameVaultShare
         case vaultNotLoaded
+        case vaultTypeMismatch
         case vaultNameInUse
-        case seedPhraseAlreadyImported
     }
 
     init(_ kind: Kind, rawError: String? = nil) {
@@ -48,10 +47,6 @@ struct ErrorPresentation: Equatable {
             title = "swapErrorInsufficientFundsTitle".localized
             description = "swapErrorInsufficientFundsDescription".localized
             type = .warning
-        case .cameraPermission:
-            title = "errorCameraPermissionTitle".localized
-            description = "errorCameraPermissionDescription".localized
-            type = .warning
         case .sameVaultShare:
             title = "sameDeviceShareError".localized
             description = "sameDeviceShareErrorDescription".localized
@@ -60,13 +55,15 @@ struct ErrorPresentation: Equatable {
             title = "errorVaultNotLoadedTitle".localized
             description = "errorVaultNotLoadedDescription".localized
             type = .warning
+        case .vaultTypeMismatch:
+            // A vault TYPE mismatch (e.g. fast vs. secure) is distinct from a
+            // missing vault — the share isn't "not loaded", it's the wrong type.
+            title = "vaultTypeDoesnotMatch".localized
+            description = .empty
+            type = .warning
         case .vaultNameInUse:
             title = "vaultNameAlreadyInUse".localized
             description = "pleaseChooseDifferentVaultName".localized
-            type = .warning
-        case .seedPhraseAlreadyImported:
-            title = "seedPhraseAlreadyImported".localized
-            description = "seedPhraseAlreadyImportedDescription".localized
             type = .warning
         }
     }

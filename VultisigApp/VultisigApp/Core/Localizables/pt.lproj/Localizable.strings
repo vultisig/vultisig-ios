@@ -392,8 +392,6 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Erro";
-"errorCameraPermissionDescription" = "A permissão de câmera é necessária para continuar. Por favor, habilite-a nas configurações.";
-"errorCameraPermissionTitle" = "Permissão de câmera não concedida";
 "errorCopy" = "Copiar";
 "errorLoadingBalance" = "Error loading balance";
 "errorMessageTitle" = "Mensagem de erro";
@@ -1177,7 +1175,7 @@
 "transactionComplete" = "Feito";
 "transactionDetails" = "Detalhes da transação";
 "transactionFailed" = "Transação falhou";
-"transactionFailedDescription" = "Um dos seus dispositivos não respondeu a tempo. Verifique a sua conexão e tente novamente.";
+"transactionFailedDescription" = "Algo deu errado. Tente novamente.";
 "transactionHash" = "Hash da transação";
 "transactionHistory" = "Histórico de transações";
 "transactionID" = "ID de Transação";

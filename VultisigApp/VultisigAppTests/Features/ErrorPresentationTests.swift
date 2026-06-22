@@ -30,10 +30,12 @@ final class ErrorPresentationTests: XCTestCase {
         XCTAssertEqual(presentation.type, .warning)
     }
 
-    func testCameraPermissionIsWarning() {
-        let presentation = ErrorPresentation(.cameraPermission)
-        XCTAssertEqual(presentation.title, "errorCameraPermissionTitle".localized)
+    func testVaultTypeMismatchIsWarningWithDistinctCopy() {
+        let presentation = ErrorPresentation(.vaultTypeMismatch)
+        XCTAssertEqual(presentation.title, "vaultTypeDoesnotMatch".localized)
         XCTAssertEqual(presentation.type, .warning)
+        // Must NOT collapse to the "not loaded" copy — a type mismatch is distinct.
+        XCTAssertNotEqual(presentation.title, "errorVaultNotLoadedTitle".localized)
     }
 
     func testSameVaultShareIsWarning() {
@@ -52,12 +54,6 @@ final class ErrorPresentationTests: XCTestCase {
     func testVaultNameInUseIsWarning() {
         let presentation = ErrorPresentation(.vaultNameInUse)
         XCTAssertEqual(presentation.title, "vaultNameAlreadyInUse".localized)
-        XCTAssertEqual(presentation.type, .warning)
-    }
-
-    func testSeedPhraseAlreadyImportedIsWarning() {
-        let presentation = ErrorPresentation(.seedPhraseAlreadyImported)
-        XCTAssertEqual(presentation.title, "seedPhraseAlreadyImported".localized)
         XCTAssertEqual(presentation.type, .warning)
     }
 

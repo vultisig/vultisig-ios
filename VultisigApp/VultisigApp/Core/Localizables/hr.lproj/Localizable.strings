@@ -392,8 +392,6 @@
 "erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
 "erc20ApprovalRequiredMessage" = "Ovaj ERC20 token zahtijeva odobrenje prije kreiranja. Potpisat će se dvije transakcije:";
 "error" = "Greška";
-"errorCameraPermissionDescription" = "Dopuštenje za kameru potrebno je za nastavak. Omogućite ga u postavkama.";
-"errorCameraPermissionTitle" = "Dopuštenje za kameru nije odobreno";
 "errorCopy" = "Kopiraj";
 "errorLoadingBalance" = "Error loading balance";
 "errorMessageTitle" = "Poruka o pogrešci";
@@ -1177,7 +1175,7 @@
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
 "transactionFailed" = "Transakcija nije uspjela";
-"transactionFailedDescription" = "Jedan od tvojih uređaja nije odgovorio na vrijeme. Provjeri vezu i pokušaj ponovno.";
+"transactionFailedDescription" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "transactionHash" = "Hash transakcije";
 "transactionHistory" = "Povijest transakcija";
 "transactionID" = "ID transakcije";
