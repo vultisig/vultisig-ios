@@ -18,6 +18,7 @@ struct EditFolderScreen: View {
 
     @State var folderName: String = ""
     @State var disableSelection: Bool = false
+    @State private var footerHeight: CGFloat = 0
     @StateObject var folderViewModel = FolderDetailViewModel()
 
     @Environment(\.modelContext) private var modelContext
@@ -65,7 +66,7 @@ struct EditFolderScreen: View {
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
-            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 100) })
+            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: footerHeight) })
             .animation(.interpolatingSpring, value: folder.containedVaultNames)
         }
     }
@@ -99,12 +100,12 @@ struct EditFolderScreen: View {
     }
 
     var saveButton: some View {
-        ListBottomSection {
+        ListBottomSection(content: {
             PrimaryButton(title: "saveChanges") {
                 saveFolder()
             }
             .disabled(saveButtonDisabled)
-        }
+        }, onHeightChange: { footerHeight = $0 })
     }
 
     var alert: Alert {
