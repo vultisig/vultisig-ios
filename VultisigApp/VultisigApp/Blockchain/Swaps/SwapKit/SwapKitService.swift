@@ -265,16 +265,30 @@ extension SwapKitService {
     }
 }
 
+extension SwapKitService {
+    /// The protocol symbol SwapKit knows an asset by, which can differ from the
+    /// app's display ticker. The Toncoin → GRAM rebrand renamed only the
+    /// *display* ticker of the native TON coin; SwapKit still lists it as "TON"
+    /// (and doesn't support "GRAM"), so a GRAM-ticker'd native must swap as TON.
+    static func swapSymbol(chain: Chain, ticker: String, isNativeToken: Bool) -> String {
+        if chain == .ton, isNativeToken {
+            return "TON"
+        }
+        return ticker
+    }
+}
+
 private extension SwapKitService {
     /// SwapKit asset identifier format: `Chain.Ticker` for native tokens,
     /// `Chain.Ticker-Contract` for tokens with an on-chain contract address.
     /// See `api-contract.md` for the canonical chain prefix table.
     func assetIdentifier(for coin: Coin) -> String {
         let prefix = chainPrefix(for: coin.chain, fallback: coin.ticker)
+        let symbol = SwapKitService.swapSymbol(chain: coin.chain, ticker: coin.ticker, isNativeToken: coin.isNativeToken)
         if coin.isNativeToken || coin.contractAddress.isEmpty {
-            return "\(prefix).\(coin.ticker)"
+            return "\(prefix).\(symbol)"
         }
-        return "\(prefix).\(coin.ticker)-\(coin.contractAddress)"
+        return "\(prefix).\(symbol)-\(coin.contractAddress)"
     }
 
     func chainPrefix(for chain: Chain, fallback: String) -> String {
