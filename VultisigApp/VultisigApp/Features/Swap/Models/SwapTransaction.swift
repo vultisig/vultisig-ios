@@ -134,6 +134,16 @@ extension SwapTransaction {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
+    /// Whether an expandable fee breakdown has any rows to show. Mirrors the
+    /// rows the swap fee surfaces emit (swap fee and/or network gas), so a
+    /// "Total fee" chevron is only offered when expanding reveals something.
+    /// `showTotalFees` can be true while both components are suppressed — for
+    /// quote-driven EVM swaps `totalFeeString` keys off `fee` while `showGas`
+    /// keys off `gas`, a distinct gas price.
+    var hasFeeBreakdown: Bool {
+        showFees || showGas
+    }
+
     var swapFeeString: String {
         SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }
