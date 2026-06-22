@@ -455,7 +455,7 @@
 "foregroundNotificationSwap" = "Trocar %@ → %@";
 "formInvalid" = "Formulário inválido";
 "formInvalidDefaultMessage" = "O formulário não é válido. Por favor, corrija os campos marcados com uma estrela vermelha.";
-"forwardTonAmount" = "Quantia TON Encaminhada";
+"forwardTonAmount" = "Quantia GRAM Encaminhada";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";

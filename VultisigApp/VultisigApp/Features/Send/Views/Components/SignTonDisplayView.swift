@@ -184,7 +184,7 @@ struct SignTonDisplayView: View {
     ) -> SwapAmount {
         switch swap.offerAsset {
         case .ton:
-            return SwapAmount(amount: swap.offerAmount, decimals: 9, ticker: "TON", logo: "ton")
+            return SwapAmount(amount: swap.offerAmount, decimals: 9, ticker: "GRAM", logo: "gram")
         case .jetton:
             let coin = entry.jettonCoin
             return SwapAmount(

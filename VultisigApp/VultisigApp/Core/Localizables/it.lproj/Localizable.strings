@@ -455,7 +455,7 @@
 "foregroundNotificationSwap" = "Scambia %@ → %@";
 "formInvalid" = "Modulo non valido";
 "formInvalidDefaultMessage" = "Il modulo non è valido. Per favore, correggi i campi contrassegnati con una stella rossa.";
-"forwardTonAmount" = "Importo TON Inoltrato";
+"forwardTonAmount" = "Importo GRAM Inoltrato";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
