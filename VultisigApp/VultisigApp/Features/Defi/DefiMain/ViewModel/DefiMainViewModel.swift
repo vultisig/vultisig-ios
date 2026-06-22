@@ -47,6 +47,7 @@ final class DefiMainViewModel: ObservableObject {
     /// balances. Mirrors `DefiChainMainViewModel.refresh()`.
     func refreshBalances(vault: Vault) async {
         await BalanceService.shared.updateBalances(vault: vault)
+        guard !Task.isCancelled else { return }
         groupChains(vault: vault)
     }
 
