@@ -97,6 +97,25 @@ final class SwapTokenListCacheTests: XCTestCase {
         XCTAssertEqual(result, lastGood, "Stale-but-present entry must be served when refetch fails")
     }
 
+    // Cancellation must propagate even with a stale entry — fail-open is for real
+    // fetch failures, not cooperative cancellation (the caller is tearing down).
+    func testCancellationErrorPropagatesWithStaleEntry() async {
+        let cache = SwapTokenListCache(ttl: ttl)
+        let now = Date()
+        cache.setCached([makeToken("USDC")], for: .ethereum, fetchedAt: now.addingTimeInterval(-ttl - 1))
+
+        do {
+            _ = try await cache.tokens(for: .ethereum, now: now) {
+                throw CancellationError()
+            }
+            XCTFail("Expected CancellationError to propagate, not fail-open to stale")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+
     // (d') With no prior entry, a fetch error propagates.
     func testFetchErrorPropagatesWhenNoPriorEntry() async {
         let cache = SwapTokenListCache(ttl: ttl)

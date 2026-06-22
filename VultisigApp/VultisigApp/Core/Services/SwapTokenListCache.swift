@@ -82,6 +82,12 @@ final class SwapTokenListCache {
             entries[chain] = Entry(tokens: fresh, fetchedAt: now)
             return fresh
         } catch {
+            // Cooperative cancellation must propagate — the caller is tearing
+            // down, so fail-open (serving stale) would mask the cancel. Only real
+            // fetch failures fall back to the last-good entry.
+            if error is CancellationError {
+                throw error
+            }
             if let entry = entries[chain] {
                 logger.warning("[swap-token-list] fetch failed for \(chain.rawValue, privacy: .public), serving last-good: \(String(describing: error), privacy: .public)")
                 return entry.tokens
