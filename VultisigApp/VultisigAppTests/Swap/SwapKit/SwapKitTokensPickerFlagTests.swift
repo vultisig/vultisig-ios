@@ -46,6 +46,30 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         XCTAssertEqual(merged.count, 1, "Overlap must not duplicate")
     }
 
+    func testCollapseToSingleNativeKeepsCuratedAndDropsStaleTickerNative() throws {
+        // After the Toncoin → GRAM rebrand the curated native is GRAM, but
+        // SwapKit's token list (and any legacy persisted coin) still surfaces
+        // the native as "TON". Both are native + empty-contract, so the
+        // uniqueId dedup keeps them separate. The picker must show one native.
+        let gram = CoinMeta(chain: .ton, ticker: "GRAM", logo: "gram", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
+        let usdt = CoinMeta(chain: .ton, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "tether", contractAddress: "EQjetton", isNativeToken: false)
+        let staleTon = CoinMeta(chain: .ton, ticker: "TON", logo: "https://example/ton.png", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
+
+        let collapsed = SwapCoinSelectionLogic.collapseToSingleNative([gram, usdt, staleTon])
+
+        XCTAssertEqual(collapsed.map { $0.ticker }, ["GRAM", "USDT"], "Curated native kept, stale-ticker native dropped, non-native untouched")
+        XCTAssertEqual(collapsed.filter { $0.isNativeToken }.count, 1, "Exactly one native asset per chain")
+    }
+
+    func testCollapseToSingleNativePreservesListWithoutDuplicateNatives() throws {
+        let eth = CoinMeta(chain: .ethereum, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        let usdc = CoinMeta(chain: .ethereum, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xa0b8", isNativeToken: false)
+
+        let collapsed = SwapCoinSelectionLogic.collapseToSingleNative([eth, usdc])
+
+        XCTAssertEqual(collapsed.map { $0.ticker }, ["ETH", "USDC"], "No duplicate native → list unchanged")
+    }
+
     @MainActor
     func testCacheSeededSnapshotReturnsBuckets() async {
         let novel = CoinMeta(chain: .arbitrum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x000000000000000000000000000000000000000A", isNativeToken: false)
