@@ -227,6 +227,7 @@ struct SwapDoneSummaryCard: View {
             Rectangle()
                 .frame(width: 1)
                 .foregroundStyle(Theme.colors.primaryAccent4)
+                .padding(.bottom, 16)
             expandableFees(transaction)
         }
         .frame(maxHeight: expanded ? nil : 0)
