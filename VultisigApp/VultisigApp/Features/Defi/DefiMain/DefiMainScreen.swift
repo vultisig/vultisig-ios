@@ -169,7 +169,11 @@ struct DefiMainScreen: View {
     }
 
     func refresh() {
+        // Paint immediately from persisted balances, then kick a fire-and-forget
+        // balance refresh so staked positions (e.g. TRON frozen TRX) land even
+        // when the user opens DeFi without visiting the Wallet tab first.
         viewModel.groupChains(vault: vault)
+        Task { await viewModel.refreshBalances(vault: vault) }
     }
 
     func clearSearch() {
