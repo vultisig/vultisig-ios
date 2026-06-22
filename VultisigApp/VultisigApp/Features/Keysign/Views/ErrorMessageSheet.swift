@@ -16,33 +16,20 @@ struct ErrorMessageSheet: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        main
-            .padding(.horizontal, 16)
-            .padding(.vertical, 24)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Theme.colors.bgPrimary.ignoresSafeArea())
+        content
+            .sheetContainer()
             #if os(iOS)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
             #endif
+            .presentationBackground(Theme.colors.bgPrimary)
     }
 
-    var main: some View {
+    var content: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("errorMessageTitle".localized)
-                    .font(Theme.fonts.title2)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-                Button {
-                    isPresented = false
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-                .buttonStyle(.plain)
-            }
+            Text("errorMessageTitle".localized)
+                .font(Theme.fonts.title2)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             ScrollView {
                 Text(rawError)
@@ -52,7 +39,6 @@ struct ErrorMessageSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
             }
-            .frame(maxHeight: 420)
             .scrollBounceBehavior(.basedOnSize)
             .background(
                 RoundedRectangle(cornerRadius: 24)
@@ -64,7 +50,7 @@ struct ErrorMessageSheet: View {
             )
 
             HStack(spacing: 12) {
-                PrimaryButton(title: "errorCopy".localized, type: .secondary) {
+                PrimaryButton(title: "errorCopy".localized, leadingIcon: "copy", type: .secondary) {
                     ClipboardManager.copyToClipboard(rawError)
                 }
                 PrimaryButton(title: "errorReportBug".localized, type: .secondary) {
@@ -72,8 +58,18 @@ struct ErrorMessageSheet: View {
                     openURL(StaticURL.DiscordVultisigURL)
                 }
             }
-
-            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.colors.bgPrimary)
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented = false
+                }
+            }
         }
     }
 }
