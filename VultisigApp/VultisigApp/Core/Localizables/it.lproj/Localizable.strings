@@ -392,8 +392,18 @@
 "erc20ApprovalRequired" = "Richiesta Approvazione ERC20";
 "erc20ApprovalRequiredMessage" = "Questo token ERC20 richiede approvazione prima del conio. Verranno firmate due transazioni:";
 "error" = "Errore";
+"errorCameraPermissionDescription" = "L'autorizzazione della fotocamera è necessaria per procedere. Abilitala nelle impostazioni.";
+"errorCameraPermissionTitle" = "Autorizzazione della fotocamera non concessa";
+"errorCopy" = "Copia";
 "errorLoadingBalance" = "Errore nel caricamento del saldo";
+"errorMessageTitle" = "Messaggio di errore";
+"errorNetworkUnstableDescription" = "Non è stato possibile raggiungere il server in tempo. Controlla la connessione e riprova.";
+"errorNetworkUnstableTitle" = "Problema di connessione";
+"errorReportBug" = "Segnala bug";
 "errorSavingFile" = "Errore nel salvataggio del file";
+"errorShowExact" = "Mostra l'errore esatto";
+"errorVaultNotLoadedDescription" = "Importa la condivisione corretta.";
+"errorVaultNotLoadedTitle" = "Il vault non è caricato";
 "estimatedBondValue" = "Valore Stimato del Bond";
 "estimatedCacaoValue" = "Valore Stimato";
 "estimatedReward" = "Ricompensa Stimata";
@@ -920,6 +930,7 @@
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Stessa condivisione del Vault";
+"sameDeviceShareErrorDescription" = "Modifica la condivisione per firmare. Due dispositivi non possono usare la stessa condivisione del vault per la co-firma.";
 "sameNameFolder" = "Una cartella con lo stesso nome esiste già";
 "sameNameFolderDescription" = "Si prega di scegliere un nome univoco per la cartella e riprovare.";
 "save" = "Salva";
@@ -1166,6 +1177,7 @@
 "transactionComplete" = "Fatto";
 "transactionDetails" = "Dettagli transazione";
 "transactionFailed" = "Transazione non riuscita";
+"transactionFailedDescription" = "Uno dei tuoi dispositivi non ha risposto in tempo. Controlla la connessione e riprova.";
 "transactionHash" = "Hash transazione";
 "transactionHistory" = "Cronologia transazioni";
 "transactionID" = "ID Transazione";

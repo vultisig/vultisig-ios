@@ -392,8 +392,18 @@
 "erc20ApprovalRequired" = "需要 ERC20 批准";
 "erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "error" = "错误";
+"errorCameraPermissionDescription" = "需要相机权限才能继续。请在设置中启用。";
+"errorCameraPermissionTitle" = "相机权限未授予";
+"errorCopy" = "复制";
 "errorLoadingBalance" = "加载余额出错";
+"errorMessageTitle" = "错误信息";
+"errorNetworkUnstableDescription" = "无法及时连接到服务器。请检查您的连接并重试。";
+"errorNetworkUnstableTitle" = "连接问题";
+"errorReportBug" = "报告错误";
 "errorSavingFile" = "保存文件时出错";
+"errorShowExact" = "显示具体错误";
+"errorVaultNotLoadedDescription" = "请导入正确的份额。";
+"errorVaultNotLoadedTitle" = "保险库未加载";
 "estimatedBondValue" = "预估绑定价值";
 "estimatedCacaoValue" = "预估价值";
 "estimatedReward" = "预计奖励";
@@ -921,6 +931,7 @@
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "rune" = "RUNE";
 "sameDeviceShareError" = "相同的保险库份额";
+"sameDeviceShareErrorDescription" = "请更改份额以签名。两台设备不能使用相同的保险库份额进行联合签名。";
 "sameNameFolderDescription" = "该文件夹名称已存在。尝试一个新的";
 "save" = "保存";
 "saveAddress" = "保存地址";
@@ -1166,6 +1177,7 @@
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
 "transactionFailed" = "交易失败";
+"transactionFailedDescription" = "您的某个设备未及时响应。请检查您的连接并重试。";
 "transactionHash" = "交易哈希";
 "transactionHistory" = "交易历史";
 "transactionID" = "交易 ID";

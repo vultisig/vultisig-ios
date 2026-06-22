@@ -392,8 +392,18 @@
 "erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
 "erc20ApprovalRequiredMessage" = "Ovaj ERC20 token zahtijeva odobrenje prije kreiranja. Potpisat će se dvije transakcije:";
 "error" = "Greška";
+"errorCameraPermissionDescription" = "Dopuštenje za kameru potrebno je za nastavak. Omogućite ga u postavkama.";
+"errorCameraPermissionTitle" = "Dopuštenje za kameru nije odobreno";
+"errorCopy" = "Kopiraj";
 "errorLoadingBalance" = "Error loading balance";
+"errorMessageTitle" = "Poruka o pogrešci";
+"errorNetworkUnstableDescription" = "Poslužitelj nije dosegnut na vrijeme. Provjerite svoju vezu i pokušajte ponovno.";
+"errorNetworkUnstableTitle" = "Problem s vezom";
+"errorReportBug" = "Prijavi grešku";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
+"errorShowExact" = "Prikaži točnu pogrešku";
+"errorVaultNotLoadedDescription" = "Molimo uvezite ispravnu dionicu.";
+"errorVaultNotLoadedTitle" = "Trezor nije učitan";
 "estimatedBondValue" = "Procijenjena Vrijednost Bonda";
 "estimatedCacaoValue" = "Procijenjena Vrijednost";
 "estimatedReward" = "Procijenjena nagrada";
@@ -920,6 +930,7 @@
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Isti udio trezora";
+"sameDeviceShareErrorDescription" = "Molimo promijenite dionicu za potpis. Dva uređaja ne mogu koristiti isti dio trezora za zajedničko potpisivanje.";
 "sameNameFolder" = "Mapa s istim imenom već postoji";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
 "save" = "Spremi";
@@ -1166,6 +1177,7 @@
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
 "transactionFailed" = "Transakcija nije uspjela";
+"transactionFailedDescription" = "Jedan od tvojih uređaja nije odgovorio na vrijeme. Provjeri vezu i pokušaj ponovno.";
 "transactionHash" = "Hash transakcije";
 "transactionHistory" = "Povijest transakcija";
 "transactionID" = "ID transakcije";

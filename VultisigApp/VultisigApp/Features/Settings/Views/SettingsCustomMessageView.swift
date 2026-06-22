@@ -11,6 +11,8 @@ struct SettingsCustomMessageView: View {
 
     @Environment(\.dismiss) var dismiss
 
+    @EnvironmentObject var appViewModel: AppViewModel
+
     @StateObject var viewModel = SettingsCustomMessageViewModel()
 
     @State var keysignView: KeysignView?
@@ -109,8 +111,21 @@ struct SettingsCustomMessageView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView(errorString: message)
+                signingErrorView
             }
+        }
+    }
+
+    var signingErrorView: some View {
+        let presentation = ErrorPresentation.signing(rawError: message)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "tryAgain".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModel.restart()
         }
     }
 

@@ -36,6 +36,7 @@ struct KeysignView: View {
     @Environment(\.openURL) private var openURL
 
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         content
@@ -175,10 +176,19 @@ struct KeysignView: View {
     }
 
     var keysignVaultMismatchErrorView: some View {
-        KeysignVaultMismatchErrorView()
-            .onAppear {
-                showError = true
-            }
+        let presentation = ErrorPresentation(.vaultNotLoaded)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "tryAgain".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModel.set(selectedVault: appViewModel.selectedVault, showingVaultSelector: true)
+        }
+        .onAppear {
+            showError = true
+        }
     }
 
     func setData() async {
@@ -246,6 +256,7 @@ struct KeysignView: View {
     }
     .environmentObject(HomeViewModel())
     .environmentObject(GlobalStateViewModel())
+    .environmentObject(AppViewModel())
 }
 
 #if os(iOS)

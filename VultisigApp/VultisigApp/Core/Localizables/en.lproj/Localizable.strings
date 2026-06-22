@@ -398,8 +398,18 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
+"errorCameraPermissionDescription" = "Camera permission is required to proceed. Please enable it in Settings.";
+"errorCameraPermissionTitle" = "Camera permission not granted";
+"errorCopy" = "Copy";
 "errorLoadingBalance" = "Error loading balance";
+"errorMessageTitle" = "Error message";
+"errorNetworkUnstableDescription" = "The server couldn't be reached in time. Please check your connection and try again.";
+"errorNetworkUnstableTitle" = "Connection problem";
+"errorReportBug" = "Report Bug";
 "errorSavingFile" = "Error saving file";
+"errorShowExact" = "Show exact error";
+"errorVaultNotLoadedDescription" = "Please import the correct share.";
+"errorVaultNotLoadedTitle" = "Vault is not loaded";
 "estimatedBondValue" = "Estimated Bond Value";
 "estimatedCacaoValue" = "Estimated Value";
 "estimatedReward" = "Estimated reward";
@@ -928,6 +938,7 @@
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Same vault share";
+"sameDeviceShareErrorDescription" = "Please change the share to sign. Two devices cannot use the same vault share for co-signing.";
 "sameNameFolderDescription" = "That folder name already exists. Try a new one.";
 "save" = "Save";
 "saveAddress" = "Save Address";
@@ -1175,6 +1186,7 @@
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
 "transactionFailed" = "Transaction failed";
+"transactionFailedDescription" = "One of your devices didn't respond in time. Check your connection and try again.";
 "transactionFailedHighlight" = "failed";
 "transactionHash" = "Transaction Hash";
 "transactionHistory" = "Transaction History";
