@@ -70,6 +70,21 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         XCTAssertEqual(collapsed.map { $0.ticker }, ["ETH", "USDC"], "No duplicate native → list unchanged")
     }
 
+    func testSwapSymbolMapsNativeTonToTON() {
+        // The Toncoin → GRAM rebrand renamed only the display ticker; SwapKit
+        // still lists the native as "TON" and doesn't support "GRAM", so a
+        // GRAM-ticker'd native must swap as TON.
+        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "GRAM", isNativeToken: true), "TON")
+        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "TON", isNativeToken: true), "TON")
+    }
+
+    func testSwapSymbolLeavesOtherAssetsUnchanged() {
+        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ethereum, ticker: "ETH", isNativeToken: true), "ETH")
+        XCTAssertEqual(SwapKitService.swapSymbol(chain: .bitcoin, ticker: "BTC", isNativeToken: true), "BTC")
+        // TON-chain jetton (non-native) keeps its own ticker.
+        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "USDT", isNativeToken: false), "USDT")
+    }
+
     @MainActor
     func testCacheSeededSnapshotReturnsBuckets() async {
         let novel = CoinMeta(chain: .arbitrum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x000000000000000000000000000000000000000A", isNativeToken: false)
