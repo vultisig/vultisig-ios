@@ -306,7 +306,7 @@ struct SignTonDisplayView: View {
     // MARK: - Amount formatters
 
     private func tonAmountString(rawAmount: String) -> String {
-        "\(formatBaseAmount(rawAmount: rawAmount, decimals: 9)) TON"
+        "\(formatBaseAmount(rawAmount: rawAmount, decimals: 9)) GRAM"
     }
 
     private func jettonAmountString(
