@@ -83,8 +83,9 @@ struct ErrorPresentation: Equatable {
     /// amber warning variant and everything else into the generic critical
     /// "Transaction failed" case. The raw string is always preserved.
     static func signing(rawError: String) -> ErrorPresentation {
-        let lowered = rawError.lowercased()
-        let raw = rawError.isEmpty ? nil : rawError
+        let normalized = rawError.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowered = normalized.lowercased()
+        let raw = normalized.isEmpty ? nil : normalized
 
         if lowered.contains("insufficient funds") || lowered.contains("insufficient balance") {
             return ErrorPresentation(.insufficientFunds, rawError: raw)
@@ -100,15 +101,17 @@ struct ErrorPresentation: Equatable {
     /// Generic fallback for an arbitrary error: the critical "Transaction
     /// failed" case carrying the underlying description as the raw trace.
     static func unknown(rawError: String) -> ErrorPresentation {
-        ErrorPresentation(.transactionFailed, rawError: rawError.isEmpty ? nil : rawError)
+        let normalized = rawError.trimmingCharacters(in: .whitespacesAndNewlines)
+        return ErrorPresentation(.transactionFailed, rawError: normalized.isEmpty ? nil : normalized)
     }
 
     /// Keygen failure: a recoverable network error surfaces the amber "Network
     /// unstable" copy; anything else keeps the keygen-specific `title` with a
     /// generic subtitle and the raw trace behind "Show exact error".
     static func keygen(title: String, rawError: String) -> ErrorPresentation {
-        let raw = rawError.isEmpty ? nil : rawError
-        if isNetworkError(rawError.lowercased()) {
+        let normalized = rawError.trimmingCharacters(in: .whitespacesAndNewlines)
+        let raw = normalized.isEmpty ? nil : normalized
+        if isNetworkError(normalized.lowercased()) {
             return ErrorPresentation(.networkUnstable, rawError: raw)
         }
         return ErrorPresentation(

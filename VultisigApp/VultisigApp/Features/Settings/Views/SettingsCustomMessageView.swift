@@ -117,7 +117,11 @@ struct SettingsCustomMessageView: View {
     }
 
     var signingErrorView: some View {
-        let presentation = ErrorPresentation.signing(rawError: message)
+        // `keysignView` is only nil here as a defensive fallback (it's set in the
+        // pair callback immediately before advancing to this state), so there's no
+        // captured signing error to show — present a generic failure rather than
+        // leaking the user's custom message as the error.
+        let presentation = ErrorPresentation.signing(rawError: "")
         return ErrorView(
             type: presentation.type,
             title: presentation.title,
