@@ -49,6 +49,14 @@ enum SwapKitConfig {
     /// stampede the proxy every time the picker opens".
     static let tokensCacheTTL: TimeInterval = 5 * 60
 
+    /// TTL for the swap "Select asset" picker's per-chain token list cache
+    /// (`SwapTokenListCache` — the cached `TokenSearchService.loadTokens`
+    /// output: 1inch / Jupiter + preset tokens). 6h: the curated + remote
+    /// token catalogs change rarely, so a long window keeps re-selecting a
+    /// chain fully offline (no spinner, no network) while still picking up
+    /// catalog changes within a day. Tunable.
+    static let swapTokenListCacheTTL: TimeInterval = 6 * 60 * 60
+
     /// Provider names that route through THORChain / MayaChain. Routes whose
     /// `providers[]` contain any of these are dropped at the fetcher
     /// boundary — Vultisig already routes those directly and we would

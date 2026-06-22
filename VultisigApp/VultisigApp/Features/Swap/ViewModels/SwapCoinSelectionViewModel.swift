@@ -44,6 +44,32 @@ class SwapCoinSelectionViewModel: ObservableObject {
     }
 
     func fetchCoins(chain: Chain) async {
+        // Sync peek on the MainActor: when the chain's vault-independent token
+        // list is already cached, do the cheap local merge and publish without
+        // ever flipping `isLoading` — instant, no spinner. Only a cold load
+        // (no cached entry) shows the loader.
+        let cached = await MainActor.run { SwapTokenListCache.shared.cached(for: chain) }
+
+        if let cached {
+            await MainActor.run {
+                error = nil
+                // A prior cold load for another chain may have been cancelled
+                // with the spinner still up — clear it so the instant-serve
+                // path is truly spinner-free.
+                isLoading = false
+            }
+            await publishMerge(externalTokens: cached, chain: chain)
+
+            // Refresh a stale entry silently in the background — still no
+            // spinner. The cache coalesces + fail-opens, so this is cheap.
+            let stale = await MainActor.run { SwapTokenListCache.shared.isStale(chain) }
+            if stale {
+                await refresh(chain: chain)
+            }
+            return
+        }
+
+        // Cold load: no cached list for this chain — show the spinner.
         await MainActor.run {
             isLoading = true
             error = nil
@@ -51,16 +77,50 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
         do {
             let result = try await logic.fetchCoins(chain: chain)
+            try Task.checkCancellation()
             await MainActor.run {
                 self.tokens = result.tokens
                 self.filteredTokens = result.tokens
                 isLoading = false
             }
+        } catch is CancellationError {
+            // Superseded by a faster chain-switch — leave state for the winner.
         } catch {
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 self.error = error
                 isLoading = false
             }
+        }
+    }
+
+    /// Background re-fetch of a stale list (via the cache) that republishes the
+    /// merge without touching `isLoading`.
+    private func refresh(chain: Chain) async {
+        do {
+            let result = try await logic.fetchCoins(chain: chain)
+            try Task.checkCancellation()
+            await MainActor.run {
+                self.tokens = result.tokens
+                self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
+            }
+        } catch {
+            // Stale-but-present list is already on screen; swallow refresh
+            // failures (the cache fail-opens to last-good anyway).
+        }
+    }
+
+    private func publishMerge(externalTokens: [CoinMeta], chain: Chain) async {
+        do {
+            let result = try await logic.merge(externalTokens: externalTokens, chain: chain)
+            try Task.checkCancellation()
+            await MainActor.run {
+                self.tokens = result.tokens
+                self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
+            }
+        } catch {
+            guard !Task.isCancelled else { return }
+            await MainActor.run { self.error = error }
         }
     }
 
@@ -109,10 +169,19 @@ struct SwapCoinSelectionLogic {
     }
 
     func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
-        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
-
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
+        return try await merge(externalTokens: externalTokens, chain: chain)
+    }
+
+    /// Builds the picker-ready list from an already-fetched external token list
+    /// (native + external/preset + destination registry + the vault's held
+    /// coins, deduped + sorted). Separated from the network fetch so the view
+    /// model can serve a cached external list without a spinner. The vault read
+    /// and `sort` (live balance reads) stay on the MainActor.
+    func merge(externalTokens: [CoinMeta], chain: Chain) async throws -> SwapCoinSelectionResult {
+        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
+
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
         let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
 
