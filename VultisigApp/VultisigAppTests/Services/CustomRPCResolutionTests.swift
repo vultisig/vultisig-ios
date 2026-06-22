@@ -4,6 +4,7 @@
 //
 
 @testable import VultisigApp
+import SwiftData
 import XCTest
 
 /// A fake `RPCEndpointResolving` that returns a fixed override per chain. Lets
@@ -317,5 +318,52 @@ final class CustomRPCResolutionTests: XCTestCase {
         // Polkadot proxy default baked at init
         XCTAssertEqual(PolkadotService.rpcEndpoint, "https://api.vultisig.com/dot/")
         XCTAssertEqual(Endpoint.polkadotServiceRpc, "https://api.vultisig.com/dot/")
+    }
+}
+
+/// EVM funnel tests that exercise the real `CustomRPCStore` so Polygon aliasing
+/// (`.polygon` / `.polygonV2` sharing one override slot) is observable — the
+/// pure `FakeRPCResolver` keys verbatim and cannot reproduce the normalizer.
+@MainActor
+final class CustomRPCPolygonFunnelTests: XCTestCase {
+
+    private var token: TestContextToken?
+    private let store = CustomRPCStore.shared
+
+    override func setUp() async throws {
+        try await super.setUp()
+        token = try TestStore.installInMemoryContainer()
+        store.reloadFromStore()
+        store.reset(.polygon)
+    }
+
+    override func tearDown() async throws {
+        store.reset(.polygon)
+        TestStore.restore(token)
+        token = nil
+        try await super.tearDown()
+    }
+
+    func test_evmConfig_polygonOverride_appliesToPolygonV2() throws {
+        store.set("https://my-polygon-node.example/rpc", for: .polygon)
+        let config = try EvmServiceConfig.getConfig(forChain: .polygonV2, resolver: store)
+        XCTAssertEqual(config.rpcEndpoint, "https://my-polygon-node.example/rpc")
+    }
+
+    func test_evmConfig_polygonV2Override_appliesToPolygon() throws {
+        store.set("https://my-polygon-node.example/rpc", for: .polygonV2)
+        let config = try EvmServiceConfig.getConfig(forChain: .polygon, resolver: store)
+        XCTAssertEqual(config.rpcEndpoint, "https://my-polygon-node.example/rpc")
+    }
+
+    func test_evmConfig_polygon_noOverride_returnsDefaultForBothCases() throws {
+        XCTAssertEqual(
+            try EvmServiceConfig.getConfig(forChain: .polygon, resolver: store).rpcEndpoint,
+            Endpoint.polygonServiceRpcService
+        )
+        XCTAssertEqual(
+            try EvmServiceConfig.getConfig(forChain: .polygonV2, resolver: store).rpcEndpoint,
+            Endpoint.polygonServiceRpcService
+        )
     }
 }

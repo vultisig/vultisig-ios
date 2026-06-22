@@ -64,4 +64,17 @@ final class CustomRPCSelectChainFilterTests: XCTestCase {
         viewModel.searchText = "  ethereum  "
         XCTAssertTrue(viewModel.filteredChains.contains(.ethereum))
     }
+
+    // MARK: - Dedup invariant (no two rows share a display name)
+
+    func test_supportedChains_haveNoDuplicateDisplayNames() {
+        let names = CustomRPCSupportedChains.all.map(\.name)
+        XCTAssertEqual(Set(names).count, names.count)
+    }
+
+    func test_supportedChains_includePolygonOnce_notPolygonV2() {
+        XCTAssertTrue(CustomRPCSupportedChains.all.contains(.polygon))
+        XCTAssertFalse(CustomRPCSupportedChains.all.contains(.polygonV2))
+        XCTAssertEqual(CustomRPCSupportedChains.all.filter { $0 == .polygon }.count, 1)
+    }
 }
