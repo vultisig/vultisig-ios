@@ -184,7 +184,7 @@ struct SignTonDisplayView: View {
     ) -> SwapAmount {
         switch swap.offerAsset {
         case .ton:
-            return SwapAmount(amount: swap.offerAmount, decimals: 9, ticker: "TON", logo: "ton")
+            return SwapAmount(amount: swap.offerAmount, decimals: 9, ticker: "GRAM", logo: "gram")
         case .jetton:
             let coin = entry.jettonCoin
             return SwapAmount(
@@ -306,7 +306,7 @@ struct SignTonDisplayView: View {
     // MARK: - Amount formatters
 
     private func tonAmountString(rawAmount: String) -> String {
-        "\(formatBaseAmount(rawAmount: rawAmount, decimals: 9)) TON"
+        "\(formatBaseAmount(rawAmount: rawAmount, decimals: 9)) GRAM"
     }
 
     private func jettonAmountString(

@@ -42,7 +42,7 @@ final class CustomRPCStore: @unchecked Sendable {
     func url(for chain: Chain) -> String? {
         lock.lock()
         defer { lock.unlock() }
-        return mirror[chain.rawValue]
+        return mirror[storageKey(for: chain)]
     }
 
     // MARK: - Write path (MainActor + SwiftData)
@@ -56,7 +56,7 @@ final class CustomRPCStore: @unchecked Sendable {
         }
 
         let trimmed = url.trimmingCharacters(in: .whitespacesAndNewlines)
-        let chainRaw = chain.rawValue
+        let chainRaw = storageKey(for: chain)
 
         do {
             let descriptor = FetchDescriptor<CustomRPCOverride>(
@@ -83,7 +83,7 @@ final class CustomRPCStore: @unchecked Sendable {
             return
         }
 
-        let chainRaw = chain.rawValue
+        let chainRaw = storageKey(for: chain)
 
         do {
             let descriptor = FetchDescriptor<CustomRPCOverride>(
@@ -109,7 +109,8 @@ final class CustomRPCStore: @unchecked Sendable {
         }
 
         do {
-            let overrides = try context.fetch(FetchDescriptor<CustomRPCOverride>())
+            var overrides = try context.fetch(FetchDescriptor<CustomRPCOverride>())
+            migrateLegacyPolygonV2(in: &overrides, context: context)
             let snapshot = Dictionary(
                 overrides.map { ($0.chainRaw, $0.url) },
                 uniquingKeysWith: { _, last in last }
@@ -123,6 +124,37 @@ final class CustomRPCStore: @unchecked Sendable {
         }
     }
 
+    // MARK: - Migration
+
+    /// Folds any legacy `polygonV2`-keyed override onto the canonical `polygon`
+    /// key and deletes the orphaned row. Earlier builds keyed overrides by the
+    /// enum case name, so a Polygon override could land under either case; both
+    /// chains now resolve through `storageKey(for:)` to the `polygon` key, and a
+    /// stale `polygonV2` row would otherwise be unreachable (and could collide
+    /// with the `.unique` constraint). When both rows exist, `polygon` wins.
+    @MainActor
+    private func migrateLegacyPolygonV2(in overrides: inout [CustomRPCOverride], context: ModelContext) {
+        let legacyKey = Chain.polygonV2.rawValue
+        guard let legacyIndex = overrides.firstIndex(where: { $0.chainRaw == legacyKey }) else {
+            return
+        }
+
+        let canonicalKey = Chain.polygon.rawValue
+        let legacy = overrides[legacyIndex]
+        if !overrides.contains(where: { $0.chainRaw == canonicalKey }) {
+            context.insert(CustomRPCOverride(chainRaw: canonicalKey, url: legacy.url))
+        }
+        context.delete(legacy)
+        overrides.remove(at: legacyIndex)
+
+        do {
+            try context.save()
+            overrides = try context.fetch(FetchDescriptor<CustomRPCOverride>())
+        } catch {
+            logger.error("Failed to migrate legacy polygonV2 override: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Mirror helpers
 
     private func updateMirror(chainRaw: String, url: String?) {
@@ -132,6 +164,18 @@ final class CustomRPCStore: @unchecked Sendable {
             mirror[chainRaw] = url
         } else {
             mirror.removeValue(forKey: chainRaw)
+        }
+    }
+
+    /// Normalizes a chain to the single persistence key used for its override.
+    /// `.polygon` and `.polygonV2` are the same network (chainId 137, shown once
+    /// in the picker), so both share one override slot keyed by `.polygon`.
+    private func storageKey(for chain: Chain) -> String {
+        switch chain {
+        case .polygonV2:
+            return Chain.polygon.rawValue
+        default:
+            return chain.rawValue
         }
     }
 }

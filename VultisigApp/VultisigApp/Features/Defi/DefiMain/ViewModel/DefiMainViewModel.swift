@@ -40,6 +40,17 @@ final class DefiMainViewModel: ObservableObject {
         return prefix + filtered.map { .chain($0) }
     }
 
+    /// Refreshes persisted balances (including `Coin.stakedBalance`, which backs
+    /// the TRON/Cosmos staking positions) and regroups. The DeFi main screen has
+    /// no other trigger for a balance refresh — entering it directly without
+    /// visiting the Wallet tab would otherwise show stale, never-fetched staked
+    /// balances. Mirrors `DefiChainMainViewModel.refresh()`.
+    func refreshBalances(vault: Vault) async {
+        await BalanceService.shared.updateBalances(vault: vault)
+        guard !Task.isCancelled else { return }
+        groupChains(vault: vault)
+    }
+
     func groupChains(vault: Vault) {
         let defiChains = vault.chainsWithCoins.filter { chain in
             vault.defiChains.contains(chain) && CoinAction.defiChains.contains(chain)

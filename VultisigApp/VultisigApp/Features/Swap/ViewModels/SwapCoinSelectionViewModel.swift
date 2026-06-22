@@ -208,7 +208,8 @@ struct SwapCoinSelectionLogic {
 
         let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
         let withVault = Self.merge(base: merged, extra: vaultTokens)
-        let sorted = await MainActor.run { sort(tokens: withVault) }
+        let deduped = Self.collapseToSingleNative(withVault)
+        let sorted = await MainActor.run { sort(tokens: deduped) }
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
@@ -223,6 +224,24 @@ struct SwapCoinSelectionLogic {
         externals: [DestinationTokenBucket]
     ) -> [CoinMeta] {
         merge(base: base, extra: externals.flatMap { $0.tokens })
+    }
+
+    /// A chain has exactly one native asset, so the picker must show it once.
+    /// External providers (e.g. SwapKit's token list) and legacy persisted
+    /// coins can surface that native under a stale ticker — after the Toncoin
+    /// rebrand the curated native is `GRAM` while SwapKit still lists `TON`,
+    /// which the `uniqueId` dedup treats as distinct and would show as a second
+    /// native row (and let it be re-added as a duplicate coin). Keep the first
+    /// native — the curated `TokensStore` entry, prepended in `fetchCoins` — and
+    /// drop any later native. Non-native tokens are untouched.
+    static func collapseToSingleNative(_ tokens: [CoinMeta]) -> [CoinMeta] {
+        var keptNative = false
+        return tokens.filter { token in
+            guard token.isNativeToken else { return true }
+            if keptNative { return false }
+            keptNative = true
+            return true
+        }
     }
 
     /// Appends `extra` tokens not already present in `base`, deduped by

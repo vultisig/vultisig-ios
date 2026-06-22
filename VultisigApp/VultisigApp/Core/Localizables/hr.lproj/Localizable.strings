@@ -455,7 +455,7 @@
 "foregroundNotificationSwap" = "Zamijeni %@ → %@";
 "formInvalid" = "Obrazac nije valjan";
 "formInvalidDefaultMessage" = "Obrazac nije valjan. Molimo ispravite polja označena crvenom zvjezdicom.";
-"forwardTonAmount" = "Iznos prosljeđenog TON-a";
+"forwardTonAmount" = "Iznos prosljeđenog GRAM-a";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
 "foundActiveChainsSubtitleHighlight" = "%d minuta";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";

@@ -83,6 +83,11 @@ struct TronView: View {
         let address = trxCoin.address
         let tronService = TronService.shared
 
+        // Persist the frozen/unfreezing balance into `Coin.stakedBalance` so the
+        // DeFi portfolio main screen (which reads the persisted value) stays in
+        // sync with this live detail view instead of diverging.
+        await BalanceService.shared.updateBalance(for: trxCoin)
+
         // Use structured concurrency for proper cancellation handling
         await withTaskGroup(of: Void.self) { group in
             // Task 1: Fetch account info (balance data)

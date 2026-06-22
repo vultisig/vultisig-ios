@@ -455,7 +455,7 @@
 "foregroundNotificationSwap" = "Tausch %@ → %@";
 "formInvalid" = "Formular ungültig";
 "formInvalidDefaultMessage" = "Das Formular ist ungültig. Bitte korrigieren Sie die mit einem roten Stern markierten Felder.";
-"forwardTonAmount" = "Weitergeleiteter TON-Betrag";
+"forwardTonAmount" = "Weitergeleiteter GRAM-Betrag";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
