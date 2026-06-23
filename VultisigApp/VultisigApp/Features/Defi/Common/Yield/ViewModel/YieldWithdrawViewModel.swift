@@ -37,7 +37,7 @@ final class YieldWithdrawViewModel: ObservableObject, Form {
     }
 
     var coinMeta: CoinMeta? {
-        usdcCoin?.toCoinMeta()
+        assetCoin?.toCoinMeta()
     }
 
     var nativeGasBalance: Decimal {
@@ -82,11 +82,13 @@ final class YieldWithdrawViewModel: ObservableObject, Form {
     }
 
     func displayTransaction(recipient: String) -> SendTransaction? {
-        guard let usdcCoin else { return nil }
-        return SendTransaction.empty(coin: usdcCoin, vault: vault).with(toAddress: recipient, amount: amountField.value)
+        guard let assetCoin else { return nil }
+        return SendTransaction.empty(coin: assetCoin, vault: vault).with(toAddress: recipient, amount: amountField.value)
     }
 
-    private var usdcCoin: Coin? {
-        vault.coins.first { $0.chain == provider.chain && $0.ticker == "USDC" }
+    /// The deposited-asset coin (USDC for Circle, VULT for staking).
+    private var assetCoin: Coin? {
+        let ticker = provider.presentation.assetTicker
+        return vault.coins.first { $0.chain == provider.chain && $0.ticker == ticker }
     }
 }

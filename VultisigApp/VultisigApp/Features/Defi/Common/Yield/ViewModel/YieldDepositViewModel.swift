@@ -19,7 +19,8 @@ final class YieldDepositViewModel: ObservableObject, Form {
     @Published var validForm: Bool = false
     @Published var isLoading = false
     @Published var error: Error?
-    @Published private(set) var usdcCoin: Coin?
+    /// The deposited-asset coin (USDC for Circle, VULT for staking).
+    @Published private(set) var assetCoin: Coin?
     @Published var amountField = FormField(
         label: "amount".localized,
         placeholder: "0",
@@ -41,15 +42,15 @@ final class YieldDepositViewModel: ObservableObject, Form {
     init(vault: Vault, providerID: DefiYieldProviderID) {
         self.vault = vault
         self.provider = DefiYieldProviderFactory.make(providerID)
-        fetchUsdcCoin()
+        fetchAssetCoin()
     }
 
     var availableAmount: Decimal {
-        usdcCoin?.balanceDecimal ?? 0
+        assetCoin?.balanceDecimal ?? 0
     }
 
     var coinMeta: CoinMeta? {
-        usdcCoin?.toCoinMeta()
+        assetCoin?.toCoinMeta()
     }
 
     /// Product minimum deposit in human units (e.g. 100 USDC). `0` ⇒ no
@@ -68,7 +69,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
     }
 
     private var depositTicker: String {
-        usdcCoin?.ticker ?? "USDC"
+        assetCoin?.ticker ?? "USDC"
     }
 
     /// The minimum rendered without trailing zeros (100, not 100.0000).
@@ -112,8 +113,8 @@ final class YieldDepositViewModel: ObservableObject, Form {
         observeAmount()
         await fetchApy()
 
-        guard let usdcCoin else { return }
-        await BalanceService.shared.updateBalance(for: usdcCoin)
+        guard let assetCoin else { return }
+        await BalanceService.shared.updateBalance(for: assetCoin)
 
         if hasMinimumDeposit {
             amountField.validators.append(
@@ -121,7 +122,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
             )
         }
         setupForm()
-        amountField.validators.append(AmountBalanceValidator(balance: usdcCoin.balanceDecimal))
+        amountField.validators.append(AmountBalanceValidator(balance: assetCoin.balanceDecimal))
     }
 
     /// Mirrors the entered amount into `enteredAmount` so the preview recomputes
@@ -152,8 +153,9 @@ final class YieldDepositViewModel: ObservableObject, Form {
         apyPercent = try? await provider.apy(vault: vault)
     }
 
-    private func fetchUsdcCoin() {
-        usdcCoin = vault.coins.first { $0.chain == provider.chain && $0.ticker == "USDC" }
+    private func fetchAssetCoin() {
+        let ticker = provider.presentation.assetTicker
+        assetCoin = vault.coins.first { $0.chain == provider.chain && $0.ticker == ticker }
     }
 
     /// `nil` ⇒ the entered amount doesn't convert to integer base units; the
@@ -188,8 +190,8 @@ final class YieldDepositViewModel: ObservableObject, Form {
     }
 
     func displayTransaction() -> SendTransaction? {
-        guard let usdcCoin else { return nil }
-        return SendTransaction.empty(coin: usdcCoin, vault: vault).with(
+        guard let assetCoin else { return nil }
+        return SendTransaction.empty(coin: assetCoin, vault: vault).with(
             toAddress: provider.depositRecipient,
             amount: amountField.value
         )

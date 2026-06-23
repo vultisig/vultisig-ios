@@ -61,21 +61,28 @@ final class YieldViewModel: ObservableObject, Hashable, Equatable {
         }
     }
 
-    var claimableRedemption: YieldRedemption? {
-        redemptions.first { $0.status == .claimable && $0.isClaimable }
+    /// All claimable redemptions. VULT can have several concurrently maturing
+    /// requests; Circle have ≤1, so this is a 0-or-1 list for them.
+    var claimableRedemptions: [YieldRedemption] {
+        redemptions.filter { $0.status == .claimable && $0.isClaimable }
     }
 
-    var pendingRedemption: YieldRedemption? {
-        redemptions.first { $0.status == .pending }
+    /// All pending (not-yet-claimable) redemptions. ≤1 for Circle.
+    var pendingRedemptions: [YieldRedemption] {
+        redemptions.filter { $0.status == .pending }
     }
+
+    /// Single-redemption shims for any non-list call site (Circle keep ≤1).
+    var claimableRedemption: YieldRedemption? { claimableRedemptions.first }
+    var pendingRedemption: YieldRedemption? { pendingRedemptions.first }
 
     /// Windowed vaults with a balance but no in-flight redemption show the
     /// "request before the cutoff" note (the withdraw action queues the request).
     var showsWindowedNote: Bool {
         presentation.showsRedemptionRows
             && depositedBalance > 0
-            && pendingRedemption == nil
-            && claimableRedemption == nil
+            && pendingRedemptions.isEmpty
+            && claimableRedemptions.isEmpty
     }
 
     func seed(from position: YieldPosition?) {

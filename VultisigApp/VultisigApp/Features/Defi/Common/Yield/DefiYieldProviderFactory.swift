@@ -12,6 +12,8 @@ enum DefiYieldProviderFactory {
         switch id {
         case .circle:
             return CircleYieldProvider()
+        case .vult:
+            return VultYieldProvider()
         }
     }
 }
