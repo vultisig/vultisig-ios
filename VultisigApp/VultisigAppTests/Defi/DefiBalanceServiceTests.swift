@@ -113,6 +113,21 @@ final class DefiBalanceServiceTests: XCTestCase {
         XCTAssertEqual(service.totalBalanceInFiat(for: .tron, vault: vault), .zero)
     }
 
+    func testTronTotalBalanceAndCountZeroWhenStakedBalanceUnset() throws {
+        // Default `Coin.stakedBalance` is the empty string (never refreshed).
+        // The DeFi main row must read $0.00 / 0 positions, not crash or inherit
+        // the wallet balance — this is exactly the stale state issue #4608 hits.
+        let trx = makeTronCoin(rawBalance: "100000000", stakedBalance: "")
+        vault.coins = [trx]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "tron", value: 0.5)
+        ])
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .tron, vault: vault), .zero)
+        XCTAssertTrue(service.totalBalanceInFiatString(for: .tron, vault: vault).contains("0"))
+        XCTAssertEqual(service.defiPositionCount(for: .tron, vault: vault), 0)
+    }
+
     private func makeTronCoin(rawBalance: String, stakedBalance: String) -> Coin {
         let trxMeta = CoinMeta.make(chain: .tron, ticker: "TRX", decimals: 6)
         let coin = Coin(asset: trxMeta, address: "TTronTestAddress", hexPublicKey: "")

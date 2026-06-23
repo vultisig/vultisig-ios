@@ -150,6 +150,20 @@ final class SwapDetailsViewModel {
         // every re-render.
         resetAdvancedSettings()
         dataLoaded = true
+        prefetchSwapTokens()
+    }
+
+    /// Warm the per-chain swap token cache (`SwapTokenListCache`, via
+    /// `TokenSearchService`) so the "Select asset" picker opens instantly instead
+    /// of showing "Loading…". The picker opens to the from/to coin's chain, so
+    /// prefetch both. Fire-and-forget; the cache coalesces an in-flight fetch if
+    /// the user opens the picker mid-prefetch, and a fresh entry makes this a
+    /// no-op.
+    func prefetchSwapTokens() {
+        let chains = Set([fromCoin.chain, toCoin.chain])
+        for chain in chains {
+            Task { _ = try? await TokenSearchService.shared.loadTokens(for: chain) }
+        }
     }
 
     /// Warm the per-session VULT discount-tier cache once on screen load so the
@@ -271,6 +285,7 @@ final class SwapDetailsViewModel {
         // `toCoin` lands on a valid pair before the quote fetch runs.
         updateCoinLists()
         fetchQuotes(vault: vault, referredCode: referredCode)
+        prefetchSwapTokens()
     }
 
     /// `immediate: true` skips the keystroke debounce — used for discrete actions
@@ -291,6 +306,7 @@ final class SwapDetailsViewModel {
         updateCoinLists()
         fetchQuotes(vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
+        prefetchSwapTokens()
     }
 
     func updateToCoin(coin: Coin, vault: Vault, referredCode: String) {
@@ -301,6 +317,7 @@ final class SwapDetailsViewModel {
         toChain = coin.chain
         fetchQuotes(vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
+        prefetchSwapTokens()
     }
 
     func updateBalance(for coin: Coin) {

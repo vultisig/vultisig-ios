@@ -9,6 +9,16 @@ import SwiftUI
 
 struct ListBottomSection<Content: View>: View {
     var content: () -> Content
+    var onHeightChange: ((CGFloat) -> Void)?
+
+    init(
+        @ViewBuilder content: @escaping () -> Content,
+        onHeightChange: ((CGFloat) -> Void)? = nil
+    ) {
+        self.content = content
+        self.onHeightChange = onHeightChange
+    }
+
     var body: some View {
         content()
             .padding(.bottom, bottomPadding)
@@ -25,6 +35,7 @@ struct ListBottomSection<Content: View>: View {
                 )
             )
             .edgesIgnoringSafeArea(.bottom)
+            .readSize { onHeightChange?($0.height) }
     }
 
     var bottomPadding: CGFloat {

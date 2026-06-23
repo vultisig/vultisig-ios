@@ -463,7 +463,7 @@
 "foregroundNotificationSwap" = "Intercambiar %@ → %@";
 "formInvalid" = "Formulario no válido";
 "formInvalidDefaultMessage" = "El formulario no es válido. Por favor, corrija los campos marcados con una estrella roja.";
-"forwardTonAmount" = "Monto de TON Reenviado";
+"forwardTonAmount" = "Monto de GRAM Reenviado";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";

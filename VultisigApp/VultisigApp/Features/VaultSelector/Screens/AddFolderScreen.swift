@@ -21,6 +21,8 @@ struct AddFolderScreen: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
 
+    @State private var footerHeight: CGFloat = 0
+
     var body: some View {
         view
             .padding(.top, 24)
@@ -54,7 +56,7 @@ struct AddFolderScreen: View {
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
-            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 100) })
+            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: footerHeight) })
         }
     }
 
@@ -72,12 +74,12 @@ struct AddFolderScreen: View {
     }
 
     var saveButton: some View {
-        ListBottomSection {
+        ListBottomSection(content: {
             PrimaryButton(title: "save") {
                 saveFolder()
             }
             .disabled(folderViewModel.saveButtonDisabled)
-        }
+        }, onHeightChange: { footerHeight = $0 })
     }
 
     var header: some View {

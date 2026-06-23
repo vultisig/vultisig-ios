@@ -469,7 +469,7 @@
 "foregroundNotificationSwap" = "Swap %@ → %@";
 "formInvalid" = "Form Invalid";
 "formInvalidDefaultMessage" = "The form is not valid. Please fix the fields marked with a red star.";
-"forwardTonAmount" = "Forward TON Amount";
+"forwardTonAmount" = "Forward GRAM Amount";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";

@@ -28,7 +28,6 @@ enum CustomRPCSupportedChains {
         .base,
         .arbitrum,
         .polygon,
-        .polygonV2,
         .optimism,
         .blast,
         .cronosChain,

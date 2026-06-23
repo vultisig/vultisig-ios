@@ -29,6 +29,7 @@ struct DefiMainScreen: View {
     @State var showChainSelection: Bool = false
     @State private var searchScrollTask: Task<Void, Never>?
     @State private var clearSearchTask: Task<Void, Never>?
+    @State private var refreshTask: Task<Void, Never>?
 
     private let scrollReferenceId = "DefiMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
@@ -93,6 +94,7 @@ struct DefiMainScreen: View {
         .onDisappear {
             searchScrollTask?.cancel()
             clearSearchTask?.cancel()
+            refreshTask?.cancel()
         }
     }
 
@@ -169,7 +171,12 @@ struct DefiMainScreen: View {
     }
 
     func refresh() {
+        // Paint immediately from persisted balances, then kick a fire-and-forget
+        // balance refresh so staked positions (e.g. TRON frozen TRX) land even
+        // when the user opens DeFi without visiting the Wallet tab first.
         viewModel.groupChains(vault: vault)
+        refreshTask?.cancel()
+        refreshTask = Task { await viewModel.refreshBalances(vault: vault) }
     }
 
     func clearSearch() {

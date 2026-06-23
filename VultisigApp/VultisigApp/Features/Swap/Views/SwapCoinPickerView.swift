@@ -21,6 +21,7 @@ struct SwapCoinPickerView: View {
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var searchBarFocused: Bool = false
+    @State private var reloadTask: Task<Void, Never>?
 
     var showSelectChainHeader: Bool {
         #if os(macOS)
@@ -226,7 +227,10 @@ struct SwapCoinPickerView: View {
     }
 
     private func reloadCoins() {
-        Task {
+        // Cancel any in-flight load so a fast chain-switch superseding a cold
+        // fetch can't publish results for the wrong chain.
+        reloadTask?.cancel()
+        reloadTask = Task {
             guard let selectedChain else { return }
             await viewModel.fetchCoins(chain: selectedChain)
         }
