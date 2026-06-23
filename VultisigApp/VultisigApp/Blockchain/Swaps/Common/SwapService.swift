@@ -543,8 +543,10 @@ private extension SwapService {
         recipientAddress: String?
     ) async throws -> SwapQuote {
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
-        // doesn't enable. Fails open if the cache can't be loaded so we don't
-        // silently disable the aggregator on a bad network day.
+        // doesn't enable. Fails CLOSED on the no-snapshot edge (throws
+        // `providerNotEnabled`) rather than offering routes that fail
+        // downstream; once a snapshot exists, `SwapKitProviderCache` serves it
+        // as last-good so a transient network blip doesn't disable SwapKit.
         let fromEnabled = await service.isChainEnabled(fromCoin.chain)
         let toEnabled = await service.isChainEnabled(toCoin.chain)
         guard fromEnabled, toEnabled else {
