@@ -192,6 +192,10 @@ enum EvmService {
         return try await (try service).fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
     }
 
+    func callContract(to: String, data: String) async throws -> String {
+        return try await (try service).callContract(to: to, data: data)
+    }
+
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
         return try await (try service).getTokenInfo(contractAddress: contractAddress)
     }

@@ -9,13 +9,13 @@ import SwiftUI
 
 /// Represents a selectable item in the DeFi chain selection screen
 enum DefiSelectableItem: Hashable, Identifiable {
-    case circle
+    case yield(DefiYieldProviderID)
     case chain(Chain)
 
     var id: String {
         switch self {
-        case .circle:
-            return "circle"
+        case .yield(let provider):
+            return provider.rawValue
         case .chain(let chain):
             return chain.rawValue
         }
@@ -28,20 +28,13 @@ struct DefiSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
+    @State private var error: HelperError?
 
     @StateObject var viewModel = DefiSelectChainViewModel()
 
     var selectableItems: [DefiSelectableItem] {
-        var items: [DefiSelectableItem] = []
-
-        // Add Circle if it matches the search filter
-        if viewModel.shouldShowCircle {
-            items.append(.circle)
-        }
-
-        // Add filtered chains
+        var items: [DefiSelectableItem] = viewModel.visibleProviders.map { .yield($0) }
         items.append(contentsOf: viewModel.filteredChains.map { .chain($0) })
-
         return items
     }
 
@@ -64,15 +57,25 @@ struct DefiSelectChainScreen: View {
         .onAppear {
             viewModel.setData(for: vault)
         }
+        .alert(item: $error) { error in
+            Alert(
+                title: Text("error".localized),
+                message: Text(error.localizedDescription),
+                dismissButton: .default(Text("ok".localized))
+            )
+        }
     }
 
     @ViewBuilder
     func cellBuilder(item: DefiSelectableItem, sectionType _: Int) -> some View {
         switch item {
-        case .circle:
-            DefiCircleSelectionGridCell(
-                viewModel: viewModel,
-                onSelection: onCircleSelection
+        case .yield(let providerID):
+            let presentation = DefiYieldProviderFactory.make(providerID).presentation
+            DefiYieldSelectionGridCell(
+                name: presentation.providerNameKey.localized,
+                logo: presentation.rowLogoAsset,
+                isEnabled: viewModel.isEnabled(providerID),
+                onSelection: { viewModel.setEnabled(providerID, $0) }
             )
         case .chain(let chain):
             DefiChainSelectionGridCell(
@@ -88,25 +91,26 @@ private extension DefiSelectChainScreen {
     func onSaveInternal() {
         isLoading = true
         Task {
-            await saveAssets()
-            await MainActor.run {
-                isLoading = false
-                onSave()
-                isPresented.toggle()
+            do {
+                try await viewModel.save(for: vault)
+                await MainActor.run {
+                    isLoading = false
+                    onSave()
+                    isPresented.toggle()
+                }
+            } catch {
+                // Keep the sheet open so the user can retry instead of losing
+                // their selection to a silently-dropped save.
+                await MainActor.run {
+                    isLoading = false
+                    self.error = .runtimeError(error.localizedDescription)
+                }
             }
         }
     }
 
     func onSelection(_ chainSelection: DefiChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, chain: chainSelection.chain)
-    }
-
-    func onCircleSelection(_ isSelected: Bool) {
-        viewModel.handleCircleSelection(isSelected: isSelected)
-    }
-
-    func saveAssets() async {
-        await viewModel.save(for: vault)
     }
 }
 

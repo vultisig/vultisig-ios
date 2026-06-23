@@ -199,12 +199,14 @@ extension ERC20ApprovePayload {
     init(proto: VSErc20ApprovePayload) {
         self.amount = BigInt(stringLiteral: proto.amount)
         self.spender = proto.spender
+        self.token = proto.token
     }
 
     func mapToProtobuff() -> VSErc20ApprovePayload {
         return .with {
             $0.amount = String(amount)
             $0.spender = String(spender)
+            $0.token = token
         }
     }
 }
