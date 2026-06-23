@@ -16,10 +16,12 @@ extension SwapQuote {
     /// - 1inch/KyberSwap: `dstAmount` is net of swap fees.
     /// - LiFi: `dstAmount` minus integrator fee (charged on the output side).
     ///
-    /// Source-chain gas is intentionally excluded: aggregators on a given chain consume similar
-    /// gas (~200k units), so the destination output dominates the comparison. THORChain Router
-    /// gas on EVM is large but isn't exposed at quote time. A future refinement can subtract gas
-    /// once a native-token price lookup is wired in.
+    /// Source-chain gas is intentionally excluded from this destination-side metric: folding it
+    /// in would require a cross-asset price (source-native wei → destination token) the ranker
+    /// doesn't have, and it only applies to same-chain EVM aggregators — an asymmetric term that
+    /// would disadvantage THORChain/Maya (no router gas at quote time). Source gas is instead
+    /// applied as an in-band lower-gas tie-break in `selectBestQuote` via `sourceGasWei`, where
+    /// the two compared EVM quotes share the same native-wei unit and no price lookup is needed.
     func expectedNetToAmount(toCoin: Coin) -> Decimal? {
         switch self {
         case .thorchain(let quote),
