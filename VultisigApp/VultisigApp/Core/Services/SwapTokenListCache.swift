@@ -15,6 +15,10 @@
 //  vault's held coins (which change at runtime) on every open, so the merged
 //  result is never cached.
 //
+//  This is the `@MainActor` variant of the generic `TTLCache` pattern: it stays
+//  separate because it exposes a SYNCHRONOUS peek (`cached(for:)` / `isStale`)
+//  that `SwapCoinSelectionViewModel` relies on, which an actor can't offer.
+//
 
 import Foundation
 import OSLog
