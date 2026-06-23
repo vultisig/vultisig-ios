@@ -151,17 +151,51 @@ final class SwapDetailsViewModel {
         let allCoins = vault.coins
         guard !allCoins.isEmpty else { return }
 
-        // Refresh live `Available` pools for both native protocols so the picker
-        // surfaces tokens beyond the static fallback arrays (fetch-supersedes-by-
-        // UNION). Fail-open: nil snapshots fall back to the static set, so a
-        // no-network launch shows exactly today's set.
-        // Retain the snapshots on the VM so the recompute + quote paths reuse the
-        // same live-pool-augmented set the picker resolves against.
+        // Resolve the default pair + lists SYNCHRONOUSLY off the static eligibility
+        // first, so the screen shows the correct from/to coins immediately. The
+        // live-pool fetch below is an `await` (an actor hop even when cached), so
+        // resolving after it would flash the `.example` placeholder (BTC) in both
+        // slots on every open. Static resolution is byte-identical to the
+        // pre-dynamic default pair; the live pools only ADD tokens.
+        applyResolvedCoins(
+            allCoins: allCoins,
+            initialFromCoin: initialFromCoin,
+            initialToCoin: initialToCoin,
+            providers: { $0.swapProviders }
+        )
+        // Every swap session starts at default advanced settings. The screen owns
+        // a fresh VM per push so this is normally already `.default`, but resetting
+        // here makes the session start explicit and guaranteed even if the VM is
+        // reused. Guarded by `dataLoaded`, so it runs once per session, not on
+        // every re-render.
+        resetAdvancedSettings()
+        dataLoaded = true
+        prefetchSwapTokens()
+
+        // Then fold in live `Available` pools (fetch-supersedes-by-UNION) so
+        // previously-hidden tokens appear, and re-resolve the lists. Fail-open:
+        // nil snapshots keep the static set. The current selection is preserved,
+        // so a warm fetch only grows the lists — it never re-jumps the pair.
         thorPools = await eligibilityCache.pools(.thorchain)
         mayaPools = await eligibilityCache.pools(.mayachain)
+        guard thorPools != nil || mayaPools != nil else { return }
+        applyResolvedCoins(
+            allCoins: allCoins,
+            initialFromCoin: fromCoin,
+            initialToCoin: toCoin,
+            providers: liveProviders
+        )
+    }
 
-        let providers = liveProviders
-
+    /// Resolve and assign the from/to coins + their picker lists for a given
+    /// provider-eligibility closure. Shared by the synchronous static pass and
+    /// the live-pool re-resolve so both produce identical end state.
+    private func applyResolvedCoins(
+        allCoins: [Coin],
+        initialFromCoin: Coin?,
+        initialToCoin: Coin?,
+        providers: (Coin) -> [SwapProvider]
+    ) {
         let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(
             allCoins: allCoins,
             providers: providers
@@ -179,15 +213,6 @@ final class SwapDetailsViewModel {
         toCoin = defaultToCoin
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
-        // Every swap session starts at default advanced settings. The screen owns
-        // a fresh VM per push so this is normally already `.default`, but resetting
-        // here makes the session start explicit and guaranteed even if the VM is
-        // reused. Guarded by `dataLoaded`, so it runs once per session, not on
-        // every re-render.
-        resetAdvancedSettings()
-        dataLoaded = true
-
-        prefetchSwapTokens()
     }
 
     /// Warm the per-chain swap token cache (`SwapTokenListCache`, via
