@@ -91,7 +91,10 @@ struct SwapCoinPickerView: View {
         }
         .onLoad {
             viewModel.setup()
-            reloadCoins()
+            // First open per presentation forces a SwapKit catalog refresh so a
+            // stale token list (or one that missed the cold-launch fetch) is
+            // re-fetched. In-session chain re-selects stay on cached data.
+            reloadCoins(forceRefresh: true)
         }
         .onChange(of: selectedChain) { _, _ in
             reloadCoins()
@@ -226,13 +229,13 @@ struct SwapCoinPickerView: View {
             .filter { vault.availableChains.contains($0) }
     }
 
-    private func reloadCoins() {
+    private func reloadCoins(forceRefresh: Bool = false) {
         // Cancel any in-flight load so a fast chain-switch superseding a cold
         // fetch can't publish results for the wrong chain.
         reloadTask?.cancel()
         reloadTask = Task {
             guard let selectedChain else { return }
-            await viewModel.fetchCoins(chain: selectedChain)
+            await viewModel.fetchCoins(chain: selectedChain, forceRefresh: forceRefresh)
         }
     }
 

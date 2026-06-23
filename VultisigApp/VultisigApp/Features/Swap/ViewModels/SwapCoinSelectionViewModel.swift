@@ -43,7 +43,12 @@ class SwapCoinSelectionViewModel: ObservableObject {
             }
     }
 
-    func fetchCoins(chain: Chain) async {
+    /// `forceRefresh` is passed to the destination-token registry so the
+    /// SwapKit token catalog is re-fetched on the picker's first open per
+    /// presentation. The external (curated/1inch/Jupiter) list keeps its own
+    /// `SwapTokenListCache` freshness logic — only the destination-registry
+    /// catalog is forced.
+    func fetchCoins(chain: Chain, forceRefresh: Bool = false) async {
         // Sync peek on the MainActor: when the chain's vault-independent token
         // list is already cached, do the cheap local merge and publish without
         // ever flipping `isLoading` — instant, no spinner. Only a cold load
@@ -58,7 +63,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
                 // path is truly spinner-free.
                 isLoading = false
             }
-            await publishMerge(externalTokens: cached, chain: chain)
+            await publishMerge(externalTokens: cached, chain: chain, forceRefresh: forceRefresh)
 
             // Refresh a stale entry silently in the background — still no
             // spinner. The cache coalesces + fail-opens, so this is cheap.
@@ -76,7 +81,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
         }
 
         do {
-            let result = try await logic.fetchCoins(chain: chain)
+            let result = try await logic.fetchCoins(chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
             await MainActor.run {
                 self.tokens = result.tokens
@@ -110,9 +115,9 @@ class SwapCoinSelectionViewModel: ObservableObject {
         }
     }
 
-    private func publishMerge(externalTokens: [CoinMeta], chain: Chain) async {
+    private func publishMerge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async {
         do {
-            let result = try await logic.merge(externalTokens: externalTokens, chain: chain)
+            let result = try await logic.merge(externalTokens: externalTokens, chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
             await MainActor.run {
                 self.tokens = result.tokens
@@ -168,10 +173,10 @@ struct SwapCoinSelectionLogic {
         self.registry = registry ?? DestinationTokenRegistry.shared
     }
 
-    func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
+    func fetchCoins(chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
-        return try await merge(externalTokens: externalTokens, chain: chain)
+        return try await merge(externalTokens: externalTokens, chain: chain, forceRefresh: forceRefresh)
     }
 
     /// Builds the picker-ready list from an already-fetched external token list
@@ -179,7 +184,7 @@ struct SwapCoinSelectionLogic {
     /// coins, deduped + sorted). Separated from the network fetch so the view
     /// model can serve a cached external list without a spinner. The vault read
     /// and `sort` (live balance reads) stay on the MainActor.
-    func merge(externalTokens: [CoinMeta], chain: Chain) async throws -> SwapCoinSelectionResult {
+    func merge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
@@ -191,7 +196,7 @@ struct SwapCoinSelectionLogic {
         // doesn't actually hold.
         let externalBuckets: [DestinationTokenBucket]
         if isDestination {
-            externalBuckets = await registry.tokens(for: chain)
+            externalBuckets = await registry.tokens(for: chain, forceRefresh: forceRefresh)
         } else {
             externalBuckets = []
         }
