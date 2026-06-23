@@ -42,9 +42,10 @@ actor SwapKitProviderCache {
 
     /// Returns a cached or freshly-fetched provider list, refreshing when the
     /// snapshot is older than `SwapKitConfig.providerCacheTTL`. Returns `nil`
-    /// when the fetch fails *and* we have no prior snapshot — callers should
-    /// treat that as "skip the SwapKit gate" rather than blocking the swap
-    /// flow.
+    /// when the fetch fails *and* we have no prior snapshot. Callers choose
+    /// their own fallback policy for that edge: `isEnabled` fails closed for
+    /// offer gating, while `isPairSupported` fails open for error-label
+    /// remapping.
     func providers(now: Date = Date()) async -> [SwapKitProvider]? {
         if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.providerCacheTTL {
             return snapshot.providers
