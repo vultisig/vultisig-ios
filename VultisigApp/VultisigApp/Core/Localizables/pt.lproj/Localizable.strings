@@ -392,8 +392,16 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Erro";
+"errorCopy" = "Copiar";
 "errorLoadingBalance" = "Error loading balance";
+"errorMessageTitle" = "Mensagem de erro";
+"errorNetworkUnstableDescription" = "Não foi possível conectar ao servidor a tempo. Verifique a sua conexão e tente novamente.";
+"errorNetworkUnstableTitle" = "Problema de conexão";
+"errorReportBug" = "Reportar bug";
 "errorSavingFile" = "Erro ao salvar o arquivo";
+"errorShowExact" = "Mostrar erro exato";
+"errorVaultNotLoadedDescription" = "Por favor, importe a partilha correta.";
+"errorVaultNotLoadedTitle" = "O cofre não está carregado";
 "estimatedBondValue" = "Valor Estimado do Bond";
 "estimatedCacaoValue" = "Valor Estimado";
 "estimatedReward" = "Recompensa Estimada";
@@ -920,6 +928,7 @@
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Mesmo compartilhamento de cofre";
+"sameDeviceShareErrorDescription" = "Por favor, altere a partilha para assinar. Dois dispositivos não podem usar a mesma partilha do cofre para co-assinar.";
 "sameNameFolder" = "Já existe uma pasta com o mesmo nome";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
 "save" = "Salvar";
@@ -1166,6 +1175,7 @@
 "transactionComplete" = "Feito";
 "transactionDetails" = "Detalhes da transação";
 "transactionFailed" = "Transação falhou";
+"transactionFailedDescription" = "Algo deu errado. Tente novamente.";
 "transactionHash" = "Hash da transação";
 "transactionHistory" = "Histórico de transações";
 "transactionID" = "ID de Transação";

@@ -392,8 +392,16 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
+"errorCopy" = "Copiar";
 "errorLoadingBalance" = "Error loading balance";
+"errorMessageTitle" = "Mensaje de error";
+"errorNetworkUnstableDescription" = "No se pudo conectar con el servidor a tiempo. Verifique su conexión e inténtelo de nuevo.";
+"errorNetworkUnstableTitle" = "Problema de conexión";
+"errorReportBug" = "Reportar error";
 "errorSavingFile" = "Error al guardar el archivo";
+"errorShowExact" = "Mostrar el error exacto";
+"errorVaultNotLoadedDescription" = "Por favor, importe la compartición correcta.";
+"errorVaultNotLoadedTitle" = "La bóveda no está cargada";
 "estimatedBondValue" = "Valor Estimado del Bond";
 "estimatedCacaoValue" = "Valor Estimado";
 "estimatedReward" = "Recompensa estimada";
@@ -920,6 +928,7 @@
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Misma compartir bóveda";
+"sameDeviceShareErrorDescription" = "Cambie la compartición para firmar. Dos dispositivos no pueden usar la misma bóveda compartida para firmar conjuntamente.";
 "sameNameFolder" = "Una carpeta con el mismo nombre ya existe";
 "sameNameFolderDescription" = "Elija un nombre único para la carpeta e inténtelo de nuevo.";
 "save" = "Guardar";
@@ -1166,6 +1175,7 @@
 "transactionComplete" = "Hecho";
 "transactionDetails" = "Detalles de la transacción";
 "transactionFailed" = "Transacción fallida";
+"transactionFailedDescription" = "Algo salió mal. Inténtalo de nuevo.";
 "transactionHash" = "Hash de transacción";
 "transactionHistory" = "Historial de transacciones";
 "transactionID" = "ID de Transacción";

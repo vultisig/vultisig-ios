@@ -392,8 +392,16 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Fehler";
+"errorCopy" = "Kopieren";
 "errorLoadingBalance" = "Error loading balance";
+"errorMessageTitle" = "Fehlermeldung";
+"errorNetworkUnstableDescription" = "Der Server konnte nicht rechtzeitig erreicht werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
+"errorNetworkUnstableTitle" = "Verbindungsproblem";
+"errorReportBug" = "Fehler melden";
 "errorSavingFile" = "Fehler beim Speichern der Datei";
+"errorShowExact" = "Genauen Fehler anzeigen";
+"errorVaultNotLoadedDescription" = "Bitte importieren Sie die richtige Freigabe.";
+"errorVaultNotLoadedTitle" = "Tresor ist nicht geladen";
 "estimatedBondValue" = "Geschätzter Bond-Wert";
 "estimatedCacaoValue" = "Geschätzter Wert";
 "estimatedReward" = "Geschätzte Belohnung";
@@ -920,6 +928,7 @@
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameDeviceShareError" = "Gleicher Tresor Teil";
+"sameDeviceShareErrorDescription" = "Bitte ändern Sie die Freigabe zum Signieren. Zwei Geräte können nicht dieselbe Tresorfreigabe zum gemeinsamen Signieren verwenden.";
 "sameNameFolder" = "Ein Ordner mit demselben Namen existiert bereits";
 "sameNameFolderDescription" = "Bitte wähle einen einzigartigen Namen für den Ordner und versuche es erneut.";
 "save" = "Speichern";
@@ -1166,6 +1175,7 @@
 "transactionComplete" = "Erledigt";
 "transactionDetails" = "Transaktionsdetails";
 "transactionFailed" = "Transaktion fehlgeschlagen";
+"transactionFailedDescription" = "Etwas ist schiefgelaufen. Bitte versuche es erneut.";
 "transactionHash" = "Transaktions-Hash";
 "transactionHistory" = "Transaktionsverlauf";
 "transactionID" = "Transaktions-ID";
