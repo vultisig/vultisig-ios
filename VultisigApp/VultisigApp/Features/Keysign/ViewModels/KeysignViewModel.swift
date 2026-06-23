@@ -111,6 +111,26 @@ class KeysignViewModel: ObservableObject {
         txid.isEmpty && !(keysignPayload?.skipBroadcast ?? false)
     }
 
+    /// Drives the keysign Rive animation's `progessPercentage` bar (0–100). The
+    /// bar fills as signing advances through its phases, mirroring the Android
+    /// client. Without an explicit value the bar stays empty regardless of the
+    /// flow (custom message and swap signing reported this), since nothing else
+    /// binds the property.
+    var signingProgress: Float {
+        switch status {
+        case .CreatingInstance:
+            return 0
+        case .KeysignECDSA:
+            return 33
+        case .KeysignEdDSA, .KeysignMLDSA:
+            return 66
+        case .KeysignFinished:
+            return 100
+        case .KeysignFailed, .KeysignRetryRequested, .KeysignVaultMismatch, .KeysignBroadcastUnconfirmed:
+            return 0
+        }
+    }
+
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo
