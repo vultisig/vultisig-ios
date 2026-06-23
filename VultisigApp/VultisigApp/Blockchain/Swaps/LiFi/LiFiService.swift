@@ -20,7 +20,8 @@ struct LiFiService {
         fromCoin: Coin,
         toCoin: Coin,
         fromAmount: BigInt,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> (quote: EVMQuote, fee: BigInt?, integratorFee: Decimal?) {
 
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
@@ -44,7 +45,8 @@ struct LiFiService {
             fromAddress: fromCoin.address,
             toAddress: toCoin.address,
             integrator: integrator,
-            fee: integratorFeeString
+            fee: integratorFeeString,
+            slippage: Self.lifiSlippageFraction(bps: slippageBps)
         )
 
         let response: LifiQuoteResponse
@@ -111,6 +113,22 @@ struct LiFiService {
 
             return (quote, response.fee, integratorFee)
         }
+    }
+
+    /// Convert a user slippage in basis points to the decimal fraction in
+    /// [0,1] that LI.FI's `slippage` query param expects (50 bps → "0.005",
+    /// 100 bps → "0.01", 300 bps → "0.03"). `nil` (Auto) returns `nil` so the
+    /// param is omitted and LI.FI applies its own default — never "0".
+    ///
+    /// The bps value is clamped to 0–5000 (0–50%) before conversion, mirroring
+    /// the 1inch path, so a bogus custom value can't produce an out-of-range
+    /// fraction. Rendered with a C-locale `%`-format (always a dot separator),
+    /// so it is locale-independent and never emits a comma.
+    static func lifiSlippageFraction(bps: Int?) -> String? {
+        guard let bps else { return nil }
+        let clamped = min(max(bps, 0), 5000)
+        let fraction = Double(clamped) / 10_000
+        return String(format: "%g", fraction)
     }
 }
 

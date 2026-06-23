@@ -9,8 +9,9 @@
 //   2. VM selection — `selectedQuote` drives the computed `quote`, a non-best
 //      pick reaches the active quote (and therefore the verify/sign summary),
 //      and every refresh resets the override back to Best.
-//   3. The below-Silver invariant: provider selection is inert
-//      (no list, best auto-selected) unless the gate is unlocked.
+//   3. Availability — provider selection depends solely on `allQuotes.count > 1`
+//      (the advanced-settings entry point is already silver-gated, so there is
+//      no second tier gate on the row itself).
 //
 
 import BigInt
@@ -64,7 +65,7 @@ final class SwapProviderSelectionTests: XCTestCase {
     func testSelectedQuoteDrivesActiveQuote() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: true)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
 
         XCTAssertEqual(vm.quote, best, "With no override, the active quote is Best")
@@ -80,7 +81,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         // Non-zero fee so `validateForm` (which requires `fee != .zero`) passes
         // and a real `SwapTransaction` materialises off the selected quote.
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1_000))
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: true)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
         vm.fromCoin = makeCoin(.ethereum, ticker: "ETH", balance: "5000000000000000000")
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
@@ -96,7 +97,7 @@ final class SwapProviderSelectionTests: XCTestCase {
     func testRefreshResetsSelectionBackToBest() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: true)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
 
         vm.selectProvider(alt)
@@ -111,7 +112,7 @@ final class SwapProviderSelectionTests: XCTestCase {
     func testEmptyAmountClearsAllQuoteState() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: true)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
         vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
@@ -127,59 +128,37 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertTrue(vm.allQuotes.isEmpty, "Emptying the amount clears the ranked set")
     }
 
-    // MARK: - Item 3: below-Silver invariant
-
-    func testCanSelectProviderFalseWhenBelowSilver() async {
-        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
-        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        // Gate locked (below Silver): more than one quote, but the row
-        // must stay static and a pick must not change the active quote.
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: false)
-        await landQuotes(on: vm)
-
-        XCTAssertFalse(
-            vm.canSelectProvider,
-            "Below Silver: provider selection must be unavailable even with multiple quotes"
-        )
-
-        vm.selectProvider(alt)
-        XCTAssertNil(vm.selectedQuote, "A locked gate must ignore selection")
-        XCTAssertEqual(vm.quote, best, "Below Silver: best stays auto-selected — exactly today's behavior")
-    }
+    // MARK: - Item 3: availability depends only on the quote count
 
     func testCanSelectProviderFalseWithSingleQuote() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
-        // Unlocked, but only one quote → no chevron, no sheet.
-        let vm = makeVM(best: best, allQuotes: [best], providerSelectionUnlocked: true)
+        // Only one quote → no chevron, no sheet.
+        let vm = makeVM(best: best, allQuotes: [best])
         await landQuotes(on: vm)
 
         XCTAssertFalse(vm.canSelectProvider, "A single quote must not offer selection")
     }
 
-    func testCanSelectProviderTrueWhenUnlockedWithMultipleQuotes() async {
+    func testCanSelectProviderTrueWithMultipleQuotes() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        let vm = makeVM(best: best, allQuotes: [best, alt], providerSelectionUnlocked: true)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
 
-        XCTAssertTrue(vm.canSelectProvider, "Unlocked + multiple quotes must offer selection")
+        XCTAssertTrue(vm.canSelectProvider, "Multiple quotes must offer selection (no tier gate)")
     }
 
     // MARK: - Fixtures
 
     private func makeVM(
         best: SwapQuote,
-        allQuotes: [SwapQuote],
-        providerSelectionUnlocked: Bool
+        allQuotes: [SwapQuote]
     ) -> SwapDetailsViewModel {
         let interactor = ProviderSelectionMockInteractor(
             best: best,
-            allQuotes: allQuotes,
-            providerSelectionUnlocked: providerSelectionUnlocked
+            allQuotes: allQuotes
         )
-        let vm = SwapDetailsViewModel(interactor: interactor)
-        vm.isProviderSelectionEnabled = providerSelectionUnlocked
-        return vm
+        return SwapDetailsViewModel(interactor: interactor)
     }
 
     /// Drive a quote fetch to completion so `allQuotes`/`bestQuote` populate via
@@ -267,18 +246,15 @@ private extension SwapDetailsViewModel {
 // swiftlint:disable async_without_await unused_parameter
 
 /// Returns a fixed best + ranked set so the VM's quote-landing path can be
-/// driven without the network, and reports a configurable provider-selection
-/// unlock so the gate invariant is testable.
+/// driven without the network.
 @MainActor
 private final class ProviderSelectionMockInteractor: SwapInteractor {
     private let best: SwapQuote
     private let allQuotes: [SwapQuote]
-    private let providerSelectionUnlocked: Bool
 
-    init(best: SwapQuote, allQuotes: [SwapQuote], providerSelectionUnlocked: Bool) {
+    init(best: SwapQuote, allQuotes: [SwapQuote]) {
         self.best = best
         self.allQuotes = allQuotes
-        self.providerSelectionUnlocked = providerSelectionUnlocked
     }
 
     func fetchQuote(
@@ -288,7 +264,9 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         vault: Vault,
         referredCode: String,
         thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?
+        mayaPools: [NativePoolAsset]?,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
@@ -318,10 +296,6 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
     func updateBalance(for coin: Coin) async {}
 
     func warmDiscountTier(for vault: Vault) async {}
-
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool {
-        providerSelectionUnlocked
-    }
 }
 
 // swiftlint:enable async_without_await unused_parameter

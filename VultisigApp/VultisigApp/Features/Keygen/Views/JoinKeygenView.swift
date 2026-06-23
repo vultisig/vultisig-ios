@@ -25,6 +25,7 @@ struct JoinKeygenView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var appViewModelLegacy: AppViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @Environment(\.router) var router
 
@@ -119,11 +120,13 @@ struct JoinKeygenView: View {
     @ViewBuilder
     var failToStartKeygen: some View {
         if let error = viewModel.error {
+            let presentation = presentation(for: error)
             ErrorView(
-                type: .warning,
-                title: error.errorTitle,
-                description: error.errorDescription,
-                buttonTitle: "tryAgain".localized
+                type: presentation.type,
+                title: presentation.title,
+                description: presentation.description,
+                buttonTitle: "tryAgain".localized,
+                rawError: presentation.rawError
             ) {
                 // Close the current screen
                 router.navigateBack()
@@ -133,6 +136,17 @@ struct JoinKeygenView: View {
                     homeViewModel.shouldShowScanner = true
                 }
             }
+        }
+    }
+
+    private func presentation(for error: JoinKeygenError) -> ErrorPresentation {
+        switch error {
+        case .vaultNameAlreadyExists:
+            return ErrorPresentation(.vaultNameInUse)
+        case .wrongVaultSelected, .vaultTypeMismatch:
+            return ErrorPresentation(.vaultNotLoaded)
+        case .failedToDecodeMessage(let details):
+            return ErrorPresentation.unknown(rawError: details)
         }
     }
 
@@ -260,7 +274,16 @@ struct JoinKeygenView: View {
     }
 
     var vaultsMismatchedError: some View {
-        SendCryptoVaultErrorView()
+        let presentation = ErrorPresentation(.vaultNotLoaded)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "changeVault".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModelLegacy.set(selectedVault: appViewModelLegacy.selectedVault, showingVaultSelector: true)
+        }
     }
 
     private func setData() {

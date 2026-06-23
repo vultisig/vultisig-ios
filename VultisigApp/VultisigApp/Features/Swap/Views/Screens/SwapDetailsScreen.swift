@@ -16,6 +16,9 @@ struct SwapDetailsScreen: View {
 
     @State private var buttonRotated = false
     @State private var showErrorTooltip = false
+    @State private var showAdvancedLockedSheet = false
+
+    private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
@@ -29,9 +32,39 @@ struct SwapDetailsScreen: View {
             }
         }
         .screenTitle("swap".localized)
+        .crossPlatformSheet(isPresented: $vm.showAdvancedSettingsSheet) {
+            AdvancedSwapSheet(
+                isPresented: $vm.showAdvancedSettingsSheet,
+                coin: detailsViewModel.toCoin,
+                isGasLimitSupported: detailsViewModel.isGasLimitSupported,
+                settings: $vm.advancedSettings,
+                detailsViewModel: detailsViewModel
+            )
+        }
         .screenToolbar {
+            // Glass button (shared toolbar background) first, then the custom
+            // countdown pill (own background → shared hidden). The toolbar
+            // renders the glass group ahead of the plain group, so this order
+            // shows the advanced-settings button left of the countdown.
+            CustomToolbarItem(placement: .trailing) {
+                advancedSettingsButton
+            }
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 refreshCounter
+            }
+        }
+        .crossPlatformSheet(isPresented: $showAdvancedLockedSheet) {
+            LockedFeatureSheet(
+                feature: .swapAdvancedSettings,
+                vault: vault,
+                isPresented: $showAdvancedLockedSheet
+            ) {
+                showAdvancedLockedSheet = false
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: tierService.getVultToken(for: vault),
+                    vault: vault
+                ))
             }
         }
         .crossPlatformSheet(isPresented: $vm.showFromChainSelector) {
@@ -105,6 +138,18 @@ struct SwapDetailsScreen: View {
         }
         .onChange(of: detailsViewModel.toChain) { _, _ in
             detailsViewModel.handleToChainUpdate(vault: vault)
+        }
+        .onChange(of: detailsViewModel.showAdvancedSettingsSheet) { wasPresented, isPresented in
+            // On dismiss (true → false), re-fetch quotes if a quote-affecting
+            // setting changed (slippage / gas limit / external recipient). The
+            // VM no-ops when nothing relevant changed, and route selection is not
+            // part of the compared settings so it never triggers a re-fetch.
+            if wasPresented && !isPresented {
+                detailsViewModel.advancedSettingsSheetDidClose(
+                    vault: vault,
+                    referredCode: referredViewModel.savedReferredCode
+                )
+            }
         }
         .onChange(of: detailsViewModel.error?.localizedDescription) { _, newError in
             showErrorTooltip = newError != nil
@@ -271,6 +316,43 @@ struct SwapDetailsScreen: View {
         }
     }
 
+    var advancedSettingsButton: some View {
+        ToolbarButton(image: "sliders", type: .outline) {
+            handleAdvancedSettingsTap()
+        }
+        .accessibilityLabel("advancedSettings".localized)
+    }
+
+    private func handleAdvancedSettingsTap() {
+        Task {
+            await TierGatedTap.handle(
+                required: .silver,
+                show: lockedSheetBinding,
+                for: vault,
+                isUnlocked: { tier, vault in
+                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+                        return false
+                    }
+                    return cached >= tier
+                },
+                onUnlocked: {
+                    detailsViewModel.snapshotAdvancedSettings()
+                    detailsViewModel.showAdvancedSettingsSheet = true
+                }
+            )
+        }
+    }
+
+    /// Bridges the boolean sheet flag to the `VultDiscountTier?` binding
+    /// `TierGatedTap` expects: any non-nil tier means "locked", surfaced as the
+    /// single `LockedFeatureSheet(.swapAdvancedSettings)`.
+    private var lockedSheetBinding: Binding<VultDiscountTier?> {
+        Binding(
+            get: { showAdvancedLockedSheet ? .silver : nil },
+            set: { showAdvancedLockedSheet = $0 != nil }
+        )
+    }
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -296,10 +378,7 @@ struct SwapDetailsScreen: View {
             detailsViewModel.refreshData(vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .toolbar {
-            if !detailsViewModel.showFromChainSelector
-                && !detailsViewModel.showToChainSelector
-                && !detailsViewModel.showFromCoinSelector
-                && !detailsViewModel.showToCoinSelector {
+            if detailsViewModel.showPercentageButtons {
                 ToolbarItemGroup(placement: .keyboard) {
                     percentageButtons
 

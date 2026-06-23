@@ -21,8 +21,8 @@ final class TonSendTransactionTests: XCTestCase {
     private func makeCoin() -> Coin {
         let meta = CoinMeta(
             chain: .ton,
-            ticker: "TON",
-            logo: "ton",
+            ticker: "GRAM",
+            logo: "gram",
             decimals: 9,
             priceProviderId: "the-open-network",
             contractAddress: "",

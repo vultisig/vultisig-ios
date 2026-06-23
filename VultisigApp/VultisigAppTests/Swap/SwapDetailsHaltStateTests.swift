@@ -134,7 +134,7 @@ private actor PathStubClient: HTTPClientProtocol {
 // swiftlint:disable async_without_await unused_parameter
 @MainActor
 private final class NoopInteractor: SwapInteractor {
-    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, vault: Vault, referredCode: String, thorPools: [NativePoolAsset]?, mayaPools: [NativePoolAsset]?) async throws -> SwapQuoteResult? { nil }
+    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, vault: Vault, referredCode: String, thorPools: [NativePoolAsset]?, mayaPools: [NativePoolAsset]?, slippageBps: Int?, recipientAddress: String?) async throws -> SwapQuoteResult? { nil }
     func isProviderSelectionUnlocked(for vault: Vault) async -> Bool { false }
     func fetchChainSpecific(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal, quote: SwapQuote?) async throws -> BlockChainSpecific {
         .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil)

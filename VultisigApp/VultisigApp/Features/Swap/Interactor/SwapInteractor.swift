@@ -24,7 +24,9 @@ protocol SwapInteractor {
         vault: Vault,
         referredCode: String,
         thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?
+        mayaPools: [NativePoolAsset]?,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult?
 
     /// Chain-specific fee/nonce/blockhash data needed to assemble the keysign payload.
@@ -56,11 +58,6 @@ protocol SwapInteractor {
     /// wallet once per session. Called on screen load to warm the cache so the per-quote
     /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
     func warmDiscountTier(for vault: Vault) async
-
-    /// Whether the vault meets the Silver `VultDiscountTier` minimum that gates
-    /// provider selection. Reads the same cached tier `warmDiscountTier` warms,
-    /// so it adds no extra network path.
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool
 }
 
 extension SwapInteractor {
@@ -80,7 +77,34 @@ extension SwapInteractor {
             vault: vault,
             referredCode: referredCode,
             thorPools: nil,
-            mayaPools: nil
+            mayaPools: nil,
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+    }
+
+    /// Convenience for callers that pass slippage/recipient but have no live pool
+    /// snapshots (e.g. the verify-screen refresh, which re-quotes an already-valid
+    /// pair) — pools fall back to the static eligibility.
+    func fetchQuote(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault,
+        referredCode: String,
+        slippageBps: Int?,
+        recipientAddress: String?
+    ) async throws -> SwapQuoteResult? {
+        try await fetchQuote(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            vault: vault,
+            referredCode: referredCode,
+            thorPools: nil,
+            mayaPools: nil,
+            slippageBps: slippageBps,
+            recipientAddress: recipientAddress
         )
     }
 }

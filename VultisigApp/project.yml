@@ -24,8 +24,8 @@ settings:
     DEVELOPMENT_TEAM: 5BP27CHH4Y
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
-    MARKETING_VERSION: "1.39"
-    CURRENT_PROJECT_VERSION: "61"
+    MARKETING_VERSION: "1.40"
+    CURRENT_PROJECT_VERSION: "62"
     ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
@@ -233,6 +233,12 @@ targets:
           - "Swap/SwapKit/__fixtures__/**"
           - "Swap/NativePools/NativePoolFixtures/**"
           - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
+          # The QBTC weighted-vote vector generator is a committed Node/cosmjs
+          # tool (generate.mjs + package.json + README + node_modules), not test
+          # code or a bundled resource. Excluding it keeps its .js/.ts/.map
+          # files from being flattened into the test bundle root (which
+          # collides under "Multiple commands produce").
+          - "Blockchain/Cosmos/Signing/fixtures/qbtc-voteweighted/**"
       # Static fixture JSONs bundled with the test target as a *folder
       # reference* (blue folder in Xcode) so they land at
       # `__fixtures__/*.json` inside the bundle instead of flattening into

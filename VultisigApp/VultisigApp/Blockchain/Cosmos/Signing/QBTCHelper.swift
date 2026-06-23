@@ -26,10 +26,11 @@ struct QBTCHelper {
     private static let msgSendTypeURL = "/cosmos.bank.v1beta1.MsgSend"
     private static let msgTransferTypeURL = "/ibc.applications.transfer.v1.MsgTransfer"
     private static let msgVoteTypeURL = "/cosmos.gov.v1beta1.MsgVote"
+    private static let msgVoteWeightedTypeURL = "/cosmos.gov.v1beta1.MsgVoteWeighted"
 
     static func create() -> QBTCHelper {
         QBTCHelper(
-            chainID: "qbtc-testnet",
+            chainID: QBTCChain.chainID,
             denom: "qbtc",
             gasLimit: 300_000
         )
@@ -178,7 +179,13 @@ struct QBTCHelper {
             }
 
         case .vote:
-            anyMsg = try buildVoteAny(keysignPayload: keysignPayload)
+            // A weighted vote and a single-option vote share the `.vote`
+            // transaction type; the memo prefix disambiguates them.
+            if keysignPayload.memo?.hasPrefix("QBTC_VOTEW:") == true {
+                anyMsg = try buildVoteWeightedAny(keysignPayload: keysignPayload)
+            } else {
+                anyMsg = try buildVoteAny(keysignPayload: keysignPayload)
+            }
             memo = nil
 
         default:
@@ -286,6 +293,12 @@ struct QBTCHelper {
 
     private func buildMsgVote(keysignPayload: KeysignPayload) throws -> Data {
         // Memo format: "QBTC_VOTE:OPTION:PROPOSAL_ID"
+        //
+        // The arg order (option before id) differs from the weighted memo
+        // ("QBTC_VOTEW:PROPOSAL_ID:OPTIONS", id first). This divergence is
+        // intentional and dictated by the QBTC chain's on-chain memo parser —
+        // each parser is internally consistent and realigning the order here
+        // would break parsing/consensus. Do not "fix" the ordering.
         let voteStr = keysignPayload.memo?.replacingOccurrences(of: "QBTC_VOTE:", with: "")
             .replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
         let components = voteStr.split(separator: ":")
@@ -294,7 +307,9 @@ struct QBTCHelper {
             throw HelperError.runtimeError("QBTC: invalid vote memo format, expected OPTION:PROPOSAL_ID")
         }
 
-        let option = voteOptionValue(from: String(components[0]))
+        guard let option = Self.voteOptionInt(from: String(components[0])) else {
+            throw HelperError.runtimeError("QBTC: invalid vote option '\(components[0])'")
+        }
 
         // MsgVote:
         //   field 1 = proposal_id (uint64)
@@ -307,14 +322,114 @@ struct QBTCHelper {
         return msg
     }
 
-    private func voteOptionValue(from description: String) -> UInt64 {
+    // MARK: - Governance Weighted Vote (MsgVoteWeighted)
+
+    private func buildVoteWeightedAny(keysignPayload: KeysignPayload) throws -> Data {
+        let msg = try buildMsgVoteWeighted(keysignPayload: keysignPayload)
+        var anyMsg = Data()
+        anyMsg.appendProtoString(fieldNumber: 1, value: Self.msgVoteWeightedTypeURL)
+        anyMsg.appendProtoBytes(fieldNumber: 2, data: msg)
+        return anyMsg
+    }
+
+    private func buildMsgVoteWeighted(keysignPayload: KeysignPayload) throws -> Data {
+        // Memo format: "QBTC_VOTEW:PROPOSAL_ID:OPTION=WEIGHT,OPTION=WEIGHT,..."
+        // e.g. "QBTC_VOTEW:42:YES=0.7,ABSTAIN=0.3"
+        //
+        // Note the id-first order here vs. option-first in the single-vote
+        // memo ("QBTC_VOTE:OPTION:PROPOSAL_ID"). The divergence is intentional
+        // and chain-contract-defined: the QBTC on-chain parser expects each
+        // memo in its own order. Do not realign them — it would break parsing.
+        let body = keysignPayload.memo?.replacingOccurrences(of: "QBTC_VOTEW:", with: "") ?? ""
+        let firstColon = body.firstIndex(of: ":")
+        guard let firstColon else {
+            throw HelperError.runtimeError("QBTC: invalid weighted-vote memo, expected PROPOSAL_ID:OPTIONS")
+        }
+        let proposalIDPart = String(body[body.startIndex..<firstColon])
+        let optionsPart = String(body[body.index(after: firstColon)...])
+
+        guard let proposalID = UInt64(proposalIDPart) else {
+            throw HelperError.runtimeError("QBTC: invalid weighted-vote proposal id")
+        }
+
+        let weightedOptions = try Self.parseWeightedOptions(optionsPart)
+        guard !weightedOptions.isEmpty else {
+            throw HelperError.runtimeError("QBTC: weighted vote requires at least one option")
+        }
+
+        // MsgVoteWeighted:
+        //   field 1 = proposal_id (uint64)
+        //   field 2 = voter (string)
+        //   field 3 = options (repeated WeightedVoteOption)
+        var msg = Data()
+        msg.appendProtoVarint(fieldNumber: 1, value: proposalID)
+        msg.appendProtoString(fieldNumber: 2, value: keysignPayload.coin.address)
+        for option in weightedOptions {
+            // WeightedVoteOption: field 1 = option (enum varint), field 2 = weight (cosmos.Dec string)
+            var optionMsg = Data()
+            optionMsg.appendProtoVarint(fieldNumber: 1, value: option.option)
+            optionMsg.appendProtoString(fieldNumber: 2, value: option.weight)
+            msg.appendProtoBytes(fieldNumber: 3, data: optionMsg)
+        }
+        return msg
+    }
+
+    /// Parses the `OPTION=WEIGHT,OPTION=WEIGHT` body into proto option ints +
+    /// canonical 18-decimal `cosmos.Dec` weight strings. Preserves order
+    /// (the chain rejects duplicate options, but order is the caller's).
+    static func parseWeightedOptions(_ raw: String) throws -> [(option: UInt64, weight: String)] {
+        let pairs = raw.split(separator: ",")
+        var out: [(option: UInt64, weight: String)] = []
+        for pair in pairs {
+            let kv = pair.split(separator: "=")
+            guard kv.count == 2 else {
+                throw HelperError.runtimeError("QBTC: invalid weighted-vote option '\(pair)'")
+            }
+            guard let option = QBTCHelper.voteOptionInt(from: String(kv[0])) else {
+                throw HelperError.runtimeError("QBTC: invalid weighted-vote option '\(kv[0])'")
+            }
+            guard let weight = QBTCHelper.legacyDecString(from: String(kv[1])) else {
+                throw HelperError.runtimeError("QBTC: invalid weighted-vote weight '\(kv[1])'")
+            }
+            out.append((option: option, weight: weight))
+        }
+        return out
+    }
+
+    /// Maps a vote-option token (e.g. "YES", "NO_WITH_VETO") to the canonical
+    /// proto enum integer. Shared by the single-option and weighted paths.
+    /// Returns `nil` for an unknown token so callers fail fast rather than
+    /// signing `VOTE_OPTION_UNSPECIFIED` for a malformed memo.
+    static func voteOptionInt(from description: String) -> UInt64? {
         switch description.uppercased() {
         case "YES": return 1
         case "ABSTAIN": return 2
         case "NO": return 3
         case "NO_WITH_VETO", "NOWITHVETO": return 4
-        default: return 0 // UNSPECIFIED
+        default: return nil
         }
+    }
+
+    /// Normalizes a decimal weight (e.g. "0.7", ".3", "1") to the canonical
+    /// `cosmossdk.io/math.LegacyDec` string the chain emits: a fixed 18
+    /// fractional digits (e.g. "0.700000000000000000"). Returns `nil` for a
+    /// non-numeric or negative input. Truncates beyond 18 fractional digits.
+    static func legacyDecString(from raw: String) -> String? {
+        let trimmed = raw.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+
+        let parts = trimmed.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        let intPart = parts[0].isEmpty ? "0" : String(parts[0])
+        let fracPart = parts.count == 2 ? String(parts[1]) : ""
+
+        // Reject anything that isn't pure digits in either part (no signs).
+        guard intPart.allSatisfy(\.isNumber), fracPart.allSatisfy(\.isNumber) else {
+            return nil
+        }
+
+        let scale = 18
+        let paddedFrac = String((fracPart + String(repeating: "0", count: scale)).prefix(scale))
+        return "\(intPart).\(paddedFrac)"
     }
 
     // MARK: - AuthInfo

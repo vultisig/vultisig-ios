@@ -79,6 +79,17 @@ enum SecurityRiskLevel: String, Equatable {
     case medium = "MEDIUM"
     case high = "HIGH"
     case critical = "CRITICAL"
+
+    /// Ordered severity (higher = riskier) for comparing two scan results.
+    var severity: Int {
+        switch self {
+        case .noRisk: return 0
+        case .low: return 1
+        case .medium: return 2
+        case .high: return 3
+        case .critical: return 4
+        }
+    }
 }
 
 enum SecurityScannerFeaturesType {

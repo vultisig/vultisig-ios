@@ -31,20 +31,24 @@ protocol QuoteServiceProtocol {
         referredCode: String,
         vultTierDiscount: Int,
         thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?
+        mayaPools: [NativePoolAsset]?,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes
 }
 
 extension QuoteServiceProtocol {
     /// Cold-start convenience: callers without live pool snapshots resolve
-    /// providers off the static fallback, identical to pre-dynamic behavior.
+    /// providers off the static fallback (identical to pre-dynamic behavior).
     func fetchQuotes(
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes {
         try await fetchQuotes(
             amount: amount,
@@ -54,7 +58,9 @@ extension QuoteServiceProtocol {
             referredCode: referredCode,
             vultTierDiscount: vultTierDiscount,
             thorPools: nil,
-            mayaPools: nil
+            mayaPools: nil,
+            slippageBps: slippageBps,
+            recipientAddress: recipientAddress
         )
     }
 }

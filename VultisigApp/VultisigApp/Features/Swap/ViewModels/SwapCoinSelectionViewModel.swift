@@ -44,6 +44,32 @@ class SwapCoinSelectionViewModel: ObservableObject {
     }
 
     func fetchCoins(chain: Chain) async {
+        // Sync peek on the MainActor: when the chain's vault-independent token
+        // list is already cached, do the cheap local merge and publish without
+        // ever flipping `isLoading` — instant, no spinner. Only a cold load
+        // (no cached entry) shows the loader.
+        let cached = await MainActor.run { SwapTokenListCache.shared.cached(for: chain) }
+
+        if let cached {
+            await MainActor.run {
+                error = nil
+                // A prior cold load for another chain may have been cancelled
+                // with the spinner still up — clear it so the instant-serve
+                // path is truly spinner-free.
+                isLoading = false
+            }
+            await publishMerge(externalTokens: cached, chain: chain)
+
+            // Refresh a stale entry silently in the background — still no
+            // spinner. The cache coalesces + fail-opens, so this is cheap.
+            let stale = await MainActor.run { SwapTokenListCache.shared.isStale(chain) }
+            if stale {
+                await refresh(chain: chain)
+            }
+            return
+        }
+
+        // Cold load: no cached list for this chain — show the spinner.
         await MainActor.run {
             isLoading = true
             error = nil
@@ -51,16 +77,50 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
         do {
             let result = try await logic.fetchCoins(chain: chain)
+            try Task.checkCancellation()
             await MainActor.run {
                 self.tokens = result.tokens
                 self.filteredTokens = result.tokens
                 isLoading = false
             }
+        } catch is CancellationError {
+            // Superseded by a faster chain-switch — leave state for the winner.
         } catch {
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 self.error = error
                 isLoading = false
             }
+        }
+    }
+
+    /// Background re-fetch of a stale list (via the cache) that republishes the
+    /// merge without touching `isLoading`.
+    private func refresh(chain: Chain) async {
+        do {
+            let result = try await logic.fetchCoins(chain: chain)
+            try Task.checkCancellation()
+            await MainActor.run {
+                self.tokens = result.tokens
+                self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
+            }
+        } catch {
+            // Stale-but-present list is already on screen; swallow refresh
+            // failures (the cache fail-opens to last-good anyway).
+        }
+    }
+
+    private func publishMerge(externalTokens: [CoinMeta], chain: Chain) async {
+        do {
+            let result = try await logic.merge(externalTokens: externalTokens, chain: chain)
+            try Task.checkCancellation()
+            await MainActor.run {
+                self.tokens = result.tokens
+                self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
+            }
+        } catch {
+            guard !Task.isCancelled else { return }
+            await MainActor.run { self.error = error }
         }
     }
 
@@ -109,10 +169,19 @@ struct SwapCoinSelectionLogic {
     }
 
     func fetchCoins(chain: Chain) async throws -> SwapCoinSelectionResult {
-        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
-
         // Propagate errors instead of swallowing with try?
         let externalTokens = try await service.loadTokens(for: chain)
+        return try await merge(externalTokens: externalTokens, chain: chain)
+    }
+
+    /// Builds the picker-ready list from an already-fetched external token list
+    /// (native + external/preset + destination registry + the vault's held
+    /// coins, deduped + sorted). Separated from the network fetch so the view
+    /// model can serve a cached external list without a spinner. The vault read
+    /// and `sort` (live balance reads) stay on the MainActor.
+    func merge(externalTokens: [CoinMeta], chain: Chain) async throws -> SwapCoinSelectionResult {
+        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
+
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
         let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
 
@@ -139,7 +208,8 @@ struct SwapCoinSelectionLogic {
 
         let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
         let withVault = Self.merge(base: merged, extra: vaultTokens)
-        let sorted = await MainActor.run { sort(tokens: withVault) }
+        let deduped = Self.collapseToSingleNative(withVault)
+        let sorted = await MainActor.run { sort(tokens: deduped) }
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
@@ -154,6 +224,24 @@ struct SwapCoinSelectionLogic {
         externals: [DestinationTokenBucket]
     ) -> [CoinMeta] {
         merge(base: base, extra: externals.flatMap { $0.tokens })
+    }
+
+    /// A chain has exactly one native asset, so the picker must show it once.
+    /// External providers (e.g. SwapKit's token list) and legacy persisted
+    /// coins can surface that native under a stale ticker — after the Toncoin
+    /// rebrand the curated native is `GRAM` while SwapKit still lists `TON`,
+    /// which the `uniqueId` dedup treats as distinct and would show as a second
+    /// native row (and let it be re-added as a duplicate coin). Keep the first
+    /// native — the curated `TokensStore` entry, prepended in `fetchCoins` — and
+    /// drop any later native. Non-native tokens are untouched.
+    static func collapseToSingleNative(_ tokens: [CoinMeta]) -> [CoinMeta] {
+        var keptNative = false
+        return tokens.filter { token in
+            guard token.isNativeToken else { return true }
+            if keptNative { return false }
+            keptNative = true
+            return true
+        }
     }
 
     /// Appends `extra` tokens not already present in `base`, deduped by

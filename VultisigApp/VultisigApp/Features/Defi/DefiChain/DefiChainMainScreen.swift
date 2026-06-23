@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 17/10/2025.
 //
 
+import BigInt
 import SwiftUI
 
 struct DefiChainMainScreen: View {
@@ -17,6 +18,7 @@ struct DefiChainMainScreen: View {
     @StateObject private var lpsViewModel: DefiChainLPsViewModel
     @StateObject private var stakeViewModel: DefiChainStakeViewModel
     @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
+    @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -31,10 +33,29 @@ struct DefiChainMainScreen: View {
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
+        self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
     }
 
     private var nativeCoin: Coin? {
         vault.nativeCoin(for: chain)
+    }
+
+    /// Whether the native coin balance can cover a governance vote's flat tx
+    /// fee. A vote is an on-chain tx that costs gas, so a 0/dust-balance user
+    /// would otherwise walk verify → ML-DSA keysign only for the broadcast to
+    /// fail. We compare the raw balance against the chain's flat `min_tx_fee`
+    /// (`CosmosStakingConfig`, the single source of truth for QBTC fee). The
+    /// fee is the exact flat floor — `min_gas_price` is 0 on qbtc-testnet, so
+    /// gas is free and the fee doesn't vary by message — so this is a precise
+    /// pre-flight, not an approximation. Gates both vote entry points and
+    /// greys the vote controls with a hint.
+    var canCoverVoteFee: Bool {
+        guard let nativeCoin else { return false }
+        guard let feeAmount = try? CosmosStakingConfig.feeAmount(for: chain) else {
+            // No fee config for this chain — don't block (non-QBTC fallback).
+            return true
+        }
+        return nativeCoin.rawBalance.toBigInt() >= BigInt(feeAmount)
     }
 
     /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
@@ -160,6 +181,17 @@ struct DefiChainMainScreen: View {
                         onTransactionToPresent(.addLP(position: $0))
                     },
                     emptyStateView: { emptyStateView }
+                )
+            case .governance:
+                QBTCGovernanceView(
+                    viewModel: governanceViewModel,
+                    onVote: { proposal, choice in
+                        onGovernanceVote(proposal: proposal, choice: choice)
+                    },
+                    onWeightedVote: { proposal, options in
+                        onGovernanceWeightedVote(proposal: proposal, options: options)
+                    },
+                    canVote: canCoverVoteFee
                 )
             }
         }
@@ -293,6 +325,49 @@ struct DefiChainMainScreen: View {
         return coin
     }
 
+    /// Builds a single-option QBTC governance vote tx straight from the
+    /// proposal + chosen option and pushes it to the existing verify → ML-DSA
+    /// keysign flow. The memo (`QBTC_VOTE:<OPTION>:<ID>`) is what
+    /// `QBTCHelper.buildMsgVote` consumes; the dictionary is display-only so
+    /// verify reads "Vote <OPTION> on Proposal #N" rather than the raw memo.
+    func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
+        guard let nativeCoin, canCoverVoteFee else { return }
+        let memo = QBTCGovVoteMemo.singleVote(proposalID: proposal.id, choice: choice)
+        let displayDictionary: [String: String] = [
+            "action": "governanceVoteAction".localized,
+            "vote": choice.displayTitle,
+            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
+        ]
+        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
+            memo: memo,
+            transactionType: .vote,
+            memoFunctionDictionary: displayDictionary
+        )
+        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+    }
+
+    /// Builds a weighted QBTC governance vote tx from per-option weights and
+    /// pushes it to verify → ML-DSA keysign. The memo
+    /// (`QBTC_VOTEW:<ID>:OPT=W,...`) is what `QBTCHelper.buildMsgVoteWeighted`
+    /// consumes; weights are passed as plain decimals and the helper
+    /// canonicalizes them to the 18-decimal `cosmos.Dec` form.
+    func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
+        guard let nativeCoin, canCoverVoteFee, !options.isEmpty else { return }
+        let memo = QBTCGovVoteMemo.weightedVote(proposalID: proposal.id, options: options)
+        let displayValue = QBTCGovVoteMemo.weightedDisplayValue(options: options)
+        let displayDictionary: [String: String] = [
+            "action": "governanceVoteAction".localized,
+            "vote": displayValue,
+            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
+        ]
+        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
+            memo: memo,
+            transactionType: .vote,
+            memoFunctionDictionary: displayDictionary
+        )
+        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+    }
+
     func onTransactionToPresent(_ type: FunctionTransactionType) {
         Task { @MainActor in
             let vaultCoins = vault.coins.map { $0.toCoinMeta() }
@@ -373,7 +448,8 @@ private extension DefiChainMainScreen {
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
         async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh)
+        async let governanceRefresh: Void = refreshGovernanceIfNeeded()
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh, governanceRefresh)
     }
 
     /// Conditional refresh for the cosmos staking VM — only fires when the
@@ -383,6 +459,13 @@ private extension DefiChainMainScreen {
         guard CosmosStakingConfig.isStakingSupported(chain) else { return }
         guard let nativeCoin else { return }
         await cosmosStakeViewModel.refresh(address: nativeCoin.address, decimals: nativeCoin.decimals)
+    }
+
+    /// Conditional refresh for the QBTC governance VM — only fires on QBTC,
+    /// the one chain with the governance segment. Quiet no-op elsewhere.
+    func refreshGovernanceIfNeeded() async {
+        guard chain == .qbtc else { return }
+        await governanceViewModel.refresh(voterAddress: nativeCoin?.address)
     }
 
     func update(vault: Vault) {

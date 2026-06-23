@@ -23,6 +23,8 @@ struct VaultListView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var appViewModel: AppViewModel
 
+    @State private var footerHeight: CGFloat = 0
+
     var filteredVaults: [Vault] {
         homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
     }
@@ -59,7 +61,7 @@ struct VaultListView: View {
                 .scrollContentBackground(.hidden)
                 .scrollIndicators(.hidden)
                 .background(Theme.colors.bgPrimary)
-                .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: isEditing ? 100 : 0) })
+                .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: isEditing ? footerHeight : 0) })
                 .background(Theme.colors.bgPrimary)
             }
             addFolderButton
@@ -160,14 +162,14 @@ struct VaultListView: View {
     }
 
     var addFolderButton: some View {
-        ListBottomSection {
+        ListBottomSection(content: {
             PrimaryButton(
                 title: "addFolder",
                 leadingIcon: "folder-add",
                 type: .secondary,
                 action: onAddFolder
             )
-        }
+        }, onHeightChange: { footerHeight = $0 })
         .opacity(isEditing ? 1 : 0)
         .animation(.interpolatingSpring.delay(0.3), value: isEditing)
     }

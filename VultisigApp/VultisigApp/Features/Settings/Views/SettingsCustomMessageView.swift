@@ -11,6 +11,8 @@ struct SettingsCustomMessageView: View {
 
     @Environment(\.dismiss) var dismiss
 
+    @EnvironmentObject var appViewModel: AppViewModel
+
     @StateObject var viewModel = SettingsCustomMessageViewModel()
 
     @State var keysignView: KeysignView?
@@ -109,8 +111,25 @@ struct SettingsCustomMessageView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView(errorString: message)
+                signingErrorView
             }
+        }
+    }
+
+    var signingErrorView: some View {
+        // `keysignView` is only nil here as a defensive fallback (it's set in the
+        // pair callback immediately before advancing to this state), so there's no
+        // captured signing error to show — present a generic failure rather than
+        // leaking the user's custom message as the error.
+        let presentation = ErrorPresentation.signing(rawError: "")
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "tryAgain".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModel.restart()
         }
     }
 

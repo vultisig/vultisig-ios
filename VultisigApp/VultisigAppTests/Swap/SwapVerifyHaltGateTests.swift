@@ -106,7 +106,8 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             thorchainFee: .zero,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: arb
+            feeCoin: arb,
+            advancedSettings: .default
         )
         return SwapVerifyViewModel(transaction: tx, mayachainService: maya)
     }

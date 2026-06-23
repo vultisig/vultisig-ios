@@ -95,7 +95,9 @@ final class SwapVerifyViewModel {
                 fromCoin: transaction.fromCoin,
                 toCoin: transaction.toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                slippageBps: transaction.advancedSettings.slippage.bps,
+                recipientAddress: transaction.advancedSettings.externalRecipient
             )
             var updated = transaction
             if let result {

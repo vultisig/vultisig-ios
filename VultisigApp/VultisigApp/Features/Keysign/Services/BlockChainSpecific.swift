@@ -40,6 +40,21 @@ enum BlockChainSpecific: Codable, Hashable {
         gasFeeEstimation: UInt64
     )
 
+    /// Return a copy with the EVM gas limit replaced. No-op for non-EVM cases
+    /// (gas-limit overrides only apply to Ethereum-family swaps). Used to honour
+    /// a user-supplied custom gas limit from the swap advanced settings.
+    func overridingEVMGasLimit(_ gasLimit: BigInt) -> BlockChainSpecific {
+        guard case let .Ethereum(maxFeePerGasWei, priorityFeeWei, nonce, _) = self else {
+            return self
+        }
+        return .Ethereum(
+            maxFeePerGasWei: maxFeePerGasWei,
+            priorityFeeWei: priorityFeeWei,
+            nonce: nonce,
+            gasLimit: gasLimit
+        )
+    }
+
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _, _):
