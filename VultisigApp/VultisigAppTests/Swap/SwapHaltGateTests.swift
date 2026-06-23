@@ -2,8 +2,7 @@
 //  SwapHaltGateTests.swift
 //  VultisigAppTests
 //
-//  The shared inbound-halt resolution used by the screen-level dim (PR-5) and
-//  the sign-time block (PR-4).
+//  The shared inbound-halt resolution used by the sign-time block.
 //
 
 import XCTest
@@ -56,16 +55,5 @@ final class SwapHaltGateTests: XCTestCase {
     func testMissingChainIsNotHalted() {
         let list = [inbound(chain: "BTC", halted: true)]
         XCTAssertFalse(SwapHaltGate.isHalted(chain: .ethereum, in: list))
-    }
-
-    func testHaltedChainsUnionsBothProtocols() {
-        let thor = [inbound(chain: "ETH", halted: true)]
-        let maya = [inbound(chain: "ARB", chainPaused: true)]
-        let halted = SwapHaltGate.haltedChains(
-            among: [.ethereum, .arbitrum, .base],
-            thorInbound: thor,
-            mayaInbound: maya
-        )
-        XCTAssertEqual(halted, [.ethereum, .arbitrum])
     }
 }

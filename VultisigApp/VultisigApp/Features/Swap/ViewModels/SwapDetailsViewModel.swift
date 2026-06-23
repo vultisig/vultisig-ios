@@ -19,8 +19,6 @@ final class SwapDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
     @ObservationIgnored private let interactor: SwapInteractor
     @ObservationIgnored private let eligibilityCache: NativePoolEligibilityCache
-    @ObservationIgnored private let thorchainService: ThorchainService
-    @ObservationIgnored private let mayachainService: MayachainService
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
@@ -119,11 +117,6 @@ final class SwapDetailsViewModel {
     var dataLoaded = false
     var timer: Int = 59
 
-    /// Chains whose THORChain/Maya inbound is halted (screen-level dim). Fetched
-    /// in `load`; consulted by `isRouteHalted` to dim/disable a halted route
-    /// before the user reaches the verify screen.
-    var haltedChains: Set<Chain> = []
-
     var fromChain: Chain?
     var toChain: Chain?
     var showFromChainSelector = false
@@ -145,14 +138,10 @@ final class SwapDetailsViewModel {
 
     init(
         interactor: SwapInteractor = DefaultSwapInteractor.live,
-        eligibilityCache: NativePoolEligibilityCache = .shared,
-        thorchainService: ThorchainService = .shared,
-        mayachainService: MayachainService = .shared
+        eligibilityCache: NativePoolEligibilityCache = .shared
     ) {
         self.interactor = interactor
         self.eligibilityCache = eligibilityCache
-        self.thorchainService = thorchainService
-        self.mayachainService = mayachainService
     }
 
     // MARK: - Loading
@@ -198,22 +187,7 @@ final class SwapDetailsViewModel {
         resetAdvancedSettings()
         dataLoaded = true
 
-        await refreshHaltedChains(coins: resolvedFromCoins + resolvedToCoins)
         prefetchSwapTokens()
-    }
-
-    /// Fetch THORChain + Maya inbound and compute which of the picker's chains
-    /// are halted, so halted routes can be dimmed/disabled on screen. Fail-soft:
-    /// an empty inbound list means nothing is flagged halted.
-    func refreshHaltedChains(coins: [Coin]) async {
-        let chains = Set(coins.map { $0.chain })
-        async let thorInbound = thorchainService.fetchThorchainInboundAddress()
-        async let mayaInbound = mayachainService.fetchInboundAddress()
-        haltedChains = await SwapHaltGate.haltedChains(
-            among: chains,
-            thorInbound: thorInbound,
-            mayaInbound: mayaInbound
-        )
     }
 
     /// Warm the per-chain swap token cache (`SwapTokenListCache`, via
@@ -227,20 +201,6 @@ final class SwapDetailsViewModel {
         for chain in chains {
             Task { _ = try? await TokenSearchService.shared.loadTokens(for: chain) }
         }
-    }
-
-    /// True when the active route is a native THORChain/Maya route whose source
-    /// or destination chain is halted — the screen dims it and blocks Continue.
-    /// Scoped to native routes: a halt on a chain only strands funds for a route
-    /// that deposits into the THOR/Maya inbound vault, so aggregator routes
-    /// (1inch/LI.FI/KyberSwap/SwapKit) on the same chain are never dimmed. Before
-    /// any quote lands (no provider known yet) the dim falls back to chain
-    /// membership so a confirmed-halted source chain is flagged pre-quote.
-    var isCurrentRouteHalted: Bool {
-        let chainHalted = haltedChains.contains(fromCoin.chain) || haltedChains.contains(toCoin.chain)
-        guard chainHalted else { return false }
-        guard let quote else { return true }
-        return quote.isNativeProtocolRoute
     }
 
     /// Warm the per-session VULT discount-tier cache once on screen load so the
