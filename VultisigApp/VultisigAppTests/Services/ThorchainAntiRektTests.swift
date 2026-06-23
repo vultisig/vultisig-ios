@@ -82,7 +82,7 @@ final class ThorchainAntiRektTests: XCTestCase {
         XCTAssertEqual(mock.callCount, 1, "Streaming must be fetched at 101 bps with a 1% threshold")
         XCTAssertEqual(
             mock.lastToleranceBps, SwapService.defaultThorchainToleranceBps,
-            "Streaming quote must carry tolerance_bps so the node bakes a minimum-output LIM into the memo"
+            "Streaming quote carries the same tolerance_bps as rapid (Auto default = 0 → omitted; node imposes no LIM)"
         )
     }
 
