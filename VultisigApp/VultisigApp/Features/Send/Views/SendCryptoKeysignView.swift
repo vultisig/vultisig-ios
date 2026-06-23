@@ -12,6 +12,7 @@ struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
     var coinLogo: String? = nil
+    var progress: Float = 0
     var errorButtonTitle: String? = nil
     var errorAction: (() -> Void)? = nil
 
@@ -24,7 +25,7 @@ struct SendCryptoKeysignView: View {
             if showError {
                 errorView
             } else {
-                KeysignAnimationView(connected: .constant(true), coinLogo: coinLogo)
+                KeysignAnimationView(connected: .constant(true), coinLogo: coinLogo, progress: progress)
             }
         }
     }

@@ -13,10 +13,15 @@ struct KeysignAnimationView: View {
 
     @Binding var connected: Bool
     var coinLogo: String?
+    /// Signing progress on a 0–100 scale, bound to the Rive `progessPercentage`
+    /// property so the bar fills as signing advances. Defaults to 0.
+    var progress: Float = 0
 
     @State private var animationVM: RiveViewModel?
     @State private var animationVMInstance: RiveDataBindingViewModel.Instance?
     @State private var coinLogoTask: Task<Void, Never>?
+    @State private var displayedProgress: Float = 0
+    @State private var progressAnimationTimer: Timer?
 
     var body: some View {
         ZStack {
@@ -32,12 +37,17 @@ struct KeysignAnimationView: View {
         .onChange(of: coinLogo) { _, newValue in
             applyCoinLogo(newValue)
         }
+        .onChange(of: progress) { _, newValue in
+            animateProgress(to: newValue)
+        }
         .onAppear {
             setupAnimation()
         }
         .onDisappear {
             animationVM?.stop()
             coinLogoTask?.cancel()
+            progressAnimationTimer?.invalidate()
+            progressAnimationTimer = nil
         }
     }
 
@@ -52,9 +62,50 @@ struct KeysignAnimationView: View {
                 animationVMInstance = instance
                 instance.booleanProperty(fromPath: "Connected")?.value = connected
                 applyCoinLogo(coinLogo)
+                displayedProgress = progress
+                updateRiveProgress(progress)
             }
         }
         animationVM = vm
+    }
+
+    private func animateProgress(to targetValue: Float) {
+        progressAnimationTimer?.invalidate()
+
+        let duration: TimeInterval = 1.0
+        let frameRate: TimeInterval = 1.0 / 60.0
+        let totalSteps = Int(duration / frameRate)
+        let startValue = displayedProgress
+        let delta = targetValue - startValue
+
+        guard delta != 0, totalSteps > 0 else {
+            displayedProgress = targetValue
+            updateRiveProgress(targetValue)
+            return
+        }
+
+        var currentStep = 0
+
+        progressAnimationTimer = Timer.scheduledTimer(withTimeInterval: frameRate, repeats: true) { timer in
+            currentStep += 1
+            let stepProgress = Float(currentStep) / Float(totalSteps)
+            let easedProgress = 1 - pow(1 - stepProgress, 3)
+            let newValue = startValue + delta * easedProgress
+
+            displayedProgress = newValue
+            updateRiveProgress(newValue)
+
+            if currentStep >= totalSteps {
+                timer.invalidate()
+                progressAnimationTimer = nil
+                displayedProgress = targetValue
+                updateRiveProgress(targetValue)
+            }
+        }
+    }
+
+    private func updateRiveProgress(_ value: Float) {
+        animationVMInstance?.numberProperty(fromPath: "progessPercentage")?.value = value
     }
 
     private func applyCoinLogo(_ logo: String?) {
