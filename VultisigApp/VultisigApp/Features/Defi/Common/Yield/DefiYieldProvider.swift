@@ -94,6 +94,15 @@ struct YieldPresentation {
     /// Optional secondary line under the row title (Circle's "Yield Account");
     /// `nil` hides it.
     let rowSubtitleKey: String?
+
+    // MARK: - Account setup card (account-gated providers only)
+
+    /// Label above the deposited balance on the "Open Account" setup card.
+    let setupBalanceLabelKey: String
+    /// Setup button title while the account is being created.
+    let setupCreatingAccountKey: String
+    /// Setup button title prompting the user to open an account.
+    let setupOpenAccountKey: String
 }
 
 /// The seam every yield provider rides. Hides each provider's encoding model

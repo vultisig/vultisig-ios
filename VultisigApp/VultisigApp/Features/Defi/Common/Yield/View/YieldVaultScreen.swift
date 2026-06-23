@@ -239,7 +239,7 @@ struct YieldVaultScreen: View {
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("circleSetupAccountBalance".localized)
+                    Text(presentation.setupBalanceLabelKey.localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                     Text(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
@@ -265,8 +265,8 @@ struct YieldVaultScreen: View {
 
     private var setupButtonTitle: String {
         model.isLoading
-            ? "circleCreatingAccount".localized
-            : "circleSetupOpenAccount".localized
+            ? presentation.setupCreatingAccountKey.localized
+            : presentation.setupOpenAccountKey.localized
     }
 
     // MARK: - Redemption states

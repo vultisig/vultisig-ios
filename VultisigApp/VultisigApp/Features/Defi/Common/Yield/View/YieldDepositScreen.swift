@@ -13,6 +13,7 @@ struct YieldDepositScreen: View {
     @Environment(\.router) private var router
 
     @State private var percentageSelected: Double?
+    @State private var error: HelperError?
 
     init(vault: Vault, providerID: DefiYieldProviderID) {
         _viewModel = StateObject(wrappedValue: YieldDepositViewModel(vault: vault, providerID: providerID))
@@ -40,6 +41,13 @@ struct YieldDepositScreen: View {
         .withLoading(isLoading: $viewModel.isLoading)
         .task {
             await viewModel.onLoad()
+        }
+        .alert(item: $error) { error in
+            Alert(
+                title: Text("error".localized),
+                message: Text(error.localizedDescription),
+                dismissButton: .default(Text("ok".localized))
+            )
         }
     }
 
@@ -96,7 +104,14 @@ struct YieldDepositScreen: View {
 
     private func handleVerify() async {
         guard let payload = await viewModel.makeDepositPayload(),
-              let displayTx = viewModel.displayTransaction() else { return }
+              let displayTx = viewModel.displayTransaction() else {
+            await MainActor.run {
+                if let buildError = viewModel.error {
+                    error = .runtimeError(buildError.localizedDescription)
+                }
+            }
+            return
+        }
 
         await MainActor.run {
             router.navigate(

@@ -55,7 +55,10 @@ struct CircleYieldProvider: DefiYieldProvider {
             infoBannerKey: "circleDashboardInfoText",
             rowLogoAsset: "circle-logo",
             rowTitleKey: "circleTitle",
-            rowSubtitleKey: "circleRowYieldAccount"
+            rowSubtitleKey: "circleRowYieldAccount",
+            setupBalanceLabelKey: "circleSetupAccountBalance",
+            setupCreatingAccountKey: "circleCreatingAccount",
+            setupOpenAccountKey: "circleSetupOpenAccount"
         )
     }
 
