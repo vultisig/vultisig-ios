@@ -132,35 +132,37 @@ final class SwapQuoteRankingTests: XCTestCase {
     // MARK: - Banded provider preference
 
     func test_selectBestQuote_nearTieWithinBand_priorityWins_swapKitOverLifi() {
-        // SwapKit (priority 2) and LI.FI (priority 5) within 1% of each other on net output:
+        // SwapKit (priority 2) and LI.FI (priority 5) within 50bps of each other on net output:
         // LI.FI's raw output is slightly higher but still inside the band, so the
-        // higher-priority SwapKit quote wins instead of the raw maximum.
+        // higher-priority SwapKit quote wins instead of the raw maximum. SwapKit exposes no
+        // sourceGasWei, so the lower-gas check can't fire and selection falls to priority.
         // SwapKit reports expectedBuyAmount in human units; LI.FI 0.03 ETH dstAmount in wei.
         let swapKit: SwapQuote = .swapkit(makeSwapKitResponse(expectedBuyAmount: "0.0299"), fee: nil, subProvider: "Chainflip")
         let lifi: SwapQuote = .lifi(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, integratorFee: nil) // 0.03
 
-        // best = LI.FI 0.03, floor = 0.0297, SwapKit 0.0299 is in band → SwapKit wins on priority.
+        // best = LI.FI 0.03, floor = 0.02985, SwapKit 0.0299 is in band → SwapKit wins on priority.
         let pick = SwapService.selectBestQuote(quotes: [lifi, swapKit], toCoin: ethCoin())
 
         XCTAssertEqual(pick?.displayName, "SwapKit")
     }
 
     func test_selectBestQuote_priorityOrderingWithinBand_thorchainOverOneInch() {
-        // THORChain (priority 0) vs 1inch (priority 4) within 1%: 1inch's raw output is
-        // marginally higher but in band, so THORChain wins on priority.
+        // THORChain (priority 0) vs 1inch (priority 4) within 50bps: 1inch's raw output is
+        // marginally higher but in band, so THORChain wins on priority. THORChain exposes no
+        // sourceGasWei, so the lower-gas check can't fire and selection falls to priority.
         let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2990000")) // 0.0299 ETH
         let oneInch: SwapQuote = .oneinch(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil) // 0.03 ETH
 
-        // best = 1inch 0.03, floor = 0.0297, THORChain 0.0299 in band → THORChain wins.
+        // best = 1inch 0.03, floor = 0.02985, THORChain 0.0299 in band → THORChain wins.
         let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
 
         XCTAssertEqual(pick?.displayName, "THORChain")
     }
 
     func test_selectBestQuote_exactBandBoundaryIsInclusive() {
-        // A quote exactly at best * 0.99 is included (>= floor) and, being higher priority,
-        // wins. best = 1inch 0.03 → floor = 0.0297. THORChain at exactly 0.0297 is in band.
-        let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2970000")) // 0.0297 ETH
+        // A quote exactly at best * 0.995 is included (>= floor) and, being higher priority,
+        // wins. best = 1inch 0.03 → floor = 0.02985. THORChain at exactly 0.02985 is in band.
+        let thor: SwapQuote = .thorchain(makeThorQuote(expectedAmountOut: "2985000")) // 0.02985 ETH
         let oneInch: SwapQuote = .oneinch(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil) // 0.03 ETH
 
         let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
@@ -177,6 +179,45 @@ final class SwapQuoteRankingTests: XCTestCase {
         let pick = SwapService.selectBestQuote(quotes: [oneInch, thor], toCoin: ethCoin())
 
         XCTAssertEqual(pick?.displayName, "1Inch")
+    }
+
+    // MARK: - In-band lower-gas tie-break
+
+    func test_selectBestQuote_inBandLowerGasWins() {
+        // Two same-chain EVM quotes within 50bps on net output (economically tied): KyberSwap
+        // (priority 3) has the marginally higher net AND higher priority, but burns more source
+        // gas; 1inch (priority 4) is in band with cheaper gas. The lower-gas quote must win,
+        // beating both the higher net output and the higher provider priority.
+        let kyber: SwapQuote = .kyberswap(
+            makeEVMQuote(dstAmount: "30000000000000000", gas: 300_000, gasPrice: "20000000000"),
+            fee: nil
+        ) // 0.03 ETH, gas = 300k * 20gwei
+        let oneInch: SwapQuote = .oneinch(
+            makeEVMQuote(dstAmount: "29950000000000000", gas: 150_000, gasPrice: "20000000000"),
+            fee: nil
+        ) // 0.02995 ETH (in band; floor = 0.02985), gas = 150k * 20gwei
+
+        let pick = SwapService.selectBestQuote(quotes: [kyber, oneInch], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "1Inch")
+    }
+
+    func test_selectBestQuote_outsideBandBetterRateWins_regardlessOfGas() {
+        // A materially better rate (outside the 50bps band) must win even when it burns far more
+        // source gas — the lower-gas tie-break only applies among in-band, economically-tied
+        // quotes and must never trade away a real rate advantage.
+        let kyber: SwapQuote = .kyberswap(
+            makeEVMQuote(dstAmount: "30000000000000000", gas: 600_000, gasPrice: "20000000000"),
+            fee: nil
+        ) // 0.03 ETH, expensive gas
+        let oneInch: SwapQuote = .oneinch(
+            makeEVMQuote(dstAmount: "29000000000000000", gas: 100_000, gasPrice: "20000000000"),
+            fee: nil
+        ) // 0.029 ETH (outside band; floor = 0.02985), cheap gas
+
+        let pick = SwapService.selectBestQuote(quotes: [oneInch, kyber], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "KyberSwap")
     }
 
     // MARK: - Same-chain ERC20→ETH regression

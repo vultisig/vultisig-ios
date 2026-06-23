@@ -195,16 +195,21 @@ struct SwapService {
 
     /// Width of the priority band, as a fraction of the best net output. Quotes whose net
     /// output lands within this band of the best are treated as effectively tied on rate, so
-    /// the higher-priority provider is preferred over a marginally larger raw output. 1%.
-    static let providerPreferenceBand: Decimal = 0.01
+    /// the higher-priority provider is preferred over a marginally larger raw output. 50bps.
+    static let providerPreferenceBand: Decimal = 0.005
 
     /// Pick the best quote across providers. The ranking metric is net output in `toCoin`
     /// units (every provider in a candidate set swaps to the same `toCoin`, so the
     /// destination amount is directly comparable). On top of that metric a banded
-    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (1%)
-    /// of the best net output, the highest-priority provider wins instead of the raw maximum.
-    /// This keeps near-tie routes on the more trusted/integrated provider without ever
-    /// trading away a materially better rate (anything outside the band loses on output).
+    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (50bps)
+    /// of the best net output — economically equivalent on net output — a lower source-chain
+    /// gas cost wins first (same-chain EVM aggregators only, where `sourceGasWei` is exposed in
+    /// the same native-wei unit), then the highest-priority provider, then the higher net
+    /// output. The lower-gas check only fires when BOTH compared quotes expose `sourceGasWei`,
+    /// so a gas-unknown quote (THORChain/Maya/SwapKit cross-chain) never falsely wins it and
+    /// instead falls through to provider preference. This keeps near-tie routes on the cheaper
+    /// or more trusted route without ever trading away a materially better rate (anything
+    /// outside the band loses on output).
     /// Falls back to the first quote (priority order from `resolveAllProviders`) when no
     /// quote produces a comparable amount.
     ///
@@ -226,12 +231,17 @@ struct SwapService {
             return quotes.first
         }
 
-        // Quotes within the band of the best net output are treated as tied on rate; among
-        // those, prefer the higher-priority (lower index) provider. Tie-break inside the same
-        // priority by higher net output (defensive — a provider rarely appears twice).
+        // Quotes within the band of the best net output are treated as tied on rate. Among
+        // those, prefer (1) lower source-chain gas when BOTH quotes expose it in the same
+        // native-wei unit (same-chain EVM aggregators) — a gas-unknown quote must not win this
+        // check, so it falls through; then (2) the higher-priority (lower index) provider; then
+        // (3) higher net output (defensive — a provider rarely appears twice).
         let floor = best.1 * (1 - providerPreferenceBand)
         let inBand = ranked.filter { $0.1 >= floor }
         let picked = inBand.min { lhs, rhs in
+            if let lhsGas = lhs.0.sourceGasWei, let rhsGas = rhs.0.sourceGasWei, lhsGas != rhsGas {
+                return lhsGas < rhsGas
+            }
             let lhsPriority = priority(of: lhs.0)
             let rhsPriority = priority(of: rhs.0)
             if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
