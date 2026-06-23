@@ -372,7 +372,12 @@ struct YieldVaultScreen: View {
 
     @MainActor
     private func onAppear() async {
-        try? YieldPositionStorageService().migrateCirclePositionIfNeeded(for: vault)
+        do {
+            try YieldPositionStorageService().migrateCirclePositionIfNeeded(for: vault)
+        } catch {
+            logger.error("Yield position migration failed: \(error.localizedDescription)")
+            model.error = error
+        }
 
         do {
             let resolved = try await model.provider.resolveAccountAddress(vault: vault)

@@ -30,7 +30,7 @@ struct DefiSelectChainScreen: View {
     @State var isLoading: Bool = false
     @State private var error: HelperError?
 
-    @StateObject var viewModel = DefiSelectChainViewModel()
+    @StateObject private var viewModel = DefiSelectChainViewModel()
 
     var selectableItems: [DefiSelectableItem] {
         var items: [DefiSelectableItem] = viewModel.visibleProviders.map { .yield($0) }

@@ -16,8 +16,13 @@ enum YieldAmount {
     /// must block request construction on `nil`.
     static func baseUnits(_ amount: Decimal, decimals: Int) -> BigInt? {
         let scaled = amount * pow(Decimal(10), decimals)
-        let whole = scaled.description.components(separatedBy: ".").first ?? scaled.description
-        return BigInt(whole)
+        var scaledCopy = scaled
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaledCopy, 0, .plain)
+        // Reject sub-unit precision instead of truncating it — a value that
+        // doesn't land on a whole base unit must fail, not silently shrink.
+        guard rounded == scaled else { return nil }
+        return BigInt(NSDecimalNumber(decimal: rounded).stringValue)
     }
 
     static func humanAmount(_ value: BigInt, decimals: Int) -> Decimal {

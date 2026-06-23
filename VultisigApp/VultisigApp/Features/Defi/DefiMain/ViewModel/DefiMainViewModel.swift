@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-main-view-model")
 
 enum DefiMainItem: Identifiable, Hashable {
     case chain(Chain)
@@ -57,7 +60,11 @@ final class DefiMainViewModel: ObservableObject {
         // Backfill the provider array from the legacy flags the first time the
         // DeFi tab loads, then persist so the migration sticks.
         if vault.migrateLegacyDefiProvidersIfNeeded() {
-            try? Storage.shared.save()
+            do {
+                try Storage.shared.save()
+            } catch {
+                logger.error("Failed to persist DeFi provider migration: \(error.localizedDescription)")
+            }
         }
 
         let defiChains = vault.chainsWithCoins.filter { chain in
@@ -69,15 +76,16 @@ final class DefiMainViewModel: ObservableObject {
             value: { vault.coins(for: $0).totalDefiBalanceInFiatDecimal }
         )
 
-        // A provider shows when it is enabled, the vault has Ethereum, and its
-        // account (Circle MSCA) is provisioned. Account-less providers are
-        // always provisioned, so the gate is uniform across providers.
+        // A provider shows when it is enabled, the vault holds the provider's
+        // chain, and its account (e.g. Circle MSCA) is provisioned. Account-less
+        // providers are always provisioned, so the gate is uniform across providers.
         visibleProviders = DefiYieldProviderID.allCases.filter { isProviderVisible($0, in: vault) }
     }
 
     private func isProviderVisible(_ id: DefiYieldProviderID, in vault: Vault) -> Bool {
-        guard vault.isDefiProviderEnabled(id), vault.chains.contains(.ethereum) else { return false }
-        return DefiYieldProviderFactory.make(id).isAccountProvisioned(vault: vault)
+        let provider = DefiYieldProviderFactory.make(id)
+        guard vault.isDefiProviderEnabled(id), vault.chains.contains(provider.chain) else { return false }
+        return provider.isAccountProvisioned(vault: vault)
     }
 
     private func providerName(_ id: DefiYieldProviderID) -> String {

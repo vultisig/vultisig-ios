@@ -157,7 +157,10 @@ final class Vault: ObservableObject, Codable {
         // Encode the effective (post-migration) state under the legacy keys so
         // older app versions importing this backup still read the right toggles.
         try container.encode(isDefiProviderEnabled(.circle), forKey: .isCircleEnabled)
-        try container.encode(enabledDefiProviders, forKey: .enabledDefiProviders)
+        // Encode the effective provider set, not the raw (possibly-unmigrated,
+        // empty) buffer — otherwise importing a pre-backfill backup would decode
+        // an empty array as authoritative and drop the legacy-enabled providers.
+        try container.encode(currentDefiProviders(), forKey: .enabledDefiProviders)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }

@@ -128,13 +128,22 @@ final class YieldDepositViewModel: ObservableObject, Form {
     /// as the user types. Kept on its own cancellable so it doesn't disturb the
     /// `Form` validation pipeline (`formCancellable`).
     private func observeAmount() {
-        enteredAmount = Decimal(string: amountField.value)
+        enteredAmount = parseAmount(amountField.value)
         amountCancellable = amountField.$value
             .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] value in
-                self?.enteredAmount = Decimal(string: value)
+                self?.enteredAmount = self?.parseAmount(value)
             }
+    }
+
+    /// Locale-aware amount parse, matching the validation formatter so inputs
+    /// like `1,25` that pass validation also parse here (a bare `Decimal(string:)`
+    /// is locale-agnostic and would reject them, hiding the preview and blocking
+    /// the deposit as `invalidAmount`).
+    private func parseAmount(_ value: String) -> Decimal? {
+        guard let number = AmountBalanceValidator.formatter.number(from: value) else { return nil }
+        return Decimal(string: number.stringValue)
     }
 
     /// Loads the provider's 7d-net APY (a percent). A failed read leaves the
@@ -151,7 +160,7 @@ final class YieldDepositViewModel: ObservableObject, Form {
     /// caller must block payload construction rather than fall through to a
     /// zero-amount transaction.
     private var amountBaseUnits: BigInt? {
-        guard let amount = Decimal(string: amountField.value) else { return nil }
+        guard let amount = parseAmount(amountField.value) else { return nil }
         return YieldAmount.baseUnits(amount, decimals: provider.assetDecimals)
     }
 
