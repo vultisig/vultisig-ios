@@ -72,6 +72,12 @@ final class TronFreezeViewModel: ObservableObject, Form {
 
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
 
+        // Drop the cached account/resource for this address so balances
+        // refresh when the user navigates back into the DeFi screens after
+        // the freeze is broadcast.
+        let address = coin.address
+        Task { await TronService.shared.invalidateAccountCache(for: address) }
+
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: coin.address,
             amount: amountDecimal.description,
