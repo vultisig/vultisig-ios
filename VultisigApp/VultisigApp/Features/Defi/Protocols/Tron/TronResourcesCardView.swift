@@ -61,7 +61,7 @@ struct TronResourcesCardView: View {
                 showInfoSheet = true
             } label: {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 20))
+                    .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textSecondary.opacity(0.6))
             }
             .buttonStyle(.plain)

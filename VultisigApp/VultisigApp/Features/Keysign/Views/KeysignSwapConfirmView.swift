@@ -31,6 +31,14 @@ struct KeysignSwapConfirmView: View {
             summaryTitle
             summaryFromTo
 
+            if let toAddress = viewModel.keysignPayload?.toAddress, !toAddress.isEmpty {
+                separator
+                getValueCell(
+                    for: "to",
+                    with: toAddress.truncatedAddress
+                )
+            }
+
             separator
             getValueCell(
                 for: "provider",

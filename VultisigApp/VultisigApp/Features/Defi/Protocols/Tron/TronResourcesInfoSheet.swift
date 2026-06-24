@@ -15,21 +15,21 @@ struct TronResourcesInfoSheet: View {
         self.onDismiss = onDismiss
     }
 
-    @State private var bandwidthExpanded = true
-    @State private var energyExpanded = false
+    @State private var expandedSection: TronResourceType? = .bandwidth
 
     @Environment(\.openURL) var openURL
+
+    private let learnMoreURL = URL(string: "https://developers.tron.network/docs/resource-model")
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {
                     header
-                    bandwidthSection
-                    energySection
+                    accordion
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 40)
+                .padding(.top, 24)
                 .padding(.bottom, 24)
             }
 
@@ -37,7 +37,7 @@ struct TronResourcesInfoSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationBackground(Theme.colors.bgSurface1)
         .background(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
@@ -53,116 +53,156 @@ struct TronResourcesInfoSheet: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: 12) {
-            Image("tron")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 48, height: 48)
-                .clipShape(Circle())
+        VStack(spacing: 24) {
+            HStack(spacing: 8) {
+                Image("tron")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            Text("TRON")
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
+                Text("TRON")
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
 
-            Text(NSLocalizedString("tronResourcesInfoTitle", comment: "Bandwidth & Energy"))
+            Text("tronResourcesInfoTitle".localized)
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Accordion
+
+    private var accordion: some View {
+        VStack(spacing: 12) {
+            accordionSection(
+                resource: .bandwidth,
+                icon: "gauge",
+                title: "tronBandwidth".localized,
+                accentColor: Theme.colors.alertSuccess,
+                description: "tronBandwidthDescription".localized
+            )
+
+            accordionSection(
+                resource: .energy,
+                icon: "lightning",
+                title: "tronEnergy".localized,
+                accentColor: Theme.colors.alertWarning,
+                description: "tronEnergyDescription".localized
+            )
         }
     }
 
-    // MARK: - Accordion Sections
-
-    private var bandwidthSection: some View {
-        accordionSection(
-            icon: "gauge.with.needle",
-            title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
-            accentColor: Theme.colors.alertSuccess,
-            description: NSLocalizedString("tronBandwidthDescription", comment: "Bandwidth description"),
-            isExpanded: $bandwidthExpanded
-        )
-    }
-
-    private var energySection: some View {
-        accordionSection(
-            icon: "bolt.fill",
-            title: NSLocalizedString("tronEnergy", comment: "Energy"),
-            accentColor: Theme.colors.alertWarning,
-            description: NSLocalizedString("tronEnergyDescription", comment: "Energy description"),
-            isExpanded: $energyExpanded
-        )
-    }
-
     private func accordionSection(
+        resource: TronResourceType,
         icon: String,
         title: String,
         accentColor: Color,
-        description: String,
-        isExpanded: Binding<Bool>
+        description: String
     ) -> some View {
-        VStack(spacing: 0) {
-            // Header row
+        let isExpanded = expandedSection == resource
+
+        return VStack(alignment: .leading, spacing: 16) {
             Button {
                 withAnimation(.easeInOut(duration: 0.25)) {
-                    isExpanded.wrappedValue.toggle()
+                    // Opening one section collapses the other.
+                    expandedSection = isExpanded ? nil : resource
                 }
             } label: {
-                HStack(spacing: 12) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(accentColor.opacity(0.15))
-                            .frame(width: 36, height: 36)
-
-                        Image(systemName: icon)
-                            .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(accentColor)
-                    }
+                HStack(spacing: 8) {
+                    iconChip(icon: icon, accentColor: accentColor)
 
                     Text(title)
-                        .font(Theme.fonts.bodyLMedium)
+                        .font(Theme.fonts.subtitle)
                         .foregroundStyle(accentColor)
 
                     Spacer()
 
-                    Image(systemName: isExpanded.wrappedValue ? "chevron.up" : "chevron.down")
+                    Image(systemName: "chevron.down")
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
-                .padding(16)
             }
             .buttonStyle(.plain)
 
-            // Expandable content
-            if isExpanded.wrappedValue {
-                Divider()
-                    .overlay(Theme.colors.textSecondary.opacity(0.2))
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 16) {
+                    Divider()
+                        .overlay(Theme.colors.bgSurface2)
 
-                Text(description)
-                    .font(Theme.fonts.bodyMRegular)
-                    .foregroundStyle(Theme.colors.textSecondary)
-                    .padding(16)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    Text(description)
+                        .font(Theme.fonts.bodySRegular)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .transition(.verticalGrow)
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, isExpanded ? 24 : 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
+    }
+
+    private func iconChip(icon: String, accentColor: Color) -> some View {
+        Image(icon)
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 16, height: 16)
+            .foregroundStyle(accentColor)
+            .padding(8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(accentColor.opacity(0.1))
+            )
     }
 
     // MARK: - Learn More Button
 
     private var learnMoreButton: some View {
         PrimaryButton(
-            title: NSLocalizedString("learnMore", comment: "Learn more"),
+            title: "learnMore".localized,
             type: .secondary
         ) {
-            if let url = URL(string: "https://developers.tron.network/docs/resource-model") {
-                openURL(url)
+            if let learnMoreURL {
+                openURL(learnMoreURL)
             }
         }
+    }
+}
+
+private extension AnyTransition {
+    /// Vertical grow + fade used by the resource accordion: the content
+    /// scales open from the top edge while fading in, instead of merely
+    /// sliding or fading.
+    static var verticalGrow: AnyTransition {
+        .modifier(
+            active: VerticalGrowModifier(progress: 0),
+            identity: VerticalGrowModifier(progress: 1)
+        )
+    }
+}
+
+private struct VerticalGrowModifier: ViewModifier {
+    let progress: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(x: 1, y: progress, anchor: .top)
+            .opacity(Double(progress))
     }
 }
