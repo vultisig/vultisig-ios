@@ -17,8 +17,12 @@ struct TronRouter {
             viewBuilder.buildMainScreen(vault: vault)
         case .freeze(let vault):
             viewBuilder.buildFreezeScreen(vault: vault)
-        case .unfreeze(let vault, let model):
-            viewBuilder.buildUnfreezeScreen(vault: vault, model: model)
+        case .unfreeze(let vault, let frozenBandwidth, let frozenEnergy):
+            viewBuilder.buildUnfreezeScreen(
+                vault: vault,
+                frozenBandwidth: frozenBandwidth,
+                frozenEnergy: frozenEnergy
+            )
         }
     }
 }

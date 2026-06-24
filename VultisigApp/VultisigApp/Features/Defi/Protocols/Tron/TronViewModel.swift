@@ -6,13 +6,43 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Resource Type
-enum TronResourceType: String, CaseIterable, Identifiable {
+enum TronResourceType: String, CaseIterable, FilledSegmentedControlType {
     case bandwidth = "BANDWIDTH"
     case energy = "ENERGY"
 
-    var id: String { rawValue }
+    var id: Int {
+        switch self {
+        case .bandwidth:
+            return 0
+        case .energy:
+            return 1
+        }
+    }
+
+    var title: String {
+        displayName
+    }
+
+    var icon: String? {
+        switch self {
+        case .bandwidth:
+            return "gauge"
+        case .energy:
+            return "lightning"
+        }
+    }
+
+    var iconSelectedTint: Color? {
+        switch self {
+        case .bandwidth:
+            return Theme.colors.alertSuccess
+        case .energy:
+            return Theme.colors.alertWarning
+        }
+    }
 
     var displayName: String {
         switch self {

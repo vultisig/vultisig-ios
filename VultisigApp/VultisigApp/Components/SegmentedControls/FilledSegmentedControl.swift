@@ -10,11 +10,22 @@ import SwiftUI
 protocol FilledSegmentedControlType: Identifiable {
     var id: Int { get }
     var title: String { get }
+    var icon: String? { get }
+    var iconSelectedTint: Color? { get }
+}
+
+extension FilledSegmentedControlType {
+    var icon: String? { nil }
+    var iconSelectedTint: Color? { nil }
 }
 
 enum FilledSegmentedControlSize {
     case normal
     case small
+    /// Resource toggle styling per Figma (track surface1, selected pill surface2,
+    /// 52pt tall, 12pt option padding). Distinct case so the macOS scanner keeps
+    /// its existing look.
+    case filledPill
 }
 
 struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
@@ -35,24 +46,22 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
-                let size = proxy.size.width / CGFloat(options.count)
-                RoundedRectangle(cornerRadius: 99)
-                    .fill(Theme.colors.bgPrimary)
-                    .frame(width: size)
-                    .offset(x: CGFloat(selectionIndex) * size)
+                let pillWidth = (proxy.size.width - trackPadding * 2 - optionGap * CGFloat(options.count - 1)) / CGFloat(options.count)
+                RoundedRectangle(cornerRadius: pillCornerRadius)
+                    .fill(pillColor)
+                    .frame(width: pillWidth)
+                    .offset(x: CGFloat(selectionIndex) * (pillWidth + optionGap))
                     .animation(.interpolatingSpring, value: selectionIndex)
 
-                HStack {
+                HStack(spacing: optionGap) {
                     ForEach(options) { option in
                         Button {
                             withAnimation {
                                 self.selection = option
                             }
                         } label: {
-                            Text(option.title)
-                                .font(Theme.fonts.bodySMedium)
-                                .foregroundStyle(Theme.colors.textPrimary)
-                                .padding(padding)
+                            optionLabel(for: option)
+                                .padding(optionPadding)
                                 .frame(maxWidth: .infinity)
                         }
                         .contentShape(Rectangle())
@@ -60,21 +69,103 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                 }
             }
             .frame(width: proxy.size.width)
-            .padding(4)
+            .padding(trackPadding)
             .background(
-                RoundedRectangle(cornerRadius: 99)
-                    .fill(Theme.colors.bgSurface2)
+                RoundedRectangle(cornerRadius: trackCornerRadius)
+                    .fill(trackColor)
             )
         }
         .frame(height: height)
     }
 
-    var padding: CGFloat {
+    @ViewBuilder
+    private func optionLabel(for option: T) -> some View {
+        let isSelected = option.id == selection.id
+        HStack(spacing: 6) {
+            if let icon = option.icon {
+                Image(icon)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(iconTint(for: option, isSelected: isSelected))
+            }
+
+            Text(option.title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+    }
+
+    private func iconTint(for option: T, isSelected: Bool) -> Color {
+        guard isSelected, let tint = option.iconSelectedTint else {
+            return Theme.colors.textSecondary
+        }
+        return tint
+    }
+
+    var optionPadding: CGFloat {
         switch size {
         case .normal:
             16
         case .small:
             8
+        case .filledPill:
+            12
+        }
+    }
+
+    var trackPadding: CGFloat {
+        switch size {
+        case .normal, .small:
+            4
+        case .filledPill:
+            4
+        }
+    }
+
+    var optionGap: CGFloat {
+        switch size {
+        case .normal, .small:
+            0
+        case .filledPill:
+            12
+        }
+    }
+
+    var trackColor: Color {
+        switch size {
+        case .normal, .small:
+            Theme.colors.bgSurface2
+        case .filledPill:
+            Theme.colors.bgSurface1
+        }
+    }
+
+    var pillColor: Color {
+        switch size {
+        case .normal, .small:
+            Theme.colors.bgPrimary
+        case .filledPill:
+            Theme.colors.bgSurface2
+        }
+    }
+
+    var trackCornerRadius: CGFloat {
+        switch size {
+        case .normal, .small:
+            99
+        case .filledPill:
+            88
+        }
+    }
+
+    var pillCornerRadius: CGFloat {
+        switch size {
+        case .normal, .small:
+            99
+        case .filledPill:
+            77
         }
     }
 
@@ -84,6 +175,8 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
             60
         case .small:
             30
+        case .filledPill:
+            52
         }
     }
 }

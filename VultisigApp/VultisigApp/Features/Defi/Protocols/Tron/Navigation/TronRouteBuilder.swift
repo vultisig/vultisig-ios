@@ -20,7 +20,11 @@ struct TronRouteBuilder {
     }
 
     @ViewBuilder
-    func buildUnfreezeScreen(vault: Vault, model: TronViewModel) -> some View {
-        TronUnfreezeView(vault: vault, model: model)
+    func buildUnfreezeScreen(vault: Vault, frozenBandwidth: Decimal, frozenEnergy: Decimal) -> some View {
+        TronUnfreezeView(
+            vault: vault,
+            frozenBandwidthBalance: frozenBandwidth,
+            frozenEnergyBalance: frozenEnergy
+        )
     }
 }

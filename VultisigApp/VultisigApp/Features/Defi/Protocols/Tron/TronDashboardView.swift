@@ -201,7 +201,13 @@ struct TronDashboardView: View {
                     icon: "minus",
                     type: .outline,
                     isSystemIcon: true,
-                    action: { router.navigate(to: TronRoute.unfreeze(vault: vault, model: model)) }
+                    action: {
+                        router.navigate(to: TronRoute.unfreeze(
+                            vault: vault,
+                            frozenBandwidth: model.frozenBandwidthBalance,
+                            frozenEnergy: model.frozenEnergyBalance
+                        ))
+                    }
                 )
                 .disabled(model.totalFrozenBalance <= 0)
 

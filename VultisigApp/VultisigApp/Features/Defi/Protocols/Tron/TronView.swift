@@ -18,40 +18,21 @@ struct TronView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .onAppear {
+                Task { await loadData() }
+            }
     }
 
+    @ViewBuilder
     var content: some View {
-        Screen {
-            if model.missingTrx {
-                // Show warning to add TRX
-                VStack(spacing: 24) {
-                    Spacer()
-
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(Theme.fonts.largeTitle)
-                        .foregroundStyle(Theme.colors.alertWarning)
-
-                    Text(NSLocalizedString("tronTrxRequired", comment: "TRX Required"))
-                        .font(Theme.fonts.title2)
-                        .foregroundStyle(Theme.colors.textPrimary)
-
-                    Text(NSLocalizedString("tronTrxRequiredDescription", comment: "Please add TRX to your vault to use TRON staking."))
-                        .font(Theme.fonts.bodyMRegular)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+        if model.missingTrx {
+            TronMissingTrxView()
+        } else {
+            Screen {
                 // Show dashboard immediately (cards show their own loading states)
                 TronDashboardView(vault: vault, model: model, onRefresh: loadData)
             }
-        }
-        .screenTitle(NSLocalizedString("tronTitle", comment: "TRON Staking"))
-        .onAppear {
-            Task { await loadData() }
+            .screenTitle("tronTitle".localized)
         }
     }
 
