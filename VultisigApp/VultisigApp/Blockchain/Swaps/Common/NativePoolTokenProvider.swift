@@ -52,19 +52,15 @@ final class NativePoolTokenProvider: DestinationTokenProvider {
     }
 
     func tokens(for chain: Chain) async -> DestinationTokenBucket {
-        await tokens(for: chain, now: Date())
-    }
-
-    /// Date-injectable variant used by tests / TTL-sensitive callers.
-    func tokens(for chain: Chain, now: Date) async -> DestinationTokenBucket {
-        let buckets = await ensureSnapshot(now: now)
+        let buckets = await ensureSnapshot()
         return buckets?[chain] ?? .empty(chain: chain)
     }
 
     /// Coalescing fetch — concurrent callers share one in-flight Task. Returns
     /// the cached snapshot when fresh; otherwise refreshes. Fail-open to
     /// last-good on a fetch failure (mirrors `SwapKitTokensCache`).
-    private func ensureSnapshot(now: Date) async -> [Chain: DestinationTokenBucket]? {
+    private func ensureSnapshot() async -> [Chain: DestinationTokenBucket]? {
+        let now = Date()
         if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < cacheTTL {
             return snapshot.buckets
         }
@@ -81,12 +77,6 @@ final class NativePoolTokenProvider: DestinationTokenProvider {
             snapshot = Snapshot(buckets: result, fetchedAt: now)
         }
         return result ?? snapshot?.buckets
-    }
-
-    /// Replace the snapshot — test seam so tests don't stand up a fake
-    /// `HTTPClient`.
-    func setSnapshot(buckets: [Chain: DestinationTokenBucket], fetchedAt: Date = Date()) {
-        snapshot = Snapshot(buckets: buckets, fetchedAt: fetchedAt)
     }
 
     // MARK: - Fetch + map
