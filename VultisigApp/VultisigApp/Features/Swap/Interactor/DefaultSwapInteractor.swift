@@ -118,8 +118,14 @@ struct DefaultSwapInteractor: SwapInteractor {
             switch quote {
             case .mayachain:
                 inbound = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
-            case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            case .thorchain:
                 inbound = try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .thorchainChainnet:
+                // Read inbound from the matching node, not mainnet, so the
+                // halt status reflects the network the quote actually routes on.
+                inbound = try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .thorchainStagenet:
+                inbound = try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
             case .oneinch, .kyberswap, .lifi, .swapkit:
                 return
             }
