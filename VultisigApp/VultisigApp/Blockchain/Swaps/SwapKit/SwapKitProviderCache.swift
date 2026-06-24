@@ -33,8 +33,12 @@ struct SwapKitProvidersSnapshot {
 actor SwapKitProviderCache {
     static let shared = SwapKitProviderCache()
 
+    /// Single-key cache — the providers list isn't partitioned, so one fixed
+    /// key holds the whole snapshot.
+    private enum CacheKey { case providers }
+
     private let httpClient: HTTPClientProtocol
-    private var snapshot: SwapKitProvidersSnapshot?
+    private let cache = TTLCache<CacheKey, [SwapKitProvider]>()
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
@@ -47,19 +51,20 @@ actor SwapKitProviderCache {
     /// offer gating, while `isPairSupported` fails open for error-label
     /// remapping.
     func providers(now: Date = Date()) async -> [SwapKitProvider]? {
-        if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.providerCacheTTL {
-            return snapshot.providers
-        }
         do {
-            let response = try await httpClient.request(
-                SwapKitAPI.providers,
-                responseType: [SwapKitProvider].self
-            )
-            let fresh = SwapKitProvidersSnapshot(providers: response.data, fetchedAt: now)
-            snapshot = fresh
-            return fresh.providers
+            return try await cache.value(
+                for: .providers,
+                now: now,
+                ttl: SwapKitConfig.providerCacheTTL
+            ) { [httpClient] in
+                let response = try await httpClient.request(
+                    SwapKitAPI.providers,
+                    responseType: [SwapKitProvider].self
+                )
+                return response.data
+            }
         } catch {
-            return snapshot?.providers
+            return await cache.peek(.providers)
         }
     }
 
@@ -147,8 +152,8 @@ actor SwapKitProviderCache {
 
     /// Replace the snapshot — exposed for tests so they don't have to stand
     /// up a fake HTTPClient.
-    func setSnapshot(_ snapshot: SwapKitProvidersSnapshot) {
-        self.snapshot = snapshot
+    func setSnapshot(_ snapshot: SwapKitProvidersSnapshot) async {
+        await cache.setCached(snapshot.providers, for: .providers, fetchedAt: snapshot.fetchedAt)
     }
 }
 

@@ -419,6 +419,8 @@ private final class MockSwapInteractor: SwapInteractor {
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }
 
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
+
     func fetchChainSpecific(
         fromCoin: Coin,
         toCoin: Coin,

@@ -130,19 +130,23 @@ final class SwapDetailsViewModel {
         let allCoins = vault.coins
         guard !allCoins.isEmpty else { return }
 
+        // Resolve the default pair + lists off the chain-level provider
+        // eligibility. THORChain / Maya are offered at the chain level, so this
+        // is a pure synchronous resolve — no pool fetch, no re-resolve, no
+        // placeholder flash. Token-level native-pool availability surfaces in
+        // the picker via the native-pool `DestinationTokenProvider`s.
         let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: allCoins)
         let resolvedFromCoin = initialFromCoin ?? defaultFromCoin
-
         let (resolvedToCoins, defaultToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: resolvedFromCoin,
             allCoins: allCoins,
             selectedToCoin: initialToCoin ?? .example
         )
-
         fromCoin = resolvedFromCoin
         toCoin = defaultToCoin
         fromCoins = resolvedFromCoins
         toCoins = resolvedToCoins
+
         // Every swap session starts at default advanced settings. The screen owns
         // a fresh VM per push so this is normally already `.default`, but resetting
         // here makes the session start explicit and guaranteed even if the VM is

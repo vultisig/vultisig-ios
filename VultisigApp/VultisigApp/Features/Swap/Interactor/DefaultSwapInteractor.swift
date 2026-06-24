@@ -8,6 +8,7 @@
 
 import BigInt
 import Foundation
+import OSLog
 
 struct DefaultSwapInteractor: SwapInteractor {
     let quote: QuoteServiceProtocol
@@ -15,6 +16,10 @@ struct DefaultSwapInteractor: SwapInteractor {
     let balance: BalanceServiceProtocol
     let fastVault: FastVaultServiceProtocol
     let tierResolver: SwapDiscountTierResolving
+    /// Inbound clients for the sign-time native-route halt re-check. Injected so
+    /// the gate is unit-testable; production uses the shared singletons.
+    var thorchainService: ThorchainService = .shared
+    var mayachainService: MayachainService = .shared
 
     static var live: SwapInteractor {
         DefaultSwapInteractor(
@@ -101,6 +106,42 @@ struct DefaultSwapInteractor: SwapInteractor {
             fromAmount: fromAmount,
             vault: vault
         )
+    }
+
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
+        let quote = transaction.quote
+        guard quote.isNativeProtocolRoute else { return }
+
+        let sourceChain = transaction.fromCoin.chain
+        do {
+            let inbound: [InboundAddress]
+            switch quote {
+            case .mayachain:
+                inbound = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+            case .thorchain:
+                inbound = try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .thorchainChainnet:
+                // Read inbound from the matching node, not mainnet, so the
+                // halt status reflects the network the quote actually routes on.
+                inbound = try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .thorchainStagenet:
+                inbound = try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            case .oneinch, .kyberswap, .lifi, .swapkit:
+                return
+            }
+            if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {
+                throw SwapError.tradingHalted
+            }
+        } catch let error as SwapError {
+            throw error
+        } catch {
+            // Fail closed: an unverifiable inbound re-check must not let a native
+            // deposit proceed. Surface the retryable halt message so the user can
+            // retry once the fetch recovers.
+            let logger = Logger(subsystem: "com.vultisig.app", category: "swap-interactor")
+            logger.warning("Sign-time halt re-check failed, blocking native route: \(error.localizedDescription, privacy: .public)")
+            throw SwapError.tradingHalted
+        }
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {

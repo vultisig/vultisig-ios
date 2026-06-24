@@ -269,6 +269,8 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
 
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
+
     func fetchChainSpecific(
         fromCoin: Coin,
         toCoin: Coin,

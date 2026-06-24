@@ -68,7 +68,13 @@ struct SwapService {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes {
-        let resolvedProviders = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+        // THORChain / MayaChain are offered at the chain level, so provider
+        // overlap here decides which native + aggregator routes are attempted;
+        // the live quote prunes a native route with no real pool.
+        let resolvedProviders = SwapCoinsResolver.resolveAllProviders(
+            fromCoin: fromCoin,
+            toCoin: toCoin
+        )
 
         guard !resolvedProviders.isEmpty else {
             throw SwapError.routeUnavailable
@@ -610,10 +616,39 @@ extension SwapService {
     /// a *temporary* condition the user can retry, distinct from a permanently
     /// unsupported pair, so it gets its own user-facing message rather than the
     /// generic "route not available" or a leaked raw upstream string.
-    private static let tradingHaltedMarkers = ["trading is halted", "trading halted"]
+    private static let tradingHaltedMarkers = [
+        "trading is halted",
+        "trading halted",
+        "trading paused",
+        "_trading_paused",
+        "is paused"
+    ]
 
     private static func isTradingHalted(_ message: String) -> Bool {
         tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
+    }
+
+    /// Classify a native (THORChain/MAYAChain) quote-error body into a typed
+    /// `SwapError`, shared by both branches so Maya stops leaking dust-minimum /
+    /// missing-pool errors as a raw `.serverError`. Returns `nil` when the body
+    /// matches none of the known classes; the caller then applies its own
+    /// fallback (THORChain relays the server message, Maya relays the raw error).
+    private static func classifyNativeQuoteError(_ message: String) -> SwapError? {
+        if message.contains("not enough asset to pay for fees") ||
+            message.localizedCaseInsensitiveContains("zero emit asset") {
+            // "zero emit asset" means the input is below the dust/fee threshold —
+            // the same class as "not enough asset to pay for fees", surfaced as
+            // the retry-with-more message.
+            return .swapAmountTooSmall
+        }
+        if message.localizedCaseInsensitiveContains("invalid symbol") ||
+            message.localizedCaseInsensitiveContains("bad to asset") ||
+            message.localizedCaseInsensitiveContains("bad from asset") ||
+            message.localizedCaseInsensitiveContains("pool does not exist") {
+            // This typically means no liquidity pool exists for this token pair.
+            return .noLiquidityPool
+        }
+        return nil
     }
 
     /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
@@ -626,29 +661,21 @@ extension SwapService {
             return .tradingHalted
         }
         if error.code == 3 {
-            if error.message.contains("not enough asset to pay for fees") {
-                return .swapAmountTooSmall
-            } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
-                error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                error.message.localizedCaseInsensitiveContains("pool does not exist") {
-                // This typically means no liquidity pool exists for this token pair
-                return .noLiquidityPool
-            } else {
-                return .serverError(message: error.message)
-            }
+            return classifyNativeQuoteError(error.message) ?? .serverError(message: error.message)
         }
         return .routeUnavailable
     }
 
     /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.
-    /// A trading halt surfaces as the retryable message; any other error keeps
-    /// the previous behaviour of relaying the raw upstream string.
+    /// A trading halt surfaces as the retryable message; the shared dust-minimum
+    /// / missing-pool classification (previously THORChain-only) now applies here
+    /// too, so those no longer leak as a raw `.serverError`. Anything unrecognised
+    /// keeps the previous behaviour of relaying the raw upstream string.
     static func mapMayachainSwapError(_ error: MayachainSwapError) -> SwapError {
         if isTradingHalted(error.error) {
             return .tradingHalted
         }
-        return .serverError(message: error.error)
+        return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
     }
 }
 
