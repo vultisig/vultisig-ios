@@ -26,7 +26,7 @@ struct TronScreen: View {
     @ViewBuilder
     var content: some View {
         if model.missingTrx {
-            TronMissingTrxView()
+            TronMissingTrxScreen()
         } else {
             Screen {
                 // Show dashboard immediately (cards show their own loading states)

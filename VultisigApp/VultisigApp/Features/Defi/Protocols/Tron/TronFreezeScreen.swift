@@ -37,7 +37,7 @@ struct TronFreezeScreen: View {
             )
             .onLoad { viewModel.onLoad() }
         } else {
-            TronMissingTrxView()
+            TronMissingTrxScreen()
         }
     }
 

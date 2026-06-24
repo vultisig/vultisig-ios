@@ -1,5 +1,5 @@
 //
-//  TronMissingTrxView.swift
+//  TronMissingTrxScreen.swift
 //  VultisigApp
 //
 //  Created for TRON Freeze/Unfreeze integration
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TronMissingTrxView: View {
+struct TronMissingTrxScreen: View {
     var body: some View {
         Screen {
             VStack(spacing: 24) {
