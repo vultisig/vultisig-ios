@@ -70,7 +70,7 @@ struct ChainDetailScreenContainer: View {
                 case .defi:
                     switch chain {
                     case .tron:
-                        TronView(vault: vault)
+                        TronScreen(vault: vault)
                     default:
                         DefiChainMainScreen(vault: vault, chain: chain)
                     }

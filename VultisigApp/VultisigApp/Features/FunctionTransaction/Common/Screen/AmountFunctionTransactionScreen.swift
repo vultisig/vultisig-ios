@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AmountFunctionTransactionScreen<CustomView: View>: View {
+struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     enum FocusedField {
         case amount
     }
@@ -22,6 +22,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
     var onVerify: () -> Void
     var customViewPosition: AmountTextField<CustomView>.CustomViewPosition
     var customView: () -> CustomView
+    var topView: () -> TopView
 
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
@@ -36,7 +37,8 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
         validForm: Binding<Bool>,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
         onVerify: @escaping () -> Void,
-        @ViewBuilder customView: @escaping () -> CustomView
+        @ViewBuilder customView: @escaping () -> CustomView,
+        @ViewBuilder topView: @escaping () -> TopView = { EmptyView() }
     ) {
         self.title = title
         self.coin = coin
@@ -48,6 +50,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
         self.onVerify = onVerify
         self.customViewPosition = customViewPosition
         self.customView = customView
+        self.topView = topView
     }
 
     var body: some View {
@@ -56,6 +59,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
             validForm: $validForm,
             onContinue: onContinue
         ) {
+            topView()
             FormExpandableSection(
                 title: amountField.label ?? .empty,
                 isValid: amountField.valid,

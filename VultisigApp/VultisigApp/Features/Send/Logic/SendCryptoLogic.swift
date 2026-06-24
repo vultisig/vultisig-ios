@@ -34,7 +34,7 @@ enum SendCryptoLogic {
 
     /// Returns true if the requested amount + applicable fee exceeds the coin's
     /// raw balance. TRON staking operations short-circuit — balance is already
-    /// validated in TronFreezeView / TronUnfreezeView.
+    /// validated in TronFreezeScreen / TronUnfreezeScreen.
     static func isAmountExceeded(
         coin: Coin,
         amount: String,

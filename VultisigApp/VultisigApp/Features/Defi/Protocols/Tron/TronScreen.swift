@@ -1,5 +1,5 @@
 //
-//  TronView.swift
+//  TronScreen.swift
 //  VultisigApp
 //
 //  Created for TRON Freeze/Unfreeze integration
@@ -8,7 +8,7 @@
 import SwiftUI
 import BigInt
 
-struct TronView: View {
+struct TronScreen: View {
     let vault: Vault
 
     @StateObject private var model = TronViewModel()
@@ -18,52 +18,25 @@ struct TronView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
-    }
-
-    var content: some View {
-        Screen {
-            if model.missingTrx {
-                // Show warning to add TRX
-                VStack(spacing: 24) {
-                    Spacer()
-
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(Theme.fonts.largeTitle)
-                        .foregroundStyle(Theme.colors.alertWarning)
-
-                    Text(NSLocalizedString("tronTrxRequired", comment: "TRX Required"))
-                        .font(Theme.fonts.title2)
-                        .foregroundStyle(Theme.colors.textPrimary)
-
-                    Text(NSLocalizedString("tronTrxRequiredDescription", comment: "Please add TRX to your vault to use TRON staking."))
-                        .font(Theme.fonts.bodyMRegular)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                // Show dashboard immediately (cards show their own loading states)
-                TronDashboardView(vault: vault, model: model, onRefresh: loadData)
+            .onAppear {
+                Task { await loadData() }
             }
-        }
-        .screenTitle(NSLocalizedString("tronTitle", comment: "TRON Staking"))
-        .onAppear {
-            Task { await loadData() }
+    }
+
+    @ViewBuilder
+    var content: some View {
+        if model.missingTrx {
+            TronMissingTrxScreen()
+        } else {
+            Screen {
+                // Show dashboard immediately (cards show their own loading states)
+                TronDashboardView(vault: vault, model: model, onRefresh: { await loadData(forceRefresh: true) })
+            }
+            .screenTitle("tronTitle".localized)
         }
     }
 
-    private func loadData() async {
-        // Set all loading states upfront so skeletons appear and clear previous errors
-        await MainActor.run {
-            model.isLoading = true
-            model.isLoadingBalance = true
-            model.isLoadingResources = true
-            model.error = nil
-        }
-
+    private func loadData(forceRefresh: Bool = false) async {
         // Check if vault has TRX
         guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
             await MainActor.run {
@@ -75,13 +48,22 @@ struct TronView: View {
             return
         }
 
-        // Clear missingTrx flag when TRX is found
-        await MainActor.run {
-            model.missingTrx = false
-        }
-
         let address = trxCoin.address
         let tronService = TronService.shared
+
+        // Serve fresh-cached data immediately without a spinner. Only show
+        // loading skeletons when the cache is cold/stale or an explicit
+        // refresh was requested.
+        let cachedAccount = forceRefresh ? nil : await tronService.cachedAccount(for: address)
+        let cachedResource = forceRefresh ? nil : await tronService.cachedAccountResource(for: address)
+
+        await MainActor.run {
+            model.missingTrx = false
+            model.error = nil
+            model.isLoading = cachedAccount == nil || cachedResource == nil
+            model.isLoadingBalance = cachedAccount == nil
+            model.isLoadingResources = cachedResource == nil
+        }
 
         // Persist the frozen/unfreezing balance into `Coin.stakedBalance` so the
         // DeFi portfolio main screen (which reads the persisted value) stays in
@@ -93,7 +75,7 @@ struct TronView: View {
             // Task 1: Fetch account info (balance data)
             group.addTask {
                 do {
-                    let account = try await tronService.getAccount(address: address)
+                    let account = try await tronService.getAccount(address: address, forceRefresh: forceRefresh)
                     await MainActor.run {
                         // Calculate available balance (in TRX, not SUN)
                         let balanceSun = account.balance ?? 0
@@ -131,7 +113,7 @@ struct TronView: View {
             // Task 2: Fetch resource info (bandwidth/energy)
             group.addTask {
                 do {
-                    let resource = try await tronService.getAccountResource(address: address)
+                    let resource = try await tronService.getAccountResource(address: address, forceRefresh: forceRefresh)
                     await MainActor.run {
                         self.model.availableBandwidth = resource.calculateAvailableBandwidth()
                         self.model.totalBandwidth = resource.freeNetLimit + resource.NetLimit

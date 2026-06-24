@@ -18,6 +18,15 @@ class TronService {
     // Cache for chain parameters
     private var chainParametersCache: TronChainParametersResponse?
 
+    /// Per-address TTL cache for account + resource responses, shared across
+    /// the DeFi screens so re-opening paints instantly instead of refetching.
+    private let accountCache = TronAccountCache()
+
+    /// Time-to-live for cached account/resource data, in seconds. Tunable —
+    /// short enough that balances stay fresh after a freeze/unfreeze, long
+    /// enough that navigating back into the screen serves from cache.
+    static var accountCacheTTL: TimeInterval = 60
+
     // Constants from Android implementation
     private static let BYTES_PER_COIN_TX: Int64 = 300
     private static let BYTES_PER_CONTRACT_TX: Int64 = 345
@@ -111,12 +120,42 @@ class TronService {
 
     // MARK: - Account Info
 
-    func getAccount(address: String) async throws -> TronAccountResponse {
-        return try await apiService.getAccount(address: address)
+    /// Returns the account for `address`, served from the TTL cache when a
+    /// fresh entry exists. `forceRefresh` bypasses the cache for explicit
+    /// pull-to-refresh. Concurrent callers for the same address coalesce onto
+    /// a single network request.
+    func getAccount(address: String, forceRefresh: Bool = false) async throws -> TronAccountResponse {
+        try await accountCache.account(for: address, forceRefresh: forceRefresh) {
+            try await self.apiService.getAccount(address: address)
+        }
     }
 
-    func getAccountResource(address: String) async throws -> TronAccountResourceResponse {
-        return try await apiService.getAccountResource(address: address)
+    /// Returns the account resources for `address`, served from the TTL cache
+    /// when fresh. See `getAccount(address:forceRefresh:)` for cache semantics.
+    func getAccountResource(address: String, forceRefresh: Bool = false) async throws -> TronAccountResourceResponse {
+        try await accountCache.resource(for: address, forceRefresh: forceRefresh) {
+            try await self.apiService.getAccountResource(address: address)
+        }
+    }
+
+    /// Returns the cached account for `address` only if a non-expired entry
+    /// exists, without touching the network. Lets a screen paint instantly
+    /// (no spinner) when data is fresh and fall back to a network load only
+    /// when the cache is cold or stale.
+    func cachedAccount(for address: String) async -> TronAccountResponse? {
+        await accountCache.cachedAccount(for: address)
+    }
+
+    /// Cached-resource counterpart to `cachedAccount(for:)`.
+    func cachedAccountResource(for address: String) async -> TronAccountResourceResponse? {
+        await accountCache.cachedResource(for: address)
+    }
+
+    /// Drops any cached account + resource entry for `address` so the next
+    /// load refetches. Called after a freeze/unfreeze so balances update when
+    /// the user navigates back into the DeFi screens.
+    func invalidateAccountCache(for address: String) async {
+        await accountCache.invalidate(address: address)
     }
 
     // MARK: - Private Helpers
@@ -274,5 +313,99 @@ class TronService {
         let createAccountContractFee = BigInt(chainParams.createNewAccountFeeEstimateContract)
 
         return createAccountFee + createAccountContractFee
+    }
+}
+
+// MARK: - Account Cache
+
+/// Concurrency-safe, per-address TTL cache for TRON account + resource
+/// responses, mirroring `THORChainAPICache`. Coalesces concurrent loads for
+/// the same address onto a single in-flight request so the dashboard and the
+/// resources loader opening together don't duplicate network calls.
+private actor TronAccountCache {
+
+    private struct CacheEntry<T> {
+        let value: T
+        let timestamp: Date
+
+        func isExpired(duration: TimeInterval) -> Bool {
+            Date().timeIntervalSince(timestamp) > duration
+        }
+    }
+
+    private var accounts: [String: CacheEntry<TronAccountResponse>] = [:]
+    private var resources: [String: CacheEntry<TronAccountResourceResponse>] = [:]
+    private var inFlightAccounts: [String: Task<TronAccountResponse, Error>] = [:]
+    private var inFlightResources: [String: Task<TronAccountResourceResponse, Error>] = [:]
+
+    // MARK: Account
+
+    func cachedAccount(for address: String) -> TronAccountResponse? {
+        guard let entry = accounts[address],
+              !entry.isExpired(duration: TronService.accountCacheTTL) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func account(
+        for address: String,
+        forceRefresh: Bool,
+        fetch: @escaping () async throws -> TronAccountResponse
+    ) async throws -> TronAccountResponse {
+        if !forceRefresh, let cached = cachedAccount(for: address) {
+            return cached
+        }
+
+        if let existing = inFlightAccounts[address] {
+            return try await existing.value
+        }
+
+        let task = Task { try await fetch() }
+        inFlightAccounts[address] = task
+        defer { inFlightAccounts[address] = nil }
+
+        let value = try await task.value
+        accounts[address] = CacheEntry(value: value, timestamp: Date())
+        return value
+    }
+
+    // MARK: Resource
+
+    func cachedResource(for address: String) -> TronAccountResourceResponse? {
+        guard let entry = resources[address],
+              !entry.isExpired(duration: TronService.accountCacheTTL) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func resource(
+        for address: String,
+        forceRefresh: Bool,
+        fetch: @escaping () async throws -> TronAccountResourceResponse
+    ) async throws -> TronAccountResourceResponse {
+        if !forceRefresh, let cached = cachedResource(for: address) {
+            return cached
+        }
+
+        if let existing = inFlightResources[address] {
+            return try await existing.value
+        }
+
+        let task = Task { try await fetch() }
+        inFlightResources[address] = task
+        defer { inFlightResources[address] = nil }
+
+        let value = try await task.value
+        resources[address] = CacheEntry(value: value, timestamp: Date())
+        return value
+    }
+
+    // MARK: Invalidation
+
+    func invalidate(address: String) {
+        accounts[address] = nil
+        resources[address] = nil
     }
 }
