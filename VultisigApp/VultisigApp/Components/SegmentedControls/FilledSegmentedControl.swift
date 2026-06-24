@@ -68,7 +68,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                     }
                 }
             }
-            .frame(width: proxy.size.width)
+            .frame(width: proxy.size.width - trackPadding * 2)
             .padding(trackPadding)
             .background(
                 RoundedRectangle(cornerRadius: trackCornerRadius)
