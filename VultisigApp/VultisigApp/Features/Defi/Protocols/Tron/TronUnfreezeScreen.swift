@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TronUnfreezeScreen: View {
-    @StateObject var viewModel: TronUnfreezeViewModel
+    @StateObject private var viewModel: TronUnfreezeViewModel
     @Environment(\.router) var router
 
     init(vault: Vault, frozenBandwidthBalance: Decimal, frozenEnergyBalance: Decimal) {

@@ -11,6 +11,7 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "tron-freeze-view-model")
 
+@MainActor
 final class TronFreezeViewModel: ObservableObject, Form {
     let vault: Vault
 
