@@ -54,9 +54,13 @@ final class NativePoolTokenProvider {
     /// Coalescing fetch — concurrent callers share one in-flight Task. Returns
     /// the cached snapshot when fresh; otherwise refreshes. Fail-open to
     /// last-good on a fetch failure (mirrors `SwapKitTokensCache`).
-    private func ensureSnapshot() async -> [Chain: DestinationTokenBucket]? {
+    ///
+    /// `forceRefresh` bypasses the freshness/TTL early-return and re-fetches,
+    /// while still coalescing concurrent callers onto one in-flight Task and
+    /// serving last-good on failure.
+    private func ensureSnapshot(forceRefresh: Bool = false) async -> [Chain: DestinationTokenBucket]? {
         let now = Date()
-        if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < cacheTTL {
+        if !forceRefresh, let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < cacheTTL {
             return snapshot.buckets
         }
         if let inFlight {
@@ -135,8 +139,8 @@ final class NativePoolTokenProvider {
 // inline form intermittently tripped a noteless "does not conform" error
 // during separate Swift module emission.
 extension NativePoolTokenProvider: DestinationTokenProvider {
-    func tokens(for chain: Chain) async -> DestinationTokenBucket {
-        let buckets = await ensureSnapshot()
+    func tokens(for chain: Chain, forceRefresh: Bool) async -> DestinationTokenBucket {
+        let buckets = await ensureSnapshot(forceRefresh: forceRefresh)
         return buckets?[chain] ?? .empty(chain: chain)
     }
 }
