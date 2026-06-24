@@ -142,6 +142,20 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Source-chain gas cost in native wei (`gas × gasPrice`) for same-chain EVM
+    /// aggregator quotes. Used only as a tie-break among in-band quotes that both
+    /// expose it — same-unit source-native wei, no cross-asset price normalization.
+    /// `nil` for THORChain/Maya/SwapKit, which expose no router gas at quote time.
+    var sourceGasWei: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            guard let gasPrice = BigInt(quote.tx.gasPrice), gasPrice > 0 else { return nil }
+            return BigInt(quote.tx.gas) * gasPrice
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
+            return nil
+        }
+    }
+
     var swapFeeTokenContract: String? {
         switch self {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):

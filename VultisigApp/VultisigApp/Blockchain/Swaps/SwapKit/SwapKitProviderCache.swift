@@ -42,9 +42,10 @@ actor SwapKitProviderCache {
 
     /// Returns a cached or freshly-fetched provider list, refreshing when the
     /// snapshot is older than `SwapKitConfig.providerCacheTTL`. Returns `nil`
-    /// when the fetch fails *and* we have no prior snapshot — callers should
-    /// treat that as "skip the SwapKit gate" rather than blocking the swap
-    /// flow.
+    /// when the fetch fails *and* we have no prior snapshot. Callers choose
+    /// their own fallback policy for that edge: `isEnabled` fails closed for
+    /// offer gating, while `isPairSupported` fails open for error-label
+    /// remapping.
     func providers(now: Date = Date()) async -> [SwapKitProvider]? {
         if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.providerCacheTTL {
             return snapshot.providers
@@ -84,11 +85,20 @@ actor SwapKitProviderCache {
     }
 
     /// Async variant — refreshes the cache and returns whether the chain has
-    /// at least one non-filtered provider enabled. Returns `true` when the
-    /// providers list can't be loaded (fail-open: better to attempt the
-    /// fetcher and let `/v3/quote` decide than to silently disable SwapKit).
+    /// at least one non-filtered provider enabled. Fails CLOSED (`false`) when
+    /// the providers list can't be loaded at all (a cold-launch `/providers`
+    /// fetch failure with no prior snapshot): SwapKit is simply not offered for
+    /// the chain until a refresh succeeds, rather than offering routes that
+    /// will fail downstream. Other providers still populate the picker, and
+    /// `SwapService.fetchSwapKitQuote` throws `providerNotEnabled` cleanly.
+    /// Once a snapshot exists, `providers(now:)` serves it as last-good on a
+    /// later fetch failure, so this only bites the genuine no-data edge.
+    ///
+    /// Note the asymmetry with `isPairSupported(...)`, which fails OPEN on the
+    /// same edge: that predicate only governs an error-label re-mapping, so
+    /// failing it closed would merely degrade a message, not block a swap.
     func isEnabled(chain: Chain, now: Date = Date()) async -> Bool {
-        guard let providers = await providers(now: now) else { return true }
+        guard let providers = await providers(now: now) else { return false }
         return Self.chainEnabled(chain, in: providers)
     }
 
@@ -120,8 +130,16 @@ actor SwapKitProviderCache {
     /// Async variant — refreshes the cache and returns whether the (from, to)
     /// chain pair has at least one non-filtered provider that enables both
     /// chains. Returns `true` when the providers list can't be loaded
-    /// (fail-open, mirroring `isEnabled(chain:)`) — the caller treats this
-    /// as "could plausibly be supported" when re-classifying error codes.
+    /// (fail-OPEN) — the caller treats this as "could plausibly be supported"
+    /// when re-classifying error codes.
+    ///
+    /// This deliberately differs from `isEnabled(chain:)`, which fails CLOSED
+    /// on the same no-snapshot edge. The asymmetry is intentional: `isEnabled`
+    /// gates whether SwapKit is *offered* at all, so the safe default is to
+    /// withhold it; `isPairSupported` only chooses between two error labels
+    /// (a `noRoutesFound` 404 re-mapped to `amountBelowProviderMinimum`), so
+    /// failing it closed would merely show a less specific error message
+    /// rather than prevent a bad swap — not worth withholding the better label.
     func isPairSupported(fromChain: Chain, toChain: Chain, now: Date = Date()) async -> Bool {
         guard let providers = await providers(now: now) else { return true }
         return Self.pairEnabled(fromChain: fromChain, toChain: toChain, in: providers)

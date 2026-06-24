@@ -77,7 +77,7 @@ struct KeysignView: View {
                     .KeysignECDSA,
                     .KeysignEdDSA,
                     .KeysignMLDSA:
-                SendCryptoKeysignView(coinLogo: keysignPayload?.coin.logo)
+                SendCryptoKeysignView(coinLogo: keysignPayload?.coin.logo, progress: viewModel.signingProgress)
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
