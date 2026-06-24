@@ -41,11 +41,12 @@ final class TronFreezeViewModel: ObservableObject, Form {
 
     func onLoad() {
         setupForm()
-        amountField.validators.append(AmountBalanceValidator(balance: availableBalance))
+        updateValidators()
     }
 
     func loadBalance() async {
         guard let coin = trxCoin else {
+            logger.error("Unable to load TRX coin for freeze: no TRX coin in vault")
             await MainActor.run { self.error = TronStakingError.noTrxCoin }
             return
         }
@@ -54,11 +55,15 @@ final class TronFreezeViewModel: ObservableObject, Form {
 
         await MainActor.run {
             self.availableBalance = coin.balanceDecimal
-            self.amountField.validators = [
-                RequiredValidator(errorMessage: "emptyAmountField".localized),
-                AmountBalanceValidator(balance: coin.balanceDecimal)
-            ]
+            self.updateValidators()
         }
+    }
+
+    func updateValidators() {
+        amountField.validators = [
+            RequiredValidator(errorMessage: "emptyAmountField".localized),
+            AmountBalanceValidator(balance: availableBalance)
+        ]
     }
 
     /// Builds the TRON freeze transaction. Preserves the memo format

@@ -68,6 +68,7 @@ final class TronUnfreezeViewModel: ObservableObject, Form {
                 self.updateValidators()
             }
         } catch {
+            logger.error("Failed to load TRON unfreeze data: \(error.localizedDescription, privacy: .public)")
             await MainActor.run { self.error = error }
         }
     }
