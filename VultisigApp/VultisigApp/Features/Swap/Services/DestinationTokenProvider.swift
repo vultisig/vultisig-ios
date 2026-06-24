@@ -28,5 +28,18 @@ protocol DestinationTokenProvider: AnyObject {
     /// the provider is disabled, doesn't support the chain, or its data
     /// isn't yet warmed. Concrete conformers short-circuit on feature
     /// flags / catalog absence as appropriate.
-    func tokens(for chain: Chain) async -> DestinationTokenBucket
+    ///
+    /// `forceRefresh` asks the provider to bypass its freshness/TTL early-return
+    /// and re-fetch its catalog, while still coalescing concurrent callers and
+    /// serving last-good on failure. The picker passes `true` only on its first
+    /// open per presentation so users see an up-to-date catalog; in-session
+    /// re-merges (search debounce, chain re-select) pass `false` to stay
+    /// instant/offline. Providers without a refreshable catalog ignore it.
+    func tokens(for chain: Chain, forceRefresh: Bool) async -> DestinationTokenBucket
+}
+
+extension DestinationTokenProvider {
+    func tokens(for chain: Chain) async -> DestinationTokenBucket {
+        await tokens(for: chain, forceRefresh: false)
+    }
 }

@@ -52,24 +52,31 @@ final class SwapKitTokensCache: DestinationTokenProvider {
     ///  - SwapKit has no tokens on this chain (cache built, bucket missing).
     /// The picker treats "empty bucket" identically to "no SwapKit unlock"
     /// and falls back to the curated + 1inch + Jupiter list it has today.
-    func tokens(for chain: Chain) async -> DestinationTokenBucket {
-        await tokens(for: chain, now: Date())
+    func tokens(for chain: Chain, forceRefresh: Bool) async -> DestinationTokenBucket {
+        await tokens(for: chain, forceRefresh: forceRefresh, now: Date())
     }
 
     /// Date-injectable variant used by tests / TTL-sensitive callers.
-    func tokens(for chain: Chain, now: Date) async -> DestinationTokenBucket {
+    func tokens(for chain: Chain, forceRefresh: Bool = false, now: Date) async -> DestinationTokenBucket {
         guard SwapKitConfig.isFeatureEnabled else {
             return .empty(chain: chain)
         }
-        let buckets = await ensureSnapshot(now: now)
+        let buckets = await ensureSnapshot(now: now, forceRefresh: forceRefresh)
         return buckets?[chain] ?? .empty(chain: chain)
     }
 
     /// Coalescing fetch — concurrent callers share one in-flight Task to
     /// avoid stampeding the proxy on first picker open. Returns the cached
     /// snapshot when fresh; otherwise refreshes.
-    private func ensureSnapshot(now: Date) async -> [Chain: DestinationTokenBucket]? {
-        if let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.tokensCacheTTL {
+    ///
+    /// `forceRefresh` skips the TTL-fresh early-return so the caller always
+    /// triggers a re-fetch, but still rides the `inFlight` coalescing (so
+    /// concurrent force-refreshes share one request) and the last-good
+    /// fallback (so a failed forced fetch keeps the prior snapshot on screen).
+    private func ensureSnapshot(now: Date, forceRefresh: Bool) async -> [Chain: DestinationTokenBucket]? {
+        if !forceRefresh,
+           let snapshot,
+           now.timeIntervalSince(snapshot.fetchedAt) < SwapKitConfig.tokensCacheTTL {
             return snapshot.buckets
         }
         if let inFlight {

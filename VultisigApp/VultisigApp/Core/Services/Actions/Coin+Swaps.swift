@@ -187,7 +187,12 @@ extension Coin {
 
     var isLifiFeesSupported: Bool {
         switch chain.chainType {
-        case .EVM:
+        case .EVM, .Solana:
+            // LI.FI now honours the `integrator`/`fee` params on Solana routes,
+            // so Solana swaps charge the same VULT-discounted affiliate fee as
+            // EVM. They were previously excluded because LI.FI rejected those
+            // params on Solana, which left Solana routes uncharged while the UI
+            // still displayed a fee — a display/charge mismatch.
             return true
         default:
             return false
