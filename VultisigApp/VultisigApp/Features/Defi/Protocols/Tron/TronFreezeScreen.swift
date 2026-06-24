@@ -1,5 +1,5 @@
 //
-//  TronUnfreezeView.swift
+//  TronFreezeScreen.swift
 //  VultisigApp
 //
 //  Created for TRON Freeze/Unfreeze integration
@@ -7,44 +7,33 @@
 
 import SwiftUI
 
-struct TronUnfreezeView: View {
-    @StateObject var viewModel: TronUnfreezeViewModel
+struct TronFreezeScreen: View {
+    @StateObject var viewModel: TronFreezeViewModel
     @Environment(\.router) var router
 
-    init(vault: Vault, frozenBandwidthBalance: Decimal, frozenEnergyBalance: Decimal) {
-        self._viewModel = StateObject(
-            wrappedValue: TronUnfreezeViewModel(
-                vault: vault,
-                frozenBandwidthBalance: frozenBandwidthBalance,
-                frozenEnergyBalance: frozenEnergyBalance
-            )
-        )
+    init(vault: Vault) {
+        self._viewModel = StateObject(wrappedValue: TronFreezeViewModel(vault: vault))
     }
 
     var body: some View {
         content
-            .task { await viewModel.loadData() }
+            .task { await viewModel.loadBalance() }
     }
 
     @ViewBuilder
     var content: some View {
         if let coin = viewModel.trxCoin {
             AmountFunctionTransactionScreen(
-                title: "tronUnfreezeTitle".localized,
+                title: "tronFreezeTitle".localized,
                 coin: coin.toCoinMeta(),
-                availableAmount: viewModel.availableAmount,
+                availableAmount: viewModel.availableBalance,
                 percentageSelected: $viewModel.percentageSelected,
-                percentageFieldType: .slider,
+                percentageFieldType: .button,
                 amountField: viewModel.amountField,
                 validForm: $viewModel.validForm,
                 onVerify: onVerify,
                 customView: { EmptyView() },
-                topView: {
-                    TronResourceTypeToggle(
-                        selection: $viewModel.selectedResourceType,
-                        onChange: { viewModel.onResourceChange() }
-                    )
-                }
+                topView: { TronResourceTypeToggle(selection: $viewModel.selectedResourceType) }
             )
             .onLoad { viewModel.onLoad() }
         } else {

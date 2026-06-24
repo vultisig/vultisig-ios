@@ -82,7 +82,7 @@ struct SendCryptoVerifyLogic {
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
-        // The balance is already validated in TronFreezeView/TronUnfreezeView
+        // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
         let isTronStaking = tx.coin.chain == .tron && tx.isStakingOperation
 

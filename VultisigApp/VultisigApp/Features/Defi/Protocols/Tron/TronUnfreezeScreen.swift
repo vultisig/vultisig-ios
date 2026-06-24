@@ -1,5 +1,5 @@
 //
-//  TronFreezeView.swift
+//  TronUnfreezeScreen.swift
 //  VultisigApp
 //
 //  Created for TRON Freeze/Unfreeze integration
@@ -7,33 +7,44 @@
 
 import SwiftUI
 
-struct TronFreezeView: View {
-    @StateObject var viewModel: TronFreezeViewModel
+struct TronUnfreezeScreen: View {
+    @StateObject var viewModel: TronUnfreezeViewModel
     @Environment(\.router) var router
 
-    init(vault: Vault) {
-        self._viewModel = StateObject(wrappedValue: TronFreezeViewModel(vault: vault))
+    init(vault: Vault, frozenBandwidthBalance: Decimal, frozenEnergyBalance: Decimal) {
+        self._viewModel = StateObject(
+            wrappedValue: TronUnfreezeViewModel(
+                vault: vault,
+                frozenBandwidthBalance: frozenBandwidthBalance,
+                frozenEnergyBalance: frozenEnergyBalance
+            )
+        )
     }
 
     var body: some View {
         content
-            .task { await viewModel.loadBalance() }
+            .task { await viewModel.loadData() }
     }
 
     @ViewBuilder
     var content: some View {
         if let coin = viewModel.trxCoin {
             AmountFunctionTransactionScreen(
-                title: "tronFreezeTitle".localized,
+                title: "tronUnfreezeTitle".localized,
                 coin: coin.toCoinMeta(),
-                availableAmount: viewModel.availableBalance,
+                availableAmount: viewModel.availableAmount,
                 percentageSelected: $viewModel.percentageSelected,
-                percentageFieldType: .button,
+                percentageFieldType: .slider,
                 amountField: viewModel.amountField,
                 validForm: $viewModel.validForm,
                 onVerify: onVerify,
                 customView: { EmptyView() },
-                topView: { TronResourceTypeToggle(selection: $viewModel.selectedResourceType) }
+                topView: {
+                    TronResourceTypeToggle(
+                        selection: $viewModel.selectedResourceType,
+                        onChange: { viewModel.onResourceChange() }
+                    )
+                }
             )
             .onLoad { viewModel.onLoad() }
         } else {

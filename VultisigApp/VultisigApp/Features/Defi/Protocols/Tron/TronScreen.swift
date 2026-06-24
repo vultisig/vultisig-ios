@@ -1,5 +1,5 @@
 //
-//  TronView.swift
+//  TronScreen.swift
 //  VultisigApp
 //
 //  Created for TRON Freeze/Unfreeze integration
@@ -8,7 +8,7 @@
 import SwiftUI
 import BigInt
 
-struct TronView: View {
+struct TronScreen: View {
     let vault: Vault
 
     @StateObject private var model = TronViewModel()
