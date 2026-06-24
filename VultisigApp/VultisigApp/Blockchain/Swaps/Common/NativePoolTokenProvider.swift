@@ -27,7 +27,7 @@ enum NativeSwapProtocol {
 }
 
 @MainActor
-final class NativePoolTokenProvider: DestinationTokenProvider {
+final class NativePoolTokenProvider {
 
     let providerKind: String
 
@@ -49,11 +49,6 @@ final class NativePoolTokenProvider: DestinationTokenProvider {
         case .thorchain: self.providerKind = "thorchainPool"
         case .mayachain: self.providerKind = "mayachainPool"
         }
-    }
-
-    func tokens(for chain: Chain) async -> DestinationTokenBucket {
-        let buckets = await ensureSnapshot()
-        return buckets?[chain] ?? .empty(chain: chain)
     }
 
     /// Coalescing fetch — concurrent callers share one in-flight Task. Returns
@@ -131,6 +126,18 @@ final class NativePoolTokenProvider: DestinationTokenProvider {
             )
         }
         return buckets
+    }
+}
+
+// Conformance lives in an explicit extension (rather than on the primary
+// declaration) so the protocol-witness match for the async `tokens(for:)`
+// requirement is resolved independently of the @MainActor class body. The
+// inline form intermittently tripped a noteless "does not conform" error
+// during separate Swift module emission.
+extension NativePoolTokenProvider: DestinationTokenProvider {
+    func tokens(for chain: Chain) async -> DestinationTokenBucket {
+        let buckets = await ensureSnapshot()
+        return buckets?[chain] ?? .empty(chain: chain)
     }
 }
 
