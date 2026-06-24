@@ -21,8 +21,7 @@ protocol QuoteServiceProtocol {
 
     /// Same fan-out as `fetchQuote`, but returns the full ranked candidate set
     /// alongside the auto-selected winner so the provider-selection UI can offer
-    /// alternatives without a second fetch. `thorPools`/`mayaPools` are the live
-    /// `Available` pool snapshots; `nil` falls back to the static eligibility.
+    /// alternatives without a second fetch.
     func fetchQuotes(
         amount: Decimal,
         fromCoin: Coin,
@@ -30,39 +29,9 @@ protocol QuoteServiceProtocol {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?,
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes
-}
-
-extension QuoteServiceProtocol {
-    /// Cold-start convenience: callers without live pool snapshots resolve
-    /// providers off the static fallback (identical to pre-dynamic behavior).
-    func fetchQuotes(
-        amount: Decimal,
-        fromCoin: Coin,
-        toCoin: Coin,
-        isAffiliate: Bool,
-        referredCode: String,
-        vultTierDiscount: Int,
-        slippageBps: Int?,
-        recipientAddress: String?
-    ) async throws -> SwapQuotes {
-        try await fetchQuotes(
-            amount: amount,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            isAffiliate: isAffiliate,
-            referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount,
-            thorPools: nil,
-            mayaPools: nil,
-            slippageBps: slippageBps,
-            recipientAddress: recipientAddress
-        )
-    }
 }
 
 extension SwapService: QuoteServiceProtocol {}

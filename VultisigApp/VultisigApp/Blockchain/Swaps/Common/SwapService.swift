@@ -67,20 +67,15 @@ struct SwapService {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        thorPools: [NativePoolAsset]? = nil,
-        mayaPools: [NativePoolAsset]? = nil,
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes {
-        // Resolve providers off the live-pool-augmented set (UNION with the
-        // static fallback) so a token made eligible by a live `Available` pool
-        // keeps its native provider here, not just in the picker. `nil` pools
-        // (cold start) make `swapProviders(thorPools:mayaPools:)` identical to
-        // the static `swapProviders`, so behavior is byte-identical to today.
+        // THORChain / MayaChain are offered at the chain level, so provider
+        // overlap here decides which native + aggregator routes are attempted;
+        // the live quote prunes a native route with no real pool.
         let resolvedProviders = SwapCoinsResolver.resolveAllProviders(
             fromCoin: fromCoin,
-            toCoin: toCoin,
-            providers: { $0.swapProviders(thorPools: thorPools, mayaPools: mayaPools) }
+            toCoin: toCoin
         )
 
         guard !resolvedProviders.isEmpty else {

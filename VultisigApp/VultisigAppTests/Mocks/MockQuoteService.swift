@@ -39,8 +39,6 @@ final class MockQuoteService: QuoteServiceProtocol {
         isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int,
-        thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?,
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes {

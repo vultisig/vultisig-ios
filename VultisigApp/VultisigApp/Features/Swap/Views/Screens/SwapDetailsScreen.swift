@@ -111,11 +111,7 @@ struct SwapDetailsScreen: View {
             #endif
             // `load(...)` seeds `detailsViewModel.fromCoin/toCoin`; no manual
             // re-assignment afterwards or `onChange` would re-fire the quote fetch.
-            // It now awaits the live pool-eligibility refresh before resolving the
-            // picker lists.
-            Task {
-                await detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
-            }
+            detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
             detailsViewModel.warmDiscountTier(vault: vault)
             setData()
         }

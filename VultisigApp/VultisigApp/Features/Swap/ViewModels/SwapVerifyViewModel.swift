@@ -18,8 +18,6 @@ import SwiftUI
 final class SwapVerifyViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
     @ObservationIgnored private let interactor: SwapInteractor
-    @ObservationIgnored private let thorchainService: ThorchainService
-    @ObservationIgnored private let mayachainService: MayachainService
     @ObservationIgnored private let securityScanViewModel = SecurityScannerViewModel()
     @ObservationIgnored private var securityScannerCancellable: AnyCancellable?
 
@@ -40,14 +38,10 @@ final class SwapVerifyViewModel {
 
     init(
         transaction: SwapTransaction,
-        interactor: SwapInteractor = DefaultSwapInteractor.live,
-        thorchainService: ThorchainService = .shared,
-        mayachainService: MayachainService = .shared
+        interactor: SwapInteractor = DefaultSwapInteractor.live
     ) {
         self.transaction = transaction
         self.interactor = interactor
-        self.thorchainService = thorchainService
-        self.mayachainService = mayachainService
     }
 
     func onLoad() {
@@ -139,45 +133,17 @@ final class SwapVerifyViewModel {
         }
     }
 
-    /// Sign-time fund-safety gate: re-check the live inbound for the source chain
-    /// immediately before building the keysign payload, BYPASSING the 5-minute
-    /// cache. Returns `true` when it's safe to sign; on a halt (or an
-    /// unverifiable fetch) it sets `error` and returns `false` so the caller does
-    /// NOT build the payload or navigate.
-    ///
-    /// Scoped to native routes (thread #4): an aggregator route
-    /// (1inch/LI.FI/KyberSwap/SwapKit) never deposits into a THOR/Maya inbound
-    /// vault, so it skips the preflight entirely. For a native route, only the
-    /// relevant protocol's inbound is fetched (THORChain vs Maya), and the fetch
-    /// is FAIL-CLOSED (thread #6): if the live re-check throws / can't be
-    /// verified, signing is blocked with a retryable error rather than failing
-    /// open on an empty list.
+    /// Sign-time fund-safety gate: delegates the live inbound re-check to the
+    /// interactor (which owns the THORChain / Maya services), keeping this VM
+    /// free of any chain-service dependency. Returns `true` when it's safe to
+    /// sign; on a halt (or an unverifiable fetch) it sets `error` and returns
+    /// `false` so the caller does NOT build the payload or navigate.
     func isSourceChainSafeToSign() async -> Bool {
-        let quote = transaction.quote
-        guard quote.isNativeProtocolRoute else { return true }
-
-        let sourceChain = transaction.fromCoin.chain
         do {
-            let inbound: [InboundAddress]
-            switch quote {
-            case .mayachain:
-                inbound = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
-            case .thorchain, .thorchainChainnet, .thorchainStagenet:
-                inbound = try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
-            case .oneinch, .kyberswap, .lifi, .swapkit:
-                return true
-            }
-            if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {
-                error = SwapError.tradingHalted
-                return false
-            }
+            try await interactor.assertSourceChainNotHalted(transaction: transaction)
             return true
         } catch {
-            // Fail closed: an unverifiable inbound re-check must not let a native
-            // deposit proceed. Surface the retryable halt message (no new locale
-            // key per Decision 3) so the user can retry once the fetch recovers.
-            logger.warning("Sign-time halt re-check failed, blocking native route: \(error.localizedDescription, privacy: .public)")
-            self.error = SwapError.tradingHalted
+            self.error = error
             return false
         }
     }

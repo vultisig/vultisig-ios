@@ -304,7 +304,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.advancedSettings, settings, "A chain switch alone must not reset advanced settings")
     }
 
-    func testLoadResetsAdvancedSettingsAtSessionStart() async {
+    func testLoadResetsAdvancedSettingsAtSessionStart() {
         let vm = makeVM()
         var settings = SwapAdvancedSettings.default
         settings.slippage = .custom(bps: 275)
@@ -315,7 +315,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         let vault = makeVault()
         vault.coins.append(makeCoin(.ethereum, ticker: "ETH", balance: "1"))
 
-        await vm.load(initialFromCoin: nil, initialToCoin: nil, vault: vault)
+        vm.load(initialFromCoin: nil, initialToCoin: nil, vault: vault)
 
         XCTAssertEqual(vm.advancedSettings, .default, "A new swap session (load) must start at default advanced settings")
     }
@@ -411,8 +411,6 @@ private final class MockSwapInteractor: SwapInteractor {
         toCoin: Coin,
         vault: Vault,
         referredCode: String,
-        thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?,
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
@@ -420,6 +418,8 @@ private final class MockSwapInteractor: SwapInteractor {
         guard let stubbedQuote else { return nil }
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }
+
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
 
     func fetchChainSpecific(
         fromCoin: Coin,

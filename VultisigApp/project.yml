@@ -231,7 +231,6 @@ targets:
           # resource and collides with `ChainHelperTests.testChainHelpers`,
           # which enumerates every top-level JSON in the bundle root.
           - "Swap/SwapKit/__fixtures__/**"
-          - "Swap/NativePools/NativePoolFixtures/**"
           - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
           # The QBTC weighted-vote vector generator is a committed Node/cosmjs
           # tool (generate.mjs + package.json + README + node_modules), not test
@@ -246,9 +245,6 @@ targets:
       # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
       # JSON and decodes it as `[ChainHelperTestCase]`.
       - path: VultisigAppTests/Swap/SwapKit/__fixtures__
-        type: folder
-        buildPhase: resources
-      - path: VultisigAppTests/Swap/NativePools/NativePoolFixtures
         type: folder
         buildPhase: resources
       - path: VultisigAppTests/Blockchain/Cosmos/Staking/CosmosStakingFixtures

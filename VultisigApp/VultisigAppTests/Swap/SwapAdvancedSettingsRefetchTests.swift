@@ -149,8 +149,7 @@ private final class RefetchMockInteractor: SwapInteractor {
 
     func fetchQuote(
         amount: Decimal, fromCoin: Coin, toCoin: Coin, vault: Vault,
-        referredCode: String, thorPools: [NativePoolAsset]?, mayaPools: [NativePoolAsset]?,
-        slippageBps: Int?, recipientAddress: String?
+        referredCode: String, slippageBps: Int?, recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         let quote = SwapQuote.thorchain(ThorchainSwapQuote(
@@ -175,6 +174,8 @@ private final class RefetchMockInteractor: SwapInteractor {
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
         throw CancellationError()
     }
+
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
 
     func updateBalance(for coin: Coin) async {}
     func warmDiscountTier(for vault: Vault) async {}

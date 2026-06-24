@@ -2,9 +2,9 @@
 //  TTLCache.swift
 //  VultisigApp
 //
-//  Generic per-key TTL cache shared by the swap "fetch-a-remote-list" caches
-//  (`NativePoolEligibilityCache`, `SwapKitProviderCache`). Captures the shape
-//  those caches triplicated: one snapshot per key with its `fetchedAt`, a TTL,
+//  Generic per-key TTL cache for the swap "fetch-a-remote-list" caches
+//  (`SwapKitProviderCache`). Captures the shape those caches duplicated: one
+//  snapshot per key with its `fetchedAt`, a TTL,
 //  in-flight `Task` coalescing so concurrent callers share one fetch, fail-open
 //  to the last-good snapshot when a fetch throws, an injectable `now`, and
 //  `setCached` / `clearCache` test seams.

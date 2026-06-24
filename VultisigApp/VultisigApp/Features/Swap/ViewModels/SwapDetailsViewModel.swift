@@ -18,7 +18,6 @@ import SwiftUI
 final class SwapDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
     @ObservationIgnored private let interactor: SwapInteractor
-    @ObservationIgnored private let eligibilityCache: NativePoolEligibilityCache
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
@@ -28,22 +27,6 @@ final class SwapDetailsViewModel {
     // instant indicative estimate and the summary shows its loading skeleton.
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
     @ObservationIgnored private var quotedAmount: String?
-
-    // Live `Available` pool snapshots fetched on `load`, retained so the
-    // recompute path (`updateCoinLists`) and the quote fetch resolve providers
-    // off the SAME live-pool-augmented set the picker used — otherwise a token
-    // made eligible by a live pool would be dropped at quote time and surface
-    // `routeUnavailable`. `nil` (cold start / fetch failure) falls back to the
-    // static eligibility, byte-identical to pre-dynamic behavior.
-    @ObservationIgnored private var thorPools: [NativePoolAsset]?
-    @ObservationIgnored private var mayaPools: [NativePoolAsset]?
-
-    /// A pure per-coin provider lookup backed by the retained live-pool sets.
-    @ObservationIgnored private var liveProviders: (Coin) -> [SwapProvider] {
-        let thor = thorPools
-        let maya = mayaPools
-        return { $0.swapProviders(thorPools: thor, mayaPools: maya) }
-    }
 
     // MARK: - Form fields (mutable while the user is editing)
 
@@ -136,33 +119,34 @@ final class SwapDetailsViewModel {
         && !showAdvancedSettingsSheet
     }
 
-    init(
-        interactor: SwapInteractor = DefaultSwapInteractor.live,
-        eligibilityCache: NativePoolEligibilityCache = .shared
-    ) {
+    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
         self.interactor = interactor
-        self.eligibilityCache = eligibilityCache
     }
 
     // MARK: - Loading
 
-    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault) async {
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault) {
         guard !dataLoaded else { return }
         let allCoins = vault.coins
         guard !allCoins.isEmpty else { return }
 
-        // Resolve the default pair + lists SYNCHRONOUSLY off the static eligibility
-        // first, so the screen shows the correct from/to coins immediately. The
-        // live-pool fetch below is an `await` (an actor hop even when cached), so
-        // resolving after it would flash the `.example` placeholder (BTC) in both
-        // slots on every open. Static resolution is byte-identical to the
-        // pre-dynamic default pair; the live pools only ADD tokens.
-        applyResolvedCoins(
+        // Resolve the default pair + lists off the chain-level provider
+        // eligibility. THORChain / Maya are offered at the chain level, so this
+        // is a pure synchronous resolve — no pool fetch, no re-resolve, no
+        // placeholder flash. Token-level native-pool availability surfaces in
+        // the picker via the native-pool `DestinationTokenProvider`s.
+        let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: allCoins)
+        let resolvedFromCoin = initialFromCoin ?? defaultFromCoin
+        let (resolvedToCoins, defaultToCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: resolvedFromCoin,
             allCoins: allCoins,
-            initialFromCoin: initialFromCoin,
-            initialToCoin: initialToCoin,
-            providers: { $0.swapProviders }
+            selectedToCoin: initialToCoin ?? .example
         )
+        fromCoin = resolvedFromCoin
+        toCoin = defaultToCoin
+        fromCoins = resolvedFromCoins
+        toCoins = resolvedToCoins
+
         // Every swap session starts at default advanced settings. The screen owns
         // a fresh VM per push so this is normally already `.default`, but resetting
         // here makes the session start explicit and guaranteed even if the VM is
@@ -171,48 +155,6 @@ final class SwapDetailsViewModel {
         resetAdvancedSettings()
         dataLoaded = true
         prefetchSwapTokens()
-
-        // Then fold in live `Available` pools (fetch-supersedes-by-UNION) so
-        // previously-hidden tokens appear, and re-resolve the lists. Fail-open:
-        // nil snapshots keep the static set. The current selection is preserved,
-        // so a warm fetch only grows the lists — it never re-jumps the pair.
-        thorPools = await eligibilityCache.pools(.thorchain)
-        mayaPools = await eligibilityCache.pools(.mayachain)
-        guard thorPools != nil || mayaPools != nil else { return }
-        applyResolvedCoins(
-            allCoins: allCoins,
-            initialFromCoin: fromCoin,
-            initialToCoin: toCoin,
-            providers: liveProviders
-        )
-    }
-
-    /// Resolve and assign the from/to coins + their picker lists for a given
-    /// provider-eligibility closure. Shared by the synchronous static pass and
-    /// the live-pool re-resolve so both produce identical end state.
-    private func applyResolvedCoins(
-        allCoins: [Coin],
-        initialFromCoin: Coin?,
-        initialToCoin: Coin?,
-        providers: (Coin) -> [SwapProvider]
-    ) {
-        let (resolvedFromCoins, defaultFromCoin) = SwapCoinsResolver.resolveFromCoins(
-            allCoins: allCoins,
-            providers: providers
-        )
-        let resolvedFromCoin = initialFromCoin ?? defaultFromCoin
-
-        let (resolvedToCoins, defaultToCoin) = SwapCoinsResolver.resolveToCoins(
-            fromCoin: resolvedFromCoin,
-            allCoins: allCoins,
-            selectedToCoin: initialToCoin ?? .example,
-            providers: providers
-        )
-
-        fromCoin = resolvedFromCoin
-        toCoin = defaultToCoin
-        fromCoins = resolvedFromCoins
-        toCoins = resolvedToCoins
     }
 
     /// Warm the per-chain swap token cache (`SwapTokenListCache`, via
@@ -302,8 +244,7 @@ final class SwapDetailsViewModel {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,
             allCoins: fromCoins,
-            selectedToCoin: toCoin,
-            providers: liveProviders
+            selectedToCoin: toCoin
         )
         toCoin = resolvedToCoin
         toCoins = resolvedToCoins
@@ -778,8 +719,6 @@ private extension SwapDetailsViewModel {
                 toCoin: toCoin,
                 vault: vault,
                 referredCode: referredCode,
-                thorPools: thorPools,
-                mayaPools: mayaPools,
                 slippageBps: advancedSettings.slippage.bps,
                 recipientAddress: advancedSettings.externalRecipient
             )

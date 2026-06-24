@@ -2,10 +2,11 @@
 //  SwapVerifyHaltGateTests.swift
 //  VultisigAppTests
 //
-//  Sign-time halt block (PR-4, HIGH security): the pre-flight re-check bypasses
-//  the inbound cache and blocks signing when the source chain is halted. The
-//  Maya inbound client is injectable, so it stands in for the source-chain
-//  re-check the verify path performs across both protocols.
+//  Sign-time halt block (HIGH security): the pre-flight re-check bypasses the
+//  inbound cache and blocks signing when the source chain is halted. The gate
+//  now lives in `DefaultSwapInteractor` (so the verify VM holds no chain
+//  service); these tests drive the interactor's inbound clients directly, plus
+//  a thin VM-delegation check that the VM surfaces the thrown error.
 //
 
 import BigInt
@@ -16,56 +17,97 @@ import XCTest
 final class SwapVerifyHaltGateTests: XCTestCase {
 
     func testHaltedSourceChainBlocksSigning() async {
-        let vm = makeVM(mayaInbound: haltedArbInbound)
-        let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertFalse(safe, "A halted source chain must block signing")
-        XCTAssertEqual((vm.error as? SwapError), .tradingHalted)
+        let interactor = makeInteractor(mayaInbound: haltedArbInbound)
+        await assertThrowsTradingHalted {
+            try await interactor.assertSourceChainNotHalted(transaction: makeTransaction())
+        }
     }
 
-    func testNonHaltedSourceChainProceeds() async {
-        let vm = makeVM(mayaInbound: openArbInbound)
-        let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertTrue(safe, "A non-halted source chain must allow signing")
-        XCTAssertNil(vm.error)
+    func testNonHaltedSourceChainProceeds() async throws {
+        let interactor = makeInteractor(mayaInbound: openArbInbound)
+        try await interactor.assertSourceChainNotHalted(transaction: makeTransaction())
     }
 
     func testHaltReCheckBypassesCache() async {
         // The sign-time fetch must issue a fresh request every time (bypassCache)
         // rather than serving a stale cached entry.
         let stub = PathStubClient(responses: ["/mayachain/inbound_addresses": haltedArbInbound])
-        let maya = MayachainService(httpClient: stub)
-        let vm = makeVM(maya: maya)
-        _ = await vm.isSourceChainSafeToSign()
-        _ = await vm.isSourceChainSafeToSign()
+        let interactor = makeInteractor(maya: MayachainService(httpClient: stub))
+        _ = try? await interactor.assertSourceChainNotHalted(transaction: makeTransaction())
+        _ = try? await interactor.assertSourceChainNotHalted(transaction: makeTransaction())
         let count = await stub.requestCount
         XCTAssertEqual(count, 2, "Each sign-time re-check must bypass the cache and refetch")
     }
 
-    // MARK: - Thread #4: aggregator routes skip the preflight
+    // MARK: - Aggregator routes skip the preflight
 
-    func testAggregatorRouteSkipsPreflightEvenOnHaltedChain() async {
+    func testAggregatorRouteSkipsPreflightEvenOnHaltedChain() async throws {
         // Even though the source chain's Maya inbound is halted, a 1inch route
         // never deposits there — the preflight is skipped and signing proceeds.
         let stub = PathStubClient(responses: ["/mayachain/inbound_addresses": haltedArbInbound])
-        let maya = MayachainService(httpClient: stub)
-        let vm = makeVM(maya: maya, quote: .oneinch(makeEVMQuote(), fee: nil))
-        let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertTrue(safe, "Aggregator routes skip the native halt preflight")
-        XCTAssertNil(vm.error)
+        let interactor = makeInteractor(maya: MayachainService(httpClient: stub))
+        try await interactor.assertSourceChainNotHalted(
+            transaction: makeTransaction(quote: .oneinch(makeEVMQuote(), fee: nil))
+        )
         let count = await stub.requestCount
         XCTAssertEqual(count, 0, "Aggregator routes must not fetch any inbound")
     }
 
-    // MARK: - Thread #6: native routes fail CLOSED on an unverifiable fetch
+    // MARK: - Native routes fail CLOSED on an unverifiable fetch
 
     func testNativeRouteFailsClosedWhenInboundFetchThrows() async {
         // The Maya inbound endpoint returns a 501 (no stubbed response) → the
         // throwing fetch propagates → the native route is BLOCKED, not allowed.
-        let maya = MayachainService(httpClient: PathStubClient(responses: [:]))
-        let vm = makeVM(maya: maya)
+        let interactor = makeInteractor(maya: MayachainService(httpClient: PathStubClient(responses: [:])))
+        await assertThrowsTradingHalted {
+            try await interactor.assertSourceChainNotHalted(transaction: makeTransaction())
+        }
+    }
+
+    // MARK: - VM delegation
+
+    func testVMReturnsFalseAndSetsErrorWhenGateThrows() async {
+        let vm = SwapVerifyViewModel(transaction: makeTransaction(), interactor: StubGateInteractor(throwError: SwapError.tradingHalted))
         let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertFalse(safe, "A native route must fail closed when the inbound re-check can't be verified")
+        XCTAssertFalse(safe)
         XCTAssertEqual((vm.error as? SwapError), .tradingHalted)
+    }
+
+    func testVMReturnsTrueWhenGatePasses() async {
+        let vm = SwapVerifyViewModel(transaction: makeTransaction(), interactor: StubGateInteractor(throwError: nil))
+        let safe = await vm.isSourceChainSafeToSign()
+        XCTAssertTrue(safe)
+        XCTAssertNil(vm.error)
+    }
+
+    // MARK: - Helpers
+
+    private func makeInteractor(mayaInbound: Data) -> DefaultSwapInteractor {
+        makeInteractor(maya: MayachainService(httpClient: PathStubClient(responses: ["/mayachain/inbound_addresses": mayaInbound])))
+    }
+
+    private func makeInteractor(maya: MayachainService) -> DefaultSwapInteractor {
+        DefaultSwapInteractor(
+            quote: SwapService.shared,
+            blockchain: BlockChainService.shared,
+            balance: BalanceService.shared,
+            fastVault: FastVaultService.shared,
+            tierResolver: VultTierService(),
+            mayachainService: maya
+        )
+    }
+
+    private func assertThrowsTradingHalted(
+        _ body: () async throws -> Void,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        do {
+            try await body()
+            XCTFail("Expected SwapError.tradingHalted", file: file, line: line)
+        } catch {
+            XCTAssertEqual(error as? SwapError, .tradingHalted, file: file, line: line)
+        }
     }
 
     // MARK: - Fixtures
@@ -90,14 +132,10 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         """.data(using: .utf8)!
     }
 
-    private func makeVM(mayaInbound: Data) -> SwapVerifyViewModel {
-        makeVM(maya: MayachainService(httpClient: PathStubClient(responses: ["/mayachain/inbound_addresses": mayaInbound])))
-    }
-
-    private func makeVM(maya: MayachainService, quote: SwapQuote? = nil) -> SwapVerifyViewModel {
+    private func makeTransaction(quote: SwapQuote? = nil) -> SwapTransaction {
         let arb = makeCoin(.arbitrum, ticker: "ARB")
         let eth = makeCoin(.ethereum, ticker: "ETH")
-        let tx = SwapTransaction(
+        return SwapTransaction(
             fromCoin: arb,
             toCoin: eth,
             fromAmount: 1,
@@ -109,7 +147,6 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             feeCoin: arb,
             advancedSettings: .default
         )
-        return SwapVerifyViewModel(transaction: tx, mayachainService: maya)
     }
 
     private func makeCoin(_ chain: Chain, ticker: String) -> Coin {
@@ -139,6 +176,26 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         )
     }
 }
+
+// swiftlint:disable async_without_await unused_parameter
+/// Minimal `SwapInteractor` that only stubs the halt gate, for the VM-delegation
+/// tests. Every other method is unreachable in those tests.
+private struct StubGateInteractor: SwapInteractor {
+    let throwError: Error?
+
+    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, vault: Vault, referredCode: String, slippageBps: Int?, recipientAddress: String?) async throws -> SwapQuoteResult? { nil }
+    func fetchChainSpecific(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal, quote: SwapQuote?) async throws -> BlockChainSpecific {
+        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil)
+    }
+    func computeThorchainFee(chainSpecific: BlockChainSpecific, fromCoin: Coin, fromAmount: Decimal, vault: Vault) async throws -> BigInt { .zero }
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
+        if let throwError { throw throwError }
+    }
+    func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload { throw CancellationError() }
+    func updateBalance(for coin: Coin) async {}
+    func warmDiscountTier(for vault: Vault) async {}
+}
+// swiftlint:enable async_without_await unused_parameter
 
 private actor PathStubClient: HTTPClientProtocol {
     private let responses: [String: Data]

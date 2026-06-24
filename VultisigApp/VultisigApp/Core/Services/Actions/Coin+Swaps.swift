@@ -32,35 +32,8 @@ extension Coin {
         return applyProviderGates(naturalSwapProviders)
     }
 
-    /// Dynamic variant of `swapProviders` for the swap-screen load path: the EVM
-    /// native (THORChain / MayaChain) eligibility is the UNION of the live
-    /// `Available` pools and the static fallback, rather than the static arrays
-    /// alone. A fetch can only ADD native routes. `nil` snapshots (cold start /
-    /// fetch failure) fall back to the static set, so the result is never worse
-    /// than `swapProviders`.
-    func swapProviders(thorPools: [NativePoolAsset]?, mayaPools: [NativePoolAsset]?) -> [SwapProvider] {
-        applyProviderGates(naturalSwapProviders(eligibleNative: eligibleNative(thorPools: thorPools, mayaPools: mayaPools)))
-    }
-
-    /// The native eligibility used by the swap-screen picker: static fallback
-    /// OR a live `Available` pool match (UNION). EVM-only; the per-chain arms in
-    /// `naturalSwapProviders(eligibleNative:)` decide whether either flag is read.
-    func eligibleNative(thorPools: [NativePoolAsset]?, mayaPools: [NativePoolAsset]?) -> NativeEligibility {
-        var eligible = staticEligibleNativeProviders
-        if let thorPools,
-           NativePoolEligibility.isEligible(chain: chain, ticker: ticker, contract: contractAddress, in: thorPools) {
-            eligible.thorchain = true
-        }
-        if let mayaPools,
-           NativePoolEligibility.isEligible(chain: chain, ticker: ticker, contract: contractAddress, in: mayaPools) {
-            eligible.mayachain = true
-        }
-        return eligible
-    }
-
     /// Applies the SwapKit feature flag + the debug forced-provider gate to a
-    /// raw natural-provider list. Shared by the static and dynamic paths so both
-    /// honor the same opt-in / forced-pin behaviour.
+    /// raw natural-provider list.
     private func applyProviderGates(_ raw: [SwapProvider]) -> [SwapProvider] {
         // SwapKit is opt-in behind the Settings → Advanced → "SwapKit" toggle.
         let afterSwapKitGate = SwapKitConfig.isFeatureEnabled
@@ -102,47 +75,16 @@ extension Coin {
         }
     }
 
-    /// Whether the native protocols gate a coin for swaps. EVM tokens are gated
-    /// (THORChain / MayaChain pools); everything else is decided per chain arm.
-    struct NativeEligibility {
-        var thorchain: Bool
-        var mayachain: Bool
-    }
-
+    /// The natural swap-provider list for a coin's chain, before the SwapKit
+    /// feature flag + forced-provider gates (`applyProviderGates`).
+    ///
+    /// THORChain / MayaChain are offered at the **chain** level — every token on
+    /// a supported EVM chain carries the native provider, and the live quote
+    /// decides the actual route: a real `Available` pool quotes through, anything
+    /// else loses to an aggregator or surfaces `routeUnavailable`. There is no
+    /// per-token allowlist here; token-level pool availability surfaces in the
+    /// picker via the native-pool `DestinationTokenProvider`s.
     private var naturalSwapProviders: [SwapProvider] {
-        // Cold-start / sync default: the static ticker arrays. The swap-screen
-        // load path supersedes this by UNION with live `Available` pools (see
-        // `eligibleNativeSwapProviders`); a fetch can only ADD native routes.
-        return naturalSwapProviders(eligibleNative: staticEligibleNativeProviders)
-    }
-
-    /// The native (THORChain / MayaChain) providers a coin is eligible for under
-    /// the static fallback arrays. EVM-only; non-EVM chains don't consult it.
-    private var staticEligibleNativeProviders: NativeEligibility {
-        var eligible = NativeEligibility(thorchain: false, mayachain: false)
-        switch chain {
-        case .ethereum:
-            eligible.thorchain = thorEthTokens.contains(ticker)
-            eligible.mayachain = mayaEthTokens.contains(ticker)
-        case .bscChain:
-            eligible.thorchain = thorBscTokens.contains(ticker)
-        case .avalanche:
-            eligible.thorchain = thorAvaxTokens.contains(ticker)
-        case .arbitrum:
-            eligible.mayachain = mayaArbTokens.contains(ticker)
-        case .base:
-            eligible.thorchain = thorBaseTokens.contains(ticker)
-        default:
-            break
-        }
-        return eligible
-    }
-
-    /// The full provider list given a precomputed eligible-native set. The EVM
-    /// arms read `eligibleNative` instead of the static arrays so the swap-screen
-    /// load path can pass in the UNION of fetched-`Available` pools + the
-    /// fallback. Non-EVM arms are unchanged (not array-gated).
-    private func naturalSwapProviders(eligibleNative: NativeEligibility) -> [SwapProvider] {
         switch chain {
         case .mayaChain, .kujira:
             return [.mayachain]
@@ -154,47 +96,15 @@ extension Coin {
             // a provider — both rank against each other per quote.
             return [.mayachain, .swapkit]
         case .ethereum:
-            let defaultProviders: [SwapProvider] = [
-                .oneinch(chain),
-                .lifi,
-                .kyberswap(chain),
-                .swapkit
-            ]
-
-            var providers: [SwapProvider] = []
-
-            if eligibleNative.thorchain {
-                providers.append(.thorchain)
-            }
-
-            if eligibleNative.mayachain {
-                providers.append(.mayachain)
-            }
-
-            return providers + defaultProviders
+            return [.thorchain, .mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .bscChain:
-            if eligibleNative.thorchain {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .avalanche:
-            if eligibleNative.thorchain {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .arbitrum:
-            if eligibleNative.mayachain {
-                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .base:
-            if eligibleNative.thorchain {
-                return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
-            }
-            return [.oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
+            return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2:
             return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
         case .mantle:
@@ -282,32 +192,5 @@ extension Coin {
         default:
             return false
         }
-    }
-}
-
-private extension Coin {
-
-    var mayaEthTokens: [String] {
-        return ["ETH", "USDC"]
-    }
-
-    var mayaArbTokens: [String] {
-        return ["ETH", "ARB", "USDC", "YUM", "TGT", "GLD", "USDT", "PEPE"]
-    }
-
-    var thorEthTokens: [String] {
-        return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX", "vTHOR"]
-    }
-
-    var thorBscTokens: [String] {
-        return ["BNB", "USDT", "USDC"]
-    }
-
-    var thorBaseTokens: [String] {
-        return ["ETH", "USDC", "CBBTC"]
-    }
-
-    var thorAvaxTokens: [String] {
-        return ["AVAX", "USDC", "USDT", "SOL"]
     }
 }

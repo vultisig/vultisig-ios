@@ -263,13 +263,13 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         toCoin: Coin,
         vault: Vault,
         referredCode: String,
-        thorPools: [NativePoolAsset]?,
-        mayaPools: [NativePoolAsset]?,
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
+
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
 
     func fetchChainSpecific(
         fromCoin: Coin,
