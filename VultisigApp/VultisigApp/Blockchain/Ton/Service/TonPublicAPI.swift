@@ -11,6 +11,9 @@ import Foundation
 /// Vultisig Windows client.
 enum TonPublicAPI: TargetType {
     case emulateEvent(boc: String)
+    /// tonapi.io computed staking-pool info (APY, name, min stake). `address`
+    /// is the nominator-pool contract address.
+    case stakingPool(address: String)
 
     private static let host: URL = {
         guard let url = URL(string: "https://tonapi.io") else {
@@ -25,6 +28,8 @@ enum TonPublicAPI: TargetType {
         switch self {
         case .emulateEvent:
             return "/v2/events/emulate"
+        case .stakingPool(let address):
+            return "/v2/staking/pool/\(address)"
         }
     }
 
@@ -32,6 +37,8 @@ enum TonPublicAPI: TargetType {
         switch self {
         case .emulateEvent:
             return .post
+        case .stakingPool:
+            return .get
         }
     }
 
@@ -54,6 +61,8 @@ enum TonPublicAPI: TargetType {
                 bodyData: body,
                 urlParameters: ["ignore_signature_check": "true"]
             )
+        case .stakingPool:
+            return .requestPlain
         }
     }
 
@@ -64,4 +73,24 @@ enum TonPublicAPI: TargetType {
 
 private struct TonEmulateRequest: Encodable {
     let boc: String
+}
+
+/// Response from tonapi.io `GET /v2/staking/pool/{address}`. `apy` is a
+/// percentage value (e.g. `13.27` means 13.27%); callers divide by 100 to get
+/// the fraction the staking UI expects. Fields are optional so a partial /
+/// changed response degrades gracefully rather than dropping the position.
+struct TonStakingPoolResponse: Decodable {
+    let pool: TonStakingPoolInfo?
+}
+
+struct TonStakingPoolInfo: Decodable {
+    let address: String?
+    let name: String?
+    let apy: Double?
+    let minStake: Int64?
+
+    private enum CodingKeys: String, CodingKey {
+        case address, name, apy
+        case minStake = "min_stake"
+    }
 }

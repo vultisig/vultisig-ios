@@ -43,6 +43,8 @@ struct DefiPositionsService {
             [TokensStore.lunc]
         case .qbtc:
             [TokensStore.qbtc]
+        case .ton:
+            [TokensStore.ton]
         default:
             []
         }

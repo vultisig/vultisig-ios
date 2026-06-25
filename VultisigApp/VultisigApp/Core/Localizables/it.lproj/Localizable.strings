@@ -1168,6 +1168,9 @@
 "to" = "A";
 "today" = "Oggi";
 "tokens" = "Token";
+"tonStakeBelowMinimum" = "Lo stake minimo è %@ %@";
+"tonStakingPoolAddress" = "Indirizzo del Pool";
+"tonUnstakeFullWithdrawalNotice" = "I pool di nominator TON supportano solo il prelievo totale. L'intero stake verrà ritirato.";
 "totalFee" = "Commissione totale";
 "track" = "Traccia";
 "transaction" = "Transazione";

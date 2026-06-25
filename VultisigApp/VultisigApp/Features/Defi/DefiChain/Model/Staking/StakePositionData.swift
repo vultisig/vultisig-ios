@@ -22,6 +22,7 @@ struct StakePositionData: Sendable, Equatable {
     let rewards: Decimal?
     let rewardCoin: CoinMeta?
     let unstakeMetadata: UnstakeMetadata?
+    let poolAddress: String?
 
     init(
         coin: CoinMeta,
@@ -33,7 +34,8 @@ struct StakePositionData: Sendable, Equatable {
         nextPayout: TimeInterval? = nil,
         rewards: Decimal? = nil,
         rewardCoin: CoinMeta? = nil,
-        unstakeMetadata: UnstakeMetadata? = nil
+        unstakeMetadata: UnstakeMetadata? = nil,
+        poolAddress: String? = nil
     ) {
         self.coin = coin
         self.type = type
@@ -45,5 +47,6 @@ struct StakePositionData: Sendable, Equatable {
         self.rewards = rewards
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
+        self.poolAddress = poolAddress
     }
 }

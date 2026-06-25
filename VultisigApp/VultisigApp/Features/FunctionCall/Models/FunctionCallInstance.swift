@@ -263,8 +263,6 @@ enum FunctionCallInstance {
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:
             return .vote(FunctionCallVote())
-        case .ton:
-            return .stake(FunctionCallStake(initialAmount: coin.balanceDecimal))
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
         case .kujira:

@@ -89,11 +89,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                     .custom]
         case .dydx:
             return [.vote]
-        case .ton:
-            return [
-                .stake,
-                .unstake
-            ]
         case .gaiaChain:
             return [
                 .cosmosIBC,
@@ -124,8 +119,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .bondMaya
         case .dydx:
             return .vote
-        case .ton:
-            return .stake
         case .gaiaChain:
             return .theSwitch
         case .kujira:

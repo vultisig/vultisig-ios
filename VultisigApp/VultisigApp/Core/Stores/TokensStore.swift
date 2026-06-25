@@ -2117,6 +2117,18 @@ class TokensStore {
         isNativeToken: false
     )
 
+    /// Native TON coin (on-chain symbol "GRAM"). Used as the staking-position
+    /// asset for the DeFi tab's TON nominator-pool flow.
+    static let ton: CoinMeta = CoinMeta(
+        chain: .ton,
+        ticker: "GRAM",
+        logo: "gram",
+        decimals: 9,
+        priceProviderId: "the-open-network",
+        contractAddress: "",
+        isNativeToken: true
+    )
+
     static let ruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUJI",

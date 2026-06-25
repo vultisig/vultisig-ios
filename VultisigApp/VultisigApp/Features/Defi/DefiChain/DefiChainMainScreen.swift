@@ -260,6 +260,12 @@ struct DefiChainMainScreen: View {
     }
 
     func onStake(position: StakePosition) {
+        if position.coin.chain == .ton {
+            // Add-more reuses the existing pool; a first-time stake (no pool yet)
+            // routes with `nil` so the screen prompts for the pool address.
+            onTransactionToPresent(.tonStake(coin: position.coin, poolAddress: position.poolAddress))
+            return
+        }
         switch position.type {
         case .stake:
             onTransactionToPresent(.stake(coin: position.coin, isAutocompound: false))
@@ -271,6 +277,17 @@ struct DefiChainMainScreen: View {
     }
 
     func onUnstake(position: StakePosition) {
+        if position.coin.chain == .ton {
+            guard let poolAddress = position.poolAddress, !poolAddress.isEmpty else { return }
+            onTransactionToPresent(
+                .tonUnstake(
+                    coin: position.coin,
+                    poolAddress: poolAddress,
+                    stakedAmount: position.amount
+                )
+            )
+            return
+        }
         switch position.type {
         case .stake:
             onTransactionToPresent(

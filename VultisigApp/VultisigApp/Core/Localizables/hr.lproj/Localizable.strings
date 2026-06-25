@@ -1168,6 +1168,9 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
+"tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
+"tonStakingPoolAddress" = "Adresa Poola";
+"tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";

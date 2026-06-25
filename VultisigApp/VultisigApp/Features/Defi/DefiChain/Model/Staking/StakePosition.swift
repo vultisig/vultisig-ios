@@ -22,6 +22,12 @@ final class StakePosition {
     var rewards: Decimal?
     var rewardCoin: CoinMeta?
     var unstakeMetadata: UnstakeMetadata?
+    /// Contract address the position is staked into (e.g. a TON nominator
+    /// pool). Drives the destination of an add-more / unstake transaction so
+    /// those reuse the existing pool instead of re-prompting for it. `nil` for
+    /// chains whose staking has no per-position pool address (THOR/Maya/Cosmos
+    /// carry the destination elsewhere).
+    var poolAddress: String?
 
     var canUnstake: Bool {
         let unstakeAmount = availableToUnstake ?? amount
@@ -45,6 +51,7 @@ final class StakePosition {
         rewards: Decimal? = nil,
         rewardCoin: CoinMeta? = nil,
         unstakeMetadata: UnstakeMetadata? = nil,
+        poolAddress: String? = nil,
         vault: Vault
     ) {
         self.coin = coin
@@ -57,6 +64,7 @@ final class StakePosition {
         self.rewards = rewards
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
+        self.poolAddress = poolAddress
         self.vault = vault
         self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }
@@ -73,6 +81,7 @@ final class StakePosition {
             rewards: dto.rewards,
             rewardCoin: dto.rewardCoin,
             unstakeMetadata: dto.unstakeMetadata,
+            poolAddress: dto.poolAddress,
             vault: vault
         )
     }
@@ -88,6 +97,7 @@ final class StakePosition {
         rewards = dto.rewards
         rewardCoin = dto.rewardCoin
         unstakeMetadata = dto.unstakeMetadata
+        poolAddress = dto.poolAddress
     }
 }
 

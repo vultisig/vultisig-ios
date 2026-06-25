@@ -1176,6 +1176,9 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
+"tonStakeBelowMinimum" = "Minimum stake is %@ %@";
+"tonStakingPoolAddress" = "Pool Address";
+"tonUnstakeFullWithdrawalNotice" = "TON nominator pools support full withdrawal only. Your entire stake will be unstaked.";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";

@@ -100,6 +100,9 @@ final class DefiChainMainViewModel: ObservableObject {
             // staking. Governance is not a selectable asset, so it is
             // always present here and skips `setupSelectablePositions()`.
             [.stake, .governance]
+        case .ton:
+            // TON nominator-pool staking only — no bond / LP segments.
+            [.stake]
         default:
             []
         }

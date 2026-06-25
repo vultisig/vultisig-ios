@@ -186,6 +186,29 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .tonStake(let coin, let poolAddress):
+                resolvingCoin(coinMeta: coin) { coin in
+                    TonStakeTransactionScreen(
+                        viewModel: TonStakeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            existingPoolAddress: poolAddress
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .tonUnstake(let coin, let poolAddress, let stakedAmount):
+                resolvingCoin(coinMeta: coin) { coin in
+                    TonUnstakeTransactionScreen(
+                        viewModel: TonUnstakeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            poolAddress: poolAddress,
+                            stakedAmount: stakedAmount
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)

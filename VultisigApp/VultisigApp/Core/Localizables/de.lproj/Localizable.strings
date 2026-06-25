@@ -1168,6 +1168,9 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
+"tonStakeBelowMinimum" = "Mindesteinsatz beträgt %@ %@";
+"tonStakingPoolAddress" = "Pool-Adresse";
+"tonUnstakeFullWithdrawalNotice" = "TON-Nominator-Pools unterstützen nur die vollständige Auszahlung. Dein gesamter Einsatz wird entstaked.";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";

@@ -21,6 +21,14 @@ enum FunctionTransactionType: Hashable {
     case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
     case cosmosRedelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
     case cosmosWithdrawRewards(coin: CoinMeta, validators: [CosmosWithdrawRewardsCandidate])
+    /// TON nominator-pool stake (memo "d"). `poolAddress` is the existing pool
+    /// for add-more, or `nil` for a first-time stake (the screen exposes a
+    /// validated pool-address field).
+    case tonStake(coin: CoinMeta, poolAddress: String?)
+    /// TON nominator-pool unstake (memo "w", full withdrawal). `poolAddress` is
+    /// the existing pool the position is staked into; `stakedAmount` is shown
+    /// for confirmation (full withdrawal only).
+    case tonUnstake(coin: CoinMeta, poolAddress: String, stakedAmount: Decimal)
 
     var coins: [CoinMeta] {
         switch self {
@@ -49,6 +57,10 @@ enum FunctionTransactionType: Hashable {
         case .cosmosRedelegate(let coin, _, _, _):
             return [coin]
         case .cosmosWithdrawRewards(let coin, _):
+            return [coin]
+        case .tonStake(let coin, _):
+            return [coin]
+        case .tonUnstake(let coin, _, _):
             return [coin]
         }
     }
