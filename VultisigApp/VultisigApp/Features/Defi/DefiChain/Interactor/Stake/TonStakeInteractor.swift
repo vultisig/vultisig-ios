@@ -28,11 +28,11 @@ struct TonStakeInteractor: StakeInteractor {
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
         guard let snapshot = await tonSnapshot(in: vault) else { return [] }
 
-        let enabled = await vaultStakePositions(in: vault)
-        guard enabled.contains(where: { $0.ticker == snapshot.meta.ticker }) else {
-            return []
-        }
-
+        // TON nominator staking is a single, always-relevant position (like
+        // Tron's frozen TRX), so it is NOT gated behind the per-coin opt-in
+        // (`defiPositions[.ton].staking`). Whenever the wallet has a nominator
+        // stake the position is returned, shown, and counted — no manual
+        // "select positions" step. THOR/Maya/Cosmos keep their opt-in.
         let pools: [TonAccountStakingInfo]
         do {
             pools = try await service.getNominatorPools(address: snapshot.address)
@@ -105,10 +105,5 @@ private extension TonStakeInteractor {
             return nil
         }
         return TonStakeSnapshot(meta: coin.toCoinMeta(), address: coin.address, decimals: coin.decimals)
-    }
-
-    @MainActor
-    func vaultStakePositions(in vault: Vault) -> [CoinMeta] {
-        vault.defiPositions.first { $0.chain == .ton }?.staking ?? []
     }
 }

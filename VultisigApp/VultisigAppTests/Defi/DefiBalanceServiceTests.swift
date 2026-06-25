@@ -137,6 +137,58 @@ final class DefiBalanceServiceTests: XCTestCase {
         return coin
     }
 
+    // MARK: - TON nominator staking (issue #4653)
+
+    /// A real TON nominator stake (surfaced as a `StakePosition`) must contribute
+    /// to the DeFi total and count as a position WITHOUT enabling the per-coin
+    /// opt-in (`defiPositions[.ton].staking`) — mirrors Tron.
+    func testTonTotalBalanceFiatFromStakePositionWithoutOptIn() throws {
+        let tonMeta = TokensStore.ton
+        let ton = Coin(asset: tonMeta, address: "UQTonTestAddress", hexPublicKey: "")
+        ton.priceProviderId = tonMeta.priceProviderId
+        vault.coins = [ton]
+        // No `defiPositions[.ton].staking` entry: the position must still count.
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: tonMeta.priceProviderId, value: 2)
+        ])
+
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        let total = service.totalBalanceInFiat(for: .ton, vault: vault)
+        XCTAssertEqual(total, Decimal(10) * Decimal(2), "TON staked fiat must be staked amount × rate, ungated.")
+    }
+
+    func testTonPositionCountOneFromStakePositionWithoutOptIn() throws {
+        let tonMeta = TokensStore.ton
+        let ton = Coin(asset: tonMeta, address: "UQTonTestAddress", hexPublicKey: "")
+        vault.coins = [ton]
+
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 1, "A staked TON position counts without opt-in.")
+    }
+
+    func testTonPositionCountZeroWhenNoStake() {
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0)
+        XCTAssertEqual(service.totalBalanceInFiat(for: .ton, vault: vault), .zero)
+    }
+
+    func testTonPositionCountZeroWhenStakedAmountZero() throws {
+        let tonMeta = TokensStore.ton
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 0)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0, "A zero-amount placeholder is not a position.")
+    }
+
     // MARK: - Position counts (Windows parity)
 
     func testPositionCountZeroForEmptyVault() {
