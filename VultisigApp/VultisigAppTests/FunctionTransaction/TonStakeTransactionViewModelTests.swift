@@ -126,9 +126,9 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
 
     // MARK: - Per-implementation deposit comment resolution
 
-    /// First-time stake into a whales pool resolves the deposit comment "Stake"
-    /// and the builder emits it (not the legacy "d").
-    func testFirstTimeWhalesStakeResolvesStakeComment() {
+    /// First-time stake into a whales pool resolves the deposit comment
+    /// "Deposit" (verified on-chain; the README's "Stake" is rejected), not "d".
+    func testFirstTimeWhalesStakeResolvesDepositComment() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
             vault: .example,
@@ -136,7 +136,7 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         )
         vm.selectedPool = makePool(implementation: "whales")
         XCTAssertEqual(vm.destinationPoolImplementation, "whales")
-        XCTAssertEqual(vm.depositComment, "Stake")
+        XCTAssertEqual(vm.depositComment, "Deposit")
     }
 
     /// First-time stake into a tf (standard nominator) pool resolves "d".
@@ -159,7 +159,7 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
             existingPoolAddress: Self.poolAddress,
             existingPoolImplementation: "whales"
         )
-        XCTAssertEqual(whalesVM.depositComment, "Stake")
+        XCTAssertEqual(whalesVM.depositComment, "Deposit")
 
         let tfVM = TonStakeTransactionViewModel(
             coin: makeTonCoin(),

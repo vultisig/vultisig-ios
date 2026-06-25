@@ -18,11 +18,13 @@ import Foundation
 /// These are TON contract protocol tokens, NOT user-facing UI — never localize.
 enum TonStakingComment {
     /// Standard nominator pool (`ton-blockchain/nominator-pool`): deposit "d".
-    /// Whales pool (`tonwhales/ton-nominators`): deposit "Stake" (capitalized).
+    /// Whales pool (`tonwhales/ton-nominators`): deposit "Deposit" (capitalized) —
+    /// verified against successful on-chain deposits; the repo README's "Stake"
+    /// is stale and is rejected by the live pools (exit 72).
     static func deposit(for implementation: String?) -> String? {
         switch implementation {
         case "tf": return "d"
-        case "whales": return "Stake"
+        case "whales": return "Deposit"
         default: return nil
         }
     }
