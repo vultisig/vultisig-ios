@@ -34,7 +34,11 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         return coin
     }
 
-    private func makePool(address: String = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a", minStake: Decimal = 50) -> TonStakingPool {
+    private func makePool(
+        address: String = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+        minStake: Decimal = 50,
+        implementation: String = "whales"
+    ) -> TonStakingPool {
         TonStakingPool(
             entry: TonStakingPoolListEntry(
                 address: address,
@@ -44,7 +48,7 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
                 verified: true,
                 currentNominators: 100,
                 maxNominators: 30000,
-                implementation: "whales"
+                implementation: implementation
             ),
             decimals: 9
         )
@@ -107,7 +111,7 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
     /// treat as non-bounceable.
     func testStakeBuilderNormalizesPoolAddressToBounceable() {
         let rawPool = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a"
-        let builder = TonStakeTransactionBuilder(coin: makeTonCoin(), amount: "50", poolAddress: rawPool)
+        let builder = TonStakeTransactionBuilder(coin: makeTonCoin(), amount: "50", poolAddress: rawPool, memo: "Stake")
         XCTAssertTrue(builder.toAddress.hasPrefix("E"), "stake destination must be bounceable EQ form, got \(builder.toAddress)")
         XCTAssertNotEqual(builder.toAddress, rawPool)
         XCTAssertEqual(builder.memoFunctionDictionary.get("nodeAddress"), builder.toAddress)
@@ -115,9 +119,68 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
 
     func testUnstakeBuilderNormalizesPoolAddressToBounceable() {
         let rawPool = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a"
-        let builder = TonUnstakeTransactionBuilder(coin: makeTonCoin(), amount: "1", poolAddress: rawPool)
+        let builder = TonUnstakeTransactionBuilder(coin: makeTonCoin(), amount: "1", poolAddress: rawPool, memo: "Withdraw")
         XCTAssertTrue(builder.toAddress.hasPrefix("E"), "unstake destination must be bounceable EQ form, got \(builder.toAddress)")
         XCTAssertNotEqual(builder.toAddress, rawPool)
+    }
+
+    // MARK: - Per-implementation deposit comment resolution
+
+    /// First-time stake into a whales pool resolves the deposit comment "Stake"
+    /// and the builder emits it (not the legacy "d").
+    func testFirstTimeWhalesStakeResolvesStakeComment() {
+        let vm = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: nil
+        )
+        vm.selectedPool = makePool(implementation: "whales")
+        XCTAssertEqual(vm.destinationPoolImplementation, "whales")
+        XCTAssertEqual(vm.depositComment, "Stake")
+    }
+
+    /// First-time stake into a tf (standard nominator) pool resolves "d".
+    func testFirstTimeTfStakeResolvesDComment() {
+        let vm = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: nil
+        )
+        vm.selectedPool = makePool(implementation: "tf")
+        XCTAssertEqual(vm.depositComment, "d")
+    }
+
+    /// Add-more reuses the stored existing-pool implementation to resolve the
+    /// deposit comment.
+    func testAddMoreResolvesCommentFromExistingImplementation() {
+        let whalesVM = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: Self.poolAddress,
+            existingPoolImplementation: "whales"
+        )
+        XCTAssertEqual(whalesVM.depositComment, "Stake")
+
+        let tfVM = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: Self.poolAddress,
+            existingPoolImplementation: "tf"
+        )
+        XCTAssertEqual(tfVM.depositComment, "d")
+    }
+
+    /// An unknown/unsupported implementation resolves no comment, so no builder
+    /// is produced — the build is blocked rather than guessing a comment.
+    func testUnsupportedImplementationBlocksBuilder() {
+        let vm = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: Self.poolAddress,
+            existingPoolImplementation: "liquidTF"
+        )
+        XCTAssertNil(vm.depositComment)
+        XCTAssertNil(vm.transactionBuilder)
     }
 
     func testMaxStakeableReservesNetworkFee() {
@@ -138,5 +201,45 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         )
         XCTAssertFalse(vm.hasSufficientBalanceForFee)
         XCTAssertEqual(vm.maxStakeableAmount, 0)
+    }
+
+    // MARK: - Unstake comment resolution
+
+    func testUnstakeWhalesResolvesWithdrawCommentAndBuilds() {
+        let vm = TonUnstakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            poolAddress: "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+            poolImplementation: "whales",
+            stakedAmount: 50
+        )
+        XCTAssertEqual(vm.withdrawComment, "Withdraw")
+        let builder = try? XCTUnwrap(vm.transactionBuilder as? TonUnstakeTransactionBuilder)
+        XCTAssertEqual(builder?.memo, "Withdraw")
+        XCTAssertTrue(builder?.toAddress.hasPrefix("E") ?? false)
+    }
+
+    func testUnstakeTfResolvesWComment() {
+        let vm = TonUnstakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            poolAddress: "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+            poolImplementation: "tf",
+            stakedAmount: 50
+        )
+        XCTAssertEqual(vm.withdrawComment, "w")
+        XCTAssertEqual((vm.transactionBuilder as? TonUnstakeTransactionBuilder)?.memo, "w")
+    }
+
+    func testUnstakeUnsupportedImplementationBlocksBuilder() {
+        let vm = TonUnstakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            poolAddress: "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+            poolImplementation: nil,
+            stakedAmount: 50
+        )
+        XCTAssertNil(vm.withdrawComment)
+        XCTAssertNil(vm.transactionBuilder)
     }
 }

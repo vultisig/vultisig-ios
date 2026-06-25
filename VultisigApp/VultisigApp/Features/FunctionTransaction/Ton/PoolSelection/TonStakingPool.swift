@@ -9,6 +9,34 @@
 
 import Foundation
 
+/// The deposit/withdraw text comments a TON nominator-pool contract expects.
+/// Nominator deposits are plain text comments, but each pool *implementation*
+/// uses a DIFFERENT word — sending the wrong one is rejected on-chain
+/// (exit 72). This is the single source of truth mapping a pool's tonapi
+/// `implementation` string to its protocol tokens.
+///
+/// These are TON contract protocol tokens, NOT user-facing UI — never localize.
+enum TonStakingComment {
+    /// Standard nominator pool (`ton-blockchain/nominator-pool`): deposit "d".
+    /// Whales pool (`tonwhales/ton-nominators`): deposit "Stake" (capitalized).
+    static func deposit(for implementation: String?) -> String? {
+        switch implementation {
+        case "tf": return "d"
+        case "whales": return "Stake"
+        default: return nil
+        }
+    }
+
+    /// Standard nominator pool withdraw "w"; Whales withdraw "Withdraw".
+    static func withdraw(for implementation: String?) -> String? {
+        switch implementation {
+        case "tf": return "w"
+        case "whales": return "Withdraw"
+        default: return nil
+        }
+    }
+}
+
 struct TonStakingPool: Equatable, Hashable {
     /// Pool contract address (raw `0:…` form from tonapi). Becomes the `"d"`
     /// memo destination once selected.
@@ -33,6 +61,12 @@ struct TonStakingPool: Equatable, Hashable {
     var isNominatorPool: Bool {
         guard let implementation else { return false }
         return Self.nominatorImplementations.contains(implementation)
+    }
+
+    /// The deposit text comment this pool's contract expects, resolved from its
+    /// `implementation`. `nil` for unsupported implementations.
+    var depositComment: String? {
+        TonStakingComment.deposit(for: implementation)
     }
 
     /// Whether the pool has room for another nominator. Pools at capacity are

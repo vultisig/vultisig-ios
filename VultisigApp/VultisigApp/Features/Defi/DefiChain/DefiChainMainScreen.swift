@@ -263,7 +263,11 @@ struct DefiChainMainScreen: View {
         if position.coin.chain == .ton {
             // Add-more reuses the existing pool; a first-time stake (no pool yet)
             // routes with `nil` so the screen prompts for the pool address.
-            onTransactionToPresent(.tonStake(coin: position.coin, poolAddress: position.poolAddress))
+            onTransactionToPresent(.tonStake(
+                coin: position.coin,
+                poolAddress: position.poolAddress,
+                poolImplementation: position.poolImplementation
+            ))
             return
         }
         switch position.type {
@@ -283,6 +287,7 @@ struct DefiChainMainScreen: View {
                 .tonUnstake(
                     coin: position.coin,
                     poolAddress: poolAddress,
+                    poolImplementation: position.poolImplementation,
                     stakedAmount: position.amount
                 )
             )

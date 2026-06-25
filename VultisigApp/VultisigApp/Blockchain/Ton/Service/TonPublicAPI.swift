@@ -106,9 +106,12 @@ struct TonStakingPoolInfo: Decodable {
     let name: String?
     let apy: Double?
     let minStake: Int64?
+    /// Pool implementation (`whales`, `tf`, `liquidTF`, …) — drives the
+    /// deposit/withdraw comment for add-more / unstake transactions.
+    let implementation: String?
 
     private enum CodingKeys: String, CodingKey {
-        case address, name, apy
+        case address, name, apy, implementation
         case minStake = "min_stake"
     }
 }

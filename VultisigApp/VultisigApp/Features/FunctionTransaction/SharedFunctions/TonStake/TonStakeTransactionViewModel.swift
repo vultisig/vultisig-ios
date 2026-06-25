@@ -15,6 +15,10 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
     /// Existing pool the user is adding more stake to. `nil` for a first-time
     /// stake — the screen then exposes the validated pool-address field.
     let existingPoolAddress: String?
+    /// Implementation of the existing pool (`whales`, `tf`, …), used to resolve
+    /// the deposit comment for add-more. `nil` for a first-time stake, where the
+    /// picked pool's implementation is used instead.
+    let existingPoolImplementation: String?
 
     @Published var validForm: Bool = false
     /// Pool chosen via the picker (first-time stake only). `nil` until the user
@@ -74,10 +78,11 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
         coin.balanceDecimal > feeDecimal
     }
 
-    init(coin: Coin, vault: Vault, existingPoolAddress: String?) {
+    init(coin: Coin, vault: Vault, existingPoolAddress: String?, existingPoolImplementation: String? = nil) {
         self.coin = coin
         self.vault = vault
         self.existingPoolAddress = existingPoolAddress
+        self.existingPoolImplementation = existingPoolImplementation
     }
 
     func onLoad() {
@@ -105,15 +110,33 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
         destinationPoolAddress != nil
     }
 
+    /// Implementation of the destination pool: the existing pool's for add-more,
+    /// otherwise the picked pool's. Resolves the deposit comment.
+    var destinationPoolImplementation: String? {
+        isFirstTimeStake ? selectedPool?.implementation : existingPoolImplementation
+    }
+
+    /// Deposit text comment for the destination pool, resolved from its
+    /// implementation (`whales` → "Stake", `tf` → "d"). `nil` for an
+    /// unsupported/unknown implementation — the build is blocked rather than
+    /// sending a guessed comment that the pool contract would reject.
+    var depositComment: String? {
+        TonStakingComment.deposit(for: destinationPoolImplementation)
+    }
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, hasSufficientBalanceForFee, let poolAddress = destinationPoolAddress else {
+        guard validForm,
+              hasSufficientBalanceForFee,
+              let poolAddress = destinationPoolAddress,
+              let memo = depositComment else {
             return nil
         }
         return TonStakeTransactionBuilder(
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),
-            poolAddress: poolAddress
+            poolAddress: poolAddress,
+            memo: memo
         )
     }
 

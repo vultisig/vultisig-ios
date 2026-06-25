@@ -7,18 +7,22 @@ import VultisigCommonData
 import WalletCore
 
 /// Builds a TON nominator-pool unstake transaction: send a small fixed amount
-/// of TON to the pool contract with the text comment "w". Standard nominator
-/// pools support full withdrawal only, so no amount is taken from the user —
-/// the "w" message triggers the full withdrawal.
+/// of TON to the pool contract with the pool's withdraw text comment. Nominator
+/// pools support full withdrawal only, so no amount is taken from the user — the
+/// withdraw message triggers the full withdrawal. The comment is
+/// implementation-specific ("w" for standard `tf` pools, "Withdraw" for
+/// `whales` pools), so it is resolved by the caller and passed in.
 struct TonUnstakeTransactionBuilder: TransactionBuilder {
     let coin: Coin
-    /// Amount accompanying the "w" message (1 TON). The pool returns the
+    /// Amount accompanying the withdraw message (1 TON). The pool returns the
     /// staked balance separately.
     let amount: String
     let sendMaxAmount: Bool = false
     let poolAddress: String
 
-    let memo: String = "w"
+    /// Withdraw text comment the pool contract expects, resolved from the pool
+    /// implementation (`whales` → "Withdraw", `tf` → "w").
+    let memo: String
 
     /// Sent bounceable (`EQ…`) so a rejected withdrawal message returns the
     /// accompanying TON instead of being absorbed by the pool. Pool addresses

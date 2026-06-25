@@ -28,6 +28,12 @@ final class StakePosition {
     /// chains whose staking has no per-position pool address (THOR/Maya/Cosmos
     /// carry the destination elsewhere).
     var poolAddress: String?
+    /// Pool implementation (`whales`, `tf`, …) for chains whose deposit/withdraw
+    /// message is implementation-specific (TON nominator pools). Drives the
+    /// add-more/unstake text comment so the right protocol token is sent.
+    /// Optional so the lightweight SwiftData migration is safe; `nil` for chains
+    /// that don't need it.
+    var poolImplementation: String?
 
     var canUnstake: Bool {
         let unstakeAmount = availableToUnstake ?? amount
@@ -52,6 +58,7 @@ final class StakePosition {
         rewardCoin: CoinMeta? = nil,
         unstakeMetadata: UnstakeMetadata? = nil,
         poolAddress: String? = nil,
+        poolImplementation: String? = nil,
         vault: Vault
     ) {
         self.coin = coin
@@ -65,6 +72,7 @@ final class StakePosition {
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
         self.poolAddress = poolAddress
+        self.poolImplementation = poolImplementation
         self.vault = vault
         self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }
@@ -82,6 +90,7 @@ final class StakePosition {
             rewardCoin: dto.rewardCoin,
             unstakeMetadata: dto.unstakeMetadata,
             poolAddress: dto.poolAddress,
+            poolImplementation: dto.poolImplementation,
             vault: vault
         )
     }
@@ -98,6 +107,7 @@ final class StakePosition {
         rewardCoin = dto.rewardCoin
         unstakeMetadata = dto.unstakeMetadata
         poolAddress = dto.poolAddress
+        poolImplementation = dto.poolImplementation
     }
 }
 

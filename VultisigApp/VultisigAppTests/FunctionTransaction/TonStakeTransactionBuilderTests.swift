@@ -2,9 +2,12 @@
 //  TonStakeTransactionBuilderTests.swift
 //  VultisigAppTests
 //
-//  Pins the TON DeFi stake/unstake transaction builders: the nominator-pool
-//  memo strings ("d"/"w"), the pool address as the transaction destination, and
-//  the `SendTransaction` propagation. Mirrors `CosmosDelegateTransactionBuilderTests`.
+//  Pins the TON DeFi stake/unstake transaction builders: the per-implementation
+//  nominator-pool deposit/withdraw comments (whales → "Stake"/"Withdraw",
+//  tf → "d"/"w"), the bounceable pool address as the transaction destination,
+//  and the `SendTransaction` propagation. Also pins the `TonStakingComment`
+//  mapping that resolves those comments. Mirrors
+//  `CosmosDelegateTransactionBuilderTests`.
 //
 
 @testable import VultisigApp
@@ -33,13 +36,44 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
         return coin
     }
 
-    // MARK: - Stake (memo "d")
+    // MARK: - TonStakingComment mapping
 
-    func testStakeBuilderEmitsDepositMemo() {
+    func testCommentMappingForWhales() {
+        XCTAssertEqual(TonStakingComment.deposit(for: "whales"), "Stake")
+        XCTAssertEqual(TonStakingComment.withdraw(for: "whales"), "Withdraw")
+    }
+
+    func testCommentMappingForTf() {
+        XCTAssertEqual(TonStakingComment.deposit(for: "tf"), "d")
+        XCTAssertEqual(TonStakingComment.withdraw(for: "tf"), "w")
+    }
+
+    func testCommentMappingForUnknownIsNil() {
+        XCTAssertNil(TonStakingComment.deposit(for: "liquidTF"))
+        XCTAssertNil(TonStakingComment.withdraw(for: "liquidTF"))
+        XCTAssertNil(TonStakingComment.deposit(for: nil))
+        XCTAssertNil(TonStakingComment.withdraw(for: nil))
+        XCTAssertNil(TonStakingComment.deposit(for: "somethingNew"))
+    }
+
+    // MARK: - Stake (per-implementation deposit comment)
+
+    func testStakeBuilderEmitsWhalesDepositComment() {
         let builder = TonStakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "60",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Stake"
+        )
+        XCTAssertEqual(builder.memo, "Stake")
+    }
+
+    func testStakeBuilderEmitsTfDepositComment() {
+        let builder = TonStakeTransactionBuilder(
+            coin: Self.makeTonCoin(),
+            amount: "60",
+            poolAddress: Self.poolAddress,
+            memo: "d"
         )
         XCTAssertEqual(builder.memo, "d")
     }
@@ -48,7 +82,8 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
         let builder = TonStakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "60",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Stake"
         )
         XCTAssertEqual(builder.toAddress, Self.poolAddress)
     }
@@ -57,32 +92,45 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
         let builder = TonStakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "60",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Stake"
         )
         let dict = builder.memoFunctionDictionary.allItems()
         XCTAssertEqual(dict["nodeAddress"], Self.poolAddress)
-        XCTAssertEqual(dict["memo"], "d")
+        XCTAssertEqual(dict["memo"], "Stake")
     }
 
     func testStakeBuildSendTransactionPropagatesMemoAndDestination() {
         let builder = TonStakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "60",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Stake"
         )
         let tx = builder.buildSendTransaction(vault: .example)
-        XCTAssertEqual(tx.memo, "d")
+        XCTAssertEqual(tx.memo, "Stake")
         XCTAssertEqual(tx.toAddress, Self.poolAddress)
         XCTAssertEqual(tx.amount, "60")
     }
 
-    // MARK: - Unstake (memo "w")
+    // MARK: - Unstake (per-implementation withdraw comment)
 
-    func testUnstakeBuilderEmitsWithdrawMemo() {
+    func testUnstakeBuilderEmitsWhalesWithdrawComment() {
         let builder = TonUnstakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "1",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Withdraw"
+        )
+        XCTAssertEqual(builder.memo, "Withdraw")
+    }
+
+    func testUnstakeBuilderEmitsTfWithdrawComment() {
+        let builder = TonUnstakeTransactionBuilder(
+            coin: Self.makeTonCoin(),
+            amount: "1",
+            poolAddress: Self.poolAddress,
+            memo: "w"
         )
         XCTAssertEqual(builder.memo, "w")
     }
@@ -91,7 +139,8 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
         let builder = TonUnstakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "1",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Withdraw"
         )
         XCTAssertEqual(builder.toAddress, Self.poolAddress)
     }
@@ -100,10 +149,11 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
         let builder = TonUnstakeTransactionBuilder(
             coin: Self.makeTonCoin(),
             amount: "1",
-            poolAddress: Self.poolAddress
+            poolAddress: Self.poolAddress,
+            memo: "Withdraw"
         )
         let tx = builder.buildSendTransaction(vault: .example)
-        XCTAssertEqual(tx.memo, "w")
+        XCTAssertEqual(tx.memo, "Withdraw")
         XCTAssertEqual(tx.toAddress, Self.poolAddress)
     }
 }
