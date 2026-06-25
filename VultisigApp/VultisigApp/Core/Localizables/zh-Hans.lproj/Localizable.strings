@@ -668,6 +668,7 @@
 "mintCoin" = "铸造 %@";
 "mintSecuredAsset" = "铸造担保资产 (SECURE+)";
 "mintTransaction" = "2. 铸造担保资产交易";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "modules" = "模块";
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";

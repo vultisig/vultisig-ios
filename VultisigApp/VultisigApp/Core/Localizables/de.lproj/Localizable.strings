@@ -668,6 +668,7 @@
 "mintCoin" = "%@ prägen";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
 "modules" = "Module";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";

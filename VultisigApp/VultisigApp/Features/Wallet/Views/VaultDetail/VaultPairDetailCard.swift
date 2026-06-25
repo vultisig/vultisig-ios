@@ -71,6 +71,10 @@ struct VaultPairDetailCard: View {
 
             vaultKeyRow(title: "ECDSA".localized, description: vault.pubKeyECDSA)
             vaultKeyRow(title: "EdDSA".localized, description: vault.pubKeyEdDSA)
+
+            if let publicKeyMLDSA44 = vault.publicKeyMLDSA44, !publicKeyMLDSA44.isEmpty {
+                vaultKeyRow(title: "MLDSA".localized, description: publicKeyMLDSA44)
+            }
         }
     }
 

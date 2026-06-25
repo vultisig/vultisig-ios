@@ -668,6 +668,7 @@
 "mintCoin" = "Conia %@";
 "mintSecuredAsset" = "Conia Asset Garantito (SECURE+)";
 "mintTransaction" = "2. Transazione di conio asset garantito";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";

@@ -668,6 +668,7 @@
 "mintCoin" = "Kovaj %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
