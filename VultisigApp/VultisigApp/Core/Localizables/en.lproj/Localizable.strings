@@ -1069,7 +1069,6 @@
 "Spanish" = "Spanish";
 "splitCoins" = "Split Coins";
 "stake" = "Stake";
-"Stake" = "Stake";
 "stakeCoin" = "Stake %@";
 "staked" = "Staked";
 "stakedCoin" = "Staked %@";
@@ -1177,6 +1176,16 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
+"tonStakeBelowMinimum" = "Minimum stake is %@ %@";
+"tonStakingAPY" = "APY";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "min %@ %@";
+"tonStakingNoPoolsFound" = "No pools found";
+"tonStakingPoolAddress" = "Pool Address";
+"tonStakingPoolPicker" = "Pool";
+"tonStakingSelectPool" = "Select Pool";
+"tonUnstakeFullWithdrawalNotice" = "TON nominator pools support full withdrawal only. Your entire stake will be unstaked.";
+"tonWithdrawalPendingMessage" = "Withdrawal in progress. Your %@ will be unlocked around %@.";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";
@@ -1248,7 +1257,6 @@
 "unrelatedQRCode" = "Unrelated QR Code";
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
 "unstake" = "Unstake";
-"Unstake" = "Unstake";
 "unstakeCoin" = "Unstake %@";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "unverifiedFunction" = "Unverified function";

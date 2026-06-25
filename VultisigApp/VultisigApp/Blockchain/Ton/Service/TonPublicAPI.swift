@@ -11,6 +11,17 @@ import Foundation
 /// Vultisig Windows client.
 enum TonPublicAPI: TargetType {
     case emulateEvent(boc: String)
+    /// tonapi.io computed staking-pool info (APY, name, min stake). `address`
+    /// is the nominator-pool contract address.
+    case stakingPool(address: String)
+    /// tonapi.io list of all known staking pools (APY, name, min stake,
+    /// verified flag, nominator counts). Backs the pool picker.
+    case stakingPools
+    /// tonapi.io nominator-pool positions for an account (`AccountStaking`).
+    /// Authoritative source for staked positions — the Vultisig
+    /// `/ton/v3/wallet` `pools` field does not populate. `address` is the
+    /// account (wallet) address.
+    case nominatorPools(address: String)
 
     private static let host: URL = {
         guard let url = URL(string: "https://tonapi.io") else {
@@ -25,6 +36,12 @@ enum TonPublicAPI: TargetType {
         switch self {
         case .emulateEvent:
             return "/v2/events/emulate"
+        case .stakingPool(let address):
+            return "/v2/staking/pool/\(address)"
+        case .stakingPools:
+            return "/v2/staking/pools"
+        case .nominatorPools(let address):
+            return "/v2/staking/nominator/\(address)/pools"
         }
     }
 
@@ -32,6 +49,8 @@ enum TonPublicAPI: TargetType {
         switch self {
         case .emulateEvent:
             return .post
+        case .stakingPool, .stakingPools, .nominatorPools:
+            return .get
         }
     }
 
@@ -54,6 +73,14 @@ enum TonPublicAPI: TargetType {
                 bodyData: body,
                 urlParameters: ["ignore_signature_check": "true"]
             )
+        case .stakingPool:
+            return .requestPlain
+        case .stakingPools:
+            // Only verified pools the picker should surface; client also
+            // re-filters defensively in `TonPoolSelectionViewModel.sortAndFilter`.
+            return .requestParameters(["include_unverified": "false"], .urlEncoding)
+        case .nominatorPools:
+            return .requestPlain
         }
     }
 
@@ -64,4 +91,86 @@ enum TonPublicAPI: TargetType {
 
 private struct TonEmulateRequest: Encodable {
     let boc: String
+}
+
+/// Response from tonapi.io `GET /v2/staking/pool/{address}`. `apy` is a
+/// percentage value (e.g. `13.27` means 13.27%); callers divide by 100 to get
+/// the fraction the staking UI expects. Fields are optional so a partial /
+/// changed response degrades gracefully rather than dropping the position.
+struct TonStakingPoolResponse: Decodable {
+    let pool: TonStakingPoolInfo?
+}
+
+struct TonStakingPoolInfo: Decodable {
+    let address: String?
+    let name: String?
+    let apy: Double?
+    let minStake: Int64?
+    /// Pool implementation (`whales`, `tf`, `liquidTF`, …) — drives the
+    /// deposit/withdraw comment for add-more / unstake transactions.
+    let implementation: String?
+    /// Unix timestamp (seconds) when the current validation cycle ends — i.e.
+    /// when a pending nominator withdrawal becomes claimable / the locked funds
+    /// are returned. Used to tell the user roughly when their withdrawal unlocks.
+    let cycleEnd: Int64?
+
+    private enum CodingKeys: String, CodingKey {
+        case address, name, apy, implementation
+        case minStake = "min_stake"
+        case cycleEnd = "cycle_end"
+    }
+}
+
+/// Response from tonapi.io `GET /v2/staking/pools`. Carries the full list of
+/// known staking pools used to populate the pool picker.
+struct TonStakingPoolsResponse: Decodable {
+    let pools: [TonStakingPoolListEntry]
+}
+
+/// A single staking pool entry from the list endpoint. `apy` is a percentage
+/// (e.g. `13.27` = 13.27%) and `minStake` is in nanotons. Fields the picker
+/// reads are required; the rest are optional so a shape drift degrades rather
+/// than dropping the whole list.
+struct TonStakingPoolListEntry: Decodable {
+    let address: String
+    let name: String
+    let apy: Double
+    let minStake: Int64
+    let verified: Bool
+    let currentNominators: Int?
+    let maxNominators: Int?
+    let implementation: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case address, name, apy, verified, implementation
+        case minStake = "min_stake"
+        case currentNominators = "current_nominators"
+        case maxNominators = "max_nominators"
+    }
+}
+
+/// Response from tonapi.io `GET /v2/staking/nominator/{account_id}/pools`
+/// (`AccountStaking`). Authoritative source for an account's nominator-pool
+/// positions; empty participation returns `{"pools": []}`.
+struct TonAccountStakingResponse: Decodable {
+    let pools: [TonAccountStakingInfo]
+}
+
+/// A single nominator-pool position for an account. All amounts are nanotons.
+/// `amount` is the active stake; `pendingDeposit` is a just-placed stake
+/// awaiting the next validation cycle (it must still surface so a fresh stake
+/// is visible immediately). `pool` is the pool contract address.
+struct TonAccountStakingInfo: Decodable {
+    let pool: String
+    let amount: Int64
+    let pendingDeposit: Int64
+    let pendingWithdraw: Int64
+    let readyWithdraw: Int64
+
+    private enum CodingKeys: String, CodingKey {
+        case pool, amount
+        case pendingDeposit = "pending_deposit"
+        case pendingWithdraw = "pending_withdraw"
+        case readyWithdraw = "ready_withdraw"
+    }
 }

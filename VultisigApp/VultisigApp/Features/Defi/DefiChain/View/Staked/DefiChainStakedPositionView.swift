@@ -22,6 +22,15 @@ struct DefiChainStakedPositionView: View {
     }
 
     var title: String {
+        // Prefer the pool/delegator name when the position carries one (TON
+        // nominator pools), falling back to the generic per-chain title.
+        if let poolName = position.poolName, !poolName.isEmpty {
+            return poolName
+        }
+        return defaultTitle
+    }
+
+    var defaultTitle: String {
         switch position.type {
         case .stake:
             switch position.coin.chain {
@@ -43,6 +52,7 @@ struct DefiChainStakedPositionView: View {
     }
 
     var unstakeDisabled: Bool { !position.canUnstake }
+    var stakeDisabled: Bool { !position.canStake }
     var canWithdraw: Bool {
         guard let rewards = position.rewards else { return false }
         return rewards > 0
@@ -216,7 +226,7 @@ struct DefiChainStakedPositionView: View {
             }.disabled(unstakeDisabled)
             DefiButton(title: addButonTitle, icon: "plus-circle") {
                 onStake()
-            }
+            }.disabled(stakeDisabled)
         }
     }
 
@@ -227,7 +237,7 @@ struct DefiChainStakedPositionView: View {
             }.disabled(unstakeDisabled)
             DefiButton(title: addButonTitle, icon: "plus-circle") {
                 onStake()
-            }
+            }.disabled(stakeDisabled)
         }
     }
 
@@ -256,7 +266,7 @@ struct DefiChainStakedPositionView: View {
             }.disabled(unstakeDisabled)
             DefiButton(title: "mint".localized, icon: "plus-circle") {
                 onStake() // Use onStake for mint action
-            }
+            }.disabled(stakeDisabled)
         }
     }
 

@@ -26,7 +26,7 @@ final class DefiChainStakeViewModel: ObservableObject {
     /// this property re-evaluates with a fresh array.
     var stakePositions: [StakePosition] {
         vault.stakePositions
-            .filter { vaultStakePositions.contains($0.coin) }
+            .filter { isEnabled($0) }
             .sorted { $0.amount > $1.amount }
     }
 
@@ -34,6 +34,17 @@ final class DefiChainStakeViewModel: ObservableObject {
 
     var vaultStakePositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.staking ?? []
+    }
+
+    /// Whether a persisted position should be shown for this chain. TON nominator
+    /// staking is a single always-relevant position (like Tron) and is NOT gated
+    /// behind the per-coin opt-in (`defiPositions[.ton].staking`): any TON stake
+    /// shows immediately. THOR/Maya/Cosmos keep their opt-in.
+    private func isEnabled(_ position: StakePosition) -> Bool {
+        if chain == .ton {
+            return position.coin.chain == .ton
+        }
+        return vaultStakePositions.contains(position.coin)
     }
 
     init(
@@ -46,8 +57,14 @@ final class DefiChainStakeViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.stakeInteractor(for: chain)
         self.storage = storage
-        let enabledStakes = vault.defiPositions.first { $0.chain == chain }?.staking ?? []
-        self.initialLoadingDone = vault.stakePositions.contains { enabledStakes.contains($0.coin) }
+        // Mirror the per-chain visibility rule: TON shows any persisted stake
+        // ungated; other chains require the per-coin opt-in.
+        if chain == .ton {
+            self.initialLoadingDone = vault.stakePositions.contains { $0.coin.chain == .ton }
+        } else {
+            let enabledStakes = vault.defiPositions.first { $0.chain == chain }?.staking ?? []
+            self.initialLoadingDone = vault.stakePositions.contains { enabledStakes.contains($0.coin) }
+        }
     }
 
     func update(vault: Vault) {

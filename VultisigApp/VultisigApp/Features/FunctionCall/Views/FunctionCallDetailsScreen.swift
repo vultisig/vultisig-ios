@@ -130,12 +130,6 @@ struct FunctionCallDetailsScreen: View {
                 fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
             case .vote:
                 fnCallInstance = .vote(FunctionCallVote())
-            case .stake:
-                fnCallInstance = .stake(FunctionCallStake(initialAmount: selectedCoin.balanceDecimal))
-
-            case .unstake:
-                fnCallInstance = .unstake(FunctionCallUnstake())
-
             case .cosmosIBC:
                 fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
             case .merge:

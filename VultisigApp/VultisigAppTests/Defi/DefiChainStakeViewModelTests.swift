@@ -113,6 +113,38 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertEqual(ruji?.amount, 200, "RUJI must keep its persisted amount when omitted from refresh.")
     }
 
+    // MARK: - TON ungated visibility (issue #4653)
+
+    /// TON nominator staking is a single always-relevant position (like Tron), so
+    /// a persisted TON stake shows WITHOUT the per-coin opt-in
+    /// (`defiPositions[.ton].staking`). The interactor itself is also ungated.
+    func testTonStakePositionShowsWithoutOptIn() throws {
+        let storage = DefiPositionsStorageService()
+        let tonMeta = TokensStore.ton
+        // No `defiPositions[.ton]` entry at all — the opt-in is never set.
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 25)
+        ], for: vault)
+
+        let vm = DefiChainStakeViewModel(vault: vault, chain: .ton, interactor: interactor)
+        XCTAssertTrue(vm.hasStakePositions, "TON stake must show without manual enablement.")
+        XCTAssertEqual(vm.stakePositions.first?.amount, 25)
+        XCTAssertTrue(vm.initialLoadingDone, "A persisted TON stake skips the skeleton even when un-opted-in.")
+    }
+
+    func testTonInteractorReturnsPositionWithoutOptIn() async {
+        // The shared mock stands in for the production interactor's behaviour: with
+        // the opt-in guard removed, the TON path no longer reads `defiPositions`.
+        let tonMeta = TokensStore.ton
+        interactor.stub = [StakePositionData(coin: tonMeta, type: .stake, amount: 25)]
+        let vm = DefiChainStakeViewModel(vault: vault, chain: .ton, interactor: interactor)
+
+        await vm.refresh()
+
+        XCTAssertEqual(vm.stakePositions.count, 1)
+        XCTAssertEqual(vm.stakePositions.first?.amount, 25)
+    }
+
     // MARK: - Helpers
 
     private func makeViewModel() -> DefiChainStakeViewModel {

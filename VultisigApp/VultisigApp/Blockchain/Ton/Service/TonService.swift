@@ -68,6 +68,45 @@ class TonService {
         return response.data.balance ?? .zero
     }
 
+    /// Fetches computed staking-pool metadata (APY, name) from tonapi.io for a
+    /// single nominator-pool contract. Returns `nil` on any failure so the
+    /// caller can degrade gracefully — APY is decorative, never load-bearing.
+    func getStakingPoolInfo(poolAddress: String) async -> TonStakingPoolInfo? {
+        do {
+            let response = try await httpClient.request(
+                TonPublicAPI.stakingPool(address: poolAddress),
+                responseType: TonStakingPoolResponse.self
+            )
+            return response.data.pool
+        } catch {
+            logger.error("Failed to fetch TON staking pool info: \(error.localizedDescription, privacy: .private)")
+            return nil
+        }
+    }
+
+    /// Fetches the full list of known staking pools from tonapi.io, used to
+    /// populate the pool picker. Throws on failure so the picker can surface a
+    /// retry/error state rather than silently showing an empty list.
+    func getStakingPools() async throws -> [TonStakingPoolListEntry] {
+        let response = try await httpClient.request(
+            TonPublicAPI.stakingPools,
+            responseType: TonStakingPoolsResponse.self
+        )
+        return response.data.pools
+    }
+
+    /// Fetches the account's nominator-pool positions from tonapi.io — the
+    /// authoritative source for staked positions (the Vultisig `/ton/v3/wallet`
+    /// `pools` field does not populate). Returns an empty array for accounts
+    /// with no nominator participation.
+    func getNominatorPools(address: String) async throws -> [TonAccountStakingInfo] {
+        let response = try await httpClient.request(
+            TonPublicAPI.nominatorPools(address: address),
+            responseType: TonAccountStakingResponse.self
+        )
+        return response.data.pools
+    }
+
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             return try await getTONBalance(address: address)
