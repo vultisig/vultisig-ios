@@ -1060,7 +1060,6 @@
 "Spanish" = "Espanhol";
 "splitCoins" = "Dividir moedas";
 "stake" = "Stake";
-"Stake" = "Stake";
 "stakeCoin" = "Fazer Stake de %@";
 "staked" = "Em Staking";
 "stakedCoin" = "%@ em Stake";
@@ -1242,7 +1241,6 @@
 "unrelatedQRCode" = "Código QR não relacionado";
 "unrelatedQRCodeMessage" = "Foi escaneado um código QR não relacionado.";
 "unstake" = "Retirar Stake";
-"Unstake" = "Unstake";
 "unstakeCoin" = "Retirar %@";
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "unverifiedFunction" = "Função não verificada";

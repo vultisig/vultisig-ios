@@ -1060,7 +1060,6 @@
 "Spanish" = "西班牙语";
 "splitCoins" = "拆分代币";
 "stake" = "质押";
-"Stake" = "质押";
 "stakeCoin" = "质押 %@";
 "staked" = "已质押";
 "stakedCoin" = "已质押 %@";
@@ -1242,7 +1241,6 @@
 "unrelatedQRCode" = "无关的二维码";
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
 "unstake" = "取消质押";
-"Unstake" = "取消质押";
 "unstakeAutoCompoundTCYRewards" = "取消质押自动复利 TCY";
 "unstakeCoin" = "取消质押 %@";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";

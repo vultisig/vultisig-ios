@@ -7,8 +7,7 @@ import VultisigCommonData
 import WalletCore
 
 /// Builds a TON nominator-pool stake transaction: send `amount` TON to the pool
-/// contract with the text comment "d". Logic ported from the (now DeFi-only)
-/// `FunctionCallStake` model.
+/// contract with the text comment "d".
 struct TonStakeTransactionBuilder: TransactionBuilder {
     let coin: Coin
     let amount: String

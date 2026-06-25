@@ -17,8 +17,6 @@ enum FunctionCallInstance {
     case leave(FunctionCallLeave)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
-    case stake(FunctionCallStake)
-    case unstake(FunctionCallUnstake)
     case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
@@ -41,10 +39,6 @@ enum FunctionCallInstance {
         case .custom(let memo):
             return memo.description
         case .vote(let memo):
-            return memo.description
-        case .stake(let memo):
-            return memo.description
-        case .unstake(let memo):
             return memo.description
         case .cosmosIBC(let memo):
             return memo.description
@@ -78,10 +72,6 @@ enum FunctionCallInstance {
             return memo.amount
         case .vote:
             return .zero
-        case .stake(let memo):
-            return memo.amount
-        case .unstake(let memo):
-            return memo.amount  // You must send 1 TON to unstake with a "w" memo
         case .cosmosIBC(let memo):
             return memo.amount
         case .merge(let memo):
@@ -102,10 +92,6 @@ enum FunctionCallInstance {
     @MainActor
     var toAddress: String? {
         switch self {
-        case .stake(let memo):
-            return memo.nodeAddress
-        case .unstake(let memo):
-            return memo.nodeAddress
         case .cosmosIBC(let memo):
             return memo.destinationAddress
         case .merge(let memo):
@@ -142,10 +128,6 @@ enum FunctionCallInstance {
         case .custom(let memo):
             return memo.toDictionary()
         case .vote(let memo):
-            return memo.toDictionary()
-        case .stake(let memo):
-            return memo.toDictionary()
-        case .unstake(let memo):
             return memo.toDictionary()
         case .cosmosIBC(let memo):
             return memo.toDictionary()
@@ -207,10 +189,6 @@ enum FunctionCallInstance {
         // No amount: vote transactions carry zero value.
         case .vote(let memo):
             return memo.isTheFormValid
-        case .stake(let memo):
-            return memo.isFormValid(for: coin)
-        case .unstake(let memo):
-            return memo.isFormValid(for: coin)
         case .cosmosIBC(let memo):
             return memo.isFormValid(for: coin)
         case .merge(let memo):
@@ -307,10 +285,6 @@ enum FunctionCallInstance {
         case .custom(let memo):
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .vote(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .stake(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .unstake(let memo):
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
         case .cosmosIBC(let memo):
             return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
