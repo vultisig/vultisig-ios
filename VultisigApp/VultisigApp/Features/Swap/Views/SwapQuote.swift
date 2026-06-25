@@ -18,6 +18,19 @@ enum SwapQuote: Hashable {
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
 
+    /// True for the native-protocol routes (THORChain on any network, MayaChain)
+    /// that deposit into a THOR/Maya inbound vault, so a source-chain halt can
+    /// strand funds. Aggregator routes (1inch/LI.FI/KyberSwap/SwapKit) never
+    /// deposit into those vaults, so the halt gate must not apply to them.
+    var isNativeProtocolRoute: Bool {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return true
+        case .oneinch, .kyberswap, .lifi, .swapkit:
+            return false
+        }
+    }
+
     var swapProviderId: SwapProviderId? {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
@@ -138,6 +151,20 @@ enum SwapQuote: Hashable {
             // lands.
             return nil
         default:
+            return nil
+        }
+    }
+
+    /// Source-chain gas cost in native wei (`gas × gasPrice`) for same-chain EVM
+    /// aggregator quotes. Used only as a tie-break among in-band quotes that both
+    /// expose it — same-unit source-native wei, no cross-asset price normalization.
+    /// `nil` for THORChain/Maya/SwapKit, which expose no router gas at quote time.
+    var sourceGasWei: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            guard let gasPrice = BigInt(quote.tx.gasPrice), gasPrice > 0 else { return nil }
+            return BigInt(quote.tx.gas) * gasPrice
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
             return nil
         }
     }

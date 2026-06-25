@@ -13,6 +13,7 @@ class MayachainService: ThorchainSwapProvider {
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-service")
     private let httpClient: HTTPClientProtocol
+    private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
 
     /// Resolves the MayaChain custom RPC override. Injected so the API values
     /// are built from a dependency rather than a global reach-in; resolution
@@ -20,7 +21,7 @@ class MayachainService: ThorchainSwapProvider {
     /// picked up live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
-    private init(
+    init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         resolver: RPCEndpointResolving = CustomRPCStore.shared
     ) {
@@ -194,6 +195,44 @@ class MayachainService: ThorchainSwapProvider {
             logger.error("Error fetching MayaChain deposit assets: \(error.localizedDescription, privacy: .public)")
             return []
         }
+    }
+
+    /// Fetch MayaChain inbound addresses (halt flags + gas rates). Mirrors
+    /// `ThorchainService.fetchThorchainInboundAddress`: 5-minute cache, fail-soft
+    /// to an empty array on decode/network error. Pass `bypassCache: true` for the
+    /// sign-time halt re-check, which must never read or write the cache.
+    func fetchInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
+        do {
+            return try await fetchInboundAddressOrThrow(bypassCache: bypassCache)
+        } catch {
+            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
+            return []
+        }
+    }
+
+    /// Throwing variant of `fetchInboundAddress` for the sign-time fund-safety
+    /// gate, which must fail CLOSED: a transport/decode failure has to propagate
+    /// so a halt re-check can't be silently misread as "not halted". The fail-soft
+    /// `fetchInboundAddress` wraps this for screen-level callers.
+    func fetchInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
+        let cacheKey = "mayachain-inbound-address"
+        if !bypassCache,
+           let cachedData = Utils.getCachedData(
+               cacheKey: cacheKey,
+               cache: cacheInboundAddresses,
+               timeInSeconds: 60 * 5
+           ) {
+            return cachedData
+        }
+        let response = try await httpClient.request(
+            api(.inboundAddresses),
+            responseType: [InboundAddress].self
+        )
+        let inboundAddresses = response.data
+        if !bypassCache {
+            cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+        }
+        return inboundAddresses
     }
 
     /// Legacy callback shim. Existing call sites in FunctionCall views still use this

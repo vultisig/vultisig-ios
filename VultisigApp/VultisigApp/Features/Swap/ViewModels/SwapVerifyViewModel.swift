@@ -36,7 +36,10 @@ final class SwapVerifyViewModel {
     var isLoadingTransaction = false
     var timer: Int = 59
 
-    init(transaction: SwapTransaction, interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        transaction: SwapTransaction,
+        interactor: SwapInteractor = DefaultSwapInteractor.live
+    ) {
         self.transaction = transaction
         self.interactor = interactor
     }
@@ -127,6 +130,21 @@ final class SwapVerifyViewModel {
             guard (error as? URLError)?.code != .cancelled else { return }
             logger.warning("Refresh quote error: \(error.localizedDescription)")
             self.error = error
+        }
+    }
+
+    /// Sign-time fund-safety gate: delegates the live inbound re-check to the
+    /// interactor (which owns the THORChain / Maya services), keeping this VM
+    /// free of any chain-service dependency. Returns `true` when it's safe to
+    /// sign; on a halt (or an unverifiable fetch) it sets `error` and returns
+    /// `false` so the caller does NOT build the payload or navigate.
+    func isSourceChainSafeToSign() async -> Bool {
+        do {
+            try await interactor.assertSourceChainNotHalted(transaction: transaction)
+            return true
+        } catch {
+            self.error = error
+            return false
         }
     }
 

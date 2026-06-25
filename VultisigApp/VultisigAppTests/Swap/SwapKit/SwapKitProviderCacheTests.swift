@@ -245,18 +245,51 @@ final class SwapKitProviderCacheTests: XCTestCase {
         )
     }
 
-    /// Async fail-open: when the cache has nothing in its snapshot AND the
+    /// Async fail-OPEN: when the cache has nothing in its snapshot AND the
     /// HTTPClient refuses to fetch, the actor reports the pair as "could be
-    /// supported" so the reclassification path still triggers. The trade-off
-    /// is documented in the wiki plan: degrading to "amount too small" is
-    /// strictly better UX than today's "unexpected error" fallback.
-    func testIsPairSupported_emptySnapshotAsyncFailsOpen() async {
+    /// supported" so the reclassification path still triggers. `isPairSupported`
+    /// only chooses between two error labels, so failing it open just keeps the
+    /// more specific "amount too small" label available — deliberately the
+    /// opposite default from `isEnabled` below.
+    func testIsPairSupported_noSnapshotFetchFails_failsOpen() async {
         let cache = SwapKitProviderCache(httpClient: FailingHTTPClient())
         let supported = await cache.isPairSupported(
             fromChain: .bitcoinCash,
             toChain: .ethereum
         )
         XCTAssertTrue(supported)
+    }
+
+    // MARK: - Provider gate (isEnabled) — fail-closed on the no-snapshot edge
+
+    /// Async fail-CLOSED: on a cold launch where the first `/providers` fetch
+    /// fails and there is no prior snapshot, the gate must report the chain as
+    /// NOT enabled. SwapKit is simply not offered until a refresh succeeds,
+    /// rather than offering routes that fail downstream. Other providers still
+    /// populate the picker and `fetchSwapKitQuote` throws cleanly.
+    func testIsEnabled_noSnapshotFetchFails_failsClosed() async {
+        let cache = SwapKitProviderCache(httpClient: FailingHTTPClient())
+        let enabled = await cache.isEnabled(chain: .ethereum)
+        XCTAssertFalse(enabled, "No snapshot + failed fetch must fail closed")
+    }
+
+    /// Once a snapshot exists, a later fetch failure must serve the last-good
+    /// providers rather than collapsing to fail-closed. Guards against
+    /// over-correcting the no-snapshot fix into "any fetch failure disables
+    /// SwapKit": seed a snapshot via `setSnapshot`, then drive `isEnabled`
+    /// through a failing client past the TTL and assert the chain is still
+    /// enabled from the retained snapshot.
+    func testIsEnabled_fetchFailsWithPriorSnapshot_servesLastGood() async {
+        let cache = SwapKitProviderCache(httpClient: FailingHTTPClient())
+        let fetchedAt = Date()
+        await cache.setSnapshot(
+            SwapKitProvidersSnapshot(providers: providers, fetchedAt: fetchedAt)
+        )
+        // Advance well past providerCacheTTL so the snapshot is stale and the
+        // cache attempts a refresh — which fails — falling back to last-good.
+        let later = fetchedAt.addingTimeInterval(SwapKitConfig.providerCacheTTL + 1)
+        let enabled = await cache.isEnabled(chain: .ethereum, now: later)
+        XCTAssertTrue(enabled, "Stale-but-present snapshot must serve last-good, not fail closed")
     }
 }
 

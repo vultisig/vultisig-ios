@@ -175,6 +175,8 @@ private final class RefetchMockInteractor: SwapInteractor {
         throw CancellationError()
     }
 
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
+
     func updateBalance(for coin: Coin) async {}
     func warmDiscountTier(for vault: Vault) async {}
 }

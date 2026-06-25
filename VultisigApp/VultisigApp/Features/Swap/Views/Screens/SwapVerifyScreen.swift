@@ -292,6 +292,13 @@ struct SwapVerifyScreen: View {
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
+            // Fund-safety pre-flight: re-check live inbound (cache-bypassing) for
+            // the source chain before building the keysign payload. A confirmed
+            // halt sets verifyViewModel.error and aborts without navigating.
+            guard await verifyViewModel.isSourceChainSafeToSign() else {
+                await MainActor.run { signButtonDisabled = false }
+                return
+            }
             if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
                     router.navigate(to: SwapRoute.pair(

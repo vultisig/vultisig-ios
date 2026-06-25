@@ -148,9 +148,10 @@ struct SwapKitService {
     }
 
     /// Whether SwapKit should be offered as a provider for `chain` based on
-    /// the cached `/v3/providers` snapshot. Falls back to "yes" when the cache
-    /// can't be loaded — `/v3/quote` will surface a useful error if the chain
-    /// is genuinely unsupported.
+    /// the cached `/v3/providers` snapshot. Fails CLOSED (returns "no") when
+    /// the snapshot can't be loaded at all — see `SwapKitProviderCache.isEnabled`
+    /// for the rationale and the last-good fallback that limits this to the
+    /// genuine no-data edge.
     func isChainEnabled(_ chain: Chain) async -> Bool {
         await providerCache.isEnabled(chain: chain)
     }
