@@ -22,6 +22,15 @@ struct DefiChainStakedPositionView: View {
     }
 
     var title: String {
+        // Prefer the pool/delegator name when the position carries one (TON
+        // nominator pools), falling back to the generic per-chain title.
+        if let poolName = position.poolName, !poolName.isEmpty {
+            return poolName
+        }
+        return defaultTitle
+    }
+
+    var defaultTitle: String {
         switch position.type {
         case .stake:
             switch position.coin.chain {

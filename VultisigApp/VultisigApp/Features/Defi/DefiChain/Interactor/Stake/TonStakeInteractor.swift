@@ -73,7 +73,8 @@ struct TonStakeInteractor: StakeInteractor {
                 amount: stakedAmount,
                 apr: apr,
                 poolAddress: normalizedAddress,
-                poolImplementation: poolInfo?.implementation
+                poolImplementation: poolInfo?.implementation,
+                poolName: poolInfo?.name
             )
         ]
     }

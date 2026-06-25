@@ -34,6 +34,10 @@ final class StakePosition {
     /// Optional so the lightweight SwiftData migration is safe; `nil` for chains
     /// that don't need it.
     var poolImplementation: String?
+    /// Human-readable pool/delegator name (e.g. a TON nominator pool name) shown
+    /// as the title on the staked card. Optional so the lightweight SwiftData
+    /// migration is safe; `nil` for chains whose staking has no named pool.
+    var poolName: String?
 
     var canUnstake: Bool {
         let unstakeAmount = availableToUnstake ?? amount
@@ -59,6 +63,7 @@ final class StakePosition {
         unstakeMetadata: UnstakeMetadata? = nil,
         poolAddress: String? = nil,
         poolImplementation: String? = nil,
+        poolName: String? = nil,
         vault: Vault
     ) {
         self.coin = coin
@@ -73,6 +78,7 @@ final class StakePosition {
         self.unstakeMetadata = unstakeMetadata
         self.poolAddress = poolAddress
         self.poolImplementation = poolImplementation
+        self.poolName = poolName
         self.vault = vault
         self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }
@@ -91,6 +97,7 @@ final class StakePosition {
             unstakeMetadata: dto.unstakeMetadata,
             poolAddress: dto.poolAddress,
             poolImplementation: dto.poolImplementation,
+            poolName: dto.poolName,
             vault: vault
         )
     }
@@ -108,6 +115,7 @@ final class StakePosition {
         unstakeMetadata = dto.unstakeMetadata
         poolAddress = dto.poolAddress
         poolImplementation = dto.poolImplementation
+        poolName = dto.poolName
     }
 }
 

@@ -28,6 +28,9 @@ struct StakePositionData: Sendable, Equatable {
     /// add-more/unstake comment without re-fetching pool metadata. `nil` for
     /// chains that don't need it.
     let poolImplementation: String?
+    /// Human-readable pool/delegator name (e.g. a TON nominator pool name) shown
+    /// on the staked card. `nil` for chains whose staking has no named pool.
+    let poolName: String?
 
     init(
         coin: CoinMeta,
@@ -41,7 +44,8 @@ struct StakePositionData: Sendable, Equatable {
         rewardCoin: CoinMeta? = nil,
         unstakeMetadata: UnstakeMetadata? = nil,
         poolAddress: String? = nil,
-        poolImplementation: String? = nil
+        poolImplementation: String? = nil,
+        poolName: String? = nil
     ) {
         self.coin = coin
         self.type = type
@@ -55,5 +59,6 @@ struct StakePositionData: Sendable, Equatable {
         self.unstakeMetadata = unstakeMetadata
         self.poolAddress = poolAddress
         self.poolImplementation = poolImplementation
+        self.poolName = poolName
     }
 }
