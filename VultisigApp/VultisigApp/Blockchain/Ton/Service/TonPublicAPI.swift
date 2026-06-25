@@ -14,6 +14,9 @@ enum TonPublicAPI: TargetType {
     /// tonapi.io computed staking-pool info (APY, name, min stake). `address`
     /// is the nominator-pool contract address.
     case stakingPool(address: String)
+    /// tonapi.io list of all known staking pools (APY, name, min stake,
+    /// verified flag, nominator counts). Backs the pool picker.
+    case stakingPools
 
     private static let host: URL = {
         guard let url = URL(string: "https://tonapi.io") else {
@@ -30,6 +33,8 @@ enum TonPublicAPI: TargetType {
             return "/v2/events/emulate"
         case .stakingPool(let address):
             return "/v2/staking/pool/\(address)"
+        case .stakingPools:
+            return "/v2/staking/pools"
         }
     }
 
@@ -37,7 +42,7 @@ enum TonPublicAPI: TargetType {
         switch self {
         case .emulateEvent:
             return .post
-        case .stakingPool:
+        case .stakingPool, .stakingPools:
             return .get
         }
     }
@@ -63,6 +68,10 @@ enum TonPublicAPI: TargetType {
             )
         case .stakingPool:
             return .requestPlain
+        case .stakingPools:
+            // Only verified pools the picker should surface; client also
+            // re-filters defensively in `TonPoolSelectionViewModel.sortAndFilter`.
+            return .requestParameters(["include_unverified": "false"], .urlEncoding)
         }
     }
 
@@ -92,5 +101,33 @@ struct TonStakingPoolInfo: Decodable {
     private enum CodingKeys: String, CodingKey {
         case address, name, apy
         case minStake = "min_stake"
+    }
+}
+
+/// Response from tonapi.io `GET /v2/staking/pools`. Carries the full list of
+/// known staking pools used to populate the pool picker.
+struct TonStakingPoolsResponse: Decodable {
+    let pools: [TonStakingPoolListEntry]
+}
+
+/// A single staking pool entry from the list endpoint. `apy` is a percentage
+/// (e.g. `13.27` = 13.27%) and `minStake` is in nanotons. Fields the picker
+/// reads are required; the rest are optional so a shape drift degrades rather
+/// than dropping the whole list.
+struct TonStakingPoolListEntry: Decodable {
+    let address: String
+    let name: String
+    let apy: Double
+    let minStake: Int64
+    let verified: Bool
+    let currentNominators: Int?
+    let maxNominators: Int?
+    let implementation: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case address, name, apy, verified, implementation
+        case minStake = "min_stake"
+        case currentNominators = "current_nominators"
+        case maxNominators = "max_nominators"
     }
 }

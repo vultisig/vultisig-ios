@@ -96,6 +96,17 @@ class TonService {
         }
     }
 
+    /// Fetches the full list of known staking pools from tonapi.io, used to
+    /// populate the pool picker. Throws on failure so the picker can surface a
+    /// retry/error state rather than silently showing an empty list.
+    func getStakingPools() async throws -> [TonStakingPoolListEntry] {
+        let response = try await httpClient.request(
+            TonPublicAPI.stakingPools,
+            responseType: TonStakingPoolsResponse.self
+        )
+        return response.data.pools
+    }
+
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             return try await getTONBalance(address: address)

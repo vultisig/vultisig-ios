@@ -1169,7 +1169,13 @@
 "today" = "今天";
 "tokens" = "代币";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
+"tonStakingAPY" = "年化收益";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "最低 %@ %@";
+"tonStakingNoPoolsFound" = "未找到矿池";
 "tonStakingPoolAddress" = "矿池地址";
+"tonStakingPoolPicker" = "矿池";
+"tonStakingSelectPool" = "选择矿池";
 "tonUnstakeFullWithdrawalNotice" = "TON 提名人矿池仅支持全额提取。您的全部质押将被取消质押。";
 "totalFee" = "总费用";
 "track" = "跟踪";

@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Covers the TON stake form view-model: destination-address selection
-//  (existing pool reuse vs first-time typed field) and the fee headroom that
+//  (existing pool reuse vs first-time picked pool) and the fee headroom that
 //  backs the min-stake / max-stakeable calculations.
 //
 
@@ -34,6 +34,22 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         return coin
     }
 
+    private func makePool(address: String = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a", minStake: Decimal = 50) -> TonStakingPool {
+        TonStakingPool(
+            entry: TonStakingPoolListEntry(
+                address: address,
+                name: "Test Pool",
+                apy: 13.27,
+                minStake: NSDecimalNumber(decimal: minStake * pow(Decimal(10), 9)).int64Value,
+                verified: true,
+                currentNominators: 100,
+                maxNominators: 30000,
+                implementation: "whales"
+            ),
+            decimals: 9
+        )
+    }
+
     func testAddMoreReusesExistingPoolAddress() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
@@ -42,28 +58,35 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         )
         XCTAssertFalse(vm.isFirstTimeStake)
         XCTAssertEqual(vm.destinationPoolAddress, Self.poolAddress)
+        XCTAssertTrue(vm.hasDestinationPool)
     }
 
-    func testFirstTimeStakeUsesTypedPoolAddress() {
+    func testFirstTimeStakeUsesPickedPoolAddress() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
             vault: .example,
             existingPoolAddress: nil
         )
         XCTAssertTrue(vm.isFirstTimeStake)
-        vm.poolAddress = Self.poolAddress
-        XCTAssertEqual(vm.destinationPoolAddress, Self.poolAddress)
-        XCTAssertTrue(vm.isPoolAddressValid)
+        XCTAssertNil(vm.destinationPoolAddress)
+        XCTAssertFalse(vm.hasDestinationPool)
+
+        let pool = makePool()
+        vm.selectedPool = pool
+        XCTAssertEqual(vm.destinationPoolAddress, pool.address)
+        XCTAssertTrue(vm.hasDestinationPool)
     }
 
-    func testFirstTimeStakeRejectsInvalidPoolAddress() {
+    func testMinStakeDrivenByPickedPool() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
             vault: .example,
             existingPoolAddress: nil
         )
-        vm.poolAddress = "not-a-ton-address"
-        XCTAssertFalse(vm.isPoolAddressValid)
+        // Before a pool is picked, the conservative default floor applies.
+        XCTAssertEqual(vm.minStake, TonStakeTransactionViewModel.defaultMinStake)
+        vm.selectedPool = makePool(minStake: 50)
+        XCTAssertEqual(vm.minStake, 50)
     }
 
     func testMaxStakeableReservesNetworkFee() {

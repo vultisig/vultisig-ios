@@ -17,8 +17,9 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
     let existingPoolAddress: String?
 
     @Published var validForm: Bool = false
-    @Published var poolAddress: String = ""
-    @Published var poolAddressError: String?
+    /// Pool chosen via the picker (first-time stake only). `nil` until the user
+    /// selects one. Add-more reuses `existingPoolAddress` instead.
+    @Published var selectedPool: TonStakingPool?
 
     @Published var amountField = FormField(
         label: "amount".localized,
@@ -26,23 +27,22 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
         validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
     )
 
-    /// Pool minimum stake (human-decimal TON), fetched from tonapi when the
-    /// destination pool is known. Stake amount must clear this plus the network
-    /// fee. Defaults to a conservative floor until/if the pool reports its own.
-    @Published private(set) var minStake: Decimal = TonStakeTransactionViewModel.defaultMinStake
-
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [amountField]
 
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
 
-    private let service = TonService.shared
-
-    /// Conservative fallback floor (TON) for the minimum stake when the pool's
-    /// own `min_stake` is unavailable. Real nominator pools require far more
-    /// (tens of TON); this only guards against dust stakes.
+    /// Conservative fallback floor (TON) for the minimum stake before a pool is
+    /// picked (or for add-more, where the pool isn't re-fetched). Real pools
+    /// require far more; this only guards against dust stakes.
     static let defaultMinStake: Decimal = 1
+
+    /// Minimum stake (human-decimal TON) the amount must clear: the selected
+    /// pool's `min_stake` once picked, otherwise the conservative floor.
+    var minStake: Decimal {
+        selectedPool?.minStake ?? Self.defaultMinStake
+    }
 
     var isFirstTimeStake: Bool { existingPoolAddress == nil }
 
@@ -76,48 +76,32 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
                 guard let self else { return }
                 let amount = value.toDecimal()
                 if amount < self.minStake {
-                    throw MinStakeError.belowMinimum(self.minStake, self.coin.ticker)
+                    throw MinStakeError.belowMinimum(self.minStake, self.coin.chain.ticker)
                 }
             }
         )
-        if let existingPoolAddress {
-            poolAddress = existingPoolAddress
-            Task { await loadMinStake(for: existingPoolAddress) }
-        }
     }
 
-    /// The destination pool for the stake transaction. Reuses the existing
-    /// pool for add-more, otherwise the validated typed address.
-    var destinationPoolAddress: String {
-        existingPoolAddress ?? poolAddress.trimmingCharacters(in: .whitespaces)
+    /// The destination pool for the stake transaction. Reuses the existing pool
+    /// for add-more, otherwise the picked pool's address.
+    var destinationPoolAddress: String? {
+        existingPoolAddress ?? selectedPool?.address
     }
 
-    var isPoolAddressValid: Bool {
-        FunctionCallAddressValidation.isValidThorMayaTON(destinationPoolAddress)
-    }
-
-    func validatePoolAddress() {
-        poolAddressError = FunctionCallAddressValidation.errorForThorMayaTON(poolAddress)
-        if isFirstTimeStake, isPoolAddressValid {
-            Task { await loadMinStake(for: destinationPoolAddress) }
-        }
-    }
-
-    private func loadMinStake(for poolAddress: String) async {
-        guard let info = await service.getStakingPoolInfo(poolAddress: poolAddress),
-              let rawMin = info.minStake else {
-            return
-        }
-        minStake = Decimal(rawMin) / pow(Decimal(10), coin.decimals)
+    /// Whether a destination pool has been resolved (existing or picked).
+    var hasDestinationPool: Bool {
+        destinationPoolAddress != nil
     }
 
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, hasSufficientBalanceForFee, isPoolAddressValid else { return nil }
+        guard validForm, hasSufficientBalanceForFee, let poolAddress = destinationPoolAddress else {
+            return nil
+        }
         return TonStakeTransactionBuilder(
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),
-            poolAddress: destinationPoolAddress
+            poolAddress: poolAddress
         )
     }
 

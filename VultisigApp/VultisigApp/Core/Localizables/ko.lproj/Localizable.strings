@@ -1143,7 +1143,13 @@
 "today" = "오늘";
 "tokens" = "토큰";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
+"tonStakingAPY" = "APY";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "최소 %@ %@";
+"tonStakingNoPoolsFound" = "풀을 찾을 수 없습니다";
 "tonStakingPoolAddress" = "풀 주소";
+"tonStakingPoolPicker" = "풀";
+"tonStakingSelectPool" = "풀 선택";
 "tonUnstakeFullWithdrawalNotice" = "TON 노미네이터 풀은 전액 인출만 지원합니다. 전체 스테이킹이 해제됩니다.";
 "totalFee" = "총 수수료";
 "track" = "추적";

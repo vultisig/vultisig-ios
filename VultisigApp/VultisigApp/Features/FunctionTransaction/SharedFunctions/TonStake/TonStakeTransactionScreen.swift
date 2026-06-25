@@ -3,8 +3,8 @@
 //  VultisigApp
 //
 //  TON nominator-pool stake input. Add-more reuses the existing pool address
-//  (amount-only); a first-time stake also exposes a validated pool-address
-//  field. Mirrors `CosmosDelegateTransactionScreen` shape.
+//  (amount-only); a first-time stake exposes a pool picker (mirroring the
+//  Cosmos validator picker). Mirrors `CosmosDelegateTransactionScreen` shape.
 //
 
 import SwiftUI
@@ -28,6 +28,7 @@ struct TonStakeTransactionScreen: View {
     @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
     @State private var percentageSelected: Double?
+    @State private var showPoolPicker: Bool = false
 
     var body: some View {
         FormScreen(
@@ -36,20 +37,6 @@ struct TonStakeTransactionScreen: View {
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {
-            if viewModel.isFirstTimeStake {
-                AddressTextField(
-                    address: $viewModel.poolAddress,
-                    label: "tonStakingPoolAddress".localized,
-                    coin: viewModel.coin,
-                    error: $viewModel.poolAddressError
-                ) { result in
-                    if let result {
-                        viewModel.poolAddress = result.address
-                    }
-                    viewModel.validatePoolAddress()
-                }
-            }
-
             FormExpandableSection(
                 title: viewModel.amountField.label ?? .empty,
                 isValid: viewModel.amountField.valid,
@@ -72,16 +59,35 @@ struct TonStakeTransactionScreen: View {
                 .focused($focusedField, equals: .amount)
             }
 
+            if viewModel.isFirstTimeStake {
+                FormPickerSection(
+                    title: "tonStakingPoolPicker".localized,
+                    isValid: viewModel.selectedPool != nil,
+                    onTap: { showPoolPicker = true },
+                    valueView: { selectedPoolPreview }
+                )
+            }
+
             if !viewModel.hasSufficientBalanceForFee {
                 InsufficientFeeNotice(ticker: viewModel.coin.chain.ticker)
             }
         }
+        .crossPlatformSheet(isPresented: $showPoolPicker) {
+            TonPoolSelectionScreen(
+                isPresented: $showPoolPicker,
+                selectedPool: $viewModel.selectedPool,
+                ticker: viewModel.coin.chain.ticker,
+                decimals: viewModel.coin.decimals
+            )
+        }
         .onLoad {
             viewModel.onLoad()
-            focusedFieldBinding = viewModel.isFirstTimeStake ? nil : .amount
+            focusedFieldBinding = .amount
         }
-        .onChange(of: viewModel.poolAddress) { _, _ in
-            viewModel.validatePoolAddress()
+        .onChange(of: viewModel.selectedPool) { _, _ in
+            // Re-run validation so the min-stake check picks up the new pool.
+            viewModel.validateErrors()
+            focusedFieldBinding = .amount
         }
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
@@ -94,9 +100,29 @@ struct TonStakeTransactionScreen: View {
         }
     }
 
+    @ViewBuilder
+    private var selectedPoolPreview: some View {
+        if let pool = viewModel.selectedPool {
+            HStack(spacing: 8) {
+                KeybaseAvatarView(
+                    identity: nil,
+                    monogram: String((pool.name.isEmpty ? pool.address : pool.name).prefix(1)).uppercased(),
+                    size: 20
+                )
+                Text(pool.name.isEmpty ? pool.address : pool.name)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+        } else {
+            EmptyView()
+        }
+    }
+
     private func onContinue() {
-        if viewModel.isFirstTimeStake, !viewModel.isPoolAddressValid {
-            viewModel.validatePoolAddress()
+        if viewModel.isFirstTimeStake, viewModel.selectedPool == nil {
+            showPoolPicker = true
             return
         }
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
