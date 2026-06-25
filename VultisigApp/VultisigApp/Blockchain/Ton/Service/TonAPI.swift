@@ -17,7 +17,6 @@ import Foundation
 struct TonAPI: TargetType {
     enum Endpoint {
         case addressInformation(address: String)
-        case wallet(address: String)
         case extendedAddressInformation(address: String)
         case jettonWallets(ownerAddress: String, jettonMasterAddress: String)
         case jettonWalletsByAddress(walletAddress: String)
@@ -44,8 +43,6 @@ struct TonAPI: TargetType {
         switch endpoint {
         case .addressInformation:
             return "/ton/v3/addressInformation"
-        case .wallet:
-            return "/ton/v3/wallet"
         case .extendedAddressInformation:
             return "/ton/v2/getExtendedAddressInformation"
         case .jettonWallets, .jettonWalletsByAddress:
@@ -61,7 +58,7 @@ struct TonAPI: TargetType {
 
     var method: HTTPMethod {
         switch endpoint {
-        case .addressInformation, .wallet, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress, .jettonMasters:
+        case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress, .jettonMasters:
             return .get
         case .runGetMethod, .broadcastTransaction:
             return .post
@@ -72,8 +69,6 @@ struct TonAPI: TargetType {
         switch endpoint {
         case .addressInformation(let address):
             return .requestParameters(["address": address, "use_v2": "false"], .urlEncoding)
-        case .wallet(let address):
-            return .requestParameters(["address": address], .urlEncoding)
         case .extendedAddressInformation(let address):
             return .requestParameters(["address": address], .urlEncoding)
         case .jettonWallets(let owner, let master):
@@ -119,24 +114,6 @@ struct TonRunGetMethodRequest: Encodable {
 struct TonAddressInformation: Decodable {
     let balance: String?
     let status: String?
-}
-
-/// Response from the Vultisig proxy `/ton/v3/wallet` endpoint. Same shape the
-/// Windows client / SDK `getTonBalance` reads: the native `balance` plus any
-/// nominator-pool staking positions. `pools` is omitted by the backend when the
-/// wallet has no staked positions, so it decodes as an optional and the service
-/// normalizes a missing array to empty.
-struct TonWalletInformation: Decodable {
-    let balance: String?
-    let pools: [TonWalletPool]?
-}
-
-/// A single nominator-pool staking position. `address` is the pool contract
-/// (raw `0:…` form from the backend) and `amount` is the staked balance in
-/// nanotons, as a decimal string.
-struct TonWalletPool: Decodable {
-    let address: String
-    let amount: String
 }
 
 struct TonExtendedAddressInformation: Decodable {

@@ -68,18 +68,6 @@ class TonService {
         return response.data.balance ?? .zero
     }
 
-    /// Fetches the wallet's nominator-pool staking positions from the Vultisig
-    /// proxy `/ton/v3/wallet` endpoint. Each pool carries the pool contract
-    /// address plus the staked amount (nanotons). Returns an empty array when
-    /// the wallet has no staked positions (the backend omits `pools`).
-    func getStakedPools(address: String) async throws -> [TonWalletPool] {
-        let response = try await httpClient.request(
-            api(.wallet(address: address)),
-            responseType: TonWalletInformation.self
-        )
-        return response.data.pools ?? []
-    }
-
     /// Fetches computed staking-pool metadata (APY, name) from tonapi.io for a
     /// single nominator-pool contract. Returns `nil` on any failure so the
     /// caller can degrade gracefully — APY is decorative, never load-bearing.
@@ -103,6 +91,18 @@ class TonService {
         let response = try await httpClient.request(
             TonPublicAPI.stakingPools,
             responseType: TonStakingPoolsResponse.self
+        )
+        return response.data.pools
+    }
+
+    /// Fetches the account's nominator-pool positions from tonapi.io — the
+    /// authoritative source for staked positions (the Vultisig `/ton/v3/wallet`
+    /// `pools` field does not populate). Returns an empty array for accounts
+    /// with no nominator participation.
+    func getNominatorPools(address: String) async throws -> [TonAccountStakingInfo] {
+        let response = try await httpClient.request(
+            TonPublicAPI.nominatorPools(address: address),
+            responseType: TonAccountStakingResponse.self
         )
         return response.data.pools
     }

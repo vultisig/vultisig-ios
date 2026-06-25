@@ -3,7 +3,8 @@
 //  VultisigAppTests
 //
 //  Pins the TON pool picker's sort/filter contract and the decode of the
-//  tonapi.io `/v2/staking/pools` list response.
+//  tonapi.io `/v2/staking/pools` and `/v2/staking/nominator/{id}/pools`
+//  responses.
 //
 
 @testable import VultisigApp
@@ -18,7 +19,8 @@ final class TonPoolSelectionTests: XCTestCase {
         verified: Bool,
         current: Int? = 100,
         max: Int? = 30000,
-        minStake: Int64 = 50_000_000_000
+        minStake: Int64 = 50_000_000_000,
+        implementation: String = "whales"
     ) -> TonStakingPoolListEntry {
         TonStakingPoolListEntry(
             address: address,
@@ -28,7 +30,7 @@ final class TonPoolSelectionTests: XCTestCase {
             verified: verified,
             currentNominators: current,
             maxNominators: max,
-            implementation: "whales"
+            implementation: implementation
         )
     }
 
@@ -66,6 +68,28 @@ final class TonPoolSelectionTests: XCTestCase {
         let raw = [entry(address: "a", apy: 10, verified: true, minStake: 50_000_000_000)]
         let result = TonPoolSelectionViewModel.sortAndFilter(raw, decimals: 9)
         XCTAssertEqual(result.first?.minStake, 50)
+    }
+
+    func testSortAndFilterExcludesLiquidStakingPools() {
+        let raw = [
+            // Tonstakers-style liquid pool — highest APY, but must be dropped
+            // because our "d"/"w" deposit can't stake into it.
+            entry(address: "tonstakers", apy: 99, verified: true, implementation: "liquidTF"),
+            entry(address: "whales", apy: 13, verified: true, implementation: "whales"),
+            entry(address: "tf", apy: 17, verified: true, implementation: "tf")
+        ]
+        let result = TonPoolSelectionViewModel.sortAndFilter(raw, decimals: 9)
+        XCTAssertEqual(result.map(\.address), ["tf", "whales"])
+        XCTAssertFalse(result.contains { $0.address == "tonstakers" })
+    }
+
+    func testSortAndFilterExcludesUnknownImplementations() {
+        let raw = [
+            entry(address: "known", apy: 10, verified: true, implementation: "whales"),
+            entry(address: "mystery", apy: 50, verified: true, implementation: "somethingNew")
+        ]
+        let result = TonPoolSelectionViewModel.sortAndFilter(raw, decimals: 9)
+        XCTAssertEqual(result.map(\.address), ["known"])
     }
 
     // MARK: - Decode
@@ -108,5 +132,53 @@ final class TonPoolSelectionTests: XCTestCase {
         let model = TonStakingPool(entry: pool, decimals: 9)
         XCTAssertEqual(model.minStake, 50)
         XCTAssertTrue(model.hasCapacity)
+        XCTAssertTrue(model.isNominatorPool)
+    }
+
+    func testDecodeNominatorPoolsResponse() throws {
+        let json = """
+        {
+          "pools": [
+            {
+              "pool": "0:00ff9fdd8b3b80d70e8ea734d262f5e1bd4c184c33535bf3190dd67408629e7a",
+              "amount": 28152327,
+              "pending_deposit": 0,
+              "pending_withdraw": 28152327,
+              "ready_withdraw": 0
+            }
+          ]
+        }
+        """
+        let data = Data(json.utf8)
+        let response = try JSONDecoder().decode(TonAccountStakingResponse.self, from: data)
+        XCTAssertEqual(response.pools.count, 1)
+        let info = try XCTUnwrap(response.pools.first)
+        XCTAssertEqual(info.pool, "0:00ff9fdd8b3b80d70e8ea734d262f5e1bd4c184c33535bf3190dd67408629e7a")
+        XCTAssertEqual(info.amount, 28_152_327)
+        XCTAssertEqual(info.pendingDeposit, 0)
+        XCTAssertEqual(info.pendingWithdraw, 28_152_327)
+        XCTAssertEqual(info.readyWithdraw, 0)
+    }
+
+    func testDecodeEmptyNominatorPoolsResponse() throws {
+        let data = Data(#"{"pools":[]}"#.utf8)
+        let response = try JSONDecoder().decode(TonAccountStakingResponse.self, from: data)
+        XCTAssertTrue(response.pools.isEmpty)
+    }
+
+    /// A just-placed deposit sits in `pending_deposit` (active `amount` 0) until
+    /// the next validation cycle — it must still count toward the visible
+    /// position so the user doesn't "see nothing" right after staking.
+    func testPendingDepositOnlyStillProducesVisiblePosition() {
+        let info = TonAccountStakingInfo(
+            pool: "0:abc",
+            amount: 0,
+            pendingDeposit: 1_000_000_000, // 1 TON pending
+            pendingWithdraw: 0,
+            readyWithdraw: 0
+        )
+        let total = Decimal(info.amount) + Decimal(info.pendingDeposit)
+        XCTAssertGreaterThan(total, 0)
+        XCTAssertEqual(total / pow(Decimal(10), 9), 1)
     }
 }

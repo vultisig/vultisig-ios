@@ -23,6 +23,18 @@ struct TonStakingPool: Equatable, Hashable {
     let maxNominators: Int?
     let implementation: String?
 
+    /// tonapi `implementation` values that are genuine **nominator pools** — the
+    /// only ones our `"d"`/`"w"` text-comment deposit mechanism can stake into.
+    /// `liquidTF` (Tonstakers and similar) mints a jetton instead and must be
+    /// excluded; unknown implementations are treated as non-nominator (excluded).
+    static let nominatorImplementations: Set<String> = ["whales", "tf"]
+
+    /// Whether this is a nominator pool our deposit mechanism supports.
+    var isNominatorPool: Bool {
+        guard let implementation else { return false }
+        return Self.nominatorImplementations.contains(implementation)
+    }
+
     /// Whether the pool has room for another nominator. Pools at capacity are
     /// hidden from the picker since a stake to them would be rejected.
     var hasCapacity: Bool {

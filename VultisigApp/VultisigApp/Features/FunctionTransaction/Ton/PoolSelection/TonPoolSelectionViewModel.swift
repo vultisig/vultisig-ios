@@ -53,13 +53,16 @@ final class TonPoolSelectionViewModel: ObservableObject {
         }
     }
 
-    /// Keeps verified pools that still have nominator capacity, sorted by APY
-    /// descending. Surfaced as a static helper so tests can pin the
-    /// sort/filter contract independent of the network layer.
+    /// Keeps verified **nominator** pools that still have capacity, sorted by
+    /// APY descending. Liquid-staking pools (e.g. Tonstakers / `liquidTF`) are
+    /// excluded because our `"d"`/`"w"` deposit mechanism can't stake into them.
+    /// Surfaced as a static helper so tests can pin the sort/filter contract
+    /// independent of the network layer.
     static func sortAndFilter(_ raw: [TonStakingPoolListEntry], decimals: Int) -> [TonStakingPool] {
         raw
             .filter { $0.verified }
             .map { TonStakingPool(entry: $0, decimals: decimals) }
+            .filter { $0.isNominatorPool }
             .filter { $0.hasCapacity }
             .sorted { $0.apy > $1.apy }
     }

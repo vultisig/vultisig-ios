@@ -16,10 +16,12 @@ private struct TonStakeSnapshot {
 }
 
 /// Builds the user's TON nominator-pool staking positions for the DeFi tab.
-/// Positions come from the Vultisig proxy `/ton/v3/wallet` endpoint (staked
-/// amount + pool contract address); APY is decorated from tonapi.io and
-/// degrades to "no APR" when unavailable. Standard nominator pools support full
-/// withdrawal only, so the position carries no partial-unstake metadata.
+/// Positions come from tonapi's nominator endpoint (`/v2/staking/nominator/
+/// {address}/pools`) — the authoritative source, since the Vultisig
+/// `/ton/v3/wallet` `pools` field does not populate. APY is decorated from
+/// tonapi.io and degrades to "no APR" when unavailable. Standard nominator
+/// pools support full withdrawal only, so the position carries no
+/// partial-unstake metadata.
 struct TonStakeInteractor: StakeInteractor {
     private let service = TonService.shared
 
@@ -31,33 +33,35 @@ struct TonStakeInteractor: StakeInteractor {
             return []
         }
 
-        let pools: [TonWalletPool]
+        let pools: [TonAccountStakingInfo]
         do {
-            pools = try await service.getStakedPools(address: snapshot.address)
+            pools = try await service.getNominatorPools(address: snapshot.address)
         } catch {
-            logger.error("Error fetching TON staking pools: \(error.localizedDescription, privacy: .private)")
+            logger.error("Error fetching TON nominator pools: \(error.localizedDescription, privacy: .private)")
             return []
         }
 
         // The persisted stake row is keyed by `coin`, and a TON wallet stakes
         // into a single nominator pool at a time, so aggregate into one
-        // position. Picking the largest stake keeps the primary pool's address
-        // (used for add-more / unstake) when more than one is ever returned.
-        let divisor = pow(Decimal(10), snapshot.decimals)
-        guard let primary = pools.max(by: {
-            (Decimal(string: $0.amount) ?? 0) < (Decimal(string: $1.amount) ?? 0)
-        }) else {
+        // position. Pick the pool with the largest total stake (active +
+        // pending) and keep its address for add-more / unstake.
+        guard let primary = pools.max(by: { totalStake($0) < totalStake($1) }) else {
             return [StakePositionData(coin: snapshot.meta, type: .stake, amount: 0)]
         }
 
-        let stakedAmount = (Decimal(string: primary.amount) ?? 0) / divisor
+        // Include `pending_deposit`: a fresh nominator deposit sits there until
+        // the next validation cycle (hours), so a just-placed stake must still
+        // be visible rather than vanishing right after staking.
+        let divisor = pow(Decimal(10), snapshot.decimals)
+        let stakedAmount = totalStake(primary) / divisor
+
         let normalizedAddress = TONAddressConverter.toUserFriendly(
-            address: primary.address,
+            address: primary.pool,
             bounceable: true,
             testnet: false
-        ) ?? primary.address
+        ) ?? primary.pool
 
-        let poolInfo = await service.getStakingPoolInfo(poolAddress: primary.address)
+        let poolInfo = await service.getStakingPoolInfo(poolAddress: primary.pool)
         // tonapi reports `apy` as a percentage (13.27 → 13.27%); the staking
         // card formats with `.percent`, which expects the fraction.
         let apr: Double? = poolInfo?.apy.map { $0 / 100 }
@@ -71,6 +75,12 @@ struct TonStakeInteractor: StakeInteractor {
                 poolAddress: normalizedAddress
             )
         ]
+    }
+
+    /// Active stake plus the just-placed deposit awaiting the next validation
+    /// cycle, in nanotons.
+    private func totalStake(_ info: TonAccountStakingInfo) -> Decimal {
+        Decimal(info.amount) + Decimal(info.pendingDeposit)
     }
 }
 
