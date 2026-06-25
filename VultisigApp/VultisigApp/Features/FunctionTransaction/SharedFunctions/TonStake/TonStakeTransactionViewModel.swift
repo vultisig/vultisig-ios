@@ -81,7 +81,11 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
     init(coin: Coin, vault: Vault, existingPoolAddress: String?, existingPoolImplementation: String? = nil) {
         self.coin = coin
         self.vault = vault
-        self.existingPoolAddress = existingPoolAddress
+        // Normalize a blank/whitespace address to `nil` so an empty string is not
+        // mistaken for a resolved add-more pool (which would let `transactionBuilder`
+        // build a transfer to an empty destination).
+        let trimmed = existingPoolAddress?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.existingPoolAddress = (trimmed?.isEmpty == false) ? trimmed : nil
         self.existingPoolImplementation = existingPoolImplementation
     }
 

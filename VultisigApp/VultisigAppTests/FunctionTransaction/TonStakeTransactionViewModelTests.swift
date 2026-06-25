@@ -8,6 +8,7 @@
 //
 
 @testable import VultisigApp
+import WalletCore
 import XCTest
 
 @MainActor
@@ -81,6 +82,20 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         XCTAssertTrue(vm.hasDestinationPool)
     }
 
+    /// A blank/whitespace `existingPoolAddress` must be treated as unresolved
+    /// (first-time stake), not as a valid add-more destination — otherwise the
+    /// builder could send to an empty address.
+    func testBlankExistingPoolAddressIsTreatedAsFirstTimeStake() {
+        let vm = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: "   "
+        )
+        XCTAssertTrue(vm.isFirstTimeStake)
+        XCTAssertNil(vm.destinationPoolAddress)
+        XCTAssertFalse(vm.hasDestinationPool)
+    }
+
     func testMinStakeDrivenByPickedPool() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
@@ -109,19 +124,25 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
     /// rejected deposit bounces back instead of being absorbed by the pool. The
     /// staking API hands us raw `0:` addresses, which the signer would otherwise
     /// treat as non-bounceable.
+    /// The exact canonical bounceable (`EQ…`) form of `rawPool`, so the tests
+    /// prove normalization to the right address — not merely an `E…` prefix that
+    /// a wrong friendly variant could also satisfy.
+    private static let rawPool = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a"
+    private static let expectedBounceablePool = TONAddressConverter.toUserFriendly(
+        address: rawPool, bounceable: true, testnet: false
+    )
+
     func testStakeBuilderNormalizesPoolAddressToBounceable() {
-        let rawPool = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a"
-        let builder = TonStakeTransactionBuilder(coin: makeTonCoin(), amount: "50", poolAddress: rawPool, memo: "Stake")
-        XCTAssertTrue(builder.toAddress.hasPrefix("E"), "stake destination must be bounceable EQ form, got \(builder.toAddress)")
-        XCTAssertNotEqual(builder.toAddress, rawPool)
+        let builder = TonStakeTransactionBuilder(coin: makeTonCoin(), amount: "50", poolAddress: Self.rawPool, memo: "Stake")
+        XCTAssertEqual(builder.toAddress, Self.expectedBounceablePool, "stake destination must be the canonical bounceable EQ form")
+        XCTAssertNotEqual(builder.toAddress, Self.rawPool)
         XCTAssertEqual(builder.memoFunctionDictionary.get("nodeAddress"), builder.toAddress)
     }
 
     func testUnstakeBuilderNormalizesPoolAddressToBounceable() {
-        let rawPool = "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a"
-        let builder = TonUnstakeTransactionBuilder(coin: makeTonCoin(), amount: "1", poolAddress: rawPool, memo: "Withdraw")
-        XCTAssertTrue(builder.toAddress.hasPrefix("E"), "unstake destination must be bounceable EQ form, got \(builder.toAddress)")
-        XCTAssertNotEqual(builder.toAddress, rawPool)
+        let builder = TonUnstakeTransactionBuilder(coin: makeTonCoin(), amount: "1", poolAddress: Self.rawPool, memo: "Withdraw")
+        XCTAssertEqual(builder.toAddress, Self.expectedBounceablePool, "unstake destination must be the canonical bounceable EQ form")
+        XCTAssertNotEqual(builder.toAddress, Self.rawPool)
     }
 
     // MARK: - Per-implementation deposit comment resolution
@@ -171,7 +192,9 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
     }
 
     /// An unknown/unsupported implementation resolves no comment, so no builder
-    /// is produced — the build is blocked rather than guessing a comment.
+    /// is produced — the build is blocked rather than guessing a comment. The
+    /// form is primed with a valid amount first so the `nil` builder is proven to
+    /// stem from the unsupported implementation, not from invalid form state.
     func testUnsupportedImplementationBlocksBuilder() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),
@@ -179,8 +202,10 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
             existingPoolAddress: Self.poolAddress,
             existingPoolImplementation: "liquidTF"
         )
+        vm.onLoad()
+        vm.amountField.value = "100" // clears the min-stake + balance validators
         XCTAssertNil(vm.depositComment)
-        XCTAssertNil(vm.transactionBuilder)
+        XCTAssertNil(vm.transactionBuilder, "builder must stay nil because the implementation is unsupported, not the form state")
     }
 
     func testMaxStakeableReservesNetworkFee() {
