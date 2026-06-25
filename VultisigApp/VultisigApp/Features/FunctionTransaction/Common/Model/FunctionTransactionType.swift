@@ -29,6 +29,14 @@ enum FunctionTransactionType: Hashable {
     /// the existing pool the position is staked into; `stakedAmount` is shown
     /// for confirmation (full withdrawal only).
     case tonUnstake(coin: CoinMeta, poolAddress: String, stakedAmount: Decimal)
+    /// Tonstakers (TON liquid staking) deposit — send TON to the Tonstakers pool
+    /// with the 0x47d54391 body; receive tsTON. `coin` is the tsTON position
+    /// coin (the native TON balance funds the stake).
+    case tonLiquidStake(coin: CoinMeta)
+    /// Tonstakers (TON liquid staking) unstake — burn tsTON via the user's tsTON
+    /// jetton wallet. `stakedAmount` is the TON-valued position shown for
+    /// confirmation.
+    case tonLiquidUnstake(coin: CoinMeta, stakedAmount: Decimal)
 
     var coins: [CoinMeta] {
         switch self {
@@ -61,6 +69,10 @@ enum FunctionTransactionType: Hashable {
         case .tonStake(let coin, _):
             return [coin]
         case .tonUnstake(let coin, _, _):
+            return [coin]
+        case .tonLiquidStake(let coin):
+            return [coin]
+        case .tonLiquidUnstake(let coin, _):
             return [coin]
         }
     }

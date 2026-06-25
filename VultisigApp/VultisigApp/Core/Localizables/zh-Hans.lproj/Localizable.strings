@@ -1169,6 +1169,11 @@
 "today" = "今天";
 "tokens" = "代币";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeNotice" = "通过 Tonstakers 质押 TON 并获得 tsTON。最低 1 TON；请保留部分 TON 用于支付手续费。";
+"tonstakersStakeTitle" = "通过 Tonstakers 质押";
+"tonstakersUnstakeNotice" = "销毁您的 tsTON 以赎回 TON。当有流动性时，Tonstakers 会立即返还 TON，否则约 18 小时内返还。";
+"tonstakersUnstakeTitle" = "取消 Tonstakers 质押";
 "tonStakingAPY" = "年化收益";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "最低 %@ %@";

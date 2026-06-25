@@ -203,6 +203,12 @@ struct SendTransaction: Hashable {
     /// Local-only on iOS — does not round-trip through the proto-mappable
     /// `KeysignMessage` bridge (same posture as `qbtcClaimPayload`).
     let cosmosStakingPayload: CosmosStakingPayload?
+
+    /// TonConnect-style message intent for the Tonstakers liquid-staking flows
+    /// (deposit / unstake). Non-nil only for those flows; the Verify →
+    /// KeysignPayload bridge turns it into `.signTon(...)`. Local-only (same
+    /// posture as `cosmosStakingPayload`).
+    let tonStakePayload: TonStakePayload?
 }
 
 extension SendTransaction {
@@ -227,7 +233,8 @@ extension SendTransaction {
             lhs.memoFunctionDictionary == rhs.memoFunctionDictionary &&
             lhs.wasmContractPayload == rhs.wasmContractPayload &&
             lhs.feeCoinSnapshot == rhs.feeCoinSnapshot &&
-            lhs.cosmosStakingPayload == rhs.cosmosStakingPayload
+            lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
+            lhs.tonStakePayload == rhs.tonStakePayload
     }
 
     func hash(into hasher: inout Hasher) {
@@ -252,6 +259,7 @@ extension SendTransaction {
         hasher.combine(wasmContractPayload)
         hasher.combine(feeCoinSnapshot)
         hasher.combine(cosmosStakingPayload)
+        hasher.combine(tonStakePayload)
     }
 }
 
@@ -277,7 +285,8 @@ extension SendTransaction {
         memoFunctionDictionary: [String: String],
         wasmContractPayload: WasmExecuteContractPayload?,
         feeCoin: Coin,
-        cosmosStakingPayload: CosmosStakingPayload? = nil
+        cosmosStakingPayload: CosmosStakingPayload? = nil,
+        tonStakePayload: TonStakePayload? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -303,6 +312,7 @@ extension SendTransaction {
         self.feeCoin = feeCoin
         self.feeCoinSnapshot = SendCoinSnapshot(coin: feeCoin)
         self.cosmosStakingPayload = cosmosStakingPayload
+        self.tonStakePayload = tonStakePayload
     }
 }
 
@@ -370,7 +380,8 @@ extension SendTransaction {
         memoFunctionDictionary: [String: String]? = nil,
         wasmContractPayload: SendTransactionUpdate<WasmExecuteContractPayload?>? = nil,
         feeCoin: Coin? = nil,
-        cosmosStakingPayload: SendTransactionUpdate<CosmosStakingPayload?>? = nil
+        cosmosStakingPayload: SendTransactionUpdate<CosmosStakingPayload?>? = nil,
+        tonStakePayload: SendTransactionUpdate<TonStakePayload?>? = nil
     ) -> SendTransaction {
         let resolvedVault = vault ?? self.vault
         let resolvedCoin = coin ?? self.coin
@@ -398,6 +409,10 @@ extension SendTransaction {
             guard let cosmosStakingPayload else { return self.cosmosStakingPayload }
             return cosmosStakingPayload.value
         }()
+        let resolvedTonStakePayload: TonStakePayload? = {
+            guard let tonStakePayload else { return self.tonStakePayload }
+            return tonStakePayload.value
+        }()
         return SendTransaction(
             coin: resolvedCoin,
             vault: resolvedVault,
@@ -419,7 +434,8 @@ extension SendTransaction {
             memoFunctionDictionary: memoFunctionDictionary ?? self.memoFunctionDictionary,
             wasmContractPayload: resolvedWasmContractPayload,
             feeCoin: feeCoin ?? self.feeCoin,
-            cosmosStakingPayload: resolvedCosmosStakingPayload
+            cosmosStakingPayload: resolvedCosmosStakingPayload,
+            tonStakePayload: resolvedTonStakePayload
         )
     }
 

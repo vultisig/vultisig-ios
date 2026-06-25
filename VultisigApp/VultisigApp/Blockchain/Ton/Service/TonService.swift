@@ -107,6 +107,51 @@ class TonService {
         return response.data.pools
     }
 
+    /// Resolves the tsTON→TON conversion rate for the Tonstakers liquid-staking
+    /// position: `pool.total_amount (nanoTON) ÷ tsTON total_supply (base units)`.
+    /// Both have 9 decimals so the ratio is a plain TON-per-tsTON multiplier
+    /// (≈ 1.12 live, growing with rewards).
+    ///
+    /// We use this on-chain-derived ratio rather than a price-feed quote so the
+    /// position value tracks the actual redeemable TON. Degrades to `1.0` if
+    /// either fetch fails or returns non-positive values — never prices the
+    /// position to zero on a transient API error.
+    func getTonstakersRate() async -> Decimal {
+        async let poolInfo = getStakingPoolInfo(poolAddress: TonstakersConstants.poolAddress)
+        async let supply = getTsTONSupply()
+
+        guard
+            let totalAmount = await poolInfo?.totalAmount, totalAmount > 0,
+            let tsTONSupply = await supply, tsTONSupply > 0
+        else {
+            return 1
+        }
+        return Decimal(totalAmount) / tsTONSupply
+    }
+
+    /// Reads the tsTON jetton master's `total_supply` (base units) from the
+    /// Toncenter v3 `/jetton/masters` endpoint. Returns `nil` on any failure so
+    /// the rate falls back to `1.0`.
+    private func getTsTONSupply() async -> Decimal? {
+        do {
+            let response = try await httpClient.request(
+                api(.jettonMasters(jettonAddress: TonstakersConstants.tsTONMasterAddress)),
+                responseType: JettonMastersResponse.self
+            )
+            guard
+                let supplyString = response.data.jetton_masters.first?.total_supply,
+                let supply = Decimal(string: supplyString),
+                supply > 0
+            else {
+                return nil
+            }
+            return supply
+        } catch {
+            logger.error("Failed to fetch tsTON supply: \(error.localizedDescription, privacy: .private)")
+            return nil
+        }
+    }
+
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             return try await getTONBalance(address: address)

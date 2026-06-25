@@ -1169,6 +1169,11 @@
 "today" = "Danas";
 "tokens" = "Tokeni";
 "tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeNotice" = "Stakeaj TON putem Tonstakersa i primi tsTON. Najmanje 1 TON; zadrži nešto TON-a za naknade.";
+"tonstakersStakeTitle" = "Stakeaj putem Tonstakersa";
+"tonstakersUnstakeNotice" = "Spaljuje tvoj tsTON za otkup TON-a. Tonstakers vraća TON odmah kada je likvidnost dostupna, inače unutar ~18 h.";
+"tonstakersUnstakeTitle" = "Povuci s Tonstakersa";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "min %@ %@";

@@ -1169,6 +1169,11 @@
 "today" = "Oggi";
 "tokens" = "Token";
 "tonStakeBelowMinimum" = "Lo stake minimo è %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeNotice" = "Fai staking di TON con Tonstakers e ricevi tsTON. Minimo 1 TON; tieni un po' di TON per le commissioni.";
+"tonstakersStakeTitle" = "Fai staking con Tonstakers";
+"tonstakersUnstakeNotice" = "Brucia i tuoi tsTON per riscattare TON. Tonstakers restituisce TON immediatamente se c'è liquidità, altrimenti entro ~18 h.";
+"tonstakersUnstakeTitle" = "Annulla staking Tonstakers";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "min %@ %@";

@@ -34,6 +34,8 @@ struct DefiChainStakedPositionView: View {
             String(format: "compoundedCoin".localized, position.coin.ticker)
         case .index:
             position.coin.ticker
+        case .liquid:
+            "tonstakersPositionLabel".localized
         }
     }
 
@@ -206,6 +208,11 @@ struct DefiChainStakedPositionView: View {
             }
         case .index:
             indexButtonsView
+        case .liquid:
+            // Liquid staking (Tonstakers): stake more / unstake. No rewards
+            // claim — rewards accrue into the tsTON rate, not a claimable
+            // balance.
+            defaultButtonsView
         }
     }
 

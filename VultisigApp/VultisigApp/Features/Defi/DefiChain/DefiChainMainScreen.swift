@@ -261,6 +261,12 @@ struct DefiChainMainScreen: View {
 
     func onStake(position: StakePosition) {
         if position.coin.chain == .ton {
+            if position.type == .liquid {
+                // Tonstakers deposit spends native TON; the position coin is
+                // tsTON only for display/keying.
+                onTransactionToPresent(.tonLiquidStake(coin: TokensStore.ton))
+                return
+            }
             // Add-more reuses the existing pool; a first-time stake (no pool yet)
             // routes with `nil` so the screen prompts for the pool address.
             onTransactionToPresent(.tonStake(coin: position.coin, poolAddress: position.poolAddress))
@@ -273,11 +279,24 @@ struct DefiChainMainScreen: View {
             onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), isAutocompound: true))
         case .index:
             onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
+        case .liquid:
+            // Liquid staking is TON-only and handled by the early TON branch
+            // above; unreachable here.
+            break
         }
     }
 
     func onUnstake(position: StakePosition) {
         if position.coin.chain == .ton {
+            if position.type == .liquid {
+                // The burn spends native TON for gas (the tsTON rides in the
+                // body); route with the native coin and show the TON-valued
+                // position for confirmation.
+                onTransactionToPresent(
+                    .tonLiquidUnstake(coin: TokensStore.ton, stakedAmount: position.amount)
+                )
+                return
+            }
             guard let poolAddress = position.poolAddress, !poolAddress.isEmpty else { return }
             onTransactionToPresent(
                 .tonUnstake(
@@ -307,6 +326,10 @@ struct DefiChainMainScreen: View {
             )
         case .index:
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
+        case .liquid:
+            // Liquid staking is TON-only and handled by the early TON branch
+            // above; unreachable here.
+            break
         }
     }
 

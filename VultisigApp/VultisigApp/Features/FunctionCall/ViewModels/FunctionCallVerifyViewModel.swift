@@ -125,6 +125,16 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 
+            // TON liquid-staking (Tonstakers) branch — the deposit / unstake
+            // bodies are app-built BOCs routed through the TonConnect
+            // `customPayload` signing path. Attaching `.signTon` makes
+            // `TonHelper.buildTransfers` thread each message's `payload` as the
+            // transfer's `customPayload`, so both MPC devices sign the identical
+            // body instead of a plain transfer.
+            if let tonStakePayload = tx.tonStakePayload {
+                return basePayload.withSignData(.signTon(SignTon(tonMessages: tonStakePayload.messages)))
+            }
+
             return basePayload
         } catch {
             let errorMessage: String

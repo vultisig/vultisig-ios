@@ -105,6 +105,11 @@ enum StakePositionType: String, Codable, Equatable {
     case stake
     case compound
     case index
+    /// Liquid staking: the user holds a receipt jetton (e.g. Tonstakers tsTON)
+    /// whose value tracks the underlying staked asset plus rewards. Distinct
+    /// from `.stake` so the DeFi screen routes deposit/unstake through the
+    /// liquid-staking flow instead of the nominator-pool flow.
+    case liquid
 
     static func defaultType(for coin: CoinMeta) -> StakePositionType {
         switch coin.ticker.uppercased() {
@@ -112,6 +117,8 @@ enum StakePositionType: String, Codable, Equatable {
             return .compound
         case "YRUNE", "YTCY":
             return .index
+        case "TSTON":
+            return .liquid
         default:
             return .stake
         }

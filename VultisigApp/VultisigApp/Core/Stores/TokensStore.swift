@@ -2129,6 +2129,20 @@ class TokensStore {
         isNativeToken: true
     )
 
+    /// Tonstakers liquid-staking receipt jetton (tsTON). Used as the staking
+    /// asset for the DeFi tab's Tonstakers position — pricing the position as
+    /// `tsTON balance × tsTON→TON rate` and keying its `StakePosition`
+    /// distinctly from the native-TON nominator position.
+    static let tston: CoinMeta = CoinMeta(
+        chain: .ton,
+        ticker: "tsTON",
+        logo: "tston",
+        decimals: TonstakersConstants.tsTONDecimals,
+        priceProviderId: TonstakersConstants.tsTONPriceProviderId,
+        contractAddress: TonstakersConstants.tsTONMasterAddress,
+        isNativeToken: false
+    )
+
     static let ruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUJI",

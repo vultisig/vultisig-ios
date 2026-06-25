@@ -20,6 +20,10 @@ protocol TransactionBuilder {
     /// the per-flow Cosmos staking builders (delegate, undelegate, redelegate,
     /// withdrawRewards); every other builder uses the default `nil`.
     var cosmosStakingPayload: CosmosStakingPayload? { get }
+    /// TonConnect-style message intent for the Tonstakers liquid-staking flows.
+    /// Populated only by the TON liquid stake / unstake builders; every other
+    /// builder uses the default `nil`.
+    var tonStakePayload: TonStakePayload? { get }
 }
 
 extension TransactionBuilder {
@@ -27,6 +31,9 @@ extension TransactionBuilder {
     /// requirement defaulted means every existing `TransactionBuilder`
     /// conformer compiles unchanged.
     var cosmosStakingPayload: CosmosStakingPayload? { nil }
+
+    /// Default — only the TON liquid-staking builders override this.
+    var tonStakePayload: TonStakePayload? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly. `gas` /
     /// `fee` and runtime-only fields default to the construction-time
@@ -54,7 +61,8 @@ extension TransactionBuilder {
             memoFunctionDictionary: memoFunctionDictionary.allItems(),
             wasmContractPayload: wasmContractPayload,
             feeCoin: SendTransaction.resolveFeeCoin(coin: coin, vault: vault),
-            cosmosStakingPayload: cosmosStakingPayload
+            cosmosStakingPayload: cosmosStakingPayload,
+            tonStakePayload: tonStakePayload
         )
     }
 }

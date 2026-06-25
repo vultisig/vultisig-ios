@@ -1143,6 +1143,11 @@
 "today" = "오늘";
 "tokens" = "토큰";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeNotice" = "Tonstakers로 TON을 스테이킹하고 tsTON을 받으세요. 최소 1 TON이며, 수수료를 위해 약간의 TON을 남겨두세요.";
+"tonstakersStakeTitle" = "Tonstakers로 스테이킹";
+"tonstakersUnstakeNotice" = "tsTON을 소각하여 TON을 상환합니다. 유동성이 있으면 Tonstakers가 즉시 TON을 반환하며, 그렇지 않으면 약 18시간 이내에 반환합니다.";
+"tonstakersUnstakeTitle" = "Tonstakers 언스테이킹";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "최소 %@ %@";

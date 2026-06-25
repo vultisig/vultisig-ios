@@ -106,10 +106,17 @@ struct TonStakingPoolInfo: Decodable {
     let name: String?
     let apy: Double?
     let minStake: Int64?
+    /// Total TON managed by the pool, in nanotons. Numerator of the
+    /// tsTON→TON rate (`total_amount ÷ tsTON total_supply`).
+    let totalAmount: Int64?
+    /// tsTON jetton master (`liquid_jetton_master`) reported by the pool.
+    let liquidJettonMaster: String?
 
     private enum CodingKeys: String, CodingKey {
         case address, name, apy
         case minStake = "min_stake"
+        case totalAmount = "total_amount"
+        case liquidJettonMaster = "liquid_jetton_master"
     }
 }
 
