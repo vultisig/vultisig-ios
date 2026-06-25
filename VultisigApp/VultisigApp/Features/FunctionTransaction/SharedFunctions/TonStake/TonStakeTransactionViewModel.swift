@@ -38,10 +38,22 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
     /// require far more; this only guards against dust stakes.
     static let defaultMinStake: Decimal = 1
 
-    /// Minimum stake (human-decimal TON) the amount must clear: the selected
-    /// pool's `min_stake` once picked, otherwise the conservative floor.
+    /// TON nominator pools deduct a ~1 TON processing commission on deposit, so
+    /// the sent amount must clear the pool minimum PLUS this buffer — depositing
+    /// exactly `min_stake` is rejected by the pool contract (which, sent
+    /// bounceable, returns the funds rather than crediting a position).
+    static let depositFeeBuffer: Decimal = 1
+
+    /// Pool minimum (human-decimal TON): the selected pool's `min_stake` once
+    /// picked, otherwise the conservative floor.
     var minStake: Decimal {
         selectedPool?.minStake ?? Self.defaultMinStake
+    }
+
+    /// Effective minimum the amount must clear: the pool minimum plus the
+    /// deposit-processing buffer.
+    var requiredMinStake: Decimal {
+        minStake + Self.depositFeeBuffer
     }
 
     var isFirstTimeStake: Bool { existingPoolAddress == nil }
@@ -75,8 +87,8 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
             ClosureValidator { [weak self] value in
                 guard let self else { return }
                 let amount = value.toDecimal()
-                if amount < self.minStake {
-                    throw MinStakeError.belowMinimum(self.minStake, self.coin.chain.ticker)
+                if amount < self.requiredMinStake {
+                    throw MinStakeError.belowMinimum(self.requiredMinStake, self.coin.chain.ticker)
                 }
             }
         )
