@@ -668,6 +668,7 @@
 "mintCoin" = "Cunhar %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
 "modules" = "Módulos";
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";

@@ -674,6 +674,7 @@
 "mintCoin" = "Mint %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "modules" = "Modules";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
