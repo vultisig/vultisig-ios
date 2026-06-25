@@ -1184,6 +1184,7 @@
 "tonStakingPoolPicker" = "Pool";
 "tonStakingSelectPool" = "Select Pool";
 "tonUnstakeFullWithdrawalNotice" = "TON nominator pools support full withdrawal only. Your entire stake will be unstaked.";
+"tonWithdrawalPendingMessage" = "Withdrawal in progress. Your %@ will be unlocked around %@.";
 "totalFee" = "Total Fee";
 "track" = "Track";
 "transaction" = "Transaction";

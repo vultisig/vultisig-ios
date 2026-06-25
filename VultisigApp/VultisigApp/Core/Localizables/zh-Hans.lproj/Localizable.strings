@@ -1176,6 +1176,7 @@
 "tonStakingPoolPicker" = "矿池";
 "tonStakingSelectPool" = "选择矿池";
 "tonUnstakeFullWithdrawalNotice" = "TON 提名人矿池仅支持全额提取。您的全部质押将被取消质押。";
+"tonWithdrawalPendingMessage" = "提现进行中。您的 %@ 将在 %@ 左右解锁。";
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";

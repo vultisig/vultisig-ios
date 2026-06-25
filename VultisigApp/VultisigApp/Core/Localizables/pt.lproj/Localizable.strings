@@ -1176,6 +1176,7 @@
 "tonStakingPoolPicker" = "Pool";
 "tonStakingSelectPool" = "Selecionar Pool";
 "tonUnstakeFullWithdrawalNotice" = "Os pools de nominadores TON suportam apenas o levantamento total. Todo o seu stake será retirado.";
+"tonWithdrawalPendingMessage" = "Saque em andamento. Seu %@ será desbloqueado por volta de %@.";
 "totalFee" = "Taxa total";
 "track" = "Acompanhar";
 "transaction" = "Transação";

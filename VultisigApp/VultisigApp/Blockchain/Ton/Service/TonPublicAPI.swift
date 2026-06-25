@@ -109,10 +109,15 @@ struct TonStakingPoolInfo: Decodable {
     /// Pool implementation (`whales`, `tf`, `liquidTF`, …) — drives the
     /// deposit/withdraw comment for add-more / unstake transactions.
     let implementation: String?
+    /// Unix timestamp (seconds) when the current validation cycle ends — i.e.
+    /// when a pending nominator withdrawal becomes claimable / the locked funds
+    /// are returned. Used to tell the user roughly when their withdrawal unlocks.
+    let cycleEnd: Int64?
 
     private enum CodingKeys: String, CodingKey {
         case address, name, apy, implementation
         case minStake = "min_stake"
+        case cycleEnd = "cycle_end"
     }
 }
 

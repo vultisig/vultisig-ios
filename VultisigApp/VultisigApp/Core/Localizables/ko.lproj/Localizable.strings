@@ -1150,6 +1150,7 @@
 "tonStakingPoolPicker" = "풀";
 "tonStakingSelectPool" = "풀 선택";
 "tonUnstakeFullWithdrawalNotice" = "TON 노미네이터 풀은 전액 인출만 지원합니다. 전체 스테이킹이 해제됩니다.";
+"tonWithdrawalPendingMessage" = "출금 진행 중입니다. %@은(는) %@경에 잠금 해제됩니다.";
 "totalFee" = "총 수수료";
 "track" = "추적";
 "transaction" = "트랜잭션";

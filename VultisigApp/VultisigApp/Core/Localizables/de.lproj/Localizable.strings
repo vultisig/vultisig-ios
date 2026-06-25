@@ -1176,6 +1176,7 @@
 "tonStakingPoolPicker" = "Pool";
 "tonStakingSelectPool" = "Pool auswählen";
 "tonUnstakeFullWithdrawalNotice" = "TON-Nominator-Pools unterstützen nur die vollständige Auszahlung. Dein gesamter Einsatz wird entstaked.";
+"tonWithdrawalPendingMessage" = "Abhebung läuft. Dein %@ wird etwa am %@ freigegeben.";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";

@@ -1176,6 +1176,7 @@
 "tonStakingPoolPicker" = "Pool";
 "tonStakingSelectPool" = "Odaberi Pool";
 "tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
+"tonWithdrawalPendingMessage" = "Povlačenje u tijeku. Vaš %@ bit će otključan oko %@.";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";

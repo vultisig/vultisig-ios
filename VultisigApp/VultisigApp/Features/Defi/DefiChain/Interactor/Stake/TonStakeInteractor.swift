@@ -66,6 +66,16 @@ struct TonStakeInteractor: StakeInteractor {
         // card formats with `.percent`, which expects the fraction.
         let apr: Double? = poolInfo?.apy.map { $0 / 100 }
 
+        // A nominator withdrawal is two-step/cyclic: the first unstake REQUESTS
+        // the withdrawal (`pending_withdraw`) and the funds stay locked until the
+        // validation cycle ends, after which they become claimable
+        // (`ready_withdraw`). While either is set, block both staking more and
+        // unstaking again, and surface roughly when the funds unlock.
+        let withdrawalPending = primary.pendingWithdraw > 0 || primary.readyWithdraw > 0
+        let withdrawalUnlockTime: TimeInterval? = withdrawalPending
+            ? poolInfo?.cycleEnd.map(TimeInterval.init)
+            : nil
+
         return [
             StakePositionData(
                 coin: snapshot.meta,
@@ -74,7 +84,9 @@ struct TonStakeInteractor: StakeInteractor {
                 apr: apr,
                 poolAddress: normalizedAddress,
                 poolImplementation: poolInfo?.implementation,
-                poolName: poolInfo?.name
+                poolName: poolInfo?.name,
+                canStake: !withdrawalPending,
+                withdrawalUnlockTime: withdrawalUnlockTime
             )
         ]
     }
