@@ -14,8 +14,8 @@ import WalletCore
 /// `whales` pools), so it is resolved by the caller and passed in.
 struct TonUnstakeTransactionBuilder: TransactionBuilder {
     let coin: Coin
-    /// Amount accompanying the withdraw message (1 TON). The pool returns the
-    /// staked balance separately.
+    /// Amount accompanying the withdraw message (the 0.2 TON withdraw fee). The
+    /// pool returns the staked balance separately.
     let amount: String
     let sendMaxAmount: Bool = false
     let poolAddress: String

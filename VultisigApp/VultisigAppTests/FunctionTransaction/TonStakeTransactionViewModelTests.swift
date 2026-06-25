@@ -217,6 +217,44 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         let builder = try? XCTUnwrap(vm.transactionBuilder as? TonUnstakeTransactionBuilder)
         XCTAssertEqual(builder?.memo, "Withdraw")
         XCTAssertTrue(builder?.toAddress.hasPrefix("E") ?? false)
+        // The withdraw carries the 0.2 TON deposit/withdraw fee, not 1 TON.
+        XCTAssertEqual(builder?.amount, Self.expectedWithdrawalSignalAmount)
+    }
+
+    /// The 0.2 TON withdrawal signal, formatted exactly as the builder formats it
+    /// (locale-dependent decimal separator), so the assertion holds on any
+    /// simulator locale.
+    private static let expectedWithdrawalSignalAmount =
+        (Decimal(string: "0.2") ?? 0.2).formatToDecimal(digits: 9)
+
+    /// The withdrawal signal must carry the 0.2 TON withdraw fee for `tf` pools
+    /// too — a larger amount (e.g. 1 TON) is rejected on-chain.
+    func testUnstakeSignalAmountIs0Point2Ton() {
+        let vm = TonUnstakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            poolAddress: "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+            poolImplementation: "tf",
+            stakedAmount: 50
+        )
+        XCTAssertEqual(
+            (vm.transactionBuilder as? TonUnstakeTransactionBuilder)?.amount,
+            Self.expectedWithdrawalSignalAmount
+        )
+    }
+
+    /// The 0.2 TON signal plus the network fee must be covered by the liquid
+    /// balance, otherwise no builder is produced.
+    func testUnstakeBlocksBuilderWhenBalanceBelowSignalPlusFee() {
+        let vm = TonUnstakeTransactionViewModel(
+            coin: makeTonCoin(rawBalance: "100000000"), // 0.1 TON < 0.2 + fee
+            vault: .example,
+            poolAddress: "0:a44757069a7b04e393782b4a2d3e5e449f19d16a4986a9e25436e6b97e45a16a",
+            poolImplementation: "whales",
+            stakedAmount: 50
+        )
+        XCTAssertFalse(vm.hasSufficientBalance)
+        XCTAssertNil(vm.transactionBuilder)
     }
 
     func testUnstakeTfResolvesWComment() {

@@ -17,9 +17,11 @@ final class TonUnstakeTransactionViewModel: ObservableObject {
     /// full withdrawal only, so the user does not pick an amount.
     let stakedAmount: Decimal
 
-    /// Fixed amount that accompanies the withdrawal message (1 TON, mirroring the
-    /// legacy FunctionCall unstake). The pool returns the staked balance.
-    private static let withdrawalSignalAmount: Decimal = 1
+    /// Fixed amount that accompanies the withdrawal message (the 0.2 TON
+    /// deposit/withdraw fee per the Whales pool spec). On-chain, a "Withdraw"
+    /// carrying this fee is accepted and the pool returns the full staked
+    /// balance, whereas a larger signal (e.g. 1 TON) is rejected.
+    private static let withdrawalSignalAmount: Decimal = Decimal(string: "0.2") ?? 0.2
 
     init(coin: Coin, vault: Vault, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal) {
         self.coin = coin
@@ -29,8 +31,8 @@ final class TonUnstakeTransactionViewModel: ObservableObject {
         self.stakedAmount = stakedAmount
     }
 
-    /// Whether the liquid balance can cover the 1-TON withdrawal signal plus the
-    /// network fee. Without it the "w" message would fail to broadcast.
+    /// Whether the liquid balance can cover the 0.2-TON withdrawal signal plus the
+    /// network fee. Without it the withdraw message would fail to broadcast.
     var hasSufficientBalance: Bool {
         let fee = TonHelper.defaultFee.description.toDecimal() / pow(Decimal(10), coin.decimals)
         return coin.balanceDecimal >= Self.withdrawalSignalAmount + fee

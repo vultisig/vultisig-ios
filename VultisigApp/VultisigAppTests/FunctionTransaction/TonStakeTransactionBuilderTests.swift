@@ -39,7 +39,7 @@ final class TonStakeTransactionBuilderTests: XCTestCase {
     // MARK: - TonStakingComment mapping
 
     func testCommentMappingForWhales() {
-        XCTAssertEqual(TonStakingComment.deposit(for: "whales"), "Stake")
+        XCTAssertEqual(TonStakingComment.deposit(for: "whales"), "Deposit")
         XCTAssertEqual(TonStakingComment.withdraw(for: "whales"), "Withdraw")
     }
 
