@@ -1114,6 +1114,7 @@
 "swapErrorUnexpectedTitle" = "意外错误";
 "swapFee" = "交换费用";
 "swapFeePercentage" = "交换费用 (%.2f%%)";
+"swapInsufficientTokenBalance" = "%@ 余额不足";
 "swapKitErrorAddressScreening" = "地址筛查失败 — 请联系支持";
 "swapKitErrorApiKeyInvalid" = "SwapKit API 密钥无效";
 "swapKitErrorApiKeyMissing" = "SwapKit API 密钥未配置";

@@ -1114,6 +1114,7 @@
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
 "swapFeePercentage" = "Naknada za zamjenu (%.2f%%)";
+"swapInsufficientTokenBalance" = "Nedovoljan saldo %@";
 "swapKitErrorAddressScreening" = "Provjera adrese nije uspjela — obratite se podršci";
 "swapKitErrorApiKeyInvalid" = "SwapKit API ključ je neispravan";
 "swapKitErrorApiKeyMissing" = "SwapKit API ključ nije postavljen";

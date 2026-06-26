@@ -689,8 +689,13 @@ private extension SwapDetailsViewModel {
             // Skip `updateFees` if `updateQuotes` already failed: with `quote`
             // still nil, `updateFees` would throw and overwrite the real error
             // (`swapAmountTooSmall`, `sameAsset`, etc.) with `insufficientGas`.
+            //
+            // Also skip when the balance is insufficient: the quote still renders
+            // as a preview, but a fee you can't pay would surface the UTXO
+            // `notEnoughUTXO` / `insufficientGas` fee errors. Insufficiency is
+            // reflected only on the disabled Continue button, never as a fee error.
             await self.updateQuotes(vault: vault, referredCode: referredCode)
-            if self.error == nil, self.quote != nil {
+            if self.balanceError == nil, self.error == nil, self.quote != nil {
                 await self.updateFees(vault: vault)
             }
 
@@ -736,10 +741,6 @@ private extension SwapDetailsViewModel {
                 quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
-            }
-
-            if let balanceError {
-                throw balanceError
             }
         } catch {
             // Ignore cancellation from a superseding amount edit — surfacing it
