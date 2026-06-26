@@ -1081,6 +1081,7 @@
 "solanaStakingErrorValidatorPreflightFailed" = "Validazione del validatore non riuscita: %@";
 "solanaStakingErrorWrongOpType" = "Operazione di staking Solana non supportata.";
 "solanaStakingInactiveNotice" = "Inattivo — raffreddato e pronto per il prelievo.";
+"solanaStakingMinimumDelegation" = "Lo stake minimo è %@ SOL";
 "solanaStakingRentReserve" = "Riserva di rent";
 "solanaStakingStakeAccount" = "Account di staking";
 "solanaStakingStakedRowAmount" = "%@ %@";

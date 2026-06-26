@@ -98,14 +98,22 @@ class SolanaService {
             }
 
             // -32002 is Solana's generic preflight-failure code, not specific
-            // to expired blockhashes — match on the message instead.
-            let lowered = error.message.lowercased()
+            // to expired blockhashes. The structured reason lives in
+            // `data.err` ("BlockhashNotFound"); the message is just the generic
+            // "Transaction simulation failed". Match on either.
+            let structuredErr = error.data?.err?.stringValue ?? ""
+            let lowered = (error.message + " " + structuredErr).lowercased()
+            // The structured `data.err` form is "BlockhashNotFound" (no spaces);
+            // the message form is "Blockhash not found". Match both.
+            let isBlockhashNotFound = lowered.contains("blockhash not found")
+                || lowered.contains("blockhashnotfound")
+            let isBlockHeightExceeded = lowered.contains("block height exceeded")
 
-            // "Blockhash not found" right after signing is usually propagation
+            // Blockhash-not-found right after signing is usually propagation
             // lag: the RPC node we hit hasn't observed our (confirmed) blockhash
             // yet. Resending the same signed tx after a short backoff typically
             // clears it without escalating to a full keysign-ceremony retry.
-            if lowered.contains("blockhash not found"), attempt < Self.maxBroadcastAttempts {
+            if isBlockhashNotFound, attempt < Self.maxBroadcastAttempts {
                 logger.warning("solana broadcast attempt \(attempt)/\(Self.maxBroadcastAttempts) hit transient blockhash-not-found; resending after backoff")
                 try await Task.sleep(for: broadcastRetryBackoff)
                 continue
@@ -115,8 +123,7 @@ class SolanaService {
             // retry) means the blockhash has expired — resending the same tx
             // can't help, so surface it as retryable to re-sign with a fresh
             // blockhash.
-            if lowered.contains("blockhash not found") ||
-                lowered.contains("block height exceeded") {
+            if isBlockhashNotFound || isBlockHeightExceeded {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
             }
 

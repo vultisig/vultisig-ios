@@ -172,6 +172,21 @@ struct SolanaSendTransactionResponse: Decodable {
 
         struct ErrorData: Decodable {
             let logs: [String]?
+            /// Structured failure reason. Solana puts `"BlockhashNotFound"` here
+            /// (with a generic `"Transaction simulation failed"` message), so the
+            /// retry/expiry detection must inspect this, not just the message.
+            let err: AnyCodableErr?
+        }
+
+        /// `err` is polymorphic — a bare string (`"BlockhashNotFound"`) or an
+        /// object (`{"InstructionError": [...]}`). Decode just enough to expose
+        /// the string form for matching.
+        struct AnyCodableErr: Decodable {
+            let stringValue: String?
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                stringValue = try? container.decode(String.self)
+            }
         }
     }
 }

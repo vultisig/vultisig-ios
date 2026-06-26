@@ -58,7 +58,26 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: stakeableBalance))
+        // Minimum-delegation guard: the Solana mainnet minimum delegation is
+        // 1 SOL (getStakeMinimumDelegation), enforced by the Stake program —
+        // a DelegateStake below it reverts with StakeError.InsufficientDelegation
+        // (custom error 12). The active stake = funding − rent reserve, so the
+        // funding floor is 1 SOL + rent. Read `minimumDelegationDecimal` live so
+        // it picks up the rent reserve once it loads.
+        amountField.validators.append(ClosureValidator { [weak self] value in
+            guard let self else { return }
+            guard value.toDecimal() >= self.minimumDelegationDecimal else {
+                throw SolanaDelegateValidationError.belowMinimum(self.minimumDelegationDecimal)
+            }
+        })
         Task { await loadRentReserve() }
+    }
+
+    /// Funding floor for a new stake account: the 1 SOL program minimum
+    /// delegation plus the rent-exempt reserve (active stake = funding − rent).
+    var minimumDelegationDecimal: Decimal {
+        let oneSol = Decimal(SolanaStakingConfig.minDelegationFloorLamports) / pow(Decimal(10), coin.decimals)
+        return oneSol + rentReserve
     }
 
     private func loadRentReserve() async {
@@ -108,5 +127,23 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
 
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
+    }
+}
+
+enum SolanaDelegateValidationError: LocalizedError {
+    case belowMinimum(Decimal)
+
+    var errorDescription: String? {
+        switch self {
+        case .belowMinimum(let minimum):
+            let handler = NSDecimalNumberHandler(
+                roundingMode: .up, scale: 4,
+                raiseOnExactness: false, raiseOnOverflow: false,
+                raiseOnUnderflow: false, raiseOnDivideByZero: false
+            )
+            let formatted = NSDecimalNumber(decimal: minimum)
+                .rounding(accordingToBehavior: handler).stringValue
+            return String(format: "solanaStakingMinimumDelegation".localized, formatted)
+        }
     }
 }

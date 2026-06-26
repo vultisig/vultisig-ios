@@ -1081,6 +1081,7 @@
 "solanaStakingErrorValidatorPreflightFailed" = "Provjera validatora nije uspjela: %@";
 "solanaStakingErrorWrongOpType" = "Nepodržana Solana staking operacija.";
 "solanaStakingInactiveNotice" = "Neaktivno — ohlađeno i spremno za povlačenje.";
+"solanaStakingMinimumDelegation" = "Minimalni ulog je %@ SOL";
 "solanaStakingRentReserve" = "Pričuva za najam";
 "solanaStakingStakeAccount" = "Staking račun";
 "solanaStakingStakedRowAmount" = "%@ %@";
