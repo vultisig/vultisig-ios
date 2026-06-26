@@ -7,6 +7,11 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
+
+// TEMP diagnostic logger for the Solana staking signing path. Remove once the
+// delegate broadcast is confirmed working.
+private let solanaStakingDiag = Logger(subsystem: "com.vultisig.app", category: "solana-staking-diag")
 
 enum SolanaHelper {
 
@@ -45,6 +50,7 @@ enum SolanaHelper {
         // (omitting it); deactivate/withdraw operate on an existing account, so
         // they carry its address explicitly.
         if let stakingPayload = keysignPayload.solanaStakingPayload {
+            solanaStakingDiag.error("inputData → STAKING branch, opType=\(stakingPayload.opType.rawValue, privacy: .public)")
             return try buildStakingInputData(
                 payload: stakingPayload,
                 sender: keysignPayload.coin.address,
@@ -53,6 +59,7 @@ enum SolanaHelper {
                 priorityFeeLimit: priorityFeeLimitValue
             )
         }
+        solanaStakingDiag.error("inputData → TRANSFER branch (solanaStakingPayload=nil, signSolana=\(keysignPayload.signSolana != nil)) toAddress=\(keysignPayload.toAddress, privacy: .public)")
 
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
@@ -357,6 +364,7 @@ enum SolanaHelper {
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        solanaStakingDiag.error("imageHash: signSolana=\(keysignPayload.signSolana != nil) solanaStakingPayload=\(keysignPayload.solanaStakingPayload != nil)")
         // Handle SignSolana (raw transactions)
         if let signSolana = keysignPayload.signSolana {
             var allHashes: [String] = []
@@ -385,6 +393,7 @@ enum SolanaHelper {
 
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+        solanaStakingDiag.error("signedTx: signSolana=\(keysignPayload.signSolana != nil) solanaStakingPayload=\(keysignPayload.solanaStakingPayload != nil)")
         // Handle SignSolana (raw transactions)
         if let signSolana = keysignPayload.signSolana {
             guard signSolana.rawTransactions.count == 1 else {
