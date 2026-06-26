@@ -51,11 +51,6 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         self.onInvalidateCaches = onInvalidateCaches
     }
 
-    /// Whether the vault currently has any delegated SOL — drives the
-    /// empty-vs-populated branch in the view independently of the in-flight
-    /// loading state.
-    var hasPositions: Bool { !rows.isEmpty }
-
     /// Fans out the stake-account read (uncached), the live epoch, the cached
     /// validator set + inflation, and the rent reserve, then folds them into one
     /// row per stake account. Per-call failures degrade individually: a failed

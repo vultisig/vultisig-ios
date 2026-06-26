@@ -308,8 +308,7 @@ struct DefiChainMainScreen: View {
                     coin: coin.toCoinMeta(),
                     sourceStakeAccount: row.stakeAccount
                 ))
-            },
-            emptyStateView: { emptyStateView }
+            }
         )
     }
 

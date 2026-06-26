@@ -37,7 +37,7 @@ private enum SolanaStakeDefiFormatters {
     }()
 }
 
-struct SolanaStakeDefiView<EmptyState: View>: View {
+struct SolanaStakeDefiView: View {
     let coin: Coin
     let totalFiat: String
     @ObservedObject var viewModel: SolanaStakeDefiViewModel
@@ -45,7 +45,6 @@ struct SolanaStakeDefiView<EmptyState: View>: View {
     var onUnstake: (SolanaStakeAccountRow) -> Void
     var onWithdraw: (SolanaStakeAccountRow) -> Void
     var onMoveStake: (SolanaStakeAccountRow) -> Void
-    @ViewBuilder var emptyStateView: () -> EmptyState
 
     var body: some View {
         Group {
@@ -53,19 +52,23 @@ struct SolanaStakeDefiView<EmptyState: View>: View {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.top, 32)
-            } else if !viewModel.hasPositions {
-                emptyStateView()
             } else {
                 populatedState
             }
         }
     }
 
+    // Always render the total-staked card (and its "Delegate to New Validator"
+    // CTA) so a user with zero stake accounts can still start staking — Solana
+    // staking has no empty state. The per-account list only appears once the
+    // wallet actually holds stake accounts.
     @ViewBuilder
     private var populatedState: some View {
         VStack(spacing: 16) {
             totalStakedCard
-            stakeAccountsCard
+            if !viewModel.rows.isEmpty {
+                stakeAccountsCard
+            }
         }
     }
 
