@@ -506,4 +506,89 @@ class SolanaService {
         return (true, isToken2022)
     }
 
+    // MARK: - Native staking reads
+
+    /// Rent-exempt reserve for a 200-byte stake account. Rent params change
+    /// rarely, so it is cached 24h via `Utils.getCachedData`.
+    private var rentReserveCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
+    /// Live epoch info. Cached 45s so a screen refresh doesn't re-hit RPC on
+    /// every appear while still tracking the ~2-day epoch closely.
+    private var epochInfoCache = ThreadSafeDictionary<String, (data: SolanaEpochInfo, timestamp: Date)>()
+
+    private static let rentReserveTTL: TimeInterval = 60 * 60 * 24
+    private static let epochInfoTTL: TimeInterval = 45
+
+    /// All validators (vote accounts), tagged with their delinquent bucket.
+    func fetchSolanaValidators() async throws -> [SolanaValidator] {
+        let response = try await httpClient.request(
+            api(.getVoteAccounts),
+            responseType: SolanaGetVoteAccountsResponse.self
+        )
+        let current = response.data.result.current.map { SolanaValidator(voteAccount: $0, isDelinquent: false) }
+        let delinquent = response.data.result.delinquent.map { SolanaValidator(voteAccount: $0, isDelinquent: true) }
+        return current + delinquent
+    }
+
+    /// Parsed stake accounts delegated by `owner` (the staker authority). Uses
+    /// the `dataSize:200 + memcmp{offset:12}` filter and `jsonParsed` encoding.
+    /// Not cached — must reflect a just-submitted stake/unstake and freshly
+    /// accrued rewards; the UI refreshes on appear.
+    func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
+        let response = try await httpClient.request(
+            api(.getStakeAccountsByOwner(staker: owner, pubkeyOnly: false)),
+            responseType: SolanaGetProgramAccountsResponse.self
+        )
+        return response.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
+    }
+
+    /// Full parsed info for a single stake account.
+    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? {
+        let response = try await httpClient.request(
+            api(.getStakeAccountInfo(address: address)),
+            responseType: SolanaGetStakeAccountInfoResponse.self
+        )
+        guard let value = response.data.result.value else { return nil }
+        return SolanaStakeAccount(pubkey: address, accountInfo: value)
+    }
+
+    /// Current epoch info, cached 45s.
+    func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo {
+        let cacheKey = "solana-epoch-info"
+        if let cached: SolanaEpochInfo = Utils.getCachedData(cacheKey: cacheKey, cache: epochInfoCache, timeInSeconds: Self.epochInfoTTL) {
+            return cached
+        }
+        let response = try await httpClient.request(
+            api(.getEpochInfo),
+            responseType: SolanaGetEpochInfoResponse.self
+        )
+        let info = response.data.result
+        epochInfoCache.set(cacheKey, (data: info, timestamp: Date()))
+        return info
+    }
+
+    /// Rent-exempt reserve (lamports) for a 200-byte stake account, cached 24h.
+    func fetchSolanaRentReserve() async throws -> UInt64 {
+        let cacheKey = "solana-rent-reserve-\(SolanaStakingConfig.stakeStateSize)"
+        if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL) {
+            return cached
+        }
+        let response = try await httpClient.request(
+            api(.getMinimumBalanceForRentExemption(size: SolanaStakingConfig.stakeStateSize)),
+            responseType: SolanaGetMinimumBalanceForRentExemptionResponse.self
+        )
+        let reserve = response.data.result
+        rentReserveCache.set(cacheKey, (data: reserve, timestamp: Date()))
+        return reserve
+    }
+
+    /// Network total inflation rate for the current epoch (fraction, e.g.
+    /// 0.0377). Caching is owned by `SolanaStakingService` (10 min, actor).
+    func fetchSolanaInflationRate() async throws -> Double {
+        let response = try await httpClient.request(
+            api(.getInflationRate),
+            responseType: SolanaGetInflationRateResponse.self
+        )
+        return response.data.result.total
+    }
+
 }
