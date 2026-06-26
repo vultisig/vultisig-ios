@@ -42,7 +42,15 @@ enum SolanaStakingVerifyResolver {
         case .withdraw:
             return try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: basePayload)
         case .moveStakeStep:
-            throw SolanaStakingSignDataResolver.Errors.wrongOpType(payload.opType)
+            // The re-delegate sub-step delegates to validator B, so it needs the
+            // known-vote set for the preflight; deactivate ignores it.
+            let knownVotePubkeys = Set(
+                ((try? await stakingService.fetchValidators()) ?? []).map(\.votePubkey)
+            )
+            return try SolanaStakingSignDataResolver.resolveMoveStake(
+                basePayload: basePayload,
+                knownVotePubkeys: knownVotePubkeys
+            )
         }
     }
 }

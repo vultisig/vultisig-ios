@@ -30,16 +30,20 @@ enum SolanaStakingSignDataResolver {
     enum Errors: Error, LocalizedError {
         case missingPayload
         case wrongOpType(SolanaStakingOpType)
+        case wrongMoveStakeStep(SolanaMoveStakeStep?)
         case missingChainSpecific
         case missingPayloadField(String)
         case validatorPreflightFailed(String)
         case insufficientForRentReserve(required: UInt64, available: UInt64)
+        case partialSplitUnsupported
 
         var errorDescription: String? {
             switch self {
             case .missingPayload:
                 return "solanaStakingErrorMissingPayload".localized
             case .wrongOpType:
+                return "solanaStakingErrorWrongOpType".localized
+            case .wrongMoveStakeStep:
                 return "solanaStakingErrorWrongOpType".localized
             case .missingChainSpecific:
                 return "solanaStakingErrorMissingChainSpecific".localized
@@ -49,6 +53,8 @@ enum SolanaStakingSignDataResolver {
                 return String(format: "solanaStakingErrorValidatorPreflightFailed".localized, reason)
             case .insufficientForRentReserve:
                 return "solanaStakingErrorInsufficientForRentReserve".localized
+            case .partialSplitUnsupported:
+                return "solanaStakingErrorPartialSplitUnsupported".localized
             }
         }
     }
@@ -172,6 +178,92 @@ enum SolanaStakingSignDataResolver {
             """
             Built Solana withdraw tx: stakeAccount=\(stakeAccount, privacy: .public) \
             lamports=\(lamports)
+            """
+        )
+
+        return SignSolana(rawTransactions: [rawTransaction])
+    }
+
+    /// Resolves the `SignSolana` artefact for one guided move-stake sub-step.
+    /// Each sub-step is signed and broadcast independently across epochs:
+    ///
+    ///   - `.deactivate`: byte-identical to a plain deactivate on the moved
+    ///     account — no amount, no validator preflight.
+    ///   - `.redelegate`: a delegate targeting the existing cooled-down account,
+    ///     so it carries the validator preflight and re-uses the relayed-bytes
+    ///     parity contract.
+    ///   - `.split`: a partial move needs a Stake-program Split instruction
+    ///     wallet-core does not expose — rejected here so the user moves the
+    ///     whole account instead.
+    static func resolveMoveStake(basePayload: KeysignPayload, knownVotePubkeys: Set<String>) throws -> SignSolana {
+        guard let payload = basePayload.solanaStakingPayload else {
+            throw Errors.missingPayload
+        }
+        guard payload.opType == .moveStakeStep else {
+            throw Errors.wrongOpType(payload.opType)
+        }
+        guard case .Solana = basePayload.chainSpecific else {
+            throw Errors.missingChainSpecific
+        }
+
+        switch payload.moveStakeSubStep {
+        case .deactivate:
+            return try resolveMoveStakeDeactivate(payload: payload, basePayload: basePayload)
+        case .redelegate:
+            return try resolveMoveStakeRedelegate(
+                payload: payload,
+                basePayload: basePayload,
+                knownVotePubkeys: knownVotePubkeys
+            )
+        case .split:
+            throw Errors.partialSplitUnsupported
+        case .none:
+            throw Errors.wrongMoveStakeStep(nil)
+        }
+    }
+
+    private static func resolveMoveStakeDeactivate(
+        payload: SolanaStakingPayload,
+        basePayload: KeysignPayload
+    ) throws -> SignSolana {
+        guard let stakeAccount = payload.stakeAccount, !stakeAccount.isEmpty else {
+            throw Errors.missingPayloadField("stakeAccount")
+        }
+
+        let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)
+
+        logger.info("Built Solana move-stake deactivate tx: stakeAccount=\(stakeAccount, privacy: .public)")
+
+        return SignSolana(rawTransactions: [rawTransaction])
+    }
+
+    private static func resolveMoveStakeRedelegate(
+        payload: SolanaStakingPayload,
+        basePayload: KeysignPayload,
+        knownVotePubkeys: Set<String>
+    ) throws -> SignSolana {
+        guard let stakeAccount = payload.stakeAccount, !stakeAccount.isEmpty else {
+            throw Errors.missingPayloadField("stakeAccount")
+        }
+        guard let votePubkey = payload.votePubkey, !votePubkey.isEmpty else {
+            throw Errors.missingPayloadField("votePubkey")
+        }
+        guard let lamports = payload.lamports, lamports > 0 else {
+            throw Errors.missingPayloadField("lamports")
+        }
+
+        do {
+            try SolanaValidatorPreflight.validate(votePubkey, knownVotePubkeys: knownVotePubkeys)
+        } catch {
+            throw Errors.validatorPreflightFailed(error.localizedDescription)
+        }
+
+        let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)
+
+        logger.info(
+            """
+            Built Solana move-stake redelegate tx: stakeAccount=\(stakeAccount, privacy: .public) \
+            validator=\(votePubkey, privacy: .public) lamports=\(lamports)
             """
         )
 
