@@ -106,6 +106,19 @@ final class BlockChainService {
             hasProgramId: hasProgramId
         )
 
+        // Solana native staking: the relayed `signData = .signSolana` bytes
+        // (delegate / deactivate / withdraw / move) have the OLD blockhash baked
+        // in, and a plain rebuild drops BOTH `signData` and the local-only
+        // `solanaStakingPayload`. Without preserving them the keysign sees no
+        // staking intent and signs a plain transfer to the validator vote
+        // account. Preserve the staking payload across the chain-specific swap
+        // and rebuild the unsigned staking tx with the fresh blockhash.
+        if payload.solanaStakingPayload != nil {
+            let staked = payload.withChainSpecific(updatedChainSpecific)
+            let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: staked)
+            return staked.withSignData(.signSolana(SignSolana(rawTransactions: [rawTransaction])))
+        }
+
         // Create and return updated payload with fresh blockhash
         return KeysignPayload(
             coin: payload.coin,
