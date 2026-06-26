@@ -22,7 +22,8 @@ extension CoinAction {
         .terra,
         .terraClassic,
         .qbtc,
-        .ton
+        .ton,
+        .solana
     ]
 
 }

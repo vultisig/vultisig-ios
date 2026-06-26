@@ -581,6 +581,15 @@ class SolanaService {
         return reserve
     }
 
+    /// Drops the short-lived epoch-info cache so the next read reflects a freshly
+    /// advanced epoch. Stake accounts are already uncached, so after a signed
+    /// delegate/unstake/withdraw/move the only stale read is the 45 s epoch cache
+    /// the activation/cooldown state is derived against; clear it so the post-tx
+    /// row state is exact.
+    func invalidateEpochInfoCache() {
+        epochInfoCache.clear()
+    }
+
     /// Network total inflation rate for the current epoch (fraction, e.g.
     /// 0.0377). Caching is owned by `SolanaStakingService` (10 min, actor).
     func fetchSolanaInflationRate() async throws -> Double {
