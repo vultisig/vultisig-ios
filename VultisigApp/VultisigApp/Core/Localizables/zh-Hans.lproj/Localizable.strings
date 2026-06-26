@@ -1057,6 +1057,15 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
+"solanaStakingErrorInsufficientForRentReserve" = "SOL 不足以支付质押金额加上免租金储备金。";
+"solanaStakingErrorMissingChainSpecific" = "缺少用于质押的 Solana 链特定数据。";
+"solanaStakingErrorMissingPayload" = "缺少 Solana 质押载荷。";
+"solanaStakingErrorMissingPayloadField" = "Solana 质押载荷缺少必填字段：%@";
+"solanaStakingErrorValidatorPreflightFailed" = "验证者校验失败：%@";
+"solanaStakingErrorWrongOpType" = "不支持的 Solana 质押操作。";
+"solanaValidatorErrorEmpty" = "验证者投票地址为空。";
+"solanaValidatorErrorInvalidVotePubkey" = "无效的 Solana 验证者投票地址。";
+"solanaValidatorErrorUnknownValidator" = "在当前投票账户集合中未找到该验证者。";
 "somethingsWrong" = "有问题";
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "sourceValidator" = "来源验证人";

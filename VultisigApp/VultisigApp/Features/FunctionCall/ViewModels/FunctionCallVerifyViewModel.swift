@@ -125,6 +125,28 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 
+            // Solana native-staking branch — build the unsigned delegate tx
+            // once (pinned blockhash + derived stake-account address) and relay
+            // it via `signData = .signSolana`, the field that round-trips so the
+            // peer device signs byte-identical message bytes. Mirrors
+            // `SendCryptoVerifyLogic`.
+            if let solanaStakingPayload = tx.solanaStakingPayload {
+                let payloadWithStaking = basePayload.withSolanaStakingPayload(solanaStakingPayload)
+                let stakingService = SolanaStakingService()
+                let rentReserve = try await stakingService.fetchRentReserve()
+                let knownVotePubkeys = Set(
+                    ((try? await stakingService.fetchValidators()) ?? []).map(\.votePubkey)
+                )
+                let balance = UInt64(tx.coin.rawBalance) ?? 0
+                let signSolana = try SolanaStakingSignDataResolver.resolve(
+                    basePayload: payloadWithStaking,
+                    rentReserve: rentReserve,
+                    knownVotePubkeys: knownVotePubkeys,
+                    balance: balance
+                )
+                return payloadWithStaking.withSignData(.signSolana(signSolana))
+            }
+
             return basePayload
         } catch {
             let errorMessage: String

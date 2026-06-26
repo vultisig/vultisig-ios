@@ -1057,6 +1057,15 @@
 "slippageHelperText" = "Begrenzt, wie stark sich der Preis ändern darf, bevor die Ausführung abgebrochen wird.";
 "slippageMaxNote" = "Slippage ist auf %@ begrenzt.";
 "slippageTolerance" = "Slippage-Toleranz";
+"solanaStakingErrorInsufficientForRentReserve" = "Nicht genügend SOL, um den Stake-Betrag plus die mietfreie Reserve zu decken.";
+"solanaStakingErrorMissingChainSpecific" = "Solana-Chain-spezifische Daten für das Staking fehlen.";
+"solanaStakingErrorMissingPayload" = "Solana-Staking-Payload fehlt.";
+"solanaStakingErrorMissingPayloadField" = "Solana-Staking-Payload fehlt erforderliches Feld: %@";
+"solanaStakingErrorValidatorPreflightFailed" = "Validator-Prüfung fehlgeschlagen: %@";
+"solanaStakingErrorWrongOpType" = "Nicht unterstützte Solana-Staking-Operation.";
+"solanaValidatorErrorEmpty" = "Validator-Vote-Adresse ist leer.";
+"solanaValidatorErrorInvalidVotePubkey" = "Ungültige Solana-Validator-Vote-Adresse.";
+"solanaValidatorErrorUnknownValidator" = "Validator nicht im aktuellen Vote-Account-Satz gefunden.";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "sourceValidator" = "Quell-Validator";

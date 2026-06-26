@@ -186,6 +186,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .solanaDelegate(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SolanaDelegateTransactionScreen(
+                        viewModel: SolanaDelegateTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             case .tonStake(let coin, let poolAddress, let poolImplementation):
                 resolvingCoin(coinMeta: coin) { coin in
                     TonStakeTransactionScreen(
