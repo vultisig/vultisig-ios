@@ -165,6 +165,14 @@ struct SolanaSendTransactionResponse: Decodable {
     struct Error: Decodable {
         let code: Int
         let message: String
+        /// Preflight-simulation detail. On a `-32002` simulation failure the RPC
+        /// returns the program `logs` (and `err`) here — the only thing that
+        /// names the actual on-chain failure. Optional: most errors omit it.
+        let data: ErrorData?
+
+        struct ErrorData: Decodable {
+            let logs: [String]?
+        }
     }
 }
 

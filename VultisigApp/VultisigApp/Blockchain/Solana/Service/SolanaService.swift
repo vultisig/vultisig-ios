@@ -120,6 +120,17 @@ class SolanaService {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
             }
 
+            // Surface the preflight program logs — on a simulation failure they
+            // name the real on-chain reason (e.g. insufficient funds for rent,
+            // exceeded compute budget) that the bare message omits.
+            if let logs = error.data?.logs, !logs.isEmpty {
+                logger.error("solana broadcast simulation failed: \(error.message, privacy: .public)\nlogs:\n\(logs.joined(separator: "\n"), privacy: .public)")
+                throw SolanaServiceError.rpcError(
+                    message: "\(error.message)\n\(logs.suffix(4).joined(separator: "\n"))",
+                    code: error.code
+                )
+            }
+
             throw SolanaServiceError.rpcError(message: error.message, code: error.code)
         }
 
