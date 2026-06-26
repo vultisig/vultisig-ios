@@ -23,7 +23,11 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
 
     @Published var validForm: Bool = false
     @Published var selectedValidator: SolanaValidator?
-    @Published private(set) var rentReserve: Decimal = 0
+    // Seeded with the deterministic size-200 stake-account reserve so the
+    // "fund entered + rent" math is correct even before the live
+    // getMinimumBalanceForRentExemption read returns; overwritten on load.
+    @Published private(set) var rentReserve: Decimal =
+        Decimal(SolanaStakingConfig.rentExemptReserveLamports) / Decimal(SolanaStakingConfig.lamportsPerSol)
 
     @Published var amountField = FormField(
         label: "amount".localized,
@@ -58,12 +62,13 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: stakeableBalance))
-        // Minimum-delegation guard: the Solana mainnet minimum delegation is
-        // 1 SOL (getStakeMinimumDelegation), enforced by the Stake program —
-        // a DelegateStake below it reverts with StakeError.InsufficientDelegation
-        // (custom error 12). The active stake = funding − rent reserve, so the
-        // funding floor is 1 SOL + rent. Read `minimumDelegationDecimal` live so
-        // it picks up the rent reserve once it loads.
+        // Minimum-delegation guard. The user enters the amount they want
+        // ACTIVELY staked; the Solana mainnet minimum delegation is 1 SOL
+        // (getStakeMinimumDelegation), enforced by the Stake program — a
+        // DelegateStake below it reverts with StakeError.InsufficientDelegation
+        // (custom error 12). The rent-exempt reserve is added on top
+        // automatically in `transactionBuilder`, so the user only needs to enter
+        // >= 1 SOL.
         amountField.validators.append(ClosureValidator { [weak self] value in
             guard let self else { return }
             guard value.toDecimal() >= self.minimumDelegationDecimal else {
@@ -73,11 +78,11 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
         Task { await loadRentReserve() }
     }
 
-    /// Funding floor for a new stake account: the 1 SOL program minimum
-    /// delegation plus the rent-exempt reserve (active stake = funding − rent).
+    /// Minimum amount the user may enter — the 1 SOL program minimum delegation.
+    /// This is the ACTIVE stake; the rent reserve is funded on top separately, so
+    /// the user is not asked to do the "1 SOL + rent" math.
     var minimumDelegationDecimal: Decimal {
-        let oneSol = Decimal(SolanaStakingConfig.minDelegationFloorLamports) / pow(Decimal(10), coin.decimals)
-        return oneSol + rentReserve
+        Decimal(SolanaStakingConfig.minDelegationFloorLamports) / pow(Decimal(10), coin.decimals)
     }
 
     private func loadRentReserve() async {
@@ -117,9 +122,16 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
         guard validForm, hasSufficientBalanceForFee, let validator = selectedValidator else { return nil }
+        // The user enters the amount to ACTIVELY stake; a new stake account must
+        // additionally hold the rent-exempt reserve (active stake = funding −
+        // rent). Fund with entered + rent so the delegated stake equals what the
+        // user typed and clears the 1 SOL minimum. The headroom-aware
+        // `stakeableBalance` already reserves both fee and rent, so this can't
+        // overdraw.
+        let funding = amountField.value.toDecimal() + rentReserve
         return SolanaDelegateTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals),
+            amount: NSDecimalNumber(decimal: funding).stringValue,
             sendMaxAmount: isMaxAmount,
             votePubkey: validator.votePubkey
         )

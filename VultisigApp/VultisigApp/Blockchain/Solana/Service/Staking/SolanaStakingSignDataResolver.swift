@@ -104,13 +104,15 @@ enum SolanaStakingSignDataResolver {
             throw Errors.validatorPreflightFailed(error.localizedDescription)
         }
 
-        // Rent-reserve accounting: a new stake account must hold the delegated
-        // amount AND the rent-exempt reserve. Both come from the signer's
-        // balance, so reject up front when the balance can't cover both —
-        // otherwise the ceremony signs a tx the chain rejects.
-        let (required, overflow) = lamports.addingReportingOverflow(rentReserve)
-        if overflow || required > balance {
-            throw Errors.insufficientForRentReserve(required: overflow ? .max : required, available: balance)
+        // Balance guard. `payload.lamports` is the stake-account FUNDING — the
+        // delegated amount plus the rent-exempt reserve, already combined
+        // upstream (the form funds entered + rent so the active stake equals the
+        // entered amount). The signer pays that funding (plus a negligible tx
+        // fee), so reject up front when it exceeds the balance — otherwise the
+        // ceremony signs a tx the chain rejects. (`rentReserve` is informational
+        // here; it is already inside `lamports`.)
+        if lamports > balance {
+            throw Errors.insufficientForRentReserve(required: lamports, available: balance)
         }
 
         let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)

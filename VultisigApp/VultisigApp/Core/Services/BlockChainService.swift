@@ -91,8 +91,13 @@ final class BlockChainService {
             return payload
         }
 
-        // Fetch fresh blockhash
-        guard let freshBlockhash = try await sol.fetchRecentBlockhash() else {
+        // Fetch a fresh FINALIZED blockhash. A `confirmed` blockhash can be
+        // unknown to the load-balanced proxy's broadcast node (preflight
+        // `BlockhashNotFound` even seconds after fetching it); a finalized,
+        // rooted blockhash is known to every node. This refresh runs right
+        // before the ceremony, so the ~13s finalized lag still leaves ample
+        // validity.
+        guard let freshBlockhash = try await sol.fetchFinalizedBlockhash() else {
             throw Errors.failToGetRecentBlockHash
         }
 

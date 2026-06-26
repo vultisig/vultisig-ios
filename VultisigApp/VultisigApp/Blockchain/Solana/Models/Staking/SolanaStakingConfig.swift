@@ -54,6 +54,13 @@ enum SolanaStakingConfig {
     /// Lamports per SOL (9 decimals). Shared by the staking read/format layer.
     static let lamportsPerSol: UInt64 = 1_000_000_000
 
+    /// Rent-exempt reserve for a 200-byte stake account (`StakeStateV2`), in
+    /// lamports. Deterministic from the rent rate + account size, so it serves
+    /// as the pre-load default before the live `getMinimumBalanceForRentExemption`
+    /// read returns — keeps the "fund entered + rent" math correct even if the
+    /// user submits before that fetch completes.
+    static let rentExemptReserveLamports: UInt64 = 2_282_880
+
     /// Mainnet schedule: 432,000 slots per epoch (~2 days). Informational —
     /// the live value is read from `getEpochInfo.slotsInEpoch`; this is the
     /// documented fallback for activation/cooldown copy.

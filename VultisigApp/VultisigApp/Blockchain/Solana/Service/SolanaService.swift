@@ -200,6 +200,18 @@ class SolanaService {
         return response.data.result.value.blockhash
     }
 
+    /// `finalized`-commitment blockhash for the pre-keysign refresh. A confirmed
+    /// blockhash can be unknown to the load-balanced proxy's broadcast node
+    /// (preflight `BlockhashNotFound`); a finalized one is rooted and known to
+    /// every node.
+    func fetchFinalizedBlockhash() async throws -> String? {
+        let response = try await httpClient.request(
+            api(.getLatestBlockhashFinalized),
+            responseType: SolanaGetLatestBlockhashResponse.self
+        )
+        return response.data.result.value.blockhash
+    }
+
     func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws
     -> [String: SolanaFmTokenInfo] {
         guard !contractAddresses.isEmpty else {
