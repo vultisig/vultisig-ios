@@ -210,17 +210,10 @@ struct SendCryptoVerifyLogic {
             // relayed raw bytes — peer devices sign those without the payload.
             if let solanaStakingPayload = tx.solanaStakingPayload {
                 let payloadWithStaking = basePayload.withSolanaStakingPayload(solanaStakingPayload)
-                let stakingService = SolanaStakingService()
-                let rentReserve = try await stakingService.fetchRentReserve()
-                let knownVotePubkeys = Set(
-                    ((try? await stakingService.fetchValidators()) ?? []).map(\.votePubkey)
-                )
-                let balance = UInt64(tx.coin.rawBalance) ?? 0
-                let signSolana = try SolanaStakingSignDataResolver.resolve(
+                let signSolana = try await SolanaStakingVerifyResolver.resolve(
+                    payload: solanaStakingPayload,
                     basePayload: payloadWithStaking,
-                    rentReserve: rentReserve,
-                    knownVotePubkeys: knownVotePubkeys,
-                    balance: balance
+                    coin: tx.coin
                 )
                 return payloadWithStaking.withSignData(.signSolana(signSolana))
             }

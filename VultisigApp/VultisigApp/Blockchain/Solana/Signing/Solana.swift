@@ -39,14 +39,13 @@ enum SolanaHelper {
         }
         let priorityFeeLimitValue = UInt32(truncatingIfNeeded: effectivePriorityLimit)
 
-        // Native stake delegate rides the same compiler plumbing as a transfer —
-        // only the transaction-type oneof differs. Built from the local-only
-        // `solanaStakingPayload`; the wallet-core stake builder derives the
-        // stake-account address and emits create + initialize + delegate in a
-        // single transaction (`stakeAccount` deliberately omitted).
-        if let stakingPayload = keysignPayload.solanaStakingPayload,
-           stakingPayload.opType == .delegate {
-            return try buildDelegateInputData(
+        // Native staking rides the same compiler plumbing as a transfer — only
+        // the transaction-type oneof differs. Built from the local-only
+        // `solanaStakingPayload`. Delegate derives the stake-account address
+        // (omitting it); deactivate/withdraw operate on an existing account, so
+        // they carry its address explicitly.
+        if let stakingPayload = keysignPayload.solanaStakingPayload {
+            return try buildStakingInputData(
                 payload: stakingPayload,
                 sender: keysignPayload.coin.address,
                 recentBlockHash: recentBlockHash,
@@ -164,34 +163,35 @@ enum SolanaHelper {
         }
     }
 
-    // MARK: - Native staking (delegate)
+    // MARK: - Native staking (delegate / deactivate / withdraw)
 
-    /// Builds the `SolanaSigningInput` for a native stake delegate. `stakeAccount`
-    /// is intentionally omitted so wallet-core derives the stake-account address
-    /// deterministically and emits create + initialize + delegate in one tx.
-    private static func buildDelegateInputData(
+    /// Builds the `SolanaSigningInput` for a native-staking op. The op type
+    /// selects the wallet-core transaction-type oneof:
+    ///   - delegate:   `delegateStakeTransaction` (stake account derived/omitted)
+    ///   - unstake:    `deactivateStakeTransaction` (existing stake account)
+    ///   - withdraw:   `withdrawTransaction` (existing stake account + amount)
+    private static func buildStakingInputData(
         payload: SolanaStakingPayload,
         sender: String,
         recentBlockHash: String,
         priorityFeePrice: UInt64,
         priorityFeeLimit: UInt32
     ) throws -> Data {
-        guard let votePubkey = payload.votePubkey, !votePubkey.isEmpty else {
-            throw HelperError.runtimeError("solana delegate: missing validator vote pubkey")
-        }
-        guard let lamports = payload.lamports, lamports > 0 else {
-            throw HelperError.runtimeError("solana delegate: missing or zero delegation amount")
-        }
-        guard AnyAddress(string: votePubkey, coin: .solana) != nil else {
-            throw HelperError.runtimeError("solana delegate: invalid validator vote pubkey")
+        let transactionType: SolanaSigningInput.OneOf_TransactionType
+        switch payload.opType {
+        case .delegate:
+            transactionType = try delegateTransactionType(payload: payload)
+        case .unstake:
+            transactionType = try deactivateTransactionType(payload: payload)
+        case .withdraw:
+            transactionType = try withdrawTransactionType(payload: payload)
+        case .moveStakeStep:
+            throw HelperError.runtimeError("solana staking: move-stake is not supported")
         }
 
         let input = SolanaSigningInput.with {
             $0.v0Msg = true
-            $0.delegateStakeTransaction = SolanaDelegateStake.with {
-                $0.validatorPubkey = votePubkey
-                $0.value = lamports
-            }
+            $0.transactionType = transactionType
             $0.recentBlockhash = recentBlockHash
             $0.sender = sender
             $0.priorityFeePrice = SolanaPriorityFeePrice.with {
@@ -204,19 +204,77 @@ enum SolanaHelper {
         return try input.serializedData()
     }
 
-    /// Compiles the unsigned delegate transaction (zero-signature envelope) and
+    /// `delegateStakeTransaction` — `stakeAccount` is intentionally omitted so
+    /// wallet-core derives the stake-account address deterministically and emits
+    /// create + initialize + delegate in one tx.
+    private static func delegateTransactionType(
+        payload: SolanaStakingPayload
+    ) throws -> SolanaSigningInput.OneOf_TransactionType {
+        guard let votePubkey = payload.votePubkey, !votePubkey.isEmpty else {
+            throw HelperError.runtimeError("solana delegate: missing validator vote pubkey")
+        }
+        guard let lamports = payload.lamports, lamports > 0 else {
+            throw HelperError.runtimeError("solana delegate: missing or zero delegation amount")
+        }
+        guard AnyAddress(string: votePubkey, coin: .solana) != nil else {
+            throw HelperError.runtimeError("solana delegate: invalid validator vote pubkey")
+        }
+        return .delegateStakeTransaction(SolanaDelegateStake.with {
+            $0.validatorPubkey = votePubkey
+            $0.value = lamports
+        })
+    }
+
+    /// `deactivateStakeTransaction` — begins the ~1-epoch cooldown on an existing
+    /// stake account. Carries no amount: the whole account deactivates.
+    private static func deactivateTransactionType(
+        payload: SolanaStakingPayload
+    ) throws -> SolanaSigningInput.OneOf_TransactionType {
+        let stakeAccount = try validatedStakeAccount(payload.stakeAccount, op: "deactivate")
+        return .deactivateStakeTransaction(SolanaDeactivateStake.with {
+            $0.stakeAccount = stakeAccount
+        })
+    }
+
+    /// `withdrawTransaction` — moves cooled-down lamports from the stake account
+    /// back to the wallet. Only valid once the account is fully inactive (gated
+    /// upstream by `SolanaEpochCooldownGate`).
+    private static func withdrawTransactionType(
+        payload: SolanaStakingPayload
+    ) throws -> SolanaSigningInput.OneOf_TransactionType {
+        let stakeAccount = try validatedStakeAccount(payload.stakeAccount, op: "withdraw")
+        guard let lamports = payload.lamports, lamports > 0 else {
+            throw HelperError.runtimeError("solana withdraw: missing or zero withdrawal amount")
+        }
+        return .withdrawTransaction(SolanaWithdrawStake.with {
+            $0.stakeAccount = stakeAccount
+            $0.value = lamports
+        })
+    }
+
+    private static func validatedStakeAccount(_ stakeAccount: String?, op: String) throws -> String {
+        guard let stakeAccount, !stakeAccount.isEmpty else {
+            throw HelperError.runtimeError("solana \(op): missing stake account")
+        }
+        guard AnyAddress(string: stakeAccount, coin: .solana) != nil else {
+            throw HelperError.runtimeError("solana \(op): invalid stake account address")
+        }
+        return stakeAccount
+    }
+
+    /// Compiles the unsigned staking transaction (zero-signature envelope) and
     /// returns it base64-encoded. This is the byte-parity contract for native
     /// staking: the initiating device builds these bytes once — pinning the
     /// recent blockhash and the wallet-core-derived stake-account address — and
     /// relays them via `SignSolana.rawTransactions`. Every co-signing device
     /// then signs the IDENTICAL message bytes through the raw-transaction path,
     /// so no device rebuilds the input from a non-round-tripped staking payload.
-    static func buildDelegateUnsignedTransaction(keysignPayload: KeysignPayload) throws -> String {
+    static func buildStakingUnsignedTransaction(keysignPayload: KeysignPayload) throws -> String {
         guard let publicKey = PublicKey(
             data: Data(hex: keysignPayload.coin.hexPublicKey),
             type: .ed25519
         ) else {
-            throw HelperError.runtimeError("solana delegate: invalid signer public key")
+            throw HelperError.runtimeError("solana staking: invalid signer public key")
         }
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let allSignatures = DataVector()
@@ -237,9 +295,14 @@ enum SolanaHelper {
         // Normalize to base64 — the encoding `SignSolana.rawTransactions` and
         // the raw-signing path consume.
         guard let txData = Base58.decodeNoCheck(string: output.encoded) else {
-            throw HelperError.runtimeError("solana delegate: failed to decode unsigned transaction")
+            throw HelperError.runtimeError("solana staking: failed to decode unsigned transaction")
         }
         return txData.base64EncodedString()
+    }
+
+    /// Backward-compatible alias for the delegate-only call sites and tests.
+    static func buildDelegateUnsignedTransaction(keysignPayload: KeysignPayload) throws -> String {
+        try buildStakingUnsignedTransaction(keysignPayload: keysignPayload)
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

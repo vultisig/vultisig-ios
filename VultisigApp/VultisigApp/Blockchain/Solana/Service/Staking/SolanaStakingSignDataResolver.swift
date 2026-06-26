@@ -107,12 +107,71 @@ enum SolanaStakingSignDataResolver {
             throw Errors.insufficientForRentReserve(required: overflow ? .max : required, available: balance)
         }
 
-        let rawTransaction = try SolanaHelper.buildDelegateUnsignedTransaction(keysignPayload: basePayload)
+        let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)
 
         logger.info(
             """
             Built Solana delegate tx: lamports=\(lamports) rentReserve=\(rentReserve) \
             validator=\(votePubkey, privacy: .public)
+            """
+        )
+
+        return SignSolana(rawTransactions: [rawTransaction])
+    }
+
+    /// Resolves the `SignSolana` artefact for a deactivate (unstake) payload.
+    /// Unlike delegate there is no validator preflight or rent-reserve guard —
+    /// deactivate operates on an existing stake account and carries no amount.
+    /// The stake-account address round-trips through the payload, but byte
+    /// parity still rides the relayed raw bytes so peer devices need no payload.
+    static func resolveDeactivate(basePayload: KeysignPayload) throws -> SignSolana {
+        guard let payload = basePayload.solanaStakingPayload else {
+            throw Errors.missingPayload
+        }
+        guard payload.opType == .unstake else {
+            throw Errors.wrongOpType(payload.opType)
+        }
+        guard case .Solana = basePayload.chainSpecific else {
+            throw Errors.missingChainSpecific
+        }
+        guard let stakeAccount = payload.stakeAccount, !stakeAccount.isEmpty else {
+            throw Errors.missingPayloadField("stakeAccount")
+        }
+
+        let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)
+
+        logger.info("Built Solana deactivate tx: stakeAccount=\(stakeAccount, privacy: .public)")
+
+        return SignSolana(rawTransactions: [rawTransaction])
+    }
+
+    /// Resolves the `SignSolana` artefact for a withdraw payload. The withdraw
+    /// CTA is gated upstream by `SolanaEpochCooldownGate` (full inactivity), so
+    /// no cooldown check is repeated here — only the field/shape validation and
+    /// the byte-parity build. Carries the stake account + the withdrawal amount.
+    static func resolveWithdraw(basePayload: KeysignPayload) throws -> SignSolana {
+        guard let payload = basePayload.solanaStakingPayload else {
+            throw Errors.missingPayload
+        }
+        guard payload.opType == .withdraw else {
+            throw Errors.wrongOpType(payload.opType)
+        }
+        guard case .Solana = basePayload.chainSpecific else {
+            throw Errors.missingChainSpecific
+        }
+        guard let stakeAccount = payload.stakeAccount, !stakeAccount.isEmpty else {
+            throw Errors.missingPayloadField("stakeAccount")
+        }
+        guard let lamports = payload.lamports, lamports > 0 else {
+            throw Errors.missingPayloadField("lamports")
+        }
+
+        let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: basePayload)
+
+        logger.info(
+            """
+            Built Solana withdraw tx: stakeAccount=\(stakeAccount, privacy: .public) \
+            lamports=\(lamports)
             """
         )
 
