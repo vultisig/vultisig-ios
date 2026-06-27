@@ -14,7 +14,8 @@ extension SwapQuote {
     ///
     /// - THORChain/Maya: `expectedAmountOut` is already net of inbound + swap + outbound fees.
     /// - 1inch/KyberSwap: `dstAmount` is net of swap fees.
-    /// - LiFi: `dstAmount` minus integrator fee (charged on the output side).
+    /// - LiFi: `dstAmount` is already net of the integrator fee, which LI.FI takes from the
+    ///   source token (`fromToken`) and reflects in `estimate.toAmount` (`included: true`).
     ///
     /// Source-chain gas is intentionally excluded from this destination-side metric: folding it
     /// in would require a cross-asset price (source-native wei → destination token) the ranker
@@ -32,15 +33,10 @@ extension SwapQuote {
             return raw / toCoin.thorswapMultiplier
 
         case .oneinch(let quote, _),
-             .kyberswap(let quote, _):
+             .kyberswap(let quote, _),
+             .lifi(let quote, _, _):
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
             return toCoin.decimal(for: raw)
-
-        case .lifi(let quote, _, let integratorFee):
-            guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
-            let amount = toCoin.decimal(for: raw)
-            let fee = amount * (integratorFee ?? 0)
-            return amount - fee
 
         case .swapkit(let response, _, _):
             // SwapKit's `expectedBuyAmount` is already a decimal string in
