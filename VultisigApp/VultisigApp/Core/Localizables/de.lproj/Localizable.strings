@@ -669,6 +669,7 @@
 "mintCoin" = "%@ prägen";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
 "modules" = "Module";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
@@ -1061,7 +1062,6 @@
 "Spanish" = "Spanisch";
 "splitCoins" = "Coins aufteilen";
 "stake" = "Staken";
-"Stake" = "Stake";
 "stakeCoin" = "%@ staken";
 "staked" = "Eingesetzt";
 "stakedCoin" = "%@ gestaked";
@@ -1169,6 +1169,16 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
+"tonStakeBelowMinimum" = "Mindesteinsatz beträgt %@ %@";
+"tonStakingAPY" = "APY";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "min. %@ %@";
+"tonStakingNoPoolsFound" = "Keine Pools gefunden";
+"tonStakingPoolAddress" = "Pool-Adresse";
+"tonStakingPoolPicker" = "Pool";
+"tonStakingSelectPool" = "Pool auswählen";
+"tonUnstakeFullWithdrawalNotice" = "TON-Nominator-Pools unterstützen nur die vollständige Auszahlung. Dein gesamter Einsatz wird entstaked.";
+"tonWithdrawalPendingMessage" = "Abhebung läuft. Dein %@ wird etwa am %@ freigegeben.";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
@@ -1234,7 +1244,6 @@
 "unrelatedQRCode" = "Unbekannter QR-Code";
 "unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
 "unstake" = "Entstaken";
-"Unstake" = "Unstake";
 "unstakeCoin" = "%@ entstaken";
 "unsupportedFileTypeError" = "Nicht unterstützter Dateityp, bitte versuche es erneut";
 "unverifiedFunction" = "Unverifizierte Funktion";

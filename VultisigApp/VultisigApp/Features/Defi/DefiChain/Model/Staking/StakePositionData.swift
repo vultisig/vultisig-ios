@@ -22,6 +22,25 @@ struct StakePositionData: Sendable, Equatable {
     let rewards: Decimal?
     let rewardCoin: CoinMeta?
     let unstakeMetadata: UnstakeMetadata?
+    let poolAddress: String?
+    /// Pool implementation (`whales`, `tf`, …) for chains whose deposit/withdraw
+    /// message is implementation-specific (TON nominator pools). Resolves the
+    /// add-more/unstake comment without re-fetching pool metadata. `nil` for
+    /// chains that don't need it.
+    let poolImplementation: String?
+    /// Human-readable pool/delegator name (e.g. a TON nominator pool name) shown
+    /// on the staked card. `nil` for chains whose staking has no named pool.
+    let poolName: String?
+    /// `false` when staking more is currently blocked (e.g. a TON nominator
+    /// withdrawal is pending, so the funds are locked until the validation cycle
+    /// ends). Defaults to `true` so chains without a pending-withdrawal concept
+    /// are unaffected.
+    let canStake: Bool
+    /// When non-nil, a withdrawal is in progress and BOTH stake and unstake are
+    /// locked until this Unix timestamp (the pool's validation-cycle end). Drives
+    /// the explanatory label on the staked card. `nil` for chains/positions with
+    /// no pending withdrawal.
+    let withdrawalUnlockTime: TimeInterval?
 
     init(
         coin: CoinMeta,
@@ -33,7 +52,12 @@ struct StakePositionData: Sendable, Equatable {
         nextPayout: TimeInterval? = nil,
         rewards: Decimal? = nil,
         rewardCoin: CoinMeta? = nil,
-        unstakeMetadata: UnstakeMetadata? = nil
+        unstakeMetadata: UnstakeMetadata? = nil,
+        poolAddress: String? = nil,
+        poolImplementation: String? = nil,
+        poolName: String? = nil,
+        canStake: Bool = true,
+        withdrawalUnlockTime: TimeInterval? = nil
     ) {
         self.coin = coin
         self.type = type
@@ -45,5 +69,10 @@ struct StakePositionData: Sendable, Equatable {
         self.rewards = rewards
         self.rewardCoin = rewardCoin
         self.unstakeMetadata = unstakeMetadata
+        self.poolAddress = poolAddress
+        self.poolImplementation = poolImplementation
+        self.poolName = poolName
+        self.canStake = canStake
+        self.withdrawalUnlockTime = withdrawalUnlockTime
     }
 }

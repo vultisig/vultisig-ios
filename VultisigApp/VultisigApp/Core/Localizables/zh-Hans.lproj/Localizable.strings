@@ -669,6 +669,7 @@
 "mintCoin" = "铸造 %@";
 "mintSecuredAsset" = "铸造担保资产 (SECURE+)";
 "mintTransaction" = "2. 铸造担保资产交易";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "modules" = "模块";
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";
@@ -1061,7 +1062,6 @@
 "Spanish" = "西班牙语";
 "splitCoins" = "拆分代币";
 "stake" = "质押";
-"Stake" = "质押";
 "stakeCoin" = "质押 %@";
 "staked" = "已质押";
 "stakedCoin" = "已质押 %@";
@@ -1169,6 +1169,16 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
+"tonStakeBelowMinimum" = "最低质押为 %@ %@";
+"tonStakingAPY" = "年化收益";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "最低 %@ %@";
+"tonStakingNoPoolsFound" = "未找到矿池";
+"tonStakingPoolAddress" = "矿池地址";
+"tonStakingPoolPicker" = "矿池";
+"tonStakingSelectPool" = "选择矿池";
+"tonUnstakeFullWithdrawalNotice" = "TON 提名人矿池仅支持全额提取。您的全部质押将被取消质押。";
+"tonWithdrawalPendingMessage" = "提现进行中。您的 %@ 将在 %@ 左右解锁。";
 "totalFee" = "总费用";
 "track" = "跟踪";
 "transaction" = "交易";
@@ -1234,7 +1244,6 @@
 "unrelatedQRCode" = "无关的二维码";
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
 "unstake" = "取消质押";
-"Unstake" = "取消质押";
 "unstakeAutoCompoundTCYRewards" = "取消质押自动复利 TCY";
 "unstakeCoin" = "取消质押 %@";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";

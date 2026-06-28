@@ -669,6 +669,7 @@
 "mintCoin" = "Acuñar %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
 "modules" = "Módulos";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
@@ -1061,7 +1062,6 @@
 "Spanish" = "Español";
 "splitCoins" = "Dividir monedas";
 "stake" = "Hacer Staking";
-"Stake" = "Stake";
 "stakeCoin" = "Hacer Staking de %@";
 "staked" = "Apostado";
 "stakedCoin" = "%@ en Staking";
@@ -1169,6 +1169,16 @@
 "to" = "A";
 "today" = "Hoy";
 "tokens" = "Tokens";
+"tonStakeBelowMinimum" = "El staking mínimo es %@ %@";
+"tonStakingAPY" = "APY";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "mín %@ %@";
+"tonStakingNoPoolsFound" = "No se encontraron pools";
+"tonStakingPoolAddress" = "Dirección del Pool";
+"tonStakingPoolPicker" = "Pool";
+"tonStakingSelectPool" = "Seleccionar Pool";
+"tonUnstakeFullWithdrawalNotice" = "Los pools de nominadores de TON solo admiten el retiro total. Se retirará todo tu staking.";
+"tonWithdrawalPendingMessage" = "Retiro en curso. Tu %@ se desbloqueará alrededor del %@.";
 "totalFee" = "Comisión total";
 "track" = "Rastrear";
 "transaction" = "Transacción";
@@ -1234,7 +1244,6 @@
 "unrelatedQRCode" = "Código QR no relacionado";
 "unrelatedQRCodeMessage" = "Se escaneó un código QR no relacionado.";
 "unstake" = "Retirar Staking";
-"Unstake" = "Unstake";
 "unstakeCoin" = "Retirar %@";
 "unsupportedFileTypeError" = "Tipo de archivo no soportado, inténtalo de nuevo";
 "unverifiedFunction" = "Función no verificada";

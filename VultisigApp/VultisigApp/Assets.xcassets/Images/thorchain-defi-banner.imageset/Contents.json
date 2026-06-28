@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "thorchain-defi-banner.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

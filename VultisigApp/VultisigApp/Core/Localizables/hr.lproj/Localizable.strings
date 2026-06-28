@@ -669,6 +669,7 @@
 "mintCoin" = "Kovaj %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
@@ -1061,7 +1062,6 @@
 "Spanish" = "Španjolski";
 "splitCoins" = "Podijeli novčiće";
 "stake" = "Uloži";
-"Stake" = "Ulog";
 "stakeCoin" = "Uloži %@";
 "staked" = "Uloženo";
 "stakedCoin" = "%@ Uloženo";
@@ -1169,6 +1169,16 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
+"tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
+"tonStakingAPY" = "APY";
+"tonStakingAPYValue" = "%@%%";
+"tonStakingMinStake" = "min %@ %@";
+"tonStakingNoPoolsFound" = "Nema pronađenih poolova";
+"tonStakingPoolAddress" = "Adresa Poola";
+"tonStakingPoolPicker" = "Pool";
+"tonStakingSelectPool" = "Odaberi Pool";
+"tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
+"tonWithdrawalPendingMessage" = "Povlačenje u tijeku. Vaš %@ bit će otključan oko %@.";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
 "transaction" = "Transakcija";
@@ -1234,7 +1244,6 @@
 "unrelatedQRCode" = "Nepovezani QR kod";
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
 "unstake" = "Povuci";
-"Unstake" = "Poništi ulog";
 "unstakeCoin" = "Povuci %@";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "unverifiedFunction" = "Neprovjerena funkcija";

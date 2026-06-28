@@ -10,7 +10,7 @@ import Foundation
 extension CoinAction {
 
     static var memoChains: [Chain] = [
-        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
+        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
@@ -21,7 +21,8 @@ extension CoinAction {
         .tron,
         .terra,
         .terraClassic,
-        .qbtc
+        .qbtc,
+        .ton
     ]
 
 }

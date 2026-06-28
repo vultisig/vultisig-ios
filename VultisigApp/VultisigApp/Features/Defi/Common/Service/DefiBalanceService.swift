@@ -31,6 +31,8 @@ struct DefiBalanceService {
             mayaChainTotalBalanceFiatDecimal(for: vault)
         case .tron:
             tronTotalBalanceFiatDecimal(for: vault)
+        case .ton:
+            tonTotalBalanceFiatDecimal(for: vault)
         case .terra, .terraClassic, .qbtc:
             cosmosStakingTotalBalanceFiatDecimal(chain: chain, vault: vault)
         default:
@@ -71,6 +73,8 @@ struct DefiBalanceService {
             mayaChainPositionCount(for: vault)
         case .tron:
             tronPositionCount(for: vault)
+        case .ton:
+            tonPositionCount(for: vault)
         case .terra, .terraClassic, .qbtc:
             cosmosStakingPositionCount(chain: chain, vault: vault)
         default:
@@ -126,6 +130,23 @@ private extension DefiBalanceService {
         guard let trxCoin = vault.nativeCoin(for: .tron) else { return .zero }
         return trxCoin.fiat(decimal: trxCoin.stakedBalanceDecimal)
     }
+
+    /// The TON DeFi position is the nominator-pool stake surfaced as a
+    /// `StakePosition` (active + pending deposit, kept visible through a pending
+    /// withdrawal since the funds are still locked in the pool). A TON wallet has
+    /// a single always-relevant nominator position, so — like Tron — we don't gate
+    /// on the per-coin opt-in (`defiPositions[.ton].staking`); a real stake always
+    /// contributes to the DeFi total.
+    func tonTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        vault.stakePositions
+            .filter { $0.coin.chain == .ton }
+            .compactMap { position in
+                guard let coin = vault.coin(for: position.coin) else { return nil }
+                return coin.fiat(decimal: position.amount)
+            }
+            .reduce(Decimal.zero, +)
+    }
+
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {
         let coins = vault.coins
             .filter { $0.chain == chain }
@@ -219,6 +240,15 @@ private extension DefiBalanceService {
     func tronPositionCount(for vault: Vault) -> Int {
         guard let trx = vault.nativeCoin(for: .tron) else { return 0 }
         return trx.stakedBalanceDecimal > 0 ? 1 : 0
+    }
+
+    /// Count of TON nominator stake positions with a non-zero amount. Ungated
+    /// (no per-coin opt-in) — mirrors Tron, since a real stake is always the
+    /// vault's TON position.
+    func tonPositionCount(for vault: Vault) -> Int {
+        vault.stakePositions
+            .filter { $0.coin.chain == .ton && $0.amount > 0 }
+            .count
     }
 
     func cosmosStakingPositionCount(chain: Chain, vault: Vault) -> Int {
