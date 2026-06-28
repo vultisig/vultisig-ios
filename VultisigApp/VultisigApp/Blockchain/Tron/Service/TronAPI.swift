@@ -208,6 +208,11 @@ struct TronChainParametersResponse: Codable {
         chainParameter.first { $0.key == "getTransactionFee" }?.value ?? 1000
     }
 
+    var energyUnitPrice: Int64 {
+        let energyFee = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
+        return energyFee > 0 ? energyFee : 210 // SUN per energy unit; live param overrides
+    }
+
     var memoFeeEstimate: Int64 {
         let memoFee = chainParameter.first { $0.key == "getMemoFee" }?.value ?? 0
         return memoFee > 0 ? memoFee : 1_000_000

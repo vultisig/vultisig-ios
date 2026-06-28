@@ -22,6 +22,14 @@ class TronService {
     private static let BYTES_PER_COIN_TX: Int64 = 300
     private static let BYTES_PER_CONTRACT_TX: Int64 = 345
 
+    // Energy a TRC20 transfer consumes: ~65k when the recipient already holds the token,
+    // ~130k when a new balance slot has to be written (approximated via account activation).
+    private static let ENERGY_PER_TRC20_TRANSFER_ACTIVE: Int64 = 65_000
+    private static let ENERGY_PER_TRC20_TRANSFER_INACTIVE: Int64 = 130_000
+
+    // Fallback SUN-per-energy price used when chain parameters are unavailable.
+    private static let DEFAULT_ENERGY_UNIT_PRICE_SUN: Int64 = 210
+
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.apiService = TronAPIService(httpClient: httpClient)
     }
@@ -39,7 +47,7 @@ class TronService {
 
     // MARK: - Block Info
 
-    func getBlockInfo(coin: Coin, to: String? = nil, memo: String? = nil) async throws -> BlockChainSpecific {
+    func getBlockInfo(coin: Coin, to: String? = nil, memo: String? = nil, isSwap: Bool = false) async throws -> BlockChainSpecific {
         let response = try await apiService.getNowBlock()
 
         let currentTimestampMillis = UInt64(Date().timeIntervalSince1970 * 1000)
@@ -49,8 +57,9 @@ class TronService {
 
         let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo)
 
-        // For swaps, if fee calculation returns 0, use default fee
-        let finalFee = calculatedFee == 0 ? coin.feeDefault.toBigInt() : calculatedFee
+        // For swaps a 0 fee means the estimate could not be derived, so fall back to the default.
+        // For regular sends a 0 fee is legitimate (energy + bandwidth fully cover the transfer).
+        let finalFee = (isSwap && calculatedFee == 0) ? coin.feeDefault.toBigInt() : calculatedFee
         let estimation = String(finalFee)
 
         return BlockChainSpecific.Tron(
@@ -114,23 +123,35 @@ class TronService {
                 )
             } else {
                 let accountResource = try await apiService.getAccountResource(address: coin.address)
-                let availableEnergy = accountResource.EnergyLimit - accountResource.EnergyUsed
+                let availableEnergy = max(0, accountResource.EnergyLimit - accountResource.EnergyUsed)
+                let availableBandwidth = accountResource.calculateAvailableBandwidth()
 
                 let isDestinationActive = try await checkIfAccountIsActive(address: to)
-                let energyRequired = isDestinationActive ? 65000 : 130000
+                let energyRequired = isDestinationActive
+                    ? Self.ENERGY_PER_TRC20_TRANSFER_ACTIVE
+                    : Self.ENERGY_PER_TRC20_TRANSFER_INACTIVE
 
-                if availableEnergy >= energyRequired {
-                    transactionFee = BigInt(1_000_000)
-                } else {
-                    transactionFee = isDestinationActive ? BigInt(18_000_000) : BigInt(36_000_000)
-                }
+                // Energy and bandwidth covered by staked/free resources cost no TRX; only the
+                // shortfall is burned. A fully resourced transfer therefore estimates to zero.
+                let chainParams = try await getCachedChainParameters()
+                let energyShortfall = max(0, energyRequired - availableEnergy)
+                let energyCost = BigInt(energyShortfall) * BigInt(chainParams.energyUnitPrice)
+
+                let bandwidthCost = try await getBandwidthFeeDiscount(
+                    isNativeToken: false,
+                    availableBandwidth: availableBandwidth
+                )
+
+                transactionFee = energyCost + bandwidthCost
             }
 
             let totalFee = transactionFee + memoFee + activationFee
             return totalFee
 
         } catch {
-            return BigInt(Self.BYTES_PER_CONTRACT_TX * 1000)
+            // Network failure: fall back to a fee_limit large enough to cover a typical TRC20
+            // transfer's energy cost so the transaction can still broadcast.
+            return BigInt(Self.ENERGY_PER_TRC20_TRANSFER_ACTIVE) * BigInt(Self.DEFAULT_ENERGY_UNIT_PRICE_SUN)
         }
     }
 
@@ -162,17 +183,11 @@ class TronService {
         let chainParams = try await getCachedChainParameters()
         let bandwidthPrice = chainParams.bandwidthFeePrice
 
-        switch (isNativeToken, availableBandwidth >= feeBandwidthRequired) {
-        case (true, true):
-            // Native transfer with sufficient bandwidth => FREE tx
-            return BigInt.zero
-        case (false, _):
-            // TRC20 always pays fee (no free bandwidth for smart contracts)
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
-        case (true, false):
-            // Native transfer without sufficient bandwidth
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
-        }
+        // Bandwidth (free daily allowance + staked) covers the transaction size for both native
+        // and TRC20 transfers; the byte cost is only burned as TRX when bandwidth is insufficient.
+        return availableBandwidth >= feeBandwidthRequired
+            ? BigInt.zero
+            : BigInt(feeBandwidthRequired * bandwidthPrice)
     }
 
     private func getTronFeeMemo(memo: String?) async throws -> BigInt {
