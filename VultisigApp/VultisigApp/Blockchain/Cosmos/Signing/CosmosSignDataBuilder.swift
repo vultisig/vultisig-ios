@@ -22,14 +22,29 @@ enum CosmosSignDataBuilder {
 
     static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee? {
         guard let signData = keysignPayload.signData else { return nil }
+        let chain = keysignPayload.coin.chain
+        let feeDenom = chain.feeUnit.lowercased()
         switch signData {
         case .signAmino(let signAmino):
+            // signAmino is JSON re-encoded per device, so flooring the fee here
+            // is hash-safe. Raise a sub-floor fee on the chain's own fee denom
+            // to the network minimum (e.g. a Keplr-injected Akash staking fee
+            // of 7_500 uakt at ~300k gas is floored to 25_000 uakt).
+            let gasLimit = UInt64(signAmino.fee.gas) ?? 0
             return WalletCore.CosmosFee.with {
-                $0.gas = UInt64(signAmino.fee.gas) ?? 0
+                $0.gas = gasLimit
                 $0.amounts = signAmino.fee.amount.map { amount in
                     WalletCore.CosmosAmount.with {
                         $0.denom = amount.denom
-                        $0.amount = amount.amount
+                        if amount.denom.lowercased() == feeDenom, let computed = UInt64(amount.amount) {
+                            $0.amount = String(CosmosFeeFloorConfig.flooredFee(
+                                for: chain,
+                                computedFee: computed,
+                                gasLimit: gasLimit
+                            ))
+                        } else {
+                            $0.amount = amount.amount
+                        }
                     }
                 }
             }
@@ -40,6 +55,19 @@ enum CosmosSignDataBuilder {
                 let feeInfo = CosmosSignDirectParser.extractFee(from: authInfoBytes)
             else {
                 throw HelperError.runtimeError("Couldn't parse signDirect fee info")
+            }
+
+            // The fee lives inside peer-shared authInfoBytes that every cosigner
+            // hashes; rewriting it would diverge the cosigner hash and break the
+            // threshold signature. So for a floored chain we VALIDATE the
+            // supplied fee and reject a sub-floor request, rather than silently
+            // rewriting the bytes.
+            let suppliedFee = feeInfo.amounts
+                .filter { $0.denom.lowercased() == feeDenom }
+                .compactMap { UInt64($0.amount) }
+                .reduce(0, +)
+            if !CosmosFeeFloorConfig.meetsFloor(for: chain, fee: suppliedFee, gasLimit: feeInfo.gasLimit) {
+                throw HelperError.runtimeError("Cosmos signDirect fee \(suppliedFee) \(feeDenom) is below the network minimum of \(CosmosFeeFloorConfig.requiredFloor(for: chain, gasLimit: feeInfo.gasLimit)) \(feeDenom)")
             }
 
             return WalletCore.CosmosFee.with {

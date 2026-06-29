@@ -798,12 +798,22 @@ private extension BlockChainService {
                 gas = 2500000000000000
             case .noble:
                 gas = 20000
-            case .akash:
-                gas = 3000
-            case .osmosis:
-                gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
+            }
+
+            // Enforce the per-chain Cosmos fee floor. Akash and Osmosis charge a
+            // non-zero minimum gas price; a sub-floor fee is rejected on-chain
+            // with "insufficient fee" (this is what replaces the old inline
+            // Akash 3000 / Osmosis 25000 literals). Because chainSpecific.gas
+            // feeds both the displayed fee and the WalletCore signing input,
+            // flooring here keeps the shown and signed fee identical.
+            if let cosmosGasLimit = try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit {
+                gas = CosmosFeeFloorConfig.flooredFee(
+                    for: coin.chain,
+                    computedFee: gas,
+                    gasLimit: cosmosGasLimit
+                )
             }
 
             // Terra Classic charges a proportional burn tax (~0.5%) on the send
