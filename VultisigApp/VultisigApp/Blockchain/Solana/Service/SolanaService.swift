@@ -98,14 +98,22 @@ class SolanaService {
             }
 
             // -32002 is Solana's generic preflight-failure code, not specific
-            // to expired blockhashes — match on the message instead.
-            let lowered = error.message.lowercased()
+            // to expired blockhashes. The structured reason lives in
+            // `data.err` ("BlockhashNotFound"); the message is just the generic
+            // "Transaction simulation failed". Match on either.
+            let structuredErr = error.data?.err?.stringValue ?? ""
+            let lowered = (error.message + " " + structuredErr).lowercased()
+            // The structured `data.err` form is "BlockhashNotFound" (no spaces);
+            // the message form is "Blockhash not found". Match both.
+            let isBlockhashNotFound = lowered.contains("blockhash not found")
+                || lowered.contains("blockhashnotfound")
+            let isBlockHeightExceeded = lowered.contains("block height exceeded")
 
-            // "Blockhash not found" right after signing is usually propagation
+            // Blockhash-not-found right after signing is usually propagation
             // lag: the RPC node we hit hasn't observed our (confirmed) blockhash
             // yet. Resending the same signed tx after a short backoff typically
             // clears it without escalating to a full keysign-ceremony retry.
-            if lowered.contains("blockhash not found"), attempt < Self.maxBroadcastAttempts {
+            if isBlockhashNotFound, attempt < Self.maxBroadcastAttempts {
                 logger.warning("solana broadcast attempt \(attempt)/\(Self.maxBroadcastAttempts) hit transient blockhash-not-found; resending after backoff")
                 try await Task.sleep(for: broadcastRetryBackoff)
                 continue
@@ -115,9 +123,19 @@ class SolanaService {
             // retry) means the blockhash has expired — resending the same tx
             // can't help, so surface it as retryable to re-sign with a fresh
             // blockhash.
-            if lowered.contains("blockhash not found") ||
-                lowered.contains("block height exceeded") {
+            if isBlockhashNotFound || isBlockHeightExceeded {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
+            }
+
+            // Surface the preflight program logs — on a simulation failure they
+            // name the real on-chain reason (e.g. insufficient funds for rent,
+            // exceeded compute budget) that the bare message omits.
+            if let logs = error.data?.logs, !logs.isEmpty {
+                logger.error("solana broadcast simulation failed: \(error.message, privacy: .public)\nlogs:\n\(logs.joined(separator: "\n"), privacy: .public)")
+                throw SolanaServiceError.rpcError(
+                    message: "\(error.message)\n\(logs.suffix(4).joined(separator: "\n"))",
+                    code: error.code
+                )
             }
 
             throw SolanaServiceError.rpcError(message: error.message, code: error.code)
@@ -177,6 +195,18 @@ class SolanaService {
     func fetchRecentBlockhash() async throws -> String? {
         let response = try await httpClient.request(
             api(.getLatestBlockhash),
+            responseType: SolanaGetLatestBlockhashResponse.self
+        )
+        return response.data.result.value.blockhash
+    }
+
+    /// `finalized`-commitment blockhash for the pre-keysign refresh. A confirmed
+    /// blockhash can be unknown to the load-balanced proxy's broadcast node
+    /// (preflight `BlockhashNotFound`); a finalized one is rooted and known to
+    /// every node.
+    func fetchFinalizedBlockhash() async throws -> String? {
+        let response = try await httpClient.request(
+            api(.getLatestBlockhashFinalized),
             responseType: SolanaGetLatestBlockhashResponse.self
         )
         return response.data.result.value.blockhash
@@ -579,6 +609,15 @@ class SolanaService {
         let reserve = response.data.result
         rentReserveCache.set(cacheKey, (data: reserve, timestamp: Date()))
         return reserve
+    }
+
+    /// Drops the short-lived epoch-info cache so the next read reflects a freshly
+    /// advanced epoch. Stake accounts are already uncached, so after a signed
+    /// delegate/unstake/withdraw/move the only stale read is the 45 s epoch cache
+    /// the activation/cooldown state is derived against; clear it so the post-tx
+    /// row state is exact.
+    func invalidateEpochInfoCache() {
+        epochInfoCache.clear()
     }
 
     /// Network total inflation rate for the current epoch (fraction, e.g.

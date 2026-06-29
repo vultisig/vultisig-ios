@@ -103,6 +103,10 @@ final class DefiChainMainViewModel: ObservableObject {
         case .ton:
             // TON nominator-pool staking only — no bond / LP segments.
             [.stake]
+        case .solana:
+            // Solana native (Stake program) staking only — routes to
+            // `SolanaStakeDefiView` (see `DefiChainMainScreen.solanaStakeView`).
+            [.stake]
         default:
             []
         }

@@ -10,10 +10,13 @@
 //  it so the two read layers stay legible side by side.
 //
 //  The min-delegation RPC (`getStakeMinimumDelegation`) is blocked by the
-//  Vultisig proxy, and the 1 SOL program minimum is feature-gated / inactive on
-//  mainnet today. So delegation-floor preflight uses the rent-exempt reserve
-//  (fetched live via `getMinimumBalanceForRentExemption(200)`) plus the
-//  documented `minDelegationFloorLamports` constant below as the substitute.
+//  Vultisig proxy. The 1 SOL program minimum delegation IS active on mainnet
+//  (verified live 2026-06-26: getStakeMinimumDelegation = 1_000_000_000) and is
+//  enforced by the Stake program — a DelegateStake below it reverts with
+//  StakeError.InsufficientDelegation. Since the RPC is blocked, the delegation
+//  floor uses the documented `minDelegationFloorLamports` constant below plus
+//  the live rent-exempt reserve (active stake = funding − rent, so the funding
+//  floor is 1 SOL + rent).
 //
 
 import Foundation
@@ -50,6 +53,13 @@ enum SolanaStakingConfig {
 
     /// Lamports per SOL (9 decimals). Shared by the staking read/format layer.
     static let lamportsPerSol: UInt64 = 1_000_000_000
+
+    /// Rent-exempt reserve for a 200-byte stake account (`StakeStateV2`), in
+    /// lamports. Deterministic from the rent rate + account size, so it serves
+    /// as the pre-load default before the live `getMinimumBalanceForRentExemption`
+    /// read returns — keeps the "fund entered + rent" math correct even if the
+    /// user submits before that fetch completes.
+    static let rentExemptReserveLamports: UInt64 = 2_282_880
 
     /// Mainnet schedule: 432,000 slots per epoch (~2 days). Informational —
     /// the live value is read from `getEpochInfo.slotsInEpoch`; this is the

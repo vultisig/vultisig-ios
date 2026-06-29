@@ -91,8 +91,13 @@ final class BlockChainService {
             return payload
         }
 
-        // Fetch fresh blockhash
-        guard let freshBlockhash = try await sol.fetchRecentBlockhash() else {
+        // Fetch a fresh FINALIZED blockhash. A `confirmed` blockhash can be
+        // unknown to the load-balanced proxy's broadcast node (preflight
+        // `BlockhashNotFound` even seconds after fetching it); a finalized,
+        // rooted blockhash is known to every node. This refresh runs right
+        // before the ceremony, so the ~13s finalized lag still leaves ample
+        // validity.
+        guard let freshBlockhash = try await sol.fetchFinalizedBlockhash() else {
             throw Errors.failToGetRecentBlockHash
         }
 
@@ -105,6 +110,19 @@ final class BlockChainService {
             toAddressPubKey: toAddressPubKey,
             hasProgramId: hasProgramId
         )
+
+        // Solana native staking: the relayed `signData = .signSolana` bytes
+        // (delegate / deactivate / withdraw / move) have the OLD blockhash baked
+        // in, and a plain rebuild drops BOTH `signData` and the local-only
+        // `solanaStakingPayload`. Without preserving them the keysign sees no
+        // staking intent and signs a plain transfer to the validator vote
+        // account. Preserve the staking payload across the chain-specific swap
+        // and rebuild the unsigned staking tx with the fresh blockhash.
+        if payload.solanaStakingPayload != nil {
+            let staked = payload.withChainSpecific(updatedChainSpecific)
+            let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: staked)
+            return staked.withSignData(.signSolana(SignSolana(rawTransactions: [rawTransaction])))
+        }
 
         // Create and return updated payload with fresh blockhash
         return KeysignPayload(

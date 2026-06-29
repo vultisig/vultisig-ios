@@ -27,6 +27,14 @@ struct SolanaAPI: TargetType {
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
+        /// `finalized`-commitment blockhash. Used for the pre-keysign refresh:
+        /// a `confirmed` blockhash isn't yet universal across the load-balanced
+        /// RPC proxy's upstream nodes, so the broadcast node's preflight can
+        /// return `BlockhashNotFound`. A finalized (rooted) blockhash is known
+        /// to every node, eliminating that failure at the cost of ~13s of the
+        /// validity window — acceptable since the refresh runs right before the
+        /// ceremony.
+        case getLatestBlockhashFinalized
         case getTokenAccountsByOwner(walletAddress: String, filter: TokenAccountFilter)
         case getAccountInfo(address: String)
         /// All validators (vote accounts), `current` + `delinquent`.
@@ -81,6 +89,8 @@ struct SolanaAPI: TargetType {
             // burns that much of the ~60–90s blockhash validity window before
             // the keysign ceremony even starts.
             return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "confirmed"]]), .jsonEncoding)
+        case .getLatestBlockhashFinalized:
+            return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "finalized"]]), .jsonEncoding)
         case .getTokenAccountsByOwner(let walletAddress, let filter):
             let filterDict: [String: String]
             switch filter {
@@ -165,6 +175,29 @@ struct SolanaSendTransactionResponse: Decodable {
     struct Error: Decodable {
         let code: Int
         let message: String
+        /// Preflight-simulation detail. On a `-32002` simulation failure the RPC
+        /// returns the program `logs` (and `err`) here — the only thing that
+        /// names the actual on-chain failure. Optional: most errors omit it.
+        let data: ErrorData?
+
+        struct ErrorData: Decodable {
+            let logs: [String]?
+            /// Structured failure reason. Solana puts `"BlockhashNotFound"` here
+            /// (with a generic `"Transaction simulation failed"` message), so the
+            /// retry/expiry detection must inspect this, not just the message.
+            let err: AnyCodableErr?
+        }
+
+        /// `err` is polymorphic — a bare string (`"BlockhashNotFound"`) or an
+        /// object (`{"InstructionError": [...]}`). Decode just enough to expose
+        /// the string form for matching.
+        struct AnyCodableErr: Decodable {
+            let stringValue: String?
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                stringValue = try? container.decode(String.self)
+            }
+        }
     }
 }
 

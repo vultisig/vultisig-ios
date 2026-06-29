@@ -66,22 +66,25 @@ struct SolanaMoveStakeTransactionBuilder: TransactionBuilder {
             return SolanaStakingPayload.moveStakeRedelegate(
                 movedStakeAccount: stakeAccount,
                 votePubkey: votePubkey,
-                lamports: lamports(from: amount, decimals: coin.decimals)
+                lamports: lamports(from: amount)
             )
         case .split:
             return SolanaStakingPayload.moveStakeSplit(
                 sourceStakeAccount: stakeAccount,
                 splitStakeAccount: stakeAccount,
                 votePubkey: votePubkey,
-                lamports: lamports(from: amount, decimals: coin.decimals)
+                lamports: lamports(from: amount)
             )
         }
     }
 
-    /// Converts a human-decimal SOL amount into lamports. Uses `BigInt` to avoid
-    /// `Double` rounding at the 9-decimal scale, then clamps to `UInt64`.
-    private func lamports(from amount: String, decimals: Int) -> UInt64 {
-        let raw = amount.toBigInt(decimals: decimals)
+    /// Converts the human-decimal SOL amount ("0.0289…") into lamports via the
+    /// shared send-path scaler (locale-aware, ×10^decimals), then clamps to the
+    /// `UInt64` range. Note: this must NOT use `String.toBigInt(decimals:)`,
+    /// which expects an already-scaled integer string and would truncate a
+    /// fractional amount to 0 lamports.
+    private func lamports(from amount: String) -> UInt64 {
+        let raw = SendCryptoLogic.amountInRaw(coin: coin, amount: amount)
         guard raw > 0, raw <= BigInt(UInt64.max) else { return 0 }
         return UInt64(raw)
     }
