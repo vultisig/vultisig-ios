@@ -1057,6 +1057,15 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
+"solanaStakingErrorInsufficientForRentReserve" = "Nedovoljno SOL-a za pokrivanje uloženog iznosa i pričuve za najam.";
+"solanaStakingErrorMissingChainSpecific" = "Nedostaju podaci specifični za Solana lanac za staking.";
+"solanaStakingErrorMissingPayload" = "Nedostaje Solana staking payload.";
+"solanaStakingErrorMissingPayloadField" = "Solana staking payload nedostaje obavezno polje: %@";
+"solanaStakingErrorValidatorPreflightFailed" = "Provjera validatora nije uspjela: %@";
+"solanaStakingErrorWrongOpType" = "Nepodržana Solana staking operacija.";
+"solanaValidatorErrorEmpty" = "Adresa glasanja validatora je prazna.";
+"solanaValidatorErrorInvalidVotePubkey" = "Nevažeća Solana adresa glasanja validatora.";
+"solanaValidatorErrorUnknownValidator" = "Validator nije pronađen u trenutnom skupu računa za glasanje.";
 "somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "sourceValidator" = "Izvorni validator";
