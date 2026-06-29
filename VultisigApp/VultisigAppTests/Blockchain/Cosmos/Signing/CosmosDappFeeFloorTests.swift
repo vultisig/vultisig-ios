@@ -38,7 +38,7 @@ final class CosmosDappFeeFloorTests: XCTestCase {
             coin: coin,
             toAddress: "",
             toAmount: 0,
-            chainSpecific: .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil),
+            chainSpecific: .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
             utxos: [],
             memo: nil,
             swapPayload: nil,

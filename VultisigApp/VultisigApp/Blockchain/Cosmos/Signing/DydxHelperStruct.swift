@@ -14,7 +14,7 @@ struct DydxHelperStruct {
     static let DydxGasLimit: UInt64 = 2500000000000000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {

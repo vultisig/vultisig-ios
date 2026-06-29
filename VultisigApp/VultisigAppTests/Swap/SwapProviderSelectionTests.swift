@@ -277,7 +277,7 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         fromAmount: Decimal,
         quote: SwapQuote?
     ) async throws -> BlockChainSpecific {
-        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     func computeThorchainFee(

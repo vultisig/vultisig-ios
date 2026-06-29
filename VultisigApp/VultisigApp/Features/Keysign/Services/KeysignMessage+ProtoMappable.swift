@@ -440,7 +440,8 @@ extension BlockChainSpecific {
                 sequence: value.sequence,
                 gas: value.gas,
                 transactionType: value.transactionType.rawValue,
-                ibcDenomTrace: value.hasIbcDenomTraces ? CosmosIbcDenomTraceDenomTrace(path: value.ibcDenomTraces.path, baseDenom: value.ibcDenomTraces.baseDenom, height: value.ibcDenomTraces.latestBlock) : nil
+                ibcDenomTrace: value.hasIbcDenomTraces ? CosmosIbcDenomTraceDenomTrace(path: value.ibcDenomTraces.path, baseDenom: value.ibcDenomTraces.baseDenom, height: value.ibcDenomTraces.latestBlock) : nil,
+                gasLimit: value.hasGasLimit ? value.gasLimit : nil
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -549,7 +550,7 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType, let ibc):
+        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType, let ibc, let gasLimit):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
@@ -559,6 +560,9 @@ extension BlockChainSpecific {
                     $0.baseDenom = ibc?.baseDenom ?? ""
                     $0.path = ibc?.path ?? ""
                     $0.latestBlock = ibc?.height ?? "0"
+                }
+                if let gasLimit {
+                    $0.gasLimit = gasLimit
                 }
             })
         case .Solana(let recentBlockHash, let priorityFee, let priorityLimit, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):

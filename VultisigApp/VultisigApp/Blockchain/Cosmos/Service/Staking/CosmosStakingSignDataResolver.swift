@@ -120,7 +120,7 @@ enum CosmosStakingSignDataResolver {
         guard let payload = sendTransaction.cosmosStakingPayload else {
             throw Errors.missingPayloadField("cosmosStakingPayload")
         }
-        guard case .Cosmos(let accountNumber, let sequence, _, _, _) = chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, _, _, _, _) = chainSpecific else {
             throw Errors.missingChainSpecific
         }
         let chain = sendTransaction.coin.chain

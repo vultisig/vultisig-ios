@@ -109,7 +109,7 @@ struct QBTCHelper {
             return (bodyBytes, authInfoBytes)
         }
 
-        guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace) = keysignPayload.chainSpecific else {
+        guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("QBTC: fail to get account number and sequence")
         }
 
@@ -140,7 +140,7 @@ struct QBTCHelper {
             }
             accountNumber = parsed
         } else {
-            guard case let .Cosmos(chainSpecificAccountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
+            guard case let .Cosmos(chainSpecificAccountNumber, _, _, _, _, _) = keysignPayload.chainSpecific else {
                 throw HelperError.runtimeError("QBTC: fail to get account number")
             }
             docChainID = chainID

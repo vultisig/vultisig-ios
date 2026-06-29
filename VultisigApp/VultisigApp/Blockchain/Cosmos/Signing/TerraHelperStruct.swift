@@ -14,7 +14,7 @@ struct TerraHelperStruct {
     static let GasLimit: UInt64 = 300000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload, chain: Chain) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
 

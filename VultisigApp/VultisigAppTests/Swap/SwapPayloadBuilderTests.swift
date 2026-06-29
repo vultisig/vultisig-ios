@@ -525,7 +525,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
     }
 
     private func cosmosChainSpecific() -> BlockChainSpecific {
-        .Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     private func ethereumChainSpecific() -> BlockChainSpecific {

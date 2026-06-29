@@ -296,7 +296,7 @@ struct SendCryptoSecondaryDoneView: View {
                 coin: .example,
                 toAddress: "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
                 toAmount: 0,
-                chainSpecific: .Cosmos(accountNumber: 3367086, sequence: 42, gas: 7500, transactionType: 0, ibcDenomTrace: nil),
+                chainSpecific: .Cosmos(accountNumber: 3367086, sequence: 42, gas: 7500, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
                 utxos: [],
                 memo: nil,
                 swapPayload: nil,

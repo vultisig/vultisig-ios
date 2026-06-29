@@ -802,17 +802,45 @@ private extension BlockChainService {
                 gas = 7500
             }
 
-            // Enforce the per-chain Cosmos fee floor. Akash and Osmosis charge a
-            // non-zero minimum gas price; a sub-floor fee is rejected on-chain
-            // with "insufficient fee" (this is what replaces the old inline
-            // Akash 3000 / Osmosis 25000 literals). Because chainSpecific.gas
-            // feeds both the displayed fee and the WalletCore signing input,
-            // flooring here keeps the shown and signed fee identical.
-            if let cosmosGasLimit = try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit {
+            // Optionally simulate to derive a dynamic per-tx gas limit the
+            // initiator relays to co-signers (CosmosSpecific.gas_limit). Gated
+            // OFF by default (see CosmosGasEstimationConfig): the relayed limit
+            // is part of the SignDoc, so until every co-signer honors it the
+            // SignDocs would diverge and the MPC signature would fail. nil when
+            // the gate is off or simulation fails, in which case peers fall back
+            // to the static per-chain gas limit.
+            var dynamicGasLimit: UInt64?
+            if CosmosGasEstimationConfig.shouldSimulate(chain: coin.chain),
+               action == .transfer,
+               coin.isNativeToken,
+               let amount, amount > 0,
+               let toAddress, !toAddress.isEmpty {
+                dynamicGasLimit = await CosmosGasEstimator.estimateGasLimit(
+                    chain: coin.chain,
+                    hexPublicKey: coin.hexPublicKey,
+                    fromAddress: coin.address,
+                    toAddress: toAddress,
+                    amount: String(amount),
+                    accountNumber: accountNumber,
+                    sequence: sequence,
+                    service: service
+                )
+            }
+
+            // Enforce the per-chain Cosmos fee floor at the effective gas limit:
+            // the relayed dynamic limit when present, else the static per-chain
+            // limit. Akash and Osmosis charge a non-zero minimum gas price; a
+            // sub-floor fee is rejected on-chain with "insufficient fee" (this is
+            // what replaces the old inline Akash 3000 / Osmosis 25000 literals).
+            // Because chainSpecific.gas feeds both the displayed fee and the
+            // WalletCore signing input, flooring here keeps the shown and signed
+            // fee identical.
+            let effectiveGasLimit = dynamicGasLimit ?? (try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit)
+            if let effectiveGasLimit {
                 gas = CosmosFeeFloorConfig.flooredFee(
                     for: coin.chain,
                     computedFee: gas,
-                    gasLimit: cosmosGasLimit
+                    gasLimit: effectiveGasLimit
                 )
             }
 
@@ -842,7 +870,8 @@ private extension BlockChainService {
                 sequence: sequence,
                 gas: gas,
                 transactionType: transactionType.rawValue,
-                ibcDenomTrace: ibcDenomTrace
+                ibcDenomTrace: ibcDenomTrace,
+                gasLimit: dynamicGasLimit
             )
 
         case .ton:
