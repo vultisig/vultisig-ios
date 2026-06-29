@@ -28,7 +28,11 @@ class BalanceService {
     private let thorchainAPIService = THORChainAPIService()
     private let mayaChainAPIService = MayaChainAPIService()
 
-    private let cryptoPriceService = CryptoPriceService.shared
+    private let cryptoPriceService: CryptoPriceServiceProtocol
+
+    init(cryptoPriceService: CryptoPriceServiceProtocol = CryptoPriceService.shared) {
+        self.cryptoPriceService = cryptoPriceService
+    }
 
     /// Value type to identify a coin for balance fetching without holding SwiftData model references
     /// Reuses CoinMeta and adds only the minimal additional fields needed for balance operations
@@ -63,31 +67,61 @@ class BalanceService {
     }
 
     func updateBalances(vault: Vault) async {
-        // Phase 0: Fetch prices (already async-safe)
-        do {
-            try await cryptoPriceService.fetchPrices(vault: vault)
-        } catch {
-            if (error as? URLError)?.code != .cancelled {
-                logger.warning("Fetch Rates error: \(error.localizedDescription)")
-            }
-        }
-
-        // Phase 1: Extract coin identifiers on MainActor
+        // Phase 1: Extract value-type identifiers on MainActor
         let coinIdentifiers = await extractCoinIdentifiers(from: vault)
+        let coinMetas = coinIdentifiers.map { $0.coinMeta }
 
-        // Phase 2: Fetch balances concurrently (off MainActor)
+        // Prices and balances run concurrently. Balances never read prices (fiat
+        // is computed lazily from RateProvider at render time), so a slow or
+        // failing price provider must not gate balance freshness.
+        async let pricesDone: Void = fetchRatesSafely(coins: coinMetas)
         let updates = await fetchBalanceUpdates(for: coinIdentifiers)
 
-        // Phase 3: Apply updates in batch on MainActor
+        // Phase 3: Apply updates in batch on MainActor (triggers SwiftUI updates).
         do {
             try await applyBalanceUpdates(updates, to: vault)
         } catch {
             logger.error("Update Balances error: \(error.localizedDescription)")
         }
 
+        // Ensure rates have landed, then relabel fiat on MainActor.
+        await pricesDone
+        await refreshFiat(vault: vault)
+
         // Phase 4: Discover Cardano native tokens silently — mirrors Windows
         // CoinFinder behaviour. Failures here must never break a balance refresh.
         await discoverCardanoNativeTokens(vault: vault)
+    }
+
+    /// Rates-only refresh used when only the display currency changed. Fetches
+    /// price rates and relabels fiat without issuing any per-coin balance RPCs or
+    /// running Cardano token discovery.
+    func refreshRates(vault: Vault) async {
+        let metas = await extractCoinIdentifiers(from: vault).map { $0.coinMeta }
+        await fetchRatesSafely(coins: metas)
+        await refreshFiat(vault: vault)
+    }
+
+    /// Fetch price rates for the given coins, swallowing cancellation and logging
+    /// other failures so a price outage can never gate balances.
+    private func fetchRatesSafely(coins: [CoinMeta]) async {
+        do {
+            try await cryptoPriceService.fetchPrices(coins: coins)
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Fetch Rates error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Nudge SwiftUI to recompute fiat labels for the vault and its coins once
+    /// fresh rates are cached. Balances are applied separately.
+    @MainActor
+    private func refreshFiat(vault: Vault) {
+        vault.objectWillChange.send()
+        for coin in vault.coins {
+            coin.objectWillChange.send()
+        }
     }
 
     /// Phase 1: Extract coin identifiers on MainActor

@@ -86,6 +86,10 @@ extension String {
 
     static let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
 
+    /// Rendered in place of fiat when a balance is known but its rate has not yet
+    /// loaded (first-ever cold start), so the UI never flashes a misleading "$0.00".
+    static let fiatPlaceholder = "—"
+
     var truncatedAddress: String {
         self.prefix(4) + "..." + self.suffix(4)
     }
