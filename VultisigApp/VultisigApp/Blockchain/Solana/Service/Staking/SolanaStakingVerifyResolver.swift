@@ -26,7 +26,12 @@ enum SolanaStakingVerifyResolver {
     ) async throws -> SignSolana {
         switch payload.opType {
         case .delegate:
-            let rentReserve = try await stakingService.fetchRentReserve()
+            // Rent reserve is informational on this verify branch — the funding
+            // amount already bakes it in upstream — so a transient rent-exemption
+            // outage must not block an otherwise-valid delegate. Fall back to 0
+            // rather than hard-fail. The validator set, by contrast, stays a soft
+            // dependency (graceful preflight degradation; see SolanaValidatorPreflight).
+            let rentReserve = (try? await stakingService.fetchRentReserve()) ?? 0
             let knownVotePubkeys = Set(
                 ((try? await stakingService.fetchValidators()) ?? []).map(\.votePubkey)
             )

@@ -6,9 +6,13 @@
 //  has no native redelegate, so a move is a multi-transaction, cross-epoch
 //  flow: split the chosen amount → deactivate the moved account → wait ~1 epoch
 //  → re-delegate to validator B. There is no on-device journal of where the
-//  user is in that flow — instead the state is INFERRED entirely from the
-//  on-chain parsed stake account, so it survives app restarts and reinstalls
-//  and is resumable on any device that holds the vault.
+//  user is in that flow — instead the PHASE is INFERRED from the on-chain parsed
+//  stake account, so it survives app restarts. The destination validator (B),
+//  however, only becomes readable on-chain once the re-delegate lands; while the
+//  move is still cooling down it is known from local intent alone, so resuming a
+//  PENDING move is scoped to the same device/session that started it (a fresh
+//  device or reinstall can still observe an already-landed move, just not finish
+//  a cooling-down one).
 //
 //  Inference reads the moved/split account's `activationState` and its current
 //  delegation target, gated by `SolanaEpochCooldownGate` for the cooldown:

@@ -61,21 +61,34 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
 
     func onLoad() {
         setupForm()
-        amountField.validators.append(AmountBalanceValidator(balance: stakeableBalance))
-        // Minimum-delegation guard. The user enters the amount they want
-        // ACTIVELY staked; the Solana mainnet minimum delegation is 1 SOL
-        // (getStakeMinimumDelegation), enforced by the Stake program — a
-        // DelegateStake below it reverts with StakeError.InsufficientDelegation
-        // (custom error 12). The rent-exempt reserve is added on top
-        // automatically in `transactionBuilder`, so the user only needs to enter
-        // >= 1 SOL.
-        amountField.validators.append(ClosureValidator { [weak self] value in
-            guard let self else { return }
-            guard value.toDecimal() >= self.minimumDelegationDecimal else {
-                throw SolanaDelegateValidationError.belowMinimum(self.minimumDelegationDecimal)
-            }
-        })
+        refreshAmountValidators()
         Task { await loadRentReserve() }
+    }
+
+    /// (Re)builds the amount-field validators against the CURRENT
+    /// `stakeableBalance`. Called again after `loadRentReserve()` because the live
+    /// rent reserve can exceed the seeded estimate, shrinking `stakeableBalance` —
+    /// without a rebuild the balance guard would keep validating against the stale
+    /// snapshot and let an amount through that no longer fits (and overfund the
+    /// stake account).
+    private func refreshAmountValidators() {
+        amountField.validators = [
+            RequiredValidator(errorMessage: "emptyAmountField".localized),
+            AmountBalanceValidator(balance: stakeableBalance),
+            // Minimum-delegation guard. The user enters the amount they want
+            // ACTIVELY staked; the Solana mainnet minimum delegation is 1 SOL
+            // (getStakeMinimumDelegation), enforced by the Stake program — a
+            // DelegateStake below it reverts with StakeError.InsufficientDelegation
+            // (custom error 12). The rent-exempt reserve is added on top
+            // automatically in `transactionBuilder`, so the user only needs to
+            // enter >= 1 SOL.
+            ClosureValidator { [weak self] value in
+                guard let self else { return }
+                guard value.toDecimal() >= self.minimumDelegationDecimal else {
+                    throw SolanaDelegateValidationError.belowMinimum(self.minimumDelegationDecimal)
+                }
+            }
+        ]
     }
 
     /// Minimum amount the user may enter — the 1 SOL program minimum delegation.
@@ -90,6 +103,14 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
             let reserveLamports = try await stakingService.fetchRentReserve()
             let divisor = pow(Decimal(10), coin.decimals)
             rentReserve = Decimal(reserveLamports) / divisor
+            // Rebuild the balance guard against the now-live `stakeableBalance`; if
+            // the user already entered an amount that no longer fits, re-validate
+            // immediately so the form rejects it.
+            refreshAmountValidators()
+            if amountField.touched {
+                validateErrors()
+                validForm = form.allSatisfy { $0.valid }
+            }
         } catch {
             logger.error("Rent reserve fetch failed: \(error.localizedDescription, privacy: .public)")
         }

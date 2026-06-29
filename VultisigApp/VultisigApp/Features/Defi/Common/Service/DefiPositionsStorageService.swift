@@ -93,7 +93,10 @@ struct DefiPositionsStorageService {
     @discardableResult
     @MainActor
     func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {
-        assert(
+        // A real runtime guard, not `assert` — `assert` is compiled out in
+        // release, so a mis-routed SOL snapshot would silently run the coin-keyed
+        // path in production and collapse every stake account onto one row.
+        precondition(
             !positions.contains { $0.coin.chain == .solana },
             "Solana stake positions must use upsert(solanaStake:for:) — coin-keyed upsert collapses N accounts."
         )
@@ -129,6 +132,14 @@ struct DefiPositionsStorageService {
     /// read (a failed/degraded read keeps the last-known snapshot).
     @MainActor
     func upsert(solanaStake snapshots: [StakePositionData], for vault: Vault) throws {
+        // Every Solana row is keyed by its stake-account pubkey. An empty/nil
+        // pubkey collapses to the historical coin-keyed `makeID` fallback (or a
+        // dangling suffix), aliasing every account onto one id — the Solana-scoped
+        // delete-stale below would then wipe the sibling rows. Reject the whole
+        // snapshot rather than corrupt the persisted set.
+        guard snapshots.allSatisfy({ $0.stakeAccountPubkey?.isEmpty == false }) else {
+            throw DefiPositionsStorageError.missingStakeAccountPubkey
+        }
         let newIDs = Set(snapshots.map {
             StakePosition.makeID(coin: $0.coin, vault: vault, stakeAccountPubkey: $0.stakeAccountPubkey)
         })
@@ -214,4 +225,10 @@ private extension DefiPositionsStorageService {
         try Storage.shared.save()
         NotificationCenter.default.post(name: .defiPositionsDidChange, object: nil)
     }
+}
+
+enum DefiPositionsStorageError: Error {
+    /// A Solana stake snapshot carried an empty/nil `stakeAccountPubkey`, which
+    /// would alias rows onto the coin-keyed fallback id under delete-stale.
+    case missingStakeAccountPubkey
 }

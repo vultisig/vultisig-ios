@@ -116,7 +116,7 @@ extension SolanaStakeAccount {
 
     private init?(pubkey: String, lamports: UInt64, parsed: SolanaStakeParsed) {
         let info = parsed.info
-        let rentReserve = UInt64(info.meta.rentExemptReserve) ?? 0
+        guard let rentReserve = UInt64(info.meta.rentExemptReserve) else { return nil }
 
         var delegation: Delegation?
         if let stake = info.stake {
