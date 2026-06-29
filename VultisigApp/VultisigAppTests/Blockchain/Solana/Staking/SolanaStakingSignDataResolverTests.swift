@@ -68,9 +68,11 @@ final class SolanaStakingSignDataResolverTests: XCTestCase {
     func testResolveEmitsSingleRelayedTransactionWithMatchingPreImage() throws {
         let privateKey = try makeSignerKey()
         let votePubkey = try validatorVotePubkey()
+        // Post-refactor delegate `lamports` already include the rent reserve
+        // (active 2 SOL + 2_282_880 rent), so exercise the emitted funding total.
         let payload = makePayload(
             privateKey: privateKey, votePubkey: votePubkey,
-            lamports: 2_000_000_000, rawBalance: "5000000000"
+            lamports: 2_002_282_880, rawBalance: "5000000000"
         )
 
         let signSolana = try SolanaStakingSignDataResolver.resolve(

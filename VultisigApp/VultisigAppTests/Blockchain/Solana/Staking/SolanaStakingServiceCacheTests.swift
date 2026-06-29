@@ -80,21 +80,29 @@ final class SolanaStakingServiceCacheTests: XCTestCase {
             clock: { now.value }
         )
         _ = try await service.fetchValidators()
-        now.advance(to: 601) // past the 10-min TTL
+        now.advance(to: 599) // one second inside the TTL — still served from cache
+        _ = try await service.fetchValidators()
+        XCTAssertEqual(reader.validatorCalls, 1)
+        now.advance(to: 600) // exactly at the TTL boundary — expired (cache is valid for age < ttl)
         _ = try await service.fetchValidators()
         XCTAssertEqual(reader.validatorCalls, 2)
     }
 
     func testInflationCachedWithinTTL() async throws {
         let reader = CountingReader()
+        let now = MovableClock(start: 0)
         let service = SolanaStakingService(
             solanaService: reader,
             inflationTTL: 600,
-            clock: { Date(timeIntervalSince1970: 0) }
+            clock: { now.value }
         )
         _ = try await service.fetchInflationRate()
+        now.advance(to: 599) // still inside the TTL — served from cache
         _ = try await service.fetchInflationRate()
         XCTAssertEqual(reader.inflationCalls, 1)
+        now.advance(to: 600) // exactly at the TTL boundary — expired (cache is valid for age < ttl)
+        _ = try await service.fetchInflationRate()
+        XCTAssertEqual(reader.inflationCalls, 2)
     }
 
     func testStakeAccountsNeverCached() async throws {

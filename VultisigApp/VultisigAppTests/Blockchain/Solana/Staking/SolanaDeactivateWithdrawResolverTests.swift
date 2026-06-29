@@ -87,7 +87,12 @@ final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
             stakingPayload: .withdraw(stakeAccount: stakeAccount, lamports: 2_000_000_000)
         )
 
-        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveDeactivate(basePayload: payload))
+        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveDeactivate(basePayload: payload)) { error in
+            guard case SolanaStakingSignDataResolver.Errors.wrongOpType(let op) = error else {
+                return XCTFail("expected wrongOpType, got \(error)")
+            }
+            XCTAssertEqual(op, .withdraw)
+        }
     }
 
     // MARK: - Withdraw
@@ -115,7 +120,12 @@ final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
         let stakeAccount = try stakeAccountAddress()
         let payload = makePayload(privateKey: privateKey, stakingPayload: .unstake(stakeAccount: stakeAccount))
 
-        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: payload))
+        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: payload)) { error in
+            guard case SolanaStakingSignDataResolver.Errors.wrongOpType(let op) = error else {
+                return XCTFail("expected wrongOpType, got \(error)")
+            }
+            XCTAssertEqual(op, .unstake)
+        }
     }
 
     func testWithdrawRejectsZeroAmount() throws {
@@ -126,6 +136,11 @@ final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
             stakingPayload: .withdraw(stakeAccount: stakeAccount, lamports: 0)
         )
 
-        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: payload))
+        XCTAssertThrowsError(try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: payload)) { error in
+            guard case SolanaStakingSignDataResolver.Errors.missingPayloadField(let field) = error else {
+                return XCTFail("expected missingPayloadField, got \(error)")
+            }
+            XCTAssertEqual(field, "lamports")
+        }
     }
 }

@@ -74,7 +74,11 @@ final class SolanaStakingAPYResolverTests: XCTestCase {
             totalActivatedStake: 5_000,
             totalSupplyLamports: 10_000
         )
-        XCTAssertNotNil(apy)
+        // Pin the on-chain fallback value so a regression that returns the zero
+        // metadataAPY (instead of taking the fallback) is caught: apr =
+        // (0.06 / 0.5) * 1, compounded over 182 epochs.
+        let expected = pow(1 + ((0.06 / 0.5) / 182.0), 182.0) - 1
+        XCTAssertEqual((apy as NSDecimalNumber?)?.doubleValue ?? 0, expected, accuracy: 0.0005)
     }
 
     func testOnChainNilWhenSupplyMissing() {

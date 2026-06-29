@@ -55,8 +55,10 @@ final class SolanaStakingAPITests: XCTestCase {
         let dataSlice = try XCTUnwrap(config["dataSlice"] as? [String: Any])
         XCTAssertEqual(dataSlice["offset"] as? Int, 0)
         XCTAssertEqual(dataSlice["length"] as? Int, 0)
-        // The owner memcmp must still be present so the slice doesn't widen the scan.
+        // The dataSize:200 + owner memcmp filters must still be present so the
+        // zero-length slice doesn't widen the scan beyond stake-state accounts.
         let filters = try XCTUnwrap(config["filters"] as? [[String: Any]])
+        XCTAssertTrue(filters.contains { $0["dataSize"] as? Int == 200 })
         XCTAssertTrue(filters.contains { ($0["memcmp"] as? [String: Any])?["bytes"] as? String == owner })
     }
 

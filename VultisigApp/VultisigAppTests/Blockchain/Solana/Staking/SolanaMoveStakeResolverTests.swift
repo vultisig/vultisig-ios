@@ -147,7 +147,11 @@ final class SolanaMoveStakeResolverTests: XCTestCase {
 
         XCTAssertThrowsError(
             try SolanaStakingSignDataResolver.resolveMoveStake(basePayload: payload, knownVotePubkeys: [])
-        )
+        ) { error in
+            guard case SolanaStakingSignDataResolver.Errors.partialSplitUnsupported = error else {
+                return XCTFail("expected partialSplitUnsupported, got \(error)")
+            }
+        }
     }
 
     func testMoveStakeRejectsNonMoveOpType() throws {
@@ -157,7 +161,12 @@ final class SolanaMoveStakeResolverTests: XCTestCase {
 
         XCTAssertThrowsError(
             try SolanaStakingSignDataResolver.resolveMoveStake(basePayload: payload, knownVotePubkeys: [])
-        )
+        ) { error in
+            guard case SolanaStakingSignDataResolver.Errors.wrongOpType(let op) = error else {
+                return XCTFail("expected wrongOpType, got \(error)")
+            }
+            XCTAssertEqual(op, .unstake)
+        }
     }
 
     func testMoveStakeRejectsMissingSubStep() throws {
@@ -174,6 +183,11 @@ final class SolanaMoveStakeResolverTests: XCTestCase {
 
         XCTAssertThrowsError(
             try SolanaStakingSignDataResolver.resolveMoveStake(basePayload: payload, knownVotePubkeys: [])
-        )
+        ) { error in
+            guard case SolanaStakingSignDataResolver.Errors.wrongMoveStakeStep(let step) = error else {
+                return XCTFail("expected wrongMoveStakeStep, got \(error)")
+            }
+            XCTAssertNil(step)
+        }
     }
 }
