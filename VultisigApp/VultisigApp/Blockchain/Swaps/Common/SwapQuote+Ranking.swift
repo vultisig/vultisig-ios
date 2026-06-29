@@ -38,6 +38,14 @@ extension SwapQuote {
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
             return toCoin.decimal(for: raw)
 
+        case .jupiter(let quote, _, let platformFee):
+            // Jupiter `outAmount` is the gross output in raw toCoin base units;
+            // the VULT-scaled affiliate fee (already in toCoin units) is taken
+            // from the output, so subtract it for the net the user receives.
+            guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
+            let net = toCoin.decimal(for: raw) - (platformFee ?? 0)
+            return net > 0 ? net : nil
+
         case .swapkit(let response, _, _):
             // SwapKit's `expectedBuyAmount` is already a decimal string in
             // human units (not raw base units) — same wire choice the

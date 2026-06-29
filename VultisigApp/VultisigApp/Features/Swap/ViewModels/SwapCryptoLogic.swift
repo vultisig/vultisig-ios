@@ -88,6 +88,11 @@ enum SwapCryptoLogic {
             default:
                 return fee ?? 0
             }
+        case let .jupiter(_, fee, _):
+            // Jupiter exposes no network fee at quote time; fall back to the
+            // Solana-source plan fee carried in `thorchainFee`
+            // (`chainSpecific.gas`), the same way Send computes it.
+            return fee ?? thorchainFee
         case nil:
             return .zero
         }
@@ -105,6 +110,12 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
+        case let .jupiter(quote, _, platformFee):
+            // `outAmount` is gross of the affiliate fee, which is taken from the
+            // output — show the user the net they receive.
+            let amount = BigInt(quote.dstAmount) ?? BigInt.zero
+            let net = toCoin.decimal(for: amount) - (platformFee ?? 0)
+            return net > 0 ? net : .zero
         case let .swapkit(response, _, _):
             // SwapKit returns human-units decimal strings, not raw base units.
             return Decimal(string: response.expectedBuyAmount) ?? .zero

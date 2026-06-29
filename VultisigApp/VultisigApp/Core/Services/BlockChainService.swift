@@ -957,6 +957,10 @@ private extension BlockChainService {
             } catch {
                 return nil
             }
+        case .jupiter:
+            // Jupiter is Solana-only; the EVM-source guard above already returned
+            // nil before reaching here. Kept for switch exhaustiveness.
+            return nil
         case .none:
             return nil
         }
