@@ -221,6 +221,51 @@ final class SwapQuoteRankingTests: XCTestCase {
         XCTAssertEqual(pick?.displayName, "KyberSwap")
     }
 
+    // MARK: - Jupiter
+
+    func test_expectedNetToAmount_jupiter_subtractsPlatformFee() {
+        // 0.03 ETH gross output minus a 0.0001 ETH affiliate fee (already in
+        // toCoin units) → 0.0299 net.
+        let quote: SwapQuote = .jupiter(
+            makeEVMQuote(dstAmount: "30000000000000000"),
+            fee: nil,
+            platformFee: Decimal(string: "0.0001")
+        )
+
+        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.0299"))
+    }
+
+    func test_expectedNetToAmount_jupiter_nilPlatformFee_returnsGrossOutput() {
+        let quote: SwapQuote = .jupiter(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, platformFee: nil)
+
+        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.03"))
+    }
+
+    func test_selectBestQuote_jupiterWinsOverLifiWithinBand() {
+        // Jupiter (priority 5) and LI.FI (priority 6) within 50bps: LI.FI's raw
+        // output is marginally higher but in band, so the higher-priority Jupiter
+        // wins (no aggregator markup). Jupiter exposes no sourceGasWei, so the
+        // lower-gas tie-break can't fire and selection falls to priority.
+        let jupiter: SwapQuote = .jupiter(makeEVMQuote(dstAmount: "29900000000000000"), fee: nil, platformFee: nil) // 0.0299
+        let lifi: SwapQuote = .lifi(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, integratorFee: nil) // 0.03
+
+        let pick = SwapService.selectBestQuote(quotes: [lifi, jupiter], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "Jupiter")
+    }
+
+    func test_selectBestQuote_lifiWinsWhenMateriallyBetterThanJupiter() {
+        // LI.FI materially better (outside the 50bps band) must win over Jupiter
+        // despite Jupiter's higher priority — banded preference never trades away
+        // a real rate advantage.
+        let jupiter: SwapQuote = .jupiter(makeEVMQuote(dstAmount: "29000000000000000"), fee: nil, platformFee: nil) // 0.029
+        let lifi: SwapQuote = .lifi(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, integratorFee: nil) // 0.03
+
+        let pick = SwapService.selectBestQuote(quotes: [jupiter, lifi], toCoin: ethCoin())
+
+        XCTAssertEqual(pick?.displayName, "LI.FI")
+    }
+
     // MARK: - Same-chain ERC20→ETH regression
 
     func test_sameChainErc20ToEth_aggregatorWinsOverThorchain() {

@@ -68,7 +68,7 @@ struct JupiterService {
 
         // Same numerator LiFi/Kyber/SwapKit use: 50 bps, reduced by the VULT
         // tier discount, floored at 0.
-        let platformFeeBps = max(0, LiFiService.integratorFeeBps - vultTierDiscount)
+        let platformFeeBps = Self.platformFeeBps(vultTierDiscount: vultTierDiscount)
 
         // Derive + verify the fee ATA off the signed path. Skip entirely when
         // there's no fee to collect (fully-discounted user).
@@ -117,6 +117,12 @@ struct JupiterService {
     /// SOL for native SOL.
     func jupiterMint(for coin: Coin) -> String {
         coin.isNativeToken ? Self.wrappedSolMint : coin.contractAddress
+    }
+
+    /// Affiliate fee in basis points: the same 50bps base LiFi/Kyber/SwapKit use,
+    /// reduced by the VULT tier discount and floored at 0.
+    static func platformFeeBps(vultTierDiscount: Int) -> Int {
+        max(0, LiFiService.integratorFeeBps - vultTierDiscount)
     }
 }
 
