@@ -4,7 +4,7 @@
 //
 //  Delegate input form for Solana native staking. Two sections — amount (uses
 //  the existing `AmountTextField`) and a validator picker (opens the
-//  `SolanaValidatorSelectionScreen` sheet). Mirrors
+//  shared `StakingValidatorPickerScreen` sheet). Mirrors
 //  `CosmosDelegateTransactionScreen`.
 //
 
@@ -73,9 +73,10 @@ struct SolanaDelegateTransactionScreen: View {
             }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
-            SolanaValidatorSelectionScreen(
+            StakingValidatorPickerScreen(
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedValidator,
+                source: .solana(),
                 chainTicker: viewModel.coin.ticker,
                 chainDecimals: viewModel.coin.decimals
             )

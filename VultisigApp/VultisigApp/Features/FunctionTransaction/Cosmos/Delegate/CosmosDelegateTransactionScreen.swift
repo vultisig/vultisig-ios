@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 //  Delegate input form for LUNA / LUNC. Two sections — validator picker
-//  (opens the `ValidatorSelectionScreen` sheet) and amount (uses the
+//  (opens the shared `StakingValidatorPickerScreen` sheet) and amount (uses the
 //  existing `AmountTextField`). Mirrors `BondTransactionScreen` shape.
 //
 
@@ -71,10 +71,10 @@ struct CosmosDelegateTransactionScreen: View {
             }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
-            ValidatorSelectionScreen(
+            StakingValidatorPickerScreen(
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedValidator,
-                chain: viewModel.coin.chain,
+                source: .cosmos(chain: viewModel.coin.chain),
                 chainTicker: viewModel.coin.ticker,
                 chainDecimals: viewModel.coin.decimals
             )

@@ -1,18 +1,19 @@
 //
-//  ValidatorSelectionViewModelTests.swift
+//  StakingValidatorPickerViewModelTests.swift
 //  VultisigAppTests
 //
-//  Locks the validator-picker contract — sort-by-voting-power-desc, filter
-//  jailed + non-bonded validators out, case-insensitive search across
-//  moniker and operator address, and exclusion list (used by the
-//  redelegate flow to keep the user from redelegating to themselves).
+//  Locks the shared validator-picker contract through the Cosmos source —
+//  sort-by-voting-power-desc, filter jailed + non-bonded validators out,
+//  case-insensitive search across moniker and operator address, exclusion list
+//  (used by the redelegate flow to keep the user from redelegating to
+//  themselves), and graceful error surfacing on a fetch failure.
 //
 
 @testable import VultisigApp
 import XCTest
 
 @MainActor
-final class ValidatorSelectionViewModelTests: XCTestCase {
+final class StakingValidatorPickerViewModelTests: XCTestCase {
 
     func testSortAndFilterDropsJailedAndNonBondedAndSortsByVotingPowerDesc() {
         let raw = [
@@ -57,71 +58,48 @@ final class ValidatorSelectionViewModelTests: XCTestCase {
                 votingPower: 250
             )
         ]
-        let filtered = ValidatorSelectionViewModel.sortAndFilter(raw)
+        let filtered = CosmosValidator.sortAndFilter(raw)
         XCTAssertEqual(filtered.map(\.moniker), ["Alice", "Bob", "Charlie"])
     }
 
-    func testFilteredValidatorsAppliesCaseInsensitiveSearch() {
-        let vm = ValidatorSelectionViewModel(
-            chain: .terra,
-            service: StubService(validators: Self.sampleValidators)
+    func testFilteredValidatorsAppliesCaseInsensitiveSearch() async {
+        let vm = StakingValidatorPickerViewModel(
+            source: .cosmos(chain: .terra, service: StubService(validators: Self.sampleValidators))
         )
-        // Seed the cache via load(); we bypass the network by injecting a
-        // stub that resolves synchronously.
-        let exp = expectation(description: "load")
-        Task {
-            await vm.load()
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1)
+        await vm.load()
 
         vm.searchText = "all"
         XCTAssertEqual(vm.filteredValidators.map(\.moniker), ["Allnodes"])
     }
 
-    func testFilteredValidatorsMatchesOperatorAddressSubstring() {
-        let vm = ValidatorSelectionViewModel(
-            chain: .terra,
-            service: StubService(validators: Self.sampleValidators)
+    func testFilteredValidatorsMatchesOperatorAddressSubstring() async {
+        let vm = StakingValidatorPickerViewModel(
+            source: .cosmos(chain: .terra, service: StubService(validators: Self.sampleValidators))
         )
-        let exp = expectation(description: "load")
-        Task {
-            await vm.load()
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1)
+        await vm.load()
 
         vm.searchText = "VALOPER1A"
         XCTAssertEqual(vm.filteredValidators.map(\.operatorAddress), ["terravaloper1aaa"])
     }
 
-    func testExclusionListHidesSourceValidator() {
-        let vm = ValidatorSelectionViewModel(
-            chain: .terra,
-            service: StubService(validators: Self.sampleValidators),
-            excludedValidators: ["terravaloper1aaa"]
+    func testExclusionListHidesSourceValidator() async {
+        let vm = StakingValidatorPickerViewModel(
+            source: .cosmos(
+                chain: .terra,
+                excludedValidators: ["terravaloper1aaa"],
+                service: StubService(validators: Self.sampleValidators)
+            )
         )
-        let exp = expectation(description: "load")
-        Task {
-            await vm.load()
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1)
+        await vm.load()
 
         XCTAssertFalse(vm.filteredValidators.contains { $0.operatorAddress == "terravaloper1aaa" })
     }
 
-    func testFetchFailureSurfacesErrorAndKeepsEmptyList() {
-        let vm = ValidatorSelectionViewModel(
-            chain: .terra,
-            service: ThrowingService()
+    func testFetchFailureSurfacesErrorAndKeepsEmptyList() async {
+        let vm = StakingValidatorPickerViewModel(
+            source: .cosmos(chain: .terra, service: ThrowingService())
         )
-        let exp = expectation(description: "load")
-        Task {
-            await vm.load()
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1)
+        await vm.load()
 
         XCTAssertNotNil(vm.error)
         XCTAssertTrue(vm.filteredValidators.isEmpty)
@@ -151,6 +129,7 @@ final class ValidatorSelectionViewModelTests: XCTestCase {
 
 // MARK: - Stubs
 
+// swiftlint:disable async_without_await unused_parameter
 private struct StubService: CosmosStakingServiceProtocol {
     let validators: [CosmosValidator]
 
@@ -172,3 +151,4 @@ private struct ThrowingService: CosmosStakingServiceProtocol {
     func fetchValidators(chain: Chain) async throws -> [CosmosValidator] { throw StubError() }
     func fetchRedelegations(chain: Chain, address: String) async throws -> [CosmosRedelegationEntry] { throw StubError() }
 }
+// swiftlint:enable async_without_await unused_parameter
