@@ -22,11 +22,18 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
         serverAddr: "https://relay.vultisig.test"
     )
 
+    /// Vault keys that derive a valid BTC (ECDSA) + QBTC (MLDSA) account
+    /// on the fly, so the resolver succeeds even with empty `coins`.
+    private static let pubKeyECDSA = "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b"
+    private static let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
+    private static let publicKeyMLDSA44 = String(repeating: "ab", count: 1312)
+
     /// Returns a vault that has BTC + QBTC coins. BTC carries a valid
     /// 33-byte compressed pubkey so `QBTCClaimHashes.computeAll` succeeds;
-    /// QBTC carries the claimer address the peer now derives from the
-    /// vault (replacing the round-tripped `QBTCClaimContext`). The driver
-    /// fails fast on either missing — we never reach the session methods.
+    /// QBTC carries the claimer address the peer derives from the vault
+    /// (replacing the round-tripped `QBTCClaimContext`). With both coins
+    /// enabled the resolver returns them as-is and the driver proceeds to
+    /// the session methods.
     private func makeVault() -> Vault {
         let vault = Vault(name: "TestVault")
         let btcAsset = CoinMeta(
@@ -61,6 +68,16 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
         return vault
     }
 
+    /// A quantum-capable vault with the BTC/QBTC chains NOT enabled — the
+    /// resolver derives both accounts in-memory from these keys.
+    private func makeQuantumVaultWithoutCoins() -> Vault {
+        let vault = Vault(name: "TestVault")
+        vault.pubKeyECDSA = Self.pubKeyECDSA
+        vault.hexChainCode = Self.hexChainCode
+        vault.publicKeyMLDSA44 = Self.publicKeyMLDSA44
+        return vault
+    }
+
     func testRunRegistersAndAwaitsOnConstructorSession() async {
         let service = MockKeysignSessionService()
         // Let `registerAsParticipant` succeed; trip `awaitKeysignStart`
@@ -89,6 +106,33 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
 
         if case .failed = driver.phase {
             // ok — the error transitioned the phase as expected
+        } else {
+            XCTFail("expected `.failed`, got \(driver.phase)")
+        }
+    }
+
+    /// Regression for #4679: a quantum vault without the BTC/QBTC chains
+    /// enabled no longer fails fast — the driver derives both accounts and
+    /// proceeds to the session methods (short-circuited here at kickoff).
+    func testRunDerivesCoinsWhenChainsNotEnabled() async {
+        let service = MockKeysignSessionService()
+        service.awaitError = MockSessionServiceError(message: "short-circuit before DKLS")
+
+        let driver = QBTCClaimJoinDriver(
+            vault: makeQuantumVaultWithoutCoins(),
+            session: Self.testSession,
+            sessionService: service
+        )
+
+        await driver.run()
+
+        XCTAssertEqual(
+            service.calls.count, 2,
+            "Driver must derive the coins and reach register + await — no fail-fast on missing coins"
+        )
+        XCTAssertNotNil(driver.resolvedCoins, "Driver should expose the derived coins")
+        if case .failed = driver.phase {
+            // ok — only the mocked kickoff error stopped the run, not a missing coin
         } else {
             XCTFail("expected `.failed`, got \(driver.phase)")
         }
