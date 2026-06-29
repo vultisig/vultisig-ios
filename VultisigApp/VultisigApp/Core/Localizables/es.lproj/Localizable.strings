@@ -853,6 +853,8 @@
 "qbtcClaimUnavailableDetail" = "Reclamar está actualmente desactivado por la cadena. Inténtalo de nuevo más tarde.";
 "qbtcClaimUnavailableTitle" = "Reclamo no disponible";
 "qbtcClaimUnsupportedAddressTitle" = "Dirección no admitida";
+"qbtcClaimUnsupportedVaultDetail" = "Reclamar QBTC no es compatible con el tipo de clave más antiguo de esta bóveda. Actualiza tu bóveda y vuelve a intentarlo.";
+"qbtcClaimUnsupportedVaultTitle" = "Se requiere actualizar la bóveda";
 "qbtcClaimUtxoBlockFormat" = "Bloque n.º %d";
 "qbtcClaimUtxoPending" = "Pendiente de confirmación";
 "quantumSecurityFeatureClaimSubtitle" = "Una vez generada, tus UTXOs de BTC elegibles aparecen como QBTC reclamable en proporción 1:1.";

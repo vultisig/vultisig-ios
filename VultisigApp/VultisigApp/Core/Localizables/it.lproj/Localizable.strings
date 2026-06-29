@@ -853,6 +853,8 @@
 "qbtcClaimUnavailableDetail" = "Il riscatto è attualmente disabilitato dalla chain. Riprova più tardi.";
 "qbtcClaimUnavailableTitle" = "Riscatto non disponibile";
 "qbtcClaimUnsupportedAddressTitle" = "Indirizzo non supportato";
+"qbtcClaimUnsupportedVaultDetail" = "Il riscatto di QBTC non è supportato con il tipo di chiave più vecchio di questo vault. Aggiorna il tuo vault e riprova.";
+"qbtcClaimUnsupportedVaultTitle" = "Aggiornamento del vault richiesto";
 "qbtcClaimUtxoBlockFormat" = "Blocco #%d";
 "qbtcClaimUtxoPending" = "In attesa di conferma";
 "quantumSecurityFeatureClaimSubtitle" = "Una volta generata, i tuoi UTXO BTC idonei compaiono come QBTC reclamabili con rapporto 1:1.";

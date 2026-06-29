@@ -854,6 +854,8 @@
 "qbtcClaimUnavailableDetail" = "认领目前在链上被禁用。请稍后再试。";
 "qbtcClaimUnavailableTitle" = "认领不可用";
 "qbtcClaimUnsupportedAddressTitle" = "不支持的地址";
+"qbtcClaimUnsupportedVaultDetail" = "此保险库使用的旧密钥类型不支持认领 QBTC。请升级你的保险库后再试。";
+"qbtcClaimUnsupportedVaultTitle" = "需要升级保险库";
 "qbtcClaimUtxoBlockFormat" = "区块 #%d";
 "qbtcClaimUtxoPending" = "等待确认";
 "quantumSecurityFeatureClaimSubtitle" = "生成后，符合条件的 BTC UTXO 会以 1:1 比例显示为可领取的 QBTC。";

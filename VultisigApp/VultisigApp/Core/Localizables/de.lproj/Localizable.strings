@@ -853,6 +853,8 @@
 "qbtcClaimUnavailableDetail" = "Beansprüchen ist derzeit von der Chain deaktiviert. Bitte versuche es später erneut.";
 "qbtcClaimUnavailableTitle" = "Anspruch nicht verfügbar";
 "qbtcClaimUnsupportedAddressTitle" = "Nicht unterstützte Adresse";
+"qbtcClaimUnsupportedVaultDetail" = "Das Beanspruchen von QBTC wird mit dem älteren Schlüsseltyp dieses Vaults nicht unterstützt. Aktualisiere deinen Vault und versuche es dann erneut.";
+"qbtcClaimUnsupportedVaultTitle" = "Vault-Upgrade erforderlich";
 "qbtcClaimUtxoBlockFormat" = "Block #%d";
 "qbtcClaimUtxoPending" = "Bestätigung ausstehend";
 "quantumSecurityFeatureClaimSubtitle" = "Nach der Erzeugung erscheinen deine berechtigten BTC-UTXOs im Verhältnis 1:1 als beanspruchbare QBTC.";
