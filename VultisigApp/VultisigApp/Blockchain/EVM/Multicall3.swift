@@ -114,6 +114,15 @@ enum Multicall3 {
         }
         let count = Int(countBig)
         let headBase = arrayOffset + word
+        // The element-offset head (one word per result) must fit entirely within
+        // the payload. The count guard above ignores `arrayOffset`, so a header
+        // pointing near EOF would otherwise produce `count` nils that the caller
+        // reads as an all-zero success instead of a malformed batch to fall back
+        // from. Reject it here so the per-token path takes over.
+        guard headBase <= bytes.count,
+              count <= (bytes.count - headBase) / word else {
+            return []
+        }
 
         var results: [BigInt?] = []
         results.reserveCapacity(count)

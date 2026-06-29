@@ -242,13 +242,27 @@ class BalanceService {
         }
     }
 
+    /// Per-coin path used when a Multicall3 batch is unavailable or fails. Fans
+    /// the individual fetches out concurrently so a batch failure reverts to the
+    /// original parallel per-coin behaviour rather than serializing N RPCs.
     private func fallbackPerCoin(_ coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
-        var updates: [CoinBalanceUpdate] = []
-        updates.reserveCapacity(coins.count)
-        for coin in coins {
-            updates.append(await fetchBalanceUpdate(for: coin))
+        return await withTaskGroup(of: CoinBalanceUpdate.self) { group in
+            for coin in coins {
+                group.addTask { [weak self] in
+                    guard let self, !Task.isCancelled else {
+                        return Self.emptyUpdate(for: coin)
+                    }
+                    return await self.fetchBalanceUpdate(for: coin)
+                }
+            }
+
+            var updates: [CoinBalanceUpdate] = []
+            updates.reserveCapacity(coins.count)
+            for await update in group {
+                updates.append(update)
+            }
+            return updates
         }
-        return updates
     }
 
     /// Hyperliquid (HyperEVM) is the newest chain in the Multicall3 allowlist, so
@@ -264,18 +278,21 @@ class BalanceService {
         os_unfair_lock_unlock(&multicallCodeLock)
         if let cached { return cached }
 
-        let hasCode: Bool
         do {
             let code = try await service.getCode(address: multicall3Address)
-            hasCode = !code.stripHexPrefix().isEmpty
-        } catch {
-            hasCode = false
-        }
+            let hasCode = !code.stripHexPrefix().isEmpty
 
-        os_unfair_lock_lock(&multicallCodeLock)
-        multicallCodeVerified[chain] = hasCode
-        os_unfair_lock_unlock(&multicallCodeLock)
-        return hasCode
+            // Cache only definitive code / no-code results.
+            os_unfair_lock_lock(&multicallCodeLock)
+            multicallCodeVerified[chain] = hasCode
+            os_unfair_lock_unlock(&multicallCodeLock)
+            return hasCode
+        } catch {
+            // A transient probe failure stays uncached so the next refresh can
+            // retry, rather than pinning the chain to the slow per-coin path for
+            // the rest of the process.
+            return false
+        }
     }
 
     /// Fetch balance update for a single coin identifier

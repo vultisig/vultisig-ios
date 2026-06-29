@@ -90,14 +90,25 @@ final class BalancePriceDecouplingTests: XCTestCase {
     // MARK: - AC#1: balances begin without waiting for fetchPrices
 
     func test_updateBalances_runsBalancePhasesWhilePricesStillPending() async {
-        // A gated price service blocks indefinitely until released. If balances
-        // were still gated behind prices, the balance phases (Phase 2 + Phase 3)
-        // could never run. With decoupling they complete and `updateBalances`
-        // only parks on the final `await pricesDone`.
+        // A gated price service blocks indefinitely until released. With prices
+        // decoupled, the balance phases (Phase 2 fetch + Phase 3 apply, which ends
+        // in `Storage.save`) must still run to completion while prices stay gated;
+        // `updateBalances` then parks only on the final `await pricesDone`. A build
+        // that awaited prices *before* fetching balances would never reach the
+        // balance-phase save while the gate is held, so the balance-side proof
+        // below would time out — which the previous version of this test missed.
         let fake = FakeCryptoPriceService()
         fake.enableGate()
         let sut = BalanceService(cryptoPriceService: fake)
+
+        // Disable autosave so `hasChanges` flips to false only when the balance
+        // phase's explicit `Storage.save` runs (autosave could otherwise clear it
+        // on a runloop tick and mask a regression). The pending vault insert keeps
+        // `hasChanges == true` until that save.
+        let context = storeToken.container.mainContext
+        context.autosaveEnabled = false
         let vault = TestStore.makeVault()
+        XCTAssertTrue(context.hasChanges, "precondition: the vault insert is pending an explicit save")
 
         let entered = expectation(description: "price fetch launched concurrently")
         fake.onEnter = { entered.fulfill() }
@@ -110,10 +121,23 @@ final class BalancePriceDecouplingTests: XCTestCase {
 
         await fulfillment(of: [entered], timeout: 2)
 
-        // The price fetch is still gated, so updateBalances must not have returned.
+        // Balance-side proof: spin (without releasing the gate) until the balance
+        // phase has persisted. With prices still gated this only happens because
+        // balances are decoupled; the broken ordering would never reach it.
+        let deadline = Date().addingTimeInterval(5)
+        while context.hasChanges, Date() < deadline {
+            await Task.yield()
+        }
+        XCTAssertFalse(
+            context.hasChanges,
+            "balance phases must run to completion (Storage.save) while prices are still gated"
+        )
+
+        // Prices are still gated, so updateBalances must not have returned — it is
+        // parked on the final `await pricesDone`, not finished.
         XCTAssertFalse(
             didFinish.value,
-            "updateBalances must reach the balance phases and await prices, not return before prices resolve"
+            "updateBalances must still be awaiting prices after the balance phases complete"
         )
 
         fake.release()
