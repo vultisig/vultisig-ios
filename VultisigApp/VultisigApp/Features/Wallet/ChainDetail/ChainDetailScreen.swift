@@ -359,7 +359,8 @@ private extension ChainDetailScreen {
         }
         guard let btcCoin else { return }
         let vaultPubKey = vault.pubKeyECDSA
-        Task { await qbtcEligibility.check(btcCoin: btcCoin, vaultPubKeyECDSA: vaultPubKey) }
+        let supportsClaim = vault.supportsQbtcClaim
+        Task { await qbtcEligibility.check(btcCoin: btcCoin, vaultPubKeyECDSA: vaultPubKey, vaultSupportsClaim: supportsClaim) }
     }
 
     func updateBalances() async {

@@ -119,6 +119,28 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
         XCTAssertEqual(chain.killSwitchCallCount, 1)
     }
 
+    // MARK: - 3b. Ineligible — vault can't run the DKLS claim round (GG20)
+
+    func testIneligibleWhenVaultUnsupported() async {
+        let blockchair = MockBlockchairService()
+        let chain = MockQBTCChainService()
+        blockchair.fetchHandler = { _, _ in [Self.utxoA, Self.utxoB] }
+        let checker = makeChecker(blockchair: blockchair, chain: chain)
+
+        await checker.check(
+            btcCoin: makeBtcCoin(),
+            vaultPubKeyECDSA: Self.testVaultPubKey,
+            vaultSupportsClaim: false
+        )
+
+        // GG20 vaults short-circuit to ineligible before any network work,
+        // so the banner / Claim button never appear and no calls are made.
+        XCTAssertEqual(checker.state, .ineligible)
+        XCTAssertFalse(checker.hasClaimableUtxos)
+        XCTAssertEqual(blockchair.fetchCallCount, 0)
+        XCTAssertEqual(chain.killSwitchCallCount, 0)
+    }
+
     // MARK: - 4. Ineligible — no UTXOs at all
 
     func testIneligibleWhenNoUtxos() async {

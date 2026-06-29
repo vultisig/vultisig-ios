@@ -852,6 +852,8 @@
 "qbtcClaimUnavailableDetail" = "O resgate está atualmente desativado pela chain. Tente novamente mais tarde.";
 "qbtcClaimUnavailableTitle" = "Resgate indisponível";
 "qbtcClaimUnsupportedAddressTitle" = "Endereço não suportado";
+"qbtcClaimUnsupportedVaultDetail" = "O resgate de QBTC não é suportado com o tipo de chave mais antigo deste cofre. Atualize o seu cofre e tente resgatar novamente.";
+"qbtcClaimUnsupportedVaultTitle" = "Atualização do cofre necessária";
 "qbtcClaimUtxoBlockFormat" = "Bloco #%d";
 "qbtcClaimUtxoPending" = "Aguardando confirmação";
 "quantumSecurityFeatureClaimSubtitle" = "Uma vez gerada, seus UTXOs de BTC elegíveis aparecem como QBTC reivindicáveis na proporção 1:1.";
