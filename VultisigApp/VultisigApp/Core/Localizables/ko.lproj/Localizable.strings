@@ -319,8 +319,6 @@
 "devicesOnSameInternet" = "모든 기기를 Vultisig 앱이 열린 상태로\n인터넷에 연결하세요.";
 "devicesOnSameNetwork" = "모든 기기를 Vultisig 앱이 열린 상태로\n동일한 네트워크에 연결하세요.";
 "devicesOnSameWifi" = "Vultisig가 열린 상태에서 모든 기기를 동일한 네트워크에 유지하세요.";
-"dilithiumAlreadyGeneratedSubtitle" = "이 볼트에는 이미 MLDSA-44 양자 저항 키가 생성되어 있습니다. 추가 작업이 필요하지 않습니다.";
-"dilithiumAlreadyGeneratedTitle" = "양자 저항 키 활성화됨";
 "dilithiumKeygen" = "양자 저항 키";
 "dilithiumKeygenSubtitle" = "양자 저항을 위한 MLDSA-44 키 생성";
 "directSign" = "직접 서명";
