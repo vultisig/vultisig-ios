@@ -59,8 +59,8 @@ final class StakePosition {
     /// unique across a vault's N Solana stake accounts. `nil` for non-Solana
     /// rows, which keeps their `id` byte-identical to the coin-keyed format.
     var stakeAccountPubkey: String?
-    /// Vote account the stake delegates to — drives the move-stake re-delegate
-    /// target and the seeded validator display. `nil` for non-Solana rows.
+    /// Vote account the stake delegates to — drives the seeded validator
+    /// display. `nil` for non-Solana rows.
     var validatorVotePubkey: String?
     /// Raw value of `SolanaStakeActivationState` (activating/active/deactivating/
     /// inactive) — gates which row actions paint enabled while the seed shows.

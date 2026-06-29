@@ -185,8 +185,6 @@ enum SolanaHelper {
             transactionType = try deactivateTransactionType(payload: payload)
         case .withdraw:
             transactionType = try withdrawTransactionType(payload: payload)
-        case .moveStakeStep:
-            transactionType = try moveStakeTransactionType(payload: payload)
         }
 
         let input = SolanaSigningInput.with {
@@ -260,57 +258,6 @@ enum SolanaHelper {
             throw HelperError.runtimeError("solana \(op): invalid stake account address")
         }
         return stakeAccount
-    }
-
-    /// Move-stake (redelegate A → B) is a guided, multi-transaction flow with no
-    /// native instruction. Each sub-step maps to an existing wallet-core
-    /// primitive so the cross-device byte-parity guarantee holds:
-    ///   - deactivate: `deactivateStakeTransaction` on the moved account.
-    ///   - redelegate: `delegateStakeTransaction` with the moved account set
-    ///     EXPLICITLY (unlike a fresh delegate, which omits it) so the existing
-    ///     cooled-down account is re-delegated rather than a new one derived.
-    ///   - split: needs a Stake-program Split instruction, which wallet-core's
-    ///     high-level Solana proto does not expose — so a partial move can't be
-    ///     built with byte parity here. The whole-account move (no split) is the
-    ///     supported path; a partial move surfaces this as a clear error.
-    private static func moveStakeTransactionType(
-        payload: SolanaStakingPayload
-    ) throws -> SolanaSigningInput.OneOf_TransactionType {
-        switch payload.moveStakeSubStep {
-        case .deactivate:
-            return try deactivateTransactionType(payload: payload)
-        case .redelegate:
-            return try moveStakeRedelegateTransactionType(payload: payload)
-        case .split:
-            throw HelperError.runtimeError(
-                "solana move-stake: partial split is unsupported — move the whole account instead"
-            )
-        case .none:
-            throw HelperError.runtimeError("solana move-stake: missing sub-step")
-        }
-    }
-
-    /// Re-delegate the already-existing (cooled-down) moved account to validator
-    /// B. Sets `stakeAccount` explicitly — the account already exists, so
-    /// wallet-core must NOT derive a new one.
-    private static func moveStakeRedelegateTransactionType(
-        payload: SolanaStakingPayload
-    ) throws -> SolanaSigningInput.OneOf_TransactionType {
-        let stakeAccount = try validatedStakeAccount(payload.stakeAccount, op: "move-stake redelegate")
-        guard let votePubkey = payload.votePubkey, !votePubkey.isEmpty else {
-            throw HelperError.runtimeError("solana move-stake redelegate: missing validator vote pubkey")
-        }
-        guard AnyAddress(string: votePubkey, coin: .solana) != nil else {
-            throw HelperError.runtimeError("solana move-stake redelegate: invalid validator vote pubkey")
-        }
-        guard let lamports = payload.lamports, lamports > 0 else {
-            throw HelperError.runtimeError("solana move-stake redelegate: missing or zero delegation amount")
-        }
-        return .delegateStakeTransaction(SolanaDelegateStake.with {
-            $0.validatorPubkey = votePubkey
-            $0.value = lamports
-            $0.stakeAccount = stakeAccount
-        })
     }
 
     /// Compiles the unsigned staking transaction (zero-signature envelope) and

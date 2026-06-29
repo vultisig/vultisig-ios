@@ -1057,14 +1057,7 @@
 "slippageHelperText" = "Begrenzt, wie stark sich der Preis ändern darf, bevor die Ausführung abgebrochen wird.";
 "slippageMaxNote" = "Slippage ist auf %@ begrenzt.";
 "slippageTolerance" = "Slippage-Toleranz";
-"solanaFinishMoveNotice" = "Dadurch wird das abgekühlte Stake-Konto an den neuen Validator delegiert und der Wechsel abgeschlossen.";
-"solanaFinishMoveTitle" = "Verschieben von %@ abschließen";
-"solanaMoveStakeDestinationValidator" = "Zu Validator verschieben";
-"solanaMoveStakeMultiStepNotice" = "Stake zu verschieben erfolgt in mehreren Schritten über Epochen hinweg: Das Konto wird jetzt deaktiviert, und nach der Abkühlphase von ~%d Epoche(n) (~%d Tage) schließen Sie den Wechsel zum neuen Validator ab.";
-"solanaMoveStakeSourceAccount" = "Stake-Konto";
-"solanaMoveStakeTitle" = "%@-Stake verschieben";
 "solanaStakingActionDelegate" = "Einsatz";
-"solanaStakingActionMove" = "Verschieben";
 "solanaStakingActionUnstake" = "Entstaken";
 "solanaStakingActionWithdraw" = "Abheben";
 "solanaStakingActivatingNotice" = "Wird aktiviert — verdient ab der nächsten Epoche Belohnungen.";
@@ -1077,7 +1070,6 @@
 "solanaStakingErrorMissingChainSpecific" = "Solana-Chain-spezifische Daten für das Staking fehlen.";
 "solanaStakingErrorMissingPayload" = "Solana-Staking-Payload fehlt.";
 "solanaStakingErrorMissingPayloadField" = "Solana-Staking-Payload fehlt erforderliches Feld: %@";
-"solanaStakingErrorPartialSplitUnsupported" = "Ein teilweiser Wechsel wird noch nicht unterstützt – verschieben Sie stattdessen das gesamte Stake-Konto zum neuen Validator.";
 "solanaStakingErrorValidatorPreflightFailed" = "Validator-Prüfung fehlgeschlagen: %@";
 "solanaStakingErrorWrongOpType" = "Nicht unterstützte Solana-Staking-Operation.";
 "solanaStakingInactiveNotice" = "Inaktiv — abgekühlt und bereit zum Abheben.";

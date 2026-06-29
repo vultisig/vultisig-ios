@@ -30,13 +30,6 @@ enum FunctionTransactionType: Hashable {
     /// Solana native-staking withdraw. Moves the cooled-down lamports from
     /// `stakeAccount` back to the wallet; the CTA is gated on full inactivity.
     case solanaWithdraw(coin: CoinMeta, stakeAccount: SolanaStakeAccount)
-    /// Solana move-stake (redelegate A → B). Guided, multi-tx, cross-epoch: this
-    /// case kicks off the move by deactivating `sourceStakeAccount`; the user
-    /// finishes via `.solanaFinishMove` once it has cooled down.
-    case solanaMoveStake(coin: CoinMeta, sourceStakeAccount: SolanaStakeAccount)
-    /// Solana move-stake resume — "Finish moving to B". Re-delegates the now
-    /// cooled-down `movedStakeAccount` to `destinationValidator`.
-    case solanaFinishMove(coin: CoinMeta, movedStakeAccount: SolanaStakeAccount, destinationValidator: SolanaValidator)
     /// TON nominator-pool stake. `poolAddress`/`poolImplementation` are the
     /// existing pool for add-more, or `nil` for a first-time stake (the picker
     /// supplies the pool, whose implementation resolves the deposit comment).
@@ -79,10 +72,6 @@ enum FunctionTransactionType: Hashable {
         case .solanaUnstake(let coin, _):
             return [coin]
         case .solanaWithdraw(let coin, _):
-            return [coin]
-        case .solanaMoveStake(let coin, _):
-            return [coin]
-        case .solanaFinishMove(let coin, _, _):
             return [coin]
         case .tonStake(let coin, _, _):
             return [coin]

@@ -1057,14 +1057,7 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
-"solanaFinishMoveNotice" = "这会将已冷却的质押账户重新委托给新的验证者并完成迁移。";
-"solanaFinishMoveTitle" = "完成迁移 %@";
-"solanaMoveStakeDestinationValidator" = "迁移至验证者";
-"solanaMoveStakeMultiStepNotice" = "迁移质押需多个步骤并跨越多个纪元：此操作会立即停用该账户，在约 %d 个纪元（约 %d 天）的冷却后，你再完成向新验证者的迁移。";
-"solanaMoveStakeSourceAccount" = "质押账户";
-"solanaMoveStakeTitle" = "迁移 %@ 质押";
 "solanaStakingActionDelegate" = "质押";
-"solanaStakingActionMove" = "移动";
 "solanaStakingActionUnstake" = "取消质押";
 "solanaStakingActionWithdraw" = "提取";
 "solanaStakingActivatingNotice" = "激活中 — 从下一个纪元开始获得奖励。";
@@ -1077,7 +1070,6 @@
 "solanaStakingErrorMissingChainSpecific" = "缺少用于质押的 Solana 链特定数据。";
 "solanaStakingErrorMissingPayload" = "缺少 Solana 质押载荷。";
 "solanaStakingErrorMissingPayloadField" = "Solana 质押载荷缺少必填字段：%@";
-"solanaStakingErrorPartialSplitUnsupported" = "暂不支持部分迁移——请改为将整个质押账户迁移到新的验证者。";
 "solanaStakingErrorValidatorPreflightFailed" = "验证者校验失败：%@";
 "solanaStakingErrorWrongOpType" = "不支持的 Solana 质押操作。";
 "solanaStakingInactiveNotice" = "未激活 — 已冷却，可提取。";

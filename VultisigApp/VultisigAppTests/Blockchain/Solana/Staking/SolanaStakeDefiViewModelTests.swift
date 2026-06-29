@@ -213,12 +213,10 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         await vm.refresh(owner: "Owner", decimals: 9)
         let active = vm.rows.first { $0.id == "Active" }
         let inactive = vm.rows.first { $0.id == "Inactive" }
-        XCTAssertEqual(active?.canMoveStake, true)
         XCTAssertEqual(active?.canUnstake, true)
         XCTAssertEqual(active?.canWithdraw, false)
         // A live refresh backs the row, so its actions are enabled.
         XCTAssertEqual(active?.isActionable, true)
-        XCTAssertEqual(inactive?.canMoveStake, false)
         XCTAssertEqual(inactive?.canUnstake, false)
         XCTAssertEqual(inactive?.canWithdraw, true)
     }

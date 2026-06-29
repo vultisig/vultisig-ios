@@ -282,7 +282,7 @@ struct DefiChainMainScreen: View {
     }
 
     /// Solana native-staking stake-segment renderer. Per-stake-account rows;
-    /// the four user-facing actions route through the shared
+    /// the user-facing actions route through the shared
     /// `FunctionTransactionType.solana*` cases — the function-call router takes
     /// it from there. No claim action: Solana rewards auto-compound.
     private func solanaStakeView(coin: Coin) -> some View {
@@ -308,16 +308,6 @@ struct DefiChainMainScreen: View {
                 onTransactionToPresent(.solanaWithdraw(
                     coin: coin.toCoinMeta(),
                     stakeAccount: stakeAccount
-                ))
-            },
-            onMoveStake: { row in
-                // v1 is a WHOLE-ACCOUNT move (wallet-core has no Split). The
-                // move-stake flow kicks off by deactivating the source account;
-                // the user finishes once it has cooled down.
-                guard let stakeAccount = row.stakeAccount else { return }
-                onTransactionToPresent(.solanaMoveStake(
-                    coin: coin.toCoinMeta(),
-                    sourceStakeAccount: stakeAccount
                 ))
             }
         )

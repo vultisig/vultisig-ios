@@ -10,17 +10,16 @@
 //    - "Total Staked SOL" summary card with a "Delegate to New Validator" CTA
 //    - Per-stake-account card: validator identity, delegated amount + fiat,
 //      activation/cooldown status badge (Activating / Active / Deactivating /
-//      Inactive), APY (when resolved), rent-reserve line, and the four action
-//      buttons — Unstake / Move / Withdraw / Delegate.
+//      Inactive), APY (when resolved), rent-reserve line, and the action
+//      buttons — Unstake / Withdraw / Delegate.
 //
 //  Each action hands off to the shared `FunctionTransactionType.solana*` enum
 //  cases via the closures, which route through `FunctionTransactionScreen` into
 //  the per-flow Solana staking VMs (built on prior PRs). NO claim path — Solana
 //  rewards auto-compound into the stake.
 //
-//  Gating: Unstake is enabled only while active/activating, Move only while
-//  active (a stable delegation to move), Withdraw only once fully inactive
-//  (cooled down). Move is WHOLE-ACCOUNT only in v1 (wallet-core has no Split).
+//  Gating: Unstake is enabled only while active/activating, Withdraw only once
+//  fully inactive (cooled down).
 //
 
 import SwiftUI
@@ -44,7 +43,6 @@ struct SolanaStakeDefiView: View {
     var onDelegate: (Coin) -> Void
     var onUnstake: (SolanaStakeAccountRow) -> Void
     var onWithdraw: (SolanaStakeAccountRow) -> Void
-    var onMoveStake: (SolanaStakeAccountRow) -> Void
 
     var body: some View {
         Group {
@@ -257,9 +255,9 @@ struct SolanaStakeDefiView: View {
     @ViewBuilder
     private func actionButtons(for row: SolanaStakeAccountRow) -> some View {
         // A seed row (no live `SolanaStakeAccount` yet) paints its action layout
-        // from the cached activation state but keeps Unstake/Withdraw/Move
-        // DISABLED until the live refresh supplies the account — signing never
-        // runs off the seed. Delegate needs no account, so it stays enabled.
+        // from the cached activation state but keeps Unstake/Withdraw DISABLED
+        // until the live refresh supplies the account — signing never runs off
+        // the seed. Delegate needs no account, so it stays enabled.
         HStack(spacing: 8) {
             if row.canWithdraw {
                 PrimaryButton(
@@ -278,14 +276,6 @@ struct SolanaStakeDefiView: View {
                     onUnstake(row)
                 }
                 .disabled(!row.canUnstake || !row.isActionable)
-                PrimaryButton(
-                    title: "solanaStakingActionMove".localized,
-                    type: .secondary,
-                    size: .smallFixed
-                ) {
-                    onMoveStake(row)
-                }
-                .disabled(!row.canMoveStake || !row.isActionable)
                 PrimaryButton(
                     title: "solanaStakingActionDelegate".localized,
                     size: .smallFixed

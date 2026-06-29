@@ -215,29 +215,6 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .solanaMoveStake(let coin, let sourceStakeAccount):
-                resolvingCoin(coinMeta: coin) { coin in
-                    SolanaMoveStakeTransactionScreen(
-                        viewModel: SolanaMoveStakeTransactionViewModel(
-                            coin: coin,
-                            vault: vault,
-                            sourceStakeAccount: sourceStakeAccount
-                        ),
-                        onVerify: onVerify
-                    )
-                }
-            case .solanaFinishMove(let coin, let movedStakeAccount, let destinationValidator):
-                resolvingCoin(coinMeta: coin) { coin in
-                    SolanaFinishMoveTransactionScreen(
-                        viewModel: SolanaFinishMoveTransactionViewModel(
-                            coin: coin,
-                            vault: vault,
-                            movedStakeAccount: movedStakeAccount,
-                            destinationValidator: destinationValidator
-                        ),
-                        onVerify: onVerify
-                    )
-                }
             case .tonStake(let coin, let poolAddress, let poolImplementation):
                 resolvingCoin(coinMeta: coin) { coin in
                     TonStakeTransactionScreen(

@@ -1057,14 +1057,7 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
-"solanaFinishMoveNotice" = "Ovo ponovno delegira ohlađeni staking račun novom validatoru i dovršava premještanje.";
-"solanaFinishMoveTitle" = "Dovrši premještanje %@";
-"solanaMoveStakeDestinationValidator" = "Premjesti na validatora";
-"solanaMoveStakeMultiStepNotice" = "Premještanje stakea ima više koraka i obuhvaća epohe: ovo sada deaktivira račun, a nakon hlađenja od ~%d epoha (~%d dana) dovršavate premještanje na novog validatora.";
-"solanaMoveStakeSourceAccount" = "Staking račun";
-"solanaMoveStakeTitle" = "Premjesti %@ stake";
 "solanaStakingActionDelegate" = "Ulog";
-"solanaStakingActionMove" = "Premjesti";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
 "solanaStakingActionWithdraw" = "Povuci";
 "solanaStakingActivatingNotice" = "Aktivira se — zarađuje nagrade od sljedeće epohe.";
@@ -1077,7 +1070,6 @@
 "solanaStakingErrorMissingChainSpecific" = "Nedostaju podaci specifični za Solana lanac za staking.";
 "solanaStakingErrorMissingPayload" = "Nedostaje Solana staking payload.";
 "solanaStakingErrorMissingPayloadField" = "Solana staking payload nedostaje obavezno polje: %@";
-"solanaStakingErrorPartialSplitUnsupported" = "Djelomično premještanje još nije podržano — umjesto toga premjestite cijeli staking račun na novog validatora.";
 "solanaStakingErrorValidatorPreflightFailed" = "Provjera validatora nije uspjela: %@";
 "solanaStakingErrorWrongOpType" = "Nepodržana Solana staking operacija.";
 "solanaStakingInactiveNotice" = "Neaktivno — ohlađeno i spremno za povlačenje.";

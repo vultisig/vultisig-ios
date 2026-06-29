@@ -11,7 +11,7 @@
 //  resolved APY.
 //
 //  Stake accounts are read live (never long-cached) so a just-submitted
-//  delegate/unstake/withdraw/move is visible on the next refresh. After a signed
+//  delegate/unstake/withdraw is visible on the next refresh. After a signed
 //  keysign the caller invokes `invalidateAndRefresh(...)`, which additionally
 //  drops the short-lived epoch cache so the post-tx state derivation is exact.
 //
@@ -355,13 +355,8 @@ struct SolanaStakeAccountRow: Identifiable, Equatable, Sendable {
     let apyPercent: Decimal?
 
     /// `true` once a live `SolanaStakeAccount` backs the row — actions
-    /// (Unstake/Withdraw/Move) can only fire then, never from a seed projection.
+    /// (Unstake/Withdraw) can only fire then, never from a seed projection.
     var isActionable: Bool { stakeAccount != nil }
-
-    /// Whether a move-stake can be started from this account — only a fully
-    /// active delegation; an activating/deactivating/inactive account has no
-    /// stable stake to move.
-    var canMoveStake: Bool { activationState == .active }
 
     /// Whether the account can be unstaked (deactivated) — only an active or
     /// activating delegation; a deactivating/inactive one has nothing to cool

@@ -1063,14 +1063,7 @@
 "slippageHelperText" = "Limits how much the price can change before execution is canceled.";
 "slippageMaxNote" = "Slippage is capped at %@.";
 "slippageTolerance" = "Slippage Tolerance";
-"solanaFinishMoveNotice" = "This re-delegates the cooled-down stake account to the new validator and completes the move.";
-"solanaFinishMoveTitle" = "Finish moving %@";
-"solanaMoveStakeDestinationValidator" = "Move to validator";
-"solanaMoveStakeMultiStepNotice" = "Moving stake is multi-step and spans epochs: this deactivates the account now, then after the ~%d epoch (~%d days) cooldown you finish moving it to the new validator.";
-"solanaMoveStakeSourceAccount" = "Stake account";
-"solanaMoveStakeTitle" = "Move %@ stake";
 "solanaStakingActionDelegate" = "Stake";
-"solanaStakingActionMove" = "Move";
 "solanaStakingActionUnstake" = "Unstake";
 "solanaStakingActionWithdraw" = "Withdraw";
 "solanaStakingActivatingNotice" = "Activating — earns rewards from the next epoch.";
@@ -1083,7 +1076,6 @@
 "solanaStakingErrorMissingChainSpecific" = "Missing Solana chain-specific data for staking.";
 "solanaStakingErrorMissingPayload" = "Solana staking payload is missing.";
 "solanaStakingErrorMissingPayloadField" = "Solana staking payload missing required field: %@";
-"solanaStakingErrorPartialSplitUnsupported" = "A partial move isn't supported yet — move the whole stake account to the new validator instead.";
 "solanaStakingErrorValidatorPreflightFailed" = "Validator validation failed: %@";
 "solanaStakingErrorWrongOpType" = "Unsupported Solana staking operation.";
 "solanaStakingInactiveNotice" = "Inactive — cooled down and ready to withdraw.";

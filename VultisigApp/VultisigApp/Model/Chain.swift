@@ -571,7 +571,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     }
 
     /// Solana native staking via the on-chain Stake program (delegate /
-    /// deactivate / withdraw / move-stake). Only Solana today.
+    /// deactivate / withdraw). Only Solana today.
     var isSolanaStakingChain: Bool {
         self == .solana
     }
