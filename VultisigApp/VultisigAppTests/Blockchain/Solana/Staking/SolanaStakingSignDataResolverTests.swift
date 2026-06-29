@@ -91,9 +91,13 @@ final class SolanaStakingSignDataResolverTests: XCTestCase {
     func testRejectsWhenBalanceCannotCoverAmountPlusRentReserve() throws {
         let privateKey = try makeSignerKey()
         let votePubkey = try validatorVotePubkey()
+        // `lamports` is the stake-account FUNDING (active amount + rent reserve,
+        // combined upstream by the delegate view-model). Here the funding is
+        // 2 SOL + the rent reserve while the wallet holds only 2 SOL — it covers
+        // the entered amount but not amount + rent, so resolve(...) must reject.
         let payload = makePayload(
             privateKey: privateKey, votePubkey: votePubkey,
-            lamports: 2_000_000_000, rawBalance: "2000000000"
+            lamports: 2_000_000_000 + 2_282_880, rawBalance: "2000000000"
         )
 
         XCTAssertThrowsError(
@@ -101,7 +105,7 @@ final class SolanaStakingSignDataResolverTests: XCTestCase {
                 basePayload: payload,
                 rentReserve: 2_282_880,
                 knownVotePubkeys: [votePubkey],
-                balance: 2_000_000_000 // exactly the amount, no room for rent reserve
+                balance: 2_000_000_000 // covers the 2 SOL amount but not amount + rent
             )
         )
     }
