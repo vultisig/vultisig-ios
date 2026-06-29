@@ -33,57 +33,6 @@ struct CircleService {
 
     private init() {}
 
-    // MARK: - Payload Generation
-
-    /// Generates the payload required for keysign
-    func getKeysignPayload(
-        encryptionKeyHex: String,
-        vault: Vault,
-        toAddress: String,
-        amount: BigInt,
-        memo: String?,
-        chainSpecific: BlockChainSpecific
-    ) throws -> KeysignMessage {
-        let (chain, _) = CircleViewLogic.getChainDetails()
-
-        guard let coin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
-            throw CircleServiceError.invalidDetails
-        }
-
-        let keysignPayload = KeysignPayload(
-            coin: coin,
-            toAddress: toAddress,
-            toAmount: amount,
-            chainSpecific: chainSpecific,
-            utxos: [],
-            memo: memo,
-            swapPayload: nil,
-            approvePayload: nil,
-            vaultPubKeyECDSA: vault.pubKeyECDSA,
-            vaultLocalPartyID: vault.localPartyID,
-            libType: (vault.libType ?? .GG20) == .DKLS ? "dkls" : "gg20",
-            wasmExecuteContractPayload: nil,
-            tronTransferContractPayload: nil,
-            tronTriggerSmartContractPayload: nil,
-            tronTransferAssetContractPayload: nil,
-            qbtcClaimPayload: nil,
-            isQbtcClaim: false,
-            skipBroadcast: false,
-            signData: nil
-        )
-
-        return KeysignMessage(
-            sessionID: UUID().uuidString,
-            serviceName: "Circle",
-            payload: keysignPayload,
-            customMessagePayload: nil,
-            encryptionKeyHex: encryptionKeyHex,
-            useVultisigRelay: false,
-            payloadID: UUID().uuidString,
-            customPayloadID: ""
-        )
-    }
-
     // MARK: - ABI Encoding Logic
 
     /// Generates the withdrawal values for Circle MSCA execute call

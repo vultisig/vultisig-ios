@@ -52,8 +52,8 @@ struct DefiChainListView: View {
     @ViewBuilder
     private func cell(for item: DefiMainItem) -> some View {
         switch item {
-        case .circle:
-            DefiCircleRow(vault: vault)
+        case .yield(let providerID):
+            DefiYieldProviderRow(vault: vault, providerID: providerID)
         case .chain(let chain):
             DefiChainCellView(chain: chain, vault: vault)
         }
@@ -61,9 +61,9 @@ struct DefiChainListView: View {
 
     private func handleSelection(_ item: DefiMainItem) {
         switch item {
-        case .circle:
+        case .yield(let providerID):
             guard enableUsdcIfNeeded() else { return }
-            router.navigate(to: CircleRoute.main(vault: vault))
+            router.navigate(to: YieldRoute.main(vault: vault, providerID: providerID))
         case .chain(let chain):
             switch chain {
             case .thorChain, .mayaChain, .terra, .terraClassic, .qbtc, .ton:
