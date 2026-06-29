@@ -25,6 +25,10 @@ final class Vault: ObservableObject, Codable {
     var order: Int = 0
     var isBackedUp: Bool = false
     var libType: LibType? = LibType.GG20
+    /// Deprecated: legacy per-vault promo-banner dismissals. Superseded by the
+    /// app-wide `PromoBannerDismissalStore`; read only once at launch by
+    /// `PromoBannerDismissalMigration`. Kept in the schema to avoid a SwiftData
+    /// migration; remove behind a versioned schema stage in a later release.
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
     var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
