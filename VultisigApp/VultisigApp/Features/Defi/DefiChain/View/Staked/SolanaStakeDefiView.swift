@@ -189,11 +189,11 @@ struct SolanaStakeDefiView: View {
     private func stakedAmountRow(for row: SolanaStakeAccountRow) -> some View {
         HStack(alignment: .firstTextBaseline) {
             HiddenBalanceText(String(format: "solanaStakingStakedRowAmount".localized, formatAmount(row.delegatedAmount), coin.ticker))
-                .font(Theme.fonts.bodyMMedium)
+                .font(Theme.fonts.priceBodyL)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
             HiddenBalanceText(fiatString(for: row.delegatedAmount))
-                .font(Theme.fonts.caption12)
+                .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textTertiary)
         }
     }
@@ -222,7 +222,7 @@ struct SolanaStakeDefiView: View {
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
             Text("\(formatAmount(row.rentReserve)) \(coin.ticker)")
-                .font(Theme.fonts.bodySMedium)
+                .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textSecondary)
         }
     }

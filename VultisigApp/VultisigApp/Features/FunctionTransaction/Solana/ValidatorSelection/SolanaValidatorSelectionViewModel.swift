@@ -62,7 +62,9 @@ final class SolanaValidatorSelectionViewModel: ObservableObject {
             }
         } catch {
             logger.error("Validator fetch failed: \(error.localizedDescription, privacy: .public)")
-            self.error = error.localizedDescription
+            // Keep the raw error in the log; surface a stable localized message to
+            // the UI rather than backend/system English.
+            self.error = "solanaValidatorLoadFailed".localized
         }
     }
 

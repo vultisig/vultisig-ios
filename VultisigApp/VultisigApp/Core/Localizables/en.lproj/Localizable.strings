@@ -1103,6 +1103,7 @@
 "solanaValidatorErrorEmpty" = "Validator vote address is empty.";
 "solanaValidatorErrorInvalidVotePubkey" = "Invalid Solana validator vote address.";
 "solanaValidatorErrorUnknownValidator" = "Validator not found in the current vote-account set.";
+"solanaValidatorLoadFailed" = "Failed to load validators. Please check your connection and try again.";
 "somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "sourceValidator" = "Source Validator";

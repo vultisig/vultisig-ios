@@ -28,7 +28,7 @@ struct SolanaValidatorCard: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)
                     Text(activatedStakeText)
-                        .font(Theme.fonts.caption12)
+                        .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .lineLimit(1)
                 }

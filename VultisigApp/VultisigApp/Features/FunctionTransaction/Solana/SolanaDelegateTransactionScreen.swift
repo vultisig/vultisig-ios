@@ -30,6 +30,7 @@ struct SolanaDelegateTransactionScreen: View {
     @FocusState private var focusedField: FocusedField?
     @State private var percentageSelected: Double?
     @State private var showValidatorPicker: Bool = false
+    @State private var focusTask: Task<Void, Never>?
 
     var body: some View {
         FormScreen(
@@ -91,7 +92,12 @@ struct SolanaDelegateTransactionScreen: View {
             focusedFieldBinding = .amount
         }
         .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // Cancellable delay so a later focus change supersedes an in-flight one
+            // instead of a stale callback refocusing the amount field.
+            focusTask?.cancel()
+            focusTask = Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(500))
+                guard !Task.isCancelled else { return }
                 focusedField = newValue
             }
         }

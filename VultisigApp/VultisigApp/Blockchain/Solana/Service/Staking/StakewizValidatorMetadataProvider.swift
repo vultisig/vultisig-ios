@@ -187,11 +187,17 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
 // MARK: - Endpoint
 
 private struct StakewizValidatorsAPI: TargetType {
-    var baseURL: URL {
-        // Force-unwrap is safe: the host is a compile-time literal known to
-        // produce a valid URL at this exact form.
-        URL(string: "https://api.stakewiz.com")!
-    }
+    private static let stakewizBaseURL: URL = {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.stakewiz.com"
+        guard let url = components.url else {
+            preconditionFailure("Invalid Stakewiz base URL")
+        }
+        return url
+    }()
+
+    var baseURL: URL { Self.stakewizBaseURL }
 
     var path: String { "/validators" }
     var method: HTTPMethod { .get }

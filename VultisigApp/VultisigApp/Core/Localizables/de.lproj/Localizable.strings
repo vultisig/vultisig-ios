@@ -1067,7 +1067,7 @@
 "solanaStakingActionMove" = "Verschieben";
 "solanaStakingActionUnstake" = "Entstaken";
 "solanaStakingActionWithdraw" = "Abheben";
-"solanaStakingActivatingNotice" = "Wird aktiviert — verdient ab der nächsten Epoche Rewards.";
+"solanaStakingActivatingNotice" = "Wird aktiviert — verdient ab der nächsten Epoche Belohnungen.";
 "solanaStakingActiveAccounts" = "Stake-Konten";
 "solanaStakingApy" = "APY";
 "solanaStakingDeactivatingNotice" = "Die Deaktivierung startet eine Abkühlphase — abhebbar in %d Epoche(n) (~%d Tage).";
@@ -1097,6 +1097,7 @@
 "solanaValidatorErrorEmpty" = "Validator-Vote-Adresse ist leer.";
 "solanaValidatorErrorInvalidVotePubkey" = "Ungültige Solana-Validator-Vote-Adresse.";
 "solanaValidatorErrorUnknownValidator" = "Validator nicht im aktuellen Vote-Account-Satz gefunden.";
+"solanaValidatorLoadFailed" = "Validatoren konnten nicht geladen werden. Bitte überprüfe deine Verbindung und versuche es erneut.";
 "somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "sourceValidator" = "Quell-Validator";

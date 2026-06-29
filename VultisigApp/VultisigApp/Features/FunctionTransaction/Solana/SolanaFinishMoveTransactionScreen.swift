@@ -24,7 +24,7 @@ struct SolanaFinishMoveTransactionScreen: View {
 
     var body: some View {
         FormScreen(
-            title: String(format: "solanaFinishMoveTitle".localized, viewModel.coin.ticker),
+            title: String(format: "solanaFinishMoveTitle".localized, viewModel.destinationValidator.displayName),
             validForm: $viewModel.validForm,
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue

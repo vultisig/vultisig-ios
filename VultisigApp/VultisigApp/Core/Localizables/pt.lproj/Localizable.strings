@@ -1067,12 +1067,12 @@
 "solanaStakingActionMove" = "Mover";
 "solanaStakingActionUnstake" = "Cancelar stake";
 "solanaStakingActionWithdraw" = "Sacar";
-"solanaStakingActivatingNotice" = "Ativando — gera recompensas a partir da próxima epoch.";
+"solanaStakingActivatingNotice" = "Ativando — gera recompensas a partir da próxima época.";
 "solanaStakingActiveAccounts" = "Contas de staking";
 "solanaStakingApy" = "APY";
 "solanaStakingDeactivatingNotice" = "A desativação inicia um período de espera — disponível para saque em %d época(s) (~%d dias).";
 "solanaStakingDeactivatingRowNotice" = "Desativando — esfriando antes de poder ser sacado.";
-"solanaStakingDelegateNewValidator" = "Delegar a novo validator";
+"solanaStakingDelegateNewValidator" = "Delegar a novo validador";
 "solanaStakingErrorInsufficientForRentReserve" = "SOL insuficiente para cobrir o valor em stake mais a reserva isenta de aluguel.";
 "solanaStakingErrorMissingChainSpecific" = "Dados específicos da cadeia Solana para staking ausentes.";
 "solanaStakingErrorMissingPayload" = "Payload de staking da Solana ausente.";
@@ -1097,6 +1097,7 @@
 "solanaValidatorErrorEmpty" = "O endereço de voto do validador está vazio.";
 "solanaValidatorErrorInvalidVotePubkey" = "Endereço de voto do validador da Solana inválido.";
 "solanaValidatorErrorUnknownValidator" = "Validador não encontrado no conjunto atual de contas de voto.";
+"solanaValidatorLoadFailed" = "Falha ao carregar os validadores. Verifique a sua ligação e tente novamente.";
 "somethingsWrong" = "Algo está errado";
 "somethingWentWrongTryAgain" = "Algo deu errado, por favor tente novamente.";
 "sourceValidator" = "Validador de origem";

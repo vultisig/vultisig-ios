@@ -1067,7 +1067,7 @@
 "solanaStakingActionMove" = "Premjesti";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
 "solanaStakingActionWithdraw" = "Povuci";
-"solanaStakingActivatingNotice" = "Aktivira se — zarađuje nagrade od sljedeće epoch.";
+"solanaStakingActivatingNotice" = "Aktivira se — zarađuje nagrade od sljedeće epohe.";
 "solanaStakingActiveAccounts" = "Staking računi";
 "solanaStakingApy" = "APY";
 "solanaStakingDeactivatingNotice" = "Deaktivacija pokreće razdoblje hlađenja — dostupno za povlačenje za %d epoha (~%d dana).";
@@ -1097,6 +1097,7 @@
 "solanaValidatorErrorEmpty" = "Adresa glasanja validatora je prazna.";
 "solanaValidatorErrorInvalidVotePubkey" = "Nevažeća Solana adresa glasanja validatora.";
 "solanaValidatorErrorUnknownValidator" = "Validator nije pronađen u trenutnom skupu računa za glasanje.";
+"solanaValidatorLoadFailed" = "Učitavanje validatora nije uspjelo. Provjerite svoju vezu i pokušajte ponovno.";
 "somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "sourceValidator" = "Izvorni validator";
