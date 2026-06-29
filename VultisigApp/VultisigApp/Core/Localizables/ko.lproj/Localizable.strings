@@ -837,6 +837,8 @@
 "qbtcClaimUnavailableDetail" = "현재 체인에서 청구가 비활성화되어 있습니다. 나중에 다시 시도하세요.";
 "qbtcClaimUnavailableTitle" = "청구 불가";
 "qbtcClaimUnsupportedAddressTitle" = "지원되지 않는 주소";
+"qbtcClaimUnsupportedVaultDetail" = "이 보관함의 이전 키 유형에서는 QBTC 청구가 지원되지 않습니다. 보관함을 업그레이드한 후 다시 시도하세요.";
+"qbtcClaimUnsupportedVaultTitle" = "보관함 업그레이드 필요";
 "rawPayload" = "원시 페이로드";
 "ready" = "준비 완료";
 "Rebond" = "재본드";

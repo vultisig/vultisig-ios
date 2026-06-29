@@ -27,6 +27,9 @@ enum QBTCClaimScreenState: Hashable {
 }
 
 enum QBTCClaimBlockedReason: Hashable {
+    /// The vault uses GG20 keyshares, which can't take part in the DKLS
+    /// BTC signing round the claim flow requires.
+    case unsupportedVaultType
     /// Chain returned `ClaimWithProofDisabled > 0`. Or query failed —
     /// fail-closed.
     case killSwitchClosed
@@ -182,6 +185,14 @@ final class QBTCClaimViewModel: ObservableObject {
             lastClaimError = nil
         }
         defer { isLoading = false }
+
+        // GG20 vaults can't run the DKLS BTC signing round the claim flow
+        // requires — block up front with a clear message instead of letting
+        // the user reach keysign and hit a cryptic DKLS retry failure.
+        guard vault.supportsQbtcClaim else {
+            state = .blocked(reason: .unsupportedVaultType)
+            return
+        }
 
         guard let btcCoin else {
             state = .blocked(reason: .missingCoin(chainName: "Bitcoin"))

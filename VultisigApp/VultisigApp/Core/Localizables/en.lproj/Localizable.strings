@@ -859,6 +859,8 @@
 "qbtcClaimUnavailableDetail" = "Claiming is currently disabled by the chain. Please try again later.";
 "qbtcClaimUnavailableTitle" = "Claim unavailable";
 "qbtcClaimUnsupportedAddressTitle" = "Unsupported address";
+"qbtcClaimUnsupportedVaultDetail" = "Claiming QBTC isn't supported on this vault's older key type. Upgrade your vault, then try claiming again.";
+"qbtcClaimUnsupportedVaultTitle" = "Vault upgrade required";
 "qbtcClaimUtxoBlockFormat" = "Block #%d";
 "qbtcClaimUtxoPending" = "Pending confirmation";
 "quantumSecurityFeatureClaimSubtitle" = "Once generated, your eligible BTC UTXOs appear as claimable QBTC at a 1:1 ratio.";

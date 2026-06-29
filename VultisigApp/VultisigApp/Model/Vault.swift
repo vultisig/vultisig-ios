@@ -251,6 +251,21 @@ final class Vault: ObservableObject, Codable {
         }
     }
 
+    /// The QBTC claim signs its BTC ECDSA round exclusively via DKLS (see
+    /// `QBTCClaimRoundRunner`). GG20 keyshares can't take part in that
+    /// ceremony — a GG20 vault that tries to claim hangs and fails with a
+    /// DKLS "fail to download setup message" error — so the claim flow is
+    /// limited to DKLS-family vaults. A nil `libType` is a legacy GG20
+    /// vault and is therefore unsupported.
+    var supportsQbtcClaim: Bool {
+        switch libType {
+        case .DKLS, .KeyImport:
+            true
+        case .GG20, nil:
+            false
+        }
+    }
+
     func coins(for chain: Chain) -> [Coin] {
         coins.filter { $0.chain == chain }
     }

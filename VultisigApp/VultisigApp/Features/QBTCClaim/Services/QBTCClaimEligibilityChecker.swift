@@ -138,7 +138,18 @@ final class QBTCClaimEligibilityChecker: ObservableObject {
     ///   - vaultPubKeyECDSA: Vault identifier scoping the cache so two
     ///     vaults with the same BTC address (rare but possible) can't
     ///     contaminate each other's cached state.
-    func check(btcCoin: Coin, vaultPubKeyECDSA: String) async {
+    ///   - vaultSupportsClaim: Whether the vault can run the DKLS BTC
+    ///     signing round the claim requires. GG20 vaults can't, so the
+    ///     banner / Claim button stay hidden for them.
+    func check(btcCoin: Coin, vaultPubKeyECDSA: String, vaultSupportsClaim: Bool = true) async {
+        // GG20 vaults can't complete the claim's DKLS round — keep the
+        // banner / Claim button hidden rather than surfacing an entry point
+        // that dead-ends at a keysign failure.
+        guard vaultSupportsClaim else {
+            state = .ineligible
+            return
+        }
+
         if let inFlightTask {
             await inFlightTask.value
             return
