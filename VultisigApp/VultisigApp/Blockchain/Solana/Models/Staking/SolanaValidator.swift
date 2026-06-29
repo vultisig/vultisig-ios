@@ -61,6 +61,36 @@ struct SolanaValidator: Codable, Hashable, Identifiable {
     }
 }
 
+// MARK: - Display fallbacks
+
+extension SolanaValidator {
+    /// Name to show in the picker: the enriched metadata name when present,
+    /// otherwise a truncated vote pubkey (`9gAN…7mq`). Keeps the display layer
+    /// independent of whether the metadata provider returned anything.
+    var displayName: String {
+        if let name = metadata.name?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty {
+            return name
+        }
+        return Self.truncatedPubkey(votePubkey)
+    }
+
+    /// The validator logo URL, or `nil` when no metadata source supplied one —
+    /// the display layer then renders a deterministic placeholder.
+    var logoURL: URL? {
+        guard let raw = metadata.logoURL?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            return nil
+        }
+        return URL(string: raw)
+    }
+
+    /// `prefix…suffix` form of a base58 pubkey for compact display. Returns the
+    /// input unchanged when it is too short to truncate meaningfully.
+    static func truncatedPubkey(_ pubkey: String, prefix: Int = 4, suffix: Int = 4) -> String {
+        guard pubkey.count > prefix + suffix + 1 else { return pubkey }
+        return "\(pubkey.prefix(prefix))…\(pubkey.suffix(suffix))"
+    }
+}
+
 /// Off-chain enrichment for a validator. All optional — populated by a later
 /// PR from a metadata source; the base read layer leaves it empty.
 struct ValidatorMetadata: Codable, Hashable {
