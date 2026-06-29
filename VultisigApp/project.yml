@@ -57,13 +57,13 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to `feat/erc20-approve-token` (branched off main #89/sign-sui): adds
-    # an optional `token` field to `Erc20ApprovePayload` so an approve can be
-    # bundled before a native-coin EVM contract call (calldata in `memo`) where the
-    # keysign coin is the native gas coin, not the token. Empty `token` falls back
-    # to the coin contract (backward-compatible). Repoint to the merged main commit
-    # once the commondata PR lands.
-    revision: 7147770b17229b8152db544a8e3de868bc6b88e5
+    # Pinned to the main revision that adds the `sign_sui` case to the
+    # `KeysignPayload.sign_data` oneof (commondata #89): a new `SignSui`
+    # message carrying `unsigned_tx_msg` (base64 TransactionData BCS bytes)
+    # so pre-built Sui Programmable Transaction Blocks (Sui Wallet Standard
+    # dApp signing) flow through the standard keysign pipeline. Generates the
+    # `signSui` case our exhaustive `OneOf_SignData` switches now handle.
+    revision: 86400c61e39790887ca03b98d82746ee4dc312f4
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     exactVersion: 4.6.13

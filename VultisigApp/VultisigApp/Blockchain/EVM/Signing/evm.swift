@@ -223,7 +223,7 @@ class EVMHelper {
         return try input.serializedData()
     }
 
-    func getPreSignedInputData(keysignPayload: KeysignPayload, incrementNonce: Bool = false) throws -> Data {
+    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
@@ -234,10 +234,9 @@ class EVMHelper {
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
-        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
         var input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
-            $0.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+            $0.nonce = Data(hexString: nonce.hexString())!
             $0.toAddress = keysignPayload.toAddress
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
@@ -264,8 +263,8 @@ class EVMHelper {
         return try input.serializedData()
     }
 
-    func getPreSignedImageHash(keysignPayload: KeysignPayload, incrementNonce: Bool = false) throws -> [String] {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -275,9 +274,8 @@ class EVMHelper {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse],
-                              incrementNonce: Bool = false) throws -> SignedTransactionResult {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }

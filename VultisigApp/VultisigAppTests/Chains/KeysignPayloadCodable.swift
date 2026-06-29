@@ -651,20 +651,17 @@ extension VSErc20ApprovePayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case amount
         case spender
-        case token
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(amount, forKey: .amount)
         try container.encode(spender, forKey: .spender)
-        try container.encode(token, forKey: .token)
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         amount = try container.decode(String.self, forKey: .amount)
         spender = try container.decode(String.self, forKey: .spender)
-        token = try container.decodeIfPresent(String.self, forKey: .token) ?? String()
     }
 }
 extension VSOneInchTransaction: @retroactive Codable {

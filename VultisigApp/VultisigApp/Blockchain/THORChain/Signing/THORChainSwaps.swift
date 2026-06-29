@@ -84,15 +84,6 @@ class THORChainSwaps {
     }
 
     func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> Data {
-        // An explicit approve token targets that contract; an empty token falls
-        // back to the keysign coin's contract (the swap-approve case, where
-        // `coin` is already the token being approved). This keeps swap approve
-        // bytes byte-identical while letting a native-coin keysign (native-coin
-        // deposit: coin = ETH) approve a different token (USDC).
-        let approveTarget = approvePayload.token.isEmpty ? keysignPayload.coin.contractAddress : approvePayload.token
-        guard !approveTarget.isEmpty else {
-            throw HelperError.runtimeError("approve target contract address is empty")
-        }
         let approveInput = EthereumSigningInput.with {
             $0.transaction = .with {
                 $0.erc20Approve = .with {
@@ -100,7 +91,7 @@ class THORChainSwaps {
                     $0.spender = approvePayload.spender
                 }
             }
-            $0.toAddress = approveTarget
+            $0.toAddress = keysignPayload.coin.contractAddress
         }
         let inputData = try EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,

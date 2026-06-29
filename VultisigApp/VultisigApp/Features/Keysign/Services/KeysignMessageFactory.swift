@@ -22,21 +22,6 @@ struct KeysignMessageFactory {
             let swaps = THORChainSwaps()
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
-
-        // Non-swap approve bundle (e.g. a native-coin deposit): an approve with NO swap
-        // payload on a native EVM coin. The approve hash was appended above at
-        // nonce N; append the main `memo`-call tx at nonce N+1 so the bundle is
-        // [approve@N, call@N+1] → `.regularWithApprove`. Without this the
-        // early-return gate below would fire on the lone approve and the main
-        // call would never be built (its tx silently dropped).
-        if payload.approvePayload != nil,
-           payload.swapPayload == nil,
-           payload.coin.chain.chainType == .EVM,
-           payload.coin.isNativeToken {
-            messages += try EVMHelper.getHelper(coin: payload.coin)
-                .getPreSignedImageHash(keysignPayload: payload, incrementNonce: true)
-        }
-
         if let swapPayload = payload.swapPayload {
             let incrementNonce = payload.approvePayload != nil
             switch swapPayload {
