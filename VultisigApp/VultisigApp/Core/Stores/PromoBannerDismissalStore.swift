@@ -66,9 +66,9 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
             sessionDismissed.insert(banner.dismissalID)
             lock.unlock()
         case .ttl:
-            var dict = persistentDismissals()
-            dict[banner.dismissalID] = now
-            persist(dict)
+            mutatePersistentDismissals { dict in
+                dict[banner.dismissalID] = now
+            }
         }
     }
 
@@ -96,26 +96,38 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
     /// Writes `dismissedAt = now` only if no entry exists yet, so re-running the
     /// migration never resets a countdown that already started.
     private func seedDismissedIfAbsent(_ banner: VaultBannerType, now: Date) {
-        var dict = persistentDismissals()
-        guard dict[banner.dismissalID] == nil else { return }
-        dict[banner.dismissalID] = now
-        persist(dict)
+        mutatePersistentDismissals { dict in
+            guard dict[banner.dismissalID] == nil else { return }
+            dict[banner.dismissalID] = now
+        }
+    }
+
+    /// Loads, mutates, and persists the dismissal dictionary inside a single
+    /// lock scope so concurrent writers can't lose each other's updates across
+    /// a separate read-then-write window.
+    private func mutatePersistentDismissals(_ body: (inout [String: Date]) -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        var dict = decodePersistentDismissals()
+        body(&dict)
+
+        guard let data = try? JSONEncoder().encode(dict) else { return }
+        defaults.set(data, forKey: storageKey)
     }
 
     private func persistentDismissals() -> [String: Date] {
         lock.lock()
         defer { lock.unlock() }
+        return decodePersistentDismissals()
+    }
+
+    /// Decodes the persisted dictionary. Callers must already hold `lock`.
+    private func decodePersistentDismissals() -> [String: Date] {
         guard let data = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode([String: Date].self, from: data) else {
             return [:]
         }
         return decoded
-    }
-
-    private func persist(_ dict: [String: Date]) {
-        lock.lock()
-        defer { lock.unlock() }
-        guard let data = try? JSONEncoder().encode(dict) else { return }
-        defaults.set(data, forKey: storageKey)
     }
 }

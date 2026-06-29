@@ -25,6 +25,13 @@ import SwiftData
 /// Idempotency comes from `AppMigrationService` (Keychain-versioned, runs once)
 /// and is reinforced by the store's seed-if-absent semantics.
 struct PromoBannerDismissalMigration: @MainActor AppMigration {
+    /// Surfaced when the legacy per-vault store cannot be read. Throwing leaves
+    /// the migration version un-bumped so `AppMigrationService` retries on the
+    /// next launch rather than marking the carry-over as done with no data.
+    private enum MigrationError: Error {
+        case missingModelContext
+    }
+
     let version: Int = 2
 
     let description: String = "Seeding global promo-banner dismissals from legacy per-vault/app-wide storage"
@@ -43,7 +50,7 @@ struct PromoBannerDismissalMigration: @MainActor AppMigration {
     @MainActor
     func migrate() throws {
         let legacyAppBanners = readLegacyAppBanners()
-        let legacyVaultBanners = readLegacyVaultBanners()
+        let legacyVaultBanners = try readLegacyVaultBanners()
 
         store.migrateLegacyDismissals(
             legacyAppBanners: legacyAppBanners,
@@ -64,14 +71,12 @@ struct PromoBannerDismissalMigration: @MainActor AppMigration {
     }
 
     @MainActor
-    private func readLegacyVaultBanners() -> [String] {
+    private func readLegacyVaultBanners() throws -> [String] {
         guard let modelContext = Storage.shared.modelContext else {
-            return []
+            throw MigrationError.missingModelContext
         }
         let descriptor = FetchDescriptor<Vault>()
-        guard let vaults = try? modelContext.fetch(descriptor) else {
-            return []
-        }
+        let vaults = try modelContext.fetch(descriptor)
         var union = Set<String>()
         for vault in vaults {
             union.formUnion(vault.closedBanners)
