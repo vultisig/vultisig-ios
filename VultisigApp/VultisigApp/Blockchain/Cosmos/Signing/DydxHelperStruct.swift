@@ -14,7 +14,7 @@ struct DydxHelperStruct {
     static let DydxGasLimit: UInt64 = 2500000000000000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _, let relayedGasLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -77,7 +77,10 @@ struct DydxHelperStruct {
             fee = signDataFee
         } else {
             fee = WalletCore.CosmosFee.with {
-                $0.gas = 200000 // gas limit
+                // Honor the relayed dynamic gas limit when present; otherwise
+                // fall back to the static dYdX limit. Both co-signers hash this
+                // value, so they must resolve to the identical limit.
+                $0.gas = relayedGasLimit ?? 200000
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "adydx"
                     $0.amount = String(gas)

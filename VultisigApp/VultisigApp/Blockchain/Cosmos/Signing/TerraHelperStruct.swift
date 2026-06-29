@@ -14,7 +14,7 @@ struct TerraHelperStruct {
     static let GasLimit: UInt64 = 300000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload, chain: Chain) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, let relayedGasLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
 
@@ -24,6 +24,10 @@ struct TerraHelperStruct {
 
         let coinType = chain.coinType
         let denom = "uluna"
+        // Honor the relayed dynamic gas limit when present; otherwise fall back
+        // to the static per-chain limit. Both co-signers hash this value, so
+        // they must resolve to the identical limit.
+        let effectiveGasLimit = relayedGasLimit ?? GasLimit
 
         if
             let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),
@@ -71,7 +75,7 @@ struct TerraHelperStruct {
                 }]
 
                 $0.fee = WalletCore.CosmosFee.with {
-                    $0.gas = GasLimit
+                    $0.gas = effectiveGasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = denom
                         $0.amount = String(gas)
@@ -117,7 +121,7 @@ struct TerraHelperStruct {
                     // and carried in `gas`, so the fee is a single coin in the
                     // token's own denom.
                     $0.fee = WalletCore.CosmosFee.with {
-                        $0.gas = GasLimit
+                        $0.gas = effectiveGasLimit
                         $0.amounts = [
                             CosmosAmount.with {
                                 $0.denom = keysignPayload.coin.contractAddress
@@ -151,7 +155,7 @@ struct TerraHelperStruct {
                 }
 
                 let fee = WalletCore.CosmosFee.with {
-                    $0.gas = GasLimit
+                    $0.gas = effectiveGasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.amount = String(gas)
                         $0.denom = denom

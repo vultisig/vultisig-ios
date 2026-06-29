@@ -2,39 +2,46 @@
 //  CosmosGasEstimationConfig.swift
 //  VultisigApp
 //
-//  Master gate for INITIATOR-set dynamic Cosmos gas estimation.
+//  Scope for INITIATOR-set dynamic Cosmos gas estimation.
 //
 
 import Foundation
 
-/// Gate for the initiator-set side of relayed dynamic Cosmos gas estimation
-/// (proto `CosmosSpecific.gas_limit`).
+/// Decides which chains the initiator simulates (`/cosmos/tx/v1beta1/simulate`)
+/// to derive a dynamic per-tx gas limit it relays to co-signers in proto
+/// `CosmosSpecific.gas_limit`, for a more accurate gas limit than the static
+/// per-chain fallback.
 ///
-/// IMPORTANT — keep `isInitiatorDynamicGasEnabled` false until EVERY co-signing
-/// implementation honors `gas_limit`: `vultiserver` (FastVault server
-/// co-signer), `vultisig-android`, `vultisig-windows` / the browser extension,
-/// and `vultisig-sdk`. The relayed gas limit is part of the SignDoc; if this
-/// device sets it but a co-signer ignores it, the two SignDocs diverge and the
-/// MPC signature fails — breaking FastVault and cross-client Cosmos signing in
-/// production. Flip this flag only after all of those repos have shipped the
-/// read/honor side.
+/// Two-sided contract:
+///  * Read/honor side — ALWAYS-ON and hash-safe. Every Cosmos signing helper
+///    applies a relayed `gas_limit` when present and falls back to the static
+///    per-chain limit otherwise: `CosmosHelperStruct`, `TerraHelperStruct`,
+///    `DydxHelperStruct`. It is a no-op when no peer set one, so two co-signing
+///    devices always resolve the identical gas value.
+///  * Initiator-set side — this type. The device simulates and SETS
+///    `gas_limit`. The relayed value is part of the SignDoc every co-signer
+///    hashes.
 ///
-/// The read/honor side (`CosmosHelperStruct.defaultFee`) is always-on and
-/// unaffected by this flag: it is harmless when no peer sets a `gas_limit`.
+/// Enabled for every Cosmos-family chain that can be simulated through
+/// WalletCore's secp256k1 Cosmos signing path. `.qbtc` is excluded: it signs
+/// with ML-DSA keys via a bespoke builder (`QBTCHelper`) that WalletCore cannot
+/// compile, so it cannot produce simulate `tx_bytes`.
+///
+/// CROSS-PLATFORM PARITY — KNOWN FOLLOW-UP. The other co-signers (`vultiserver`
+/// / FastVault, `vultisig-android`, `vultisig-windows` / the browser extension,
+/// `vultisig-sdk`) must also honor `gas_limit`. Until they ship the read side, a
+/// Cosmos send co-signed across platforms where one side ignores the relayed
+/// limit will diverge the SignDoc and fail the MPC signature. This is a
+/// deliberate, tracked tradeoff — the relayed value is fail-closed (any
+/// simulation error falls back to the static limit) and the PR stays draft
+/// pending the cross-client work.
 enum CosmosGasEstimationConfig {
-    /// Master gate. Defaults OFF. See the type doc for the enable precondition.
-    static let isInitiatorDynamicGasEnabled = false
+    /// Cosmos chains that cannot be simulated via WalletCore (ML-DSA keys /
+    /// bespoke builder), so the initiator never simulates them.
+    static let nonSimulatableChains: Set<Chain> = [.qbtc]
 
-    /// Chains the initiator may simulate when the gate is on. Restricted to
-    /// Akash (Phase-1 scope): chains here MUST route through
-    /// `CosmosHelperStruct` (whose `defaultFee` honors the relayed limit) and
-    /// have a `CosmosFeeFloorConfig` entry (so the floored fee is computed from
-    /// a known minimum gas price). Terra / Dydx / QBTC use their own helpers
-    /// that do not read `gas_limit`, so they are intentionally excluded.
-    static let simulationChains: Set<Chain> = [.akash]
-
-    /// Whether the initiator should simulate gas for `chain` for a native send.
+    /// Whether the initiator should simulate gas for `chain` on a native send.
     static func shouldSimulate(chain: Chain) -> Bool {
-        isInitiatorDynamicGasEnabled && simulationChains.contains(chain)
+        chain.chainType == .Cosmos && !nonSimulatableChains.contains(chain)
     }
 }

@@ -85,6 +85,26 @@ final class CosmosRelayedGasLimitTests: XCTestCase {
         XCTAssertEqual(input.fee.gas, 200_000, "Absent gas_limit must use the static per-chain limit")
     }
 
+    // MARK: - Bespoke helpers honor the relayed limit too (Terra)
+
+    private func terraSigningInput(for payload: KeysignPayload) throws -> CosmosSigningInput {
+        let inputData = try TerraHelperStruct.getPreSignedInputData(keysignPayload: payload, chain: .terra)
+        return try CosmosSigningInput(serializedBytes: inputData)
+    }
+
+    func testTerraRelayedGasLimitIsHonoredInSigningInput() throws {
+        let coin = makeCoin(chain: .terra)
+        let input = try terraSigningInput(for: makePayload(coin: coin, gasLimit: 123_456))
+        XCTAssertEqual(input.fee.gas, 123_456, "Relayed gas_limit must drive the signed fee.gas on Terra")
+    }
+
+    func testTerraAbsentGasLimitFallsBackToStaticLimit() throws {
+        let coin = makeCoin(chain: .terra)
+        let input = try terraSigningInput(for: makePayload(coin: coin, gasLimit: nil))
+        XCTAssertEqual(input.fee.gas, TerraHelperStruct.GasLimit,
+                       "Absent gas_limit must use Terra's static per-chain limit")
+    }
+
     // MARK: - Proto round-trip
 
     func testGasLimitRoundTripsThroughProto() throws {
