@@ -27,6 +27,7 @@
 //       equal inputs are `==` (Equatable rows).
 //
 
+import Foundation
 import XCTest
 @testable import VultisigApp
 

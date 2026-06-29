@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import Foundation
 import SwiftData
 
 /// Seeds the global `PromoBannerDismissalStore` from the two legacy permanent
