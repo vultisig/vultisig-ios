@@ -45,6 +45,28 @@ final class StakePosition {
     /// with no pending-withdrawal concept.
     var withdrawalUnlockTime: TimeInterval?
 
+    // MARK: - Solana stake-account fields
+
+    // Solana staking is per-STAKE-ACCOUNT (N rows per coin, on-chain-discovered),
+    // unlike the one-row-per-coin THOR/Maya/TON staking this model otherwise
+    // serves. These three optionals carry the per-account discriminator + the
+    // bits needed to PAINT and IDENTIFY a Solana row before the live RPC refresh
+    // lands. They are display/seed-only: the row's actions never sign from them —
+    // a live `SolanaStakeAccount` from the refresh is required first. `nil` for
+    // every non-Solana chain (lightweight SwiftData migration).
+
+    /// Stake-account address — the per-account discriminator that makes the `id`
+    /// unique across a vault's N Solana stake accounts. `nil` for non-Solana
+    /// rows, which keeps their `id` byte-identical to the coin-keyed format.
+    var stakeAccountPubkey: String?
+    /// Vote account the stake delegates to — drives the move-stake re-delegate
+    /// target and the seeded validator display. `nil` for non-Solana rows.
+    var validatorVotePubkey: String?
+    /// Raw value of `SolanaStakeActivationState` (activating/active/deactivating/
+    /// inactive) — gates which row actions paint enabled while the seed shows.
+    /// `nil` for non-Solana rows.
+    var activationState: String?
+
     /// `false` while a withdrawal is pending (the deposit is locked); `true`
     /// otherwise, so chains without a pending-withdrawal concept are unaffected.
     var canStake: Bool {
@@ -84,6 +106,9 @@ final class StakePosition {
         poolImplementation: String? = nil,
         poolName: String? = nil,
         withdrawalUnlockTime: TimeInterval? = nil,
+        stakeAccountPubkey: String? = nil,
+        validatorVotePubkey: String? = nil,
+        activationState: String? = nil,
         vault: Vault
     ) {
         self.coin = coin
@@ -100,8 +125,20 @@ final class StakePosition {
         self.poolImplementation = poolImplementation
         self.poolName = poolName
         self.withdrawalUnlockTime = withdrawalUnlockTime
+        self.stakeAccountPubkey = stakeAccountPubkey
+        self.validatorVotePubkey = validatorVotePubkey
+        self.activationState = activationState
         self.vault = vault
-        self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
+        self.id = StakePosition.makeID(coin: coin, vault: vault, stakeAccountPubkey: stakeAccountPubkey)
+    }
+
+    /// Builds the persistent `id`. The base is coin-keyed (one row per coin —
+    /// the THOR/Maya/TON contract). Solana appends its stake-account pubkey so a
+    /// vault's N stake accounts stay distinct; non-Solana rows pass `nil` and the
+    /// `id` is byte-identical to the historical coin-keyed format (no migration).
+    static func makeID(coin: CoinMeta, vault: Vault, stakeAccountPubkey: String?) -> String {
+        let base = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
+        return base + (stakeAccountPubkey.map { "_\($0)" } ?? "")
     }
 
     convenience init(_ dto: StakePositionData, vault: Vault) {
@@ -120,11 +157,16 @@ final class StakePosition {
             poolImplementation: dto.poolImplementation,
             poolName: dto.poolName,
             withdrawalUnlockTime: dto.withdrawalUnlockTime,
+            stakeAccountPubkey: dto.stakeAccountPubkey,
+            validatorVotePubkey: dto.validatorVotePubkey,
+            activationState: dto.activationState,
             vault: vault
         )
     }
 
     /// Updates everything except the lookup key (`coin`) and the persistent `id`.
+    /// `stakeAccountPubkey` is part of the `id`, so it is intentionally NOT
+    /// reassigned here (a matched row already shares it).
     func apply(_ dto: StakePositionData) {
         type = dto.type
         amount = dto.amount
@@ -139,6 +181,8 @@ final class StakePosition {
         poolImplementation = dto.poolImplementation
         poolName = dto.poolName
         withdrawalUnlockTime = dto.withdrawalUnlockTime
+        validatorVotePubkey = dto.validatorVotePubkey
+        activationState = dto.activationState
     }
 }
 

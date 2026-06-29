@@ -85,9 +85,18 @@ struct DefiPositionsStorageService {
 
     /// Upserts the given DTOs. No delete-stale (see `upsert(lp:for:)`); rows are removed only via
     /// `removeStake(coin:from:)` when the user disables a position.
+    ///
+    /// Coin-keyed (one row per coin) — the THOR/Maya/TON contract. Solana is
+    /// per-stake-account (N rows per coin, delete-stale) and MUST route through
+    /// `upsert(solanaStake:for:)` instead; routing SOL here would collapse every
+    /// stake account onto a single coin-keyed row.
     @discardableResult
     @MainActor
     func upsert(stake positions: [StakePositionData], for vault: Vault) throws -> [StakePosition] {
+        assert(
+            !positions.contains { $0.coin.chain == .solana },
+            "Solana stake positions must use upsert(solanaStake:for:) — coin-keyed upsert collapses N accounts."
+        )
         let existingByCoin = Dictionary(
             vault.stakePositions.map { ($0.coin, $0) },
             uniquingKeysWith: { _, latest in latest }
@@ -105,6 +114,44 @@ struct DefiPositionsStorageService {
 
         try saveAndNotify()
         return materialized
+    }
+
+    // MARK: - Solana stake positions
+
+    /// Upserts the Solana per-stake-account snapshot keyed by `id` (which carries
+    /// the stake-account pubkey) and removes any persisted Solana row absent from
+    /// the input. Mirrors the bond `upsert(_:)` (id-keyed + delete-stale).
+    ///
+    /// Delete-stale is SCOPED to `coin.chain == .solana` so the THOR/Maya/TON
+    /// rows that share `vault.stakePositions` are never touched. Empty input is a
+    /// valid "the vault now holds no stake accounts" state and clears the Solana
+    /// rows — callers MUST only pass the result of a SUCCESSFUL stake-account
+    /// read (a failed/degraded read keeps the last-known snapshot).
+    @MainActor
+    func upsert(solanaStake snapshots: [StakePositionData], for vault: Vault) throws {
+        let newIDs = Set(snapshots.map {
+            StakePosition.makeID(coin: $0.coin, vault: vault, stakeAccountPubkey: $0.stakeAccountPubkey)
+        })
+
+        for stale in vault.stakePositions where stale.coin.chain == .solana && !newIDs.contains(stale.id) {
+            Storage.shared.modelContext.delete(stale)
+        }
+
+        let existingByID = Dictionary(
+            vault.stakePositions.map { ($0.id, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+
+        for dto in snapshots {
+            let id = StakePosition.makeID(coin: dto.coin, vault: vault, stakeAccountPubkey: dto.stakeAccountPubkey)
+            if let existing = existingByID[id] {
+                existing.apply(dto)
+            } else {
+                Storage.shared.modelContext.insert(StakePosition(dto, vault: vault))
+            }
+        }
+
+        try saveAndNotify()
     }
 
     // MARK: - Enable / disable position

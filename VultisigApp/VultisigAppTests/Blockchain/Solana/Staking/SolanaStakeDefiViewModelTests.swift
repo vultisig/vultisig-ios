@@ -7,9 +7,16 @@
 //  metadata enrichment, APY resolution, and the post-keysign
 //  invalidate-and-refresh re-reading stake accounts (which are never cached).
 //
+//  Also covers the cache-first paint: the VM seeds `rows` synchronously from the
+//  persisted Solana `StakePosition` snapshot before any network call, a
+//  successful refresh rewrites the snapshot (id-keyed + Solana-scoped
+//  delete-stale), and a FAILED stake-account read keeps the last-known snapshot
+//  rather than clobbering it with `[]`.
+//
 
 @testable import VultisigApp
 import Foundation
+import SwiftData
 import XCTest
 
 // Protocol conformance forces `async throws` the fakes don't await.
@@ -20,6 +27,8 @@ private final class FakeStakingService: SolanaStakingServiceProtocol, @unchecked
     var epoch: SolanaEpochInfo
     var inflation: Double
     var rentReserve: UInt64
+    /// When set, `fetchStakeAccounts` throws it — simulates an RPC outage.
+    var stakeAccountError: Error?
 
     private(set) var stakeAccountCalls = 0
     private let lock = NSLock()
@@ -29,19 +38,22 @@ private final class FakeStakingService: SolanaStakingServiceProtocol, @unchecked
         validators: [SolanaValidator] = [],
         epoch: SolanaEpochInfo = SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1),
         inflation: Double = 0.07,
-        rentReserve: UInt64 = 2_282_880
+        rentReserve: UInt64 = 2_282_880,
+        stakeAccountError: Error? = nil
     ) {
         self.accounts = accounts
         self.validators = validators
         self.epoch = epoch
         self.inflation = inflation
         self.rentReserve = rentReserve
+        self.stakeAccountError = stakeAccountError
     }
 
     func fetchValidators() async throws -> [SolanaValidator] { validators }
 
     func fetchStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
         lock.withLock { stakeAccountCalls += 1 }
+        if let stakeAccountError { throw stakeAccountError }
         return accounts
     }
 
@@ -58,8 +70,45 @@ private struct FakeMetadataProvider: ValidatorMetadataProvider {
 }
 // swiftlint:enable async_without_await unused_parameter
 
+private enum FakeRPCError: Error { case outage }
+
 @MainActor
 final class SolanaStakeDefiViewModelTests: XCTestCase {
+
+    private var storeToken: TestContextToken!
+    private var vault: Vault!
+    private let storage = DefiPositionsStorageService()
+    private let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
+        // A SOL native coin so the VM can resolve the CoinMeta it persists into.
+        let solCoin = Coin(asset: solMeta, address: "Owner", hexPublicKey: "")
+        Storage.shared.modelContext.insert(solCoin)
+        solCoin.vault = vault
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        TestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
+    private func makeViewModel(
+        service: SolanaStakingServiceProtocol,
+        metadata: [String: ValidatorMetadata] = [:]
+    ) -> SolanaStakeDefiViewModel {
+        SolanaStakeDefiViewModel(
+            vault: vault,
+            stakingService: service,
+            metadataProvider: FakeMetadataProvider(byVote: metadata),
+            storage: storage,
+            onInvalidateCaches: {}
+        )
+    }
 
     private func account(
         pubkey: String,
@@ -98,17 +147,17 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         )
     }
 
+    private func solanaPositions() -> [StakePosition] {
+        vault.stakePositions.filter { $0.coin.chain == .solana }
+    }
+
     func testSumsDelegatedStakeAcrossAccounts() async {
         let lamportsPerSol = Decimal(SolanaStakingConfig.lamportsPerSol)
         let service = FakeStakingService(accounts: [
             account(pubkey: "A", vote: "V1", stake: 2_000_000_000, activationEpoch: 700),
             account(pubkey: "B", vote: "V2", stake: 3_000_000_000, activationEpoch: 700)
         ])
-        let vm = SolanaStakeDefiViewModel(
-            stakingService: service,
-            metadataProvider: FakeMetadataProvider(byVote: [:]),
-            onInvalidateCaches: {}
-        )
+        let vm = makeViewModel(service: service)
         await vm.refresh(owner: "Owner", decimals: 9)
         XCTAssertEqual(vm.rows.count, 2)
         // 2 + 3 = 5 SOL.
@@ -124,11 +173,7 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
             account(pubkey: "Deactivating", vote: "V3", stake: 1_000_000_000, activationEpoch: 700, deactivationEpoch: 800),
             account(pubkey: "Inactive", vote: "V4", stake: 1_000_000_000, activationEpoch: 700, deactivationEpoch: 700)
         ])
-        let vm = SolanaStakeDefiViewModel(
-            stakingService: service,
-            metadataProvider: FakeMetadataProvider(byVote: [:]),
-            onInvalidateCaches: {}
-        )
+        let vm = makeViewModel(service: service)
         await vm.refresh(owner: "Owner", decimals: 9)
         let byId = Dictionary(uniqueKeysWithValues: vm.rows.map { ($0.id, $0.activationState) })
         XCTAssertEqual(byId["Active"], .active)
@@ -142,17 +187,15 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
             account(pubkey: "Active", vote: "V1", stake: 1_000_000_000, activationEpoch: 700),
             account(pubkey: "Inactive", vote: "V4", stake: 1_000_000_000, activationEpoch: 700, deactivationEpoch: 700)
         ])
-        let vm = SolanaStakeDefiViewModel(
-            stakingService: service,
-            metadataProvider: FakeMetadataProvider(byVote: [:]),
-            onInvalidateCaches: {}
-        )
+        let vm = makeViewModel(service: service)
         await vm.refresh(owner: "Owner", decimals: 9)
         let active = vm.rows.first { $0.id == "Active" }
         let inactive = vm.rows.first { $0.id == "Inactive" }
         XCTAssertEqual(active?.canMoveStake, true)
         XCTAssertEqual(active?.canUnstake, true)
         XCTAssertEqual(active?.canWithdraw, false)
+        // A live refresh backs the row, so its actions are enabled.
+        XCTAssertEqual(active?.isActionable, true)
         XCTAssertEqual(inactive?.canMoveStake, false)
         XCTAssertEqual(inactive?.canUnstake, false)
         XCTAssertEqual(inactive?.canWithdraw, true)
@@ -163,13 +206,9 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
             accounts: [account(pubkey: "A", vote: "V1", stake: 1_000_000_000, activationEpoch: 700)],
             validators: [validator(vote: "V1", commission: 5)]
         )
-        let vm = SolanaStakeDefiViewModel(
-            stakingService: service,
-            metadataProvider: FakeMetadataProvider(byVote: [
-                "V1": ValidatorMetadata(name: "Vultisig Pool", apyEstimate: Decimal(string: "0.068"))
-            ]),
-            onInvalidateCaches: {}
-        )
+        let vm = makeViewModel(service: service, metadata: [
+            "V1": ValidatorMetadata(name: "Vultisig Pool", apyEstimate: Decimal(string: "0.068"))
+        ])
         await vm.refresh(owner: "Owner", decimals: 9)
         XCTAssertEqual(vm.rows.first?.validatorName, "Vultisig Pool")
         XCTAssertEqual((vm.rows.first?.apyPercent as NSDecimalNumber?)?.doubleValue ?? 0, 0.068, accuracy: 0.00001)
@@ -181,8 +220,10 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         ])
         var invalidated = 0
         let vm = SolanaStakeDefiViewModel(
+            vault: vault,
             stakingService: service,
             metadataProvider: FakeMetadataProvider(byVote: [:]),
+            storage: storage,
             onInvalidateCaches: { invalidated += 1 }
         )
         await vm.refresh(owner: "Owner", decimals: 9)
@@ -191,5 +232,109 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         // cache-invalidation hook fired exactly once on the post-keysign refresh.
         XCTAssertEqual(service.stakeAccountCalls, 2)
         XCTAssertEqual(invalidated, 1)
+    }
+
+    // MARK: - Cache-first paint
+
+    /// Seeds a persisted Solana row, then constructs the VM and asserts `rows`
+    /// is painted BEFORE any network call (synchronous seed in init).
+    func testSeedPaintsPersistedRowsBeforeNetwork() throws {
+        try storage.upsert(solanaStake: [
+            StakePositionData(
+                coin: solMeta,
+                type: .stake,
+                amount: 4,
+                apr: 0.06,
+                poolName: "Seeded Validator",
+                stakeAccountPubkey: "A",
+                validatorVotePubkey: "V1",
+                activationState: SolanaStakeActivationState.active.rawValue
+            )
+        ], for: vault)
+
+        let service = FakeStakingService(accounts: [])
+        let vm = makeViewModel(service: service)
+
+        // No refresh yet — the seed must already be on screen.
+        XCTAssertEqual(vm.rows.count, 1)
+        XCTAssertEqual(vm.rows.first?.id, "A")
+        XCTAssertEqual(vm.rows.first?.validatorName, "Seeded Validator")
+        XCTAssertEqual(vm.totalStaked, 4)
+        // The seed carries no live account, so its actions stay disabled.
+        XCTAssertEqual(vm.rows.first?.isActionable, false)
+    }
+
+    /// A successful refresh writes the per-account snapshot back to SwiftData.
+    func testSuccessfulRefreshUpsertsSnapshot() async {
+        let service = FakeStakingService(
+            accounts: [account(pubkey: "A", vote: "V1", stake: 1_000_000_000, activationEpoch: 700)],
+            validators: [validator(vote: "V1", commission: 5)]
+        )
+        let vm = makeViewModel(service: service)
+        await vm.refresh(owner: "Owner", decimals: 9)
+
+        let persisted = solanaPositions()
+        XCTAssertEqual(persisted.count, 1)
+        XCTAssertEqual(persisted.first?.stakeAccountPubkey, "A")
+        XCTAssertEqual(persisted.first?.validatorVotePubkey, "V1")
+        XCTAssertEqual(persisted.first?.activationState, SolanaStakeActivationState.active.rawValue)
+        XCTAssertEqual(persisted.first?.amount, 1)
+    }
+
+    /// A FAILED stake-account read must keep the last-known seed/rows and the
+    /// persisted snapshot — never clobber them with `[]`.
+    func testFailedFetchDoesNotClobberSnapshot() async throws {
+        try storage.upsert(solanaStake: [
+            StakePositionData(
+                coin: solMeta,
+                type: .stake,
+                amount: 9,
+                poolName: "Persisted",
+                stakeAccountPubkey: "A",
+                validatorVotePubkey: "V1",
+                activationState: SolanaStakeActivationState.active.rawValue
+            )
+        ], for: vault)
+
+        let service = FakeStakingService(accounts: [], stakeAccountError: FakeRPCError.outage)
+        let vm = makeViewModel(service: service)
+        XCTAssertEqual(vm.rows.count, 1) // seeded
+
+        await vm.refresh(owner: "Owner", decimals: 9)
+
+        // Rows unchanged and the persisted row survives the failed read.
+        XCTAssertEqual(vm.rows.count, 1)
+        XCTAssertEqual(vm.rows.first?.id, "A")
+        XCTAssertEqual(solanaPositions().count, 1)
+    }
+
+    /// Delete-stale drops a Solana account absent from the fresh read while
+    /// leaving a sibling THOR `StakePosition` in the shared relationship intact.
+    func testDeleteStaleRemovesAbsentAccountAndKeepsSiblingChain() async throws {
+        // Two Solana accounts persisted...
+        try storage.upsert(solanaStake: [
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "A", activationState: "active"),
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "B", activationState: "active")
+        ], for: vault)
+        // ...plus a sibling THOR stake row sharing `vault.stakePositions`.
+        _ = try storage.upsert(stake: [
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100)
+        ], for: vault)
+        XCTAssertEqual(vault.stakePositions.count, 3)
+
+        // The fresh read returns only account A — B is gone on chain.
+        let service = FakeStakingService(accounts: [
+            account(pubkey: "A", vote: "V1", stake: 1_000_000_000, activationEpoch: 700)
+        ])
+        let vm = makeViewModel(service: service)
+        await vm.refresh(owner: "Owner", decimals: 9)
+
+        let solana = solanaPositions()
+        XCTAssertEqual(Set(solana.compactMap(\.stakeAccountPubkey)), ["A"], "Absent Solana account deleted.")
+        XCTAssertEqual(
+            vault.stakePositions.filter { $0.coin.chain == .thorChain }.count,
+            1,
+            "Sibling THOR stake row must survive Solana-scoped delete-stale."
+        )
     }
 }

@@ -30,9 +30,11 @@ final class SolanaStakeDefiViewModel: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var error: String?
 
+    private let vault: Vault
     private let stakingService: SolanaStakingServiceProtocol
     private let metadataProvider: ValidatorMetadataProvider
     private let apyResolver: SolanaStakingAPYResolverProtocol
+    private let storage: DefiPositionsStorageService
     private let onInvalidateCaches: @Sendable () -> Void
     private let logger = Logger(
         subsystem: "com.vultisig.app",
@@ -40,15 +42,54 @@ final class SolanaStakeDefiViewModel: ObservableObject {
     )
 
     init(
+        vault: Vault,
         stakingService: SolanaStakingServiceProtocol = SolanaStakingService(),
         metadataProvider: ValidatorMetadataProvider = StakewizValidatorMetadataProvider(),
         apyResolver: SolanaStakingAPYResolverProtocol = SolanaStakingAPYResolver(),
+        storage: DefiPositionsStorageService = DefiPositionsStorageService(),
         onInvalidateCaches: @escaping @Sendable () -> Void = { SolanaService.shared.invalidateEpochInfoCache() }
     ) {
+        self.vault = vault
         self.stakingService = stakingService
         self.metadataProvider = metadataProvider
         self.apyResolver = apyResolver
+        self.storage = storage
         self.onInvalidateCaches = onInvalidateCaches
+        seedFromPersistedSnapshot()
+    }
+
+    /// Cache-first paint: map the persisted Solana `StakePosition` snapshot into
+    /// display rows and assign `rows` / `totalStaked` synchronously, BEFORE any
+    /// network call, so a warm store renders the last-known accounts instantly
+    /// (matching the persisted THOR/Maya/TON DeFi path). The seed rows carry no
+    /// live `SolanaStakeAccount`, so their actions stay disabled until the live
+    /// refresh — they are a display projection, never a signing source.
+    private func seedFromPersistedSnapshot() {
+        let seeded = vault.stakePositions
+            .filter { $0.coin.chain == .solana }
+            .compactMap { position -> SolanaStakeAccountRow? in
+                guard let pubkey = position.stakeAccountPubkey, !pubkey.isEmpty else { return nil }
+                let state = position.activationState
+                    .flatMap(SolanaStakeActivationState.init(rawValue:)) ?? .active
+                let name = position.poolName
+                    ?? SolanaValidator.truncatedPubkey(position.validatorVotePubkey ?? pubkey)
+                return SolanaStakeAccountRow(
+                    stakeAccountPubkey: pubkey,
+                    stakeAccount: nil,
+                    validatorName: name,
+                    validatorVotePubkey: position.validatorVotePubkey,
+                    validatorLogoURL: nil,
+                    delegatedAmount: position.amount,
+                    rentReserve: 0,
+                    activationState: state,
+                    apyPercent: position.apr.map { Decimal($0) }
+                )
+            }
+            .sorted { $0.delegatedAmount > $1.delegatedAmount }
+
+        guard !seeded.isEmpty else { return }
+        rows = seeded
+        totalStaked = seeded.map(\.delegatedAmount).reduce(0, +)
     }
 
     /// Fans out the stake-account read (uncached), the live epoch, the cached
@@ -67,7 +108,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         async let inflationTask = fetchInflation()
         async let rentReserveTask = fetchRentReserve()
 
-        let stakeAccounts = await stakeAccountsTask
+        let stakeAccountsResult = await stakeAccountsTask
         let epoch = await epochTask
         let validators = await validatorsTask
         let inflation = await inflationTask
@@ -75,6 +116,17 @@ final class SolanaStakeDefiViewModel: ObservableObject {
 
         let divisor = pow(Decimal(10), decimals)
         rentReserve = Decimal(reserveLamports) / divisor
+
+        // Cache-first discipline: ONLY replace the painted rows / rewrite the
+        // snapshot when the stake-account read SUCCEEDED. A failed read keeps the
+        // last-known seed so an RPC outage never blanks the user's positions —
+        // mirroring `BalanceService.fetchStakedBalance(.solana)` returning `nil`
+        // (not `0`) on failure. An empty SUCCESS, by contrast, is a real "no
+        // accounts" state and is allowed to clear the rows.
+        guard let stakeAccounts = stakeAccountsResult else {
+            logger.warning("Stake-account read failed — keeping last-known rows for owner \(owner, privacy: .private)")
+            return
+        }
 
         let validatorsByVote = Dictionary(
             validators.map { ($0.votePubkey, $0) },
@@ -91,7 +143,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         let metadata = await metadataProvider.metadata(forVotePubkeys: votePubkeys)
 
         let currentEpoch = epoch?.epoch
-        rows = stakeAccounts.map { account in
+        let liveRows = stakeAccounts.map { account in
             row(
                 for: account,
                 divisor: divisor,
@@ -104,10 +156,38 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         }
         .sorted { $0.delegatedAmount > $1.delegatedAmount }
 
-        totalStaked = rows.map(\.delegatedAmount).reduce(0, +)
+        rows = liveRows
+        totalStaked = liveRows.map(\.delegatedAmount).reduce(0, +)
 
-        if rows.isEmpty {
+        if liveRows.isEmpty {
             logger.info("No stake accounts for owner \(owner, privacy: .private)")
+        }
+
+        persistSnapshot(rows: liveRows)
+    }
+
+    /// Writes the just-refreshed rows back to the persisted Solana `StakePosition`
+    /// snapshot (id-keyed + Solana-scoped delete-stale) so the next open paints
+    /// cache-first. Called ONLY on a successful stake-account read — an empty
+    /// list here clears withdrawn-away accounts; a failed read never reaches it.
+    private func persistSnapshot(rows liveRows: [SolanaStakeAccountRow]) {
+        guard let coinMeta = vault.nativeCoin(for: .solana)?.toCoinMeta() else { return }
+        let snapshots = liveRows.map { row in
+            StakePositionData(
+                coin: coinMeta,
+                type: .stake,
+                amount: row.delegatedAmount,
+                apr: row.apyPercent.map { NSDecimalNumber(decimal: $0).doubleValue },
+                poolName: row.validatorName,
+                stakeAccountPubkey: row.stakeAccountPubkey,
+                validatorVotePubkey: row.validatorVotePubkey,
+                activationState: row.activationState.rawValue
+            )
+        }
+        do {
+            try storage.upsert(solanaStake: snapshots, for: vault)
+        } catch {
+            logger.error("Failed to persist Solana stake snapshot: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -164,6 +244,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
             ?? SolanaValidator.truncatedPubkey(account.pubkey)
 
         return SolanaStakeAccountRow(
+            stakeAccountPubkey: account.pubkey,
             stakeAccount: account,
             validatorName: validatorName,
             validatorVotePubkey: votePubkey,
@@ -177,13 +258,16 @@ final class SolanaStakeDefiViewModel: ObservableObject {
 
     // MARK: - Fetches (each degrades to a quiet default on failure)
 
-    private func fetchStakeAccounts(owner: String) async -> [SolanaStakeAccount] {
+    /// Returns the live stake accounts, or `nil` when the read FAILED — the
+    /// caller uses `nil` to keep the last-known snapshot rather than clobbering
+    /// it with `[]`. An empty array is a genuine "no accounts" success.
+    private func fetchStakeAccounts(owner: String) async -> [SolanaStakeAccount]? {
         do {
             return try await stakingService.fetchStakeAccounts(owner: owner)
         } catch {
             logger.error("Failed to fetch stake accounts: \(error.localizedDescription, privacy: .public)")
             self.error = error.localizedDescription
-            return []
+            return nil
         }
     }
 
@@ -228,12 +312,22 @@ final class SolanaStakeDefiViewModel: ObservableObject {
 /// stake account — a wallet can hold N. `validatorName` / `validatorLogoURL`
 /// fall back to a truncated vote pubkey when the validator set / metadata
 /// couldn't be enriched; `apyPercent` is nil when no source produced a positive
-/// value (the view hides the APY row). Carries the full `SolanaStakeAccount` so
-/// the row actions can hand it straight to the `FunctionTransactionType.solana*`
-/// flows without re-querying.
+/// value (the view hides the APY row).
+///
+/// `stakeAccount` is the full live `SolanaStakeAccount` the row actions hand to
+/// the `FunctionTransactionType.solana*` flows. It is OPTIONAL because a
+/// cache-first SEED row (reconstructed from the persisted `StakePosition`
+/// snapshot before the live refresh lands) carries no live account — it paints
+/// and gates buttons via `stakeAccountPubkey` + `activationState`, but its
+/// actions stay disabled (`isActionable == false`) until the live refresh
+/// supplies the account. Signing never reads the seed projection.
 struct SolanaStakeAccountRow: Identifiable, Equatable, Sendable {
-    var id: String { stakeAccount.pubkey }
-    let stakeAccount: SolanaStakeAccount
+    var id: String { stakeAccountPubkey }
+    /// Stake-account address — always present (seed or live); drives `id` and
+    /// the row's pubkey display.
+    let stakeAccountPubkey: String
+    /// Live on-chain account, or `nil` for a not-yet-refreshed seed row.
+    let stakeAccount: SolanaStakeAccount?
     let validatorName: String
     let validatorVotePubkey: String?
     let validatorLogoURL: URL?
@@ -246,6 +340,10 @@ struct SolanaStakeAccountRow: Identifiable, Equatable, Sendable {
     let activationState: SolanaStakeActivationState
     /// Fractional APY (`0.067` = 6.7%), or `nil` to hide the row.
     let apyPercent: Decimal?
+
+    /// `true` once a live `SolanaStakeAccount` backs the row — actions
+    /// (Unstake/Withdraw/Move) can only fire then, never from a seed projection.
+    var isActionable: Bool { stakeAccount != nil }
 
     /// Whether a move-stake can be started from this account — only a fully
     /// active delegation; an activating/deactivating/inactive account has no

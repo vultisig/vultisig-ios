@@ -153,7 +153,7 @@ struct SolanaStakeDefiView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)
                 HStack {
-                    Text(SolanaValidator.truncatedPubkey(row.stakeAccount.pubkey))
+                    Text(SolanaValidator.truncatedPubkey(row.stakeAccountPubkey))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .lineLimit(1)
@@ -256,6 +256,10 @@ struct SolanaStakeDefiView: View {
 
     @ViewBuilder
     private func actionButtons(for row: SolanaStakeAccountRow) -> some View {
+        // A seed row (no live `SolanaStakeAccount` yet) paints its action layout
+        // from the cached activation state but keeps Unstake/Withdraw/Move
+        // DISABLED until the live refresh supplies the account — signing never
+        // runs off the seed. Delegate needs no account, so it stays enabled.
         HStack(spacing: 8) {
             if row.canWithdraw {
                 PrimaryButton(
@@ -264,6 +268,7 @@ struct SolanaStakeDefiView: View {
                 ) {
                     onWithdraw(row)
                 }
+                .disabled(!row.isActionable)
             } else {
                 PrimaryButton(
                     title: "solanaStakingActionUnstake".localized,
@@ -272,7 +277,7 @@ struct SolanaStakeDefiView: View {
                 ) {
                     onUnstake(row)
                 }
-                .disabled(!row.canUnstake)
+                .disabled(!row.canUnstake || !row.isActionable)
                 PrimaryButton(
                     title: "solanaStakingActionMove".localized,
                     type: .secondary,
@@ -280,7 +285,7 @@ struct SolanaStakeDefiView: View {
                 ) {
                     onMoveStake(row)
                 }
-                .disabled(!row.canMoveStake)
+                .disabled(!row.canMoveStake || !row.isActionable)
                 PrimaryButton(
                     title: "solanaStakingActionDelegate".localized,
                     size: .smallFixed

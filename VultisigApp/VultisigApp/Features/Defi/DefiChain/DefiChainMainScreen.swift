@@ -38,7 +38,7 @@ struct DefiChainMainScreen: View {
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
-        self._solanaStakeViewModel = StateObject(wrappedValue: SolanaStakeDefiViewModel())
+        self._solanaStakeViewModel = StateObject(wrappedValue: SolanaStakeDefiViewModel(vault: vault))
         self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
     }
 
@@ -289,24 +289,29 @@ struct DefiChainMainScreen: View {
                 onTransactionToPresent(.solanaDelegate(coin: coin.toCoinMeta()))
             },
             onUnstake: { row in
+                // Persist-light: only a live stake account (from the completed
+                // refresh) may feed signing — a seed projection never does.
+                guard let stakeAccount = row.stakeAccount else { return }
                 onTransactionToPresent(.solanaUnstake(
                     coin: coin.toCoinMeta(),
-                    stakeAccount: row.stakeAccount
+                    stakeAccount: stakeAccount
                 ))
             },
             onWithdraw: { row in
+                guard let stakeAccount = row.stakeAccount else { return }
                 onTransactionToPresent(.solanaWithdraw(
                     coin: coin.toCoinMeta(),
-                    stakeAccount: row.stakeAccount
+                    stakeAccount: stakeAccount
                 ))
             },
             onMoveStake: { row in
                 // v1 is a WHOLE-ACCOUNT move (wallet-core has no Split). The
                 // move-stake flow kicks off by deactivating the source account;
                 // the user finishes once it has cooled down.
+                guard let stakeAccount = row.stakeAccount else { return }
                 onTransactionToPresent(.solanaMoveStake(
                     coin: coin.toCoinMeta(),
-                    sourceStakeAccount: row.stakeAccount
+                    sourceStakeAccount: stakeAccount
                 ))
             }
         )

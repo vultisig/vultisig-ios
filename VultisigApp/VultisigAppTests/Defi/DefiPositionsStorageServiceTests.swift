@@ -77,6 +77,64 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         XCTAssertEqual(vault.stakePositions.first(where: { $0.coin.ticker == "TCY" })?.amount, 20)
     }
 
+    // MARK: - Solana stake upsert
+
+    func testUpsertSolanaStakeIsIdKeyedWithChainScopedDeleteStale() throws {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+
+        // Two Solana stake accounts plus a sibling THOR stake row, all sharing
+        // `vault.stakePositions`.
+        try service.upsert(solanaStake: [
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "A", activationState: "active"),
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "B", activationState: "active")
+        ], for: vault)
+        _ = try service.upsert(stake: [
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100)
+        ], for: vault)
+        XCTAssertEqual(vault.stakePositions.count, 3)
+
+        // The fresh read returns only account A (with updated fields) — B is gone.
+        try service.upsert(solanaStake: [
+            StakePositionData(coin: solMeta, type: .stake, amount: 5, stakeAccountPubkey: "A", activationState: "deactivating")
+        ], for: vault)
+
+        let solana = vault.stakePositions.filter { $0.coin.chain == .solana }
+        XCTAssertEqual(solana.count, 1, "Account B absent from the fresh read is delete-staled.")
+        XCTAssertEqual(solana.first?.stakeAccountPubkey, "A")
+        XCTAssertEqual(solana.first?.amount, 5, "Matched id is updated in place, not duplicated.")
+        XCTAssertEqual(solana.first?.activationState, "deactivating")
+        XCTAssertEqual(
+            vault.stakePositions.filter { $0.coin.chain == .thorChain }.count,
+            1,
+            "Solana-scoped delete-stale must not touch the sibling THOR row."
+        )
+    }
+
+    func testNonSolanaStakePositionIDFormatUnchanged() throws {
+        // Pins the historical coin-keyed id format so the optional Solana segment
+        // can never drift a non-Solana id (which would orphan persisted rows).
+        let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        _ = try service.upsert(stake: [
+            StakePositionData(coin: runeMeta, type: .stake, amount: 1)
+        ], for: vault)
+
+        let id = vault.stakePositions.first?.id
+        XCTAssertEqual(id, "\(runeMeta.chain.ticker)_\(runeMeta.contractAddress)_\(vault.pubKeyECDSA)")
+        XCTAssertEqual(id?.hasSuffix("_"), false, "No trailing stake-account segment for non-Solana rows.")
+    }
+
+    func testSolanaStakePositionIDAppendsStakeAccountSegment() throws {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+        try service.upsert(solanaStake: [
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "STAKE123")
+        ], for: vault)
+
+        XCTAssertEqual(
+            vault.stakePositions.first?.id,
+            "\(solMeta.chain.ticker)_\(solMeta.contractAddress)_\(vault.pubKeyECDSA)_STAKE123"
+        )
+    }
+
     // MARK: - LP upsert
 
     func testUpsertLpInsertsNewPosition() throws {
