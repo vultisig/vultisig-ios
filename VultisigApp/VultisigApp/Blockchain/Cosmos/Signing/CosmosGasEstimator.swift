@@ -42,6 +42,7 @@ enum CosmosGasEstimator {
         fromAddress: String,
         toAddress: String,
         amount: String,
+        memo: String? = nil,
         accountNumber: UInt64,
         sequence: UInt64
     ) throws -> String {
@@ -57,6 +58,11 @@ enum CosmosGasEstimator {
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
+            // A non-empty memo grows the tx body, which the node charges gas
+            // for. Include it so the simulated gas matches the real send.
+            if let memo, !memo.isEmpty {
+                $0.memo = memo
+            }
             // Simulate ignores the fee, but the tx must still be well-formed.
             // `WalletCore.` disambiguates from the SignData model `CosmosFee`.
             $0.fee = WalletCore.CosmosFee.with {
@@ -115,6 +121,7 @@ enum CosmosGasEstimator {
         fromAddress: String,
         toAddress: String,
         amount: String,
+        memo: String? = nil,
         accountNumber: UInt64,
         sequence: UInt64,
         service: CosmosService
@@ -126,6 +133,7 @@ enum CosmosGasEstimator {
                 fromAddress: fromAddress,
                 toAddress: toAddress,
                 amount: amount,
+                memo: memo,
                 accountNumber: accountNumber,
                 sequence: sequence
             )

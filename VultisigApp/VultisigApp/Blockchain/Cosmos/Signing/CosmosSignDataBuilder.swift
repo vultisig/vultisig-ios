@@ -62,10 +62,19 @@ enum CosmosSignDataBuilder {
             // threshold signature. So for a floored chain we VALIDATE the
             // supplied fee and reject a sub-floor request, rather than silently
             // rewriting the bytes.
-            let suppliedFee = feeInfo.amounts
-                .filter { $0.denom.lowercased() == feeDenom }
-                .compactMap { UInt64($0.amount) }
-                .reduce(0, +)
+            // Checked summation: a malformed/adversarial signDirect can carry
+            // multiple same-denom fee coins whose total exceeds UInt64, and an
+            // unchecked `reduce(0, +)` would trap and crash signing. Reject the
+            // overflow explicitly instead.
+            var suppliedFee: UInt64 = 0
+            for coin in feeInfo.amounts where coin.denom.lowercased() == feeDenom {
+                guard let value = UInt64(coin.amount) else { continue }
+                let (sum, overflow) = suppliedFee.addingReportingOverflow(value)
+                guard !overflow else {
+                    throw HelperError.runtimeError("Cosmos signDirect fee total overflows UInt64")
+                }
+                suppliedFee = sum
+            }
             if !CosmosFeeFloorConfig.meetsFloor(for: chain, fee: suppliedFee, gasLimit: feeInfo.gasLimit) {
                 throw HelperError.runtimeError("Cosmos signDirect fee \(suppliedFee) \(feeDenom) is below the network minimum of \(CosmosFeeFloorConfig.requiredFloor(for: chain, gasLimit: feeInfo.gasLimit)) \(feeDenom)")
             }

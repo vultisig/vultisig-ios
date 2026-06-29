@@ -216,7 +216,10 @@ class Coin: ObservableObject, Codable, Hashable {
         case .kujira:
             return "7500"
         case .osmosis:
-            return "7500"
+            // Osmosis enforces a non-zero network minimum fee; use the shared
+            // safe floor so the pre-fetch display fallback is never sub-floor
+            // and stays aligned with the floored send fee.
+            return String(CosmosFeeFloorConfig.minFeeFloor(for: .osmosis))
         case .gaiaChain:
             return "7500"
         case .dydx:

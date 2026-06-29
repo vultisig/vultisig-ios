@@ -821,6 +821,7 @@ private extension BlockChainService {
                     fromAddress: coin.address,
                     toAddress: toAddress,
                     amount: String(amount),
+                    memo: memo,
                     accountNumber: accountNumber,
                     sequence: sequence,
                     service: service
@@ -835,14 +836,19 @@ private extension BlockChainService {
             // Because chainSpecific.gas feeds both the displayed fee and the
             // WalletCore signing input, flooring here keeps the shown and signed
             // fee identical.
-            let effectiveGasLimit = dynamicGasLimit ?? (try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit)
-            if let effectiveGasLimit {
-                gas = CosmosFeeFloorConfig.flooredFee(
-                    for: coin.chain,
-                    computedFee: gas,
-                    gasLimit: effectiveGasLimit
-                )
-            }
+            // Resolve the gas limit that computes the on-chain minimum fee: the
+            // relayed dynamic limit when present, else the static per-chain
+            // limit. If the static lookup is unavailable, fall back to 0 so the
+            // floor still runs — the absolute `minFeeFloor` keeps a floored chain
+            // from silently skipping its floor, and `flooredFee` is a no-op for
+            // unfloored chains.
+            let staticGasLimit = (try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit) ?? 0
+            let effectiveGasLimit = dynamicGasLimit ?? staticGasLimit
+            gas = CosmosFeeFloorConfig.flooredFee(
+                for: coin.chain,
+                computedFee: gas,
+                gasLimit: effectiveGasLimit
+            )
 
             // Terra Classic charges a proportional burn tax (~0.5%) on the send
             // amount, paid in the SEND denom on top of the base gas fee. We fold

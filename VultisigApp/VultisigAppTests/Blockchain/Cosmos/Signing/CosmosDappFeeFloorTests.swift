@@ -124,7 +124,18 @@ final class CosmosDappFeeFloorTests: XCTestCase {
         )
         let payload = makePayload(coin: coin, signData: .signDirect(signDirect))
 
-        XCTAssertThrowsError(try CosmosSignDataBuilder.getFee(keysignPayload: payload))
+        // Assert the specific sub-floor rejection, not just any throw, so an
+        // unrelated parser/proto regression can't masquerade as the floor check.
+        // 7_500 uakt at 300k gas → required floor 25_000 uakt.
+        XCTAssertThrowsError(try CosmosSignDataBuilder.getFee(keysignPayload: payload)) { error in
+            guard case let HelperError.runtimeError(message) = error else {
+                return XCTFail("Expected HelperError.runtimeError, got \(error)")
+            }
+            XCTAssertTrue(message.contains("below the network minimum"),
+                          "Expected a sub-floor rejection, got: \(message)")
+            XCTAssertTrue(message.contains("25000"),
+                          "Expected the Akash floor (25000) in the message, got: \(message)")
+        }
     }
 
     func testAkashSignDirectAtFloorFeeIsAccepted() throws {
