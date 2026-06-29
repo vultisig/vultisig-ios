@@ -214,6 +214,56 @@ struct EvmServiceStruct {
         return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
 
+    /// Reads native + ERC20 balances for `walletAddress` in a single `eth_call`
+    /// to Multicall3 `aggregate3`. When `includeNative` is set, a `getEthBalance`
+    /// call is prepended so the native balance comes back in the same round-trip.
+    /// Every sub-call uses `allowFailure = true`, so a reverting/garbage contract
+    /// maps to `0` instead of failing its siblings (mirrors today's per-call
+    /// fallback). Order is the contract for mapping results back to inputs.
+    func fetchERC20Balances(
+        contractAddresses: [String],
+        walletAddress: String,
+        multicall3Address: String,
+        includeNative: Bool
+    ) async throws -> (native: BigInt?, balances: [String: BigInt]) {
+        let paddedWallet = String(walletAddress.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+
+        var calls: [(target: String, callData: String)] = []
+        if includeNative {
+            // getEthBalance(address) is hosted on the Multicall3 contract itself.
+            calls.append((target: multicall3Address, callData: "0x" + Multicall3.getEthBalanceSelector + paddedWallet))
+        }
+        for contractAddress in contractAddresses {
+            calls.append((target: contractAddress, callData: "0x" + Multicall3.balanceOfSelector + paddedWallet))
+        }
+
+        let calldata = Multicall3.encodeAggregate3(calls: calls)
+        let params: [Any] = [["to": multicall3Address, "data": calldata], "latest"]
+        let resultHex = try await rpcService.strRpcCall(method: "eth_call", params: params)
+        let decoded = Multicall3.decodeAggregate3Results(hex: resultHex)
+
+        // A short/garbage decode would silently zero balances; treat it as a batch
+        // failure so the caller falls back to the per-token path.
+        guard decoded.count == calls.count else {
+            throw RpcEvmServiceError.rpcError(code: -1, message: "Unexpected Multicall3 result count")
+        }
+
+        var index = 0
+        var native: BigInt?
+        if includeNative {
+            native = decoded[index] ?? 0
+            index += 1
+        }
+
+        var balances: [String: BigInt] = [:]
+        for contractAddress in contractAddresses {
+            balances[contractAddress] = decoded[index] ?? 0
+            index += 1
+        }
+
+        return (native, balances)
+    }
+
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")

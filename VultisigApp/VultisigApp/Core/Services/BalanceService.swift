@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftData
+import BigInt
 
 class BalanceService {
 
@@ -32,6 +33,17 @@ class BalanceService {
 
     init(cryptoPriceService: CryptoPriceServiceProtocol = CryptoPriceService.shared) {
         self.cryptoPriceService = cryptoPriceService
+    }
+
+    /// Cache of whether a chain's Multicall3 contract was verified to have code.
+    /// Probed at most once per process for chains that need a runtime gate.
+    private var multicallCodeVerified: [Chain: Bool] = [:]
+    private var multicallCodeLock = os_unfair_lock()
+
+    /// Key for grouping EVM coins so each (chain, wallet) issues one Multicall3 call.
+    private struct EvmBatchKey: Hashable {
+        let chain: Chain
+        let address: String
     }
 
     /// Value type to identify a coin for balance fetching without holding SwiftData model references
@@ -130,34 +142,140 @@ class BalanceService {
         return vault.coins.map { CoinIdentifier(from: $0) }
     }
 
-    /// Phase 2: Fetch balance updates concurrently using identifiers
+    /// Phase 2: Fetch balance updates concurrently using identifiers.
+    ///
+    /// EVM coins on a chain with a verified Multicall3 deployment are grouped by
+    /// (chain, wallet) and fetched in a single `aggregate3` call (native + every
+    /// token in one round-trip). Everything else — non-EVM chains and EVM chains
+    /// without a Multicall3 address — keeps the one-task-per-coin path verbatim.
     private func fetchBalanceUpdates(for identifiers: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
-        await withTaskGroup(of: CoinBalanceUpdate.self) { group in
+        var batchGroups: [EvmBatchKey: [CoinIdentifier]] = [:]
+        var perCoin: [CoinIdentifier] = []
+
+        for identifier in identifiers {
+            if identifier.chain.chainType == .EVM, Multicall3.address(for: identifier.chain) != nil {
+                batchGroups[EvmBatchKey(chain: identifier.chain, address: identifier.address), default: []].append(identifier)
+            } else {
+                perCoin.append(identifier)
+            }
+        }
+
+        return await withTaskGroup(of: [CoinBalanceUpdate].self) { group in
             var updates: [CoinBalanceUpdate] = []
             updates.reserveCapacity(identifiers.count)
 
-            for identifier in identifiers {
+            for (key, coins) in batchGroups {
                 group.addTask { [weak self] in
                     guard let self, !Task.isCancelled else {
-                        return CoinBalanceUpdate(
-                            coinId: identifier.coinId,
-                            rawBalance: nil,
-                            stakedBalance: nil,
-                            bondedNodes: nil,
-                            error: nil
-                        )
+                        return coins.map { Self.emptyUpdate(for: $0) }
                     }
-
-                    return await self.fetchBalanceUpdate(for: identifier)
+                    return await self.fetchEvmBatchBalances(chain: key.chain, address: key.address, coins: coins)
                 }
             }
 
-            for await update in group {
-                updates.append(update)
+            for identifier in perCoin {
+                group.addTask { [weak self] in
+                    guard let self, !Task.isCancelled else {
+                        return [Self.emptyUpdate(for: identifier)]
+                    }
+                    return [await self.fetchBalanceUpdate(for: identifier)]
+                }
+            }
+
+            for await groupUpdates in group {
+                updates.append(contentsOf: groupUpdates)
             }
 
             return updates
         }
+    }
+
+    private static func emptyUpdate(for identifier: CoinIdentifier) -> CoinBalanceUpdate {
+        CoinBalanceUpdate(coinId: identifier.coinId, rawBalance: nil, stakedBalance: nil, bondedNodes: nil, error: nil)
+    }
+
+    /// Fetch every balance for one (chain, wallet) EVM group in a single
+    /// Multicall3 call. On any thrown error (network blip, unexpected decode, or
+    /// a failed runtime gate) the whole group degrades to the per-coin path, so a
+    /// batch failure never zeroes balances — it just reverts to today's behaviour.
+    /// EVM chains carry no staked/bonded balances, so the batch produces only
+    /// `rawBalance`, identical to the per-coin path.
+    private func fetchEvmBatchBalances(chain: Chain, address: String, coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
+        guard let multicall3Address = Multicall3.address(for: chain) else {
+            return await fallbackPerCoin(coins)
+        }
+
+        do {
+            let service = try EvmService.getService(forChain: chain)
+
+            guard await isMulticallAvailable(chain: chain, multicall3Address: multicall3Address, service: service) else {
+                return await fallbackPerCoin(coins)
+            }
+
+            let nativeCoins = coins.filter { $0.isNativeToken }
+            let tokenCoins = coins.filter { !$0.isNativeToken }
+            let contractAddresses = tokenCoins.map { $0.coinMeta.contractAddress }
+
+            let result = try await service.fetchERC20Balances(
+                contractAddresses: contractAddresses,
+                walletAddress: address,
+                multicall3Address: multicall3Address,
+                includeNative: !nativeCoins.isEmpty
+            )
+
+            var updates: [CoinBalanceUpdate] = []
+            updates.reserveCapacity(coins.count)
+
+            for coin in nativeCoins {
+                let value = result.native ?? 0
+                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
+            }
+            for coin in tokenCoins {
+                let value = result.balances[coin.coinMeta.contractAddress] ?? 0
+                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
+            }
+
+            return updates
+        } catch {
+            logger.warning("Multicall3 batch failed for \(chain.name); falling back to per-coin: \(error.localizedDescription)")
+            return await fallbackPerCoin(coins)
+        }
+    }
+
+    private func fallbackPerCoin(_ coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
+        var updates: [CoinBalanceUpdate] = []
+        updates.reserveCapacity(coins.count)
+        for coin in coins {
+            updates.append(await fetchBalanceUpdate(for: coin))
+        }
+        return updates
+    }
+
+    /// Hyperliquid (HyperEVM) is the newest chain in the Multicall3 allowlist, so
+    /// its deployment is gated behind a one-time `eth_getCode` probe before the
+    /// batch path is trusted; an absent contract maps to the per-coin fallback.
+    /// Every other listed chain is verified against the canonical deployment list
+    /// and trusted directly. The probe result is cached per process.
+    private func isMulticallAvailable(chain: Chain, multicall3Address: String, service: EvmService) async -> Bool {
+        guard chain == .hyperliquid else { return true }
+
+        os_unfair_lock_lock(&multicallCodeLock)
+        let cached = multicallCodeVerified[chain]
+        os_unfair_lock_unlock(&multicallCodeLock)
+        if let cached { return cached }
+
+        let hasCode: Bool
+        do {
+            let code = try await service.getCode(address: multicall3Address)
+            hasCode = !code.stripHexPrefix().isEmpty
+        } catch {
+            hasCode = false
+        }
+
+        os_unfair_lock_lock(&multicallCodeLock)
+        multicallCodeVerified[chain] = hasCode
+        os_unfair_lock_unlock(&multicallCodeLock)
+        return hasCode
     }
 
     /// Fetch balance update for a single coin identifier
