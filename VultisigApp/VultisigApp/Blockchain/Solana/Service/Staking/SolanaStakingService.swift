@@ -41,6 +41,14 @@ extension SolanaService: SolanaStakingReading {}
 
 actor SolanaStakingService: SolanaStakingServiceProtocol {
 
+    /// Process-wide instance so the validator-set (10 min) and inflation (10 min)
+    /// caches survive across screen opens. Consumers are per-navigation
+    /// `@StateObject` view models that used to each `news-up` their own service —
+    /// which threw the caches away on every open. Sharing one actor (it is
+    /// `Sendable`) keeps the TTLs honest the way the epoch/rent caches on
+    /// `SolanaService.shared` already do. Tests inject their own instance.
+    static let shared = SolanaStakingService()
+
     private struct CachedEntry<Value> {
         let value: Value
         let fetchedAt: Date

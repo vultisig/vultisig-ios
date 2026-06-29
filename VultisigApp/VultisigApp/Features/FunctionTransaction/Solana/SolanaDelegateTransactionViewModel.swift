@@ -52,7 +52,7 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
     init(
         coin: Coin,
         vault: Vault,
-        stakingService: SolanaStakingServiceProtocol = SolanaStakingService()
+        stakingService: SolanaStakingServiceProtocol = SolanaStakingService.shared
     ) {
         self.coin = coin
         self.vault = vault

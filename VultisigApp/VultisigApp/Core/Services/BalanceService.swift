@@ -445,7 +445,7 @@ private extension BalanceService {
             // persisted value rather than clobbering it with 0.
             guard identifier.isNativeToken else { return nil }
             do {
-                let accounts = try await SolanaStakingService().fetchStakeAccounts(owner: identifier.address)
+                let accounts = try await SolanaStakingService.shared.fetchStakeAccounts(owner: identifier.address)
                 let totalLamports = accounts
                     .compactMap { $0.delegation?.stake }
                     .reduce(UInt64.zero, +)

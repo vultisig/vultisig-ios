@@ -46,7 +46,7 @@ final class SolanaWithdrawTransactionViewModel: ObservableObject, Form {
         coin: Coin,
         vault: Vault,
         stakeAccount: SolanaStakeAccount,
-        stakingService: SolanaStakingServiceProtocol = SolanaStakingService()
+        stakingService: SolanaStakingServiceProtocol = SolanaStakingService.shared
     ) {
         self.coin = coin
         self.vault = vault

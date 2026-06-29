@@ -22,7 +22,7 @@ enum SolanaStakingVerifyResolver {
         payload: SolanaStakingPayload,
         basePayload: KeysignPayload,
         coin: Coin,
-        stakingService: SolanaStakingServiceProtocol = SolanaStakingService()
+        stakingService: SolanaStakingServiceProtocol = SolanaStakingService.shared
     ) async throws -> SignSolana {
         switch payload.opType {
         case .delegate:

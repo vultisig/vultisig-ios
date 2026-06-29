@@ -84,6 +84,12 @@ struct DefiChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
+            // Warm the shared validator-set + metadata caches on tab load so the
+            // validator picker opens without a cold re-download (the caches now
+            // survive across opens via the shared service/provider).
+            if chain.isSolanaStakingChain {
+                solanaStakeViewModel.warmValidatorMetadata()
+            }
             Task { await refresh() }
         }
         .onAppear {

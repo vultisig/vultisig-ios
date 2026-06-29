@@ -10,12 +10,15 @@
 //  already cached (possibly nothing) — the call never throws, so callers degrade
 //  to on-chain-only display.
 //
-//  When a validator exposes a Keybase identity, the logo is resolved through the
-//  shared `KeybaseAvatarService`, falling back to Stakewiz's own `image` URL.
+//  The logo prefers Stakewiz's own bundled `image` URL (already in the bulk
+//  response), falling back to a Keybase lookup ONLY when no image is present —
+//  which avoids a per-validator keybase.io round-trip (the old N+1) for the
+//  common case. The remaining Keybase fallbacks are resolved concurrently across
+//  the requested set rather than awaited one at a time.
 //
 //  Field mapping (Stakewiz → ValidatorMetadata):
 //    name         -> name
-//    keybase/image -> logoURL  (Keybase avatar preferred, else image)
+//    image/keybase -> logoURL  (Stakewiz image preferred, Keybase only as fallback)
 //    apy_estimate -> apyEstimate  (percent on the wire, stored as a fraction)
 //    wiz_score    -> score
 //    commission / delinquent / vote_identity are surfaced via the row itself so
@@ -26,6 +29,13 @@ import Foundation
 import OSLog
 
 actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
+
+    /// Process-wide instance so the 1-hour per-vote-pubkey enrichment cache
+    /// survives across screen opens — the picker and the stake rows used to each
+    /// `news-up` their own provider, re-downloading the full `/validators`
+    /// payload on every open. The actor is `Sendable`, so one shared instance is
+    /// concurrency-safe. Tests inject their own instance.
+    static let shared = StakewizValidatorMetadataProvider()
 
     private struct CachedEntry {
         let value: ValidatorMetadata
@@ -87,9 +97,25 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
         for row in rows where !row.voteIdentity.isEmpty {
             byVotePubkey[row.voteIdentity] = row
         }
-        for pubkey in requested where result[pubkey] == nil {
-            guard let row = byVotePubkey[pubkey] else { continue }
-            let metadata = await map(row)
+
+        // Resolve the missing rows CONCURRENTLY. Most map to a bundled Stakewiz
+        // `image` (no network), but the Keybase fallback that some still need is
+        // a per-validator HTTP call — running them in a task group instead of a
+        // sequential `await` loop keeps a cold picker open from serializing those
+        // round-trips. `map` is `nonisolated` so the children run off the actor.
+        let pending = requested
+            .filter { result[$0] == nil }
+            .compactMap { byVotePubkey[$0] }
+        let resolved = await withTaskGroup(of: (String, ValidatorMetadata).self) { group in
+            for row in pending {
+                group.addTask { [self] in (row.voteIdentity, await map(row)) }
+            }
+            var pairs: [(String, ValidatorMetadata)] = []
+            for await pair in group { pairs.append(pair) }
+            return pairs
+        }
+
+        for (pubkey, metadata) in resolved {
             cache[pubkey] = CachedEntry(value: metadata, fetchedAt: fetchedAt)
             result[pubkey] = metadata
         }
@@ -98,7 +124,7 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
 
     // MARK: - Mapping
 
-    private func map(_ row: StakewizValidator) async -> ValidatorMetadata {
+    nonisolated private func map(_ row: StakewizValidator) async -> ValidatorMetadata {
         let name = row.name?.trimmingCharacters(in: .whitespacesAndNewlines)
         return ValidatorMetadata(
             name: (name?.isEmpty == false) ? name : nil,
@@ -108,18 +134,20 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
         )
     }
 
-    /// Prefer the Keybase avatar when the validator exposes a Keybase identity;
-    /// otherwise use Stakewiz's own `image` URL.
-    private func resolveLogo(_ row: StakewizValidator) async -> String? {
+    /// Prefer Stakewiz's bundled `image` URL — it ships in the same bulk
+    /// response, so it costs nothing. Only when a row has no usable image do we
+    /// fall back to a Keybase identity lookup (a per-validator HTTP call), which
+    /// keeps the avatar N+1 off the hot path entirely for the common case.
+    nonisolated private func resolveLogo(_ row: StakewizValidator) async -> String? {
+        if let image = row.image?.trimmingCharacters(in: .whitespacesAndNewlines), !image.isEmpty {
+            return image
+        }
         if let identity = row.keybase?.trimmingCharacters(in: .whitespacesAndNewlines),
            !identity.isEmpty,
            let url = await avatarService.avatarURL(forIdentity: identity) {
             return url.absoluteString
         }
-        guard let image = row.image?.trimmingCharacters(in: .whitespacesAndNewlines), !image.isEmpty else {
-            return nil
-        }
-        return image
+        return nil
     }
 
     /// Stakewiz reports `apy_estimate` as a percentage (e.g. `5.72`). Store it

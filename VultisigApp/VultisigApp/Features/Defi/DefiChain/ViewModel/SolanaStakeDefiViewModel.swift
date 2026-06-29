@@ -43,8 +43,8 @@ final class SolanaStakeDefiViewModel: ObservableObject {
 
     init(
         vault: Vault,
-        stakingService: SolanaStakingServiceProtocol = SolanaStakingService(),
-        metadataProvider: ValidatorMetadataProvider = StakewizValidatorMetadataProvider(),
+        stakingService: SolanaStakingServiceProtocol = SolanaStakingService.shared,
+        metadataProvider: ValidatorMetadataProvider = StakewizValidatorMetadataProvider.shared,
         apyResolver: SolanaStakingAPYResolverProtocol = SolanaStakingAPYResolver(),
         storage: DefiPositionsStorageService = DefiPositionsStorageService(),
         onInvalidateCaches: @escaping @Sendable () -> Void = { SolanaService.shared.invalidateEpochInfoCache() }
@@ -197,6 +197,19 @@ final class SolanaStakeDefiViewModel: ObservableObject {
     func invalidateAndRefresh(owner: String, decimals: Int) async {
         onInvalidateCaches()
         await refresh(owner: owner, decimals: decimals)
+    }
+
+    /// Best-effort background prime of the FULL validator set + its metadata so
+    /// the validator picker opens warm. Both reads hit the process-wide shared
+    /// service/provider caches, so this is safe to call on every Solana DeFi tab
+    /// load — only the first cold open per TTL window pays the fetch; subsequent
+    /// calls are cache hits. Fire-and-forget: it never blocks or replaces the
+    /// stake rows.
+    func warmValidatorMetadata() {
+        Task { [stakingService, metadataProvider] in
+            guard let validators = try? await stakingService.fetchValidators(), !validators.isEmpty else { return }
+            _ = await metadataProvider.metadata(forVotePubkeys: validators.map(\.votePubkey))
+        }
     }
 
     // MARK: - Row building

@@ -27,8 +27,8 @@ final class SolanaValidatorSelectionViewModel: ObservableObject {
     )
 
     init(
-        service: SolanaStakingServiceProtocol = SolanaStakingService(),
-        metadataProvider: ValidatorMetadataProvider = StakewizValidatorMetadataProvider()
+        service: SolanaStakingServiceProtocol = SolanaStakingService.shared,
+        metadataProvider: ValidatorMetadataProvider = StakewizValidatorMetadataProvider.shared
     ) {
         self.service = service
         self.metadataProvider = metadataProvider

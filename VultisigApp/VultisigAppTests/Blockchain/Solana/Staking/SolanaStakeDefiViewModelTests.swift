@@ -62,6 +62,28 @@ private final class FakeStakingService: SolanaStakingServiceProtocol, @unchecked
     func fetchInflationRate() async throws -> Double { inflation }
 }
 
+/// Counting `SolanaStakingReading` so a test can prove the validator-set cache on
+/// a SHARED `SolanaStakingService` survives across freshly-constructed VMs.
+private final class CountingReader: SolanaStakingReading, @unchecked Sendable {
+    private(set) var validatorCalls = 0
+    private let lock = NSLock()
+
+    func fetchSolanaValidators() async throws -> [SolanaValidator] {
+        lock.withLock { validatorCalls += 1 }
+        return [SolanaValidator(
+            votePubkey: "V1", nodePubkey: "Node1", activatedStake: 1,
+            commission: 0, epochVoteAccount: true, isDelinquent: false
+        )]
+    }
+
+    func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] { [] }
+    func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo {
+        SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
+    }
+    func fetchSolanaRentReserve() async throws -> UInt64 { 2_282_880 }
+    func fetchSolanaInflationRate() async throws -> Double { 0.07 }
+}
+
 private struct FakeMetadataProvider: ValidatorMetadataProvider {
     let byVote: [String: ValidatorMetadata]
     func metadata(forVotePubkeys votePubkeys: [String]) async -> [String: ValidatorMetadata] {
@@ -336,5 +358,25 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
             1,
             "Sibling THOR stake row must survive Solana-scoped delete-stale."
         )
+    }
+
+    /// A shared `SolanaStakingService` keeps its validator-set cache across a
+    /// brand-new VM instance — the fix for cold-cache-per-open (VMs are
+    /// per-navigation `@StateObject`s that used to news-up their own service).
+    func testSharedStakingServiceCacheSurvivesNewViewModel() async {
+        let reader = CountingReader()
+        let shared = SolanaStakingService(
+            solanaService: reader,
+            clock: { Date(timeIntervalSince1970: 0) }
+        )
+        let vm1 = makeViewModel(service: shared)
+        await vm1.refresh(owner: "Owner", decimals: 9)
+
+        // A freshly-constructed VM (mimicking navigate-away-then-back) reuses the
+        // same shared service — the validator set is NOT refetched.
+        let vm2 = makeViewModel(service: shared)
+        await vm2.refresh(owner: "Owner", decimals: 9)
+
+        XCTAssertEqual(reader.validatorCalls, 1)
     }
 }

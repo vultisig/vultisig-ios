@@ -49,16 +49,38 @@ final class StakewizValidatorMetadataProviderTests: XCTestCase {
         XCTAssertEqual(result[voteB]?.name, "WEB34EVER")
     }
 
-    func testPrefersKeybaseAvatarOverStakewizImage() async {
-        // voteB carries a Keybase identity; the avatar service resolves it and
-        // its URL should win over the row's `image`.
+    func testPrefersStakewizImageOverKeybaseAndSkipsLookup() async {
+        // voteB carries BOTH a Keybase identity and a Stakewiz `image`. The
+        // bundled image is preferred (it ships in the same bulk payload), and the
+        // per-validator Keybase round-trip must NOT happen — that N+1 is the
+        // latency we removed.
         let stub = StubHTTPClient(payload: Self.validatorsPayload())
+        let spy = SpyAvatarService(url: URL(string: "https://keybase.io/web34ever.png"))
         let provider = StakewizValidatorMetadataProvider(
             httpClient: stub,
-            avatarService: FixedAvatarService(url: URL(string: "https://keybase.io/web34ever.png"))
+            avatarService: spy
         )
         let result = await provider.metadata(forVotePubkeys: [voteB])
-        XCTAssertEqual(result[voteB]?.logoURL, "https://keybase.io/web34ever.png")
+        XCTAssertEqual(result[voteB]?.logoURL, "https://media.stakewiz.com/web34ever.png")
+        let calls = await spy.calls
+        XCTAssertEqual(calls, 0, "Keybase must not be queried when a Stakewiz image is present.")
+    }
+
+    func testFallsBackToKeybaseWhenImageMissing() async {
+        // No usable `image` but a Keybase identity present → resolve via Keybase.
+        let payload = Data(#"""
+        [{"vote_identity": "\#(voteB)", "name": "NoImage", "keybase": "nimg", "image": ""}]
+        """#.utf8)
+        let stub = StubHTTPClient(payload: payload)
+        let spy = SpyAvatarService(url: URL(string: "https://keybase.io/nimg.png"))
+        let provider = StakewizValidatorMetadataProvider(
+            httpClient: stub,
+            avatarService: spy
+        )
+        let result = await provider.metadata(forVotePubkeys: [voteB])
+        XCTAssertEqual(result[voteB]?.logoURL, "https://keybase.io/nimg.png")
+        let calls = await spy.calls
+        XCTAssertEqual(calls, 1, "Keybase is the fallback when no image is bundled.")
     }
 
     // MARK: - Graceful degradation
@@ -201,6 +223,22 @@ private struct FixedAvatarService: KeybaseAvatarServiceProtocol {
     let url: URL?
     // swiftlint:disable:next async_without_await
     func avatarURL(forIdentity _: String) async -> URL? { url }
+}
+
+/// Counts how many times the Keybase fallback is hit so a test can assert the
+/// per-validator round-trip is skipped when a Stakewiz image is present.
+private actor SpyAvatarService: KeybaseAvatarServiceProtocol {
+    private let url: URL?
+    private(set) var calls = 0
+
+    init(url: URL?) { self.url = url }
+
+    // Protocol conformance forces `async`; actor-isolated mutation needs no await.
+    // swiftlint:disable:next async_without_await
+    func avatarURL(forIdentity _: String) async -> URL? {
+        calls += 1
+        return url
+    }
 }
 
 private actor StubHTTPClient: HTTPClientProtocol {
