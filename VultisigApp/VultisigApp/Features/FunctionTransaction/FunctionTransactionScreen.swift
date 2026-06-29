@@ -193,6 +193,28 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .solanaUnstake(let coin, let stakeAccount):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SolanaUnstakeTransactionScreen(
+                        viewModel: SolanaUnstakeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            stakeAccount: stakeAccount
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .solanaWithdraw(let coin, let stakeAccount):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SolanaWithdrawTransactionScreen(
+                        viewModel: SolanaWithdrawTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            stakeAccount: stakeAccount
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .tonStake(let coin, let poolAddress, let poolImplementation):
                 resolvingCoin(coinMeta: coin) { coin in
                     TonStakeTransactionScreen(
