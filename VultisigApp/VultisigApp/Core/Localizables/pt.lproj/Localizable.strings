@@ -1117,6 +1117,7 @@
 "swapErrorUnexpectedTitle" = "Erro Inesperado";
 "swapFee" = "Taxa de troca";
 "swapFeePercentage" = "Taxa de troca (%.2f%%)";
+"swapInsufficientTokenBalance" = "Saldo de %@ insuficiente";
 "swapKitErrorAddressScreening" = "Falha na verificação de endereço — entre em contato com o suporte";
 "swapKitErrorApiKeyInvalid" = "A chave de API do SwapKit é inválida";
 "swapKitErrorApiKeyMissing" = "Chave de API do SwapKit não configurada";

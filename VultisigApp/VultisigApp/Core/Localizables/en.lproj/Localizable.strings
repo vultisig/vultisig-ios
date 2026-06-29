@@ -1123,6 +1123,7 @@
 "swapErrorUnexpectedTitle" = "Unexpected Error";
 "swapFee" = "Swap Fee";
 "swapFeePercentage" = "Swap Fee (%.2f%%)";
+"swapInsufficientTokenBalance" = "Insufficient %@ balance";
 "swapKitErrorAddressScreening" = "Address screening failed — contact support";
 "swapKitErrorApiKeyInvalid" = "SwapKit API key is invalid";
 "swapKitErrorApiKeyMissing" = "SwapKit API key not configured";

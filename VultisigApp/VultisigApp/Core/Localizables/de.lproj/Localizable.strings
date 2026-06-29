@@ -1117,6 +1117,7 @@
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";
 "swapFeePercentage" = "Tauschgebühr (%.2f%%)";
+"swapInsufficientTokenBalance" = "Unzureichendes %@-Guthaben";
 "swapKitErrorAddressScreening" = "Adressprüfung fehlgeschlagen — bitte Support kontaktieren";
 "swapKitErrorApiKeyInvalid" = "SwapKit-API-Schlüssel ist ungültig";
 "swapKitErrorApiKeyMissing" = "SwapKit-API-Schlüssel nicht konfiguriert";
