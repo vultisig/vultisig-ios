@@ -29,6 +29,22 @@ struct SolanaAPI: TargetType {
         case getLatestBlockhash
         case getTokenAccountsByOwner(walletAddress: String, filter: TokenAccountFilter)
         case getAccountInfo(address: String)
+        /// All validators (vote accounts), `current` + `delinquent`.
+        case getVoteAccounts
+        /// Stake-program accounts owned by `staker`. `dataSize:200` excludes
+        /// non-stake-state accounts; the `memcmp{offset:12}` narrows to the
+        /// owner's accounts. `jsonParsed` returns the full parsed delegation;
+        /// the pubkey-only variant (`dataSlice{0,0}`) returns just addresses.
+        case getStakeAccountsByOwner(staker: String, pubkeyOnly: Bool)
+        /// Full `jsonParsed` info for a single stake account.
+        case getStakeAccountInfo(address: String)
+        /// Current epoch + slot progress.
+        case getEpochInfo
+        /// Minimum lamports for a `size`-byte account to be rent-exempt. Stake
+        /// accounts pass `200`.
+        case getMinimumBalanceForRentExemption(size: Int)
+        /// Network inflation rate for the current epoch.
+        case getInflationRate
     }
 
     enum TokenAccountFilter {
@@ -82,7 +98,57 @@ struct SolanaAPI: TargetType {
                 rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
                 .jsonEncoding
             )
+        case .getVoteAccounts:
+            return .requestParameters(
+                rpcEnvelope(method: "getVoteAccounts", params: [["commitment": "finalized"]]),
+                .jsonEncoding
+            )
+        case .getStakeAccountsByOwner(let staker, let pubkeyOnly):
+            return .requestParameters(
+                rpcEnvelope(
+                    method: "getProgramAccounts",
+                    params: [SolanaStakingConfig.stakeProgramId, programAccountsConfig(staker: staker, pubkeyOnly: pubkeyOnly)]
+                ),
+                .jsonEncoding
+            )
+        case .getStakeAccountInfo(let address):
+            return .requestParameters(
+                rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
+                .jsonEncoding
+            )
+        case .getEpochInfo:
+            return .requestParameters(rpcEnvelope(method: "getEpochInfo", params: [] as [Any]), .jsonEncoding)
+        case .getMinimumBalanceForRentExemption(let size):
+            return .requestParameters(
+                rpcEnvelope(method: "getMinimumBalanceForRentExemption", params: [size]),
+                .jsonEncoding
+            )
+        case .getInflationRate:
+            return .requestParameters(rpcEnvelope(method: "getInflationRate", params: [] as [Any]), .jsonEncoding)
         }
+    }
+
+    /// The `getProgramAccounts` config object for the stake-by-owner scan:
+    /// `dataSize:200` + a `memcmp` on the staker authority. When `pubkeyOnly`
+    /// the data is sliced to zero bytes (`dataSlice{0,0}`, base64) since only
+    /// the addresses are needed; otherwise the full delegation is returned
+    /// `jsonParsed`.
+    private func programAccountsConfig(staker: String, pubkeyOnly: Bool) -> [String: Any] {
+        let filters: [[String: Any]] = [
+            ["dataSize": SolanaStakingConfig.stakeStateSize],
+            ["memcmp": ["offset": SolanaStakingConfig.stakerMemcmpOffset, "bytes": staker]]
+        ]
+        if pubkeyOnly {
+            return [
+                "encoding": "base64",
+                "dataSlice": ["offset": 0, "length": 0],
+                "filters": filters
+            ]
+        }
+        return [
+            "encoding": "jsonParsed",
+            "filters": filters
+        ]
     }
 
     private func rpcEnvelope(method: String, params: [Any]) -> [String: Any] {
@@ -139,5 +205,47 @@ struct SolanaGetAccountInfoResponse: Decodable {
         struct Value: Decodable {
             let owner: String
         }
+    }
+}
+
+// MARK: - Staking RPC responses
+
+/// `getProgramAccounts` result — a flat array of rows.
+struct SolanaGetProgramAccountsResponse: Decodable {
+    let result: [SolanaStakeProgramAccount]
+}
+
+/// `getAccountInfo` (jsonParsed) for a stake account.
+struct SolanaGetStakeAccountInfoResponse: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let value: SolanaStakeAccountInfoValue?
+    }
+}
+
+struct SolanaGetEpochInfoResponse: Decodable {
+    let result: SolanaEpochInfo
+}
+
+/// `getEpochInfo` payload. `epoch` / slot fields drive activation/cooldown math.
+struct SolanaEpochInfo: Codable, Hashable {
+    let epoch: UInt64
+    let slotIndex: UInt64
+    let slotsInEpoch: UInt64
+    let absoluteSlot: UInt64
+}
+
+struct SolanaGetMinimumBalanceForRentExemptionResponse: Decodable {
+    let result: UInt64
+}
+
+struct SolanaGetInflationRateResponse: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let total: Double
+        let validator: Double
+        let epoch: UInt64
     }
 }
