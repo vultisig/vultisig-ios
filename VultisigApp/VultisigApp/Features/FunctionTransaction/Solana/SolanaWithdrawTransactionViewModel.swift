@@ -134,3 +134,35 @@ final class SolanaWithdrawTransactionViewModel: ObservableObject, Form {
         )
     }
 }
+
+// MARK: - StakingFormViewModel
+
+extension SolanaWithdrawTransactionViewModel: StakingFormViewModel {
+    var titleKey: String { "solanaStakingWithdrawTitle" }
+
+    var isContinueDisabled: Bool { !isWithdrawable || !hasSufficientBalanceForFee }
+
+    var readOnlyRows: [StakingReadOnlyRow] {
+        [
+            StakingReadOnlyRow(
+                title: "solanaStakingStakeAccount".localized,
+                value: stakeAccount.pubkey
+            ),
+            StakingReadOnlyRow(
+                title: "solanaStakingWithdrawableAmount".localized,
+                value: "\(withdrawableAmount.formatToDecimal(digits: coin.decimals)) \(coin.ticker)"
+            )
+        ]
+    }
+
+    var notices: [StakingNotice] {
+        var result: [StakingNotice] = []
+        if let cooldownMessage {
+            result.append(.info(cooldownMessage))
+        }
+        if !hasSufficientBalanceForFee {
+            result.append(.insufficientFee(ticker: coin.ticker))
+        }
+        return result
+    }
+}

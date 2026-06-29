@@ -180,3 +180,35 @@ enum SolanaDelegateValidationError: LocalizedError {
         }
     }
 }
+
+// MARK: - StakingFormViewModel
+
+extension SolanaDelegateTransactionViewModel: StakingFormViewModel {
+    var titleKey: String { "cosmosStakingDelegateTitle" }
+
+    var isContinueDisabled: Bool { !hasSufficientBalanceForFee }
+
+    var amountSpec: StakingAmountSpec? {
+        StakingAmountSpec(
+            field: amountField,
+            type: .button,
+            availableAmount: stakeableBalance,
+            decimals: coin.decimals,
+            ticker: coin.ticker,
+            seedMaxOnLoad: false
+        )
+    }
+
+    var pickerSpec: StakingPickerSpec? {
+        StakingPickerSpec(
+            title: "cosmosStakingValidatorPicker".localized,
+            isSelected: selectedValidator != nil,
+            selectionToken: selectedValidator?.votePubkey,
+            preview: selectedValidator.map { StakingValidatorPreview(name: $0.displayName, avatar: nil) }
+        )
+    }
+
+    var notices: [StakingNotice] {
+        hasSufficientBalanceForFee ? [] : [.insufficientFee(ticker: coin.ticker)]
+    }
+}

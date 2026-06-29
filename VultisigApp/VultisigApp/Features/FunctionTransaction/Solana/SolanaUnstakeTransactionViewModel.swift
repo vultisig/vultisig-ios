@@ -65,3 +65,23 @@ final class SolanaUnstakeTransactionViewModel: ObservableObject, Form {
         return SolanaUnstakeTransactionBuilder(coin: coin, stakeAccount: stakeAccount.pubkey)
     }
 }
+
+// MARK: - StakingFormViewModel
+
+extension SolanaUnstakeTransactionViewModel: StakingFormViewModel {
+    var titleKey: String { "solanaStakingUnstakeTitle" }
+
+    var isContinueDisabled: Bool { !hasSufficientBalanceForFee }
+
+    var readOnlyRows: [StakingReadOnlyRow] {
+        [StakingReadOnlyRow(title: "solanaStakingStakeAccount".localized, value: stakeAccount.pubkey)]
+    }
+
+    var notices: [StakingNotice] {
+        var result: [StakingNotice] = [.info(cooldownMessage)]
+        if !hasSufficientBalanceForFee {
+            result.append(.insufficientFee(ticker: coin.ticker))
+        }
+        return result
+    }
+}

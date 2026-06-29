@@ -4,7 +4,8 @@
 //
 //  TON nominator-pool stake input. Add-more reuses the existing pool address
 //  (amount-only); a first-time stake exposes a pool picker (mirroring the
-//  Cosmos validator picker). Mirrors `CosmosDelegateTransactionScreen` shape.
+//  shared validator picker). Same `FormScreen` + amount + picker shape as the
+//  generic `StakingTransactionScreen`.
 //
 
 import SwiftUI

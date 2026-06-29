@@ -144,14 +144,25 @@ struct FunctionTransactionScreen: View {
                 }
             case .cosmosDelegate(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
-                    CosmosDelegateTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: CosmosDelegateTransactionViewModel(coin: coin, vault: vault),
                         onVerify: onVerify
-                    )
+                    ) { isPresented, viewModel in
+                        StakingValidatorPickerScreen(
+                            isPresented: isPresented,
+                            selectedValidator: Binding(
+                                get: { viewModel.selectedValidator },
+                                set: { viewModel.selectedValidator = $0 }
+                            ),
+                            source: .cosmos(chain: coin.chain),
+                            chainTicker: coin.ticker,
+                            chainDecimals: coin.decimals
+                        )
+                    }
                 }
             case .cosmosUndelegate(let coin, let valAddr, let valMoniker, let staked):
                 resolvingCoin(coinMeta: coin) { coin in
-                    CosmosUndelegateTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: CosmosUndelegateTransactionViewModel(
                             coin: coin,
                             vault: vault,
@@ -160,7 +171,7 @@ struct FunctionTransactionScreen: View {
                             stakedBalance: staked
                         ),
                         onVerify: onVerify
-                    )
+                    ) { _, _ in EmptyView() }
                 }
             case .cosmosRedelegate(let coin, let valAddr, let valMoniker, let staked):
                 resolvingCoin(coinMeta: coin) { coin in
@@ -188,32 +199,43 @@ struct FunctionTransactionScreen: View {
                 }
             case .solanaDelegate(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
-                    SolanaDelegateTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: SolanaDelegateTransactionViewModel(coin: coin, vault: vault),
                         onVerify: onVerify
-                    )
+                    ) { isPresented, viewModel in
+                        StakingValidatorPickerScreen(
+                            isPresented: isPresented,
+                            selectedValidator: Binding(
+                                get: { viewModel.selectedValidator },
+                                set: { viewModel.selectedValidator = $0 }
+                            ),
+                            source: .solana(),
+                            chainTicker: coin.ticker,
+                            chainDecimals: coin.decimals
+                        )
+                    }
                 }
             case .solanaUnstake(let coin, let stakeAccount):
                 resolvingCoin(coinMeta: coin) { coin in
-                    SolanaUnstakeTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: SolanaUnstakeTransactionViewModel(
                             coin: coin,
                             vault: vault,
                             stakeAccount: stakeAccount
                         ),
                         onVerify: onVerify
-                    )
+                    ) { _, _ in EmptyView() }
                 }
             case .solanaWithdraw(let coin, let stakeAccount):
                 resolvingCoin(coinMeta: coin) { coin in
-                    SolanaWithdrawTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: SolanaWithdrawTransactionViewModel(
                             coin: coin,
                             vault: vault,
                             stakeAccount: stakeAccount
                         ),
                         onVerify: onVerify
-                    )
+                    ) { _, _ in EmptyView() }
                 }
             case .tonStake(let coin, let poolAddress, let poolImplementation):
                 resolvingCoin(coinMeta: coin) { coin in
