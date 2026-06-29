@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftUI
 import BigInt
 import WalletCore
@@ -138,13 +137,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     basePayload: payloadWithStaking,
                     coin: tx.coin
                 )
-                Logger(subsystem: "com.vultisig.app", category: "solana-staking-diag")
-                    .error("FuncVerify: solana staking branch TAKEN, set signData=.signSolana (op=\(solanaStakingPayload.opType.rawValue, privacy: .public))")
                 return payloadWithStaking.withSignData(.signSolana(signSolana))
-            }
-            if tx.coin.chain == .solana {
-                Logger(subsystem: "com.vultisig.app", category: "solana-staking-diag")
-                    .error("FuncVerify: solana but solanaStakingPayload=NIL → falls through to transfer")
             }
 
             return basePayload

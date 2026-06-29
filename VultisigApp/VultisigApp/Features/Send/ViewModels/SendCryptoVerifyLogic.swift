@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 import BigInt
 import WalletCore
 
@@ -216,13 +215,7 @@ struct SendCryptoVerifyLogic {
                     basePayload: payloadWithStaking,
                     coin: tx.coin
                 )
-                Logger(subsystem: "com.vultisig.app", category: "solana-staking-diag")
-                    .error("SendVerify: solana staking branch TAKEN, set signData=.signSolana (op=\(solanaStakingPayload.opType.rawValue, privacy: .public))")
                 return payloadWithStaking.withSignData(.signSolana(signSolana))
-            }
-            if tx.coin.chain == .solana {
-                Logger(subsystem: "com.vultisig.app", category: "solana-staking-diag")
-                    .error("SendVerify: solana but solanaStakingPayload=NIL → falls through to transfer")
             }
 
             return basePayload
