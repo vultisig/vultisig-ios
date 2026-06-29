@@ -3,9 +3,10 @@
 //  VultisigApp
 //
 //  Form view-model for the Solana withdraw flow. The stake account is
-//  pre-selected by the caller. Withdraw moves the full withdrawable balance
-//  (delegated stake + auto-compounded rewards, minus the rent-exempt reserve)
-//  back to the wallet — there's no amount field and no rewards-claim op.
+//  pre-selected by the caller. Withdraw is a TRUE full withdraw: it moves the
+//  account's entire balance (delegated stake + auto-compounded rewards + the
+//  refundable rent-exempt reserve) back to the wallet, closing the now-empty
+//  stake account on-chain — there's no amount field and no rewards-claim op.
 //
 //  The Continue CTA is DISABLED until the account is fully inactive: on load
 //  the VM reads the live epoch and runs `SolanaEpochCooldownGate`. While the
@@ -82,14 +83,13 @@ final class SolanaWithdrawTransactionViewModel: ObservableObject, Form {
         cooldownState == .available
     }
 
-    /// Full withdrawable lamports — the account's total lamports minus its
-    /// rent-exempt reserve. After full inactivity the delegated stake plus any
-    /// auto-compounded rewards are all withdrawable; the reserve must remain to
-    /// keep the account rent-exempt until it's closed.
+    /// Full withdrawable lamports — the account's entire balance. This is a true
+    /// full withdraw: once the account is fully inactive, draining it to 0
+    /// lamports closes it on-chain, so the rent-exempt reserve is refunded to the
+    /// wallet too. Subtracting the reserve would strand it as dust in a 0-stake
+    /// account that the network no longer tracks.
     var withdrawableLamports: UInt64 {
-        stakeAccount.lamports >= stakeAccount.rentExemptReserve
-            ? stakeAccount.lamports - stakeAccount.rentExemptReserve
-            : 0
+        stakeAccount.lamports
     }
 
     /// Human-decimal withdrawable amount, for display and the builder.

@@ -8,9 +8,10 @@
 //  KeysignPayload bridge time so the recent blockhash is always fresh. Analog
 //  of `SolanaDelegateTransactionBuilder`.
 //
-//  Withdraw moves the cooled-down lamports (delegated stake + auto-compounded
-//  rewards) from the stake account back to the wallet. The CTA is gated upstream
-//  on full inactivity (`SolanaEpochCooldownGate`); there is no rewards-claim op.
+//  Withdraw moves the stake account's entire balance (delegated stake +
+//  auto-compounded rewards + the refundable rent-exempt reserve) back to the
+//  wallet, closing the now-empty account on-chain. The CTA is gated upstream on
+//  full inactivity (`SolanaEpochCooldownGate`); there is no rewards-claim op.
 //
 
 import BigInt
