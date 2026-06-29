@@ -71,6 +71,23 @@ final class ChainDetailViewModel: ObservableObject {
         }
     }
 
+    /// The Bitcoin coin the QBTC claim-eligibility check runs against. On
+    /// the Bitcoin chain-detail screen the native coin is itself the BTC
+    /// coin; on the QBTC screen it's read from the vault, or derived
+    /// in-memory when the Bitcoin chain isn't enabled — so the Claim entry
+    /// point still appears for a quantum vault that hasn't added Bitcoin.
+    /// Returns nil only on a genuine derivation failure.
+    @MainActor
+    func qbtcClaimBitcoinCoin() -> Coin? {
+        if nativeCoin.chain == .bitcoin {
+            return nativeCoin
+        }
+        if let enabled = vault.nativeCoin(for: .bitcoin) {
+            return enabled
+        }
+        return try? QBTCClaimCoinResolver().resolve(vault: vault, chain: .bitcoin)
+    }
+
     private func recomputeTokens() {
         tokens = Self.computeTokens(vault: vault, nativeCoin: nativeCoin)
     }
