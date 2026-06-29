@@ -852,6 +852,8 @@
 "qbtcClaimUnavailableDetail" = "Zahtijevanje je trenutno onemogućeno na lancu. Pokušaj ponovno kasnije.";
 "qbtcClaimUnavailableTitle" = "Zahtjev nedostupan";
 "qbtcClaimUnsupportedAddressTitle" = "Nepodržana adresa";
+"qbtcClaimUnsupportedVaultDetail" = "Zahtijevanje QBTC-a nije podržano za stariji tip ključa ovog sefa. Nadogradi svoj sef pa pokušaj ponovno.";
+"qbtcClaimUnsupportedVaultTitle" = "Potrebna je nadogradnja sefa";
 "qbtcClaimUtxoBlockFormat" = "Blok #%d";
 "qbtcClaimUtxoPending" = "Čeka potvrdu";
 "quantumSecurityFeatureClaimSubtitle" = "Nakon generiranja, prihvatljivi BTC UTXO-ovi pojavljuju se kao QBTC dostupan za polaganje u omjeru 1:1.";

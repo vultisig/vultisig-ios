@@ -12,7 +12,6 @@ struct VaultAdvancedSettingsScreen: View {
     @ObservedObject var vault: Vault
 
     @Environment(\.router) var router
-    @State private var showDilithiumAlreadyGenerated = false
     @State private var showCustomRPCLockedSheet = false
     @State private var isLoading = false
     private let tierService = VultTierService()
@@ -33,9 +32,6 @@ struct VaultAdvancedSettingsScreen: View {
         }
         .screenTitle("advanced".localized)
         .withLoading(isLoading: $isLoading)
-        .crossPlatformSheet(isPresented: $showDilithiumAlreadyGenerated) {
-            DilithiumAlreadyGeneratedSheet(isPresented: $showDilithiumAlreadyGenerated)
-        }
         .crossPlatformSheet(isPresented: $showCustomRPCLockedSheet) {
             LockedFeatureSheet(
                 feature: .customRPC,
@@ -63,39 +59,44 @@ struct VaultAdvancedSettingsScreen: View {
         }
     }
 
+    /// Generating an MLDSA-44 post-quantum key is a one-time action, so
+    /// hide the row entirely once the vault already has one rather than
+    /// surfacing an entry point that dead-ends at an "already generated"
+    /// notice.
+    @ViewBuilder
     var dilithiumKeygenRow: some View {
-        Button {
-            if vault.publicKeyMLDSA44 != nil {
-                showDilithiumAlreadyGenerated = true
-            } else if vault.isFastVault {
-                router.navigate(
-                    to: KeygenRoute.fastVaultPassword(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .fast,
-                        isExistingVault: true,
-                        singleKeygenType: .MLDSA
+        if vault.publicKeyMLDSA44 == nil {
+            Button {
+                if vault.isFastVault {
+                    router.navigate(
+                        to: KeygenRoute.fastVaultPassword(
+                            tssType: .SingleKeygen,
+                            vault: vault,
+                            selectedTab: .fast,
+                            isExistingVault: true,
+                            singleKeygenType: .MLDSA
+                        )
                     )
-                )
-            } else {
-                router.navigate(
-                    to: KeygenRoute.peerDiscovery(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .secure,
-                        fastSignConfig: nil,
-                        keyImportInput: nil,
-                        setupType: nil,
-                        singleKeygenType: .MLDSA
+                } else {
+                    router.navigate(
+                        to: KeygenRoute.peerDiscovery(
+                            tssType: .SingleKeygen,
+                            vault: vault,
+                            selectedTab: .secure,
+                            fastSignConfig: nil,
+                            keyImportInput: nil,
+                            setupType: nil,
+                            singleKeygenType: .MLDSA
+                        )
                     )
+                }
+            } label: {
+                SettingsCommonOptionView(
+                    icon: "atom-shield",
+                    title: "dilithiumKeygen".localized,
+                    subtitle: "dilithiumKeygenSubtitle".localized
                 )
             }
-        } label: {
-            SettingsCommonOptionView(
-                icon: "atom-shield",
-                title: "dilithiumKeygen".localized,
-                subtitle: "dilithiumKeygenSubtitle".localized
-            )
         }
     }
 

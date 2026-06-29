@@ -32,6 +32,8 @@ struct QBTCClaimBlockedView: View {
 
     private var iconName: String {
         switch reason {
+        case .unsupportedVaultType:
+            return "exclamationmark.shield.fill"
         case .unsupportedBtcAddress:
             return "exclamationmark.triangle.fill"
         case .killSwitchClosed, .utxoFetchFailed:
@@ -47,6 +49,8 @@ struct QBTCClaimBlockedView: View {
 
     private var title: String {
         switch reason {
+        case .unsupportedVaultType:
+            return "qbtcClaimUnsupportedVaultTitle".localized
         case .killSwitchClosed:
             return "qbtcClaimUnavailableTitle".localized
         case .missingCoin:
@@ -64,6 +68,8 @@ struct QBTCClaimBlockedView: View {
 
     private var detail: String {
         switch reason {
+        case .unsupportedVaultType:
+            return "qbtcClaimUnsupportedVaultDetail".localized
         case .killSwitchClosed:
             return "qbtcClaimUnavailableDetail".localized
         case .missingCoin(let chainName):

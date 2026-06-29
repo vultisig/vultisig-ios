@@ -41,11 +41,12 @@ final class SwapQuoteRankingTests: XCTestCase {
         XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.03"))
     }
 
-    func test_expectedNetToAmount_lifi_subtractsIntegratorFeeFromOutput() {
-        // 0.03 ETH × (1 - 0.005) = 0.02985 ETH.
+    func test_expectedNetToAmount_lifi_dstAmountIsAlreadyNetOfIntegratorFee() {
+        // LI.FI's `toAmount`/`dstAmount` is already net of the integrator fee
+        // (taken from the source token), so it passes through unchanged.
         let quote: SwapQuote = .lifi(makeEVMQuote(dstAmount: "30000000000000000"), fee: nil, integratorFee: Decimal(string: "0.005"))
 
-        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.02985"))
+        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.03"))
     }
 
     func test_expectedNetToAmount_lifi_nilIntegratorFee_returnsRawOutput() {
