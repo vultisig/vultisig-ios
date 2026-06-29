@@ -37,22 +37,40 @@ final class BalancePriceDecouplingTests: XCTestCase {
         var errorToThrow: Error?
         var onEnter: (() -> Void)?
 
+        // `lock` guards the gate state so `release()` is safe whether it runs
+        // before or after the continuation is suspended (no deadlock either way).
+        private let lock = NSLock()
         private var gateEnabled = false
+        private var released = false
         private var gateContinuation: CheckedContinuation<Void, Never>?
 
         func enableGate() { gateEnabled = true }
 
         func release() {
-            gateContinuation?.resume()
-            gateContinuation = nil
+            lock.lock()
+            if let continuation = gateContinuation {
+                gateContinuation = nil
+                lock.unlock()
+                continuation.resume()
+            } else {
+                released = true
+                lock.unlock()
+            }
         }
 
         func fetchPrices(coins _: [CoinMeta]) async throws {
             fetchPricesCoinsCallCount += 1
             onEnter?()
             if gateEnabled {
-                await withCheckedContinuation { continuation in
-                    self.gateContinuation = continuation
+                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                    lock.lock()
+                    if released {
+                        lock.unlock()
+                        continuation.resume()
+                    } else {
+                        gateContinuation = continuation
+                        lock.unlock()
+                    }
                 }
             }
             if let errorToThrow { throw errorToThrow }
