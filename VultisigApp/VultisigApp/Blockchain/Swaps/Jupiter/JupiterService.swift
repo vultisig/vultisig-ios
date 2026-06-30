@@ -89,7 +89,12 @@ struct JupiterService {
         let quoteData = try await fetchQuoteData(params: params)
         let quoteResponse = try JSONDecoder().decode(JupiterQuoteResponse.self, from: quoteData)
 
-        guard let outAmount = BigInt(quoteResponse.outAmount), outAmount > 0 else {
+        // Reject a response that quoted a different pair than requested — a
+        // mismatched proxy/Jupiter quote must never be ranked or signed as if
+        // it swapped into `toCoin`.
+        guard quoteResponse.inputMint == inputMint,
+              quoteResponse.outputMint == outputMint,
+              let outAmount = BigInt(quoteResponse.outAmount), outAmount > 0 else {
             throw JupiterError.invalidQuote
         }
 

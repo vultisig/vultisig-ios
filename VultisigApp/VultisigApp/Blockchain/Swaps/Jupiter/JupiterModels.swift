@@ -39,8 +39,11 @@ struct JupiterQuoteParams {
 /// forwarded verbatim to `/swap` (see `JupiterService`), so this struct only
 /// needs the fields used for ranking, fee accounting, and validation.
 struct JupiterQuoteResponse: Decodable {
+    let inputMint: String
     let outputMint: String
-    /// Output amount in raw base units of the output mint (gross of platform fee).
+    /// Output amount in raw base units of the output mint, already net of the
+    /// platform fee (Jupiter deducts it from the AMM output and reports it
+    /// separately in `platformFee`).
     let outAmount: String
     let platformFee: PlatformFee?
     let routePlan: [RoutePlanStep]
