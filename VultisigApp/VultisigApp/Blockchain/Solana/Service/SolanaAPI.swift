@@ -51,8 +51,19 @@ struct SolanaAPI: TargetType {
         case .sendTransaction(let encodedTransaction):
             // Pin the encoding: signed transactions are normalized to base64
             // before broadcast, while the RPC default is base58.
+            // Pin the preflight commitment to `confirmed` to match the
+            // commitment used to fetch the blockhash (getLatestBlockhash is
+            // requested at `confirmed`). The sendTransaction default is
+            // `finalized`, whose bank lags ~32 slots behind — so a just-fetched
+            // confirmed blockhash isn't in the finalized bank yet and preflight
+            // simulation fails with BlockhashNotFound. This is most visible on
+            // the swap path, which refreshes to a fresh confirmed blockhash
+            // immediately before keysign and broadcasts before it finalizes.
             return .requestParameters(
-                rpcEnvelope(method: "sendTransaction", params: [encodedTransaction, ["encoding": "base64"]]),
+                rpcEnvelope(
+                    method: "sendTransaction",
+                    params: [encodedTransaction, ["encoding": "base64", "preflightCommitment": "confirmed"]]
+                ),
                 .jsonEncoding
             )
         case .getBalance(let address):
