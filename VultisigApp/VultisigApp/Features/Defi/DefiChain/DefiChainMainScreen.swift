@@ -18,12 +18,17 @@ struct DefiChainMainScreen: View {
     @StateObject private var lpsViewModel: DefiChainLPsViewModel
     @StateObject private var stakeViewModel: DefiChainStakeViewModel
     @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
+    @StateObject private var solanaStakeViewModel: SolanaStakeDefiViewModel
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
     @State private var refreshErrorToast: String?
     @State private var isRefreshing = false
+    /// First `.onAppear` is covered by `.onLoad`; subsequent appearances mean the
+    /// user returned from a pushed flow (e.g. a signed keysign), which is when the
+    /// Solana stake reads must be invalidated and re-fetched.
+    @State private var hasAppeared = false
 
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -33,6 +38,7 @@ struct DefiChainMainScreen: View {
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
+        self._solanaStakeViewModel = StateObject(wrappedValue: SolanaStakeDefiViewModel(vault: vault))
         self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
     }
 
@@ -78,7 +84,21 @@ struct DefiChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
+            // Warm the shared validator-set + metadata caches on tab load so the
+            // validator picker opens without a cold re-download (the caches now
+            // survive across opens via the shared service/provider).
+            if chain.isSolanaStakingChain {
+                solanaStakeViewModel.warmValidatorMetadata()
+            }
             Task { await refresh() }
+        }
+        .onAppear {
+            // Skip the load-time appearance; only re-invalidate on a true return.
+            guard hasAppeared else {
+                hasAppeared = true
+                return
+            }
+            Task { await invalidateSolanaStakeIfNeeded() }
         }
         .refreshable {
             // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
@@ -149,7 +169,9 @@ struct DefiChainMainScreen: View {
                     )
                 }
             case .stake:
-                if chain.isCosmosStakingChain, let nativeCoin {
+                if chain.isSolanaStakingChain, let nativeCoin {
+                    solanaStakeView(coin: nativeCoin)
+                } else if chain.isCosmosStakingChain, let nativeCoin {
                     cosmosStakeView(coin: nativeCoin)
                 } else {
                     DefiChainStakedView(
@@ -256,6 +278,49 @@ struct DefiChainMainScreen: View {
                 ))
             },
             emptyStateView: { emptyStateView }
+        )
+    }
+
+    /// Solana native-staking stake-segment renderer. Per-stake-account rows;
+    /// the user-facing actions route through the shared
+    /// `FunctionTransactionType.solana*` cases — the function-call router takes
+    /// it from there. No claim action: Solana rewards auto-compound.
+    private func solanaStakeView(coin: Coin) -> some View {
+        let fiatAmount = RateProvider.shared.fiatBalance(value: solanaStakeViewModel.totalStaked, coin: coin)
+        return SolanaStakeDefiView(
+            coin: coin,
+            totalFiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            viewModel: solanaStakeViewModel,
+            onDelegate: { coin in
+                onTransactionToPresent(.solanaDelegate(coin: coin.toCoinMeta()))
+            },
+            onUnstake: { row in
+                // Persist-light: only a live stake account (from the completed
+                // refresh) may feed signing — a seed projection never does. The
+                // row already gates Unstake on an active/activating delegation
+                // and the deactivate flow has no editable field, so skip the
+                // redundant confirm screen and go straight to Verify.
+                guard let stakeAccount = row.stakeAccount, row.canUnstake else { return }
+                presentVerify(for: SolanaUnstakeTransactionBuilder(
+                    coin: coin,
+                    stakeAccount: stakeAccount.pubkey
+                ))
+            },
+            onWithdraw: { row in
+                // The row gates Withdraw on a fully-inactive (cooled-down)
+                // account — `canWithdraw` IS the cooldown guard, so a still-
+                // cooling account never reaches here. A full withdraw has no
+                // editable field, so skip the confirm screen: build from the
+                // live account's whole balance and go straight to Verify.
+                guard let stakeAccount = row.stakeAccount, row.canWithdraw else { return }
+                let divisor = pow(Decimal(10), coin.decimals)
+                let withdrawableAmount = Decimal(stakeAccount.lamports) / divisor
+                presentVerify(for: SolanaWithdrawTransactionBuilder(
+                    coin: coin,
+                    stakeAccount: stakeAccount.pubkey,
+                    amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
+                ))
+            }
         )
     }
 
@@ -413,6 +478,28 @@ struct DefiChainMainScreen: View {
             ))
         }
     }
+
+    /// Builds the unsigned tx and pushes straight to Verify — used by the Solana
+    /// unstake/withdraw rows, which have no editable field and are already gated
+    /// upstream (active/activating for unstake, fully inactive for withdraw), so
+    /// the intermediate confirm screen would be redundant. Mirrors
+    /// `FunctionTransactionScreen.onVerify`: pre-fetch the chain-specific gas so
+    /// Verify shows the fee immediately; it is re-fetched there anyway, so a
+    /// failure here is non-fatal.
+    func presentVerify(for builder: TransactionBuilder) {
+        Task { @MainActor in
+            isLoading = true
+            defer { isLoading = false }
+            var sendTx = builder.buildSendTransaction(vault: vault)
+            do {
+                let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
+                sendTx = sendTx.copy(gas: chainSpecific.gas)
+            } catch {
+                // Non-fatal: gas is re-fetched during Verify.
+            }
+            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+        }
+    }
 }
 
 private extension DefiChainMainScreen {
@@ -470,8 +557,9 @@ private extension DefiChainMainScreen {
         async let stakeRefresh: Void = stakeViewModel.refresh()
         async let lpsRefresh: Void = lpsViewModel.refresh()
         async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
+        async let solanaRefresh: Void = refreshSolanaStakeIfNeeded()
         async let governanceRefresh: Void = refreshGovernanceIfNeeded()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh, governanceRefresh)
+        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh, solanaRefresh, governanceRefresh)
     }
 
     /// Conditional refresh for the cosmos staking VM — only fires when the
@@ -481,6 +569,30 @@ private extension DefiChainMainScreen {
         guard CosmosStakingConfig.isStakingSupported(chain) else { return }
         guard let nativeCoin else { return }
         await cosmosStakeViewModel.refresh(address: nativeCoin.address, decimals: nativeCoin.decimals)
+    }
+
+    /// Conditional refresh for the Solana staking VM — only fires on Solana and
+    /// when the vault has the native coin loaded. Quiet no-op otherwise so other
+    /// chains don't pay the cost. Stake accounts are read uncached, so this
+    /// always reflects a just-submitted delegate/unstake/withdraw/move.
+    func refreshSolanaStakeIfNeeded() async {
+        guard chain.isSolanaStakingChain, let nativeCoin else { return }
+        await solanaStakeViewModel.refresh(owner: nativeCoin.address, decimals: nativeCoin.decimals)
+    }
+
+    /// Cache-invalidating Solana stake refresh — runs when the user returns to
+    /// the DeFi screen after a pushed flow (e.g. a signed delegate / unstake /
+    /// withdraw / move keysign). Clears the short-lived epoch cache and also
+    /// re-reads the native-coin staked balance so the aggregate DeFi balance and
+    /// the per-account rows both reflect the just-submitted tx.
+    func invalidateSolanaStakeIfNeeded() async {
+        guard chain.isSolanaStakingChain, let nativeCoin else { return }
+        async let rows: Void = solanaStakeViewModel.invalidateAndRefresh(
+            owner: nativeCoin.address,
+            decimals: nativeCoin.decimals
+        )
+        async let balance: Void = BalanceService.shared.updateBalance(for: nativeCoin)
+        _ = await (rows, balance)
     }
 
     /// Conditional refresh for the QBTC governance VM — only fires on QBTC,

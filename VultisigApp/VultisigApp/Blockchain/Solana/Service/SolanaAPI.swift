@@ -27,8 +27,32 @@ struct SolanaAPI: TargetType {
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
+        /// `finalized`-commitment blockhash. Used for the pre-keysign refresh:
+        /// a `confirmed` blockhash isn't yet universal across the load-balanced
+        /// RPC proxy's upstream nodes, so the broadcast node's preflight can
+        /// return `BlockhashNotFound`. A finalized (rooted) blockhash is known
+        /// to every node, eliminating that failure at the cost of ~13s of the
+        /// validity window — acceptable since the refresh runs right before the
+        /// ceremony.
+        case getLatestBlockhashFinalized
         case getTokenAccountsByOwner(walletAddress: String, filter: TokenAccountFilter)
         case getAccountInfo(address: String)
+        /// All validators (vote accounts), `current` + `delinquent`.
+        case getVoteAccounts
+        /// Stake-program accounts owned by `staker`. `dataSize:200` excludes
+        /// non-stake-state accounts; the `memcmp{offset:12}` narrows to the
+        /// owner's accounts. `jsonParsed` returns the full parsed delegation;
+        /// the pubkey-only variant (`dataSlice{0,0}`) returns just addresses.
+        case getStakeAccountsByOwner(staker: String, pubkeyOnly: Bool)
+        /// Full `jsonParsed` info for a single stake account.
+        case getStakeAccountInfo(address: String)
+        /// Current epoch + slot progress.
+        case getEpochInfo
+        /// Minimum lamports for a `size`-byte account to be rent-exempt. Stake
+        /// accounts pass `200`.
+        case getMinimumBalanceForRentExemption(size: Int)
+        /// Network inflation rate for the current epoch.
+        case getInflationRate
     }
 
     enum TokenAccountFilter {
@@ -65,6 +89,8 @@ struct SolanaAPI: TargetType {
             // burns that much of the ~60–90s blockhash validity window before
             // the keysign ceremony even starts.
             return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "confirmed"]]), .jsonEncoding)
+        case .getLatestBlockhashFinalized:
+            return .requestParameters(rpcEnvelope(method: "getLatestBlockhash", params: [["commitment": "finalized"]]), .jsonEncoding)
         case .getTokenAccountsByOwner(let walletAddress, let filter):
             let filterDict: [String: String]
             switch filter {
@@ -82,7 +108,57 @@ struct SolanaAPI: TargetType {
                 rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
                 .jsonEncoding
             )
+        case .getVoteAccounts:
+            return .requestParameters(
+                rpcEnvelope(method: "getVoteAccounts", params: [["commitment": "finalized"]]),
+                .jsonEncoding
+            )
+        case .getStakeAccountsByOwner(let staker, let pubkeyOnly):
+            return .requestParameters(
+                rpcEnvelope(
+                    method: "getProgramAccounts",
+                    params: [SolanaStakingConfig.stakeProgramId, programAccountsConfig(staker: staker, pubkeyOnly: pubkeyOnly)]
+                ),
+                .jsonEncoding
+            )
+        case .getStakeAccountInfo(let address):
+            return .requestParameters(
+                rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
+                .jsonEncoding
+            )
+        case .getEpochInfo:
+            return .requestParameters(rpcEnvelope(method: "getEpochInfo", params: [] as [Any]), .jsonEncoding)
+        case .getMinimumBalanceForRentExemption(let size):
+            return .requestParameters(
+                rpcEnvelope(method: "getMinimumBalanceForRentExemption", params: [size]),
+                .jsonEncoding
+            )
+        case .getInflationRate:
+            return .requestParameters(rpcEnvelope(method: "getInflationRate", params: [] as [Any]), .jsonEncoding)
         }
+    }
+
+    /// The `getProgramAccounts` config object for the stake-by-owner scan:
+    /// `dataSize:200` + a `memcmp` on the staker authority. When `pubkeyOnly`
+    /// the data is sliced to zero bytes (`dataSlice{0,0}`, base64) since only
+    /// the addresses are needed; otherwise the full delegation is returned
+    /// `jsonParsed`.
+    private func programAccountsConfig(staker: String, pubkeyOnly: Bool) -> [String: Any] {
+        let filters: [[String: Any]] = [
+            ["dataSize": SolanaStakingConfig.stakeStateSize],
+            ["memcmp": ["offset": SolanaStakingConfig.stakerMemcmpOffset, "bytes": staker]]
+        ]
+        if pubkeyOnly {
+            return [
+                "encoding": "base64",
+                "dataSlice": ["offset": 0, "length": 0],
+                "filters": filters
+            ]
+        }
+        return [
+            "encoding": "jsonParsed",
+            "filters": filters
+        ]
     }
 
     private func rpcEnvelope(method: String, params: [Any]) -> [String: Any] {
@@ -99,6 +175,29 @@ struct SolanaSendTransactionResponse: Decodable {
     struct Error: Decodable {
         let code: Int
         let message: String
+        /// Preflight-simulation detail. On a `-32002` simulation failure the RPC
+        /// returns the program `logs` (and `err`) here — the only thing that
+        /// names the actual on-chain failure. Optional: most errors omit it.
+        let data: ErrorData?
+
+        struct ErrorData: Decodable {
+            let logs: [String]?
+            /// Structured failure reason. Solana puts `"BlockhashNotFound"` here
+            /// (with a generic `"Transaction simulation failed"` message), so the
+            /// retry/expiry detection must inspect this, not just the message.
+            let err: AnyCodableErr?
+        }
+
+        /// `err` is polymorphic — a bare string (`"BlockhashNotFound"`) or an
+        /// object (`{"InstructionError": [...]}`). Decode just enough to expose
+        /// the string form for matching.
+        struct AnyCodableErr: Decodable {
+            let stringValue: String?
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                stringValue = try? container.decode(String.self)
+            }
+        }
     }
 }
 
@@ -139,5 +238,47 @@ struct SolanaGetAccountInfoResponse: Decodable {
         struct Value: Decodable {
             let owner: String
         }
+    }
+}
+
+// MARK: - Staking RPC responses
+
+/// `getProgramAccounts` result — a flat array of rows.
+struct SolanaGetProgramAccountsResponse: Decodable {
+    let result: [SolanaStakeProgramAccount]
+}
+
+/// `getAccountInfo` (jsonParsed) for a stake account.
+struct SolanaGetStakeAccountInfoResponse: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let value: SolanaStakeAccountInfoValue?
+    }
+}
+
+struct SolanaGetEpochInfoResponse: Decodable {
+    let result: SolanaEpochInfo
+}
+
+/// `getEpochInfo` payload. `epoch` / slot fields drive activation/cooldown math.
+struct SolanaEpochInfo: Codable, Hashable {
+    let epoch: UInt64
+    let slotIndex: UInt64
+    let slotsInEpoch: UInt64
+    let absoluteSlot: UInt64
+}
+
+struct SolanaGetMinimumBalanceForRentExemptionResponse: Decodable {
+    let result: UInt64
+}
+
+struct SolanaGetInflationRateResponse: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let total: Double
+        let validator: Double
+        let epoch: UInt64
     }
 }

@@ -2,7 +2,7 @@
 //  TonPoolCard.swift
 //  VultisigApp
 //
-//  Per-pool row in the TON staking-pool picker sheet. Mirrors `ValidatorCard`:
+//  Per-pool row in the TON staking-pool picker sheet. Mirrors `StakingValidatorCard`:
 //  a 36pt monogram avatar, pool name (+ a verified badge), a min-stake subline,
 //  and the pool's APY on the right (in place of commission), with an optional
 //  check on selection.
