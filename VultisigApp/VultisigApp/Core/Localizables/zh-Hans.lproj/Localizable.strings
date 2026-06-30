@@ -1039,6 +1039,7 @@
 "settingsAdvancedCustomRPC" = "自定义 RPC";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedForcedSwapProviderJupiter" = "仅 Jupiter";
 "settingsAdvancedManage" = "管理";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "share" = "分享";
