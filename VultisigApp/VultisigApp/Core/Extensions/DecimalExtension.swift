@@ -19,7 +19,7 @@ extension Decimal {
     }
 
     /// Base method for formatting fiat values with configurable decimal places
-    private func formatToFiat(includeCurrencySymbol: Bool = true, maximumFractionDigits: Int) -> String {
+    private func formatToFiat(includeCurrencySymbol: Bool = true, maximumFractionDigits: Int, roundingMode: NumberFormatter.RoundingMode = .down) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
@@ -31,7 +31,7 @@ extension Decimal {
         formatter.minimumFractionDigits = 2
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
-        formatter.roundingMode = .down
+        formatter.roundingMode = roundingMode
 
         let number = NSDecimalNumber(decimal: self)
         return formatter.string(from: number) ?? ""
@@ -45,6 +45,34 @@ extension Decimal {
     /// Format fiat value for fee display with more decimal places to show small fees
     func formatToFiatForFee(includeCurrencySymbol: Bool = true) -> String {
         return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, maximumFractionDigits: 5)
+    }
+
+    /// Format a per-token unit price, revealing the leading significant figures of a sub-cent
+    /// price instead of collapsing it to the currency's standard 2 decimal places. A tiny price
+    /// like LUNC's `0.00006` displays as `$0.00006` rather than `$0.00`; prices of one cent or
+    /// more, and zero, use standard formatting.
+    func formatToFiatPrice(includeCurrencySymbol: Bool = true) -> String {
+        let subUnit = Decimal(sign: .plus, exponent: -2, significand: 1)
+        let absValue = abs(self)
+        guard absValue > 0, absValue < subUnit else {
+            return formatToFiat(includeCurrencySymbol: includeCurrencySymbol)
+        }
+        // Count the zeros between the decimal point and the first significant digit, then extend
+        // precision just far enough to reveal two significant figures (capped at 8 fraction digits).
+        var scaled = absValue
+        var firstSignificantPlace = 0
+        while scaled < 1 {
+            scaled *= 10
+            firstSignificantPlace += 1
+        }
+        let leadingZeros = firstSignificantPlace - 1
+        let maximumFractionDigits = min(leadingZeros + PriceFormatting.significantDigits, PriceFormatting.maxFractionDigits)
+        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, maximumFractionDigits: maximumFractionDigits, roundingMode: .halfUp)
+    }
+
+    private enum PriceFormatting {
+        static let significantDigits = 2
+        static let maxFractionDigits = 8
     }
 
     func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
