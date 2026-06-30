@@ -44,28 +44,22 @@ struct SolanaStakeDefiView: View {
     var onUnstake: (SolanaStakeAccountRow) -> Void
     var onWithdraw: (SolanaStakeAccountRow) -> Void
 
+    // The total-staked card (and its "Delegate to New Validator" CTA) ALWAYS
+    // renders — Solana staking has no empty state, so a user with zero stake
+    // accounts can still start staking, and the card must never vanish on a
+    // pull-to-refresh or background load (cache-first: persist + refresh, never
+    // blank). The per-account list appears once the wallet holds stake accounts;
+    // only a first-ever cold load with no cached rows shows a non-blocking
+    // spinner beneath the card — a refresh of existing data leaves it in place.
     var body: some View {
-        Group {
-            if viewModel.isLoading && viewModel.rows.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 32)
-            } else {
-                populatedState
-            }
-        }
-    }
-
-    // Always render the total-staked card (and its "Delegate to New Validator"
-    // CTA) so a user with zero stake accounts can still start staking — Solana
-    // staking has no empty state. The per-account list only appears once the
-    // wallet actually holds stake accounts.
-    @ViewBuilder
-    private var populatedState: some View {
         VStack(spacing: 16) {
             totalStakedCard
             if !viewModel.rows.isEmpty {
                 stakeAccountsCard
+            } else if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
             }
         }
     }
