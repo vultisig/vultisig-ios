@@ -15,12 +15,34 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         rawValue
     }
 
-    var isAppBanner: Bool {
+    /// Stable, storage-facing identifier for this banner's dismissal intent.
+    /// Decoupled from `rawValue` so renaming a case never invalidates a
+    /// persisted dismissal.
+    var dismissalID: String {
         switch self {
-        case .upgradeVault, .backupVault, .buyVult:
-            return false
+        case .backupVault:
+            return "backup_vault_share"
+        case .upgradeVault:
+            return "upgrade_vault_dkls"
+        case .buyVult:
+            return "buy_vult_swap"
         case .followVultisig:
-            return true
+            return "follow_x_vultisig"
+        }
+    }
+
+    /// How long a dismissal of this banner is honored. `buyVult` resurfaces a
+    /// week later; `upgradeVault`/`followVultisig` a fortnight later; the
+    /// backup reminder is session-scoped and reappears each cold launch while
+    /// the vault is still un-backed-up.
+    var dismissalRule: BannerDismissalRule {
+        switch self {
+        case .buyVult:
+            return .ttl(.days(7))
+        case .backupVault:
+            return .session
+        case .upgradeVault, .followVultisig:
+            return .ttl(.days(15))
         }
     }
 
@@ -86,5 +108,22 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         case .followVultisig:
             "follow-vultisig-banner-background"
         }
+    }
+}
+
+/// Per-banner rule governing how long a dismissal suppresses a promo banner.
+enum BannerDismissalRule: Equatable {
+    /// Suppressed until `dismissedAt + interval`; reappears once the interval
+    /// elapses. Backed by persistent (per-device) storage.
+    case ttl(TimeInterval)
+    /// Suppressed only for the current app session; reappears on the next cold
+    /// launch. Never persisted.
+    case session
+}
+
+extension TimeInterval {
+    /// A whole number of days expressed as a `TimeInterval` (seconds).
+    static func days(_ count: Int) -> TimeInterval {
+        TimeInterval(count) * 24 * 60 * 60
     }
 }

@@ -124,7 +124,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 // both devices share the same hash. The claimer's QBTC
                 // address comes from this device's own vault.
                 let btcCoin = keysignPayload.coin
-                if let qbtcCoin = vault.nativeCoin(for: .qbtc),
+                // Resolve QBTC from this device's own vault, deriving it
+                // in-memory when the chain isn't enabled so both devices
+                // share the same claimer address (and thus the same hash).
+                if let qbtcCoin = try? QBTCClaimCoinResolver().resolve(vault: vault, chain: .qbtc),
                    let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) {
                     do {
                         let hashes = try QBTCClaimHashes.computeAll(

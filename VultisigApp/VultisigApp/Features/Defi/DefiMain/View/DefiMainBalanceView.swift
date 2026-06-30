@@ -125,6 +125,7 @@ struct DefiMainBalanceView: View {
         }
     }
 
+    @MainActor
     func updateBalance() {
         balance = defiBalanceService.totalBalanceInFiatString(for: vault.defiChains, vault: vault)
     }

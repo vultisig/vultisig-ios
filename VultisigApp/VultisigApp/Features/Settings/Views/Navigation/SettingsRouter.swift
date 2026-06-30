@@ -37,8 +37,6 @@ struct SettingsRouter {
             viewBuilder.buildCheckForUpdatesScreen()
         case .advancedSettings:
             viewBuilder.buildAdvancedSettingsScreen()
-        case .vaultDetailQRCode(let vault):
-            viewBuilder.buildVaultDetailQRCodeScreen(vault: vault)
         }
     }
 }

@@ -37,18 +37,16 @@ struct QBTCClaimJoinView: View {
 
     @ViewBuilder
     private func doneScreen(result: QBTCClaimRunResult?) -> some View {
-        // The peer has the vault from the driver; BTC + QBTC coins are
-        // derived from it. If the tx-hash push didn't arrive in time
-        // (`result == nil`), surface the same animation the standard
-        // peer keysign flow shows on completion.
-        if let result,
-           let btcCoin = driver.vault.nativeCoin(for: .bitcoin),
-           let qbtcCoin = driver.vault.nativeCoin(for: .qbtc) {
+        // The driver resolved the BTC + QBTC coins (deriving them when the
+        // chain isn't enabled) before signing, so reuse them here. If the
+        // tx-hash push didn't arrive in time (`result == nil`), surface the
+        // same animation the standard peer keysign flow shows on completion.
+        if let result, let coins = driver.resolvedCoins {
             QBTCClaimDoneScreen(
                 result: result,
                 vault: driver.vault,
-                btcCoin: btcCoin,
-                qbtcCoin: qbtcCoin
+                btcCoin: coins.btc,
+                qbtcCoin: coins.qbtc
             )
         } else {
             SendCryptoKeysignView(coinLogo: coinLogo)

@@ -27,6 +27,7 @@
 //       equal inputs are `==` (Equatable rows).
 //
 
+import Foundation
 import XCTest
 @testable import VultisigApp
 
@@ -205,7 +206,192 @@ final class VaultDetailViewModelTests: XCTestCase {
                       "Chain still resolves by name")
     }
 
+    // MARK: - Promo banner dismissal: global store + per-banner rule
+
+    /// AC: a dismissal made against one vault must not resurface when the user
+    /// switches to a different vault. The store is keyed by intent, never by
+    /// vault, so this holds structurally.
+    func testDismissedBanner_doesNotResurfaceOnVaultSwitch() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vaultA = makeVault(pubKey: "vault-a", chains: [.bitcoin])
+        let vaultB = makeVault(pubKey: "vault-b", chains: [.solana])
+
+        store.dismiss(.buyVult, now: fixedNow)
+
+        let bannersA = logic.setupBanners(for: vaultA, store: store, now: fixedNow)
+        let bannersB = logic.setupBanners(for: vaultB, store: store, now: fixedNow)
+
+        XCTAssertFalse(bannersA.contains(.buyVult))
+        XCTAssertFalse(bannersB.contains(.buyVult),
+                       "A dismissal must hold across vaults — the store has no vault key")
+    }
+
+    /// AC: different intents are independent — dismissing one banner does not
+    /// suppress another.
+    func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {
+        let store = makeStore()
+
+        store.dismiss(.buyVult, now: fixedNow)
+
+        XCTAssertTrue(store.isDismissed(.buyVult, now: fixedNow))
+        XCTAssertFalse(store.isDismissed(.followVultisig, now: fixedNow),
+                       "Follow banner must stay visible when only buyVult was dismissed")
+    }
+
+    /// AC: per-banner TTL. buyVult is 7 days — dismissed at day 6, shown again
+    /// at day 8. The boundary (exactly dismissedAt + interval) re-shows.
+    func testBuyVultTTL_sevenDayBoundary() {
+        let store = makeStore()
+        store.dismiss(.buyVult, now: fixedNow)
+
+        XCTAssertTrue(store.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(6))))
+        XCTAssertFalse(store.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(7))),
+                       "At exactly dismissedAt + TTL the banner re-shows")
+        XCTAssertFalse(store.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(8))))
+    }
+
+    /// AC: per-banner TTL. upgrade and follow are 15 days.
+    func testUpgradeAndFollowTTL_fifteenDayBoundary() {
+        let store = makeStore()
+        store.dismiss(.upgradeVault, now: fixedNow)
+        store.dismiss(.followVultisig, now: fixedNow)
+
+        for banner in [VaultBannerType.upgradeVault, .followVultisig] {
+            XCTAssertTrue(store.isDismissed(banner, now: fixedNow.addingTimeInterval(.days(14))))
+            XCTAssertFalse(store.isDismissed(banner, now: fixedNow.addingTimeInterval(.days(15))),
+                           "At exactly dismissedAt + TTL the banner re-shows")
+            XCTAssertFalse(store.isDismissed(banner, now: fixedNow.addingTimeInterval(.days(16))))
+        }
+    }
+
+    /// AC: an expired dismissal is ignored and the banner shows again
+    /// (eligibility permitting).
+    func testExpiredDismissal_showsBannerAgain() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin])
+
+        store.dismiss(.buyVult, now: fixedNow)
+
+        let withinTTL = logic.setupBanners(for: vault, store: store, now: fixedNow.addingTimeInterval(.days(6)))
+        XCTAssertFalse(withinTTL.contains(.buyVult), "Still suppressed inside the 7-day window")
+
+        let afterTTL = logic.setupBanners(for: vault, store: store, now: fixedNow.addingTimeInterval(.days(8)))
+        XCTAssertTrue(afterTTL.contains(.buyVult), "Expired dismissal must let the banner show again")
+    }
+
+    /// Backup session rule: dismissed for the rest of the session, but a fresh
+    /// store instance (a new cold launch) does not see it — it never persists.
+    func testBackupSessionRule_hidesWithinSession_resetsOnNewSession() {
+        let defaults = makeDefaults()
+        let session1 = makeStore(defaults: defaults)
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin]) // not backed up
+
+        XCTAssertTrue(logic.setupBanners(for: vault, store: session1, now: fixedNow).contains(.backupVault))
+
+        session1.dismiss(.backupVault, now: fixedNow)
+        XCTAssertTrue(session1.isDismissed(.backupVault, now: fixedNow))
+        XCTAssertFalse(logic.setupBanners(for: vault, store: session1, now: fixedNow).contains(.backupVault),
+                       "Backup banner is hidden for the rest of the session after dismissal")
+
+        // New cold launch == new store instance over the SAME persisted defaults.
+        let session2 = makeStore(defaults: defaults)
+        XCTAssertFalse(session2.isDismissed(.backupVault, now: fixedNow),
+                       "Session dismissals never persist, so a new launch re-shows the backup banner")
+        XCTAssertTrue(logic.setupBanners(for: vault, store: session2, now: fixedNow).contains(.backupVault))
+    }
+
+    /// Eligibility still gates the backup banner: a backed-up vault never shows
+    /// it, even before any dismissal.
+    func testBackupBanner_backedUpVaultNeverShows() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin])
+        vault.isBackedUp = true
+
+        XCTAssertFalse(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.backupVault),
+                       "A backed-up vault must never show the backup reminder")
+    }
+
+    // MARK: - Promo banner dismissal: migration
+
+    /// AC: migration is safe. Legacy app-wide `followVultisig` becomes a 15-day
+    /// TTL dismissal, suppressed inside the window and shown again after it.
+    func testMigration_seedsFollowFromLegacyAppBanners() {
+        let store = makeStore()
+
+        store.migrateLegacyDismissals(legacyAppBanners: ["followVultisig"], legacyVaultBanners: [], now: fixedNow)
+
+        XCTAssertTrue(store.isDismissed(.followVultisig, now: fixedNow.addingTimeInterval(.days(14))))
+        XCTAssertFalse(store.isDismissed(.followVultisig, now: fixedNow.addingTimeInterval(.days(16))))
+    }
+
+    /// AC: per-vault legacy data collapses to global with OR-semantics — a
+    /// banner dismissed in any vault is globally suppressed.
+    func testMigration_seedsUpgradeAndBuyVultFromVaultUnion() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "vault-x", chains: [.bitcoin])
+
+        store.migrateLegacyDismissals(legacyAppBanners: [],
+                                      legacyVaultBanners: ["buyVult", "upgradeVault"],
+                                      now: fixedNow)
+
+        XCTAssertTrue(store.isDismissed(.buyVult, now: fixedNow))
+        XCTAssertTrue(store.isDismissed(.upgradeVault, now: fixedNow))
+        XCTAssertFalse(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.buyVult))
+    }
+
+    /// Legacy `backupVault` dismissal is intentionally NOT carried — backup is
+    /// session-scoped and should resurface after upgrade while still missing.
+    func testMigration_skipsLegacyBackupDismissal() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin]) // not backed up
+
+        store.migrateLegacyDismissals(legacyAppBanners: [], legacyVaultBanners: ["backupVault"], now: fixedNow)
+
+        XCTAssertFalse(store.isDismissed(.backupVault, now: fixedNow),
+                       "Legacy backup dismissal must not carry into the session store")
+        XCTAssertTrue(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.backupVault))
+    }
+
+    /// AC: migration runs once and must not reset timestamps. A second run at a
+    /// later instant leaves the original countdown intact.
+    func testMigration_isIdempotent_doesNotResetTimestamps() {
+        let store = makeStore()
+
+        store.migrateLegacyDismissals(legacyAppBanners: [], legacyVaultBanners: ["buyVult"], now: fixedNow)
+        // Re-run 3 days later — must NOT restart the 7-day countdown.
+        store.migrateLegacyDismissals(legacyAppBanners: [],
+                                      legacyVaultBanners: ["buyVult"],
+                                      now: fixedNow.addingTimeInterval(.days(3)))
+
+        // 8 days after the FIRST seed it is expired. Had the second run reset
+        // the timestamp to day 3, it would still be suppressed here (day 3 + 7).
+        XCTAssertFalse(store.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(8))),
+                       "Second migration run must not restart the TTL countdown")
+    }
+
     // MARK: - Helpers
+
+    /// A fixed reference instant so TTL boundary math is deterministic.
+    private var fixedNow: Date { Date(timeIntervalSince1970: 1_700_000_000) }
+
+    /// A fresh, empty `UserDefaults` domain per call so tests never collide with
+    /// each other or with `.standard`.
+    private func makeDefaults(_ name: String = UUID().uuidString) -> UserDefaults {
+        let suite = "promo-banner-tests-\(name)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
+    }
+
+    private func makeStore(defaults: UserDefaults? = nil) -> PromoBannerDismissalStore {
+        PromoBannerDismissalStore(defaults: defaults ?? makeDefaults(), storageKey: "promoBannerDismissals")
+    }
 
     /// Build a Vault populated with native coins for the requested chains.
     /// `chainsWithCoins` is what `VaultDetailLogic.sortedChains(vault:)` reads

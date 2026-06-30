@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftData
+import BigInt
 
 class BalanceService {
 
@@ -28,7 +29,22 @@ class BalanceService {
     private let thorchainAPIService = THORChainAPIService()
     private let mayaChainAPIService = MayaChainAPIService()
 
-    private let cryptoPriceService = CryptoPriceService.shared
+    private let cryptoPriceService: CryptoPriceServiceProtocol
+
+    init(cryptoPriceService: CryptoPriceServiceProtocol = CryptoPriceService.shared) {
+        self.cryptoPriceService = cryptoPriceService
+    }
+
+    /// Cache of whether a chain's Multicall3 contract was verified to have code.
+    /// Probed at most once per process for chains that need a runtime gate.
+    private var multicallCodeVerified: [Chain: Bool] = [:]
+    private var multicallCodeLock = os_unfair_lock()
+
+    /// Key for grouping EVM coins so each (chain, wallet) issues one Multicall3 call.
+    private struct EvmBatchKey: Hashable {
+        let chain: Chain
+        let address: String
+    }
 
     /// Value type to identify a coin for balance fetching without holding SwiftData model references
     /// Reuses CoinMeta and adds only the minimal additional fields needed for balance operations
@@ -63,31 +79,61 @@ class BalanceService {
     }
 
     func updateBalances(vault: Vault) async {
-        // Phase 0: Fetch prices (already async-safe)
-        do {
-            try await cryptoPriceService.fetchPrices(vault: vault)
-        } catch {
-            if (error as? URLError)?.code != .cancelled {
-                logger.warning("Fetch Rates error: \(error.localizedDescription)")
-            }
-        }
-
-        // Phase 1: Extract coin identifiers on MainActor
+        // Phase 1: Extract value-type identifiers on MainActor
         let coinIdentifiers = await extractCoinIdentifiers(from: vault)
+        let coinMetas = coinIdentifiers.map { $0.coinMeta }
 
-        // Phase 2: Fetch balances concurrently (off MainActor)
+        // Prices and balances run concurrently. Balances never read prices (fiat
+        // is computed lazily from RateProvider at render time), so a slow or
+        // failing price provider must not gate balance freshness.
+        async let pricesDone: Void = fetchRatesSafely(coins: coinMetas)
         let updates = await fetchBalanceUpdates(for: coinIdentifiers)
 
-        // Phase 3: Apply updates in batch on MainActor
+        // Phase 3: Apply updates in batch on MainActor (triggers SwiftUI updates).
         do {
             try await applyBalanceUpdates(updates, to: vault)
         } catch {
             logger.error("Update Balances error: \(error.localizedDescription)")
         }
 
+        // Ensure rates have landed, then relabel fiat on MainActor.
+        await pricesDone
+        await refreshFiat(vault: vault)
+
         // Phase 4: Discover Cardano native tokens silently — mirrors Windows
         // CoinFinder behaviour. Failures here must never break a balance refresh.
         await discoverCardanoNativeTokens(vault: vault)
+    }
+
+    /// Rates-only refresh used when only the display currency changed. Fetches
+    /// price rates and relabels fiat without issuing any per-coin balance RPCs or
+    /// running Cardano token discovery.
+    func refreshRates(vault: Vault) async {
+        let metas = await extractCoinIdentifiers(from: vault).map { $0.coinMeta }
+        await fetchRatesSafely(coins: metas)
+        await refreshFiat(vault: vault)
+    }
+
+    /// Fetch price rates for the given coins, swallowing cancellation and logging
+    /// other failures so a price outage can never gate balances.
+    private func fetchRatesSafely(coins: [CoinMeta]) async {
+        do {
+            try await cryptoPriceService.fetchPrices(coins: coins)
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Fetch Rates error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Nudge SwiftUI to recompute fiat labels for the vault and its coins once
+    /// fresh rates are cached. Balances are applied separately.
+    @MainActor
+    private func refreshFiat(vault: Vault) {
+        vault.objectWillChange.send()
+        for coin in vault.coins {
+            coin.objectWillChange.send()
+        }
     }
 
     /// Phase 1: Extract coin identifiers on MainActor
@@ -96,33 +142,156 @@ class BalanceService {
         return vault.coins.map { CoinIdentifier(from: $0) }
     }
 
-    /// Phase 2: Fetch balance updates concurrently using identifiers
+    /// Phase 2: Fetch balance updates concurrently using identifiers.
+    ///
+    /// EVM coins on a chain with a verified Multicall3 deployment are grouped by
+    /// (chain, wallet) and fetched in a single `aggregate3` call (native + every
+    /// token in one round-trip). Everything else — non-EVM chains and EVM chains
+    /// without a Multicall3 address — keeps the one-task-per-coin path verbatim.
     private func fetchBalanceUpdates(for identifiers: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
-        await withTaskGroup(of: CoinBalanceUpdate.self) { group in
+        var batchGroups: [EvmBatchKey: [CoinIdentifier]] = [:]
+        var perCoin: [CoinIdentifier] = []
+
+        for identifier in identifiers {
+            if identifier.chain.chainType == .EVM, Multicall3.address(for: identifier.chain) != nil {
+                batchGroups[EvmBatchKey(chain: identifier.chain, address: identifier.address), default: []].append(identifier)
+            } else {
+                perCoin.append(identifier)
+            }
+        }
+
+        return await withTaskGroup(of: [CoinBalanceUpdate].self) { group in
             var updates: [CoinBalanceUpdate] = []
             updates.reserveCapacity(identifiers.count)
 
-            for identifier in identifiers {
+            for (key, coins) in batchGroups {
                 group.addTask { [weak self] in
                     guard let self, !Task.isCancelled else {
-                        return CoinBalanceUpdate(
-                            coinId: identifier.coinId,
-                            rawBalance: nil,
-                            stakedBalance: nil,
-                            bondedNodes: nil,
-                            error: nil
-                        )
+                        return coins.map { Self.emptyUpdate(for: $0) }
                     }
-
-                    return await self.fetchBalanceUpdate(for: identifier)
+                    return await self.fetchEvmBatchBalances(chain: key.chain, address: key.address, coins: coins)
                 }
             }
 
-            for await update in group {
-                updates.append(update)
+            for identifier in perCoin {
+                group.addTask { [weak self] in
+                    guard let self, !Task.isCancelled else {
+                        return [Self.emptyUpdate(for: identifier)]
+                    }
+                    return [await self.fetchBalanceUpdate(for: identifier)]
+                }
+            }
+
+            for await groupUpdates in group {
+                updates.append(contentsOf: groupUpdates)
             }
 
             return updates
+        }
+    }
+
+    private static func emptyUpdate(for identifier: CoinIdentifier) -> CoinBalanceUpdate {
+        CoinBalanceUpdate(coinId: identifier.coinId, rawBalance: nil, stakedBalance: nil, bondedNodes: nil, error: nil)
+    }
+
+    /// Fetch every balance for one (chain, wallet) EVM group in a single
+    /// Multicall3 call. On any thrown error (network blip, unexpected decode, or
+    /// a failed runtime gate) the whole group degrades to the per-coin path, so a
+    /// batch failure never zeroes balances — it just reverts to today's behaviour.
+    /// EVM chains carry no staked/bonded balances, so the batch produces only
+    /// `rawBalance`, identical to the per-coin path.
+    private func fetchEvmBatchBalances(chain: Chain, address: String, coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
+        guard let multicall3Address = Multicall3.address(for: chain) else {
+            return await fallbackPerCoin(coins)
+        }
+
+        do {
+            let service = try EvmService.getService(forChain: chain)
+
+            guard await isMulticallAvailable(chain: chain, multicall3Address: multicall3Address, service: service) else {
+                return await fallbackPerCoin(coins)
+            }
+
+            let nativeCoins = coins.filter { $0.isNativeToken }
+            let tokenCoins = coins.filter { !$0.isNativeToken }
+            let contractAddresses = tokenCoins.map { $0.coinMeta.contractAddress }
+
+            let result = try await service.fetchERC20Balances(
+                contractAddresses: contractAddresses,
+                walletAddress: address,
+                multicall3Address: multicall3Address,
+                includeNative: !nativeCoins.isEmpty
+            )
+
+            var updates: [CoinBalanceUpdate] = []
+            updates.reserveCapacity(coins.count)
+
+            for coin in nativeCoins {
+                let value = result.native ?? 0
+                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
+            }
+            for coin in tokenCoins {
+                let value = result.balances[coin.coinMeta.contractAddress] ?? 0
+                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
+            }
+
+            return updates
+        } catch {
+            logger.warning("Multicall3 batch failed for \(chain.name); falling back to per-coin: \(error.localizedDescription)")
+            return await fallbackPerCoin(coins)
+        }
+    }
+
+    /// Per-coin path used when a Multicall3 batch is unavailable or fails. Fans
+    /// the individual fetches out concurrently so a batch failure reverts to the
+    /// original parallel per-coin behaviour rather than serializing N RPCs.
+    private func fallbackPerCoin(_ coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
+        return await withTaskGroup(of: CoinBalanceUpdate.self) { group in
+            for coin in coins {
+                group.addTask { [weak self] in
+                    guard let self, !Task.isCancelled else {
+                        return Self.emptyUpdate(for: coin)
+                    }
+                    return await self.fetchBalanceUpdate(for: coin)
+                }
+            }
+
+            var updates: [CoinBalanceUpdate] = []
+            updates.reserveCapacity(coins.count)
+            for await update in group {
+                updates.append(update)
+            }
+            return updates
+        }
+    }
+
+    /// Hyperliquid (HyperEVM) is the newest chain in the Multicall3 allowlist, so
+    /// its deployment is gated behind a one-time `eth_getCode` probe before the
+    /// batch path is trusted; an absent contract maps to the per-coin fallback.
+    /// Every other listed chain is verified against the canonical deployment list
+    /// and trusted directly. The probe result is cached per process.
+    private func isMulticallAvailable(chain: Chain, multicall3Address: String, service: EvmService) async -> Bool {
+        guard chain == .hyperliquid else { return true }
+
+        os_unfair_lock_lock(&multicallCodeLock)
+        let cached = multicallCodeVerified[chain]
+        os_unfair_lock_unlock(&multicallCodeLock)
+        if let cached { return cached }
+
+        do {
+            let code = try await service.getCode(address: multicall3Address)
+            let hasCode = !code.stripHexPrefix().isEmpty
+
+            // Cache only definitive code / no-code results.
+            os_unfair_lock_lock(&multicallCodeLock)
+            multicallCodeVerified[chain] = hasCode
+            os_unfair_lock_unlock(&multicallCodeLock)
+            return hasCode
+        } catch {
+            // A transient probe failure stays uncached so the next refresh can
+            // retry, rather than pinning the chain to the slow per-coin path for
+            // the rest of the process.
+            return false
         }
     }
 

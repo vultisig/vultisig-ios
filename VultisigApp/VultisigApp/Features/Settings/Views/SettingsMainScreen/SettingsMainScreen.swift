@@ -82,13 +82,6 @@ struct SettingsMainScreen: View {
         .accessibilityIdentifier(AccessibilityID.Settings.container)
         .screenTitle("settings".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        .screenToolbar {
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "qr-code") {
-                    router.navigate(to: SettingsRoute.vaultDetailQRCode(vault: vault))
-                }
-            }
-        }
         .crossPlatformSheet(isPresented: $showReferralBannerSheet) {
             ReferralOnboardingBanner {
                 showReferralBannerSheet = false
