@@ -6,15 +6,18 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-main-view-model")
 
 enum DefiMainItem: Identifiable, Hashable {
     case chain(Chain)
-    case circle
+    case yield(DefiYieldProviderID)
 
     var id: String {
         switch self {
         case .chain(let chain): return chain.rawValue
-        case .circle: return "circle"
+        case .yield(let provider): return provider.rawValue
         }
     }
 }
@@ -22,7 +25,7 @@ enum DefiMainItem: Identifiable, Hashable {
 @MainActor
 final class DefiMainViewModel: ObservableObject {
     @Published private var chains = [Chain]()
-    @Published private var showsCircle: Bool = false
+    @Published private var visibleProviders: [DefiYieldProviderID] = []
     @Published var searchText: String = ""
 
     private let logic = VaultDetailLogic()
@@ -30,14 +33,16 @@ final class DefiMainViewModel: ObservableObject {
     init() {}
 
     func filteredItems(in vault: Vault) -> [DefiMainItem] {
-        let prefix: [DefiMainItem] = showsCircle && matchesSearch(circleName) ? [.circle] : []
+        let providerItems = visibleProviders
+            .filter { matchesSearch(providerName($0)) }
+            .map { DefiMainItem.yield($0) }
         let filtered = chains.filter { chain in
             let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
             let tickerMatches = vault.nativeCoin(for: chain)?.ticker
                 .localizedCaseInsensitiveContains(searchText) ?? false
             return searchText.isEmpty || nameMatches || tickerMatches
         }
-        return prefix + filtered.map { .chain($0) }
+        return providerItems + filtered.map { .chain($0) }
     }
 
     /// Refreshes persisted balances (including `Coin.stakedBalance`, which backs
@@ -52,6 +57,16 @@ final class DefiMainViewModel: ObservableObject {
     }
 
     func groupChains(vault: Vault) {
+        // Backfill the provider array from the legacy flags the first time the
+        // DeFi tab loads, then persist so the migration sticks.
+        if vault.migrateLegacyDefiProvidersIfNeeded() {
+            do {
+                try Storage.shared.save()
+            } catch {
+                logger.error("Failed to persist DeFi provider migration: \(error.localizedDescription)")
+            }
+        }
+
         let defiChains = vault.chainsWithCoins.filter { chain in
             vault.defiChains.contains(chain) && CoinAction.defiChains.contains(chain)
         }
@@ -61,15 +76,21 @@ final class DefiMainViewModel: ObservableObject {
             value: { vault.coins(for: $0).totalDefiBalanceInFiatDecimal }
         )
 
-        // Circle is no longer offered to new users: only show it for vaults
-        // that already created a Circle account, so they can still withdraw.
-        let hasCircleAccount = vault.circleWalletAddress?.isEmpty == false
-        showsCircle = vault.isCircleEnabled
-            && vault.chains.contains(.ethereum)
-            && hasCircleAccount
+        // A provider shows when it is enabled, the vault holds the provider's
+        // chain, and its account (e.g. Circle MSCA) is provisioned. Account-less
+        // providers are always provisioned, so the gate is uniform across providers.
+        visibleProviders = DefiYieldProviderID.allCases.filter { isProviderVisible($0, in: vault) }
     }
 
-    private var circleName: String { "Circle" }
+    private func isProviderVisible(_ id: DefiYieldProviderID, in vault: Vault) -> Bool {
+        let provider = DefiYieldProviderFactory.make(id)
+        guard vault.isDefiProviderEnabled(id), vault.chains.contains(provider.chain) else { return false }
+        return provider.isAccountProvisioned(vault: vault)
+    }
+
+    private func providerName(_ id: DefiYieldProviderID) -> String {
+        DefiYieldProviderFactory.make(id).presentation.providerNameKey.localized
+    }
 
     private func matchesSearch(_ value: String) -> Bool {
         searchText.isEmpty || value.localizedCaseInsensitiveContains(searchText)

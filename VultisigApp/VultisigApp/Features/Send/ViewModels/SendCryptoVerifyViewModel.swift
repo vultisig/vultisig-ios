@@ -26,6 +26,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
+    @Published var isApproveCorrect = false
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
@@ -45,6 +46,17 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// summary shows the real amount and recipient. Re-deriving from the USDC
     /// `transaction` would instead sign `transfer(MSCA, 0)` — a no-op.
     private let prebuiltKeysignPayload: KeysignPayload?
+
+    /// Exposes the pre-built payload to the verify summary so it can surface
+    /// payload-only context the display `transaction` doesn't carry — e.g. the
+    /// decoded sign-data (signDirect/signAmino/signSolana/…) detail rows.
+    var verifyKeysignPayload: KeysignPayload? { prebuiltKeysignPayload }
+
+    /// Whether the pre-built payload bundles an ERC-20 `approve` that will be
+    /// signed and broadcast before the main transaction (a first-time
+    /// allowance-gated deposit). Drives the extra confirmation checkbox on the verify screen,
+    /// mirroring the swap approve flow.
+    var isApproveRequired: Bool { prebuiltKeysignPayload?.approvePayload != nil }
 
     init(
         transaction: SendTransaction,
@@ -138,6 +150,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var isValidForm: Bool {
+        if isApproveRequired {
+            return isAddressCorrect && isAmountCorrect && isApproveCorrect
+        }
         return isAddressCorrect && isAmountCorrect
     }
 
