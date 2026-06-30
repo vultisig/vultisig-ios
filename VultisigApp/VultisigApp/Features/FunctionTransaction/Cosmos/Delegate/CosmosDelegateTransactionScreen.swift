@@ -90,11 +90,7 @@ struct CosmosDelegateTransactionScreen: View {
         .onChange(of: viewModel.selectedValidator) { _, _ in
             focusedFieldBinding = .amount
         }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
+        .delayedFocus(from: focusedFieldBinding, to: $focusedField)
     }
 
     @ViewBuilder

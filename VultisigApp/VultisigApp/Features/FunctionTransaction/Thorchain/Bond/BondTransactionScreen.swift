@@ -90,11 +90,7 @@ struct BondTransactionScreen: View {
         .onChange(of: viewModel.operatorFeeField.valid) { _, _ in
             try? viewModel.operatorFeeField.validateErrors()
         }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
+        .delayedFocus(from: focusedFieldBinding, to: $focusedField)
     }
 
     func onContinue() {

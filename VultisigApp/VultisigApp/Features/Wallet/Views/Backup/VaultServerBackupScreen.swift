@@ -64,11 +64,7 @@ struct VaultServerBackupScreen: View {
                 showAlert = newValue
             }
         }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
+        .delayedFocus(from: focusedFieldBinding, to: $focusedField)
         .crossPlatformSheet(isPresented: $viewModel.showSuccess) {
             ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess) {
                 appViewModel.set(selectedVault: vault, showingVaultSelector: false)
