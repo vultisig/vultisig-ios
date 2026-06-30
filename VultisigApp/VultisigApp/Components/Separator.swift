@@ -14,7 +14,7 @@ struct Separator: View {
     var body: some View {
         Rectangle()
             .frame(height: 1)
-            .foregroundColor(color)
+            .foregroundStyle(color)
             .opacity(opacity)
     }
 }

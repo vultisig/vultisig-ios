@@ -25,12 +25,12 @@ struct HighlightedTextWithImage: View {
                 if !beforeText.isEmpty {
                     Text(beforeText)
                         .font(font)
-                        .foregroundColor(foregroundColor)
+                        .foregroundStyle(foregroundColor)
                 }
 
                 Text(highlightedText)
                     .font(font)
-                    .foregroundColor(.clear)
+                    .foregroundStyle(.clear)
                     .overlay {
                         Image(imageName)
                             .resizable()
@@ -44,14 +44,14 @@ struct HighlightedTextWithImage: View {
                 if !afterText.isEmpty {
                     Text(afterText)
                         .font(font)
-                        .foregroundColor(foregroundColor)
+                        .foregroundStyle(foregroundColor)
                 }
             }
         } else {
             // Fallback if highlighted text not found
             Text(text)
                 .font(font)
-                .foregroundColor(foregroundColor)
+                .foregroundStyle(foregroundColor)
         }
     }
 }

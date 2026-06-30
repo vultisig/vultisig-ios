@@ -66,7 +66,7 @@ struct PreferredAssetSelectionView: View {
 
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)

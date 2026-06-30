@@ -157,12 +157,12 @@ struct SwapDetailsSummary: View {
     var affiliateFee: some View {
         HStack {
             Text(vm.swapFeeLabel)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             Text(vm.baseAffiliateFee)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.caption12)
     }
@@ -172,13 +172,13 @@ struct SwapDetailsSummary: View {
             vultTierIcon
 
             Text(vm.vultDiscountLabel)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
 
             Spacer()
 
             Text(vm.vultDiscount)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
     }
@@ -193,7 +193,7 @@ struct SwapDetailsSummary: View {
         } else {
             Image(systemName: "star.circle.fill")
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.turquoise)
+                .foregroundStyle(Theme.colors.turquoise)
         }
     }
 
@@ -208,16 +208,16 @@ struct SwapDetailsSummary: View {
         HStack {
             Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.primaryAccent4)
+                .foregroundStyle(Theme.colors.primaryAccent4)
 
             Text(vm.referralDiscountLabel)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
 
             Spacer()
 
             Text(vm.referralDiscount)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
     }
@@ -225,12 +225,12 @@ struct SwapDetailsSummary: View {
     var priceImpact: some View {
         HStack {
             Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             Text(vm.priceImpactString)
-                .foregroundColor(vm.priceImpactColor)
+                .foregroundStyle(vm.priceImpactColor)
         }
         .font(Theme.fonts.caption12)
     }
@@ -238,12 +238,12 @@ struct SwapDetailsSummary: View {
     private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             Text(trailingText)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .redacted(reason: detailsViewModel.isLoading ? .placeholder : [])
         }
         .font(Theme.fonts.caption12)
@@ -258,7 +258,7 @@ struct SwapDetailsSummary: View {
     private func getErrorCell(text: String) -> some View {
         HStack {
             Text(text)
-                .foregroundColor(Theme.colors.alertError)
+                .foregroundStyle(Theme.colors.alertError)
                 .font(Theme.fonts.caption12)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)

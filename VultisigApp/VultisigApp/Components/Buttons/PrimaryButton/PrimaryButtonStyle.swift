@@ -40,7 +40,7 @@ struct PrimaryButtonStyle: ButtonStyle {
                         .scaleEffect(CGSize(width: progress, height: 1), anchor: .leading)
                 }
             )
-            .foregroundColor(foregroundColor(for: type, isEnabled: isEnabled))
+            .foregroundStyle(foregroundColor(for: type, isEnabled: isEnabled))
             .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius(for: size))
                         .stroke(borderColor(for: type, isEnabled: isEnabled),

@@ -32,10 +32,10 @@ struct SettingPickerCell<Selection: Hashable>: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
             Text(title)
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
             Menu {
                 Picker(title, selection: $selection) {
@@ -47,10 +47,10 @@ struct SettingPickerCell<Selection: Hashable>: View {
                 HStack(spacing: 4) {
                     Text(currentLabel)
                         .font(Theme.fonts.bodySRegular)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
         }

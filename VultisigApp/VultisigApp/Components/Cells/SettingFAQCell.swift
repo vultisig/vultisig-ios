@@ -37,13 +37,13 @@ struct SettingFAQCell: View {
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
     }
 
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
             .font(Theme.fonts.footnote)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var chevron: some View {

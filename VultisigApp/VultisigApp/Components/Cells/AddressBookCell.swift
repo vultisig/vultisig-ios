@@ -72,7 +72,7 @@ struct AddressBookCell: View {
 
     var titleContent: some View {
         Text(address.title)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .lineLimit(1)
             .truncationMode(.tail)
@@ -80,7 +80,7 @@ struct AddressBookCell: View {
 
     var addressContent: some View {
         Text(address.address)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.middle)

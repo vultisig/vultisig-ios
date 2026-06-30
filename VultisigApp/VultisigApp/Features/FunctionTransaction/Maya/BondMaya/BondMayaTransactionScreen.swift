@@ -76,11 +76,11 @@ struct BondMayaTransactionScreen: View {
                         HStack {
                             Text("availableLPUnits".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                             Spacer()
                             Text(availableUnits)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                             Button(
                                 action: {
                                     viewModel.lpUnitsField.value = availableUnits
@@ -88,7 +88,7 @@ struct BondMayaTransactionScreen: View {
                                 label: {
                                     Text("max".localized)
                                         .font(Theme.fonts.caption12)
-                                        .foregroundColor(Theme.colors.alertInfo)
+                                        .foregroundStyle(Theme.colors.alertInfo)
                                 }
                             )
                         }
@@ -99,11 +99,11 @@ struct BondMayaTransactionScreen: View {
                         HStack {
                             Text("estimatedBondValue".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                             Spacer()
                             Text("\(cacaoValue.formatted()) CACAO")
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                     }
                 }

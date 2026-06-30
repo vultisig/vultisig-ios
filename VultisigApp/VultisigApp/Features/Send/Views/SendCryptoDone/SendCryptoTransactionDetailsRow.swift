@@ -35,7 +35,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
         VStack(alignment: .trailing, spacing: 16) {
             HStack(spacing: 2) {
                 Text(NSLocalizedString(title, comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(minWidth: 52, alignment: .leading)
@@ -87,7 +87,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
             accessoryView()
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 }
 

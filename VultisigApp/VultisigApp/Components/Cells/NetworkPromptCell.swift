@@ -19,11 +19,11 @@ struct NetworkPromptCell: View {
         HStack(spacing: 8) {
             network.getImage()
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(Theme.colors.bgButtonPrimary)
+                .foregroundStyle(Theme.colors.bgButtonPrimary)
 
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -36,11 +36,11 @@ struct NetworkPromptCell: View {
         HStack(spacing: 8) {
             network.getImage()
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(Theme.colors.bgButtonPrimary)
+                .foregroundStyle(Theme.colors.bgButtonPrimary)
 
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)

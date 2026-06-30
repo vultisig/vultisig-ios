@@ -178,7 +178,7 @@ struct SettingsMainScreen: View {
     var appVersion: some View {
         Text(Bundle.main.appVersionString)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
             .scaleEffect(scale)
             .onTapGesture {
                 handleVersionTap()

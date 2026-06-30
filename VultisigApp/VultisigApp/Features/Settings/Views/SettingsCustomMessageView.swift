@@ -91,10 +91,10 @@ struct SettingsCustomMessageView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
             Text(value)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
@@ -137,7 +137,7 @@ struct SettingsCustomMessageView: View {
         HStack {
             Text(text)
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
 
             Spacer()
         }

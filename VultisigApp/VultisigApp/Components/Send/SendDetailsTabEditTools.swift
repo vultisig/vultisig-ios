@@ -21,7 +21,7 @@ struct SendDetailsTabEditTools: View {
 
     var checkmark: some View {
         Image(systemName: "checkmark.circle")
-            .foregroundColor(Theme.colors.alertSuccess)
+            .foregroundStyle(Theme.colors.alertSuccess)
     }
 
     var editButton: some View {
@@ -34,6 +34,6 @@ struct SendDetailsTabEditTools: View {
 
     var editLabel: some View {
         Image(systemName: "pencil")
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 }

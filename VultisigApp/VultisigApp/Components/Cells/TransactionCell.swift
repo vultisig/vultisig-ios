@@ -43,19 +43,19 @@ struct TransactionCell: View {
             Text(NSLocalizedString(title, comment: "Transaction ID"))
         }
         .font(Theme.fonts.bodyLMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var content: some View {
         Text(id)
             .font(Theme.fonts.footnote)
-            .foregroundColor(Theme.colors.bgButtonPrimary)
+            .foregroundStyle(Theme.colors.bgButtonPrimary)
             .multilineTextAlignment(.leading)
     }
 
     var chevron: some View {
         Image(systemName: "chevron.forward")
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
 }

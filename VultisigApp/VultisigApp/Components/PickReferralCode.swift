@@ -26,7 +26,7 @@ struct PickReferralCode: View {
 
     var pickReferralTitle: some View {
         Text(NSLocalizedString("pickReferralCode", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -61,12 +61,12 @@ struct PickReferralCode: View {
         if let status = viewModel.availabilityStatus {
             HStack {
                 Text(NSLocalizedString("status", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
 
                 Spacer()
 
                 Text(status.description)
-                    .foregroundColor(status.color)
+                    .foregroundStyle(status.color)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
                     .cornerRadius(24)

@@ -47,7 +47,7 @@ struct SettingSelectionCell: View {
     var titleBlock: some View {
         Text(title)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var chevron: some View {
@@ -56,7 +56,7 @@ struct SettingSelectionCell: View {
             .aspectRatio(contentMode: .fit)
             .frame(width: 6, height: 6)
             .padding(5)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .background(Circle().fill(Theme.colors.primaryAccent3))
             .showIf(isSelected)
     }
@@ -64,7 +64,7 @@ struct SettingSelectionCell: View {
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
     }
 }
 

@@ -41,9 +41,9 @@ struct FormSectionHeader<ValueView: View>: View {
                         Spacer()
                         HStack {
                             Image(systemName: "checkmark.circle")
-                                .foregroundColor(Theme.colors.alertSuccess)
+                                .foregroundStyle(Theme.colors.alertSuccess)
                             Image(systemName: "pencil")
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                     }
                 case .picker:

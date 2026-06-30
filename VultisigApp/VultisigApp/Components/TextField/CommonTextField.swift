@@ -83,7 +83,7 @@ struct CommonTextField<TrailingView: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             if let label {
                 Text(label)
-                    .foregroundColor(labelColor)
+                    .foregroundStyle(labelColor)
                     .font(labelFont)
             }
 
@@ -91,7 +91,7 @@ struct CommonTextField<TrailingView: View>: View {
                 HStack {
                     textFieldContainer
                         .font(Theme.fonts.bodyMRegular)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                         .submitLabel(.done)
                         .colorScheme(.dark)
                         .frame(maxWidth: .infinity)
@@ -115,7 +115,7 @@ struct CommonTextField<TrailingView: View>: View {
 
                 if let error, showErrorText {
                     Text(error.localized)
-                        .foregroundColor(Theme.colors.alertError)
+                        .foregroundStyle(Theme.colors.alertError)
                         .font(Theme.fonts.footnote)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)

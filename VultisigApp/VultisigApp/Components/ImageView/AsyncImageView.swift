@@ -91,7 +91,7 @@ struct AsyncImageView: View {
             .font(Theme.fonts.bodyMMedium)
             .frame(width: size.width, height: size.height)
             .background(Color.white)
-            .foregroundColor(Theme.colors.bgSurface1)
+            .foregroundStyle(Theme.colors.bgSurface1)
             .cornerRadius(100)
     }
 }

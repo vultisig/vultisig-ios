@@ -39,7 +39,7 @@ struct ReviewDeviceCell: View {
             if isThisDevice {
                 Text("\(deviceName) ") +
                 Text("(\(NSLocalizedString("thisDevice", comment: "").lowercased()))")
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             } else {
                 Text(deviceName)
             }

@@ -19,7 +19,7 @@ struct NavigationHelpButton: View {
     var image: some View {
         Image(systemName: "questionmark.circle")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
+            .foregroundStyle(tint)
     }
 }
 
