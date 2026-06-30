@@ -2,16 +2,18 @@
 //  SolanaWithdrawTransactionViewModel.swift
 //  VultisigApp
 //
-//  Form view-model for the Solana withdraw flow. The stake account is
+//  Models the Solana withdraw amount + cooldown gate. The stake account is
 //  pre-selected by the caller. Withdraw is a TRUE full withdraw: it moves the
 //  account's entire balance (delegated stake + auto-compounded rewards + the
 //  refundable rent-exempt reserve) back to the wallet, closing the now-empty
 //  stake account on-chain — there's no amount field and no rewards-claim op.
 //
-//  The Continue CTA is DISABLED until the account is fully inactive: on load
-//  the VM reads the live epoch and runs `SolanaEpochCooldownGate`. While the
-//  account is still cooling down, the CTA stays disabled and a "available to
-//  withdraw in N epochs (~M days)" notice is shown.
+//  The withdraw has no editable field, so the DeFi row (gated on full
+//  inactivity) builds the tx and pushes straight to Verify rather than
+//  rendering a confirm screen. This type retains the full-withdraw lamports
+//  math and the live-epoch `SolanaEpochCooldownGate` evaluation as the tested
+//  model for that contract: `transactionBuilder` stays `nil` until the account
+//  is fully inactive, so a still-cooling account can never produce a builder.
 //
 
 import Foundation
@@ -132,37 +134,5 @@ final class SolanaWithdrawTransactionViewModel: ObservableObject, Form {
             stakeAccount: stakeAccount.pubkey,
             amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
         )
-    }
-}
-
-// MARK: - StakingFormViewModel
-
-extension SolanaWithdrawTransactionViewModel: StakingFormViewModel {
-    var titleKey: String { "solanaStakingWithdrawTitle" }
-
-    var isContinueDisabled: Bool { !isWithdrawable || !hasSufficientBalanceForFee }
-
-    var readOnlyRows: [StakingReadOnlyRow] {
-        [
-            StakingReadOnlyRow(
-                title: "solanaStakingStakeAccount".localized,
-                value: stakeAccount.pubkey
-            ),
-            StakingReadOnlyRow(
-                title: "solanaStakingWithdrawableAmount".localized,
-                value: "\(withdrawableAmount.formatToDecimal(digits: coin.decimals)) \(coin.ticker)"
-            )
-        ]
-    }
-
-    var notices: [StakingNotice] {
-        var result: [StakingNotice] = []
-        if let cooldownMessage {
-            result.append(.info(cooldownMessage))
-        }
-        if !hasSufficientBalanceForFee {
-            result.append(.insufficientFee(ticker: coin.ticker))
-        }
-        return result
     }
 }

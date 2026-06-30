@@ -215,28 +215,6 @@ struct FunctionTransactionScreen: View {
                         )
                     }
                 }
-            case .solanaUnstake(let coin, let stakeAccount):
-                resolvingCoin(coinMeta: coin) { coin in
-                    StakingTransactionScreen(
-                        viewModel: SolanaUnstakeTransactionViewModel(
-                            coin: coin,
-                            vault: vault,
-                            stakeAccount: stakeAccount
-                        ),
-                        onVerify: onVerify
-                    ) { _, _ in EmptyView() }
-                }
-            case .solanaWithdraw(let coin, let stakeAccount):
-                resolvingCoin(coinMeta: coin) { coin in
-                    StakingTransactionScreen(
-                        viewModel: SolanaWithdrawTransactionViewModel(
-                            coin: coin,
-                            vault: vault,
-                            stakeAccount: stakeAccount
-                        ),
-                        onVerify: onVerify
-                    ) { _, _ in EmptyView() }
-                }
             case .tonStake(let coin, let poolAddress, let poolImplementation):
                 resolvingCoin(coinMeta: coin) { coin in
                     TonStakeTransactionScreen(

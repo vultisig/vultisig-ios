@@ -296,18 +296,29 @@ struct DefiChainMainScreen: View {
             },
             onUnstake: { row in
                 // Persist-light: only a live stake account (from the completed
-                // refresh) may feed signing — a seed projection never does.
-                guard let stakeAccount = row.stakeAccount else { return }
-                onTransactionToPresent(.solanaUnstake(
-                    coin: coin.toCoinMeta(),
-                    stakeAccount: stakeAccount
+                // refresh) may feed signing — a seed projection never does. The
+                // row already gates Unstake on an active/activating delegation
+                // and the deactivate flow has no editable field, so skip the
+                // redundant confirm screen and go straight to Verify.
+                guard let stakeAccount = row.stakeAccount, row.canUnstake else { return }
+                presentVerify(for: SolanaUnstakeTransactionBuilder(
+                    coin: coin,
+                    stakeAccount: stakeAccount.pubkey
                 ))
             },
             onWithdraw: { row in
-                guard let stakeAccount = row.stakeAccount else { return }
-                onTransactionToPresent(.solanaWithdraw(
-                    coin: coin.toCoinMeta(),
-                    stakeAccount: stakeAccount
+                // The row gates Withdraw on a fully-inactive (cooled-down)
+                // account — `canWithdraw` IS the cooldown guard, so a still-
+                // cooling account never reaches here. A full withdraw has no
+                // editable field, so skip the confirm screen: build from the
+                // live account's whole balance and go straight to Verify.
+                guard let stakeAccount = row.stakeAccount, row.canWithdraw else { return }
+                let divisor = pow(Decimal(10), coin.decimals)
+                let withdrawableAmount = Decimal(stakeAccount.lamports) / divisor
+                presentVerify(for: SolanaWithdrawTransactionBuilder(
+                    coin: coin,
+                    stakeAccount: stakeAccount.pubkey,
+                    amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
                 ))
             }
         )
@@ -465,6 +476,28 @@ struct DefiChainMainScreen: View {
                 vault: vault,
                 transactionType: type
             ))
+        }
+    }
+
+    /// Builds the unsigned tx and pushes straight to Verify — used by the Solana
+    /// unstake/withdraw rows, which have no editable field and are already gated
+    /// upstream (active/activating for unstake, fully inactive for withdraw), so
+    /// the intermediate confirm screen would be redundant. Mirrors
+    /// `FunctionTransactionScreen.onVerify`: pre-fetch the chain-specific gas so
+    /// Verify shows the fee immediately; it is re-fetched there anyway, so a
+    /// failure here is non-fatal.
+    func presentVerify(for builder: TransactionBuilder) {
+        Task { @MainActor in
+            isLoading = true
+            defer { isLoading = false }
+            var sendTx = builder.buildSendTransaction(vault: vault)
+            do {
+                let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
+                sendTx = sendTx.copy(gas: chainSpecific.gas)
+            } catch {
+                // Non-fatal: gas is re-fetched during Verify.
+            }
+            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }
 }

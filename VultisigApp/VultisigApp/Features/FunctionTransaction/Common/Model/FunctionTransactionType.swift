@@ -23,13 +23,11 @@ enum FunctionTransactionType: Hashable {
     case cosmosWithdrawRewards(coin: CoinMeta, validators: [CosmosWithdrawRewardsCandidate])
     /// Solana native-staking delegate (stake). The user picks a validator vote
     /// account and amount; the app builds + signs a create-and-delegate tx.
+    ///
+    /// Note: Solana unstake/withdraw are NOT routed here — they have no editable
+    /// field, so `DefiChainMainScreen` builds the tx and pushes straight to
+    /// Verify, skipping the confirm screen.
     case solanaDelegate(coin: CoinMeta)
-    /// Solana native-staking deactivate (unstake). Begins the ~1-epoch cooldown
-    /// on `stakeAccount`; carries no amount — the whole account cools down.
-    case solanaUnstake(coin: CoinMeta, stakeAccount: SolanaStakeAccount)
-    /// Solana native-staking withdraw. Moves the cooled-down lamports from
-    /// `stakeAccount` back to the wallet; the CTA is gated on full inactivity.
-    case solanaWithdraw(coin: CoinMeta, stakeAccount: SolanaStakeAccount)
     /// TON nominator-pool stake. `poolAddress`/`poolImplementation` are the
     /// existing pool for add-more, or `nil` for a first-time stake (the picker
     /// supplies the pool, whose implementation resolves the deposit comment).
@@ -68,10 +66,6 @@ enum FunctionTransactionType: Hashable {
         case .cosmosWithdrawRewards(let coin, _):
             return [coin]
         case .solanaDelegate(let coin):
-            return [coin]
-        case .solanaUnstake(let coin, _):
-            return [coin]
-        case .solanaWithdraw(let coin, _):
             return [coin]
         case .tonStake(let coin, _, _):
             return [coin]

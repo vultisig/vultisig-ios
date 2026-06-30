@@ -77,41 +77,10 @@ final class StakingFormViewModelDescriptorTests: XCTestCase {
         XCTAssertTrue(vm.readOnlyRows.isEmpty)
     }
 
-    // MARK: - Solana unstake
-
-    func testSolanaUnstakeDescriptor() {
-        let vm = SolanaUnstakeTransactionViewModel(
-            coin: Self.solanaCoin(balance: 5),
-            vault: .example,
-            stakeAccount: Self.stakeAccount(pubkey: "StakeAcc1")
-        )
-
-        XCTAssertEqual(vm.titleKey, "solanaStakingUnstakeTitle")
-        XCTAssertNil(vm.amountSpec, "unstake is confirm-only")
-        XCTAssertNil(vm.pickerSpec)
-        XCTAssertEqual(vm.readOnlyRows.map(\.value), ["StakeAcc1"])
-        // The cooldown info banner is always present; the fee notice only when short.
-        XCTAssertEqual(vm.notices.count, 1)
-        guard case .info = vm.notices.first else { return XCTFail("unstake surfaces the cooldown info notice") }
-    }
-
-    // MARK: - Solana withdraw
-
-    func testSolanaWithdrawDescriptor() {
-        let vm = SolanaWithdrawTransactionViewModel(
-            coin: Self.solanaCoin(balance: 5),
-            vault: .example,
-            stakeAccount: Self.stakeAccount(pubkey: "StakeAcc2")
-        )
-
-        XCTAssertEqual(vm.titleKey, "solanaStakingWithdrawTitle")
-        XCTAssertNil(vm.amountSpec)
-        XCTAssertNil(vm.pickerSpec)
-        XCTAssertEqual(vm.readOnlyRows.count, 2, "stake account + withdrawable amount rows")
-        XCTAssertEqual(vm.readOnlyRows.first?.value, "StakeAcc2")
-        // Cooldown not yet evaluated (no onLoad) → not withdrawable → Continue disabled.
-        XCTAssertTrue(vm.isContinueDisabled)
-    }
+    // Note: Solana unstake/withdraw no longer route through the generic
+    // `StakingTransactionScreen` — they have no editable field, so the DeFi
+    // screen builds the tx and pushes straight to Verify. There is no descriptor
+    // to pin for them.
 
     // MARK: - Fixtures
 
@@ -151,21 +120,5 @@ final class StakingFormViewModelDescriptorTests: XCTestCase {
         )
         coin.rawBalance = String(describing: NSDecimalNumber(decimal: balance * 1_000_000_000))
         return coin
-    }
-
-    private static func stakeAccount(pubkey: String) -> SolanaStakeAccount {
-        SolanaStakeAccount(
-            pubkey: pubkey,
-            lamports: 3_000_000_000,
-            rentExemptReserve: 2_282_880,
-            staker: "Owner",
-            withdrawer: "Owner",
-            delegation: SolanaStakeAccount.Delegation(
-                votePubkey: "Vote1",
-                activationEpoch: 100,
-                deactivationEpoch: SolanaStakingConfig.epochSentinel,
-                stake: 2_000_000_000
-            )
-        )
     }
 }
