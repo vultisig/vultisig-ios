@@ -94,6 +94,50 @@ final class ChainDetailViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.filteredTokens.isEmpty)
     }
 
+    // MARK: - qbtcClaimBitcoinCoin (claim entry-point BTC resolution)
+
+    /// Valid keys that derive a Bitcoin (ECDSA) address via WalletCore.
+    private static let pubKeyECDSA = "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b"
+    private static let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
+
+    func test_qbtcClaimBitcoinCoin_onBitcoinScreenReturnsNativeCoin() {
+        let btc = makeCoin(ticker: "BTC", chain: .bitcoin, isNative: true)
+        let vault = Vault(name: "test")
+        vault.coins = [btc]
+
+        let viewModel = ChainDetailViewModel(vault: vault, nativeCoin: btc)
+
+        XCTAssertEqual(viewModel.qbtcClaimBitcoinCoin()?.chain, .bitcoin)
+    }
+
+    func test_qbtcClaimBitcoinCoin_onQbtcScreenUsesEnabledBtc() {
+        let btc = makeCoin(ticker: "BTC", chain: .bitcoin, isNative: true)
+        let qbtc = makeCoin(ticker: "QBTC", chain: .qbtc, isNative: true)
+        let vault = Vault(name: "test")
+        vault.coins = [btc, qbtc]
+
+        let viewModel = ChainDetailViewModel(vault: vault, nativeCoin: qbtc)
+
+        XCTAssertEqual(viewModel.qbtcClaimBitcoinCoin()?.address, btc.address)
+    }
+
+    /// On the QBTC screen with the Bitcoin chain not enabled, the BTC coin
+    /// is derived in-memory so the Claim entry point still appears.
+    func test_qbtcClaimBitcoinCoin_derivesBtcWhenChainNotEnabled() {
+        let qbtc = makeCoin(ticker: "QBTC", chain: .qbtc, isNative: true)
+        let vault = Vault(name: "test")
+        vault.pubKeyECDSA = Self.pubKeyECDSA
+        vault.hexChainCode = Self.hexChainCode
+        vault.coins = [qbtc]
+
+        let viewModel = ChainDetailViewModel(vault: vault, nativeCoin: qbtc)
+
+        let derived = viewModel.qbtcClaimBitcoinCoin()
+        XCTAssertEqual(derived?.chain, .bitcoin)
+        XCTAssertEqual(derived?.isNativeToken, true)
+        XCTAssertFalse(derived?.address.isEmpty ?? true)
+    }
+
     // MARK: - Helpers
 
     private func makeCoin(ticker: String, chain: Chain, isNative: Bool) -> Coin {

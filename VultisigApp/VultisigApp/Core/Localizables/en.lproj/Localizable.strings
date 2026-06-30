@@ -181,13 +181,13 @@
 "circleDepositAmount" = "Amount";
 "circleDepositBalanceAvailable" = "Balance available:";
 "circleDepositContinue" = "Continue";
+"circleDepositsDisabled" = "Circle deposits are disabled";
 "circleDepositTitle" = "Deposit USDC";
 "circleErrorInvalidDetails" = "Invalid details";
 "circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";
 "circleEthereumRequired" = "Ethereum Required";
 "circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
-"circleRewardsDescription" = "Rewards are automatically credited to your balance.";
-"circleRewardsTitle" = "Rewards";
+"circleNoSeparateClaimStep" = "Circle has no separate claim step";
 "circleRowCreateWallet" = "Create Wallet";
 "circleRowGetStarted" = "Get Started";
 "circleRowYieldAccount" = "Yield Account";
@@ -197,6 +197,7 @@
 "circleSetupDeposited" = "Deposited";
 "circleSetupInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
 "circleSetupOpenAccount" = "Open Account";
+"circleStaticApy" = "1%";
 "circleTitle" = "Circle";
 "circleUSDCDeposited" = "USDC deposited";
 "circleWithdrawAmountLabel" = "Amount";
@@ -329,8 +330,6 @@
 "devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
-"dilithiumAlreadyGeneratedSubtitle" = "This vault already has an MLDSA-44 post-quantum key generated. No further action is needed.";
-"dilithiumAlreadyGeneratedTitle" = "Post-Quantum Key Active";
 "dilithiumKeygen" = "Post-Quantum Key";
 "dilithiumKeygenSubtitle" = "Generate MLDSA-44 key for quantum resistance";
 "directSign" = "Direct Sign";
@@ -860,6 +859,8 @@
 "qbtcClaimUnavailableDetail" = "Claiming is currently disabled by the chain. Please try again later.";
 "qbtcClaimUnavailableTitle" = "Claim unavailable";
 "qbtcClaimUnsupportedAddressTitle" = "Unsupported address";
+"qbtcClaimUnsupportedVaultDetail" = "Claiming QBTC isn't supported on this vault's older key type. Upgrade your vault, then try claiming again.";
+"qbtcClaimUnsupportedVaultTitle" = "Vault upgrade required";
 "qbtcClaimUtxoBlockFormat" = "Block #%d";
 "qbtcClaimUtxoPending" = "Pending confirmation";
 "quantumSecurityFeatureClaimSubtitle" = "Once generated, your eligible BTC UTXOs appear as claimable QBTC at a 1:1 ratio.";
@@ -1123,6 +1124,7 @@
 "swapErrorUnexpectedTitle" = "Unexpected Error";
 "swapFee" = "Swap Fee";
 "swapFeePercentage" = "Swap Fee (%.2f%%)";
+"swapInsufficientTokenBalance" = "Insufficient %@ balance";
 "swapKitErrorAddressScreening" = "Address screening failed — contact support";
 "swapKitErrorApiKeyInvalid" = "SwapKit API key is invalid";
 "swapKitErrorApiKeyMissing" = "SwapKit API key not configured";
@@ -1403,6 +1405,17 @@
 "x" = "X (Twitter)";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
+"yieldClaimAmount" = "Claim %@";
+"yieldClaimAvailableInDays" = "Claim available in %d Days";
+"yieldEstMonthly" = "Est. monthly";
+"yieldEstYearly" = "Est. yearly";
+"yieldMinimumDeposit" = "Minimum deposit is %@ %@.";
+"yieldNextRedemption" = "Next redemption";
+"yieldRedemptionClaimable" = "The redemption window has closed. Your USDC is ready to be withdrawn to your vault.";
+"yieldRedemptionPending" = "Your request has been submitted. Funds will be claimable after the redemption window closes.";
+"yieldRedemptionWindowNote" = "Your funds will be available to claim once the redemption period ends.";
+"yieldSharesTicker" = "Shares ticker";
+"yieldVerifyApproveCheck" = "I understand a separate approval transaction will be signed and broadcast first.";
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";

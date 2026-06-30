@@ -75,7 +75,8 @@ struct AppMigrationService {
     private func getAllMigrations() -> [AppMigration] {
         return [
             THORChainDuplicateTokensMigration(),
-            TonGramRebrandMigration()
+            TonGramRebrandMigration(),
+            PromoBannerDismissalMigration()
         ]
     }
 }

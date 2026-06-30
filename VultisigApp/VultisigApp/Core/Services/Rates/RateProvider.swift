@@ -123,6 +123,14 @@ final class RateProvider {
         return rates.first(where: { $0.id == identifier })
     }
 
+    func hasRate(for coin: Coin, currency: SettingsCurrency = .current) -> Bool {
+        rate(for: coin, currency: currency) != nil
+    }
+
+    func hasRate(for coin: CoinMeta, currency: SettingsCurrency = .current) -> Bool {
+        rate(for: coin, currency: currency) != nil
+    }
+
     @MainActor func save(rates newRates: [Rate]) throws {
         // if a rate is newer , we use the newer one
         let newRateIds = Set(newRates.map { $0.id })

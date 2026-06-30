@@ -25,9 +25,21 @@ final class Vault: ObservableObject, Codable {
     var order: Int = 0
     var isBackedUp: Bool = false
     var libType: LibType? = LibType.GG20
+    /// Deprecated: legacy per-vault promo-banner dismissals. Superseded by the
+    /// app-wide `PromoBannerDismissalStore`; read only once at launch by
+    /// `PromoBannerDismissalMigration`. Kept in the schema to avoid a SwiftData
+    /// migration; remove behind a versioned schema stage in a later release.
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
-    var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
+    /// Yield providers the user enabled in the DeFi tab, stored as raw
+    /// `DefiYieldProviderID` values so adding a provider needs no new column.
+    /// Use `isDefiProviderEnabled(_:)` / `setDefiProvider(_:enabled:)`.
+    var enabledDefiProviders: [String] = []
+    /// Set once `enabledDefiProviders` has been backfilled from the legacy flags.
+    var didMigrateDefiProviders: Bool = false
+    // Legacy per-provider toggle — superseded by `enabledDefiProviders`; retained
+    // as the migration source and for backup back-compat, not read by feature code.
+    var isCircleEnabled: Bool = true
 
     // FastVault eligibility cache — populated by FastVaultEligibilityRefresher on
     // app foreground + vault switch. Reads are sync; refresh happens at planned
@@ -48,6 +60,10 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     @Relationship(deleteRule: .cascade) var circlePosition: CirclePosition?
+    // Generalized yield-vault position cache, keyed (providerID, pubKeyECDSA).
+    // `circlePosition` is retained for the one-time migration backfill of
+    // pre-existing Circle rows; new reads/writes go here.
+    @Relationship(deleteRule: .cascade) var yieldPositions: [YieldPosition] = []
     @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
 
     enum CodingKeys: CodingKey {
@@ -64,6 +80,7 @@ final class Vault: ObservableObject, Codable {
         case libType
         case defiChains
         case isCircleEnabled
+        case enabledDefiProviders
         case defiPositions
         case activeBondedNodes
         case stakePositions
@@ -86,6 +103,15 @@ final class Vault: ObservableObject, Codable {
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .DKLS
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
+        if let providers = try container.decodeIfPresent([String].self, forKey: .enabledDefiProviders) {
+            enabledDefiProviders = providers
+            didMigrateDefiProviders = true
+        } else {
+            // Legacy backup (pre-array): the flags above drive reads until the
+            // one-time backfill runs.
+            enabledDefiProviders = []
+            didMigrateDefiProviders = false
+        }
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
@@ -132,13 +158,60 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(circleWalletAddress, forKey: .circleWalletAddress)
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
-        try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
+        // Encode the effective (post-migration) state under the legacy keys so
+        // older app versions importing this backup still read the right toggles.
+        try container.encode(isDefiProviderEnabled(.circle), forKey: .isCircleEnabled)
+        // Encode the effective provider set, not the raw (possibly-unmigrated,
+        // empty) buffer — otherwise importing a pre-backfill backup would decode
+        // an empty array as authoritative and drop the legacy-enabled providers.
+        try container.encode(currentDefiProviders(), forKey: .enabledDefiProviders)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 
     func setOrder(_ index: Int) {
         order = index
+    }
+
+    // MARK: - DeFi yield providers
+
+    /// Whether the user enabled a yield provider in the DeFi tab. Reads the
+    /// migrated array, falling back to the legacy flags until the backfill runs.
+    func isDefiProviderEnabled(_ id: DefiYieldProviderID) -> Bool {
+        currentDefiProviders().contains(id.rawValue)
+    }
+
+    /// Enables or disables a yield provider, migrating the legacy flags into the
+    /// array on first write.
+    func setDefiProvider(_ id: DefiYieldProviderID, enabled: Bool) {
+        var providers = currentDefiProviders()
+        providers.removeAll { $0 == id.rawValue }
+        if enabled {
+            providers.append(id.rawValue)
+        }
+        enabledDefiProviders = providers
+        didMigrateDefiProviders = true
+    }
+
+    /// One-time backfill of `enabledDefiProviders` from the legacy per-provider
+    /// flags. Returns `true` when it performed the migration so the caller can
+    /// persist. Idempotent.
+    @discardableResult
+    func migrateLegacyDefiProvidersIfNeeded() -> Bool {
+        guard !didMigrateDefiProviders else { return false }
+        enabledDefiProviders = legacyDefiProviders()
+        didMigrateDefiProviders = true
+        return true
+    }
+
+    private func currentDefiProviders() -> [String] {
+        didMigrateDefiProviders ? enabledDefiProviders : legacyDefiProviders()
+    }
+
+    private func legacyDefiProviders() -> [String] {
+        var providers: [String] = []
+        if isCircleEnabled { providers.append(DefiYieldProviderID.circle.rawValue) }
+        return providers
     }
 
     func getThreshold() -> Int {
@@ -247,6 +320,21 @@ final class Vault: ObservableObject, Codable {
         case .GG20, .DKLS, nil:
             true
         case .KeyImport:
+            false
+        }
+    }
+
+    /// The QBTC claim signs its BTC ECDSA round exclusively via DKLS (see
+    /// `QBTCClaimRoundRunner`). GG20 keyshares can't take part in that
+    /// ceremony — a GG20 vault that tries to claim hangs and fails with a
+    /// DKLS "fail to download setup message" error — so the claim flow is
+    /// limited to DKLS-family vaults. A nil `libType` is a legacy GG20
+    /// vault and is therefore unsupported.
+    var supportsQbtcClaim: Bool {
+        switch libType {
+        case .DKLS, .KeyImport:
+            true
+        case .GG20, nil:
             false
         }
     }

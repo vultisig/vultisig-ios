@@ -30,7 +30,11 @@ class VaultDetailViewModel: ObservableObject {
     // until the async refresh lands (~250ms debounce + network round trip).
     private var chainsVaultPubKeyECDSA: String?
 
-    @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
+    private let bannerStore: PromoBannerDismissalStoring
+
+    init(bannerStore: PromoBannerDismissalStoring = PromoBannerDismissalStore.shared) {
+        self.bannerStore = bannerStore
+    }
 
     func filteredChains(in vault: Vault) -> [Chain] {
         logic.filteredChains(searchText: searchText, chains: chains, vault: vault)
@@ -102,42 +106,18 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     func setupBanners(for vault: Vault) {
-        vaultBanners = logic.setupBanners(for: vault, appClosedBanners: appClosedBanners)
+        vaultBanners = logic.setupBanners(for: vault, store: bannerStore)
     }
 
     @MainActor
     func removeBanner(for vault: Vault, banner: VaultBannerType) {
-        guard !banner.isAppBanner else {
-            appClosedBanners.append(banner.rawValue)
-            setupBanners(for: vault)
-            return
-        }
-
-        // `.buyVult` is only dismissed permanently once the vault holds at least
-        // the Silver-tier VULT amount. Below that, skip persistence so the banner
-        // returns the next time the user opens the vault screen (the carousel has
-        // already hidden it for the current visit).
-        if banner == .buyVult, !hasReachedSilverTier(vault: vault) {
-            return
-        }
-
-        vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
-        do {
-            try Storage.shared.save()
-            setupBanners(for: vault)
-        } catch {
-            print("Error while saving closedBanners for vault", error.localizedDescription)
-        }
+        bannerStore.dismiss(banner, now: Date())
+        setupBanners(for: vault)
     }
 
     func canShowChainSelection(vault: Vault) -> Bool {
         // Vault cannot change chains for KeyImport for now
         vault.libType != .KeyImport
-    }
-
-    private func hasReachedSilverTier(vault: Vault) -> Bool {
-        let vultBalance = VultTierService().getVultToken(for: vault)?.balanceDecimal ?? 0
-        return vultBalance >= VultDiscountTier.silver.balanceToUnlock
     }
 }
 
@@ -215,23 +195,21 @@ struct VaultDetailLogic {
         return chains.first
     }
 
-    func setupBanners(for vault: Vault, appClosedBanners: [String]) -> [VaultBannerType] {
+    func setupBanners(
+        for vault: Vault,
+        store: PromoBannerDismissalStoring,
+        now: Date = Date()
+    ) -> [VaultBannerType] {
         return VaultBannerType.allCases
             .filter { banner in
-                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
-                    return false
-                } else if vault.closedBanners.contains(banner.rawValue) {
-                    return false
-                }
+                guard !store.isDismissed(banner, now: now) else { return false }
 
                 switch banner {
                 case .backupVault:
                     return !vault.isBackedUp
                 case .upgradeVault:
                     return vault.libType == .GG20
-                case .buyVult:
-                    return true
-                case .followVultisig:
+                case .buyVult, .followVultisig:
                     return true
                 }
             }
