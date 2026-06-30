@@ -70,10 +70,12 @@ struct JupiterService {
         // tier discount, floored at 0.
         let platformFeeBps = Self.platformFeeBps(vultTierDiscount: vultTierDiscount)
 
+        let feeMint = Self.feeMint(inputMint: inputMint, outputMint: outputMint)
+
         // Derive + verify the fee ATA off the signed path. Skip entirely when
         // there's no fee to collect (fully-discounted user).
         let feeAccount = platformFeeBps > 0
-            ? try await resolveFeeAccount(outputMint: outputMint)
+            ? try await resolveFeeAccount(mint: feeMint)
             : nil
 
         let params = JupiterQuoteParams(
@@ -97,7 +99,14 @@ struct JupiterService {
             feeAccount: feeAccount
         )
 
-        let platformFee = platformFeeDecimal(from: quoteResponse, toCoin: toCoin)
+        // `platformFee` is denominated in the fee mint. Surface it for display
+        // only when the fee mint is the output mint (so it's in `toCoin` units);
+        // for the input-mint case (native-SOL outputs) it would be
+        // mis-denominated, so omit it. Ranking uses `outAmount` (already net of
+        // the fee) regardless of which mint the fee is taken in.
+        let platformFee = feeMint == outputMint
+            ? platformFeeDecimal(from: quoteResponse, toCoin: toCoin)
+            : nil
 
         let evmQuote = EVMQuote(
             dstAmount: quoteResponse.outAmount,
@@ -124,20 +133,30 @@ struct JupiterService {
     static func platformFeeBps(vultTierDiscount: Int) -> Int {
         max(0, LiFiService.integratorFeeBps - vultTierDiscount)
     }
+
+    /// The mint the affiliate fee is collected in. For ExactIn, Jupiter allows
+    /// the fee account to be the input OR output mint. We use the output mint,
+    /// except for native-SOL outputs (wrapped SOL) where the fee owner holds no
+    /// wSOL ATA and collecting in wSOL would need unwrapping — there we charge
+    /// the fee on the input mint instead, which works today without provisioning
+    /// a wSOL fee ATA.
+    static func feeMint(inputMint: String, outputMint: String) -> String {
+        outputMint == wrappedSolMint ? inputMint : outputMint
+    }
 }
 
 private extension JupiterService {
 
-    /// Derive the fee owner's ATA for the output mint and verify it exists
+    /// Derive the fee owner's ATA for the fee mint and verify it exists
     /// on-chain (read-only, off the signed path). Token-2022 mints derive a
     /// different ATA, detected by inspecting the mint account's owning program.
     /// Throws `feeAccountNotProvisioned` when the ATA isn't seeded yet so the
     /// fan-out drops Jupiter and LiFi serves the pair.
-    func resolveFeeAccount(outputMint: String) async throws -> String {
+    func resolveFeeAccount(mint: String) async throws -> String {
         // The mint account's owner program tells us whether it's Token-2022.
-        let (mintExists, isToken2022) = try await solanaService.checkAccountExists(address: outputMint)
+        let (mintExists, isToken2022) = try await solanaService.checkAccountExists(address: mint)
         guard mintExists else {
-            logger.info("[jupiter] output mint \(outputMint, privacy: .public) not found on-chain → drop Jupiter")
+            logger.info("[jupiter] fee mint \(mint, privacy: .public) not found on-chain → drop Jupiter")
             throw JupiterError.feeAccountUnavailable
         }
 
@@ -145,8 +164,8 @@ private extension JupiterService {
             throw JupiterError.feeAccountUnavailable
         }
         let derived = isToken2022
-            ? owner.token2022Address(tokenMintAddress: outputMint)
-            : owner.defaultTokenAddress(tokenMintAddress: outputMint)
+            ? owner.token2022Address(tokenMintAddress: mint)
+            : owner.defaultTokenAddress(tokenMintAddress: mint)
         guard let feeAccount = derived, !feeAccount.isEmpty else {
             throw JupiterError.feeAccountUnavailable
         }

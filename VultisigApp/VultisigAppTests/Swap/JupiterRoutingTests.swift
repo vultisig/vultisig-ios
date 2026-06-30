@@ -107,6 +107,16 @@ final class JupiterRoutingTests: XCTestCase {
         XCTAssertEqual(JupiterService.platformFeeBps(vultTierDiscount: 80), 0, "Floored at 0")
     }
 
+    func testFeeMintUsesInputForNativeSolOutput() {
+        let wsol = JupiterService.wrappedSolMint
+        let usdc = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        // SPL output → fee on the output mint (spec default).
+        XCTAssertEqual(JupiterService.feeMint(inputMint: wsol, outputMint: usdc), usdc)
+        // Native-SOL (wrapped SOL) output → fee on the INPUT mint, so we don't
+        // need a wSOL fee ATA and never accrue fees in wSOL.
+        XCTAssertEqual(JupiterService.feeMint(inputMint: usdc, outputMint: wsol), usdc)
+    }
+
     // MARK: - Quote params
 
     func testQuoteParamsIncludesPlatformFeeWhenPositive() {
