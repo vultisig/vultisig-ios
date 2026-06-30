@@ -25,7 +25,7 @@ struct TokenCellView: View {
                     Text(coin.ticker)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    Text(Decimal(coin.price).formatToFiat())
+                    Text(Decimal(coin.price).formatToFiatPrice())
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .padding(.vertical, 3)
