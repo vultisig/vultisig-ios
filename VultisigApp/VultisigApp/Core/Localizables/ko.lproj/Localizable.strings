@@ -1046,8 +1046,6 @@
 "sharesBalance" = "공유 ( 잔액: %@ )";
 "sharesLabel" = "공유";
 "shareTheApp" = "앱 공유";
-"shareVaultQR" = "볼트 QR 공유";
-"shareVaultQRInformation" = "이 QR 코드를 통해 볼트의 보기 전용 버전을 공유할 수 있습니다";
 "shouldOnlyTakeAMinute..." = "잠깐만 걸립니다";
 "showBalance" = "잔액 표시";
 "showHint" = "힌트 표시";

@@ -1048,8 +1048,6 @@
 "sharesBalance" = "Udjeli ( Stanje: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Podijelite aplikaciju";
-"shareVaultQR" = "Dijelite trezor QR";
-"shareVaultQRInformation" = "Ovaj QR kôd omogućuje vam dijeljenje verzije samo za prikaz vašeg trezora";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
 "showHint" = "Prikaži hint";

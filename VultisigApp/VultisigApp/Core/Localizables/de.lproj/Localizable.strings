@@ -1048,8 +1048,6 @@
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Die App teilen";
-"shareVaultQR" = "Vault qr teilen";
-"shareVaultQRInformation" = "Mit diesem QR-Code können Sie eine reine Ansichtsversion Ihres Tresors teilen";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "showBalance" = "Guthaben anzeigen";
 "showHint" = "Hinweis anzeigen";

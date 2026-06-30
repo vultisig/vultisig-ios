@@ -1048,8 +1048,6 @@
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Compartilhar o App";
-"shareVaultQR" = "Compartilhe Vault qr";
-"shareVaultQRInformation" = "Este código QR permite compartilhar uma versão apenas para visualização do seu cofre";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar dica";

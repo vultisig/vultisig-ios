@@ -70,9 +70,4 @@ struct SettingsRouteBuilder {
     func buildAdvancedSettingsScreen() -> some View {
         SettingsAdvancedView()
     }
-
-    @ViewBuilder
-    func buildVaultDetailQRCodeScreen(vault: Vault) -> some View {
-        VaultDetailQRCodeView(vault: vault)
-    }
 }

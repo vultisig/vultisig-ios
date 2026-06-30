@@ -1046,8 +1046,6 @@
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Share the App";
-"shareVaultQR" = "Share Vault QR";
-"shareVaultQRInformation" = "This QR Code lets you share a view-only version of your Vault";
 "shouldOnlyTakeAMinute..." = "This should only take a second";
 "showBalance" = "Show balance";
 "showHint" = "Show hint";

@@ -1048,8 +1048,6 @@
 "sharesBalance" = "Quote ( Saldo: %@ )";
 "sharesLabel" = "Quote";
 "shareTheApp" = "Condividi l'App";
-"shareVaultQR" = "Condividi Vault Qr";
-"shareVaultQRInformation" = "Questo codice QR ti consente di condividere una versione di sola vista del tuo Vault";
 "shouldOnlyTakeAMinute..." = "Dovrebbe richiedere solo un secondo";
 "showBalance" = "Mostra saldo";
 "showHint" = "Mostra suggerimento";

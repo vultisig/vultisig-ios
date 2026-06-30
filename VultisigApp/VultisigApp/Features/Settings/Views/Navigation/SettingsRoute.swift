@@ -20,5 +20,4 @@ enum SettingsRoute: Hashable {
     case faq
     case checkForUpdates
     case advancedSettings
-    case vaultDetailQRCode(vault: Vault)
 }
