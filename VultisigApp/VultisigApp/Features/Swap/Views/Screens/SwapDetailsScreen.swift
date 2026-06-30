@@ -281,7 +281,7 @@ struct SwapDetailsScreen: View {
                 .disabled(true)
                 .opacity(isFormValid ? 1 : 0.5)
         } else {
-            PrimaryButton(title: "continue") {
+            PrimaryButton(title: continueButtonTitle) {
                 guard let transaction = detailsViewModel.makeTransaction() else { return }
                 let retrySignal = SwapRetrySignal()
                 router.navigate(to: SwapRoute.verify(
@@ -293,6 +293,16 @@ struct SwapDetailsScreen: View {
             .disabled(isDisabled)
             .opacity(isFormValid ? 1 : 0.5)
         }
+    }
+
+    /// The Continue button stays disabled at insufficient balance; when a quote
+    /// is present we surface the insufficiency on the button label itself rather
+    /// than blocking the quote preview with an error tooltip.
+    var continueButtonTitle: String {
+        if detailsViewModel.balanceError != nil, detailsViewModel.quote != nil {
+            return String(format: "swapInsufficientTokenBalance".localized, detailsViewModel.fromCoin.ticker)
+        }
+        return "continue"
     }
 
     @ViewBuilder

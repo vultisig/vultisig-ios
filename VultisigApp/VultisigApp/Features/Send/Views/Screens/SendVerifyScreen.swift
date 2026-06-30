@@ -115,7 +115,8 @@ struct SendVerifyScreen: View {
                 isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
-                coinTicker: tx.coin.ticker
+                coinTicker: tx.coin.ticker,
+                keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload
             ),
             securityScannerState: $sendCryptoVerifyViewModel.securityScannerState
         ) {
@@ -135,6 +136,9 @@ struct SendVerifyScreen: View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+            if sendCryptoVerifyViewModel.isApproveRequired {
+                Checkbox(isChecked: $sendCryptoVerifyViewModel.isApproveCorrect, text: "yieldVerifyApproveCheck")
+            }
         }
     }
 

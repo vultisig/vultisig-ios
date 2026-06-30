@@ -28,17 +28,11 @@ import OSLog
 import Tss
 
 enum QBTCClaimJoinDriverError: LocalizedError {
-    case missingBitcoinCoin
-    case missingQbtcCoin
     case invalidCompressedPubkey
     case round1SignatureMissing
 
     var errorDescription: String? {
         switch self {
-        case .missingBitcoinCoin:
-            return "Vault is missing the Bitcoin coin needed for QBTC claim"
-        case .missingQbtcCoin:
-            return "Vault is missing the QBTC coin needed to derive the claimer address"
         case .invalidCompressedPubkey:
             return "Bitcoin compressed public key is malformed"
         case .round1SignatureMissing:
@@ -69,8 +63,13 @@ final class QBTCClaimJoinDriver: ObservableObject {
     /// Exposed so the peer-side view can build the shared
     /// `QBTCClaimDoneScreen` once the run completes.
     let vault: Vault
+    /// The BTC + QBTC coins this peer signs against, resolved from its
+    /// own vault in `runInternal()` (derived in-memory when the chain
+    /// isn't enabled). Exposed so the done screen can render them.
+    private(set) var resolvedCoins: QBTCClaimCoinResolver.Coins?
     private let session: KeysignSessionInfo
     private let sessionService: KeysignSessionServicing
+    private let coinResolver: QBTCClaimCoinResolver
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-join")
 
     /// Cap on how long to wait for kickoff. Generous because the
@@ -80,11 +79,13 @@ final class QBTCClaimJoinDriver: ObservableObject {
     init(
         vault: Vault,
         session: KeysignSessionInfo,
-        sessionService: KeysignSessionServicing = KeysignSessionService()
+        sessionService: KeysignSessionServicing = KeysignSessionService(),
+        coinResolver: QBTCClaimCoinResolver = QBTCClaimCoinResolver()
     ) {
         self.vault = vault
         self.session = session
         self.sessionService = sessionService
+        self.coinResolver = coinResolver
     }
 
     /// Drives the full peer-side flow. Mutates `phase` as it progresses.
@@ -103,16 +104,16 @@ final class QBTCClaimJoinDriver: ObservableObject {
     // MARK: - Internal flow
 
     private func runInternal() async throws {
-        guard let btcCoin = vault.nativeCoin(for: .bitcoin) else {
-            throw QBTCClaimJoinDriverError.missingBitcoinCoin
-        }
-        // Derive the claimer's QBTC address from the peer's own vault — both
-        // initiator and peer share the same SecureVault, so the QBTC coin
-        // (and thus its derived address) is the same across devices. No need
-        // to round-trip it through the keysign payload.
-        guard let qbtcCoin = vault.nativeCoin(for: .qbtc) else {
-            throw QBTCClaimJoinDriverError.missingQbtcCoin
-        }
+        // Resolve the BTC + QBTC coins from the peer's own vault — derived
+        // in-memory when the chain isn't enabled. Both initiator and peer
+        // share the same vault keys, so they derive identical coins and
+        // thus the same claim hash; no need to round-trip the QBTC address
+        // through the keysign payload. A genuine derivation failure (a
+        // non-quantum vault) throws and transitions the phase to `.failed`.
+        let coins = try coinResolver.resolve(vault: vault)
+        resolvedCoins = coins
+        let btcCoin = coins.btc
+        let qbtcCoin = coins.qbtc
         guard let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) else {
             throw QBTCClaimJoinDriverError.invalidCompressedPubkey
         }

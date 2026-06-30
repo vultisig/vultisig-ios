@@ -140,6 +140,24 @@ class Coin: ObservableObject, Codable, Hashable {
         return balanceInFiatDecimal.formatToFiat()
     }
 
+    /// Whether a fiat rate is currently cached for this coin's display currency.
+    /// Warm starts always have rates (persisted in `RateProvider`); only a
+    /// first-ever cold start briefly lacks one until the first fetch returns.
+    var fiatRateAvailable: Bool {
+        RateProvider.shared.hasRate(for: self)
+    }
+
+    /// Fiat balance for display. Returns a placeholder instead of "$0.00" when the
+    /// crypto balance is non-zero but no rate has loaded yet, suppressing the
+    /// misleading zero-fiat frame on a cold start. Once a rate lands the real fiat
+    /// value renders.
+    var balanceInFiatForDisplay: String {
+        if balanceDecimal > 0 && !fiatRateAvailable {
+            return String.fiatPlaceholder
+        }
+        return balanceInFiat
+    }
+
     var chainType: ChainType {
         chain.type
     }

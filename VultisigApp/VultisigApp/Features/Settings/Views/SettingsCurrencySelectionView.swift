@@ -18,7 +18,6 @@ struct SettingsCurrencySelectionView: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     @State private var currencies: [SettingsCurrencyViewModel] = []
-    @State var isLoading = false
 
     var body: some View {
         Screen {
@@ -42,22 +41,20 @@ struct SettingsCurrencySelectionView: View {
         }
         .screenTitle("currency".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        .overlay(isLoading ? Loader() : nil)
         .onLoad(perform: onLoad)
     }
 
     func handleSelection(_ currency: SettingsCurrency) {
-        isLoading = true
         settingsViewModel.selectedCurrency = currency
 
-        // Refresh prices in the background without blocking the UI
+        // Only the display currency changed — refresh rates and relabel fiat from
+        // cache. No per-coin balance RPCs, no Cardano discovery.
         if let currentVault = appViewModel.selectedVault {
             Task {
-                await BalanceService.shared.updateBalances(vault: currentVault)
+                await BalanceService.shared.refreshRates(vault: currentVault)
             }
         }
         dismiss()
-        isLoading = false
     }
 
     func onLoad() {
