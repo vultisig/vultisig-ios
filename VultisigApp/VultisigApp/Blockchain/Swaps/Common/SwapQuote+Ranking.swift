@@ -38,13 +38,13 @@ extension SwapQuote {
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
             return toCoin.decimal(for: raw)
 
-        case .jupiter(let quote, _, let platformFee):
-            // Jupiter `outAmount` is the gross output in raw toCoin base units;
-            // the VULT-scaled affiliate fee (already in toCoin units) is taken
-            // from the output, so subtract it for the net the user receives.
+        case .jupiter(let quote, _, _):
+            // Jupiter `outAmount` is already net of the affiliate platform fee
+            // (Jupiter deducts the fee from the AMM output and reports it
+            // separately in `platformFee`), so it's the amount the user
+            // receives — same convention as LiFi above. Do NOT subtract again.
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
-            let net = toCoin.decimal(for: raw) - (platformFee ?? 0)
-            return net > 0 ? net : nil
+            return toCoin.decimal(for: raw)
 
         case .swapkit(let response, _, _):
             // SwapKit's `expectedBuyAmount` is already a decimal string in

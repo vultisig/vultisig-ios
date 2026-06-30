@@ -110,12 +110,12 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
-        case let .jupiter(quote, _, platformFee):
-            // `outAmount` is gross of the affiliate fee, which is taken from the
-            // output — show the user the net they receive.
+        case let .jupiter(quote, _, _):
+            // `outAmount` is already net of the affiliate fee (deducted from the
+            // output and reported separately), so it's what the user receives —
+            // same as LiFi above. Do NOT subtract the fee again.
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
-            let net = toCoin.decimal(for: amount) - (platformFee ?? 0)
-            return net > 0 ? net : .zero
+            return toCoin.decimal(for: amount)
         case let .swapkit(response, _, _):
             // SwapKit returns human-units decimal strings, not raw base units.
             return Decimal(string: response.expectedBuyAmount) ?? .zero

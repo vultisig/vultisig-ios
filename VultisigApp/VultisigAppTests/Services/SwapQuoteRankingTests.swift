@@ -223,16 +223,18 @@ final class SwapQuoteRankingTests: XCTestCase {
 
     // MARK: - Jupiter
 
-    func test_expectedNetToAmount_jupiter_subtractsPlatformFee() {
-        // 0.03 ETH gross output minus a 0.0001 ETH affiliate fee (already in
-        // toCoin units) → 0.0299 net.
+    func test_expectedNetToAmount_jupiter_doesNotSubtractPlatformFee() {
+        // Jupiter `outAmount` is ALREADY net of the affiliate fee (Jupiter
+        // deducts it from the AMM output and reports it separately), so the
+        // platform-fee value must NOT be subtracted again — the net the user
+        // receives equals `dstAmount`, same convention as LI.FI.
         let quote: SwapQuote = .jupiter(
             makeEVMQuote(dstAmount: "30000000000000000"),
             fee: nil,
             platformFee: Decimal(string: "0.0001")
         )
 
-        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.0299"))
+        XCTAssertEqual(quote.expectedNetToAmount(toCoin: ethCoin()), Decimal(string: "0.03"))
     }
 
     func test_expectedNetToAmount_jupiter_nilPlatformFee_returnsGrossOutput() {
