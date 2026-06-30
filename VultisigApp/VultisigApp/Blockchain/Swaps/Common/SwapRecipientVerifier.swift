@@ -62,7 +62,7 @@ enum SwapRecipientVerifier {
                 throw SwapError.recipientVerificationFailed
             }
 
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .jupiter:
             // These providers bury the recipient inside opaque router calldata
             // with no verifiable echo, so they are never eligible when an
             // external recipient is set (`SwapProvider.honorsExternalRecipient`).

@@ -43,7 +43,7 @@ enum ExplorerLinkBuilder {
             // covered by the follow-up tx-history plan. `track.swapkit.dev`
             // accepts on-chain hashes for the source chain.
             return swapkitTracker(txid: txHash, chain: fromChain)
-        case .oneinch, .kyberswap, .none:
+        case .oneinch, .kyberswap, .jupiter, .none:
             return getExplorerURL(chain: fromChain, txid: txHash)
         }
     }
@@ -66,7 +66,7 @@ enum ExplorerLinkBuilder {
                 return lifiTracker(txid: txHash)
             case .swapkit:
                 return swapkitTracker(txid: txHash, chain: payload.fromCoin.chain)
-            case .oneInch, .kyberSwap, .unknown:
+            case .oneInch, .kyberSwap, .jupiter, .unknown:
                 return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
             }
         case .swapkit(let payload):

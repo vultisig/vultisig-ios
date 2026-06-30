@@ -1039,6 +1039,7 @@
 "settingsAdvancedCustomRPC" = "RPCs personalizados";
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
+"settingsAdvancedForcedSwapProviderJupiter" = "Solo Jupiter";
 "settingsAdvancedManage" = "Gestionar";
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "share" = "Compartir";
