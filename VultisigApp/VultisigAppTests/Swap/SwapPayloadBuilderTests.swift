@@ -230,7 +230,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
         XCTAssertNil(payload.memo, "Solana swaps don't use memos")
         XCTAssertNil(payload.approvePayload, "Solana never needs an ERC20 approve")
-        XCTAssertEqual(payload.toAddress, "SoLfeeOwner", "Jupiter toAddress is the cosmetic EVMQuote.tx.to")
+        XCTAssertEqual(payload.toAddress, "SoLoutputMint", "Jupiter toAddress is the cosmetic EVMQuote.tx.to (the output mint, as JupiterService sets it)")
         guard case let .generic(generic) = payload.swapPayload else {
             XCTFail("Expected .generic swapPayload"); return
         }
@@ -581,7 +581,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             dstAmount: "1000000",
             tx: EVMQuote.Transaction(
                 from: "SoLfromAddr",
-                to: "SoLfeeOwner",
+                to: "SoLoutputMint",
                 data: base64,
                 value: "0",
                 gasPrice: "0",
