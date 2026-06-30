@@ -1048,8 +1048,6 @@
 "sharesBalance" = "Shares ( Balance: %@ )";
 "sharesLabel" = "Shares";
 "shareTheApp" = "Compartir La App";
-"shareVaultQR" = "Compartir bóveda QR";
-"shareVaultQRInformation" = "Este código QR le permite compartir una versión de solo vista de su bóveda";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar pista";

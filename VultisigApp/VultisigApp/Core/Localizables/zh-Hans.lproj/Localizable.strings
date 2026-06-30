@@ -1048,8 +1048,6 @@
 "sharesBalance" = "份额 ( 余额: %@ )";
 "sharesLabel" = "份额";
 "shareTheApp" = "分享应用";
-"shareVaultQR" = "分享保险库二维码";
-"shareVaultQRInformation" = "此二维码允许您分享保险库的仅查看版本";
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
 "showHint" = "显示提示";
