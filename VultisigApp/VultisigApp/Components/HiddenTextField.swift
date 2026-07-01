@@ -32,7 +32,7 @@ struct HiddenTextField: View {
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.alertError)
+            .foregroundStyle(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -59,7 +59,7 @@ struct HiddenTextField: View {
             if password.isEmpty {
                 HStack {
                     Text(NSLocalizedString(placeholder, comment: ""))
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                 }
             }
@@ -75,7 +75,7 @@ struct HiddenTextField: View {
         .submitLabel(.done)
         .colorScheme(.dark)
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var button: some View {
@@ -87,7 +87,7 @@ struct HiddenTextField: View {
             },
             label: {
                 Image(systemName: isPasswordVisible ? "eye": "eye.slash")
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
         )
         .buttonStyle(.plain)

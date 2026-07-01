@@ -13,7 +13,7 @@ struct NavigationBlankBackButton: View {
     var body: some View {
         Image(systemName: "chevron.backward")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
+            .foregroundStyle(tint)
     }
 }
 

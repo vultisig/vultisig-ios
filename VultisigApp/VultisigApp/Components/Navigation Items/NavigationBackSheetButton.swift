@@ -19,7 +19,7 @@ struct NavigationBackSheetButton: View {
             label: {
                 Image(systemName: "chevron.backward")
                     .font(Theme.fonts.bodyLMedium)
-                    .foregroundColor(tint)
+                    .foregroundStyle(tint)
             }
         )
     }

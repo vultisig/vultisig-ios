@@ -57,13 +57,13 @@ struct SwapFromToField: View {
     var fromToLabel: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
     }
 
     var balance: some View {
         Text("\(coin.balanceString) \(coin.ticker)")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
     }
 
     var unevenRectangle: some View {
@@ -75,7 +75,7 @@ struct SwapFromToField: View {
                 topTrailing: 24
             )
         )
-        .foregroundColor(Theme.colors.bgSurface1)
+        .foregroundStyle(Theme.colors.bgSurface1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
 
@@ -141,7 +141,7 @@ struct SwapFromToField: View {
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
             .animation(.easeInOut(duration: 0.25), value: fiatAmount)

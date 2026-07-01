@@ -56,13 +56,13 @@ struct SwapChainCell: View {
     var title: some View {
         Text(chain.name)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var balanceInfo: some View {
         Text(balance)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     private func setData() {

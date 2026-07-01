@@ -28,7 +28,7 @@ struct PopupCapsule: View {
 
     var capsule: some View {
         Text(showText ? NSLocalizedString(text, comment: "") : "")
-            .foregroundColor(Theme.colors.textPrimary.opacity(showText ? 1 : 0))
+            .foregroundStyle(Theme.colors.textPrimary.opacity(showText ? 1 : 0))
             .font(Theme.fonts.bodySMedium)
             .padding()
             .padding(.horizontal, showText ? 16 : 8)

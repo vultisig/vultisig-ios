@@ -264,7 +264,7 @@ struct PeerDiscoveryScreen: View {
                 failureText
             }
         }
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .blur(radius: showInfoSheet ? 1 : 0)
         .animation(.easeInOut, value: showInfoSheet)
     }
@@ -505,7 +505,7 @@ struct PeerDiscoveryScreen: View {
             Text(self.viewModel.errorMessage)
                 .font(Theme.fonts.bodyMMedium)
                 .multilineTextAlignment(.center)
-                .foregroundColor(.red)
+                .foregroundStyle(.red)
         }
     }
 

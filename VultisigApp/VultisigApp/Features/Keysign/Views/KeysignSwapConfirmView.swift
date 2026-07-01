@@ -70,7 +70,7 @@ struct KeysignSwapConfirmView: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -92,7 +92,7 @@ struct KeysignSwapConfirmView: View {
         Rectangle()
             .frame(width: 1)
             .frame(idealHeight: 80, maxHeight: 100)
-            .foregroundColor(Theme.colors.bgSurface2)
+            .foregroundStyle(Theme.colors.bgSurface2)
     }
 
     var summaryFromTo: some View {
@@ -131,7 +131,7 @@ struct KeysignSwapConfirmView: View {
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.primaryAccent4)
+            .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgSurface2)
             .cornerRadius(32)
@@ -146,7 +146,7 @@ struct KeysignSwapConfirmView: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
@@ -157,11 +157,11 @@ struct KeysignSwapConfirmView: View {
             }
 
             Text(value)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             if let bracketValue {
                 Text(bracketValue)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
 
         }
@@ -176,18 +176,18 @@ struct KeysignSwapConfirmView: View {
     private func getFeeCell(title: String, fees: (feeCrypto: String, feeFiat: String)) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(fees.feeCrypto)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
 
                 Text(fees.feeFiat)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
         }
@@ -207,24 +207,24 @@ struct KeysignSwapConfirmView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("minPayout".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
 
                 Text(amount ?? "")
                     .font(Theme.fonts.bodyLMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 HStack(spacing: 0) {
                     Text(fiatValue)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     if let chain {
                         HStack(spacing: 2) {
                             Spacer()
 
                             Text(NSLocalizedString("on", comment: ""))
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
                             Image(chain.logo)
@@ -232,7 +232,7 @@ struct KeysignSwapConfirmView: View {
                                 .frame(width: 12, height: 12)
 
                             Text(chain.name)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                         .font(Theme.fonts.caption10)
                         .offset(x: 2)

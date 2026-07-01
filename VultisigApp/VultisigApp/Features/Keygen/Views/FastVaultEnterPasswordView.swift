@@ -41,7 +41,7 @@ struct FastVaultEnterPasswordView: View {
             // Title
             Text("enterYourPassword".localized)
                 .font(Theme.fonts.title2)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .padding(.vertical, 10)
 
             // Password field
@@ -61,7 +61,7 @@ struct FastVaultEnterPasswordView: View {
                     HStack(spacing: 4) {
                         Text("showHint".localized)
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(Theme.colors.textTertiary)
+                            .foregroundStyle(Theme.colors.textTertiary)
 
                         Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                             .rotationEffect(.degrees(showHint ? 180 : 0))
@@ -74,7 +74,7 @@ struct FastVaultEnterPasswordView: View {
                 // Hint text
                 Text(hint)
                     .font(.system(size: 12, weight: .medium).italic())
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .opacity(showHint ? 1 : 0)
             }

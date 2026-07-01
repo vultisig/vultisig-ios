@@ -33,11 +33,11 @@ struct CoinPickerCell: View {
                     Text(coin.balanceInFiatForDisplay)
                 }
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
                 Text(coin.address)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.bgButtonPrimary)
+                    .foregroundStyle(Theme.colors.bgButtonPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(1)
                     .truncationMode(.middle)

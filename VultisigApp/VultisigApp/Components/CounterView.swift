@@ -57,7 +57,7 @@ struct CounterView: View {
         ZStack {
             content()
         }
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

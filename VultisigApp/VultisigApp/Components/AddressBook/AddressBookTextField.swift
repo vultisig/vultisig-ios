@@ -54,7 +54,7 @@ struct AddressBookTextField: View {
 
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 

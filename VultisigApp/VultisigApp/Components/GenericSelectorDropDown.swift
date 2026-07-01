@@ -42,7 +42,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
             if !items.contains(selected) {
                 Text(mandatoryMessage ?? "")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
             }
 
             Spacer()
@@ -53,7 +53,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
         }
         .redacted(reason: descriptionProvider(selected).isEmpty ? .placeholder : [])
         .font(Theme.fonts.bodyMRegular)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .frame(height: 48)
     }
 
@@ -74,14 +74,14 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
         HStack(spacing: 12) {
             Text(descriptionProvider(item))
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Spacer()
 
             if selected == item {
                 Image(systemName: "checkmark")
                     .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
         }
         .frame(height: 48)

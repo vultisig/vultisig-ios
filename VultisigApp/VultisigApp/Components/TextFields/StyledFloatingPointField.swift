@@ -24,11 +24,11 @@ struct StyledFloatingPointField: View {
             HStack {
                 Text("\(label)\(optionalMessage)")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
                         .font(Theme.fonts.caption10)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                 }
             }
 
@@ -41,10 +41,10 @@ struct StyledFloatingPointField: View {
         TextField("", text: $textFieldValue)
             .placeholder(when: textFieldValue.isEmpty) {
                 Text(placeholder.capitalized)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.gray)
             }
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .submitLabel(.done)
             .padding(12)
             .background(Theme.colors.bgSurface1)

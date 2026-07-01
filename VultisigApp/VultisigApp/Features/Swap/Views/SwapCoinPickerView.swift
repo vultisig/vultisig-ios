@@ -118,7 +118,7 @@ struct SwapCoinPickerView: View {
 
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
@@ -195,7 +195,7 @@ struct SwapCoinPickerView: View {
                             .frame(height: 28)
                         Text(chain.name)
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                            .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
                             .fixedSize(horizontal: true, vertical: false)
                             .minimumScaleFactor(0.5)
                     }

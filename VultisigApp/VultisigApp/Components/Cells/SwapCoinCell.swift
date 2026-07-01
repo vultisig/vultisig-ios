@@ -70,12 +70,12 @@ struct SwapCoinCell: View {
     var title: some View {
         Text(coin.ticker)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var chain: some View {
         Text(coin.chain.name)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
@@ -90,10 +90,10 @@ struct SwapCoinCell: View {
         if let balance, let balanceFiat {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(balance)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 Text(balanceFiat)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             .font(Theme.fonts.caption12)
         }

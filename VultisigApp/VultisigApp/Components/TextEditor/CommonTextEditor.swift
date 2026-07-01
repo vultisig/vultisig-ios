@@ -45,7 +45,7 @@ struct CommonTextEditor: View {
                     TextEditor(text: $value)
                         .textEditorStyle(.plain)
                         .scrollContentBackground(.hidden)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodyMMedium)
                         .submitLabel(.continue)
                         .autocorrectionDisabled()
@@ -64,7 +64,7 @@ struct CommonTextEditor: View {
                 }
                 if value.isEmpty {
                     Text(placeholder)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodyMMedium)
                         .padding(.leading, 6)
                         .padding(.top, isMacOS ? 0 : 8)
@@ -76,7 +76,7 @@ struct CommonTextEditor: View {
                         HStack {
                             Spacer()
                             Text(accessory)
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                                 .font(Theme.fonts.caption12)
                         }
                     }
@@ -95,7 +95,7 @@ struct CommonTextEditor: View {
 
             if let error, showErrorText {
                 Text(error.localized)
-                    .foregroundColor(Theme.colors.alertError)
+                    .foregroundStyle(Theme.colors.alertError)
                     .font(Theme.fonts.footnote)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
@@ -118,7 +118,7 @@ struct CommonTextEditor: View {
             value = ""
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 }

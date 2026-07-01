@@ -30,7 +30,7 @@ struct FolderCell: View {
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
@@ -38,13 +38,13 @@ struct FolderCell: View {
     var folderIcon: some View {
         Image(systemName: "folder")
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var title: some View {
         Text(folder.folderName.capitalized)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
             .lineLimit(1)
@@ -53,7 +53,7 @@ struct FolderCell: View {
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? 0 : nil)
             .clipped()
     }

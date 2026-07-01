@@ -73,7 +73,7 @@ struct VaultBackupPasswordScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             textfield
             verifyTextfield

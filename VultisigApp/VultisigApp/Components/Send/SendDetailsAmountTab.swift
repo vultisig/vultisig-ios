@@ -50,7 +50,7 @@ struct SendDetailsAmountTab: View {
         HStack {
             Text(NSLocalizedString("amount", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Spacer()
 
@@ -82,7 +82,7 @@ struct SendDetailsAmountTab: View {
 
     var editLabel: some View {
         Image(systemName: "fuelpump")
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyMMedium)
     }
 
@@ -112,7 +112,7 @@ struct SendDetailsAmountTab: View {
             Text(viewModel.coin.balanceString + " " + viewModel.coin.ticker)
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .padding(12)
         .padding(.vertical, 8)
         .background(Theme.colors.bgSurface1)
@@ -126,7 +126,7 @@ struct SendDetailsAmountTab: View {
     var errorText: some View {
         Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.alertWarning)
+            .foregroundStyle(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
