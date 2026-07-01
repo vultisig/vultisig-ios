@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 //  Redelegate input form for LUNA / LUNC. Amount first, then destination
-//  picker via the shared `ValidatorSelectionScreen` (source excluded).
+//  picker via the shared `StakingValidatorPickerScreen` (source excluded).
 //  If the source is under a 21-day redelegation cooldown, the cooldown
 //  notice replaces the form and Continue is disabled.
 //
@@ -76,13 +76,15 @@ struct CosmosRedelegateTransactionScreen: View {
             }
         }
         .crossPlatformSheet(isPresented: $showValidatorPicker) {
-            ValidatorSelectionScreen(
+            StakingValidatorPickerScreen(
                 isPresented: $showValidatorPicker,
                 selectedValidator: $viewModel.selectedDstValidator,
-                chain: viewModel.coin.chain,
+                source: .cosmos(
+                    chain: viewModel.coin.chain,
+                    excludedValidators: viewModel.excludedDstValidators
+                ),
                 chainTicker: viewModel.coin.ticker,
-                chainDecimals: viewModel.coin.decimals,
-                excludedValidators: viewModel.excludedDstValidators
+                chainDecimals: viewModel.coin.decimals
             )
         }
         .onLoad {

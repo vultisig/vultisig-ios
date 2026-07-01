@@ -255,6 +255,70 @@ final class DefiBalanceServiceTests: XCTestCase {
         XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0, "A zero-amount placeholder is not a position.")
     }
 
+    // MARK: - Solana native staking
+
+    private func makeSolanaCoin(rawBalance: String, stakedBalance: String) -> Coin {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+        let coin = Coin(asset: solMeta, address: "SoLTestAddress", hexPublicKey: "")
+        coin.priceProviderId = "solana"
+        coin.rawBalance = rawBalance
+        coin.stakedBalance = stakedBalance
+        return coin
+    }
+
+    /// Staked SOL (summed delegated lamports written to `Coin.stakedBalance`)
+    /// rolls into the DeFi total ungated — like Tron, no per-coin opt-in.
+    func testSolanaTotalBalanceFiatReadsStakedNotWallet() throws {
+        // 10 SOL wallet, 4 SOL delegated.
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "4000000000")
+        vault.coins = [sol]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
+        ])
+
+        let total = service.totalBalanceInFiat(for: .solana, vault: vault)
+        XCTAssertEqual(total, Decimal(4) * Decimal(3), "Solana DeFi fiat must be delegated SOL × rate, not wallet × rate.")
+        XCTAssertNotEqual(total, Decimal(10) * Decimal(3))
+    }
+
+    func testSolanaTotalBalanceFiatZeroWhenNoSolanaCoin() {
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+    }
+
+    func testSolanaTotalBalanceZeroWhenStakedBalanceUnset() throws {
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "")
+        vault.coins = [sol]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
+        ])
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    func testSolanaPositionCountOneWhenAnyStaked() {
+        let sol = makeSolanaCoin(rawBalance: "0", stakedBalance: "1")
+        vault.coins = [sol]
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 1)
+    }
+
+    func testSolanaPositionCountZeroWhenNoStake() {
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "0")
+        vault.coins = [sol]
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    /// The staking position picker resolves native SOL (no `TokensStore.sol`
+    /// static) from `TokenSelectionAssets`.
+    func testSolanaStakeCoinsResolvesNativeSol() {
+        let coins = DefiPositionsService().stakeCoins(for: .solana)
+        XCTAssertEqual(coins.count, 1)
+        let sol = try? XCTUnwrap(coins.first)
+        XCTAssertEqual(sol?.chain, .solana)
+        XCTAssertEqual(sol?.ticker, "SOL")
+        XCTAssertEqual(sol?.isNativeToken, true)
+    }
+
     // MARK: - Position counts (Windows parity)
 
     func testPositionCountZeroForEmptyVault() {

@@ -34,7 +34,7 @@ class SettingsViewModel: ObservableObject {
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string
     /// = no force (production ranking across all providers). Otherwise one
-    /// of: "swapkit", "oneInch", "kyberSwap", "lifi", "thorchain",
+    /// of: "swapkit", "oneInch", "kyberSwap", "lifi", "jupiter", "thorchain",
     /// "mayachain". `Coin+Swaps.swapProviders` reads this and filters the
     /// natural provider list down to the single forced provider.
     @AppStorage("forcedSwapProvider") var forcedSwapProvider: String = ""

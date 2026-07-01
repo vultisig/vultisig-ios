@@ -71,7 +71,7 @@ struct CoinDetailScreen: View {
                 }
                 CoinPriceNetworkView(
                     chainName: coin.chain.name,
-                    price: Decimal(coin.price).formatToFiat()
+                    price: Decimal(coin.price).formatToFiatPrice()
                 )
             }
             .padding(.horizontal, 24)

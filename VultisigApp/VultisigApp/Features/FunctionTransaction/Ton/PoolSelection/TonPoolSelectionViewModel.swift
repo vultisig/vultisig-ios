@@ -5,7 +5,7 @@
 //  Backs the TON staking-pool picker sheet. Loads the pool list from
 //  `TonService`, keeps verified pools with capacity sorted by APY descending,
 //  and surfaces search + selection state. Cache is per-sheet (no SwiftData),
-//  mirroring `ValidatorSelectionViewModel`.
+//  mirroring `StakingValidatorPickerViewModel`.
 //
 
 import Foundation

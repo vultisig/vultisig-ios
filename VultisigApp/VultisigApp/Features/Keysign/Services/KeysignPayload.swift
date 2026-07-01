@@ -33,6 +33,13 @@ struct KeysignPayload: Codable, Hashable {
     /// and computes the message hash locally, refusing to blind-sign
     /// whatever the initiator asks for.
     let isQbtcClaim: Bool
+    /// Set on the initiating device when constructing a Solana native-staking
+    /// delegate. Local-only: not round-tripped through the proto `KeysignPayload`
+    /// (signing rides the wallet-core signing-input bytes relayed via
+    /// `signData = .signSolana`, not a relay field). The initiator reads it to
+    /// build the unsigned transaction once; peer devices see nil and sign the
+    /// relayed raw bytes. See `SolanaStakingSignDataResolver`.
+    let solanaStakingPayload: SolanaStakingPayload?
     let skipBroadcast: Bool
     let signData: SignData?
     let dappMetadata: DAppMetadata?
@@ -58,6 +65,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferAssetContractPayload: TronTransferAssetContractPayload?,
         qbtcClaimPayload: QBTCClaimPayload?,
         isQbtcClaim: Bool,
+        solanaStakingPayload: SolanaStakingPayload? = nil,
         skipBroadcast: Bool,
         signData: SignData?,
         dappMetadata: DAppMetadata? = nil
@@ -79,6 +87,7 @@ struct KeysignPayload: Codable, Hashable {
         self.tronTransferAssetContractPayload = tronTransferAssetContractPayload
         self.qbtcClaimPayload = qbtcClaimPayload
         self.isQbtcClaim = isQbtcClaim
+        self.solanaStakingPayload = solanaStakingPayload
         self.skipBroadcast = skipBroadcast
         self.signData = signData
         self.dappMetadata = dappMetadata
@@ -108,6 +117,38 @@ struct KeysignPayload: Codable, Hashable {
             tronTransferAssetContractPayload: tronTransferAssetContractPayload,
             qbtcClaimPayload: qbtcClaimPayload,
             isQbtcClaim: isQbtcClaim,
+            solanaStakingPayload: solanaStakingPayload,
+            skipBroadcast: skipBroadcast,
+            signData: signData,
+            dappMetadata: dappMetadata
+        )
+    }
+
+    /// Returns a copy of the payload carrying the local-only Solana staking
+    /// intent. Used by the Verify → KeysignPayload bridge so the
+    /// transfer-shaped base payload from the keysign factory can be re-emitted
+    /// with the delegate payload (which drives the unsigned-tx build) without
+    /// duplicating the memberwise init at the call site.
+    func withSolanaStakingPayload(_ payload: SolanaStakingPayload) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: toAmount,
+            chainSpecific: chainSpecific,
+            utxos: utxos,
+            memo: memo,
+            swapPayload: swapPayload,
+            approvePayload: approvePayload,
+            vaultPubKeyECDSA: vaultPubKeyECDSA,
+            vaultLocalPartyID: vaultLocalPartyID,
+            libType: libType,
+            wasmExecuteContractPayload: wasmExecuteContractPayload,
+            tronTransferContractPayload: tronTransferContractPayload,
+            tronTriggerSmartContractPayload: tronTriggerSmartContractPayload,
+            tronTransferAssetContractPayload: tronTransferAssetContractPayload,
+            qbtcClaimPayload: qbtcClaimPayload,
+            isQbtcClaim: isQbtcClaim,
+            solanaStakingPayload: payload,
             skipBroadcast: skipBroadcast,
             signData: signData,
             dappMetadata: dappMetadata
@@ -136,6 +177,7 @@ struct KeysignPayload: Codable, Hashable {
             tronTransferAssetContractPayload: tronTransferAssetContractPayload,
             qbtcClaimPayload: qbtcClaimPayload,
             isQbtcClaim: isQbtcClaim,
+            solanaStakingPayload: solanaStakingPayload,
             skipBroadcast: skipBroadcast,
             signData: signData,
             dappMetadata: dappMetadata
@@ -286,6 +328,7 @@ struct KeysignPayload: Codable, Hashable {
         tronTransferAssetContractPayload: nil,
         qbtcClaimPayload: nil,
         isQbtcClaim: false,
+        solanaStakingPayload: nil,
         skipBroadcast: false,
         signData: nil,
         dappMetadata: nil

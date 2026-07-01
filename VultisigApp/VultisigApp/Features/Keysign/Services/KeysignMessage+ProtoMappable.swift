@@ -127,6 +127,12 @@ extension KeysignPayload: ProtoMappable {
         // see nil and simply sign the relayed message hashes without claim UX.
         self.qbtcClaimPayload = nil
 
+        // Solana staking intent is local-only — signing rides the wallet-core
+        // signing-input bytes relayed via `signData = .signSolana`, so the peer
+        // device sees nil and signs those raw bytes directly. No commondata
+        // change is needed for the delegate flow.
+        self.solanaStakingPayload = nil
+
         // `isQbtcClaim` round-trips: the peer needs to know this is a claim
         // so it can derive the claimer's QBTC address from its own vault
         // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash

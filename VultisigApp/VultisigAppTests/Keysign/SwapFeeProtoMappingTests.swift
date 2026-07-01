@@ -95,6 +95,48 @@ final class SwapFeeProtoMappingTests: XCTestCase {
         XCTAssertFalse(value.quote.tx.hasSwapFeeDecimals)
     }
 
+    // MARK: - Jupiter provider round-trip
+
+    func testJupiterProviderRoundTripsThroughProto() throws {
+        let payload = GenericSwapPayload(
+            fromCoin: makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true),
+            toCoin: makeCoin(
+                .solana, ticker: "USDC", decimals: 6, isNative: false,
+                contract: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            ),
+            fromAmount: BigInt("1000000000"),
+            toAmountDecimal: 25,
+            quote: EVMQuote(
+                dstAmount: "25000000",
+                tx: EVMQuote.Transaction(
+                    from: "SoLfrom",
+                    to: "SoLmint",
+                    data: "AQIDBA==",
+                    value: "0",
+                    gasPrice: "0",
+                    gas: 0
+                )
+            ),
+            provider: .jupiter
+        )
+
+        let proto = SwapPayload.generic(payload).mapToProtobuff()
+        guard case let .oneinchSwapPayload(value) = proto else {
+            XCTFail("Expected .oneinchSwapPayload"); return
+        }
+        XCTAssertEqual(value.provider, "jupiter", "Jupiter serializes as the 'jupiter' wire string")
+
+        let decoded = try SwapPayload(proto: proto)
+        guard case let .generic(decodedPayload) = decoded else {
+            XCTFail("Expected .generic"); return
+        }
+        XCTAssertEqual(decodedPayload.provider, .jupiter, "Tolerant decode maps 'jupiter' back to .jupiter")
+        XCTAssertEqual(
+            decodedPayload.quote.tx.data, "AQIDBA==",
+            "Base64 Solana wire tx survives the proto round-trip (co-signer signs the same bytes)"
+        )
+    }
+
     // MARK: - Pre-context wire bytes
 
     func testPreContextWireBytesDecodeWithNilContextAndNoFeeRow() throws {
