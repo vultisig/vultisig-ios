@@ -24,6 +24,7 @@ private final class FakeWithdrawStakingService: SolanaStakingServiceProtocol, @u
         SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
     }
     func fetchRentReserve() async throws -> UInt64 { 2_282_880 }
+    func fetchMinDelegation() async throws -> UInt64 { 1_000_000_000 }
     func fetchInflationRate() async throws -> Double { 0.07 }
 }
 // swiftlint:enable async_without_await unused_parameter

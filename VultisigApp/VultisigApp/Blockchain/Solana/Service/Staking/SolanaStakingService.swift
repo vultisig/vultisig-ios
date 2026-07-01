@@ -23,6 +23,7 @@ protocol SolanaStakingServiceProtocol: Sendable {
     func fetchStakeAccounts(owner: String) async throws -> [SolanaStakeAccount]
     func fetchEpochInfo() async throws -> SolanaEpochInfo
     func fetchRentReserve() async throws -> UInt64
+    func fetchMinDelegation() async throws -> UInt64
     func fetchInflationRate() async throws -> Double
 }
 
@@ -34,6 +35,7 @@ protocol SolanaStakingReading {
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount]
     func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo
     func fetchSolanaRentReserve() async throws -> UInt64
+    func fetchSolanaMinDelegation() async throws -> UInt64
     func fetchSolanaInflationRate() async throws -> Double
 }
 
@@ -98,6 +100,12 @@ actor SolanaStakingService: SolanaStakingServiceProtocol {
 
     func fetchRentReserve() async throws -> UInt64 {
         try await solanaService.fetchSolanaRentReserve()
+    }
+
+    func fetchMinDelegation() async throws -> UInt64 {
+        // Caching (24h) lives on `SolanaService`, same as the rent reserve, so
+        // this stays a thin pass-through.
+        try await solanaService.fetchSolanaMinDelegation()
     }
 
     func fetchInflationRate() async throws -> Double {

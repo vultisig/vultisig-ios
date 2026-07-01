@@ -28,6 +28,12 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
     // getMinimumBalanceForRentExemption read returns; overwritten on load.
     @Published private(set) var rentReserve: Decimal =
         Decimal(SolanaStakingConfig.rentExemptReserveLamports) / Decimal(SolanaStakingConfig.lamportsPerSol)
+    // Seeded with the documented 1 SOL floor so the minimum guard is correct
+    // before the live getStakeMinimumDelegation read returns; overwritten on
+    // load, and kept as the fallback if that read fails (proxy blocks it, so it
+    // is fetched from a public node).
+    @Published private(set) var minimumDelegationLamports: UInt64 =
+        SolanaStakingConfig.minDelegationFloorLamports
 
     @Published var amountField = FormField(
         label: "amount".localized,
@@ -63,6 +69,7 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
         setupForm()
         refreshAmountValidators()
         Task { await loadRentReserve() }
+        Task { await loadMinDelegation() }
     }
 
     /// (Re)builds the amount-field validators against the CURRENT
@@ -76,12 +83,12 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
             RequiredValidator(errorMessage: "emptyAmountField".localized),
             AmountBalanceValidator(balance: stakeableBalance),
             // Minimum-delegation guard. The user enters the amount they want
-            // ACTIVELY staked; the Solana mainnet minimum delegation is 1 SOL
-            // (getStakeMinimumDelegation), enforced by the Stake program — a
-            // DelegateStake below it reverts with StakeError.InsufficientDelegation
-            // (custom error 12). The rent-exempt reserve is added on top
-            // automatically in `transactionBuilder`, so the user only needs to
-            // enter >= 1 SOL.
+            // ACTIVELY staked; the network minimum delegation (live
+            // getStakeMinimumDelegation, 1 SOL fallback) is enforced by the
+            // Stake program — a DelegateStake below it reverts with
+            // StakeError.InsufficientDelegation (custom error 12). The rent-exempt
+            // reserve is added on top automatically in `transactionBuilder`, so
+            // the user only needs to enter >= the minimum.
             ClosureValidator { [weak self] value in
                 guard let self else { return }
                 guard value.toDecimal() >= self.minimumDelegationDecimal else {
@@ -91,11 +98,30 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
         ]
     }
 
-    /// Minimum amount the user may enter — the 1 SOL program minimum delegation.
-    /// This is the ACTIVE stake; the rent reserve is funded on top separately, so
-    /// the user is not asked to do the "1 SOL + rent" math.
+    /// Minimum amount the user may enter — the network minimum delegation (live
+    /// value, 1 SOL fallback). This is the ACTIVE stake; the rent reserve is
+    /// funded on top separately, so the user is not asked to do the
+    /// "minimum + rent" math.
     var minimumDelegationDecimal: Decimal {
-        Decimal(SolanaStakingConfig.minDelegationFloorLamports) / pow(Decimal(10), coin.decimals)
+        Decimal(minimumDelegationLamports) / pow(Decimal(10), coin.decimals)
+    }
+
+    /// Fetches the live network minimum delegation and rebuilds the amount guard
+    /// against it. On failure the seeded 1 SOL fallback stays in place, so the
+    /// form still enforces a safe floor offline. Internal so it can be awaited
+    /// deterministically in tests (mirrors `SolanaStakeDefiViewModel.refresh`).
+    func loadMinDelegation() async {
+        do {
+            let lamports = try await stakingService.fetchMinDelegation()
+            minimumDelegationLamports = lamports
+            refreshAmountValidators()
+            if amountField.touched {
+                validateErrors()
+                validForm = form.allSatisfy { $0.valid }
+            }
+        } catch {
+            logger.error("Min delegation fetch failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func loadRentReserve() async {

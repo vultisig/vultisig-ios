@@ -50,6 +50,8 @@ private final class CountingReader: SolanaStakingReading, @unchecked Sendable {
 
     func fetchSolanaRentReserve() async throws -> UInt64 { 2_282_880 }
 
+    func fetchSolanaMinDelegation() async throws -> UInt64 { 1_000_000_000 }
+
     func fetchSolanaInflationRate() async throws -> Double {
         lock.withLock { inflationCalls += 1 }
         return 0.0377

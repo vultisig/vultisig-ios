@@ -16,6 +16,18 @@ struct SolanaAPI: TargetType {
     /// The proxy path appended to the default host.
     static let proxyPath = "/solana/"
 
+    /// Keyless public JSON-RPC endpoints used ONLY for
+    /// `getStakeMinimumDelegation`, which the Vultisig proxy blocks. The value
+    /// is a network-global constant (identical on every mainnet node), used just
+    /// as a form-validation floor, and never touches signing — so reading it off
+    /// a public node is safe. Tried in order: PublicNode is app-friendly and
+    /// keyless; mainnet-beta is the official keyless fallback. Each is a complete
+    /// endpoint, so `usesProxyPath` is `false` when targeting them.
+    static let minDelegationPublicHosts: [URL] = [
+        URL(staticString: "https://solana-rpc.publicnode.com"),
+        URL(staticString: "https://api.mainnet-beta.solana.com")
+    ]
+
     let baseURL: URL
     /// `true` for the default Vultisig proxy (RPC under `/solana/`); `false`
     /// when a custom override supplies a complete JSON-RPC endpoint.
@@ -53,6 +65,11 @@ struct SolanaAPI: TargetType {
         case getMinimumBalanceForRentExemption(size: Int)
         /// Network inflation rate for the current epoch.
         case getInflationRate
+        /// Network minimum active delegation (lamports) enforced by the Stake
+        /// program. Takes no params. The Vultisig proxy blocks this method, so
+        /// it is read from a public node; the value is a network-global constant
+        /// used only as a form-validation floor and never touches signing.
+        case getStakeMinimumDelegation
     }
 
     enum TokenAccountFilter {
@@ -146,6 +163,8 @@ struct SolanaAPI: TargetType {
             )
         case .getInflationRate:
             return .requestParameters(rpcEnvelope(method: "getInflationRate", params: [] as [Any]), .jsonEncoding)
+        case .getStakeMinimumDelegation:
+            return .requestParameters(rpcEnvelope(method: "getStakeMinimumDelegation", params: [] as [Any]), .jsonEncoding)
         }
     }
 
@@ -282,6 +301,16 @@ struct SolanaEpochInfo: Codable, Hashable {
 
 struct SolanaGetMinimumBalanceForRentExemptionResponse: Decodable {
     let result: UInt64
+}
+
+/// `getStakeMinimumDelegation` payload. `result.value` is the minimum active
+/// delegation in lamports.
+struct SolanaGetStakeMinimumDelegationResponse: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let value: UInt64
+    }
 }
 
 struct SolanaGetInflationRateResponse: Decodable {

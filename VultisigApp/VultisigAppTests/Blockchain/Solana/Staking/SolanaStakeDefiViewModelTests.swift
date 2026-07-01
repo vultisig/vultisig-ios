@@ -59,6 +59,7 @@ private final class FakeStakingService: SolanaStakingServiceProtocol, @unchecked
 
     func fetchEpochInfo() async throws -> SolanaEpochInfo { epoch }
     func fetchRentReserve() async throws -> UInt64 { rentReserve }
+    func fetchMinDelegation() async throws -> UInt64 { 1_000_000_000 }
     func fetchInflationRate() async throws -> Double { inflation }
 }
 
@@ -81,6 +82,7 @@ private final class CountingReader: SolanaStakingReading, @unchecked Sendable {
         SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
     }
     func fetchSolanaRentReserve() async throws -> UInt64 { 2_282_880 }
+    func fetchSolanaMinDelegation() async throws -> UInt64 { 1_000_000_000 }
     func fetchSolanaInflationRate() async throws -> Double { 0.07 }
 }
 
