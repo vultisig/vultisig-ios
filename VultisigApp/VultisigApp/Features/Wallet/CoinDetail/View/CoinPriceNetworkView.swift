@@ -9,12 +9,12 @@ import SwiftUI
 
 struct CoinPriceNetworkView: View {
     let chainName: String
-    let price: String
+    let price: Decimal
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                rowView(title: "price".localized, description: price)
+                priceRow
                 Separator().padding(.horizontal, 2)
                 rowView(title: "network".localized, description: chainName)
             }
@@ -29,6 +29,21 @@ struct CoinPriceNetworkView: View {
                 topTrailingRadius: 12
             )
         )
+    }
+
+    var priceRow: some View {
+        HStack {
+            Text("price".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Spacer()
+            CompactAmountText(amount: price, fontStyle: .satoshiMedium, size: 13)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .padding(.vertical, 3)
+                .padding(.horizontal, 8)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface2))
+        }
+        .padding(16)
     }
 
     func rowView(title: String, description: String) -> some View {
@@ -49,5 +64,5 @@ struct CoinPriceNetworkView: View {
 }
 
 #Preview {
-    CoinPriceNetworkView(chainName: "TRON", price: "$214")
+    CoinPriceNetworkView(chainName: "TRON", price: 214)
 }
