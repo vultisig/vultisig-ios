@@ -21,12 +21,9 @@ struct GasLimitSettingsView: View {
             AdvancedSwapSheetHeader(title: "gasLimit".localized, showBack: true, onClose: onBack)
 
             VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Text("gasLimit".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    Icon(named: "circle-info", color: Theme.colors.textTertiary, size: 16)
-                }
+                Text("gasLimit".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
 
                 numberField
                     .font(Theme.fonts.bodySMedium)
