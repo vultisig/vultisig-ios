@@ -74,6 +74,11 @@ extension Decimal {
 
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
+        // Pin to en_US_POSIX so this internal formatter always emits ASCII digits and a "." separator,
+        // regardless of the ambient locale's digit shaping (e.g. Arabic-Indic digits). The canonical
+        // "0.xxx" string below is parsed by `hasPrefix("0.")`; the user-facing separator is re-applied
+        // from `Locale.current` when the display string is assembled.
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.usesGroupingSeparator = false
         formatter.decimalSeparator = "."
         formatter.maximumFractionDigits = fractionDigits

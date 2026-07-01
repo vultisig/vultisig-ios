@@ -79,6 +79,43 @@ final class DecimalExtensionTests: XCTestCase {
         XCTAssertTrue(formatted.contains(expected("0.0")), formatted)
     }
 
+    func testFormatToFiatPriceSubscriptStableUnderNonLatinDigitShaping() {
+        // The sub-cent branch builds an internal canonical "0.xxx" string and inspects it with
+        // hasPrefix("0."). That only holds if the internal NumberFormatter emits ASCII digits, so
+        // `formatToFiatPrice` pins it to en_US_POSIX — otherwise an ambient non-Latin-digit locale
+        // (e.g. Arabic-Indic numerals) would shape the digits and send tiny prices down the
+        // non-subscript fallback. A unit test can't reassign the process-wide `Locale.current`, so
+        // we validate the mechanism the fix relies on and pin the expectation.
+        func canonicalString(locale: Locale) -> String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.locale = locale
+            formatter.usesGroupingSeparator = false
+            formatter.decimalSeparator = "."
+            formatter.maximumFractionDigits = 11
+            formatter.minimumFractionDigits = 0
+            return formatter.string(from: NSDecimalNumber(decimal: Decimal(string: "0.00000003")!)) ?? ""
+        }
+
+        // The pinned (fixed) formatter always yields an ASCII, "0."-prefixed string, so the
+        // hasPrefix("0.") guard passes and the subscript path is taken.
+        XCTAssertTrue(canonicalString(locale: Locale(identifier: "en_US_POSIX")).hasPrefix("0."))
+
+        // The subscript output is still produced for a tiny price regardless of the host locale.
+        XCTAssertEqual(price("0.00000003"), expected("0.0₇3"))
+
+        // Demonstrate the failure mode the pin defends against: an Arabic-Indic-digit locale shapes
+        // the digits away from ASCII, so the raw string does not start with "0.". Only asserted when
+        // the runtime ICU data actually shapes the digits, keeping the test deterministic.
+        let arabic = canonicalString(locale: Locale(identifier: "ar_EG"))
+        if let first = arabic.first, !first.isASCII {
+            XCTAssertFalse(
+                arabic.hasPrefix("0."),
+                "Non-Latin digit shaping should not start with ASCII '0.' — the case the en_US_POSIX pin fixes."
+            )
+        }
+    }
+
     // MARK: - Standard formatting is unchanged
 
     func test_formatToFiatPrice_fallsBackToStandardAtExactlyOneCent() {
