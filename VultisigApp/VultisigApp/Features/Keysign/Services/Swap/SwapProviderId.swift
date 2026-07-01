@@ -22,6 +22,7 @@ enum SwapProviderId: Codable, Hashable {
     case lifi
     case kyberSwap
     case swapkit
+    case jupiter
     case unknown(String)
 
     /// Wire-format string. Matches the value 1inch / Kyber / LiFi / SwapKit
@@ -32,6 +33,7 @@ enum SwapProviderId: Codable, Hashable {
         case .lifi: return "li.fi"
         case .kyberSwap: return "kyber"
         case .swapkit: return "swapkit"
+        case .jupiter: return "jupiter"
         case .unknown(let raw): return raw
         }
     }
@@ -44,6 +46,7 @@ enum SwapProviderId: Codable, Hashable {
         case .kyberSwap: return "KyberSwap"
         case .lifi: return "LI.FI"
         case .swapkit: return "SwapKit"
+        case .jupiter: return "Jupiter"
         case .unknown(let raw): return raw
         }
     }
@@ -72,6 +75,7 @@ enum SwapProviderId: Codable, Hashable {
         case "li.fi": return .lifi
         case "kyber": return .kyberSwap
         case "swapkit": return .swapkit
+        case "jupiter": return .jupiter
         default: return .unknown(rawValue)
         }
     }

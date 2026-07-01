@@ -249,7 +249,10 @@ private extension SecurityScannerTransactionFactory {
                 data: tx.data,
                 isApprovalRequired: transaction.isApproveRequired
             )
-        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
+        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet, .jupiter:
+            // Jupiter is Solana-only; this EVM scanner is never reached for it
+            // (the source-chain guard routes Solana swaps away), but the switch
+            // must stay exhaustive.
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
         }
     }

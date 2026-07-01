@@ -605,6 +605,25 @@ private extension BalanceService {
                 return nil
             }
 
+        case .solana:
+            // Native SOL is the only stake-able asset on Solana. The DeFi
+            // position is the delegated stake summed across every stake account
+            // the vault's staker authority owns. Stake accounts are read live
+            // (uncached) so this reflects a just-submitted delegate/unstake.
+            // Returning `nil` on transient failure preserves the previously
+            // persisted value rather than clobbering it with 0.
+            guard identifier.isNativeToken else { return nil }
+            do {
+                let accounts = try await SolanaStakingService.shared.fetchStakeAccounts(owner: identifier.address)
+                let totalLamports = accounts
+                    .compactMap { $0.delegation?.stake }
+                    .reduce(UInt64.zero, +)
+                return Decimal(totalLamports).description
+            } catch {
+                logger.warning("Failed to fetch Solana stake accounts for \(identifier.address, privacy: .private): \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
+
         default:
             // All other chains currently don't support staking
             return nil

@@ -4,7 +4,7 @@
 //
 //  Form view-model for the LUNA / LUNC redelegate flow. Source validator
 //  is pre-selected from the position card; destination validator is
-//  selected via the shared `ValidatorSelectionScreen` (with the source
+//  selected via the shared `StakingValidatorPickerScreen` (with the source
 //  excluded). Pre-flight check against
 //  `/cosmos/staking/v1beta1/delegators/{addr}/redelegations` runs in
 //  `onLoad()` — if the source validator is under cooldown, `validForm`

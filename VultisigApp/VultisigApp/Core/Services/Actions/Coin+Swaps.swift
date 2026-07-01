@@ -64,6 +64,8 @@ extension Coin {
             return true
         case ("lifi", .lifi):
             return true
+        case ("jupiter", .jupiter):
+            return true
         case ("thorchain", .thorchain),
              ("thorchain", .thorchainChainnet),
              ("thorchain", .thorchainStagenet):
@@ -153,9 +155,12 @@ extension Coin {
         case .gaiaChain:
             return [.thorchain]
         case .solana:
-            // Phase 1 chain — `.swapkit` enables EVM↔Solana and Solana↔EVM
-            // routes via NEAR Intents / Chainflip / etc.
-            return [.thorchain, .lifi, .swapkit]
+            // `.swapkit` enables EVM↔Solana / Solana↔EVM via NEAR Intents /
+            // Chainflip; `.jupiter` serves on-Solana token swaps (SOL↔SPL,
+            // SPL↔SPL). Jupiter is Solana-only and same-chain — cross-chain
+            // pairs drop it automatically via the `SwapCoinsResolver` from∩to
+            // intersection, and THORChain stays for SPL↔other-chain routes.
+            return [.thorchain, .jupiter, .lifi, .swapkit]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:

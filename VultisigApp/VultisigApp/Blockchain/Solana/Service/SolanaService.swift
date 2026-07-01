@@ -98,14 +98,22 @@ class SolanaService {
             }
 
             // -32002 is Solana's generic preflight-failure code, not specific
-            // to expired blockhashes — match on the message instead.
-            let lowered = error.message.lowercased()
+            // to expired blockhashes. The structured reason lives in
+            // `data.err` ("BlockhashNotFound"); the message is just the generic
+            // "Transaction simulation failed". Match on either.
+            let structuredErr = error.data?.err?.stringValue ?? ""
+            let lowered = (error.message + " " + structuredErr).lowercased()
+            // The structured `data.err` form is "BlockhashNotFound" (no spaces);
+            // the message form is "Blockhash not found". Match both.
+            let isBlockhashNotFound = lowered.contains("blockhash not found")
+                || lowered.contains("blockhashnotfound")
+            let isBlockHeightExceeded = lowered.contains("block height exceeded")
 
-            // "Blockhash not found" right after signing is usually propagation
+            // Blockhash-not-found right after signing is usually propagation
             // lag: the RPC node we hit hasn't observed our (confirmed) blockhash
             // yet. Resending the same signed tx after a short backoff typically
             // clears it without escalating to a full keysign-ceremony retry.
-            if lowered.contains("blockhash not found"), attempt < Self.maxBroadcastAttempts {
+            if isBlockhashNotFound, attempt < Self.maxBroadcastAttempts {
                 logger.warning("solana broadcast attempt \(attempt)/\(Self.maxBroadcastAttempts) hit transient blockhash-not-found; resending after backoff")
                 try await Task.sleep(for: broadcastRetryBackoff)
                 continue
@@ -115,9 +123,19 @@ class SolanaService {
             // retry) means the blockhash has expired — resending the same tx
             // can't help, so surface it as retryable to re-sign with a fresh
             // blockhash.
-            if lowered.contains("blockhash not found") ||
-                lowered.contains("block height exceeded") {
+            if isBlockhashNotFound || isBlockHeightExceeded {
                 throw SolanaRetryableError.blockhashExpired(message: error.message)
+            }
+
+            // Surface the preflight program logs — on a simulation failure they
+            // name the real on-chain reason (e.g. insufficient funds for rent,
+            // exceeded compute budget) that the bare message omits.
+            if let logs = error.data?.logs, !logs.isEmpty {
+                logger.error("solana broadcast simulation failed: \(error.message, privacy: .public)\nlogs:\n\(logs.joined(separator: "\n"), privacy: .public)")
+                throw SolanaServiceError.rpcError(
+                    message: "\(error.message)\n\(logs.suffix(4).joined(separator: "\n"))",
+                    code: error.code
+                )
             }
 
             throw SolanaServiceError.rpcError(message: error.message, code: error.code)
@@ -177,6 +195,18 @@ class SolanaService {
     func fetchRecentBlockhash() async throws -> String? {
         let response = try await httpClient.request(
             api(.getLatestBlockhash),
+            responseType: SolanaGetLatestBlockhashResponse.self
+        )
+        return response.data.result.value.blockhash
+    }
+
+    /// `finalized`-commitment blockhash for the pre-keysign refresh. A confirmed
+    /// blockhash can be unknown to the load-balanced proxy's broadcast node
+    /// (preflight `BlockhashNotFound`); a finalized one is rooted and known to
+    /// every node.
+    func fetchFinalizedBlockhash() async throws -> String? {
+        let response = try await httpClient.request(
+            api(.getLatestBlockhashFinalized),
             responseType: SolanaGetLatestBlockhashResponse.self
         )
         return response.data.result.value.blockhash
@@ -504,6 +534,134 @@ class SolanaService {
 
         let isToken2022 = value.owner == TOKEN_PROGRAM_ID_2022
         return (true, isToken2022)
+    }
+
+    // MARK: - Native staking reads
+
+    /// Rent-exempt reserve for a 200-byte stake account. Rent params change
+    /// rarely, so it is cached 24h via `Utils.getCachedData`.
+    private var rentReserveCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
+    /// Live epoch info. Cached 45s so a screen refresh doesn't re-hit RPC on
+    /// every appear while still tracking the ~2-day epoch closely.
+    private var epochInfoCache = ThreadSafeDictionary<String, (data: SolanaEpochInfo, timestamp: Date)>()
+    /// Network minimum active delegation (lamports). Changes only on a rare
+    /// feature-gate activation, so it is cached 24h like the rent reserve.
+    private var minDelegationCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
+
+    private static let rentReserveTTL: TimeInterval = 60 * 60 * 24
+    private static let epochInfoTTL: TimeInterval = 45
+    private static let minDelegationTTL: TimeInterval = 60 * 60 * 24
+
+    /// All validators (vote accounts), tagged with their delinquent bucket.
+    func fetchSolanaValidators() async throws -> [SolanaValidator] {
+        let response = try await httpClient.request(
+            api(.getVoteAccounts),
+            responseType: SolanaGetVoteAccountsResponse.self
+        )
+        let current = response.data.result.current.map { SolanaValidator(voteAccount: $0, isDelinquent: false) }
+        let delinquent = response.data.result.delinquent.map { SolanaValidator(voteAccount: $0, isDelinquent: true) }
+        return current + delinquent
+    }
+
+    /// Parsed stake accounts delegated by `owner` (the staker authority). Uses
+    /// the `dataSize:200 + memcmp{offset:12}` filter and `jsonParsed` encoding.
+    /// Not cached — must reflect a just-submitted stake/unstake and freshly
+    /// accrued rewards; the UI refreshes on appear.
+    func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
+        let response = try await httpClient.request(
+            api(.getStakeAccountsByOwner(staker: owner, pubkeyOnly: false)),
+            responseType: SolanaGetProgramAccountsResponse.self
+        )
+        return response.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
+    }
+
+    /// Full parsed info for a single stake account.
+    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? {
+        let response = try await httpClient.request(
+            api(.getStakeAccountInfo(address: address)),
+            responseType: SolanaGetStakeAccountInfoResponse.self
+        )
+        guard let value = response.data.result.value else { return nil }
+        return SolanaStakeAccount(pubkey: address, accountInfo: value)
+    }
+
+    /// Current epoch info, cached 45s.
+    func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo {
+        let cacheKey = "solana-epoch-info"
+        if let cached: SolanaEpochInfo = Utils.getCachedData(cacheKey: cacheKey, cache: epochInfoCache, timeInSeconds: Self.epochInfoTTL) {
+            return cached
+        }
+        let response = try await httpClient.request(
+            api(.getEpochInfo),
+            responseType: SolanaGetEpochInfoResponse.self
+        )
+        let info = response.data.result
+        epochInfoCache.set(cacheKey, (data: info, timestamp: Date()))
+        return info
+    }
+
+    /// Rent-exempt reserve (lamports) for a 200-byte stake account, cached 24h.
+    func fetchSolanaRentReserve() async throws -> UInt64 {
+        let cacheKey = "solana-rent-reserve-\(SolanaStakingConfig.stakeStateSize)"
+        if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL) {
+            return cached
+        }
+        let response = try await httpClient.request(
+            api(.getMinimumBalanceForRentExemption(size: SolanaStakingConfig.stakeStateSize)),
+            responseType: SolanaGetMinimumBalanceForRentExemptionResponse.self
+        )
+        let reserve = response.data.result
+        rentReserveCache.set(cacheKey, (data: reserve, timestamp: Date()))
+        return reserve
+    }
+
+    /// Network minimum active delegation (lamports), cached 24h. The Vultisig
+    /// proxy blocks `getStakeMinimumDelegation`, so this reads directly from a
+    /// public node (PublicNode, then mainnet-beta as fallback). The value is a
+    /// network-global constant used only as a form-validation floor and never
+    /// touches signing, so the off-proxy read is safe. Throws when every public
+    /// host fails; the caller falls back to the documented
+    /// `SolanaStakingConfig.minDelegationFloorLamports`.
+    func fetchSolanaMinDelegation() async throws -> UInt64 {
+        let cacheKey = "solana-min-delegation"
+        if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: minDelegationCache, timeInSeconds: Self.minDelegationTTL) {
+            return cached
+        }
+        var lastError: Error?
+        for host in SolanaAPI.minDelegationPublicHosts {
+            do {
+                let response = try await httpClient.request(
+                    SolanaAPI(baseURL: host, usesProxyPath: false, rpcMethod: .getStakeMinimumDelegation),
+                    responseType: SolanaGetStakeMinimumDelegationResponse.self
+                )
+                let minimum = response.data.result.value
+                minDelegationCache.set(cacheKey, (data: minimum, timestamp: Date()))
+                return minimum
+            } catch {
+                lastError = error
+                logger.warning("getStakeMinimumDelegation failed on \(host.absoluteString, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        throw lastError ?? SolanaServiceError.rpcError(message: "getStakeMinimumDelegation: no public host responded", code: -1)
+    }
+
+    /// Drops the short-lived epoch-info cache so the next read reflects a freshly
+    /// advanced epoch. Stake accounts are already uncached, so after a signed
+    /// delegate/unstake/withdraw/move the only stale read is the 45 s epoch cache
+    /// the activation/cooldown state is derived against; clear it so the post-tx
+    /// row state is exact.
+    func invalidateEpochInfoCache() {
+        epochInfoCache.clear()
+    }
+
+    /// Network total inflation rate for the current epoch (fraction, e.g.
+    /// 0.0377). Caching is owned by `SolanaStakingService` (10 min, actor).
+    func fetchSolanaInflationRate() async throws -> Double {
+        let response = try await httpClient.request(
+            api(.getInflationRate),
+            responseType: SolanaGetInflationRateResponse.self
+        )
+        return response.data.result.total
     }
 
 }
