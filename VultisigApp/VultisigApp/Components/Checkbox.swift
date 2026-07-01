@@ -56,7 +56,7 @@ struct Checkbox: View {
             .opacity(isChecked ? 1 : 0)
             .overlay(
                 Circle()
-                    .stroke(color, lineWidth: 1)
+                    .strokeBorder(color, lineWidth: 1)
             )
     }
 
