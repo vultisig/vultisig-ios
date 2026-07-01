@@ -436,8 +436,14 @@ private extension SwapService {
             // External recipient (when set) becomes the swap's `destination` — the
             // node encodes it into the returned memo, so the swapped funds land at
             // the external address instead of the user's own. Defaults to the
-            // user's own destination address.
-            let destination = recipientAddress ?? toCoin.address
+            // user's own destination address. For a THORChain secured-asset
+            // `toCoin` the mint settles on THORChain, so the destination must be a
+            // THORChain (`thor1…`) address — enforced here so a non-THORChain
+            // destination surfaces a clear error instead of a collapsed quote.
+            let destination = try Self.resolveThorchainDestination(
+                toCoin: toCoin,
+                recipientAddress: recipientAddress
+            )
 
             let rapidQuote = try await service.fetchSwapQuotes(
                 address: destination,
@@ -641,6 +647,42 @@ private extension SwapService {
     }
 }
 
+// MARK: - THORChain swap destination
+
+extension SwapService {
+    /// Resolve the `destination` for a native THORChain/MAYAChain swap quote.
+    ///
+    /// The existing contract is preserved: an explicit external recipient (when
+    /// set) becomes the destination; otherwise it's the user's own receiving
+    /// address for `toCoin`.
+    ///
+    /// The one addition is a guard for THORChain **secured assets**. A secured
+    /// asset is minted *on THORChain* (quote memo `=:ETH-USDC:thor1…:0/1/0`), so
+    /// its destination must be a THORChain (`thor1…`) address. For a
+    /// `chain == .thorChain` `toCoin` that is exactly `toCoin.address` — derived
+    /// from the vault key, independent of the secured denom in `contractAddress`.
+    /// If that resolved destination is somehow not a THORChain address (e.g. an
+    /// empty or L1 `0x…` value), THORNode rejects the quote with "swap
+    /// destination address is not the same chain as the target asset"; we reject
+    /// it up front with a clear, message-bearing error instead of letting it
+    /// collapse into a generic `routeUnavailable`. Non-secured and external-
+    /// recipient paths are unchanged.
+    static func resolveThorchainDestination(toCoin: Coin, recipientAddress: String?) throws -> String {
+        let destination = recipientAddress ?? toCoin.address
+
+        if recipientAddress == nil,
+           THORChainHelper.isSecuredAsset(coin: toCoin),
+           !THORChainHelper.isValidThorchainAddress(destination, chain: toCoin.chain) {
+            throw SwapError.serverError(
+                message: "Secured-asset swap destination is not a THORChain address "
+                    + "(\(destination.nilIfEmpty ?? "empty")); expected the vault's THORChain address."
+            )
+        }
+
+        return destination
+    }
+}
+
 // MARK: - Upstream error mapping
 
 extension SwapService {
@@ -686,17 +728,20 @@ extension SwapService {
 
     /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
     /// A trading halt is detected on any code so a paused chain surfaces as a
-    /// retryable message instead of `routeUnavailable`; otherwise the existing
-    /// code-3 classification (fees / unsupported pair / raw server message) and
-    /// the non-code-3 `routeUnavailable` fallback are preserved.
+    /// retryable message. Otherwise the known dust/fee/missing-pool classes are
+    /// mapped to their typed errors and anything else relays THORNode's own
+    /// message — so a specific, actionable failure (e.g. code 2 "swap
+    /// destination address is not the same chain as the target asset") is
+    /// diagnosable instead of collapsing into a generic `routeUnavailable`. Only
+    /// a truly empty message falls back to `routeUnavailable`.
     static func mapThorchainSwapError(_ error: ThorchainSwapError) -> SwapError {
         if isTradingHalted(error.message) {
             return .tradingHalted
         }
-        if error.code == 3 {
-            return classifyNativeQuoteError(error.message) ?? .serverError(message: error.message)
+        if let classified = classifyNativeQuoteError(error.message) {
+            return classified
         }
-        return .routeUnavailable
+        return error.message.isEmpty ? .routeUnavailable : .serverError(message: error.message)
     }
 
     /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.

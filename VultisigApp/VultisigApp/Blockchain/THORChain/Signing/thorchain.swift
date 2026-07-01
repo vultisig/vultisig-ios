@@ -30,6 +30,15 @@ enum THORChainHelper {
         }
     }
 
+    /// Non-throwing check that `address` is a valid THORChain address for the
+    /// given THORChain network (mainnet `thor1…`, chainnet `cthor1…`, stagenet
+    /// `sthor1…`). Used to reject a swap destination that would not settle on
+    /// THORChain before the request leaves the device.
+    static func isValidThorchainAddress(_ address: String, chain: Chain) -> Bool {
+        guard !address.isEmpty else { return false }
+        return (try? validateThorchainAddress(address, chain: chain)) != nil
+    }
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
