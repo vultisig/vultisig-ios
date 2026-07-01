@@ -79,6 +79,23 @@ final class SolanaStakingAPITests: XCTestCase {
         XCTAssertEqual(envelope["method"] as? String, "getVoteAccounts")
     }
 
+    func testStakeMinimumDelegationMethodTakesNoParams() throws {
+        let envelope = try params(for: .getStakeMinimumDelegation)
+        XCTAssertEqual(envelope["method"] as? String, "getStakeMinimumDelegation")
+        let rpcParams = try XCTUnwrap(envelope["params"] as? [Any])
+        XCTAssertTrue(rpcParams.isEmpty)
+    }
+
+    func testMinDelegationPublicHostsDropTheProxyPath() {
+        // The public endpoints are complete JSON-RPC URLs, so the `/solana/`
+        // proxy path must not be appended.
+        for host in SolanaAPI.minDelegationPublicHosts {
+            let api = SolanaAPI(baseURL: host, usesProxyPath: false, rpcMethod: .getStakeMinimumDelegation)
+            XCTAssertEqual(api.path, "")
+        }
+        XCTAssertFalse(SolanaAPI.minDelegationPublicHosts.isEmpty)
+    }
+
     // MARK: - Response decoding
 
     func testEpochInfoResponseDecodes() throws {
@@ -97,6 +114,16 @@ final class SolanaStakingAPITests: XCTestCase {
             from: Data(#"{ "result": 2282880 }"#.utf8)
         )
         XCTAssertEqual(response.result, 2_282_880)
+    }
+
+    func testStakeMinimumDelegationResponseDecodes() throws {
+        // Shape returned by public nodes: `result` wraps `context` + `value`.
+        let json = #"{ "jsonrpc": "2.0", "result": { "context": { "slot": 429993219 }, "value": 1000000000 }, "id": 1 }"#
+        let response = try JSONDecoder().decode(
+            SolanaGetStakeMinimumDelegationResponse.self,
+            from: Data(json.utf8)
+        )
+        XCTAssertEqual(response.result.value, 1_000_000_000)
     }
 
     func testVoteAccountsResponseDecodesAndTagsDelinquency() throws {

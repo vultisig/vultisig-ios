@@ -544,9 +544,13 @@ class SolanaService {
     /// Live epoch info. Cached 45s so a screen refresh doesn't re-hit RPC on
     /// every appear while still tracking the ~2-day epoch closely.
     private var epochInfoCache = ThreadSafeDictionary<String, (data: SolanaEpochInfo, timestamp: Date)>()
+    /// Network minimum active delegation (lamports). Changes only on a rare
+    /// feature-gate activation, so it is cached 24h like the rent reserve.
+    private var minDelegationCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
 
     private static let rentReserveTTL: TimeInterval = 60 * 60 * 24
     private static let epochInfoTTL: TimeInterval = 45
+    private static let minDelegationTTL: TimeInterval = 60 * 60 * 24
 
     /// All validators (vote accounts), tagged with their delinquent bucket.
     func fetchSolanaValidators() async throws -> [SolanaValidator] {
@@ -609,6 +613,36 @@ class SolanaService {
         let reserve = response.data.result
         rentReserveCache.set(cacheKey, (data: reserve, timestamp: Date()))
         return reserve
+    }
+
+    /// Network minimum active delegation (lamports), cached 24h. The Vultisig
+    /// proxy blocks `getStakeMinimumDelegation`, so this reads directly from a
+    /// public node (PublicNode, then mainnet-beta as fallback). The value is a
+    /// network-global constant used only as a form-validation floor and never
+    /// touches signing, so the off-proxy read is safe. Throws when every public
+    /// host fails; the caller falls back to the documented
+    /// `SolanaStakingConfig.minDelegationFloorLamports`.
+    func fetchSolanaMinDelegation() async throws -> UInt64 {
+        let cacheKey = "solana-min-delegation"
+        if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: minDelegationCache, timeInSeconds: Self.minDelegationTTL) {
+            return cached
+        }
+        var lastError: Error?
+        for host in SolanaAPI.minDelegationPublicHosts {
+            do {
+                let response = try await httpClient.request(
+                    SolanaAPI(baseURL: host, usesProxyPath: false, rpcMethod: .getStakeMinimumDelegation),
+                    responseType: SolanaGetStakeMinimumDelegationResponse.self
+                )
+                let minimum = response.data.result.value
+                minDelegationCache.set(cacheKey, (data: minimum, timestamp: Date()))
+                return minimum
+            } catch {
+                lastError = error
+                logger.warning("getStakeMinimumDelegation failed on \(host.absoluteString, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        throw lastError ?? SolanaServiceError.rpcError(message: "getStakeMinimumDelegation: no public host responded", code: -1)
     }
 
     /// Drops the short-lived epoch-info cache so the next read reflects a freshly
