@@ -86,11 +86,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         .onLoad {
             focusedFieldBinding = .amount
         }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
+        .delayedFocus(from: focusedFieldBinding, to: $focusedField)
     }
 
     func onContinue() {
