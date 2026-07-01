@@ -258,6 +258,13 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Spacer()
                 }
                 .font(Theme.fonts.bodyLMedium)
+
+                if input.amountFiat.isNotEmpty {
+                    Text(input.amountFiat)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(Theme.fonts.priceBodyS)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .padding(.bottom, 8)
         }

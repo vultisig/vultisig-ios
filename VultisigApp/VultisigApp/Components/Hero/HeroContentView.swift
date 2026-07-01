@@ -78,13 +78,21 @@ struct HeroContentView: View {
                     tokenChainLogo: nil
                 )
             }
-            (
-                Text(coin.amount)
-                    .foregroundStyle(Theme.colors.textPrimary) +
-                Text(" \(coin.ticker)")
-                    .foregroundStyle(Theme.colors.textTertiary)
-            )
-            .font(Theme.fonts.priceBodyL)
+            VStack(spacing: 2) {
+                (
+                    Text(coin.amount)
+                        .foregroundStyle(Theme.colors.textPrimary) +
+                    Text(" \(coin.ticker)")
+                        .foregroundStyle(Theme.colors.textTertiary)
+                )
+                .font(Theme.fonts.priceBodyL)
+
+                if let fiat = coin.fiat, !fiat.isEmpty {
+                    Text(fiat)
+                        .font(Theme.fonts.priceBodyS)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+            }
         }
     }
 

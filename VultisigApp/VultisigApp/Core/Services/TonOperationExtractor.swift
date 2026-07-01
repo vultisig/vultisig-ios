@@ -26,6 +26,18 @@ enum TonOperationExtractor {
         let ticker: String
         let logo: String
         let display: String      // pre-joined "1.234 TICKER" string
+        /// Pre-formatted fiat value of the jetton amount (e.g. "$12.34"),
+        /// resolved against the moving coin's `RateProvider` rate. `nil` when
+        /// the jetton has no price, so the hero omits the fiat sub-line.
+        let fiat: String?
+
+        init(amountText: String, ticker: String, logo: String, display: String, fiat: String? = nil) {
+            self.amountText = amountText
+            self.ticker = ticker
+            self.logo = logo
+            self.display = display
+            self.fiat = fiat
+        }
     }
 
     /// Run the extractor against a list of messages. Returns the first
@@ -69,25 +81,31 @@ enum TonOperationExtractor {
             return nil
         }
 
-        let resolved: (ticker: String, logo: String, decimals: Int)?
-        if let vaultMatch = vault.coins.first(where: { coin in
+        guard let vaultMatch = vault.coins.first(where: { coin in
             coin.chain == .ton
                 && !coin.isNativeToken
                 && normalize(address: coin.address) == normalizedWallet
-        }) {
-            resolved = (vaultMatch.ticker, vaultMatch.logo, vaultMatch.decimals)
-        } else {
-            resolved = nil
+        }) else {
+            return nil
         }
 
-        guard let resolved else { return nil }
-        let formatted = formatAmount(rawAmount: rawAmount, decimals: resolved.decimals)
+        let formatted = formatAmount(rawAmount: rawAmount, decimals: vaultMatch.decimals)
         return Display(
             amountText: formatted,
-            ticker: resolved.ticker,
-            logo: resolved.logo,
-            display: "\(formatted) \(resolved.ticker)"
+            ticker: vaultMatch.ticker,
+            logo: vaultMatch.logo,
+            display: "\(formatted) \(vaultMatch.ticker)",
+            fiat: resolveFiat(rawAmount: rawAmount, coin: vaultMatch)
         )
+    }
+
+    /// Best-effort fiat for the moving jetton amount, sharing the send/fee
+    /// `RateProvider` price source. Returns `nil` when the jetton has no rate.
+    private static func resolveFiat(rawAmount: String, coin: Coin) -> String? {
+        guard RateProvider.shared.hasRate(for: coin) else { return nil }
+        let amountDecimal = (Decimal(string: rawAmount) ?? .zero) / pow(Decimal(10), coin.decimals)
+        let fiat = coin.fiat(decimal: amountDecimal).formatToFiat(includeCurrencySymbol: true)
+        return fiat.isEmpty ? nil : fiat
     }
 
     private static func normalize(address: String) -> String? {
