@@ -1186,6 +1186,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
+"swapSecuredAssetInvalidDestination" = "La destinazione dello swap dell'asset protetto non è un indirizzo %1$@ valido (%2$@).";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
 "swapTradingHalted" = "La negoziazione di questo asset è temporaneamente sospesa. Riprova più tardi.";
 "swapTXHash" = "Hash Tx dello scambio";

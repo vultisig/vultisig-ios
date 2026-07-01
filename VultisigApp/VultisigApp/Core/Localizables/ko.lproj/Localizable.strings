@@ -1149,6 +1149,7 @@
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
+"swapSecuredAssetInvalidDestination" = "보안 자산 스왑 대상이 유효한 %1$@ 주소가 아닙니다 (%2$@).";
 "swapTrackingLink" = "스왑 추적 링크";
 "swapTradingHalted" = "이 자산의 거래가 일시적으로 중단되었습니다. 나중에 다시 시도해 주세요.";
 "swapTXHash" = "스왑 Tx 해시";
