@@ -674,8 +674,11 @@ extension SwapService {
            THORChainHelper.isSecuredAsset(coin: toCoin),
            !THORChainHelper.isValidThorchainAddress(destination, chain: toCoin.chain) {
             throw SwapError.serverError(
-                message: "Secured-asset swap destination is not a THORChain address "
-                    + "(\(destination.nilIfEmpty ?? "empty")); expected the vault's THORChain address."
+                message: String(
+                    format: "swapSecuredAssetInvalidDestination".localized,
+                    THORChainHelper.expectedAddressPrefix(for: toCoin.chain),
+                    destination.nilIfEmpty ?? "empty"
+                )
             )
         }
 

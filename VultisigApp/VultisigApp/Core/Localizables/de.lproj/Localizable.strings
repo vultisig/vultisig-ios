@@ -1186,6 +1186,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
+"swapSecuredAssetInvalidDestination" = "Ziel des Secured-Asset-Swaps ist keine gültige %1$@-Adresse (%2$@).";
 "swapTrackingLink" = "Tauschverfolgungslink";
 "swapTradingHalted" = "Der Handel für diesen Vermögenswert ist vorübergehend ausgesetzt. Bitte versuche es später erneut.";
 "swapTXHash" = "Tausch-Tx-Hash";

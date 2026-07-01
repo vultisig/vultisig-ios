@@ -39,6 +39,17 @@ enum THORChainHelper {
         return (try? validateThorchainAddress(address, chain: chain)) != nil
     }
 
+    /// Human-readable expected address prefix for a THORChain network, for use
+    /// in user-facing diagnostics: mainnet `thor1…`, chainnet `cthor1…`,
+    /// stagenet `sthor1…`.
+    static func expectedAddressPrefix(for chain: Chain) -> String {
+        switch chain {
+        case .thorChainChainnet: return "cthor1…"
+        case .thorChainStagenet: return "sthor1…"
+        default: return "thor1…"
+        }
+    }
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
