@@ -16,8 +16,10 @@ import Foundation
 ///  * Read/honor side — ALWAYS-ON and hash-safe. Every Cosmos signing helper
 ///    applies a relayed `gas_limit` when present and falls back to the static
 ///    per-chain limit otherwise: `CosmosHelperStruct`, `TerraHelperStruct`,
-///    `DydxHelperStruct`. It is a no-op when no peer set one, so two co-signing
-///    devices always resolve the identical gas value.
+///    `DydxHelperStruct`, `QBTCHelper`. It is a no-op when no peer set one, so
+///    two co-signing devices always resolve the identical gas value. (`QBTCHelper`
+///    honors the field for consistency even though QBTC is never simulated as an
+///    initiator — see `nonSimulatableChains` below.)
 ///  * Initiator-set side — this type. The device simulates and SETS
 ///    `gas_limit`. The relayed value is part of the SignDoc every co-signer
 ///    hashes.

@@ -105,6 +105,81 @@ final class CosmosRelayedGasLimitTests: XCTestCase {
                        "Absent gas_limit must use Terra's static per-chain limit")
     }
 
+    // MARK: - Bespoke helpers honor the relayed limit too (QBTC / ML-DSA)
+
+    /// QBTC signs with a bespoke ML-DSA builder that manually encodes AuthInfo,
+    /// where the static gas limit is `QBTCHelper.create().gasLimit` (300_000).
+    /// The `gas_limit` varint is part of the SignDoc both devices hash, so the
+    /// pre-image hash is a faithful witness: a relayed limit must change the
+    /// hash, and an absent one must reproduce the static-limit hash exactly.
+    private func qbtcCoin() -> Coin {
+        let meta = CoinMeta(
+            chain: .qbtc,
+            ticker: "QBTC",
+            logo: "qbtc",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        let hexPublicKey = "02" + String(repeating: "0", count: 64)
+        return Coin(asset: meta, address: "qbtc1from", hexPublicKey: hexPublicKey)
+    }
+
+    private func qbtcSendPayload(gasLimit: UInt64?) -> KeysignPayload {
+        // A native MsgSend (signData == nil, transactionType == 0) routes through
+        // `QBTCHelper.buildTxComponents` → `buildAuthInfo`, exercising the
+        // relayed-vs-static gas-limit decision.
+        KeysignPayload(
+            coin: qbtcCoin(),
+            toAddress: "qbtc1to",
+            toAmount: 1_000,
+            chainSpecific: .Cosmos(
+                accountNumber: 7,
+                sequence: 3,
+                gas: 800,
+                transactionType: 0,
+                ibcDenomTrace: nil,
+                gasLimit: gasLimit
+            ),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "",
+            libType: LibType.GG20.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+    }
+
+    func testQBTCAbsentGasLimitReproducesStaticLimitHash() throws {
+        let helper = QBTCHelper.create()
+        let absentHash = try helper.getPreSignedImageHash(keysignPayload: qbtcSendPayload(gasLimit: nil))
+        let staticHash = try helper.getPreSignedImageHash(keysignPayload: qbtcSendPayload(gasLimit: helper.gasLimit))
+        XCTAssertEqual(
+            absentHash, staticHash,
+            "Absent gas_limit must fall back to QBTC's static limit (identical SignDoc)"
+        )
+    }
+
+    func testQBTCRelayedGasLimitChangesSignDocHash() throws {
+        let helper = QBTCHelper.create()
+        let absentHash = try helper.getPreSignedImageHash(keysignPayload: qbtcSendPayload(gasLimit: nil))
+        let relayedHash = try helper.getPreSignedImageHash(keysignPayload: qbtcSendPayload(gasLimit: 999_000))
+        XCTAssertNotEqual(
+            absentHash, relayedHash,
+            "A relayed gas_limit must be honored, changing the signed SignDoc bytes"
+        )
+    }
+
     // MARK: - Proto round-trip
 
     func testGasLimitRoundTripsThroughProto() throws {

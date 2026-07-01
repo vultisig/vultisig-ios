@@ -120,6 +120,13 @@ enum CosmosStakingSignDataResolver {
         guard let payload = sendTransaction.cosmosStakingPayload else {
             throw Errors.missingPayloadField("cosmosStakingPayload")
         }
+        // The relayed `gas_limit` (6th associated value) is intentionally NOT
+        // honored here: native staking is never gas-simulated (only native
+        // transfers are), so the field is always unset on this path, and the
+        // staking gas is display-coupled through `CosmosStakingConfig`
+        // (`scaledGasLimit`, shared with the verify screen). Overriding it with a
+        // relayed value on the signed side alone would drift the displayed fee
+        // from the signed fee. The static per-op config value is the fallback.
         guard case .Cosmos(let accountNumber, let sequence, _, _, _, _) = chainSpecific else {
             throw Errors.missingChainSpecific
         }
