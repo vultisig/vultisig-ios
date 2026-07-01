@@ -71,12 +71,36 @@ final class JoinKeysignGasSwapFeeTests: XCTestCase {
         XCTAssertEqual(payload.chainSpecific.fee, maxFeePerGasWei * gasLimit)
     }
 
+    func testGenericSwapFeeUsesGasLimitWhenRouteGasBelowIt() {
+        // Floor branch: when the transmitted gasLimit exceeds the route gas, the
+        // fee must be valued at the larger gasLimit so the co-signer never
+        // under-reports (`max(routeGas, gasLimit)`).
+        let gasLimitAboveRoute = BigInt(500_000) // > routeGas (359,942)
+        let payload = makeEvmPayload(
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: maxFeePerGasWei,
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: gasLimitAboveRoute
+            ),
+            swapPayload: makeGenericSwapPayload(routeGas: Int64(routeGas))
+        )
+
+        let result = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+        XCTAssertEqual(
+            result.feeCrypto,
+            expectedFeeCrypto(weiFee: maxFeePerGasWei * gasLimitAboveRoute),
+            "When gasLimit exceeds routeGas the fee must be valued at gasLimit, not the route gas"
+        )
+    }
+
     // MARK: - Helpers
 
     /// Mirrors the production formatting so the comparison is locale-independent:
     /// native ETH has 18 decimals (resolved from TokensStore), rounded down.
     private func expectedFeeCrypto(weiFee: BigInt) -> String {
-        let amount = Decimal(weiFee) / pow(10, 18)
+        let amount = (Decimal(string: weiFee.description) ?? .zero) / pow(10, 18)
         return "\(amount.formatToDecimal(digits: 18)) ETH"
     }
 

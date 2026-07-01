@@ -41,8 +41,11 @@ struct JoinKeysignGasViewModel {
             var totalFeeWei = payload.chainSpecific.fee
             if case .Ethereum(let maxFeePerGasWei, _, _, let gasLimit) = payload.chainSpecific,
                case .generic(let generic)? = payload.swapPayload {
-                let signedGas = max(BigInt(generic.quote.tx.gas), gasLimit)
-                totalFeeWei = maxFeePerGasWei * signedGas
+                totalFeeWei = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
+                    maxFeePerGasWei: maxFeePerGasWei,
+                    routeGas: BigInt(generic.quote.tx.gas),
+                    gasLimit: gasLimit
+                )
             }
             let gasAmount = Decimal(totalFeeWei) / pow(10, nativeToken.decimals)
             let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
