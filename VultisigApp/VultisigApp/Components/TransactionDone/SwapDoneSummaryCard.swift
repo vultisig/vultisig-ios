@@ -268,11 +268,11 @@ struct SwapDoneSummaryCard: View {
             }
 
             VStack(spacing: 4) {
-                Text(title)
+                AmountText(title)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
 
-                Text((description ?? "").formatToFiat(includeCurrencySymbol: true))
+                AmountText((description ?? "").formatToFiat(includeCurrencySymbol: true))
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.textTertiary)
             }

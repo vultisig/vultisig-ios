@@ -74,10 +74,10 @@ struct TransactionDoneHeaderView: View {
         }
 
         VStack(spacing: 4) {
-            Text(cryptoAmount)
+            AmountText(cryptoAmount)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text(fiatAmount)
+            AmountText(fiatAmount)
                 .font(Theme.fonts.caption10)
                 .foregroundStyle(Theme.colors.textTertiary)
         }

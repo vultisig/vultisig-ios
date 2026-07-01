@@ -242,7 +242,7 @@ struct YieldVaultScreen: View {
                     Text(presentation.setupBalanceLabelKey.localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    Text(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
+                    AmountText(AmountFormatter.formatCryptoAmount(value: model.depositedBalance, ticker: "USDC"))
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }

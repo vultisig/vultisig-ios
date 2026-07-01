@@ -39,7 +39,7 @@ struct ChainDetailHeaderView: View {
     }
 
     var chainBalanceView: some View {
-        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coins.totalBalanceInFiatString)
+        AmountText(homeViewModel.hideVaultBalance ? String.hideBalanceText : coins.totalBalanceInFiatString)
             .font(Theme.fonts.priceTitle1)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)

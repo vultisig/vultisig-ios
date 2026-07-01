@@ -82,7 +82,7 @@ struct YieldDepositScreen: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
-            Text(value)
+            AmountText(value)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
         }

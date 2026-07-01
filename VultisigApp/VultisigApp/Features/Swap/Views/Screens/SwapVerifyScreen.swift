@@ -373,11 +373,11 @@ struct SwapVerifyScreen: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(cryptoAmount)
+                AmountText(cryptoAmount)
                     .foregroundColor(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
 
-                Text(fiatAmount)
+                AmountText(fiatAmount)
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
@@ -411,7 +411,7 @@ struct SwapVerifyScreen: View {
                 .font(Theme.fonts.bodyLMedium)
 
                 HStack(spacing: 0) {
-                    Text(fiatValue)
+                    AmountText(fiatValue)
                         .font(Theme.fonts.caption12)
                         .foregroundColor(Theme.colors.textTertiary)
                     Spacer()

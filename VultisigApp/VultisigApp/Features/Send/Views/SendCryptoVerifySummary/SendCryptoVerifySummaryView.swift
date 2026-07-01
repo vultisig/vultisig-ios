@@ -249,7 +249,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .frame(width: 24, height: 24)
                         .cornerRadius(32)
 
-                    Text(input.amount)
+                    AmountText(input.amount)
                         .foregroundStyle(Theme.colors.textPrimary)
 
                     Text(input.coinTicker)

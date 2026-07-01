@@ -63,7 +63,7 @@ struct HomeMainHeaderView: View {
             Text("portfolioBalance".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
-            Text(balanceText)
+            AmountText(balanceText)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)

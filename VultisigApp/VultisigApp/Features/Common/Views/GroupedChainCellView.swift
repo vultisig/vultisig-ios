@@ -79,7 +79,7 @@ struct GroupedChainCellView: View {
             HStack(spacing: 8) {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(fiatBalanceText)
+                    AmountText(fiatBalanceText)
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .contentTransition(.numericText())

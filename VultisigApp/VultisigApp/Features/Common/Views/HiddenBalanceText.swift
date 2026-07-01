@@ -17,7 +17,7 @@ struct HiddenBalanceText: View {
     }
 
     var body: some View {
-        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : text)
+        AmountText(homeViewModel.hideVaultBalance ? String.hideBalanceText : text)
     }
 }
 

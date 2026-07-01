@@ -182,11 +182,11 @@ struct KeysignSwapConfirmView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(fees.feeCrypto)
+                AmountText(fees.feeCrypto)
                     .foregroundColor(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
 
-                Text(fees.feeFiat)
+                AmountText(fees.feeFiat)
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
@@ -210,12 +210,12 @@ struct KeysignSwapConfirmView: View {
                     .foregroundColor(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
 
-                Text(amount ?? "")
+                AmountText(amount ?? "")
                     .font(Theme.fonts.bodyLMedium)
                     .foregroundColor(Theme.colors.textPrimary)
 
                 HStack(spacing: 0) {
-                    Text(fiatValue)
+                    AmountText(fiatValue)
                         .font(Theme.fonts.caption12)
                         .foregroundColor(Theme.colors.textTertiary)
                     Spacer()

@@ -159,10 +159,10 @@ struct DoneTokenContent: View {
         )
 
         VStack(spacing: 4) {
-            Text(input.amountCrypto)
+            AmountText(input.amountCrypto)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text(input.amountFiat.formatToFiat(includeCurrencySymbol: true))
+            AmountText(input.amountFiat.formatToFiat(includeCurrencySymbol: true))
                 .font(Theme.fonts.caption10)
                 .foregroundStyle(Theme.colors.textTertiary)
         }

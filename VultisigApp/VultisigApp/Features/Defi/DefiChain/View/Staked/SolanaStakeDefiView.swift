@@ -213,7 +213,7 @@ struct SolanaStakeDefiView: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
-            Text("\(formatAmount(row.rentReserve)) \(coin.ticker)")
+            AmountText("\(formatAmount(row.rentReserve)) \(coin.ticker)")
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textSecondary)
         }
