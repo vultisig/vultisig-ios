@@ -16,6 +16,7 @@ enum SwapProvider: Equatable {
     case kyberswap(Chain)
     case lifi
     case swapkit
+    case jupiter
 
     var streamingInterval: Int {
         switch self {
@@ -56,7 +57,10 @@ enum SwapProvider: Equatable {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
             return true
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .jupiter:
+            // Jupiter is Solana-only same-chain (no external recipient flow), and
+            // it buries the recipient in the prebuilt tx with no verifiable echo —
+            // same constraint as the other aggregators.
             return false
         }
     }

@@ -6,7 +6,7 @@
 //  + scrollable `LazyVStack` of `TonPoolCard`s with the selected-state stroke
 //  variant. Tapping a row highlights it, then after a short delay commits the
 //  selection to the parent's `selectedPool` binding and dismisses. Mirrors
-//  `ValidatorSelectionScreen`.
+//  `StakingValidatorPickerScreen`.
 //
 
 import SwiftUI

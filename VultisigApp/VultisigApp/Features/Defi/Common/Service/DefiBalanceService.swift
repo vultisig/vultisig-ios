@@ -35,6 +35,8 @@ struct DefiBalanceService {
             tonTotalBalanceFiatDecimal(for: vault)
         case .terra, .terraClassic, .qbtc:
             cosmosStakingTotalBalanceFiatDecimal(chain: chain, vault: vault)
+        case .solana:
+            solanaStakingTotalBalanceFiatDecimal(for: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
@@ -77,6 +79,8 @@ struct DefiBalanceService {
             tonPositionCount(for: vault)
         case .terra, .terraClassic, .qbtc:
             cosmosStakingPositionCount(chain: chain, vault: vault)
+        case .solana:
+            solanaStakingPositionCount(for: vault)
         default:
             defaultPositionCount(chain: chain, for: vault)
         }
@@ -145,6 +149,19 @@ private extension DefiBalanceService {
                 return coin.fiat(decimal: position.amount)
             }
             .reduce(Decimal.zero, +)
+    }
+
+    /// The Solana DeFi position is the delegated SOL across all the vault's
+    /// stake accounts. `BalanceService.fetchStakedBalance(.solana)` sums the
+    /// delegated lamports of every stake account and writes the total (base
+    /// units) to `Coin.stakedBalance`; `stakedBalanceDecimal` divides by 10^9
+    /// to get SOL. Solana has no per-coin opt-in (a real stake is always the
+    /// vault's SOL DeFi position), so — like Tron — we don't gate on
+    /// `defiPositions`. Returning the persisted value keeps the balance stable
+    /// through a transient stake-account read failure (which writes nothing).
+    func solanaStakingTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        guard let solCoin = vault.nativeCoin(for: .solana) else { return .zero }
+        return solCoin.fiat(decimal: solCoin.stakedBalanceDecimal)
     }
 
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {
@@ -259,6 +276,16 @@ private extension DefiBalanceService {
         else { return 0 }
 
         return vault.stakePositions.filter { $0.coin.chain == chain }.count
+    }
+
+    /// `1` when the vault has any delegated SOL, else `0`. The DeFi-main cell
+    /// badge counts position *types* with a balance (mirrors Tron's single
+    /// frozen-TRX position); the exact per-stake-account breakdown — Solana can
+    /// hold N accounts — is rendered as individual rows in `SolanaStakeDefiView`.
+    /// Ungated (no per-coin opt-in), matching the balance roll-up above.
+    func solanaStakingPositionCount(for vault: Vault) -> Int {
+        guard let solCoin = vault.nativeCoin(for: .solana) else { return 0 }
+        return solCoin.stakedBalanceDecimal > 0 ? 1 : 0
     }
 
     func defaultPositionCount(chain: Chain, for vault: Vault) -> Int {

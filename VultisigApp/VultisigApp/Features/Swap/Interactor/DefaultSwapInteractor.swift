@@ -126,7 +126,7 @@ struct DefaultSwapInteractor: SwapInteractor {
                 inbound = try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
             case .thorchainStagenet:
                 inbound = try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
-            case .oneinch, .kyberswap, .lifi, .swapkit:
+            case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
                 return
             }
             if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {

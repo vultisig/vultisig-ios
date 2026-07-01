@@ -264,7 +264,10 @@ struct SwapService {
 
     /// Provider preference order for the banded selection. Lower index = preferred. Keyed off
     /// the enum case (not `displayName`, which can carry SwapKit sub-provider text). THORChain
-    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, LI.FI.
+    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, Jupiter, LI.FI.
+    /// Jupiter sits just above LI.FI so on-Solana token swaps prefer Jupiter (no aggregator
+    /// markup) when its net output is within the band, while LI.FI still wins when materially
+    /// better.
     private static func priority(of quote: SwapQuote) -> Int {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
@@ -277,8 +280,10 @@ struct SwapService {
             return 3
         case .oneinch:
             return 4
-        case .lifi:
+        case .jupiter:
             return 5
+        case .lifi:
+            return 6
         }
     }
 
@@ -391,6 +396,15 @@ struct SwapService {
                 vultTierDiscount: vultTierDiscount,
                 slippageBps: slippageBps,
                 recipientAddress: recipientAddress
+            )
+        case .jupiter:
+            return try await fetchJupiterQuote(
+                service: JupiterService.shared,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         }
     }
@@ -606,6 +620,25 @@ private extension SwapService {
             subProvider: response.subProvider
         )
     }
+
+    func fetchJupiterQuote(
+        service: JupiterService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vultTierDiscount: Int,
+        slippageBps: Int?
+    ) async throws -> SwapQuote {
+        let fromAmount = fromCoin.raw(for: amount)
+        let (quote, fee, platformFee) = try await service.fetchQuote(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
+        )
+        return .jupiter(quote, fee: fee, platformFee: platformFee)
+    }
 }
 
 // MARK: - Upstream error mapping
@@ -724,7 +757,7 @@ extension SwapService {
         switch provider {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
             return true
-        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit:
+        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
             return false
         }
     }

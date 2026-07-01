@@ -114,3 +114,26 @@ final class CosmosUndelegateTransactionViewModel: ObservableObject, Form {
         isMaxAmount = percentage == 100
     }
 }
+
+// MARK: - StakingFormViewModel
+
+extension CosmosUndelegateTransactionViewModel: StakingFormViewModel {
+    var titleKey: String { "cosmosStakingUndelegateTitle" }
+
+    var isContinueDisabled: Bool { !hasSufficientBalanceForFee }
+
+    var amountSpec: StakingAmountSpec? {
+        StakingAmountSpec(
+            field: amountField,
+            type: .slider,
+            availableAmount: stakedBalance,
+            decimals: coin.decimals,
+            ticker: coin.ticker,
+            seedMaxOnLoad: true
+        )
+    }
+
+    var notices: [StakingNotice] {
+        hasSufficientBalanceForFee ? [] : [.insufficientFee(ticker: coin.ticker)]
+    }
+}

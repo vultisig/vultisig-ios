@@ -45,10 +45,21 @@ struct DefiPositionsService {
             [TokensStore.qbtc]
         case .ton:
             [TokensStore.ton]
+        case .solana:
+            // Native SOL has no `TokensStore.sol` static — it is defined inline
+            // in `TokenSelectionAssets`. Resolve the native SOL meta from there
+            // so the staking position picker has the same coin the vault holds.
+            DefiPositionsService.nativeSolanaMeta.map { [$0] } ?? []
         default:
             []
         }
     }
+
+    /// Native SOL `CoinMeta` resolved from `TokenSelectionAssets`. There is no
+    /// `TokensStore.sol`; this is the single inline definition of the native
+    /// Solana coin, looked up by chain + native flag.
+    static let nativeSolanaMeta: CoinMeta? = TokensStore.TokenSelectionAssets
+        .first { $0.chain == .solana && $0.isNativeToken }
 
     func lpCoins(for chain: Chain) async -> [CoinMeta] {
         switch chain {

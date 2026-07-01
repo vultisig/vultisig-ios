@@ -41,6 +41,14 @@ struct StakePositionData: Sendable, Equatable {
     /// the explanatory label on the staked card. `nil` for chains/positions with
     /// no pending withdrawal.
     let withdrawalUnlockTime: TimeInterval?
+    /// Solana stake-account address — the per-account discriminator that makes a
+    /// row's persistent `id` unique across a vault's N stake accounts. `nil` for
+    /// non-Solana positions. See `StakePosition` for the full rationale.
+    let stakeAccountPubkey: String?
+    /// Solana vote account the stake delegates to. `nil` for non-Solana.
+    let validatorVotePubkey: String?
+    /// Raw value of `SolanaStakeActivationState`. `nil` for non-Solana.
+    let activationState: String?
 
     init(
         coin: CoinMeta,
@@ -57,7 +65,10 @@ struct StakePositionData: Sendable, Equatable {
         poolImplementation: String? = nil,
         poolName: String? = nil,
         canStake: Bool = true,
-        withdrawalUnlockTime: TimeInterval? = nil
+        withdrawalUnlockTime: TimeInterval? = nil,
+        stakeAccountPubkey: String? = nil,
+        validatorVotePubkey: String? = nil,
+        activationState: String? = nil
     ) {
         self.coin = coin
         self.type = type
@@ -74,5 +85,8 @@ struct StakePositionData: Sendable, Equatable {
         self.poolName = poolName
         self.canStake = canStake
         self.withdrawalUnlockTime = withdrawalUnlockTime
+        self.stakeAccountPubkey = stakeAccountPubkey
+        self.validatorVotePubkey = validatorVotePubkey
+        self.activationState = activationState
     }
 }

@@ -88,3 +88,46 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
         isMaxAmount = percentage == 100
     }
 }
+
+// MARK: - StakingFormViewModel
+
+extension CosmosDelegateTransactionViewModel: StakingFormViewModel {
+    var titleKey: String { "cosmosStakingDelegateTitle" }
+
+    var isContinueDisabled: Bool { !hasSufficientBalanceForFee }
+
+    var amountSpec: StakingAmountSpec? {
+        StakingAmountSpec(
+            field: amountField,
+            type: .button,
+            availableAmount: stakeableBalance,
+            decimals: coin.decimals,
+            ticker: coin.ticker,
+            seedMaxOnLoad: false
+        )
+    }
+
+    var pickerSpec: StakingPickerSpec? {
+        StakingPickerSpec(
+            title: "cosmosStakingValidatorPicker".localized,
+            isSelected: selectedValidator != nil,
+            selectionToken: selectedValidator?.operatorAddress,
+            preview: selectedValidator.map { validator in
+                let display = validator.moniker.isEmpty
+                    ? CosmosValidator.truncatedAddress(validator.operatorAddress)
+                    : validator.moniker
+                return StakingValidatorPreview(
+                    name: display,
+                    avatar: .keybase(
+                        identity: validator.identity,
+                        monogram: String(display.prefix(1)).uppercased()
+                    )
+                )
+            }
+        )
+    }
+
+    var notices: [StakingNotice] {
+        hasSufficientBalanceForFee ? [] : [.insufficientFee(ticker: coin.ticker)]
+    }
+}

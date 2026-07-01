@@ -222,6 +222,9 @@ final class SolanaHelperTests: XCTestCase {
         let params = try XCTUnwrap(body["params"] as? [Any])
         XCTAssertEqual(params.count, 2)
         XCTAssertEqual(params[0] as? String, encodedTransaction)
-        XCTAssertEqual(params[1] as? [String: String], ["encoding": "base64"])
+        // Encoding pinned to base64; preflight commitment pinned to `confirmed`
+        // to match the commitment the blockhash is fetched at (avoids spurious
+        // BlockhashNotFound on preflight — the default would be `finalized`).
+        XCTAssertEqual(params[1] as? [String: String], ["encoding": "base64", "preflightCommitment": "confirmed"])
     }
 }

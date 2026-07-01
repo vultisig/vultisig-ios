@@ -201,6 +201,23 @@ struct SendCryptoVerifyLogic {
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 
+            // Solana native-staking branch — the per-flow builder produced a
+            // `solanaStakingPayload`. Build the unsigned delegate transaction
+            // once (pinning the recent blockhash + derived stake-account
+            // address) and relay it via `signData = .signSolana`. The local-only
+            // `solanaStakingPayload` is also attached so the verify summary and
+            // the initiator's helper have the intent, but byte parity rides the
+            // relayed raw bytes — peer devices sign those without the payload.
+            if let solanaStakingPayload = tx.solanaStakingPayload {
+                let payloadWithStaking = basePayload.withSolanaStakingPayload(solanaStakingPayload)
+                let signSolana = try await SolanaStakingVerifyResolver.resolve(
+                    payload: solanaStakingPayload,
+                    basePayload: payloadWithStaking,
+                    coin: tx.coin
+                )
+                return payloadWithStaking.withSignData(.signSolana(signSolana))
+            }
+
             return basePayload
 
         } catch {

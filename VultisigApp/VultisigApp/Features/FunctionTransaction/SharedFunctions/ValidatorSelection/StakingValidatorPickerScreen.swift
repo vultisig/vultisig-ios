@@ -1,48 +1,44 @@
 //
-//  ValidatorSelectionScreen.swift
+//  StakingValidatorPickerScreen.swift
 //  VultisigApp
 //
-//  Validator-picker sheet for the LUNA / LUNC delegate / redelegate flows.
-//  `SearchTextField` + scrollable `LazyVStack` of `ValidatorCard`s with the
-//  selected-state stroke variant.
+//  Shared validator-picker sheet for the Cosmos + Solana staking flows. Generic
+//  over the chain's validator type and fed by a `StakingValidatorSource`.
+//  `SearchTextField` + scrollable `LazyVStack` of `StakingValidatorCard`s with
+//  the selected-state stroke variant.
 //
-//  Sheet-presented; tapping a row highlights it, then after a short delay
-//  commits the selection to the parent's `selectedValidator` binding and
-//  dismisses the sheet. The delay lets the user see the row selected before
-//  the sheet closes.
+//  Tapping a row highlights it, then after a short delay commits the selection
+//  to the parent's binding and dismisses the sheet — the delay lets the user see
+//  the row selected before the sheet closes.
 //
 
 import SwiftUI
 
-struct ValidatorSelectionScreen: View {
+struct StakingValidatorPickerScreen<V: StakingValidatorConvertible>: View {
     @Binding var isPresented: Bool
-    @Binding var selectedValidator: CosmosValidator?
+    @Binding var selectedValidator: V?
     let chainTicker: String
     let chainDecimals: Int
-    @StateObject private var viewModel: ValidatorSelectionViewModel
-    /// The highlighted row. Set immediately on tap so the selection is visible
-    /// during the brief delay before the sheet dismisses.
-    @State private var pickedValidator: CosmosValidator?
-    /// Drives the select-then-dismiss delay; cancelled if the user taps again
-    /// or closes the sheet before it fires.
+    @StateObject private var viewModel: StakingValidatorPickerViewModel<V>
+    /// The highlighted row's id. Set immediately on tap so the selection is
+    /// visible during the brief delay before the sheet dismisses.
+    @State private var pickedID: String?
+    /// Drives the select-then-dismiss delay; cancelled if the user taps again or
+    /// closes the sheet before it fires.
     @State private var selectionTask: Task<Void, Never>?
 
     init(
         isPresented: Binding<Bool>,
-        selectedValidator: Binding<CosmosValidator?>,
-        chain: Chain,
+        selectedValidator: Binding<V?>,
+        source: StakingValidatorSource<V>,
         chainTicker: String,
-        chainDecimals: Int,
-        excludedValidators: Set<String> = []
+        chainDecimals: Int
     ) {
         self._isPresented = isPresented
         self._selectedValidator = selectedValidator
         self.chainTicker = chainTicker
         self.chainDecimals = chainDecimals
-        self._viewModel = .init(wrappedValue: ValidatorSelectionViewModel(
-            chain: chain,
-            excludedValidators: excludedValidators
-        ))
+        self._viewModel = .init(wrappedValue: StakingValidatorPickerViewModel(source: source))
     }
 
     var body: some View {
@@ -85,7 +81,7 @@ struct ValidatorSelectionScreen: View {
             selectionTask?.cancel()
         }
         .onLoad {
-            pickedValidator = selectedValidator
+            pickedID = selectedValidator?.id
             Task { await viewModel.load() }
         }
     }
@@ -103,12 +99,13 @@ struct ValidatorSelectionScreen: View {
 
     private var list: some View {
         LazyVStack(spacing: 8) {
-            ForEach(viewModel.filteredValidators, id: \.operatorAddress) { validator in
-                ValidatorCard(
-                    validator: validator,
-                    chainTicker: chainTicker,
-                    chainDecimals: chainDecimals,
-                    isSelected: pickedValidator?.operatorAddress == validator.operatorAddress
+            ForEach(viewModel.filteredValidators) { validator in
+                StakingValidatorCard(
+                    validator: validator.makeStakingValidator(
+                        ticker: chainTicker,
+                        decimals: chainDecimals
+                    ),
+                    isSelected: pickedID == validator.id
                 ) {
                     select(validator)
                 }
@@ -117,8 +114,8 @@ struct ValidatorSelectionScreen: View {
         .padding(.vertical, 4)
     }
 
-    private func select(_ validator: CosmosValidator) {
-        pickedValidator = validator
+    private func select(_ validator: V) {
+        pickedID = validator.id
         selectionTask?.cancel()
         selectionTask = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(300))

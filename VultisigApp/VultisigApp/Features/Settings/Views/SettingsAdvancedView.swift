@@ -52,6 +52,7 @@ struct SettingsAdvancedView: View {
                     .init(value: "oneInch", label: "1Inch only"),
                     .init(value: "kyberSwap", label: "KyberSwap only"),
                     .init(value: "lifi", label: "LI.FI only"),
+                    .init(value: "jupiter", label: "settingsAdvancedForcedSwapProviderJupiter".localized),
                     .init(value: "thorchain", label: "THORChain only"),
                     .init(value: "mayachain", label: "Maya only")
                 ],
