@@ -427,7 +427,9 @@ struct PeerDiscoveryScreen: View {
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)
-#if os(macOS)
+#if os(iOS)
+            .padding(.bottom, idiom == .phone ? 10 : 30)
+#else
             .padding(.bottom, 24)
 #endif
     }
