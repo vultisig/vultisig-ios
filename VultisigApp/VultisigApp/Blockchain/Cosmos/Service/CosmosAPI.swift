@@ -20,6 +20,7 @@ struct CosmosAPI: TargetType {
         case spendableBalance(address: String)
         case accountNumber(address: String)
         case broadcastTransaction(body: Data)
+        case simulate(body: Data)
         case wasmTokenBalance(contractAddress: String, base64Payload: String)
         case ibcDenomTrace(hash: String)
         case denomMetadata(denom: String)
@@ -38,6 +39,8 @@ struct CosmosAPI: TargetType {
             return "/cosmos/auth/v1beta1/accounts/\(address)"
         case .broadcastTransaction:
             return "/cosmos/tx/v1beta1/txs"
+        case .simulate:
+            return "/cosmos/tx/v1beta1/simulate"
         case .wasmTokenBalance(let contractAddress, let base64Payload):
             // Base64 can include `/` and `=`, which the URL parser would
             // otherwise treat as path separators / query delimiters.
@@ -67,7 +70,7 @@ struct CosmosAPI: TargetType {
 
     var method: HTTPMethod {
         switch endpoint {
-        case .broadcastTransaction:
+        case .broadcastTransaction, .simulate:
             return .post
         default:
             return .get
@@ -79,6 +82,10 @@ struct CosmosAPI: TargetType {
         case .broadcastTransaction(let body):
             // Signed Cosmos transactions arrive pre-serialized from the
             // keysign layer; pass the bytes through unchanged.
+            return .requestData(body)
+        case .simulate(let body):
+            // `{"tx_bytes":"<base64 TxRaw>"}` — the unsigned tx carries a dummy
+            // signature; the node skips sig verification in simulate mode.
             return .requestData(body)
         case .allDenomsMetadata:
             // Mirrors the SDK fallback list-fetch URL:
@@ -111,6 +118,26 @@ struct CosmosWasmTokenBalanceResponse: Decodable {
 
     struct BalanceData: Decodable {
         let balance: String
+    }
+}
+
+/// Response for `/cosmos/tx/v1beta1/simulate`. We only consume
+/// `gas_info.gas_used` (a decimal string, e.g. `"95231"`) — the amount of gas
+/// the node actually consumed running the tx, which the initiator scales by a
+/// safety multiplier to derive the relayed gas limit.
+struct CosmosSimulateResponse: Decodable {
+    let gasInfo: GasInfo
+
+    struct GasInfo: Decodable {
+        let gasUsed: String
+
+        enum CodingKeys: String, CodingKey {
+            case gasUsed = "gas_used"
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case gasInfo = "gas_info"
     }
 }
 

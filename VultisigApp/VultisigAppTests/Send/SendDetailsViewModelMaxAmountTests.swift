@@ -108,7 +108,7 @@ final class SendDetailsViewModelMaxAmountTests: XCTestCase {
         let atom = SendFormFixture.makeATOM(rawBalance: "10000000") // 10 ATOM
         let interactor = MockSendInteractor()
         interactor.fetchChainSpecificStub = { _ in
-            .Cosmos(accountNumber: 0, sequence: 0, gas: 2_000, transactionType: 0, ibcDenomTrace: nil)
+            .Cosmos(accountNumber: 0, sequence: 0, gas: 2_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
         }
         let vm = SendFormFixture.make(coin: atom, interactor: interactor)
 

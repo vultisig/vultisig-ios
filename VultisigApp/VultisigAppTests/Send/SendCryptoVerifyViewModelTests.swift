@@ -418,7 +418,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             .Cosmos(accountNumber: 0, sequence: 0,
                     gas: UInt64(7_500),
                     transactionType: 0,
-                    ibcDenomTrace: nil)
+                    ibcDenomTrace: nil, gasLimit: nil)
         }
         let atom = makeCoin(.gaiaChain, ticker: "ATOM", decimals: 6,
                             isNative: true, rawBalance: "10000000")
@@ -610,7 +610,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         let interactor = MockSendInteractor()
         let cosmosSpec: BlockChainSpecific = .Cosmos(
             accountNumber: 42, sequence: 7, gas: UInt64(7_500),
-            transactionType: 0, ibcDenomTrace: nil
+            transactionType: 0, ibcDenomTrace: nil, gasLimit: nil
         )
         interactor.fetchChainSpecificStub = { _ in cosmosSpec }
         let atom = makeCoin(.gaiaChain, ticker: "ATOM", decimals: 6,

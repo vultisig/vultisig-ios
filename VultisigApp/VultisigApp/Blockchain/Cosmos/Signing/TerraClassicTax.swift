@@ -83,4 +83,44 @@ enum TerraClassicTax {
             ? uusdBaseGas
             : ulunaBaseGas
     }
+
+    /// The static gas limit that `ulunaBaseGas` / `uusdBaseGas` are priced at
+    /// (300k gas × the per-gas price). Mirrors `TerraHelperStruct.GasLimit`; the
+    /// signer re-derives the fee amount by scaling the base from this limit to
+    /// the effective (relayed) limit.
+    static let staticGasLimit: UInt64 = 300_000
+
+    /// Re-derive the Terra Classic send fee amount for a (possibly dynamic)
+    /// `gasLimit`, preserving any burn tax folded into the upstream `staticFee`.
+    ///
+    /// The signer honors a relayed dynamic `gas_wanted` (`effectiveGasLimit`) but
+    /// `staticFee` (`chainSpecific.gas`) is priced for the static 300k limit, so
+    /// once the relayed limit exceeds 300k the signed fee undershoots Terra
+    /// Classic's `fee >= gas_wanted × price (+ tax)` ante check (on-chain
+    /// `code 13`). This scales the BASE gas portion with the gas limit at the
+    /// chain's per-gas price (`ulunaBaseGas` / `uusdBaseGas` are `price × 300k`,
+    /// so scaling by the limit ratio is `ceil(gasLimit × price)`), while the burn
+    /// tax — a fixed proportion of the SEND amount, independent of gas — is
+    /// carried over unchanged. At `gasLimit == staticGasLimit` it returns
+    /// `staticFee` verbatim, so the non-simulated path is byte-identical.
+    ///
+    /// Pure function of `staticFee`, the relayed limit and static constants, so
+    /// every co-signer derives the identical fee.
+    static func scaledSendFee(
+        staticFee: UInt64,
+        contractAddress: String,
+        isNativeToken: Bool,
+        gasLimit: UInt64
+    ) -> UInt64 {
+        let base = baseGas(contractAddress: contractAddress, isNativeToken: isNativeToken)
+        // Burn tax folded into `staticFee` upstream (0 for CW20 / IBC, which pay
+        // no folded tax). Guarded against underflow.
+        let tax = staticFee > base ? staticFee - base : 0
+        let scaledBase = CosmosGasPricedFee.scaled(
+            base: base,
+            fromGasLimit: staticGasLimit,
+            toGasLimit: gasLimit
+        )
+        return scaledBase + tax
+    }
 }
