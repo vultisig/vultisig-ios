@@ -185,15 +185,39 @@ enum SwapQuote: Hashable {
         }
     }
 
-    /// Route gas (`quote.tx.gas`) for same-chain EVM aggregator quotes — the gas
-    /// the swap transaction is actually signed with (it beats the native-ETH gas
-    /// floor). `nil` for THORChain/Maya/SwapKit and Jupiter (Solana), which expose
-    /// no EVM router gas at quote time.
+    /// Route gas (`quote.tx.gas`) for EVM aggregator/SwapKit quotes — the gas
+    /// input to the signed reconciliation (`EVMSwapFee`: oracle gas-limit floor
+    /// plus the 600k zero-gas fallback). SwapKit carries it as a hex string on
+    /// the wire; an unparseable or absent value surfaces as zero so the
+    /// calculator's fallback applies, matching what the payload builder bakes
+    /// into the signed quote. `nil` for THORChain/Maya, non-EVM SwapKit
+    /// sources, and Jupiter (Solana), which expose no EVM route gas at quote
+    /// time.
     var evmRouteGas: BigInt? {
         switch self {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
             return BigInt(quote.tx.gas)
-        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit, .jupiter:
+        case .swapkit(let response, _, _):
+            guard case .evm(let tx) = response.tx else { return nil }
+            return BigInt(tx.gas.stripHexPrefix(), radix: 16) ?? .zero
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .jupiter:
+            return nil
+        }
+    }
+
+    /// Gas price the provider priced the route at, in wei. The signer bumps it
+    /// against the oracle's `maxFeePerGas` (see `EVMSwapFee`), so displays must
+    /// feed it through the same reconciliation. `EVMQuote.tx.gasPrice` is a
+    /// decimal string; SwapKit's wire `tx.gasPrice` is hex. `nil` for routes
+    /// with no EVM gas price at quote time.
+    var evmQuoteGasPriceWei: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            return EVMSwapFee.quoteGasPriceWei(quote.tx.gasPrice)
+        case .swapkit(let response, _, _):
+            guard case .evm(let tx) = response.tx else { return nil }
+            return BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .jupiter:
             return nil
         }
     }

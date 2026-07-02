@@ -87,6 +87,10 @@ final class SwapDetailsViewModel {
 
     var thorchainFee: BigInt = .zero
     var gas: BigInt = .zero
+    /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
+    /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
+    /// `gas` (= maxFeePerGas for EVM) so the displayed fee is the signed bond.
+    var gasLimit: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
 
@@ -413,6 +417,7 @@ final class SwapDetailsViewModel {
             fromAmount: fromAmount.toDecimal(),
             quote: quote,
             gas: gas,
+            gasLimit: gasLimit,
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
@@ -455,12 +460,13 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
     }
 
-    /// Network fee value shown on the details screen. For EVM aggregator swaps
-    /// this is the signed-gas fee so it matches the verify screen and the
-    /// co-signer. See `SwapCryptoLogic.displayedSwapNetworkFeeWei`. Display-only:
+    /// Network fee value shown on the details screen. For EVM aggregator/
+    /// SwapKit routes this is the signed bond so it matches the verify screen,
+    /// the co-signer, and the vault's signature.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`. Display-only:
     /// the insufficient-gas gate keeps using `fee`.
     var displayedNetworkFeeWei: BigInt {
-        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var fromAmountDecimal: Decimal {
@@ -655,6 +661,7 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
@@ -676,6 +683,7 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
@@ -784,6 +792,7 @@ private extension SwapDetailsViewModel {
             // A superseding edit cancelled this fetch — don't write stale fees.
             guard !Task.isCancelled else { return }
             gas = chainSpecific.gas
+            gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

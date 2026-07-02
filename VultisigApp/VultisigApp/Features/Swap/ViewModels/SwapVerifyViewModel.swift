@@ -117,6 +117,7 @@ final class SwapVerifyViewModel {
             )
             updated = updated.with(
                 gas: chainSpecific.gas,
+                gasLimit: chainSpecific.gasLimit ?? .zero,
                 thorchainFee: try await interactor.computeThorchainFee(
                     chainSpecific: chainSpecific,
                     fromCoin: updated.fromCoin,
