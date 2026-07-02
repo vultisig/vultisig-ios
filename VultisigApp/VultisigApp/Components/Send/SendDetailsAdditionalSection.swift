@@ -18,7 +18,6 @@ struct SendDetailsAdditionalSection: View {
         VStack(spacing: 14) {
             // Memo input is gated by `Chain.supportsMemo` so per-chain
             // capability lives in the model, not scattered across UI.
-            // Cardano currently returns false (see #4326 / #4377).
             if viewModel.coin.chain.supportsMemo {
                 addMemoField
             }
