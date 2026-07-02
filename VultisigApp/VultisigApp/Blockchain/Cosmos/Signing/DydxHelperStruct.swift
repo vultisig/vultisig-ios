@@ -12,6 +12,11 @@ import VultisigCommonData
 
 struct DydxHelperStruct {
     static let DydxGasLimit: UInt64 = 2500000000000000
+    /// dYdX's static per-tx gas limit. The static fee amount is priced at exactly
+    /// this limit (`DydxGasLimit` == `staticGasLimit × min gas price`), so a
+    /// relayed limit above it must scale the amount or the signed fee undershoots
+    /// dYdX's `fee >= gas_wanted × min gas price` ante check ("insufficient fee").
+    static let staticGasLimit: UInt64 = 200000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _, let relayedGasLimit) = keysignPayload.chainSpecific else {
@@ -76,14 +81,24 @@ struct DydxHelperStruct {
         if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
             fee = signDataFee
         } else {
+            // Honor the relayed dynamic gas limit when present; otherwise fall
+            // back to the static dYdX limit. Both co-signers hash this value, so
+            // they must resolve to the identical limit.
+            let effectiveGasLimit = relayedGasLimit ?? Self.staticGasLimit
             fee = WalletCore.CosmosFee.with {
-                // Honor the relayed dynamic gas limit when present; otherwise
-                // fall back to the static dYdX limit. Both co-signers hash this
-                // value, so they must resolve to the identical limit.
-                $0.gas = relayedGasLimit ?? 200000
+                $0.gas = effectiveGasLimit
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "adydx"
-                    $0.amount = String(gas)
+                    // Re-derive the fee AMOUNT from the same effectiveGasLimit
+                    // that gets signed: the static `gas` amount is priced for the
+                    // static 200k limit, so a relayed limit above it must scale
+                    // the amount too. Byte-identical to `String(gas)` when no
+                    // limit is relayed (effectiveGasLimit == 200k).
+                    $0.amount = String(CosmosGasPricedFee.scaled(
+                        base: gas,
+                        fromGasLimit: Self.staticGasLimit,
+                        toGasLimit: effectiveGasLimit
+                    ))
                 }]
             }
         }
