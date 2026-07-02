@@ -66,13 +66,14 @@ packages:
     revision: 86400c61e39790887ca03b98d82746ee4dc312f4
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
-    # Pinned by REVISION, not exactVersion: the `v4.7.0` tag in walletcore-spm
-    # was mis-cut and points at the old 4.6.13 commit (6fe770f97…), so
-    # `exactVersion: 4.7.0` silently resolves to 4.6.13 — which lacks the Cardano
-    # `CardanoSigningInput.auxiliaryData` field this feature needs. This SHA is
-    # the real wallet-core 4.7.0 (walletcore-spm main HEAD). Move back to
-    # `exactVersion` once the upstream tag is re-cut correctly.
-    revision: 628900b25de367bdd48427040977f68b6882d8a0
+    # v4.7.1 is the correctly-cut tag for wallet-core 4.7.0 (== walletcore-spm
+    # main HEAD 628900b25d…, which adds the Cardano
+    # `CardanoSigningInput.auxiliaryData` field this feature needs). The original
+    # `v4.7.0` tag is mis-cut — it points at the old 4.6.13 commit (6fe770f97…),
+    # so `exactVersion: 4.7.0` silently resolves to 4.6.13 (see #4721 on main,
+    # which is affected). A version tag also resolves reliably on CI, where a
+    # bare `revision:` pin on this binary package reused a stale 4.6.13 checkout.
+    exactVersion: 4.7.1
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation
     from: 0.9.0
