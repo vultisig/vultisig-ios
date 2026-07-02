@@ -54,29 +54,35 @@ private extension OneInchSwaps {
             }
         }
 
-        // Get gasPrice from quote, but ensure it's not too low
-        var gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-
-        // sometimes the `gas` field in oneinch tx is 0
-        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
-        var normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
-
-        // For swap providers like LiFi, their gasPrice might be outdated or too low
-        // Compare with the calculated network fees and use the higher value
+        // Reconcile the quote's gas parameters with the fee oracle through the
+        // shared calculator. `EVMSwapFee` is the single source of truth for
+        // this formula: the verify/details screens, the co-signer, and the
+        // gas-sufficiency validation all price the swap through it, so what
+        // is displayed and validated is exactly what gets signed here.
+        let oracleMaxFeePerGasWei: BigInt
+        let oracleGasLimit: BigInt
         if case .Ethereum(let maxFeePerGasWei, _, _, let gasLimit) = keysignPayload.chainSpecific {
-            let calculatedGasPrice = BigUInt(maxFeePerGasWei)
-            // Use the maximum of provider's gasPrice and our calculated maxFeePerGas
-            // This ensures transactions won't get stuck due to low gas prices
-            gasPrice = max(gasPrice, calculatedGasPrice)
-
-            // For all EVM chains, ensure we use at least the gas limit from keysignPayload
-            // This prevents insufficient gas errors when swap providers return lower values
-            normalizedGas = max(normalizedGas, Int64(gasLimit))
+            oracleMaxFeePerGasWei = maxFeePerGasWei
+            oracleGasLimit = gasLimit
+        } else {
+            oracleMaxFeePerGasWei = .zero
+            oracleGasLimit = .zero
         }
+        let effective = EVMSwapFee.effective(
+            quoteGasPriceWei: EVMSwapFee.quoteGasPriceWei(quote.tx.gasPrice),
+            quoteGas: BigInt(quote.tx.gas),
+            maxFeePerGasWei: oracleMaxFeePerGasWei,
+            gasLimit: oracleGasLimit
+        )
 
-        let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
+        let signed = try helper.getPreSignedInputData(
+            signingInput: input,
+            keysignPayload: keysignPayload,
+            gas: effective.gasLimit.magnitude,
+            gasPrice: effective.gasPriceWei.magnitude,
+            incrementNonce: incrementNonce
+        )
         return signed
     }
 }

@@ -238,50 +238,94 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertEqual(result.ticker, "ETH")
     }
 
-    // MARK: - EVM signed network fee (shared initiator/co-signer helper)
-
-    func testEvmSignedSwapNetworkFeeUsesRouteGasWhenAboveGasLimit() {
-        let maxFeePerGas = BigInt(592_930_334) // 0.592930334 Gwei
-        let routeGas = BigInt(359_942)
-        let gasLimit = BigInt(40_000) // native-ETH swap floor
-
-        let result = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
-            maxFeePerGasWei: maxFeePerGas, routeGas: routeGas, gasLimit: gasLimit
-        )
-
-        XCTAssertEqual(result, maxFeePerGas * routeGas)
-    }
-
-    func testEvmSignedSwapNetworkFeeUsesGasLimitWhenRouteGasBelowFloor() {
-        // Floor branch (CodeRabbit): a route gas below the gas limit must not
-        // under-report — the larger `gasLimit` wins.
-        let maxFeePerGas = BigInt(1_000_000_000)
-        let routeGas = BigInt(21_000)
-        let gasLimit = BigInt(120_000)
-
-        let result = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
-            maxFeePerGasWei: maxFeePerGas, routeGas: routeGas, gasLimit: gasLimit
-        )
-
-        XCTAssertEqual(result, maxFeePerGas * gasLimit)
-    }
+    // MARK: - EVM displayed network fee (shared initiator/co-signer derivation)
 
     func testDisplayedNetworkFeeForEvmAggregatorUsesSignedGasNotQuoteGasPrice() {
-        // Initiator display now matches the co-signer: maxFeePerGas × routeGas,
-        // not the aggregator's own routeGas × quote.tx.gasPrice.
+        // Initiator display matches the co-signer and the signed transaction:
+        // maxFeePerGas × routeGas, not the aggregator's own routeGas × gasPrice.
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         let maxFeePerGas = BigInt(592_930_334)
         let routeGas: Int64 = 359_942
-        // Aggregator's quote fee (routeGas × its own gasPrice, e.g. 0.5 Gwei).
+        // Aggregator's quote fee (routeGas × its own stale 0.5 Gwei gasPrice).
         let quoteFee = BigInt(routeGas) * BigInt(500_000_000)
         let quote: SwapQuote = .oneinch(makeEVMQuote(gas: routeGas, gasPrice: "500000000"), fee: quoteFee)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, fee: quoteFee
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: quoteFee
         )
 
         XCTAssertEqual(result, maxFeePerGas * BigInt(routeGas))
-        XCTAssertNotEqual(result, quoteFee, "Displayed fee must use maxFeePerGas, not the aggregator's gasPrice")
+        XCTAssertNotEqual(result, quoteFee, "Displayed fee must use maxFeePerGas, not the aggregator's stale gasPrice")
+    }
+
+    func testDisplayedNetworkFeeUsesQuoteGasPriceWhenAboveOracle() {
+        // A provider pricing ABOVE our oracle wins the signed max — the display
+        // must not under-report against the signed bond.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let maxFeePerGas = BigInt(1_000_000_000)
+        let routeGas: Int64 = 359_942
+        let quoteGasPrice = BigInt(3_000_000_000)
+        let quote: SwapQuote = .oneinch(makeEVMQuote(gas: routeGas, gasPrice: "3000000000"), fee: nil)
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
+        )
+
+        XCTAssertEqual(result, quoteGasPrice * BigInt(routeGas))
+    }
+
+    func testDisplayedNetworkFeeUsesOracleGasLimitWhenAboveRouteGas() {
+        // Token routes commonly store a 600k-default ×1.5 inflated limit that
+        // beats the route gas — the signed bond (and so the display) uses it.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let maxFeePerGas = BigInt(1_000_000_000)
+        let quote: SwapQuote = .lifi(makeEVMQuote(gas: 359_942, gasPrice: "500000000"), fee: nil, integratorFee: nil)
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(900_000), fee: .zero
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * BigInt(900_000))
+    }
+
+    func testDisplayedFeeMatchesSignedBondForSwapKitEvm() {
+        // SwapKit EVM quotes ship stale hex gas prices (observed 0.077 Gwei on
+        // mainnet); the broadcast bumps to the oracle. The displayed fee must
+        // be the oracle-bumped signed bond, not the stale gasPrice × gas seed.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let routeGas = BigInt(210_000)     // 0x33450
+        let staleGasPrice = BigInt(1_000_000_000) // 0x3b9aca00, 1 Gwei
+        let staleSeed = staleGasPrice * routeGas
+        let maxFeePerGas = BigInt(5_000_000_000) // oracle at 5 Gwei
+        let quote = makeSwapKitQuote(fee: staleSeed, gasHex: "0x33450", gasPriceHex: "0x3b9aca00")
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: staleSeed
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * routeGas)
+        XCTAssertNotEqual(result, staleSeed, "Displayed fee must not be SwapKit's stale gasPrice × gas")
+    }
+
+    func testDisplayedFeeForSwapKitEvmZeroGasUsesSignedFallback() {
+        // A SwapKit route omitting its gas is signed with the 600k default —
+        // the display must reproduce the SIGNED normalization, not the
+        // 600k/120k display seed fallback in SwapKitService.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let maxFeePerGas = BigInt(1_000_000_000)
+        let quote = makeSwapKitQuote(fee: nil, gasHex: "0x0", gasPriceHex: "0x3b9aca00")
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * BigInt(EVMHelper.defaultETHSwapGasUnit))
+    }
+
+    func testEvmRouteGasAndQuoteGasPriceParseSwapKitHex() {
+        let quote = makeSwapKitQuote(fee: nil, gasHex: "0x33450", gasPriceHex: "0x3b9aca00")
+        XCTAssertEqual(quote.evmRouteGas, BigInt(210_000))
+        XCTAssertEqual(quote.evmQuoteGasPriceWei, BigInt(1_000_000_000))
     }
 
     func testDisplayedNetworkFeeFallsBackToFeeForThorchainSwap() {
@@ -289,7 +333,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .thorchain(makeThorQuote())
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: rune, gas: BigInt(1_000), fee: BigInt(7_777)
+            quote: quote, feeCoin: rune, gas: BigInt(1_000), gasLimit: .zero, fee: BigInt(7_777)
         )
 
         XCTAssertEqual(result, BigInt(7_777), "Native-protocol swaps have no route gas and keep the quote fee")
@@ -303,7 +347,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .oneinch(makeEVMQuote(gas: 359_942, gasPrice: "500000000"), fee: quoteFee)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: .zero, fee: quoteFee
+            quote: quote, feeCoin: eth, gas: .zero, gasLimit: .zero, fee: quoteFee
         )
 
         XCTAssertEqual(result, quoteFee)
@@ -320,9 +364,15 @@ final class SwapCryptoLogicTests: XCTestCase {
         makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
     }
 
-    /// SwapKit quote fixture. The `fee` function only branches on the quote case
-    /// and the source chain, so the response body shape (EVM here) is irrelevant.
-    private func makeSwapKitQuote(fee: BigInt?) -> SwapQuote {
+    /// SwapKit quote fixture with an EVM tx body. `gasHex`/`gasPriceHex` mirror
+    /// the wire encoding (Ethers-style hex strings); defaults only matter to the
+    /// tests that read them — the `fee` function branches purely on the quote
+    /// case and the source chain.
+    private func makeSwapKitQuote(
+        fee: BigInt?,
+        gasHex: String = "0x30d40",
+        gasPriceHex: String = "0x4a817c800"
+    ) -> SwapQuote {
         let json = """
         {
           "swapId": "swap-1",
@@ -342,8 +392,8 @@ final class SwapCryptoLogicTests: XCTestCase {
             "to": "0xto",
             "value": "0",
             "data": "0x",
-            "gas": "200000",
-            "gasPrice": "20000000000"
+            "gas": "\(gasHex)",
+            "gasPrice": "\(gasPriceHex)"
           },
           "fees": []
         }
