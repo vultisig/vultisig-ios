@@ -455,6 +455,14 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
     }
 
+    /// Network fee value shown on the details screen. For EVM aggregator swaps
+    /// this is the signed-gas fee so it matches the verify screen and the
+    /// co-signer. See `SwapCryptoLogic.displayedSwapNetworkFeeWei`. Display-only:
+    /// the insufficient-gas gate keeps using `fee`.
+    var displayedNetworkFeeWei: BigInt {
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+    }
+
     var fromAmountDecimal: Decimal {
         SwapCryptoLogic.fromAmountDecimal(fromAmount: fromAmount)
     }
@@ -552,7 +560,7 @@ extension SwapDetailsViewModel {
     }
 
     var swapGasString: String {
-        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: displayedNetworkFeeWei)
     }
 
     var approveFeeString: String {
@@ -564,7 +572,7 @@ extension SwapDetailsViewModel {
     }
 
     var totalFeeString: String {
-        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
     var durationString: String {

@@ -185,6 +185,19 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Route gas (`quote.tx.gas`) for same-chain EVM aggregator quotes — the gas
+    /// the swap transaction is actually signed with (it beats the native-ETH gas
+    /// floor). `nil` for THORChain/Maya/SwapKit and Jupiter (Solana), which expose
+    /// no EVM router gas at quote time.
+    var evmRouteGas: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            return BigInt(quote.tx.gas)
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit, .jupiter:
+            return nil
+        }
+    }
+
     var swapFeeTokenContract: String? {
         switch self {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):

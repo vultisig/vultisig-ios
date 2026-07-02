@@ -31,7 +31,22 @@ struct JoinKeysignGasViewModel {
         }
 
         if payload.coin.chainType == .EVM {
-            let totalFeeWei = payload.chainSpecific.fee
+            // `chainSpecific.fee` values the EVM fee at the stored gasLimit, which for
+            // aggregator swaps is the native-ETH floor (40,000). The transaction is
+            // actually signed with `max(routeGas, gasLimit)` (see OneInchSwaps), where the
+            // route gas wins, so the bare fee under-reports the real cost. When a route gas
+            // is available (`.generic` swap payload), value the fee at the signed gas so the
+            // co-signer matches what the vault pays. Use maxFeePerGas (the conservative
+            // ceiling) for parity with the signed bond.
+            var totalFeeWei = payload.chainSpecific.fee
+            if case .Ethereum(let maxFeePerGasWei, _, _, let gasLimit) = payload.chainSpecific,
+               case .generic(let generic)? = payload.swapPayload {
+                totalFeeWei = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
+                    maxFeePerGasWei: maxFeePerGasWei,
+                    routeGas: BigInt(generic.quote.tx.gas),
+                    gasLimit: gasLimit
+                )
+            }
             let gasAmount = Decimal(totalFeeWei) / pow(10, nativeToken.decimals)
             let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 

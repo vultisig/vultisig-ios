@@ -238,6 +238,77 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertEqual(result.ticker, "ETH")
     }
 
+    // MARK: - EVM signed network fee (shared initiator/co-signer helper)
+
+    func testEvmSignedSwapNetworkFeeUsesRouteGasWhenAboveGasLimit() {
+        let maxFeePerGas = BigInt(592_930_334) // 0.592930334 Gwei
+        let routeGas = BigInt(359_942)
+        let gasLimit = BigInt(40_000) // native-ETH swap floor
+
+        let result = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
+            maxFeePerGasWei: maxFeePerGas, routeGas: routeGas, gasLimit: gasLimit
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * routeGas)
+    }
+
+    func testEvmSignedSwapNetworkFeeUsesGasLimitWhenRouteGasBelowFloor() {
+        // Floor branch (CodeRabbit): a route gas below the gas limit must not
+        // under-report — the larger `gasLimit` wins.
+        let maxFeePerGas = BigInt(1_000_000_000)
+        let routeGas = BigInt(21_000)
+        let gasLimit = BigInt(120_000)
+
+        let result = SwapCryptoLogic.evmSignedSwapNetworkFeeWei(
+            maxFeePerGasWei: maxFeePerGas, routeGas: routeGas, gasLimit: gasLimit
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * gasLimit)
+    }
+
+    func testDisplayedNetworkFeeForEvmAggregatorUsesSignedGasNotQuoteGasPrice() {
+        // Initiator display now matches the co-signer: maxFeePerGas × routeGas,
+        // not the aggregator's own routeGas × quote.tx.gasPrice.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let maxFeePerGas = BigInt(592_930_334)
+        let routeGas: Int64 = 359_942
+        // Aggregator's quote fee (routeGas × its own gasPrice, e.g. 0.5 Gwei).
+        let quoteFee = BigInt(routeGas) * BigInt(500_000_000)
+        let quote: SwapQuote = .oneinch(makeEVMQuote(gas: routeGas, gasPrice: "500000000"), fee: quoteFee)
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGas, fee: quoteFee
+        )
+
+        XCTAssertEqual(result, maxFeePerGas * BigInt(routeGas))
+        XCTAssertNotEqual(result, quoteFee, "Displayed fee must use maxFeePerGas, not the aggregator's gasPrice")
+    }
+
+    func testDisplayedNetworkFeeFallsBackToFeeForThorchainSwap() {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        let quote: SwapQuote = .thorchain(makeThorQuote())
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: rune, gas: BigInt(1_000), fee: BigInt(7_777)
+        )
+
+        XCTAssertEqual(result, BigInt(7_777), "Native-protocol swaps have no route gas and keep the quote fee")
+    }
+
+    func testDisplayedNetworkFeeFallsBackToFeeBeforeGasLoads() {
+        // `gas` (maxFeePerGas) is zero until the EIP-1559 fee lands; keep the
+        // quote fee rather than valuing the fee at zero.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quoteFee = BigInt(180_000_000_000_000)
+        let quote: SwapQuote = .oneinch(makeEVMQuote(gas: 359_942, gasPrice: "500000000"), fee: quoteFee)
+
+        let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: .zero, fee: quoteFee
+        )
+
+        XCTAssertEqual(result, quoteFee)
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -321,7 +392,9 @@ final class SwapCryptoLogicTests: XCTestCase {
         dstAmount: String = "0",
         toAddress: String = "0xTo",
         swapFee: String = "0",
-        swapFeeTokenContract: String = ""
+        swapFeeTokenContract: String = "",
+        gas: Int64 = 0,
+        gasPrice: String = "0"
     ) -> EVMQuote {
         EVMQuote(
             dstAmount: dstAmount,
@@ -330,8 +403,8 @@ final class SwapCryptoLogicTests: XCTestCase {
                 to: toAddress,
                 data: "0x",
                 value: "0",
-                gasPrice: "0",
-                gas: 0,
+                gasPrice: gasPrice,
+                gas: gas,
                 swapFee: swapFee,
                 swapFeeTokenContract: swapFeeTokenContract
             )
