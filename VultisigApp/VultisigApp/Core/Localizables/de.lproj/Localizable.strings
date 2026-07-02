@@ -721,6 +721,8 @@
 "nOfTotal" = "%d von %@";
 "noGasTokenFoundError" = "Kein Gas-Token für %@ Chain gefunden. Bitte füge den nativen Token zu deinem Vault hinzu.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
+"noLocalNetworkPermissionDescription" = "Vultisig benötigt Zugriff auf das lokale Netzwerk, um deine anderen Geräte im selben WLAN zu finden. Aktiviere ihn in den Einstellungen, stelle sicher, dass beide Geräte im selben Netzwerk sind, und versuche es erneut.";
+"noLocalNetworkPermissionTitle" = "Keine Geräte in der Nähe gefunden";
 "noMessagesToSign" = "Es gibt keine zu signierenden Nachrichten";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "Keine Positionen gefunden";

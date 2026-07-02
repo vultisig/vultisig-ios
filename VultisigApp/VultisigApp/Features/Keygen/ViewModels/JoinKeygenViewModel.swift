@@ -19,6 +19,7 @@ enum JoinKeygenStatus {
     case KeygenStarted
     case FailToStart
     case NoCameraAccess
+    case NoLocalNetworkPermission
 }
 
 @MainActor
@@ -96,6 +97,24 @@ class JoinKeygenViewModel: ObservableObject {
 
     func setStatus(status: JoinKeygenStatus) {
         self.status = status
+    }
+
+    /// Entry point for local (LAN / Bonjour) discovery. On iOS it first probes
+    /// Local Network authorization: if the user has denied it, `NetService`
+    /// resolution silently never completes, so instead of hanging on
+    /// "Discovering" we transition to a recoverable error that points the user
+    /// at Settings. When authorized (or on macOS, which has no such permission)
+    /// it proceeds to resolve the mediator service as before.
+    func startLocalDiscovery() async {
+        #if os(iOS)
+        let authorization = await LocalNetworkAuthorization.status()
+        guard authorization == .authorized else {
+            logger.error("Local Network permission denied; cannot discover mediator service")
+            status = .NoLocalNetworkPermission
+            return
+        }
+        #endif
+        discoverService()
     }
 
     func discoverService() {
