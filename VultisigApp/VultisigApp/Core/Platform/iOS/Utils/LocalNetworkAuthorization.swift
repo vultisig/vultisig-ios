@@ -50,7 +50,15 @@ enum LocalNetworkAuthorization {
 /// locking is required.
 private final class Prober: NSObject, NetServiceDelegate, @unchecked Sendable {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "local-network-authorization")
-    private let serviceType = "_vultisig-lnp._tcp"
+    /// The probe type MUST be one of the app's declared `NSBonjourServices`
+    /// entries. iOS refuses to publish or browse an undeclared type even when
+    /// Local Network access is *granted* — `NetService` fails with
+    /// `NSNetServicesMissingRequiredConfigurationError` (-72008) and
+    /// `NWBrowser`/DNSServiceBrowse returns `NoAuth` (-65555) — which the probe
+    /// would misread as `.denied`. `_lnp._tcp` is declared in Info.plist and is
+    /// otherwise unused, so it's a dedicated, authorized throwaway type that
+    /// doesn't collide with the app's real `_http._tcp.` discovery.
+    private let serviceType = "_lnp._tcp"
 
     private var browser: NWBrowser?
     private var service: NetService?
@@ -77,9 +85,10 @@ private final class Prober: NSObject, NetServiceDelegate, @unchecked Sendable {
         self.browser = browser
         browser.start(queue: .main)
 
-        // NWBrowser wants the bare service type (no trailing dot); NetService
-        // conventionally wants the trailing-dot form. Advertising with the wrong
-        // form can make the browser never see the service → false timeout/deny.
+        // NWBrowser wants the bare service type (`_lnp._tcp`); NetService wants
+        // the trailing-dot form (`_lnp._tcp.`), which also matches the Info.plist
+        // NSBonjourServices entry. Advertising with the wrong form can make the
+        // browser never see the service → false timeout/deny.
         let service = NetService(domain: "local.", type: serviceType + ".", name: "VultisigLocalNetwork", port: 1100)
         service.delegate = self
         self.service = service
