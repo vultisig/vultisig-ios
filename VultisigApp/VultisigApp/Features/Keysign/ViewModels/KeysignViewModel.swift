@@ -907,7 +907,7 @@ class KeysignViewModel: ObservableObject {
                         self.txid = hash
 
                         // Store pending transaction for nonce tracking
-                        if case .Cosmos(_, let sequence, _, _, _) = keysignPayload.chainSpecific {
+                        if case .Cosmos(_, let sequence, _, _, _, _) = keysignPayload.chainSpecific {
                             PendingTransactionManager.shared.addPendingTransaction(
                                 txHash: hash,
                                 address: keysignPayload.coin.address,

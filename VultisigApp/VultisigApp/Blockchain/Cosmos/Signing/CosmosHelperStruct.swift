@@ -29,7 +29,7 @@ struct CosmosHelperStruct {
             throw HelperError.runtimeError("swap payload memo is nil")
         }
 
-        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -60,7 +60,7 @@ struct CosmosHelperStruct {
     }
 
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, let ibcDenomTrace) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, let ibcDenomTrace, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -261,12 +261,25 @@ struct CosmosHelperStruct {
             return signDataFee
         }
 
-        return defaultFee(gas: gas)
+        return defaultFee(gas: gas, gasLimit: relayedGasLimit(keysignPayload: keysignPayload))
     }
 
-    private func defaultFee(gas: UInt64) -> WalletCore.CosmosFee {
+    /// The relayed per-tx gas limit (proto `CosmosSpecific.gas_limit`) when an
+    /// initiator set one, else nil. Reading it here is always-on and hash-safe:
+    /// the same value flows into the SignDoc on every co-signing device.
+    private func relayedGasLimit(keysignPayload: KeysignPayload) -> UInt64? {
+        guard case .Cosmos(_, _, _, _, _, let gasLimit) = keysignPayload.chainSpecific else {
+            return nil
+        }
+        return gasLimit
+    }
+
+    private func defaultFee(gas: UInt64, gasLimit: UInt64?) -> WalletCore.CosmosFee {
         WalletCore.CosmosFee.with {
-            $0.gas = config.gasLimit
+            // Honor the relayed dynamic gas limit when present; otherwise fall
+            // back to the static per-chain limit. Both co-signers hash this gas
+            // value, so they must resolve to the identical limit.
+            $0.gas = gasLimit ?? config.gasLimit
             $0.amounts = [CosmosAmount.with {
                 $0.denom = config.denom
                 $0.amount = String(gas)

@@ -71,7 +71,7 @@ final class MockSendInteractor: SendInteractor {
 
     var fetchChainSpecificStub: ((FetchChainSpecificCall) throws -> BlockChainSpecific) = { _ in
         // Sensible default: a Cosmos-shaped chain specific with zero fees.
-        .Cosmos(accountNumber: 0, sequence: 0, gas: .zero, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 0, sequence: 0, gas: .zero, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
     var calculateEVMFeeStub: ((CalculateEVMFeeCall) throws -> SendInteractorFeeResult) = { _ in
         SendInteractorFeeResult(fee: .zero, gas: .zero)

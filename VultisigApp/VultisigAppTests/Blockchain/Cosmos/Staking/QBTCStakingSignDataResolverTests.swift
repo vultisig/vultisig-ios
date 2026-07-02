@@ -56,7 +56,7 @@ final class QBTCStakingSignDataResolverTests: XCTestCase {
             sequence: sequence,
             gas: 7_500,
             transactionType: 0,
-            ibcDenomTrace: nil
+            ibcDenomTrace: nil, gasLimit: nil
         )
     }
 

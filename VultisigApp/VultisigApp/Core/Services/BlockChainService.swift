@@ -816,13 +816,57 @@ private extension BlockChainService {
                 gas = 2500000000000000
             case .noble:
                 gas = 20000
-            case .akash:
-                gas = 3000
-            case .osmosis:
-                gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
             }
+
+            // Optionally simulate to derive a dynamic per-tx gas limit the
+            // initiator relays to co-signers (CosmosSpecific.gas_limit). Gated
+            // OFF by default (see CosmosGasEstimationConfig): the relayed limit
+            // is part of the SignDoc, so until every co-signer honors it the
+            // SignDocs would diverge and the MPC signature would fail. nil when
+            // the gate is off or simulation fails, in which case peers fall back
+            // to the static per-chain gas limit.
+            var dynamicGasLimit: UInt64?
+            if CosmosGasEstimationConfig.shouldSimulate(chain: coin.chain),
+               action == .transfer,
+               coin.isNativeToken,
+               let amount, amount > 0,
+               let toAddress, !toAddress.isEmpty {
+                dynamicGasLimit = await CosmosGasEstimator.estimateGasLimit(
+                    chain: coin.chain,
+                    hexPublicKey: coin.hexPublicKey,
+                    fromAddress: coin.address,
+                    toAddress: toAddress,
+                    amount: String(amount),
+                    memo: memo,
+                    accountNumber: accountNumber,
+                    sequence: sequence,
+                    service: service
+                )
+            }
+
+            // Enforce the per-chain Cosmos fee floor at the effective gas limit:
+            // the relayed dynamic limit when present, else the static per-chain
+            // limit. Akash and Osmosis charge a non-zero minimum gas price; a
+            // sub-floor fee is rejected on-chain with "insufficient fee" (this is
+            // what replaces the old inline Akash 3000 / Osmosis 25000 literals).
+            // Because chainSpecific.gas feeds both the displayed fee and the
+            // WalletCore signing input, flooring here keeps the shown and signed
+            // fee identical.
+            // Resolve the gas limit that computes the on-chain minimum fee: the
+            // relayed dynamic limit when present, else the static per-chain
+            // limit. If the static lookup is unavailable, fall back to 0 so the
+            // floor still runs — the absolute `minFeeFloor` keeps a floored chain
+            // from silently skipping its floor, and `flooredFee` is a no-op for
+            // unfloored chains.
+            let staticGasLimit = (try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit) ?? 0
+            let effectiveGasLimit = dynamicGasLimit ?? staticGasLimit
+            gas = CosmosFeeFloorConfig.flooredFee(
+                for: coin.chain,
+                computedFee: gas,
+                gasLimit: effectiveGasLimit
+            )
 
             // Terra Classic charges a proportional burn tax (~0.5%) on the send
             // amount, paid in the SEND denom on top of the base gas fee. We fold
@@ -850,7 +894,8 @@ private extension BlockChainService {
                 sequence: sequence,
                 gas: gas,
                 transactionType: transactionType.rawValue,
-                ibcDenomTrace: ibcDenomTrace
+                ibcDenomTrace: ibcDenomTrace,
+                gasLimit: dynamicGasLimit
             )
 
         case .ton:
