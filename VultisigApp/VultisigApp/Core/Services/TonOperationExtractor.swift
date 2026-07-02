@@ -99,12 +99,13 @@ enum TonOperationExtractor {
         )
     }
 
-    /// Best-effort fiat for the moving jetton amount, sharing the send/fee
-    /// `RateProvider` price source. Returns `nil` when the jetton has no rate.
+    /// Best-effort fiat for the moving jetton amount via the shared
+    /// `CryptoAmountFormatter.amountInFiat` (same `RateProvider` price source
+    /// as the send/fee surfaces). Returns `nil` when the jetton has no rate
+    /// or the amount is zero.
     private static func resolveFiat(rawAmount: String, coin: Coin) -> String? {
-        guard RateProvider.shared.hasRate(for: coin) else { return nil }
         let amountDecimal = (Decimal(string: rawAmount) ?? .zero) / pow(Decimal(10), coin.decimals)
-        let fiat = coin.fiat(decimal: amountDecimal).formatToFiat(includeCurrencySymbol: true)
+        let fiat = CryptoAmountFormatter.amountInFiat(coin: coin, amount: amountDecimal)
         return fiat.isEmpty ? nil : fiat
     }
 

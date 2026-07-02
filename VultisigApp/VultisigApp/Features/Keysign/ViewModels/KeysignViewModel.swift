@@ -224,31 +224,7 @@ class KeysignViewModel: ObservableObject {
     /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            switch sim {
-            case .transfer(let coin, _):
-                return .send(
-                    title: decodedFunctionName,
-                    coin: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: coin.ticker,
-                        logo: coin.logo
-                    )
-                )
-            case .swap(let from, let to, _, _):
-                return .swap(
-                    title: decodedFunctionName,
-                    from: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: from.ticker,
-                        logo: from.logo
-                    ),
-                    to: HeroCoinAmount(
-                        amount: sim.heroToAmountText ?? "",
-                        ticker: to.ticker,
-                        logo: to.logo
-                    )
-                )
-            }
+            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
         }
 
         if didLoadSimulation,

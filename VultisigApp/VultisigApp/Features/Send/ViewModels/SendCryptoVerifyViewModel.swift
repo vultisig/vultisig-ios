@@ -58,6 +58,19 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// mirroring the swap approve flow.
     var isApproveRequired: Bool { prebuiltKeysignPayload?.approvePayload != nil }
 
+    /// Fiat value of the send amount for the verify header — the same price
+    /// source and empty-on-edge-case semantics as the co-sign summary
+    /// (`CryptoAmountFormatter.amountInFiat`): empty for a zero amount or when
+    /// no rate is available, never a misleading "$0.00". Derived live from the
+    /// coin's current rate rather than the Details screen's `amountInFiat`
+    /// input text, which is unformatted (no currency symbol), truncated typing
+    /// state. Independent of the fee calculation, so it stays visible while
+    /// `isCalculatingFee` blurs the fee row; a max-send amount adjustment
+    /// republishes `transaction` and recomputes this along with it.
+    var amountFiat: String {
+        CryptoAmountFormatter.amountInFiat(coin: transaction.coin, amount: transaction.amountDecimal)
+    }
+
     init(
         transaction: SendTransaction,
         interactor: SendInteractor = DefaultSendInteractor.live,

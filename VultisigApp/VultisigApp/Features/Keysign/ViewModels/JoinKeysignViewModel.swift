@@ -665,34 +665,7 @@ class JoinKeysignViewModel: ObservableObject {
     /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            switch sim {
-            case .transfer(let coin, _):
-                return .send(
-                    title: decodedFunctionName,
-                    coin: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: coin.ticker,
-                        logo: coin.logo,
-                        fiat: heroCoinFiat(chain: coin.chain, address: coin.address, amount: sim.fromAmountDecimal)
-                    )
-                )
-            case .swap(let from, let to, _, _):
-                return .swap(
-                    title: decodedFunctionName,
-                    from: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: from.ticker,
-                        logo: from.logo,
-                        fiat: heroCoinFiat(chain: from.chain, address: from.address, amount: sim.fromAmountDecimal)
-                    ),
-                    to: HeroCoinAmount(
-                        amount: sim.heroToAmountText ?? "",
-                        ticker: to.ticker,
-                        logo: to.logo,
-                        fiat: heroCoinFiat(chain: to.chain, address: to.address, amount: sim.toAmountDecimal ?? .zero)
-                    )
-                )
-            }
+            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
         }
 
         // TON-side fallback: when the BOC decoder resolved a jetton hero we
@@ -764,40 +737,19 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     /// Fiat value of a plain send amount for the verify header, mirroring the
-    /// swap `getFromFiatAmount()` and sharing the fee's `RateProvider` price
-    /// source (`Coin.fiat(decimal:)`). Returns empty for swaps (fiat is carried
-    /// on the hero from/to rows), for contract-call / approval decodes (the
-    /// amount row shows a decoded token, not a coin transfer), for zero-value
-    /// sends, or when no rate is available — so nothing misleading renders.
+    /// swap `getFromFiatAmount()` via the shared
+    /// `CryptoAmountFormatter.amountInFiat` (same `RateProvider` price source
+    /// as the fee, empty for zero-value sends or no rate). Additionally empty
+    /// for swaps (fiat is carried on the hero from/to rows) and for
+    /// contract-call / approval decodes (the amount row shows a decoded
+    /// token, not a coin transfer) — so nothing misleading renders.
     func getAmountFiat() -> String {
-        guard let payload = keysignPayload else { return .empty }
-        guard payload.swapPayload == nil,
-              decodedTokenDisplay == nil,
-              payload.toAmount > 0,
-              RateProvider.shared.hasRate(for: payload.coin) else {
+        guard let payload = keysignPayload,
+              payload.swapPayload == nil,
+              decodedTokenDisplay == nil else {
             return .empty
         }
-        return payload.coin.fiat(decimal: payload.toAmountDecimal)
-            .formatToFiat(includeCurrencySymbol: true)
-    }
-
-    /// Best-effort fiat for a hero coin row, resolved against the active vault
-    /// so it shares the amount/fee `RateProvider` price source. Matches the
-    /// simulated coin by chain + contract address (native when `address` is
-    /// nil/empty). Returns `nil` when the coin isn't in the vault or has no
-    /// rate, so the hero simply omits the fiat sub-line.
-    private func heroCoinFiat(chain: Chain, address: String?, amount: Decimal) -> String? {
-        let normalizedAddress = address?.lowercased()
-        let match = vault.coins.first { coin in
-            guard coin.chain == chain else { return false }
-            if let normalizedAddress, !normalizedAddress.isEmpty {
-                return coin.contractAddress.lowercased() == normalizedAddress
-            }
-            return coin.isNativeToken
-        }
-        guard let match, RateProvider.shared.hasRate(for: match) else { return nil }
-        let fiat = match.fiat(decimal: amount).formatToFiat(includeCurrencySymbol: true)
-        return fiat.isEmpty ? nil : fiat
+        return CryptoAmountFormatter.amountInFiat(coin: payload.coin, amount: payload.toAmountDecimal)
     }
 
 }
