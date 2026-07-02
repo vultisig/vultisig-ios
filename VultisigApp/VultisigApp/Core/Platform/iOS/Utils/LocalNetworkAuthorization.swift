@@ -77,7 +77,10 @@ private final class Prober: NSObject, NetServiceDelegate, @unchecked Sendable {
         self.browser = browser
         browser.start(queue: .main)
 
-        let service = NetService(domain: "local.", type: serviceType, name: "VultisigLocalNetwork", port: 1100)
+        // NWBrowser wants the bare service type (no trailing dot); NetService
+        // conventionally wants the trailing-dot form. Advertising with the wrong
+        // form can make the browser never see the service → false timeout/deny.
+        let service = NetService(domain: "local.", type: serviceType + ".", name: "VultisigLocalNetwork", port: 1100)
         service.delegate = self
         self.service = service
         service.publish()
