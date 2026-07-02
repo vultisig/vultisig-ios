@@ -113,7 +113,7 @@ struct JoinKeygenView: View {
     var keygenErrorText: some View {
         Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
 
@@ -169,7 +169,7 @@ struct JoinKeygenView: View {
             }
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .onAppear {
@@ -214,7 +214,7 @@ struct JoinKeygenView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(Theme.colors.alertInfo)
+            .foregroundStyle(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -307,11 +307,11 @@ struct JoinKeygenView: View {
     private func getKeygenCardContent(_ title: String) -> some View {
         VStack(spacing: 12) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title1)
 
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)

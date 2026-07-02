@@ -241,11 +241,11 @@ private extension VultiTabBar {
         switch item {
         case .wallet:
             Color.blue.ignoresSafeArea()
-                .overlay(Text("Wallet").foregroundColor(.white))
+                .overlay(Text("Wallet").foregroundStyle(.white))
                 .tag(HomeTab.wallet)
         case .defi:
             Color.green.ignoresSafeArea()
-                .overlay(Text("Earn").foregroundColor(.white))
+                .overlay(Text("Earn").foregroundStyle(.white))
                 .tag(HomeTab.defi)
         case .camera:
             EmptyView()

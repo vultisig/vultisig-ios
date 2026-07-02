@@ -34,7 +34,7 @@ struct ReferralSendOverviewView: View {
         Text(NSLocalizedString("youreSending", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
     }
 
     var assetDetail: some View {
@@ -45,10 +45,10 @@ struct ReferralSendOverviewView: View {
                 .cornerRadius(32)
 
             Text("\(transaction.amount)")
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Text("RUNE")
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
 
             Spacer()
         }
@@ -97,7 +97,7 @@ struct ReferralSendOverviewView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil, isForMemo: Bool = false) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
 
@@ -111,13 +111,13 @@ struct ReferralSendOverviewView: View {
             }
 
             Text(description)
-                .foregroundColor(isForMemo ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                .foregroundStyle(isForMemo ? Theme.colors.textTertiary : Theme.colors.textPrimary)
                 .lineLimit(isForMemo ? 2 : 1)
                 .truncationMode(.tail)
 
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }

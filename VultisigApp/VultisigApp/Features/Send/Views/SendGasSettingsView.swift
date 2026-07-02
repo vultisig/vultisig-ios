@@ -95,7 +95,7 @@ struct SendGasSettingsView: View {
         HStack {
             Text(text)
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
 
             Spacer()
         }
@@ -107,7 +107,7 @@ struct SendGasSettingsView: View {
             HStack {
                 Text(text.isEmpty ? title : text)
                     .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(Theme.colors.textSecondary)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 16)
 
@@ -117,7 +117,7 @@ struct SendGasSettingsView: View {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(Theme.colors.bgSurface1)
+                .foregroundStyle(Theme.colors.bgSurface1)
         )
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
@@ -137,7 +137,7 @@ struct SendGasSettingsView: View {
             label: {
                 Image("x")
                     .font(Theme.fonts.bodyLMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
         )
     }
@@ -205,9 +205,9 @@ extension SendGasSettingsView {
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textSecondary))
+                TextField("", text: text, prompt: Text(title).foregroundStyle(Theme.colors.textSecondary))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
+                    .foregroundStyle(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
                     .tint(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.next)
@@ -220,7 +220,7 @@ extension SendGasSettingsView {
 
                 if let label {
                     Text(label)
-                        .foregroundColor(Theme.colors.textSecondary)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodyMRegular)
                 }
             }
@@ -229,7 +229,7 @@ extension SendGasSettingsView {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(Theme.colors.bgSurface1)
+                .foregroundStyle(Theme.colors.bgSurface1)
         )
         .padding(.horizontal, 16)
     }
@@ -259,9 +259,9 @@ extension SendGasSettingsView {
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textSecondary))
+                TextField("", text: text, prompt: Text(title).foregroundStyle(Theme.colors.textSecondary))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
+                    .foregroundStyle(disabled ? Theme.colors.textSecondary : Theme.colors.textPrimary)
                     .tint(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.next)
@@ -273,7 +273,7 @@ extension SendGasSettingsView {
 
                 if let label {
                     Text(label)
-                        .foregroundColor(Theme.colors.textSecondary)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodyMRegular)
                 }
             }
@@ -282,7 +282,7 @@ extension SendGasSettingsView {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(Theme.colors.bgSurface1)
+                .foregroundStyle(Theme.colors.bgSurface1)
         )
         .padding(.horizontal, 16)
     }

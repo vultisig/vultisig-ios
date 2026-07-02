@@ -13,7 +13,7 @@ struct NavigationMenuButton: View {
     var body: some View {
         Image("MenuIcon")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
+            .foregroundStyle(tint)
     }
 }
 

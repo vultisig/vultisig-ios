@@ -76,11 +76,11 @@ struct UnbondMayaTransactionScreen: View {
                         HStack {
                             Text("bondedLPUnits".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                             Spacer()
                             Text(bondedUnits)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                             Button(
                                 action: {
                                     viewModel.lpUnitsField.value = bondedUnits
@@ -88,7 +88,7 @@ struct UnbondMayaTransactionScreen: View {
                                 label: {
                                     Text("max".localized)
                                         .font(Theme.fonts.caption12)
-                                        .foregroundColor(Theme.colors.alertInfo)
+                                        .foregroundStyle(Theme.colors.alertInfo)
                                 }
                             )
                         }
@@ -99,11 +99,11 @@ struct UnbondMayaTransactionScreen: View {
                         HStack {
                             Text("estimatedCacaoValue".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                             Spacer()
                             Text("\(cacaoValue.formatted()) CACAO")
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                     }
                 }
@@ -116,11 +116,7 @@ struct UnbondMayaTransactionScreen: View {
         .onChange(of: viewModel.addressViewModel.field.valid) { _, _ in
             onAddressFill()
         }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
+        .delayedFocus(from: focusedFieldBinding, to: $focusedField)
         .withLoading(isLoading: $viewModel.isLoading)
         .crossPlatformSheet(isPresented: $showAssetSelection) {
             AssetSelectionListScreen(

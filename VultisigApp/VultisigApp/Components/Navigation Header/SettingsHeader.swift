@@ -20,7 +20,7 @@ struct SettingsHeader: View {
 
     var text: some View {
         Text(NSLocalizedString("settings", comment: "Settings"))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(.title3)
     }
 }

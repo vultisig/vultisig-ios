@@ -42,11 +42,11 @@ struct CoinPickerView: View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             TextField(NSLocalizedString("search...", comment: "Search...").toFormattedTitleCase(), text: $searchText)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)
@@ -62,9 +62,9 @@ struct CoinPickerView: View {
                     isSearching = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
-                .foregroundColor(.blue)
+                .foregroundStyle(.blue)
                 .font(Theme.fonts.caption12)
             }
         }
@@ -151,7 +151,7 @@ extension CoinPickerView {
                     label: {
                         Image(systemName: "chevron.backward")
                             .font(Theme.fonts.bodyLMedium)
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .foregroundStyle(Theme.colors.textPrimary)
                     }
                 )
             }

@@ -64,7 +64,7 @@ struct ReferralTextField: View {
             }
         }
         .font(Theme.fonts.bodyMRegular)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var copyButton: some View {

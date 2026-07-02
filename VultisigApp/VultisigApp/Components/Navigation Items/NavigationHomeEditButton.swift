@@ -86,13 +86,13 @@ struct NavigationHomeEditButton: View {
         } label: {
             Image(.trash)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .foregroundColor(tint)
+            .foregroundStyle(tint)
             .font(Theme.fonts.bodyLMedium)
     }
 

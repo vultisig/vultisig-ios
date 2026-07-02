@@ -49,14 +49,14 @@ struct Checkbox: View {
     var check: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
-            .foregroundColor(color)
+            .foregroundStyle(color)
             .frame(width: 24, height: 24)
             .background(bgColor)
             .cornerRadius(20)
             .opacity(isChecked ? 1 : 0)
             .overlay(
                 Circle()
-                    .stroke(color, lineWidth: 1)
+                    .strokeBorder(color, lineWidth: 1)
             )
     }
 
@@ -73,7 +73,7 @@ struct Checkbox: View {
         if let text {
             Text(NSLocalizedString(text, comment: "Checkbox description"))
                 .font(font)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .multilineTextAlignment(alignment)
         }
     }

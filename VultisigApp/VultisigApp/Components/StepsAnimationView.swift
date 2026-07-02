@@ -57,7 +57,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         if height.isFinite && height > 0 {
             Rectangle()
                 .frame(width: 3, height: height)
-                .foregroundColor(Theme.colors.borderLight)
+                .foregroundStyle(Theme.colors.borderLight)
                 .offset(x: 1)
         }
     }
@@ -88,7 +88,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
 
     var titleView: some View {
         Text(title)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
@@ -97,7 +97,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(Theme.colors.alertInfo)
+            .foregroundStyle(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -116,7 +116,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         HStack(spacing: 0) {
             Rectangle()
                 .frame(width: 22, height: 3)
-                .foregroundColor(Theme.colors.borderLight)
+                .foregroundStyle(Theme.colors.borderLight)
 
             cellContent(index)
                 .padding(16)

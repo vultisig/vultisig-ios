@@ -27,19 +27,19 @@ struct InformationNote: View {
 
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .foregroundColor(Theme.colors.bgAlert)
+            .foregroundStyle(Theme.colors.bgAlert)
     }
 
     var text: some View {
         if message == nil {
             Text(NSLocalizedString("joinKeygenConnectionDisclaimer", comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
                 .lineSpacing(8)
                 .multilineTextAlignment(.leading)
         } else {
             Text(message ?? "")
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
                 .lineSpacing(8)
                 .multilineTextAlignment(.leading)

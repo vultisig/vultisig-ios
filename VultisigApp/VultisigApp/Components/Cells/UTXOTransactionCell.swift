@@ -120,6 +120,6 @@ struct UTXOTransactionCell: View {
         }
         .frame(height: 32)
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 }

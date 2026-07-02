@@ -251,7 +251,7 @@ struct SwapDetailsScreen: View {
     var filler: some View {
         Rectangle()
             .frame(width: 12, height: 10)
-            .foregroundColor(Theme.colors.bgPrimary)
+            .foregroundStyle(Theme.colors.bgPrimary)
     }
 
     var summary: some View {

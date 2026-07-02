@@ -106,7 +106,7 @@ struct AmountTextField<CustomView: View>: View {
             VStack(spacing: 12) {
                 if let error {
                     Text(error.localized)
-                        .foregroundColor(Theme.colors.alertError)
+                        .foregroundStyle(Theme.colors.alertError)
                         .font(Theme.fonts.footnote)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)

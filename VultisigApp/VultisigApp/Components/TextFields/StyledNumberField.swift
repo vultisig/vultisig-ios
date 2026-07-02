@@ -23,11 +23,11 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
             HStack {
                 Text("\(placeholder)\(optionalMessage)")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                 }
             }
 
@@ -38,7 +38,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     var textField: some View {
         TextField(placeholder.capitalized, value: customBinding, format: format)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(foregroundColor)
+            .foregroundStyle(foregroundColor)
             .submitLabel(.done)
             .padding(12)
             .background(Theme.colors.bgSurface1)

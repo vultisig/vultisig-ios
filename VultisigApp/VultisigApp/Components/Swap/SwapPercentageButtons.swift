@@ -59,7 +59,7 @@ extension SwapPercentageButtons {
     func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
             .font(Theme.fonts.caption12)
-            .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
+            .foregroundStyle(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
@@ -83,7 +83,7 @@ extension SwapPercentageButtons {
     var separator: some View {
         Rectangle()
             .frame(height: 1)
-            .foregroundColor(Theme.colors.bgSurface2)
+            .foregroundStyle(Theme.colors.bgSurface2)
     }
 
     var buttons: some View {
@@ -110,7 +110,7 @@ extension SwapPercentageButtons {
     func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
             .font(Theme.fonts.caption12)
-            .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
+            .foregroundStyle(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)

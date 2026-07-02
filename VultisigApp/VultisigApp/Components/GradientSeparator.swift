@@ -25,7 +25,7 @@ struct GradientSeparator: View {
         .mask(
             Rectangle()
                 .frame(height: 1)
-                .foregroundColor(color)
+                .foregroundStyle(color)
                 .opacity(opacity)
         )
         .frame(height: 24)

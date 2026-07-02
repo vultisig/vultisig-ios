@@ -20,7 +20,7 @@ struct TransactionDoneHashRowView: View {
     var body: some View {
         HStack(spacing: 32) {
             Text(NSLocalizedString("transactionHash", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
 
@@ -49,7 +49,7 @@ struct TransactionDoneHashRowView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 16, height: 16)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 
@@ -63,14 +63,14 @@ struct TransactionDoneHashRowView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
         }
     }
 
     var hashView: some View {
         Text(hash)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .lineLimit(1)
             .truncationMode(.middle)
     }

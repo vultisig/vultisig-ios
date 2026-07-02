@@ -195,7 +195,7 @@ struct SwapVerifyScreen: View {
         Rectangle()
             .frame(width: 1)
             .frame(idealHeight: 80, maxHeight: 100)
-            .foregroundColor(Theme.colors.bgSurface2)
+            .foregroundStyle(Theme.colors.bgSurface2)
     }
 
     var summaryFromTo: some View {
@@ -225,7 +225,7 @@ struct SwapVerifyScreen: View {
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.primaryAccent4)
+            .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgSurface2)
             .cornerRadius(32)
@@ -235,7 +235,7 @@ struct SwapVerifyScreen: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -335,7 +335,7 @@ struct SwapVerifyScreen: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
@@ -346,7 +346,7 @@ struct SwapVerifyScreen: View {
             }
 
             Text(value)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             if let bracketValue {
                 Group {
@@ -354,7 +354,7 @@ struct SwapVerifyScreen: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -367,18 +367,18 @@ struct SwapVerifyScreen: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("networkFee", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(cryptoAmount)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
 
                 Text(fiatAmount)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
         }
@@ -399,28 +399,28 @@ struct SwapVerifyScreen: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("minPayout".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
                 Group {
                     Text(amount)
-                        .foregroundColor(Theme.colors.textPrimary) +
+                        .foregroundStyle(Theme.colors.textPrimary) +
                     Text(" ") +
                     Text(ticker)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 .font(Theme.fonts.bodyLMedium)
 
                 HStack(spacing: 0) {
                     Text(fiatValue)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     if let chain {
                         HStack(spacing: 2) {
                             Spacer()
 
                             Text(NSLocalizedString("on", comment: ""))
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
                             Image(chain.logo)
@@ -428,7 +428,7 @@ struct SwapVerifyScreen: View {
                                 .frame(width: 12, height: 12)
 
                             Text(chain.name)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                         .font(Theme.fonts.caption10)
                         .offset(x: 2)

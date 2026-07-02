@@ -21,12 +21,12 @@ struct SettingsPasswordHintScreen: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("editPasswordHintTitle".localized)
                             .font(Theme.fonts.largeTitle)
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .foregroundStyle(Theme.colors.textPrimary)
                             .padding(.top, 12)
 
                         Text("editPasswordHintSubtitle".localized)
                             .font(Theme.fonts.bodySMedium)
-                            .foregroundColor(Theme.colors.textTertiary)
+                            .foregroundStyle(Theme.colors.textTertiary)
 
                         CommonTextEditor(
                             value: $viewModel.hint,

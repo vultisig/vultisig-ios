@@ -42,7 +42,7 @@ struct SendDetailsAdditionalSection: View {
 
     var chevronIcon: some View {
         Image(systemName: "chevron.down")
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .rotationEffect(.degrees(isMemoExpanded ? 180 : 0))
             .animation(.easeInOut, value: isMemoExpanded)
@@ -72,6 +72,6 @@ struct SendDetailsAdditionalSection: View {
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
     }
 }

@@ -29,7 +29,7 @@ struct VaultPairDetailCard: View {
                 Image("vultisig-logo")
                     .resizable()
                     .frame(width: 48, height: 48)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .padding(.top, 24)
             }
 
@@ -41,7 +41,7 @@ struct VaultPairDetailCard: View {
                 // Footer for sharing
                 Text("vultisig.com")
                     .font(Theme.fonts.bodyLMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .padding(.bottom, 24)
             }
         }

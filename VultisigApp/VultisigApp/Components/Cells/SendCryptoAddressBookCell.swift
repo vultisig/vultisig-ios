@@ -39,12 +39,12 @@ struct SendCryptoAddressBookCell: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .lineLimit(1)
 
             Text(description)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
@@ -73,7 +73,7 @@ struct SendCryptoAddressBookCell: View {
 
             Text(title.prefix(1).uppercased())
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(color)
+                .foregroundStyle(color)
         }
     }
 }
