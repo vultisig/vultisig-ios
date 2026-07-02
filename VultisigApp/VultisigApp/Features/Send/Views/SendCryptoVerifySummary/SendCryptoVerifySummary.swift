@@ -21,6 +21,12 @@ struct SendCryptoVerifySummary {
     let isCalculatingFee: Bool
     let coinImage: String
     let amount: String
+    /// Pre-formatted fiat value of `amount` (e.g. "$12.34"), rendered as a
+    /// sub-line under the amount in the non-hero send header. Empty when the
+    /// amount doesn't map to a single priced coin transfer (swap / contract
+    /// call / LP) or when no price is available. Defaults to empty so existing
+    /// construction sites are unaffected.
+    let amountFiat: String
     let coinTicker: String
     let keysignPayload: KeysignPayload?
     let hero: HeroContent?
@@ -54,6 +60,7 @@ struct SendCryptoVerifySummary {
         isCalculatingFee: Bool = false,
         coinImage: String,
         amount: String,
+        amountFiat: String = "",
         coinTicker: String,
         keysignPayload: KeysignPayload? = nil,
         hero: HeroContent? = nil,
@@ -77,6 +84,7 @@ struct SendCryptoVerifySummary {
         self.isCalculatingFee = isCalculatingFee
         self.coinImage = coinImage
         self.amount = amount
+        self.amountFiat = amountFiat
         self.coinTicker = coinTicker
         self.keysignPayload = keysignPayload
         self.hero = hero
