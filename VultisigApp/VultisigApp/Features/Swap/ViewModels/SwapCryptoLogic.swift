@@ -109,8 +109,10 @@ enum SwapCryptoLogic {
     /// consume, so both devices show what the vault commits to. Everything
     /// else — native-protocol swaps, routes without an EVM quote gas, or
     /// before the oracle fee has loaded (`gas == 0`) — keeps the existing
-    /// quote fee. Display-only: the insufficient-gas validation keeps using
-    /// `fee`.
+    /// quote fee. The insufficient-gas validation checks against this same
+    /// value: the bond is what an EVM node requires the account to cover, so
+    /// validating against the smaller quote seed lets swaps through that the
+    /// node then rejects with "insufficient funds for gas".
     static func displayedSwapNetworkFeeWei(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, gasLimit: BigInt, fee: BigInt) -> BigInt {
         guard feeCoin.chain.chainType == .EVM, gas > 0, let routeGas = quote?.evmRouteGas else {
             return fee

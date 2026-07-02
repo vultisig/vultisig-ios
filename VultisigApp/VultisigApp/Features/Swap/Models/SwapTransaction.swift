@@ -97,9 +97,10 @@ extension SwapTransaction {
 
     /// Network fee value shown on the verify/done screens. For EVM aggregator/
     /// SwapKit routes this is the signed bond so the initiator matches the
-    /// co-signer (`JoinKeysignGasViewModel`) and the vault's signature.
+    /// co-signer (`JoinKeysignGasViewModel`) and the vault's signature. Also
+    /// what the verify screen's sufficiency re-validation checks against,
+    /// since the bond is the node's real admission requirement.
     /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
-    /// Display-only: the insufficient-gas gate keeps using `fee`.
     var displayedNetworkFeeWei: BigInt {
         SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }

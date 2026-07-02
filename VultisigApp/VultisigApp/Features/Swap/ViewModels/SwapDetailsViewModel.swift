@@ -462,9 +462,10 @@ extension SwapDetailsViewModel {
 
     /// Network fee value shown on the details screen. For EVM aggregator/
     /// SwapKit routes this is the signed bond so it matches the verify screen,
-    /// the co-signer, and the vault's signature.
-    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`. Display-only:
-    /// the insufficient-gas gate keeps using `fee`.
+    /// the co-signer, and the vault's signature. Also what the insufficient-gas
+    /// gate (`balanceError`) validates against, since the bond is the node's
+    /// real admission requirement.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
     var displayedNetworkFeeWei: BigInt {
         SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
@@ -526,8 +527,13 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
     }
 
+    /// The sufficiency gate validates against the same fee the screen displays:
+    /// the reconciled signed bond for EVM aggregator/SwapKit routes (an EVM
+    /// node rejects any transaction whose account can't cover
+    /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
+    /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee)
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: displayedNetworkFeeWei)
     }
 
     var fromFiatAmount: String {
