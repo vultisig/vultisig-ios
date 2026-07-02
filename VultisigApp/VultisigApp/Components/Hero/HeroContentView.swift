@@ -69,7 +69,7 @@ struct HeroContentView: View {
 
     @ViewBuilder
     private func coinRow(_ coin: HeroCoinAmount, iconSize: CGFloat) -> some View {
-        VStack(spacing: 8) {
+        HStack(spacing: 8) {
             if !coin.logo.isEmpty {
                 AsyncImageView(
                     logo: coin.logo,
@@ -78,21 +78,8 @@ struct HeroContentView: View {
                     tokenChainLogo: nil
                 )
             }
-            VStack(spacing: 2) {
-                (
-                    Text(coin.amount)
-                        .foregroundStyle(Theme.colors.textPrimary) +
-                    Text(" \(coin.ticker)")
-                        .foregroundStyle(Theme.colors.textTertiary)
-                )
-                .font(Theme.fonts.priceBodyL)
-
-                if let fiat = coin.fiat, !fiat.isEmpty {
-                    Text(fiat)
-                        .font(Theme.fonts.priceBodyS)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-            }
+            CoinAmountFiatLabel(amount: coin.amount, ticker: coin.ticker, fiat: coin.fiat)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
