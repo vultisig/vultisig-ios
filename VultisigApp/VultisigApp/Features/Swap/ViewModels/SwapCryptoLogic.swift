@@ -101,13 +101,20 @@ enum SwapCryptoLogic {
     // MARK: - EVM signed network fee (shared with the co-signer)
 
     /// EVM swap network fee valued at the gas the transaction is actually signed
-    /// with: the conservative EIP-1559 ceiling (`maxFeePerGas`) times
-    /// `max(routeGas, gasLimit)`, where an aggregator route gas beats the
-    /// native-ETH gas floor. Shared by the initiator's fee display and the
-    /// co-signer (`JoinKeysignGasViewModel`) so both devices show the same
-    /// number. Display-only — never feeds the insufficient-gas gate.
+    /// with. Thin wrapper over `EVMSwapFee` — the same calculator the signer
+    /// (`OneInchSwaps`) consumes — with no quote gas price in play, so the fee
+    /// is the conservative EIP-1559 ceiling (`maxFeePerGas`) times the signed
+    /// gas (`max(routeGas, gasLimit)`, with the signer's zero-gas fallback).
+    /// Shared by the initiator's fee display and the co-signer
+    /// (`JoinKeysignGasViewModel`) so both devices show the same number.
+    /// Display-only — never feeds the insufficient-gas gate.
     static func evmSignedSwapNetworkFeeWei(maxFeePerGasWei: BigInt, routeGas: BigInt, gasLimit: BigInt) -> BigInt {
-        maxFeePerGasWei * max(routeGas, gasLimit)
+        EVMSwapFee.effective(
+            quoteGasPriceWei: .zero,
+            quoteGas: routeGas,
+            maxFeePerGasWei: maxFeePerGasWei,
+            gasLimit: gasLimit
+        ).feeWei
     }
 
     /// Network fee value the initiator shows on the swap verify/done screens. For
