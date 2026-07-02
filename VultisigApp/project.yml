@@ -66,7 +66,10 @@ packages:
     revision: 86400c61e39790887ca03b98d82746ee4dc312f4
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
-    exactVersion: 4.7.0
+    # v4.7.1 is the correctly-cut walletcore-spm tag for wallet-core 4.7.0.
+    # The v4.7.0 tag is mis-cut — it points at the old 4.6.13 commit
+    # (6fe770f97…), so `exactVersion: 4.7.0` silently resolved to 4.6.13.
+    exactVersion: 4.7.1
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation
     from: 0.9.0
