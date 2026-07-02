@@ -721,6 +721,8 @@
 "nOfTotal" = "%d di %@";
 "noGasTokenFoundError" = "Token gas non trovato per la catena %@. Aggiungi il token nativo al tuo vault.";
 "noLiquidityPool" = "Nessun pool di liquidità disponibile per questa coppia di token. Questo asset potrebbe non essere supportato.";
+"noLocalNetworkPermissionDescription" = "Vultisig ha bisogno dell'accesso alla rete locale per trovare gli altri dispositivi sulla stessa rete Wi-Fi. Abilitalo nelle Impostazioni, assicurati che entrambi i dispositivi siano sulla stessa rete e riprova.";
+"noLocalNetworkPermissionTitle" = "Impossibile trovare dispositivi nelle vicinanze";
 "noMessagesToSign" = "Non ci sono messaggi da firmare";
 "noPoolsAvailable" = "Nessuna pool disponibile";
 "noPositionsFound" = "Nessuna posizione trovata";
