@@ -160,4 +160,50 @@ final class CardanoDynamicFeeTests: XCTestCase {
 
         XCTAssertGreaterThan(largeFee, smallFee, "fee should grow with tx size")
     }
+
+    /// The factory's transient fee-estimation payload must carry the memo, and
+    /// the resulting fee must exceed the memo-less fee for the same transfer.
+    /// A CIP-20 memo grows the signed tx (the 35-byte aux-hash entry in the
+    /// body plus the aux CBOR in the envelope); a fee planned without it is
+    /// below the network minimum for the tx that actually gets signed, so the
+    /// node rejects the broadcast with `FeeTooSmallUTxO` — while the same send
+    /// from the SDK/extension (which prices the aux bytes) goes through.
+    func testFeeEstimationPayloadCarriesMemo() throws {
+        let coin = try makeCoin()
+        let utxos = [UtxoInfo(hash: utxoHash, amount: 10_000_000, index: 0)]
+        let vault = Vault(name: "CardanoFeeTest")
+        let factory = KeysignPayloadFactory()
+        let memo = "hello world"
+
+        let withMemo = factory.makeCardanoFeePayload(
+            coin: coin,
+            toAddress: cardanoAddress,
+            amount: 2_000_000,
+            memo: memo,
+            ttl: 190_000_000,
+            sendMaxAmount: false,
+            utxos: utxos,
+            vault: vault
+        )
+        let withoutMemo = factory.makeCardanoFeePayload(
+            coin: coin,
+            toAddress: cardanoAddress,
+            amount: 2_000_000,
+            memo: nil,
+            ttl: 190_000_000,
+            sendMaxAmount: false,
+            utxos: utxos,
+            vault: vault
+        )
+
+        XCTAssertEqual(withMemo.memo, memo, "fee-estimation payload must carry the memo")
+
+        let memoFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: withMemo)
+        let plainFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: withoutMemo)
+        let auxLen = CardanoCIP20.buildAuxData(memo: memo).auxDataCbor.count
+        XCTAssertGreaterThanOrEqual(
+            memoFee, plainFee + 44 * BigInt(auxLen),
+            "the initiator's byteFee must price the CIP-20 aux bytes (minFeeA = 44/byte)"
+        )
+    }
 }
