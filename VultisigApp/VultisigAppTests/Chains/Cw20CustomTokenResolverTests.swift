@@ -77,14 +77,14 @@ final class Cw20CustomTokenResolverTests: XCTestCase {
 
     // MARK: - Resolution
 
-    func testResolveUnknownContractBuildsCoinMetaFromTokenInfo() async {
+    func testResolveUnknownContractBuildsCoinMetaFromTokenInfo() async throws {
         let stub = Cw20ResolverScriptedHTTPClient()
         stub.result = .success(name: "Eris Amplified LUNA", symbol: "ampLUNA", decimals: 6)
         let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
         // A contract that is NOT in the curated TokensStore catalog.
         let contract = "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct"
 
-        let meta = await Cw20CustomTokenResolver.resolve(
+        let meta = try await Cw20CustomTokenResolver.resolve(
             contractAddress: contract,
             chain: .terra,
             metadataResolver: metadataResolver
@@ -104,14 +104,14 @@ final class Cw20CustomTokenResolverTests: XCTestCase {
         )
     }
 
-    func testResolveCuratedContractPrefersTokensStoreEntry() async {
+    func testResolveCuratedContractPrefersTokensStoreEntry() async throws {
         // Pasting a catalog token's contract must keep the curated logo and
         // priceProviderId instead of the bare LCD metadata.
         let stub = Cw20ResolverScriptedHTTPClient()
         stub.result = .success(name: "Astroport", symbol: "ASTRO", decimals: 6)
         let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
 
-        let meta = await Cw20CustomTokenResolver.resolve(
+        let meta = try await Cw20CustomTokenResolver.resolve(
             contractAddress: astroContract,
             chain: .terra,
             metadataResolver: metadataResolver
@@ -123,14 +123,14 @@ final class Cw20CustomTokenResolverTests: XCTestCase {
         XCTAssertEqual(meta?.contractAddress, astroContract)
     }
 
-    func testResolveReturnsNilWhenLcdRejectsQuery() async {
+    func testResolveReturnsNilWhenLcdRejectsQuery() async throws {
         // A wallet address / non-CW20 contract makes the LCD reject the
         // token_info query — the resolver must answer nil (not-found UX).
         let stub = Cw20ResolverScriptedHTTPClient()
         stub.result = .httpError(500)
         let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
 
-        let meta = await Cw20CustomTokenResolver.resolve(
+        let meta = try await Cw20CustomTokenResolver.resolve(
             contractAddress: astrocContract,
             chain: .terraClassic,
             metadataResolver: metadataResolver
@@ -139,12 +139,12 @@ final class Cw20CustomTokenResolverTests: XCTestCase {
         XCTAssertNil(meta)
     }
 
-    func testResolveReturnsNilWithoutNetworkCallForInvalidInput() async {
+    func testResolveReturnsNilWithoutNetworkCallForInvalidInput() async throws {
         let stub = Cw20ResolverScriptedHTTPClient()
         stub.result = .success(name: "X", symbol: "X", decimals: 6)
         let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
 
-        let meta = await Cw20CustomTokenResolver.resolve(
+        let meta = try await Cw20CustomTokenResolver.resolve(
             contractAddress: "0x1a44076050125825900e736c501f859c50fE728c",
             chain: .terra,
             metadataResolver: metadataResolver
@@ -152,6 +152,49 @@ final class Cw20CustomTokenResolverTests: XCTestCase {
 
         XCTAssertNil(meta)
         XCTAssertEqual(stub.callCount, 0, "Invalid input must short-circuit before any LCD call")
+    }
+
+    func testResolvePropagatesRateLimitError() async {
+        // Rate limiting must NOT collapse into not-found: the typed 429
+        // propagates so CustomTokenScreen shows its RateLimitError copy
+        // (which also hides the retry button).
+        let stub = Cw20ResolverScriptedHTTPClient()
+        stub.result = .httpError(429)
+        let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
+
+        do {
+            _ = try await Cw20CustomTokenResolver.resolve(
+                contractAddress: astroContract,
+                chain: .terra,
+                metadataResolver: metadataResolver
+            )
+            XCTFail("Expected a thrown rate-limit error")
+        } catch HTTPError.statusCode(let code, _) {
+            XCTAssertEqual(code, 429)
+        } catch {
+            XCTFail("Expected HTTPError.statusCode(429), got \(error)")
+        }
+    }
+
+    func testResolvePropagatesNetworkError() async {
+        // Transient network failures surface as errors (screen shows the
+        // message + retry), not as a false "token not found" verdict.
+        let stub = Cw20ResolverScriptedHTTPClient()
+        stub.result = .transportError(HTTPError.networkError(URLError(.notConnectedToInternet)))
+        let metadataResolver = CosmosTokenMetadataResolver(httpClient: stub)
+
+        do {
+            _ = try await Cw20CustomTokenResolver.resolve(
+                contractAddress: astroContract,
+                chain: .terra,
+                metadataResolver: metadataResolver
+            )
+            XCTFail("Expected a thrown network error")
+        } catch HTTPError.networkError {
+            // expected
+        } catch {
+            XCTFail("Expected HTTPError.networkError, got \(error)")
+        }
     }
 }
 
@@ -165,6 +208,7 @@ private final class Cw20ResolverScriptedHTTPClient: HTTPClientProtocol, @uncheck
     enum ScriptedResult {
         case success(name: String, symbol: String, decimals: Int)
         case httpError(Int)
+        case transportError(Error)
     }
 
     var result: ScriptedResult = .httpError(500)
@@ -206,6 +250,8 @@ private final class Cw20ResolverScriptedHTTPClient: HTTPClientProtocol, @uncheck
             return HTTPResponse(data: decoded, response: response)
         case .httpError(let code):
             throw HTTPError.statusCode(code, nil)
+        case .transportError(let error):
+            throw error
         }
     }
 

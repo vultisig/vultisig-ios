@@ -56,19 +56,22 @@ enum Cw20CustomTokenResolver {
     /// logo and no price id — the same behavior as custom tokens on every
     /// other chain.
     ///
-    /// - Returns: The resolved `CoinMeta`, or `nil` when the address doesn't
-    ///   answer the query like a CW20 token (wallet address, non-CW20
-    ///   contract, unknown address) or the lookup fails.
+    /// - Returns: The resolved `CoinMeta`, or `nil` when the address is
+    ///   definitively not a CW20 token (wallet address, non-CW20 contract,
+    ///   unknown address).
+    /// - Throws: Transport failures (rate limiting, network errors) from the
+    ///   metadata lookup, so the caller can distinguish "try again later"
+    ///   from "token not found".
     static func resolve(
         contractAddress: String,
         chain: Chain,
         metadataResolver: CosmosTokenMetadataResolver = .shared
-    ) async -> CoinMeta? {
+    ) async throws -> CoinMeta? {
         guard isValidInput(contractAddress, chain: chain) else {
             return nil
         }
 
-        guard let info = await metadataResolver.cw20TokenInfo(
+        guard let info = try await metadataResolver.cw20TokenInfo(
             chain: chain,
             contractAddress: contractAddress
         ) else {

@@ -214,9 +214,11 @@ struct CustomTokenScreen: View {
                 // Terra CW20 tokens are CosmWasm contracts; metadata comes from
                 // the `{"token_info":{}}` smart query on the selected chain's
                 // LCD. A wallet address or non-CW20 contract makes the LCD
-                // reject the query and resolves to not-found. Curated catalog
+                // reject the query and resolves to not-found; transport
+                // failures (rate limit, network) throw into the shared catch
+                // below instead of masquerading as not-found. Curated catalog
                 // entries are preferred for the logo and price provider.
-                guard let coinMeta = await Cw20CustomTokenResolver.resolve(
+                guard let coinMeta = try await Cw20CustomTokenResolver.resolve(
                     contractAddress: contractAddress,
                     chain: chain
                 ) else {
@@ -302,6 +304,15 @@ struct CustomTokenScreen: View {
 
             }
 
+        } catch HTTPError.statusCode(429, _) {
+            // HTTPClient-based lookups (Terra CW20) surface rate limiting as a
+            // typed status-code error rather than an NSError with code 429.
+            self.error = RateLimitError()
+            self.isLoading = false
+        } catch is CancellationError {
+            // A cancelled lookup is not a failure the user needs to see;
+            // just stop the spinner.
+            self.isLoading = false
         } catch let error as NSError {
             // Check for rate limit error
             if error.code == 429 {

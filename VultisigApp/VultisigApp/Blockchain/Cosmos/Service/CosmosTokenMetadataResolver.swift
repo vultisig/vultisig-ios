@@ -151,11 +151,17 @@ actor CosmosTokenMetadataResolver {
 
     /// Resolve CW20 token metadata (`name`, `symbol`, `decimals`) for a wasm
     /// contract via the `{"token_info":{}}` smart query — the same lookup the
-    /// SDK's `getCw20MetaFromLCD` performs. Returns `nil` when the contract
-    /// doesn't answer the query like a CW20 token (non-CW20 contract, unknown
-    /// address, malformed response) or on network failure; the caller surfaces
-    /// its own not-found UX and may retry.
-    func cw20TokenInfo(chain: Chain, contractAddress: String) async -> CosmosCw20TokenInfo? {
+    /// SDK's `getCw20MetaFromLCD` performs.
+    ///
+    /// Returns `nil` only when the address is *definitively* not a CW20 token:
+    /// the LCD rejects the smart query (wallet addresses, non-CW20 contracts,
+    /// unknown addresses) or the reply fails token_info validation. Transport
+    /// failures — rate limiting (HTTP 429), network errors, timeouts — THROW
+    /// instead: they say nothing about the address, and the caller's error UX
+    /// (rate-limit copy, retry) must not collapse into "token not found".
+    /// Failures are never cached either way: the entry is evicted so the next
+    /// call retries.
+    func cw20TokenInfo(chain: Chain, contractAddress: String) async throws -> CosmosCw20TokenInfo? {
         let key = cacheKey(chain: chain, value: contractAddress)
 
         if let cached = cw20Cache[key], !isExpired(storedAt: cached.storedAt) {
@@ -167,7 +173,7 @@ actor CosmosTokenMetadataResolver {
                 return nil
             } catch {
                 cw20Cache.removeValue(forKey: key)
-                return nil
+                throw error
             }
         }
 
@@ -186,7 +192,7 @@ actor CosmosTokenMetadataResolver {
         } catch {
             logger.warning("CW20 token_info lookup failed for \(contractAddress, privacy: .public) on \(chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
             cw20Cache.removeValue(forKey: key)
-            return nil
+            throw error
         }
     }
 
@@ -282,12 +288,23 @@ actor CosmosTokenMetadataResolver {
     /// as `u8` and 18 is the de-facto ceiling for real tokens.
     private static let cw20DecimalsRange = 0...36
 
+    /// HTTP statuses that signal a transient gateway/overload condition
+    /// rather than a verdict on the queried contract: request timeout, too
+    /// early, rate limited, bad gateway, service unavailable, gateway
+    /// timeout. These rethrow so the caller can show a retryable error.
+    /// Notably 500 is NOT here: Terra LCDs answer the smart query with 500
+    /// for wallet addresses and non-CW20 contracts, so it means not-found.
+    private static let transientHTTPStatuses: Set<Int> = [408, 425, 429, 502, 503, 504]
+
     /// Fetches and validates a CW20 `token_info` response. Mirrors the SDK's
     /// validation: the symbol must be non-empty after trimming and the
     /// decimals an integer within ``cw20DecimalsRange``, otherwise the
-    /// contract is treated as not-a-CW20-token (`nil`). Network/decode errors
-    /// propagate so the caller's cache eviction kicks in and a later retry
-    /// can succeed.
+    /// contract is treated as not-a-CW20-token (`nil`). LCD error statuses
+    /// outside ``transientHTTPStatuses`` and unparseable replies also mean
+    /// not-a-CW20-token — that is how the LCD answers the smart query for
+    /// wallet addresses and non-CW20 contracts. Transient statuses and
+    /// network-layer errors propagate: they are transport failures, not a
+    /// verdict on the address.
     private static func fetchCw20TokenInfo(
         httpClient: HTTPClientProtocol,
         chain: Chain,
@@ -298,10 +315,20 @@ actor CosmosTokenMetadataResolver {
             return nil
         }
 
-        let response = try await httpClient.request(
-            CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenInfo(contractAddress: contractAddress)),
-            responseType: CosmosCw20TokenInfoResponse.self
-        )
+        let response: HTTPResponse<CosmosCw20TokenInfoResponse>
+        do {
+            response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenInfo(contractAddress: contractAddress)),
+                responseType: CosmosCw20TokenInfoResponse.self
+            )
+        } catch HTTPError.statusCode(let code, let data) {
+            guard !transientHTTPStatuses.contains(code) else {
+                throw HTTPError.statusCode(code, data)
+            }
+            return nil
+        } catch HTTPError.decodingFailed {
+            return nil
+        }
 
         let info = response.data.data
         guard let symbol = info.symbol?.trimmingCharacters(in: .whitespacesAndNewlines),
