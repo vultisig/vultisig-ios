@@ -9,7 +9,13 @@ import Foundation
 import Combine
 
 class SwapCoinSelectionViewModel: ObservableObject {
-    @Published var isLoading: Bool = false
+    /// Starts `true` so the picker's first frame renders the loader: the view
+    /// falls back to "No result found." whenever `isLoading` is false and
+    /// `filteredTokens` is empty, and before the first publish that state
+    /// would flash even though nothing has been looked up yet. Cleared by the
+    /// first publish (or a failed cold load), after which an empty list is a
+    /// genuine no-results state.
+    @Published var isLoading: Bool = true
     @Published var tokens: [CoinMeta] = []
     @Published var filteredTokens: [CoinMeta] = []
     @Published var searchText: String = ""
@@ -56,19 +62,15 @@ class SwapCoinSelectionViewModel: ObservableObject {
     /// catalog is forced.
     func fetchCoins(chain: Chain, forceRefresh: Bool = false) async {
         // Sync peek on the MainActor: when the chain's vault-independent token
-        // list is already cached, do the cheap local merge and publish without
-        // ever flipping `isLoading` — instant, no spinner. Only a cold load
-        // (no cached entry) shows the loader.
+        // list is already cached, do the cheap local merge and publish — the
+        // first publish clears `isLoading`, so any spinner (initial state, or
+        // a prior chain's cancelled cold load) drops the moment real data
+        // lands rather than being cleared up front with nothing to show. Only
+        // a cold load (no cached entry) does a full spinner cycle.
         let cached = await MainActor.run { SwapTokenListCache.shared.cached(for: chain) }
 
         if let cached {
-            await MainActor.run {
-                error = nil
-                // A prior cold load for another chain may have been cancelled
-                // with the spinner still up — clear it so the instant-serve
-                // path is truly spinner-free.
-                isLoading = false
-            }
+            await MainActor.run { error = nil }
             await publishMerge(externalTokens: cached, chain: chain, forceRefresh: forceRefresh)
 
             // Refresh a stale entry silently in the background — still no
@@ -141,7 +143,13 @@ class SwapCoinSelectionViewModel: ObservableObject {
             await publish(result)
         } catch {
             guard !Task.isCancelled else { return }
-            await MainActor.run { self.error = error }
+            await MainActor.run {
+                self.error = error
+                // Terminal state: without a publish the spinner would stay up
+                // forever; dropping it lets the view fall back to its empty
+                // message.
+                self.isLoading = false
+            }
         }
     }
 
@@ -149,6 +157,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
         await MainActor.run {
             self.tokens = result.tokens
             self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
+            self.isLoading = false
         }
     }
 

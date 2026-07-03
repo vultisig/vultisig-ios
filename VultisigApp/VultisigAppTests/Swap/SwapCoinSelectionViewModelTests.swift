@@ -52,6 +52,69 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         XCTAssertTrue(filtered.isEmpty)
     }
 
+    // MARK: - Initial state defaults to loading
+
+    func testInitialStateIsLoadingSoEmptyStateCannotRenderBeforeFirstPublish() async throws {
+        let novel = meta("NOVL", contract: "0x000000000000000000000000000000000000abcd")
+        let provider = GatedDestinationTokenProvider(
+            bucket: DestinationTokenBucket(chain: .ethereum, tokens: [novel], uniqueIds: [novel.uniqueId])
+        )
+        let registry = DestinationTokenRegistry()
+        registry.register(provider)
+
+        SwapTokenListCache.shared.setCached([meta("USDC")], for: .ethereum)
+
+        let vm = SwapCoinSelectionViewModel(
+            vault: makeVault(),
+            selectedCoin: makeCoin("ETH", isNative: true),
+            isDestination: true,
+            registry: registry
+        )
+
+        // Before any fetch, the view must resolve to the loader — never the
+        // empty message — so the first frame cannot flash "No result found.".
+        XCTAssertTrue(vm.isLoading, "A fresh view model must default to loading")
+        XCTAssertTrue(vm.filteredTokens.isEmpty)
+
+        let fetchTask = Task { await vm.fetchCoins(chain: .ethereum, forceRefresh: true) }
+        defer { provider.release() }
+
+        // At every observable point up to the first publish, the view must be
+        // able to render either the loader or a non-empty list — never the
+        // empty state.
+        try await waitUntil("first publish") {
+            XCTAssertTrue(
+                vm.isLoading || !vm.filteredTokens.isEmpty,
+                "Empty state must be unreachable before the first publish"
+            )
+            return !vm.filteredTokens.isEmpty
+        }
+
+        XCTAssertFalse(vm.isLoading, "The first publish must clear the loading state")
+        _ = fetchTask
+    }
+
+    func testNoMatchQueryAfterLoadStillShowsEmptyState() async throws {
+        // After the first publish, a query with no match must land in the
+        // genuine no-results state: not loading, nothing filtered.
+        let registry = DestinationTokenRegistry()
+        SwapTokenListCache.shared.setCached([meta("USDC")], for: .ethereum)
+
+        let vm = SwapCoinSelectionViewModel(
+            vault: makeVault(),
+            selectedCoin: makeCoin("ETH", isNative: true),
+            isDestination: true,
+            registry: registry
+        )
+        vm.searchText = "zzz"
+
+        await vm.fetchCoins(chain: .ethereum, forceRefresh: true)
+
+        XCTAssertFalse(vm.isLoading, "Load finished — the empty state must be reachable again")
+        XCTAssertTrue(vm.filteredTokens.isEmpty, "No ticker matches the query")
+        XCTAssertFalse(vm.tokens.isEmpty, "The unfiltered list did load")
+    }
+
     // MARK: - Destination picker publishes before providers return
 
     func testDestinationPickerPublishesLocalListBeforeProvidersReturn() async throws {
@@ -76,7 +139,7 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
 
         // The local list must publish while the provider is still gated.
         try await waitUntil("local list published") { !vm.filteredTokens.isEmpty }
-        XCTAssertFalse(vm.isLoading, "Cached path serves without a spinner")
+        XCTAssertFalse(vm.isLoading, "The first (local) publish clears the loading state")
         XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "ETH" }, "Curated native must be in the local list")
         XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "USDC" }, "Cached external token must be in the local list")
         XCTAssertFalse(vm.filteredTokens.contains { $0.ticker == "NOVL" }, "Provider tokens only land on the enriched publish")
