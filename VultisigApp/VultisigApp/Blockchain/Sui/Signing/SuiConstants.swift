@@ -30,6 +30,12 @@ enum SuiConstants {
     /// ("serialized transaction size exceeded maximum"). Staying one under the
     /// 256-object gas-payment cap keeps every send safely within both limits.
     static let maxInputCoinObjects = 255
+
+    /// How many of the largest native SUI objects to embed as gas candidates for
+    /// a token send. The signer picks one to pay gas; carrying the largest few
+    /// (rather than all, or just one) keeps the payload small while guaranteeing a
+    /// covering object survives a re-estimated gas budget.
+    static let gasCandidateObjectCount = 5
 }
 
 /// Exact, normalization-aware matching for SUI coin-object types.
@@ -100,6 +106,43 @@ enum SuiCoinType {
             let coinType = coin["coinType"] ?? .empty
             return isNative(coinType) || matches(coinType, tokenType)
         }
+    }
+
+    /// The minimal set of coin objects to embed in the keysign payload for a Sui
+    /// send — exactly what `getPreSignedInputData` will consume.
+    ///
+    /// `payloadCoins` type-filters but keeps *every* matching object; on a wallet
+    /// whose balance is spread across thousands of objects that produces a
+    /// keysign payload too large to relay — the co-signer's poll 404s and the
+    /// initiator's transaction data expires before signing can start. Bounding
+    /// the embedded set to the objects the send actually needs keeps the pairing
+    /// QR / TSS relay message small.
+    ///
+    /// Native send: the largest objects covering `amount + gasBudget` (the input
+    /// set also pays gas). Token send: the largest token objects covering
+    /// `amount`, plus the largest few native SUI objects as gas candidates.
+    static func selectPayloadCoins(
+        _ coins: [[String: String]],
+        isNativeToken: Bool,
+        contractAddress: String,
+        amount: BigInt,
+        gasBudget: BigInt
+    ) -> [[String: String]] {
+        let nativeObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
+
+        if isNativeToken {
+            return selectInputCoins(nativeObjects, covering: amount + gasBudget)
+        }
+
+        let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
+        let tokenObjects = coins.filter { matches($0["coinType"] ?? .empty, tokenType) }
+        let selectedTokens = selectInputCoins(tokenObjects, covering: amount)
+        let gasCandidates = Array(
+            nativeObjects
+                .sorted { balance(of: $0) > balance(of: $1) }
+                .prefix(SuiConstants.gasCandidateObjectCount)
+        )
+        return selectedTokens + gasCandidates
     }
 
     /// Selects the native SUI coin object that pays gas for a token
