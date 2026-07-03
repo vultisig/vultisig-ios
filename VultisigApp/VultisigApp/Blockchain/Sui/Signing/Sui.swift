@@ -101,27 +101,26 @@ enum SuiHelper {
                 throw HelperError.runtimeError("Non-native token transaction requires the token to be present")
             }
 
-            let suiObjectForGas = coins.filter { SuiCoinType.isNative($0["coinType"] ?? .empty) }.map {
-                var obj = SuiObjectRef()
-                obj.objectID = $0["objectID"] ?? .empty
-                obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
-                obj.objectDigest = $0["objectDigest"] ?? .empty
-                return obj
-            }
-
-            guard !suiObjectForGas.isEmpty else {
+            // A token send pays gas from a single SUI object (WalletCore's
+            // `Sui.Pay` gas field is not gas-smashed like `PaySui`), so select
+            // the smallest native SUI object that covers the budget instead of an
+            // arbitrary one — otherwise the send fails when the first object is
+            // too small even though the wallet holds enough SUI elsewhere.
+            guard let gasObjectDict = SuiCoinType.selectGasObject(coins, gasBudget: gasBudget) else {
                 throw HelperError.runtimeError("Non-native token transaction requires at least one SUI coin for gas fees")
             }
+
+            var gasObject = SuiObjectRef()
+            gasObject.objectID = gasObjectDict["objectID"] ?? .empty
+            gasObject.version = UInt64(gasObjectDict["version"] ?? .zero) ?? UInt64.zero
+            gasObject.objectDigest = gasObjectDict["objectDigest"] ?? .empty
 
             let input = SuiSigningInput.with {
                 $0.pay = SuiPay.with {
                     $0.inputCoins = suiCoins
                     $0.recipients = [toAddress.description]
                     $0.amounts = [UInt64(keysignPayload.toAmount)]
-
-                    if let gasObject = suiObjectForGas.first {
-                        $0.gas = gasObject
-                    }
+                    $0.gas = gasObject
                 }
                 $0.signer = keysignPayload.coin.address
                 $0.gasBudget = UInt64(gasBudget)

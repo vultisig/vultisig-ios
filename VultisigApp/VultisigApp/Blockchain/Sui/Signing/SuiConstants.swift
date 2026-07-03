@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 /// Constants for SUI chain
 enum SuiConstants {
@@ -90,6 +91,38 @@ enum SuiCoinType {
             let coinType = coin["coinType"] ?? .empty
             return isNative(coinType) || matches(coinType, tokenType)
         }
+    }
+
+    /// Selects the native SUI coin object that pays gas for a token
+    /// (non-native) send. WalletCore's `Sui.Pay` message carries a *single*
+    /// `gas` object (unlike `PaySui`, whose whole input set is gas-smashed and
+    /// therefore merged), so the choice matters: picking an arbitrary object —
+    /// e.g. the first one the RPC happened to return — fails when that object's
+    /// balance can't cover the budget, even though the wallet holds plenty of
+    /// SUI across other objects.
+    ///
+    /// Mirrors the Android client: choose the *smallest* native SUI object whose
+    /// balance already covers `gasBudget`, so gas is guaranteed payable while the
+    /// larger objects stay available. When no single object covers the budget,
+    /// fall back to the largest object (best effort — strictly better than an
+    /// arbitrary pick). Returns `nil` only when the wallet holds no native SUI
+    /// object at all.
+    static func selectGasObject(_ coins: [[String: String]], gasBudget: BigInt) -> [String: String]? {
+        let suiObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
+        guard !suiObjects.isEmpty else { return nil }
+
+        let covering = suiObjects.filter { balance(of: $0) >= gasBudget }
+        if let smallestCovering = covering.min(by: { balance(of: $0) < balance(of: $1) }) {
+            return smallestCovering
+        }
+        return suiObjects.max(by: { balance(of: $0) < balance(of: $1) })
+    }
+
+    /// Parses a coin object's `balance` field (base-unit MIST) as `BigInt`,
+    /// treating a missing or unparseable value as zero.
+    static func balance(of coin: [String: String]) -> BigInt {
+        guard let raw = coin["balance"], let value = BigInt(raw) else { return .zero }
+        return value
     }
 
     /// Collapses a package-address segment to `0x` + hex with leading zeros
