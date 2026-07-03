@@ -48,6 +48,11 @@ struct RenameVaultView: View {
         PrimaryButton(title: "save") {
             rename()
         }
+        .disabled(trimmedName.isEmpty)
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func setData() {
@@ -55,20 +60,33 @@ struct RenameVaultView: View {
     }
 
     private func rename() {
-        // make sure the same vault name has not been occupied
-        if vaults.contains(where: { $0.name == name && $0.pubKeyECDSA != vault.pubKeyECDSA && $0.pubKeyEdDSA != vault.pubKeyEdDSA}) {
-            name = vault.name
-            errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
+        let oldName = vault.name
+        let newName = trimmedName
+
+        // Keeping the current name is always a no-op, even if legacy data
+        // contains a case-insensitive duplicate of it
+        guard newName != oldName else {
+            router.navigateBack()
+            return
+        }
+
+        // Same rules as vault creation: non-empty and not taken by another vault
+        let otherVaultNames = vaults
+            .filter { $0.pubKeyECDSA != vault.pubKeyECDSA && $0.pubKeyEdDSA != vault.pubKeyEdDSA }
+            .map(\.name)
+
+        do {
+            try VaultNameValidator(existingNames: otherVaultNames).validate(value: newName)
+        } catch {
+            errorMessage = error.localizedDescription
             showAlert = true
             return
         }
 
-        let oldName = vault.name
-
-        vault.name = name
+        vault.name = newName
         appViewModel.set(selectedVault: vault, restartNavigation: false)
 
-        checkForFolder(oldName: oldName, newName: name)
+        checkForFolder(oldName: oldName, newName: newName)
         router.navigateBack()
     }
 
