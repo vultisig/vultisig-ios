@@ -72,6 +72,7 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         )
 
         let fetchTask = Task { await vm.fetchCoins(chain: .ethereum, forceRefresh: true) }
+        defer { provider.release() }
 
         // The local list must publish while the provider is still gated.
         try await waitUntil("local list published") { !vm.filteredTokens.isEmpty }
@@ -105,6 +106,8 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         )
 
         let fetchTask = Task { await vm.fetchCoins(chain: .ethereum, forceRefresh: true) }
+        defer { provider.release() }
+
         try await waitUntil("local list published") { !vm.filteredTokens.isEmpty }
 
         // User types while the provider refresh is still in flight.
@@ -117,8 +120,9 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
     }
 
     func testSourcePickerIgnoresDestinationProviders() async throws {
-        // The gate is never released — if the source-side picker consulted the
-        // registry, fetchCoins would never complete.
+        // The gate stays closed while the fetch runs — if the source-side
+        // picker consulted the registry, the bounded wait below would fail the
+        // test, and the deferred release keeps the fetch from hanging forever.
         let novel = meta("NOVL", contract: "0x000000000000000000000000000000000000abcd")
         let provider = GatedDestinationTokenProvider(
             bucket: DestinationTokenBucket(chain: .ethereum, tokens: [novel], uniqueIds: [novel.uniqueId])
@@ -135,12 +139,16 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
             registry: registry
         )
 
-        await vm.fetchCoins(chain: .ethereum, forceRefresh: true)
+        let fetchTask = Task { await vm.fetchCoins(chain: .ethereum, forceRefresh: true) }
+        defer { provider.release() }
+
+        try await waitUntil("source-side fetch to publish without the registry") { !vm.filteredTokens.isEmpty }
 
         XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "ETH" })
         XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "USDC" })
         XCTAssertFalse(vm.filteredTokens.contains { $0.ticker == "NOVL" }, "Source side must not pull destination-provider tokens")
         XCTAssertFalse(provider.wasQueried, "Source side must not consult the destination registry")
+        await fetchTask.value
     }
 
     // MARK: - Helpers
@@ -184,6 +192,11 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         )
     }
 
+    private struct WaitTimeout: Error {}
+
+    /// Polls `condition`, throwing on timeout so the calling test exits
+    /// immediately (its `defer { provider.release() }` then unblocks any
+    /// still-gated fetch) instead of running follow-up awaits that could hang.
     private func waitUntil(
         _ what: String,
         timeout: TimeInterval = 5,
@@ -193,7 +206,7 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         while !condition() {
             if Date() > deadline {
                 XCTFail("Timed out waiting for \(what)")
-                return
+                throw WaitTimeout()
             }
             try await Task.sleep(nanoseconds: 10_000_000)
         }
