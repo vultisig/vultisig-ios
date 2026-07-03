@@ -333,18 +333,28 @@ enum FigmaParity {
     /// Normalize any CGImage into a tightly-packed RGBA8 sRGB buffer.
     private static func pixels(from image: CGImage, width: Int, height: Int) throws -> [UInt8] {
         var buffer = [UInt8](repeating: 0, count: width * height * 4)
-        guard let context = CGContext(
-            data: &buffer,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width * 4,
-            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            throw ParityError.bitmapFailed
+        // CGContext(data:) does NOT copy or retain the buffer — it draws straight
+        // into it, so the pointer must stay valid for the context's ENTIRE use.
+        // Passing `&buffer` would hand it a temporary bridged pointer that is only
+        // guaranteed valid for the initializer call; pin the array and keep both
+        // the context creation and the draw inside the closure instead.
+        try buffer.withUnsafeMutableBytes { raw in
+            guard
+                let base = raw.baseAddress,
+                let context = CGContext(
+                    data: base,
+                    width: width,
+                    height: height,
+                    bitsPerComponent: 8,
+                    bytesPerRow: width * 4,
+                    space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                )
+            else {
+                throw ParityError.bitmapFailed
+            }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         }
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         return buffer
     }
 
@@ -366,19 +376,27 @@ enum FigmaParity {
     }
 
     private static func makeImage(from buffer: [UInt8], width: Int, height: Int) -> CGImage? {
+        // Same pinning rule as pixels(from:): the context aliases the buffer
+        // without copying it, so create the context AND call makeImage() (which
+        // snapshots the bits) inside the closure where the pointer is valid.
         var mutable = buffer
-        guard let context = CGContext(
-            data: &mutable,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width * 4,
-            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            return nil
+        return mutable.withUnsafeMutableBytes { raw -> CGImage? in
+            guard
+                let base = raw.baseAddress,
+                let context = CGContext(
+                    data: base,
+                    width: width,
+                    height: height,
+                    bitsPerComponent: 8,
+                    bytesPerRow: width * 4,
+                    space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                )
+            else {
+                return nil
+            }
+            return context.makeImage()
         }
-        return context.makeImage()
     }
 
     // MARK: - IO
