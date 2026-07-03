@@ -65,8 +65,10 @@ class SwapCoinSelectionViewModel: ObservableObject {
         // list is already cached, do the cheap local merge and publish — the
         // first publish clears `isLoading`, so any spinner (initial state, or
         // a prior chain's cancelled cold load) drops the moment real data
-        // lands rather than being cleared up front with nothing to show. Only
-        // a cold load (no cached entry) does a full spinner cycle.
+        // lands rather than being cleared up front with nothing to show. A
+        // cold load (no cached entry) spins only until its first publish:
+        // destination side paints the curated-native + vault-coin list right
+        // away, source side when the external list lands.
         let cached = await MainActor.run { SwapTokenListCache.shared.cached(for: chain) }
 
         if let cached {
@@ -82,20 +84,29 @@ class SwapCoinSelectionViewModel: ObservableObject {
             return
         }
 
-        // Cold load: no cached list for this chain — show the spinner.
+        // Cold load: no cached list for this chain.
         await MainActor.run {
             isLoading = true
             error = nil
         }
 
         do {
+            // Destination side: even with no external list yet, the curated
+            // native + the vault's held coins are already local — paint them
+            // immediately (the first publish drops the spinner) instead of
+            // blocking the whole picker on the external-catalog fetch plus the
+            // registry hop buried in the full merge. The enriched publish
+            // below swaps in the complete list. Source side keeps the plain
+            // spinner cycle: its list is vault-bounded and arrives in one
+            // publish as soon as the external list lands.
+            if isDestination {
+                let local = await logic.localMerge(externalTokens: [], chain: chain)
+                try Task.checkCancellation()
+                await publish(local)
+            }
             let result = try await logic.fetchCoins(chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
-            await MainActor.run {
-                self.tokens = result.tokens
-                self.filteredTokens = result.tokens
-                isLoading = false
-            }
+            await publish(result)
         } catch is CancellationError {
             // Superseded by a faster chain-switch — leave state for the winner.
         } catch {

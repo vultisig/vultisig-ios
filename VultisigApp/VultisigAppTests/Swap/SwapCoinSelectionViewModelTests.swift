@@ -218,6 +218,74 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         await fetchTask.value
     }
 
+    // MARK: - Cold cache (no SwapTokenListCache entry)
+
+    func testColdCacheDestinationPublishesLocalListBeforeProvidersReturn() async throws {
+        // Bitcoin's external-token fetch is a synchronous empty list (no
+        // 1inch/Jupiter source), so the cold path is deterministic in tests:
+        // the only slow hop left is the gated registry inside the full merge.
+        let novel = meta("NOVL", chain: .bitcoin, contract: "0x000000000000000000000000000000000000abcd")
+        let provider = GatedDestinationTokenProvider(
+            bucket: DestinationTokenBucket(chain: .bitcoin, tokens: [novel], uniqueIds: [novel.uniqueId])
+        )
+        let registry = DestinationTokenRegistry()
+        registry.register(provider)
+
+        XCTAssertNil(SwapTokenListCache.shared.cached(for: .bitcoin), "Precondition: cold cache")
+
+        let vm = SwapCoinSelectionViewModel(
+            vault: makeVault(),
+            selectedCoin: makeCoin("ETH", isNative: true),
+            isDestination: true,
+            registry: registry
+        )
+
+        let fetchTask = Task { await vm.fetchCoins(chain: .bitcoin, forceRefresh: true) }
+        defer { provider.release() }
+
+        // The curated-native + vault-coin list must paint while the registry
+        // is still gated — a cold cache must not block the first publish.
+        try await waitUntil("cold-cache local list published") { !vm.filteredTokens.isEmpty }
+        XCTAssertFalse(vm.isLoading, "The local publish clears the cold-load spinner")
+        XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "BTC" }, "Curated native must be in the local list")
+        XCTAssertFalse(vm.filteredTokens.contains { $0.ticker == "NOVL" }, "Provider tokens only land on the enriched publish")
+
+        provider.release()
+        await fetchTask.value
+
+        XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "NOVL" }, "Provider token must append once the registry returns")
+    }
+
+    func testColdCacheSourcePickerPublishesOnceWithoutRegistry() async throws {
+        let novel = meta("NOVL", chain: .bitcoin, contract: "0x000000000000000000000000000000000000abcd")
+        let provider = GatedDestinationTokenProvider(
+            bucket: DestinationTokenBucket(chain: .bitcoin, tokens: [novel], uniqueIds: [novel.uniqueId])
+        )
+        let registry = DestinationTokenRegistry()
+        registry.register(provider)
+
+        XCTAssertNil(SwapTokenListCache.shared.cached(for: .bitcoin), "Precondition: cold cache")
+
+        let vm = SwapCoinSelectionViewModel(
+            vault: makeVault(),
+            selectedCoin: makeCoin("ETH", isNative: true),
+            isDestination: false,
+            registry: registry
+        )
+        XCTAssertTrue(vm.isLoading, "Source-side cold open starts on the spinner")
+
+        let fetchTask = Task { await vm.fetchCoins(chain: .bitcoin, forceRefresh: true) }
+        defer { provider.release() }
+
+        try await waitUntil("source-side cold fetch to publish") { !vm.filteredTokens.isEmpty }
+
+        XCTAssertFalse(vm.isLoading)
+        XCTAssertTrue(vm.filteredTokens.contains { $0.ticker == "BTC" })
+        XCTAssertFalse(vm.filteredTokens.contains { $0.ticker == "NOVL" }, "Source side must not pull destination-provider tokens")
+        XCTAssertFalse(provider.wasQueried, "Source side must not consult the destination registry")
+        await fetchTask.value
+    }
+
     // MARK: - Helpers
 
     private func makeLogic() -> SwapCoinSelectionLogic {
@@ -247,9 +315,9 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         Coin(asset: meta(ticker, isNative: isNative), address: "test-address-\(ticker)", hexPublicKey: "")
     }
 
-    private func meta(_ ticker: String, isNative: Bool = false, contract: String = "") -> CoinMeta {
+    private func meta(_ ticker: String, isNative: Bool = false, chain: Chain = .ethereum, contract: String = "") -> CoinMeta {
         CoinMeta(
-            chain: .ethereum,
+            chain: chain,
             ticker: ticker,
             logo: "",
             decimals: isNative ? 18 : 6,
