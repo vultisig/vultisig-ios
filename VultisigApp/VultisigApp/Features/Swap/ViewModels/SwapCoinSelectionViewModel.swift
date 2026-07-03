@@ -23,14 +23,20 @@ class SwapCoinSelectionViewModel: ObservableObject {
     private var cancellable: AnyCancellable?
 
     @MainActor
-    init(vault: Vault, selectedCoin: Coin, isDestination: Bool) {
+    init(
+        vault: Vault,
+        selectedCoin: Coin,
+        isDestination: Bool,
+        registry: DestinationTokenRegistry? = nil
+    ) {
         self.vault = vault
         self.selectedCoin = selectedCoin
         self.isDestination = isDestination
         self.logic = SwapCoinSelectionLogic(
             vault: vault,
             selectedCoin: selectedCoin,
-            isDestination: isDestination
+            isDestination: isDestination,
+            registry: registry
         )
     }
 
@@ -117,15 +123,32 @@ class SwapCoinSelectionViewModel: ObservableObject {
 
     private func publishMerge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async {
         do {
+            // Destination side: publish the network-free merge (curated native +
+            // cached external list + vault coins) before awaiting the remote
+            // destination providers. The registry hop below can take seconds on
+            // first open (forced SwapKit catalog + THORChain/Maya pool fetches,
+            // awaited sequentially) and the sheet has no "loading more" state —
+            // with nothing published it renders "No result found." even though
+            // the query is empty. Serving the local list first keeps the picker
+            // browsable instantly; provider tokens append on the second publish.
+            if isDestination {
+                let local = await logic.localMerge(externalTokens: externalTokens, chain: chain)
+                try Task.checkCancellation()
+                await publish(local)
+            }
             let result = try await logic.merge(externalTokens: externalTokens, chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
-            await MainActor.run {
-                self.tokens = result.tokens
-                self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
-            }
+            await publish(result)
         } catch {
             guard !Task.isCancelled else { return }
             await MainActor.run { self.error = error }
+        }
+    }
+
+    private func publish(_ result: SwapCoinSelectionResult) async {
+        await MainActor.run {
+            self.tokens = result.tokens
+            self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
         }
     }
 
@@ -185,11 +208,6 @@ struct SwapCoinSelectionLogic {
     /// model can serve a cached external list without a spinner. The vault read
     /// and `sort` (live balance reads) stay on the MainActor.
     func merge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
-        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
-
-        let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
-        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
-
         // Destination-side picker pulls in tokens from every registered
         // DestinationTokenProvider; source-side stays vault-bounded since
         // SwapKit + sibling providers add no signal for tokens the user
@@ -200,6 +218,27 @@ struct SwapCoinSelectionLogic {
         } else {
             externalBuckets = []
         }
+        return await assemble(externalTokens: externalTokens, chain: chain, externalBuckets: externalBuckets)
+    }
+
+    /// Network-free variant of `merge` — assembles the list from what is
+    /// already local (curated native + external/preset list + vault coins),
+    /// skipping the destination-registry hop. The view model publishes this
+    /// first so the destination picker is browsable immediately while the
+    /// remote providers (SwapKit catalog, THORChain/Maya pools) are awaited.
+    func localMerge(externalTokens: [CoinMeta], chain: Chain) async -> SwapCoinSelectionResult {
+        await assemble(externalTokens: externalTokens, chain: chain, externalBuckets: [])
+    }
+
+    private func assemble(
+        externalTokens: [CoinMeta],
+        chain: Chain,
+        externalBuckets: [DestinationTokenBucket]
+    ) async -> SwapCoinSelectionResult {
+        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
+
+        let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
+        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
 
         // Coins the vault actually holds for this chain — including user-added
         // custom tokens that aren't in the curated TokensStore / search list.
