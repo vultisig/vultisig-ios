@@ -10,6 +10,15 @@ import SwiftUI
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
     private let logger = Logger(subsystem: "service-delegate", category: "communication")
     @Published var serverURL: String?
+    /// Set when local-mode Bonjour resolution fails or times out. Observed by the
+    /// join flow to surface a recoverable error instead of hanging on "Discovering".
+    @Published var didFailToResolve: Bool = false
+
+    /// Clears prior discovery state so a Retry starts from a clean slate.
+    func reset() {
+        serverURL = nil
+        didFailToResolve = false
+    }
 
     public func netServiceDidResolveAddress(_ sender: NetService) {
         var ipAddress: String?
@@ -37,5 +46,8 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
 
     public func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
         logger.error("Failed to resolve service: \(sender.name) with error: \(errorDict)")
+        DispatchQueue.main.async {
+            self.didFailToResolve = true
+        }
     }
 }

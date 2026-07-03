@@ -154,6 +154,31 @@ struct CosmosServiceStruct {
         return response.data.account
     }
 
+    // MARK: - Gas Simulation
+
+    /// Estimate the gas a tx will consume via `/cosmos/tx/v1beta1/simulate`.
+    /// `txBytes` is a base64-encoded protobuf `TxRaw` carrying a dummy signature
+    /// (the node skips sig verification in simulate mode). Returns the node's
+    /// reported `gas_info.gas_used`. Throws on any network/decode failure so the
+    /// caller can fall back to the static gas limit — simulation must never
+    /// block signing.
+    func simulateGas(txBytes: String) async throws -> UInt64 {
+        guard let baseURL = config.baseURL else {
+            throw HelperError.runtimeError("No base URL for chain \(config.chain)")
+        }
+
+        let body = try JSONSerialization.data(withJSONObject: ["tx_bytes": txBytes], options: [])
+        let response = try await httpClient.request(
+            CosmosAPI(baseURL: baseURL, endpoint: .simulate(body: body)),
+            responseType: CosmosSimulateResponse.self
+        )
+
+        guard let gasUsed = UInt64(response.data.gasInfo.gasUsed) else {
+            throw HelperError.runtimeError("simulate returned non-numeric gas_used: \(response.data.gasInfo.gasUsed)")
+        }
+        return gasUsed
+    }
+
     // MARK: - Transaction Operations
 
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {

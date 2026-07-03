@@ -68,6 +68,8 @@ struct JoinKeygenView: View {
                 failToStartKeygen
             case .NoCameraAccess:
                 cameraErrorView
+            case .NoLocalNetworkPermission:
+                noLocalNetworkPermissionView
             }
         }
         .if(viewModel.status != .KeygenStarted) {
@@ -172,14 +174,20 @@ struct JoinKeygenView: View {
         .foregroundStyle(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
-        .onAppear {
+        .task {
             logger.info("Start to discover service")
-            viewModel.discoverService()
-
+            await viewModel.startLocalDiscovery()
+        }
+        .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
                 withAnimation {
                     showInformationNote = true
                 }
+            }
+        }
+        .onChange(of: serviceDelegate.didFailToResolve) { _, failed in
+            if failed {
+                viewModel.setStatus(status: .NoLocalNetworkPermission)
             }
         }
     }
@@ -264,6 +272,13 @@ struct JoinKeygenView: View {
         NoCameraPermissionView()
     }
 
+    var noLocalNetworkPermissionView: some View {
+        NoLocalNetworkPermissionView {
+            serviceDelegate.reset()
+            viewModel.setStatus(status: .DiscoverService)
+        }
+    }
+
     var informationNote: some View {
         InformationNote()
             .padding(.bottom, 50)
@@ -345,12 +360,28 @@ extension JoinKeygenView {
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(hideBackButton)
+        // iPhone relies on the system back button; on iPad the system control can
+        // be absent on this pushed screen, which trapped users on "Discovering".
+        // Render an explicit back button there (and hide the system one so there
+        // is never a duplicate) whenever a back affordance is expected.
+        .navigationBarBackButtonHidden(hideBackButton || showsIPadBackButton)
         .toolbar {
+            if showsIPadBackButton {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    NavigationBackButton()
+                }
+            }
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
         }
+    }
+
+    /// Show an explicit back button on iPad while a back affordance is expected —
+    /// i.e. everywhere except the terminal keygen run, and only when the flow
+    /// itself hasn't asked for the back button to be hidden.
+    private var showsIPadBackButton: Bool {
+        isIPadOS && !hideBackButton && viewModel.status != .KeygenStarted
     }
 
     var main: some View {

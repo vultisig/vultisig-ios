@@ -14,7 +14,7 @@ struct TerraHelperStruct {
     static let GasLimit: UInt64 = 300000
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload, chain: Chain) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, let relayedGasLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
 
@@ -24,6 +24,35 @@ struct TerraHelperStruct {
 
         let coinType = chain.coinType
         let denom = "uluna"
+        // Honor the relayed dynamic gas limit when present; otherwise fall back
+        // to the static per-chain limit. Both co-signers hash this value, so
+        // they must resolve to the identical limit.
+        let effectiveGasLimit = relayedGasLimit ?? GasLimit
+
+        // Re-derive the fee AMOUNT from the same effectiveGasLimit that gets
+        // signed. Terra Classic prices its fee as `gasLimit × price (+ burn
+        // tax)` (`TerraClassicTax.baseGas`), so the static `gas` amount in
+        // chainSpecific is priced for the static 300k limit; when a relayed
+        // simulated limit is honored above 300k the amount must scale with it, or
+        // the signed fee undershoots Terra Classic's `fee >= gas_wanted × price
+        // (+ tax)` ante check ("insufficient fee"). Byte-identical to
+        // `String(gas)` when no limit is relayed (effectiveGasLimit == 300k), so
+        // the non-simulated path is unchanged.
+        //
+        // Plain Terra (phoenix-1) is NOT priced this way — it pays a flat fee
+        // comfortably above its minimum gas price — so its amount stays the
+        // static `gas` value, keeping the signed bytes unchanged for it.
+        let feeAmount: String
+        if chain == .terraClassic {
+            feeAmount = String(TerraClassicTax.scaledSendFee(
+                staticFee: gas,
+                contractAddress: keysignPayload.coin.contractAddress,
+                isNativeToken: keysignPayload.coin.isNativeToken,
+                gasLimit: effectiveGasLimit
+            ))
+        } else {
+            feeAmount = String(gas)
+        }
 
         if
             let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),
@@ -71,10 +100,10 @@ struct TerraHelperStruct {
                 }]
 
                 $0.fee = WalletCore.CosmosFee.with {
-                    $0.gas = GasLimit
+                    $0.gas = effectiveGasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = denom
-                        $0.amount = String(gas)
+                        $0.amount = feeAmount
                     }]
                 }
             }
@@ -117,11 +146,11 @@ struct TerraHelperStruct {
                     // and carried in `gas`, so the fee is a single coin in the
                     // token's own denom.
                     $0.fee = WalletCore.CosmosFee.with {
-                        $0.gas = GasLimit
+                        $0.gas = effectiveGasLimit
                         $0.amounts = [
                             CosmosAmount.with {
                                 $0.denom = keysignPayload.coin.contractAddress
-                                $0.amount = String(gas)
+                                $0.amount = feeAmount
                             }
                         ]
                     }
@@ -151,9 +180,9 @@ struct TerraHelperStruct {
                 }
 
                 let fee = WalletCore.CosmosFee.with {
-                    $0.gas = GasLimit
+                    $0.gas = effectiveGasLimit
                     $0.amounts = [CosmosAmount.with {
-                        $0.amount = String(gas)
+                        $0.amount = feeAmount
                         $0.denom = denom
                     }]
                 }

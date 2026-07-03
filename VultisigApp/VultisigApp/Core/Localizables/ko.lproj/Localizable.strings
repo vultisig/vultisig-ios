@@ -719,6 +719,8 @@
 "nOfTotal" = "%d / %@";
 "noGasTokenFoundError" = "%@ 체인에 대한 가스 토큰을 찾을 수 없습니다. 볼트에 네이티브 토큰을 추가하세요.";
 "noLiquidityPool" = "이 토큰 쌍에 사용할 수 있는 유동성 풀이 없습니다. 이 자산은 지원되지 않을 수 있습니다.";
+"noLocalNetworkPermissionDescription" = "Vultisig가 같은 Wi-Fi에 연결된 다른 기기를 찾으려면 로컬 네트워크 접근 권한이 필요합니다. 설정에서 이를 활성화하고 두 기기가 같은 네트워크에 있는지 확인한 후 다시 시도하세요.";
+"noLocalNetworkPermissionTitle" = "근처 기기를 찾을 수 없습니다";
 "noMessagesToSign" = "서명할 메시지가 없습니다";
 "noPoolsAvailable" = "사용 가능한 풀 없음";
 "noPositionsFound" = "포지션을 찾을 수 없습니다";

@@ -59,7 +59,7 @@ final class DefaultSwapInteractorTests: XCTestCase {
 
     func testFetchChainSpecificDelegatesToBlockchainService() async throws {
         let blockchain = MockBlockChainService(
-            stubbedResult: .success(.Cosmos(accountNumber: 7, sequence: 1, gas: 200_000, transactionType: 0, ibcDenomTrace: nil))
+            stubbedResult: .success(.Cosmos(accountNumber: 7, sequence: 1, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil))
         )
         let interactor = makeInteractor(blockchain: blockchain)
 
@@ -72,7 +72,7 @@ final class DefaultSwapInteractorTests: XCTestCase {
 
         XCTAssertEqual(blockchain.fetchSwapCallCount, 1)
         XCTAssertEqual(blockchain.lastFromAmount, 0.1)
-        if case let .Cosmos(account, _, _, _, _) = result {
+        if case let .Cosmos(account, _, _, _, _, _) = result {
             XCTAssertEqual(account, 7)
         } else {
             XCTFail("Unexpected variant")

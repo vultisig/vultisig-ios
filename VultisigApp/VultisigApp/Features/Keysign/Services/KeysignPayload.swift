@@ -282,7 +282,25 @@ struct KeysignPayload: Codable, Hashable {
                 .filter { $0.denom.lowercased() == nativeDenom }
                 .compactMap { UInt64($0.amount) }
             if !denomMatched.isEmpty {
-                return denomMatched.reduce(0, +)
+                // Checked summation: untrusted native-denom fee amounts could
+                // overflow UInt64 and trap; fail safe by returning nil so the
+                // caller falls back to the estimated fee.
+                var supplied: UInt64 = 0
+                for value in denomMatched {
+                    let (sum, overflow) = supplied.addingReportingOverflow(value)
+                    guard !overflow else { return nil }
+                    supplied = sum
+                }
+                // Apply the same floor the signing path uses (see
+                // CosmosSignDataBuilder.getFee), so the displayed dApp fee can
+                // never fall below the live network minimum and stays equal to
+                // the signed fee. Non-floored chains return `supplied` verbatim.
+                let gasLimit = UInt64(amino.fee.gas) ?? 0
+                return CosmosFeeFloorConfig.flooredFee(
+                    for: coin.chain,
+                    computedFee: supplied,
+                    gasLimit: gasLimit
+                )
             }
             return nil
         }

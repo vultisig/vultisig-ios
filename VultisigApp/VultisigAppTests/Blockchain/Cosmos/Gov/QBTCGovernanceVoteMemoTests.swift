@@ -48,7 +48,7 @@ final class QBTCGovernanceVoteMemoTests: XCTestCase {
                 sequence: sequence,
                 gas: 7500,
                 transactionType: VSTransactionType.vote.rawValue,
-                ibcDenomTrace: nil
+                ibcDenomTrace: nil, gasLimit: nil
             ),
             utxos: [],
             memo: memo,
