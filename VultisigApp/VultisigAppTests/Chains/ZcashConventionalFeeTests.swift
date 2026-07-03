@@ -67,6 +67,19 @@ final class ZcashConventionalFeeTests: XCTestCase {
         XCTAssertEqual(ZcashConventionalFee.opReturnOutputSize(memoSize: 256), 271)
     }
 
+    func testHandlesUpperCompactSizeAndPushdataBoundaries() {
+        // Beyond the SDK's vectors: pin the upper thresholds so the Swift
+        // switch statements provably match the TS ternary chain.
+        // Script length 65535 -> 65536 crosses the CompactSize 3 -> 5 byte
+        // threshold (memo 65531 -> script 65535; memo 65532 -> script 65536).
+        XCTAssertEqual(ZcashConventionalFee.opReturnOutputSize(memoSize: 65_531), 65_546)
+        XCTAssertEqual(ZcashConventionalFee.opReturnOutputSize(memoSize: 65_532), 65_549)
+        // Memo 65535 -> 65536 crosses the PUSHDATA2 -> PUSHDATA4 threshold
+        // (push overhead 4 -> 6 bytes).
+        XCTAssertEqual(ZcashConventionalFee.opReturnOutputSize(memoSize: 65_535), 65_552)
+        XCTAssertEqual(ZcashConventionalFee.opReturnOutputSize(memoSize: 65_536), 65_555)
+    }
+
     // MARK: - transparentOutputSizes
 
     func testReturnsRecipientOnlyWhenThereIsNoChangeAndNoMemo() {

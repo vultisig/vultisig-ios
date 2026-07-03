@@ -85,6 +85,21 @@ final class ZcashZip317PlanTests: XCTestCase {
         XCTAssertEqual(input.byteFee, 116)
     }
 
+    func testNonAsciiMemoIsChargedByUtf8ByteLength() throws {
+        // SDK golden: TextEncoder().encode(memo) and Swift's UTF-8 encoding of
+        // outputOpReturn must agree on the byte length that sizes the
+        // OP_RETURN — this memo is 17 characters but 34 UTF-8 bytes.
+        let memo = "меморандум-🚀-мемо"
+        XCTAssertEqual(memo.utf8.count, 34)
+
+        let input = try presignInput(amount: 5_000_000, balance: 8_300_000, memo: memo)
+
+        XCTAssertEqual(input.plan.fee, 20_020)
+        XCTAssertEqual(input.plan.change, 3_279_980)
+        XCTAssertFalse(input.zip0317)
+        XCTAssertEqual(input.byteFee, 77)
+    }
+
     func testInsufficientFundsPlanPassesThroughUntouched() throws {
         // Balance can't cover amount + fee + dust, so WalletCore selects no
         // UTXOs. The conventional-fee guard must not hijack this with a
