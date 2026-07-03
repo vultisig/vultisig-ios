@@ -234,7 +234,10 @@ class Coin: ObservableObject, Codable, Hashable {
         case .kujira:
             return "7500"
         case .osmosis:
-            return "7500"
+            // Osmosis enforces a non-zero network minimum fee; use the shared
+            // safe floor so the pre-fetch display fallback is never sub-floor
+            // and stays aligned with the floored send fee.
+            return String(CosmosFeeFloorConfig.minFeeFloor(for: .osmosis))
         case .gaiaChain:
             return "7500"
         case .dydx:
@@ -250,7 +253,10 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ripple:
             return RippleFee.maxFeeDrops.description
         case .akash:
-            return "3000" // 0.003 AKT Cosmos station uses something like that
+            // Akash enforces a 0.025 uakt/gas node minimum, so 3000 uakt was
+            // below the network floor for an ordinary send. Use the shared safe
+            // floor so the pre-fetch display fallback is never sub-floor.
+            return String(CosmosFeeFloorConfig.minFeeFloor(for: .akash))
         case .qbtc:
             return "2000"
         case .tron:

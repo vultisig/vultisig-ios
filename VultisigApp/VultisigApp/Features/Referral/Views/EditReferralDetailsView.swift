@@ -67,7 +67,7 @@ struct EditReferralDetailsView: View {
     var yourReferralCodeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("yourReferralCode".localized)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
@@ -89,7 +89,7 @@ struct EditReferralDetailsView: View {
 
     var setExpirationTitle: some View {
         Text(NSLocalizedString("extendExpiration(inYears)", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -113,7 +113,7 @@ struct EditReferralDetailsView: View {
 
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -172,14 +172,14 @@ struct EditReferralDetailsView: View {
 
             Text(viewModel.preferredAsset?.asset.ticker ?? "RUNE")
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 
     var infoLabel: some View {
         Image(systemName: "info.circle")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     private func getCell(
@@ -192,17 +192,17 @@ struct EditReferralDetailsView: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 0) {
                 RedactedText(description1, redactedText: redactedDesc1, isLoading: isPlaceholder)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 if !description2.isEmpty {
                     RedactedText(description2, redactedText: redactedDesc2, isLoading: isPlaceholder)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
         }

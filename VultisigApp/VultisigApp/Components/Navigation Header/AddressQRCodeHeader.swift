@@ -31,7 +31,7 @@ struct AddressQRCodeHeader: View {
 
     var text: some View {
         Text(NSLocalizedString("address", comment: "AddressQRCodeView title"))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(.title3)
     }
 

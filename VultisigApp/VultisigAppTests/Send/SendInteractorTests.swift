@@ -122,7 +122,7 @@ final class SendInteractorTests: XCTestCase {
         let mock = MockSendInteractor()
         mock.fetchChainSpecificStub = { _ in
             .Cosmos(accountNumber: 0, sequence: 0, gas: UInt64(7_500),
-                    transactionType: 0, ibcDenomTrace: nil)
+                    transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
         }
         let atom = SendFormFixture.makeATOM()
 

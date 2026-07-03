@@ -31,7 +31,7 @@ struct JoinKeygenHeader: View {
 
     var text: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(.title3)
     }
 

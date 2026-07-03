@@ -70,7 +70,7 @@ struct CreateReferralDetailsView: View {
 
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -135,24 +135,24 @@ struct CreateReferralDetailsView: View {
 
             Text("rune".localized)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
     }
 
     var infoLabel: some View {
         Image(systemName: "info.circle")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var tooltip: some View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(Theme.colors.textDark)
+                .foregroundStyle(Theme.colors.textDark)
                 .font(Theme.fonts.bodyMMedium)
 
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -168,17 +168,17 @@ struct CreateReferralDetailsView: View {
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 0) {
                 Text(description1)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 if !description2.isEmpty {
                     Text(description2)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])

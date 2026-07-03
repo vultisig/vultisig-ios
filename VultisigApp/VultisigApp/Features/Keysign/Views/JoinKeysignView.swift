@@ -77,7 +77,7 @@ struct JoinKeysignView: View {
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
             }

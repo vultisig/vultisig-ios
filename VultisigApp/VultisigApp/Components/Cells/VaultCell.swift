@@ -41,7 +41,7 @@ struct VaultCell: View {
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
@@ -49,7 +49,7 @@ struct VaultCell: View {
     var title: some View {
         Text(vault.name.capitalized)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
             .lineLimit(1)
@@ -67,13 +67,13 @@ struct VaultCell: View {
             Text("\(viewModel.totalSigners)")
         }
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(Theme.colors.textSecondary)
+        .foregroundStyle(Theme.colors.textSecondary)
     }
 
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .padding(4)
             .padding(.horizontal, 2)
             .background(Theme.colors.border)
@@ -84,7 +84,7 @@ struct VaultCell: View {
     var selectOption: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? 0 : nil)
             .clipped()
     }

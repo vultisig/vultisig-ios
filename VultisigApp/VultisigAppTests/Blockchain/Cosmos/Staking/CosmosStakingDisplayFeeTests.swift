@@ -42,7 +42,7 @@ final class CosmosStakingDisplayFeeTests: XCTestCase {
     )
 
     private static func makeChainSpecific() -> BlockChainSpecific {
-        .Cosmos(accountNumber: 100, sequence: FX.sequence, gas: 7_500, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 100, sequence: FX.sequence, gas: 7_500, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     private static func makeQBTCCoin() -> Coin {

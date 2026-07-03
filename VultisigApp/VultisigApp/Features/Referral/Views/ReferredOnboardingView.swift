@@ -30,7 +30,7 @@ struct ReferredOnboardingView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(Theme.colors.alertInfo)
+            .foregroundStyle(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -76,7 +76,7 @@ struct ReferredOnboardingView: View {
     func cellView(icon: String, title: String, description: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(Theme.colors.primaryAccent4)
+                .foregroundStyle(Theme.colors.primaryAccent4)
                 .font(Theme.fonts.bodyLMedium)
 
             VStack(alignment: .leading, spacing: 4) {
@@ -86,7 +86,7 @@ struct ReferredOnboardingView: View {
                 Text(NSLocalizedString(description, comment: ""))
                     .font(Theme.fonts.caption10)
             }
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -94,9 +94,9 @@ struct ReferredOnboardingView: View {
     var animationHeader: some View {
         HStack {
             Image(systemName: "horn")
-                .foregroundColor(Theme.colors.alertInfo)
+                .foregroundStyle(Theme.colors.alertInfo)
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
         }
         .padding(.vertical, 8)

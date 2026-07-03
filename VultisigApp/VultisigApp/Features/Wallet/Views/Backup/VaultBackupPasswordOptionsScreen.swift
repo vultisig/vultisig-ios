@@ -43,7 +43,7 @@ struct VaultBackupPasswordOptionsScreen: View {
     var icon: some View {
         Image(systemName: "person.badge.key")
             .font(Theme.fonts.title1)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
             .background(Theme.colors.bgSurface2)
             .cornerRadius(16)
@@ -53,7 +53,7 @@ struct VaultBackupPasswordOptionsScreen: View {
         VStack(spacing: 16) {
             Text("backupOptionsTitle".localized)
                 .font(Theme.fonts.title2)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
 
             boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: "lock-keyhole-open")

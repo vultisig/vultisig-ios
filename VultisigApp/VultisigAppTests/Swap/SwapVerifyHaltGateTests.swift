@@ -185,7 +185,7 @@ private struct StubGateInteractor: SwapInteractor {
 
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, vault: Vault, referredCode: String, slippageBps: Int?, recipientAddress: String?) async throws -> SwapQuoteResult? { nil }
     func fetchChainSpecific(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal, quote: SwapQuote?) async throws -> BlockChainSpecific {
-        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
     func computeThorchainFee(chainSpecific: BlockChainSpecific, fromCoin: Coin, fromAmount: Decimal, vault: Vault) async throws -> BigInt { .zero }
     func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {

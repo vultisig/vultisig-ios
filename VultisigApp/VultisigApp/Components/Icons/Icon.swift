@@ -26,13 +26,13 @@ struct Icon: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: size, height: size)
-                .foregroundColor(color)
+                .foregroundColor(color) // foregroundColor (deprecated) accepts an optional Color; foregroundStyle requires non-optional
         } else {
             Image(name)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: size, height: size)
-                .foregroundColor(color)
+                .foregroundColor(color) // foregroundColor (deprecated) accepts an optional Color; foregroundStyle requires non-optional
         }
     }
 }

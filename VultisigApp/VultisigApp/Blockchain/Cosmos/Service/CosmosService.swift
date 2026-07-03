@@ -114,4 +114,11 @@ enum CosmosService {
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
         return await service.broadcastTransaction(jsonString: jsonString)
     }
+
+    /// Estimate gas via `/cosmos/tx/v1beta1/simulate`. `txBytes` is a base64
+    /// protobuf `TxRaw` with a dummy signature. Returns the node's reported
+    /// `gas_used`; throws on failure so the caller can fall back to static gas.
+    func simulateGas(txBytes: String) async throws -> UInt64 {
+        return try await service.simulateGas(txBytes: txBytes)
+    }
 }

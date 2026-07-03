@@ -51,7 +51,7 @@ final class QBTCVoteWeightedByteEqualityTests: XCTestCase {
                 sequence: 7,
                 gas: 800,
                 transactionType: VSTransactionType.vote.rawValue,
-                ibcDenomTrace: nil
+                ibcDenomTrace: nil, gasLimit: nil
             ),
             utxos: [],
             memo: memo,

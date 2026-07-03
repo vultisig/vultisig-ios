@@ -721,6 +721,8 @@
 "nOfTotal" = "%d od %@";
 "noGasTokenFoundError" = "Nije pronađen token za plin za %@ lanac. Molimo dodajte nativni token u vaš trezor.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
+"noLocalNetworkPermissionDescription" = "Vultisig treba pristup lokalnoj mreži kako bi pronašao vaše druge uređaje na istoj Wi-Fi mreži. Omogućite ga u Postavkama, provjerite jesu li oba uređaja na istoj mreži i pokušajte ponovno.";
+"noLocalNetworkPermissionTitle" = "Nije moguće pronaći uređaje u blizini";
 "noMessagesToSign" = "Nema poruka za potpisivanje";
 "noPoolsAvailable" = "Nema dostupnih bazena";
 "noPositionsFound" = "Nema pronađenih pozicija";
@@ -1186,6 +1188,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
+"swapSecuredAssetInvalidDestination" = "Odredište zamjene osiguranog sredstva nije valjana %1$@ adresa (%2$@).";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
 "swapTradingHalted" = "Trgovanje ovom imovinom privremeno je zaustavljeno. Pokušajte ponovno kasnije.";
 "swapTXHash" = "Zamjenski Tx hash";

@@ -17,7 +17,7 @@ struct IconButtonStyle: ButtonStyle {
             .font(font(for: size))
             .padding(padding(for: size))
             .background(backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled))
-            .foregroundColor(foregroundColor(for: type, isEnabled: isEnabled))
+            .foregroundStyle(foregroundColor(for: type, isEnabled: isEnabled))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius(for: size))
                     .stroke(borderColor(for: type, isEnabled: isEnabled),

@@ -21,7 +21,11 @@ enum BlockChainSpecific: Codable, Hashable {
     case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt)
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool, transactionType: Int = 0)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
-    case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
+    /// `gasLimit` is the relayed dynamic gas limit (proto `CosmosSpecific.gas_limit`)
+    /// from a `/cosmos/tx/v1beta1/simulate` estimate. nil means "use the static
+    /// per-chain gas limit". It is part of the SignDoc, so every co-signing
+    /// device must apply it identically or the MPC signature fails.
+    case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?, gasLimit: UInt64?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, priorityLimit: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String: String]], gasBudget: BigInt)
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
@@ -67,7 +71,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return fee.description.toBigInt()
         case .MayaChain:
             return MayaChainHelper.MayaChainGas.description.toBigInt() // Maya uses 10e10
-        case .Cosmos(_, _, let gas, _, _):
+        case .Cosmos(_, _, let gas, _, _, _):
             return gas.description.toBigInt()
         case .Solana(_, _, _, let fromAddressPubKey, let toAddressPubKey, _):
             // Include ATA rent when the recipient's associated token account must be

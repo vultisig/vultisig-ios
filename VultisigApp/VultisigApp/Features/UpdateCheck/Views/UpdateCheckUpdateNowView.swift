@@ -40,14 +40,14 @@ struct UpdateCheckUpdateNowView: View {
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
 
     var updateDescription: some View {
         Text(latestVersion)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var updateButton: some View {

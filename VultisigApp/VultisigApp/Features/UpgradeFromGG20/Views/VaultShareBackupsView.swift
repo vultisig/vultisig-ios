@@ -33,7 +33,7 @@ struct VaultShareBackupsView: View {
             Text(NSLocalizedString("vaultShareBackupsViewTitle1", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("vaultShareBackupsViewTitle2", comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)

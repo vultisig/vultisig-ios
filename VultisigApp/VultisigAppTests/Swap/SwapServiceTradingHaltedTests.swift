@@ -70,11 +70,16 @@ final class SwapServiceTradingHaltedTests: XCTestCase {
         )
     }
 
-    func testThorchainNonCode3StillMapsToRouteUnavailable() {
+    func testThorchainNonCode3SurfacesServerMessage() {
+        // Non-code-3 errors now relay THORNode's real message instead of
+        // collapsing into `.routeUnavailable`, so a specific failure (e.g. the
+        // secured-asset "…not the same chain as the target asset" rejection)
+        // stays diagnosable. A halt still short-circuits above; only an empty
+        // message falls back to route-unavailable.
         let error = ThorchainSwapError(code: 5, message: "some other upstream failure")
         XCTAssertEqual(
             SwapService.mapThorchainSwapError(error).errorDescription,
-            "swapRouteNotAvailable".localized
+            "some other upstream failure"
         )
     }
 

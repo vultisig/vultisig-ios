@@ -721,6 +721,8 @@
 "nOfTotal" = "%d de %@";
 "noGasTokenFoundError" = "Token de gas não encontrado para a cadeia %@. Por favor, adicione o token nativo ao seu vault.";
 "noLiquidityPool" = "Não há pool de liquidez disponível para este par de tokens. Este ativo pode não ser suportado.";
+"noLocalNetworkPermissionDescription" = "O Vultisig precisa de acesso à Rede Local para encontrar os seus outros dispositivos na mesma rede Wi-Fi. Ative-o nas Configurações, verifique se ambos os dispositivos estão na mesma rede e tente novamente.";
+"noLocalNetworkPermissionTitle" = "Não é possível encontrar dispositivos próximos";
 "noMessagesToSign" = "Não há mensagens para assinar";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "Nenhuma posição encontrada";
@@ -1186,6 +1188,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";
+"swapSecuredAssetInvalidDestination" = "O destino do swap de ativo protegido não é um endereço %1$@ válido (%2$@).";
 "swapTrackingLink" = "Link de rastreamento da troca";
 "swapTradingHalted" = "A negociação deste ativo está temporariamente suspensa. Tente novamente mais tarde.";
 "swapTXHash" = "Hash da Tx da troca";

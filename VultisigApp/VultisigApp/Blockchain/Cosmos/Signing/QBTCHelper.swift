@@ -109,7 +109,7 @@ struct QBTCHelper {
             return (bodyBytes, authInfoBytes)
         }
 
-        guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace) = keysignPayload.chainSpecific else {
+        guard case let .Cosmos(_, sequence, gas, transactionTypeRawValue, ibcDenomTrace, relayedGasLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("QBTC: fail to get account number and sequence")
         }
 
@@ -117,8 +117,13 @@ struct QBTCHelper {
             throw HelperError.runtimeError("QBTC: invalid hex public key")
         }
 
+        // Honor the relayed dynamic gas limit when present; otherwise fall back
+        // to the static per-chain limit. Both co-signers hash this value (it is
+        // part of the SignDoc), so they must resolve to the identical limit.
+        let effectiveGasLimit = relayedGasLimit ?? gasLimit
+
         let bodyBytes = try buildTxBody(keysignPayload: keysignPayload, transactionTypeRawValue: transactionTypeRawValue, ibcDenomTrace: ibcDenomTrace)
-        let authInfoBytes = buildAuthInfo(pubKeyData: pubKeyData, sequence: sequence, gas: gas)
+        let authInfoBytes = buildAuthInfo(pubKeyData: pubKeyData, sequence: sequence, gas: gas, gasLimit: effectiveGasLimit)
         return (bodyBytes, authInfoBytes)
     }
 
@@ -140,7 +145,7 @@ struct QBTCHelper {
             }
             accountNumber = parsed
         } else {
-            guard case let .Cosmos(chainSpecificAccountNumber, _, _, _, _) = keysignPayload.chainSpecific else {
+            guard case let .Cosmos(chainSpecificAccountNumber, _, _, _, _, _) = keysignPayload.chainSpecific else {
                 throw HelperError.runtimeError("QBTC: fail to get account number")
             }
             docChainID = chainID
@@ -434,7 +439,7 @@ struct QBTCHelper {
 
     // MARK: - AuthInfo
 
-    private func buildAuthInfo(pubKeyData: Data, sequence: UInt64, gas: UInt64) -> Data {
+    private func buildAuthInfo(pubKeyData: Data, sequence: UInt64, gas: UInt64, gasLimit: UInt64) -> Data {
         // PubKey message: field 1 = key (bytes)
         var pubKeyMsg = Data()
         pubKeyMsg.appendProtoBytes(fieldNumber: 1, data: pubKeyData)

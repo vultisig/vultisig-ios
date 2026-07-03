@@ -721,6 +721,8 @@
 "nOfTotal" = "%d / %@";
 "noGasTokenFoundError" = "未找到 %@ 链的燃料代币。请将原生代币添加到您的保险库";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
+"noLocalNetworkPermissionDescription" = "Vultisig 需要本地网络访问权限才能找到同一 Wi-Fi 下的其他设备。请在“设置”中开启该权限，确保两台设备连接到同一网络，然后重试。";
+"noLocalNetworkPermissionTitle" = "找不到附近的设备";
 "noMessagesToSign" = "没有需要签名的消息";
 "noPoolsAvailable" = "没有可用的资金池";
 "noPositionsFound" = "未找到任何持仓";
@@ -1186,6 +1188,7 @@
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
+"swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";
 "swapTXHash" = "交换交易哈希";

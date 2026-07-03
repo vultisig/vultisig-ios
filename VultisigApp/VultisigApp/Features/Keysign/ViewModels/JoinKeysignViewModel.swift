@@ -74,6 +74,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedTokenAmount: String?
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
+    @Published var decodedTokenFiat: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
@@ -480,6 +481,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.decodedTokenAmount = display?.amountText
             self.decodedTokenTicker = display?.ticker
             self.decodedTokenLogo = display?.logo
+            self.decodedTokenFiat = display?.fiat
             self.decodedTokenIsUnlimited = false
             return
         }
@@ -663,31 +665,7 @@ class JoinKeysignViewModel: ObservableObject {
     /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            switch sim {
-            case .transfer(let coin, _):
-                return .send(
-                    title: decodedFunctionName,
-                    coin: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: coin.ticker,
-                        logo: coin.logo
-                    )
-                )
-            case .swap(let from, let to, _, _):
-                return .swap(
-                    title: decodedFunctionName,
-                    from: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: from.ticker,
-                        logo: from.logo
-                    ),
-                    to: HeroCoinAmount(
-                        amount: sim.heroToAmountText ?? "",
-                        ticker: to.ticker,
-                        logo: to.logo
-                    )
-                )
-            }
+            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
         }
 
         // TON-side fallback: when the BOC decoder resolved a jetton hero we
@@ -698,7 +676,7 @@ class JoinKeysignViewModel: ObservableObject {
            !amount.isEmpty {
             return .send(
                 title: decodedFunctionName,
-                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo)
+                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo, fiat: decodedTokenFiat)
             )
         }
 
@@ -756,6 +734,22 @@ class JoinKeysignViewModel: ObservableObject {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let fiatDecimal = payload.toCoin.fiat(decimal: payload.toAmountDecimal)
         return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    /// Fiat value of a plain send amount for the verify header, mirroring the
+    /// swap `getFromFiatAmount()` via the shared
+    /// `CryptoAmountFormatter.amountInFiat` (same `RateProvider` price source
+    /// as the fee, empty for zero-value sends or no rate). Additionally empty
+    /// for swaps (fiat is carried on the hero from/to rows) and for
+    /// contract-call / approval decodes (the amount row shows a decoded
+    /// token, not a coin transfer) — so nothing misleading renders.
+    func getAmountFiat() -> String {
+        guard let payload = keysignPayload,
+              payload.swapPayload == nil,
+              decodedTokenDisplay == nil else {
+            return .empty
+        }
+        return CryptoAmountFormatter.amountInFiat(coin: payload.coin, amount: payload.toAmountDecimal)
     }
 
 }

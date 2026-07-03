@@ -22,7 +22,7 @@ struct SignAminoDisplayView: View {
                 HStack(alignment: .center) {
                     Text("aminoSign".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
@@ -35,7 +35,7 @@ struct SignAminoDisplayView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(formatSignAminoData())
                             .font(Theme.fonts.bodySRegular)
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .foregroundStyle(Theme.colors.textPrimary)
                             .padding(16)
                     }
                 }

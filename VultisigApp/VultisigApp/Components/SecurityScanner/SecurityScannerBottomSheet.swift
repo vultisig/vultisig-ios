@@ -35,11 +35,11 @@ struct SecurityScannerBottomSheetContent: View {
         VStack(spacing: 24) {
             Image(systemName: contentStyle.image)
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(contentStyle.imageColor)
+                .foregroundStyle(contentStyle.imageColor)
 
             VStack(spacing: 12) {
                 Text(contentStyle.title)
-                    .foregroundColor(contentStyle.imageColor)
+                    .foregroundStyle(contentStyle.imageColor)
                     .font(Theme.fonts.title2)
                     .multilineTextAlignment(.center)
 

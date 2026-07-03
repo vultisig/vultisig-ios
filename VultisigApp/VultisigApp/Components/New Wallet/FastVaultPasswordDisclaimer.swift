@@ -22,7 +22,7 @@ struct FastVaultPasswordDisclaimer: View {
             info
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.alertWarning)
+        .foregroundStyle(Theme.colors.alertWarning)
         .padding(16)
         .background(Theme.colors.bgAlert)
         .cornerRadius(12)
@@ -79,7 +79,7 @@ struct FastVaultPasswordDisclaimer: View {
     var title: some View {
         HStack {
             Text(NSLocalizedString("moreInfo", comment: ""))
-                .foregroundColor(Theme.colors.textDark)
+                .foregroundStyle(Theme.colors.textDark)
 
             Spacer()
             closeButton
@@ -92,13 +92,13 @@ struct FastVaultPasswordDisclaimer: View {
             showTooltip = false
         } label: {
             Image(systemName: "xmark")
-                .foregroundColor(Theme.colors.textButtonDisabled)
+                .foregroundStyle(Theme.colors.textButtonDisabled)
         }
     }
 
     var description: some View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
             .font(Theme.fonts.bodySMedium)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)

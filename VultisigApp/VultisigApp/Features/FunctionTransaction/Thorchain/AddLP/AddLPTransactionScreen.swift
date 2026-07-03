@@ -39,15 +39,15 @@ struct AddLPTransactionScreen: View {
         if viewModel.showAsymmetricDepositInfo {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
-                    .foregroundColor(Theme.colors.alertInfo)
+                    .foregroundStyle(Theme.colors.alertInfo)
                     .font(Theme.fonts.caption12)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("asymmetricDeposit".localized)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                     Text(viewModel.asymmetricDepositMessage)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 Spacer()
             }
