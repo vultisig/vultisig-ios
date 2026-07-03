@@ -214,4 +214,58 @@ final class SuiCoinTypeTests: XCTestCase {
         let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
         XCTAssertEqual(selected?["objectID"], "0xhasBalance")
     }
+
+    // MARK: - Input-coin selection (transaction-size guard)
+
+    /// Selects the fewest largest objects that cover the target, leaving the rest
+    /// out so the transaction stays small.
+    func testSelectInputCoinsPicksFewestLargestCoveringTarget() {
+        let coins = [
+            suiObject("0xa", balance: "100"),
+            suiObject("0xb", balance: "300"),
+            suiObject("0xc", balance: "200")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(450))
+        // 300 + 200 = 500 >= 450; the 100 object is left out.
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xb", "0xc"])
+    }
+
+    /// A single object that already covers the target is selected alone.
+    func testSelectInputCoinsStopsAtFirstCoveringObject() {
+        let coins = [
+            suiObject("0xbig", balance: "1000"),
+            suiObject("0xa", balance: "300"),
+            suiObject("0xb", balance: "200")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(500))
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xbig"])
+    }
+
+    /// The object count is capped even when more would be needed to cover the
+    /// target (best effort), so the transaction never exceeds Sui's limits.
+    func testSelectInputCoinsRespectsMaxObjectsCap() {
+        let coins = (0..<10).map { suiObject("0x\($0)", balance: "100") }
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(1000), maxObjects: 3)
+        XCTAssertEqual(selected.count, 3)
+    }
+
+    /// At least one object is always selected, even for a zero target.
+    func testSelectInputCoinsAlwaysSelectsAtLeastOne() {
+        let coins = [suiObject("0xa", balance: "100"), suiObject("0xb", balance: "200")]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: .zero)
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xb"])
+    }
+
+    /// Equal balances tie-break deterministically by objectID, so every
+    /// co-signing device selects the identical set.
+    func testSelectInputCoinsTieBreaksDeterministicallyByObjectID() {
+        let coins = [
+            suiObject("0xc", balance: "100"),
+            suiObject("0xa", balance: "100"),
+            suiObject("0xb", balance: "100")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(150))
+        // Two needed (100 + 100); ties broken by ascending objectID → 0xa, 0xb.
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xa", "0xb"])
+    }
 }

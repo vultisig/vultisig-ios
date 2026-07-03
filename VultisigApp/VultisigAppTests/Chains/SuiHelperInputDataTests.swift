@@ -5,15 +5,16 @@
 //  Pins the WalletCore `Sui.SigningInput` that `SuiHelper.getPreSignedInputData`
 //  builds for the two native flows:
 //
-//  * Native SUI send (`PaySui`): every native SUI object the wallet holds is
-//    passed as an input coin. WalletCore/Sui gas-smashes the whole input set
-//    into one `GasCoin`, so a balance scattered across many objects is merged —
-//    the wallet is never limited to a single object's balance.
+//  * Native SUI send (`PaySui`): only the largest objects needed to fund
+//    amount + gas are referenced (covering selection), so a balance scattered
+//    across many objects is merged — WalletCore/Sui gas-smashes the selected set
+//    into one `GasCoin` — without referencing every object and overflowing Sui's
+//    128 KiB / 256-gas-object transaction limits.
 //
-//  * Token send (`Pay`): the token's objects are the inputs and a *single* SUI
-//    object pays gas. That object is selected to cover the gas budget (smallest
-//    covering object), not taken arbitrarily, so the send doesn't fail when the
-//    first object the RPC returned is too small.
+//  * Token send (`Pay`): the token's objects are covering-selected as inputs and
+//    a *single* SUI object pays gas. That object is selected to cover the gas
+//    budget (smallest covering object), not taken arbitrarily, so the send
+//    doesn't fail when the first object the RPC returned is too small.
 //
 
 @testable import VultisigApp
@@ -82,19 +83,21 @@ final class SuiHelperInputDataTests: XCTestCase {
         )
     }
 
-    // MARK: - Native send merges every SUI object
+    // MARK: - Native send merges the objects it needs
 
-    /// A native SUI send whose balance is scattered across three objects passes
-    /// all three as `PaySui.inputCoins` — WalletCore gas-smashes them into one
-    /// spendable `GasCoin`, so the send is not capped at a single object.
-    func testNativeSendPassesEveryScatteredSuiObject() throws {
+    /// A native SUI send whose balance is scattered across three objects
+    /// references the largest objects that cover amount + gas as
+    /// `PaySui.inputCoins` — WalletCore gas-smashes them into one spendable
+    /// `GasCoin`, so the send is not capped at a single object's balance.
+    func testNativeSendSelectsLargestObjectsCoveringAmountPlusGas() throws {
         let coin = makeCoin(isNative: true)
         let coins = [
             coinObject("0xa", type: nativeType, balance: "1000000000"),
             coinObject("0xb", type: nativeType, balance: "2000000000"),
             coinObject("0xc", type: nativeType, balance: "3000000000")
         ]
-        // Amount larger than any single object, smaller than the merged total.
+        // Amount larger than any single object: the two largest (3 + 2) cover
+        // amount + gas, so they are merged and the smallest object is left out.
         let payload = makePayload(coin: coin, coins: coins, amount: BigInt(4_000_000_000), gasBudget: BigInt(3_000_000))
 
         let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
@@ -103,8 +106,70 @@ final class SuiHelperInputDataTests: XCTestCase {
         guard case .paySui(let paySui) = input.transactionPayload else {
             return XCTFail("expected a PaySui payload for a native SUI send")
         }
-        XCTAssertEqual(Set(paySui.inputCoins.map { $0.objectID }), ["0xa", "0xb", "0xc"])
+        XCTAssertEqual(Set(paySui.inputCoins.map { $0.objectID }), ["0xc", "0xb"])
         XCTAssertEqual(paySui.amounts, [4_000_000_000])
+    }
+
+    /// A small native send needs only the single largest object — the transaction
+    /// stays minimal instead of referencing every object the wallet holds.
+    func testNativeSmallSendSelectsOnlyLargestObject() throws {
+        let coin = makeCoin(isNative: true)
+        let coins = [
+            coinObject("0xa", type: nativeType, balance: "1000000000"),
+            coinObject("0xb", type: nativeType, balance: "2000000000"),
+            coinObject("0xc", type: nativeType, balance: "3000000000")
+        ]
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(100_000_000), gasBudget: BigInt(3_000_000))
+
+        let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try SuiSigningInput(serializedBytes: inputData)
+
+        guard case .paySui(let paySui) = input.transactionPayload else {
+            return XCTFail("expected a PaySui payload")
+        }
+        XCTAssertEqual(paySui.inputCoins.map { $0.objectID }, ["0xc"])
+    }
+
+    /// When the amount approaches the full balance, every object is needed to
+    /// cover amount + gas and all are merged.
+    func testNativeNearMaxSendSelectsAllObjects() throws {
+        let coin = makeCoin(isNative: true)
+        let coins = [
+            coinObject("0xa", type: nativeType, balance: "1000000000"),
+            coinObject("0xb", type: nativeType, balance: "2000000000"),
+            coinObject("0xc", type: nativeType, balance: "3000000000")
+        ]
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(5_900_000_000), gasBudget: BigInt(3_000_000))
+
+        let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try SuiSigningInput(serializedBytes: inputData)
+
+        guard case .paySui(let paySui) = input.transactionPayload else {
+            return XCTFail("expected a PaySui payload")
+        }
+        XCTAssertEqual(Set(paySui.inputCoins.map { $0.objectID }), ["0xa", "0xb", "0xc"])
+    }
+
+    /// A wallet whose balance is spread across many small objects references only
+    /// the few largest objects needed — the fix for the "serialized transaction
+    /// size exceeded maximum" broadcast failure.
+    func testNativeDustyWalletReferencesOnlyNeededObjects() throws {
+        let coin = makeCoin(isNative: true)
+        var coins = [coinObject("0xbig", type: nativeType, balance: "10000000000")]
+        // 800 dust objects the send should not need to reference.
+        for i in 0..<800 {
+            coins.append(coinObject("0xdust\(i)", type: nativeType, balance: "1000"))
+        }
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(1_000_000_000), gasBudget: BigInt(3_000_000))
+
+        let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try SuiSigningInput(serializedBytes: inputData)
+
+        guard case .paySui(let paySui) = input.transactionPayload else {
+            return XCTFail("expected a PaySui payload")
+        }
+        XCTAssertEqual(paySui.inputCoins.map { $0.objectID }, ["0xbig"])
+        XCTAssertLessThanOrEqual(paySui.inputCoins.count, SuiConstants.maxInputCoinObjects)
     }
 
     /// Look-alike objects (LST / memecoin whose type merely contains "SUI") are
@@ -130,7 +195,7 @@ final class SuiHelperInputDataTests: XCTestCase {
 
     /// A token send uses the token's objects as inputs and picks the smallest
     /// native SUI object that covers the gas budget — not the first object,
-    /// which here is too small to pay gas.
+    /// which here is too small to pay gas. The amount needs both token objects.
     func testTokenSendSelectsSmallestCoveringGasObject() throws {
         let coin = makeCoin(isNative: false)
         let coins = [
@@ -141,7 +206,8 @@ final class SuiHelperInputDataTests: XCTestCase {
             coinObject("0xtoken1", type: tokenType, balance: "100"),
             coinObject("0xtoken2", type: tokenType, balance: "200")
         ]
-        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(150), gasBudget: BigInt(3_000_000))
+        // 250 needs both token objects (200 + 100).
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(250), gasBudget: BigInt(3_000_000))
 
         let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
         let input = try SuiSigningInput(serializedBytes: inputData)
@@ -153,9 +219,9 @@ final class SuiHelperInputDataTests: XCTestCase {
         XCTAssertEqual(pay.gas.objectID, "0xgasCovers")
     }
 
-    /// The token's objects are all passed (WalletCore merges them in-PTB before
-    /// splitting), so a token balance scattered across objects is spendable.
-    func testTokenSendPassesEveryTokenObject() throws {
+    /// Token inputs are covering-selected too: when the amount needs every token
+    /// object they are all merged in-PTB; the gas object stays separate.
+    func testTokenSendSelectsCoveringTokenObjects() throws {
         let coin = makeCoin(isNative: false)
         let coins = [
             coinObject("0xgas", type: nativeType, balance: "5000000"),
@@ -163,7 +229,8 @@ final class SuiHelperInputDataTests: XCTestCase {
             coinObject("0xt2", type: tokenType, balance: "200"),
             coinObject("0xt3", type: tokenType, balance: "300")
         ]
-        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(500), gasBudget: BigInt(3_000_000))
+        // 550 needs all three token objects (300 + 200 + 100 = 600).
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(550), gasBudget: BigInt(3_000_000))
 
         let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
         let input = try SuiSigningInput(serializedBytes: inputData)
@@ -172,6 +239,28 @@ final class SuiHelperInputDataTests: XCTestCase {
             return XCTFail("expected a Pay payload")
         }
         XCTAssertEqual(Set(pay.inputCoins.map { $0.objectID }), ["0xt1", "0xt2", "0xt3"])
+        XCTAssertEqual(pay.gas.objectID, "0xgas")
+    }
+
+    /// A token send that only needs the single largest token object references
+    /// just that object — the gas object comes from the SUI objects.
+    func testTokenSmallSendSelectsOnlyLargestTokenObject() throws {
+        let coin = makeCoin(isNative: false)
+        let coins = [
+            coinObject("0xgas", type: nativeType, balance: "5000000"),
+            coinObject("0xt1", type: tokenType, balance: "100"),
+            coinObject("0xt2", type: tokenType, balance: "200"),
+            coinObject("0xt3", type: tokenType, balance: "300")
+        ]
+        let payload = makePayload(coin: coin, coins: coins, amount: BigInt(250), gasBudget: BigInt(3_000_000))
+
+        let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try SuiSigningInput(serializedBytes: inputData)
+
+        guard case .pay(let pay) = input.transactionPayload else {
+            return XCTFail("expected a Pay payload")
+        }
+        XCTAssertEqual(pay.inputCoins.map { $0.objectID }, ["0xt3"])
         XCTAssertEqual(pay.gas.objectID, "0xgas")
     }
 }
