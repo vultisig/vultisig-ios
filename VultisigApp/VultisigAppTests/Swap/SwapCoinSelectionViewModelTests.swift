@@ -91,7 +91,11 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         }
 
         XCTAssertFalse(vm.isLoading, "The first publish must clear the loading state")
-        _ = fetchTask
+
+        // Finish the gated fetch inside the test so the enriched publish
+        // can't run after the test exits (the defer above is then a no-op).
+        provider.release()
+        await fetchTask.value
     }
 
     func testNoMatchQueryAfterLoadStillShowsEmptyState() async throws {
