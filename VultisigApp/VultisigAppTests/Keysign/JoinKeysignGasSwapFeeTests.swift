@@ -2,15 +2,17 @@
 //  JoinKeysignGasSwapFeeTests.swift
 //  VultisigAppTests
 //
-//  Pins the co-signer network-fee display for EVM aggregator swaps. The
-//  transmitted `chainSpecific` carries the native-ETH gas floor (40,000), but
-//  the transaction is SIGNED with `max(routeGas, gasLimit)` (see OneInchSwaps),
-//  where the route gas wins. `JoinKeysignGasViewModel` must value the fee at the
-//  signed gas, otherwise the co-signer under-reports the fee ~9x — the dangerous
-//  direction (shows cheap, charges more).
+//  Pins the co-signer network-fee display for EVM aggregator/SwapKit swaps.
+//  The transaction is SIGNED with the `EVMSwapFee` reconciliation — quote gas
+//  price bumped to the oracle ceiling, route gas floored by the transmitted
+//  gasLimit (with the 600k zero-gas fallback) — and `JoinKeysignGasViewModel`
+//  must value the fee identically, otherwise the co-signer under-reports the
+//  fee (the dangerous direction: shows cheap, charges more). The equality
+//  tests at the bottom pin initiator display == co-signer display for
+//  identical inputs across every `.generic` provider, including SwapKit EVM.
 //
-//  A plain (non-swap) EVM send has no route gas and must keep valuing the fee at
-//  `chainSpecific.fee` (maxFeePerGas x gasLimit).
+//  A plain (non-swap) EVM send has no route gas and must keep valuing the fee
+//  at `chainSpecific.fee` (maxFeePerGas x gasLimit).
 //
 
 import BigInt
@@ -95,6 +97,125 @@ final class JoinKeysignGasSwapFeeTests: XCTestCase {
         )
     }
 
+    func testGenericSwapFeeUsesQuoteGasPriceWhenAboveOracle() {
+        // The signer takes max(quote gasPrice, maxFeePerGas); when a provider
+        // prices ABOVE our oracle, the co-signer must value the fee at the
+        // provider's gas price, not the smaller oracle ceiling.
+        let quoteGasPrice = BigInt(2_000_000_000) // 2 Gwei > 0.593 Gwei oracle
+        let payload = makeEvmPayload(
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: maxFeePerGasWei,
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: gasLimitFloor
+            ),
+            swapPayload: makeGenericSwapPayload(routeGas: Int64(routeGas), gasPrice: "2000000000")
+        )
+
+        let result = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+        XCTAssertEqual(
+            result.feeCrypto,
+            expectedFeeCrypto(weiFee: quoteGasPrice * routeGas),
+            "A provider gas price above the oracle wins the signed max and must be displayed"
+        )
+    }
+
+    func testGenericSwapFeeZeroRouteGasFallsBackToSignedDefault() {
+        // The signer normalizes a zero route gas to the 600k default before the
+        // gasLimit floor — the co-signer must reproduce that, not value the fee
+        // at the bare floor.
+        let payload = makeEvmPayload(
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: maxFeePerGasWei,
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: gasLimitFloor
+            ),
+            swapPayload: makeGenericSwapPayload(routeGas: 0)
+        )
+
+        let result = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+        XCTAssertEqual(
+            result.feeCrypto,
+            expectedFeeCrypto(weiFee: maxFeePerGasWei * BigInt(EVMHelper.defaultETHSwapGasUnit)),
+            "A zero route gas is signed with the 600k default and must be displayed at it"
+        )
+    }
+
+    // MARK: - Initiator/co-signer equality (identical inputs, same displayed fee)
+
+    func testCosignerFeeMatchesInitiatorDisplayedFeeForAggregatorProviders() {
+        let eth = makeCoin(ticker: "ETH", decimals: 18, isNative: true)
+        let evmQuote = makeEVMQuote(routeGas: Int64(routeGas), gasPrice: "568000000")
+        let quotes: [(String, SwapQuote)] = [
+            ("oneinch", .oneinch(evmQuote, fee: nil)),
+            ("kyberswap", .kyberswap(evmQuote, fee: nil)),
+            ("lifi", .lifi(evmQuote, fee: nil, integratorFee: nil))
+        ]
+
+        for (name, quote) in quotes {
+            let initiatorFeeWei = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+                quote: quote, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
+            )
+            let payload = makeEvmPayload(
+                chainSpecific: .Ethereum(
+                    maxFeePerGasWei: maxFeePerGasWei,
+                    priorityFeeWei: BigInt(1),
+                    nonce: 0,
+                    gasLimit: gasLimitFloor
+                ),
+                swapPayload: makeGenericSwapPayload(quote: evmQuote)
+            )
+            let cosigner = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+            XCTAssertEqual(
+                cosigner.feeCrypto,
+                expectedFeeCrypto(weiFee: initiatorFeeWei),
+                "Initiator and co-signer must display the same network fee for \(name)"
+            )
+        }
+    }
+
+    func testCosignerFeeMatchesInitiatorDisplayedFeeForSwapKitEvm() throws {
+        // The FLASHNET EVM fixture is a real captured SwapKit response (hex
+        // gas/gasPrice). The initiator reads the raw response; the co-signer
+        // reads the EVMQuote the payload builder bakes from it. Both must
+        // reconcile to the same signed bond.
+        let eth = makeCoin(ticker: "ETH", decimals: 18, isNative: true)
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-flashnet-evm-usdc-btc-swap"
+        )
+        let quote: SwapQuote = .swapkit(response, fee: nil, subProvider: "FLASHNET")
+
+        let initiatorFeeWei = SwapCryptoLogic.displayedSwapNetworkFeeWei(
+            quote: quote, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
+        )
+
+        let evmQuote = try SwapCryptoLogic.buildEVMQuoteFromSwapKit(swapResponse: response)
+        let payload = makeEvmPayload(
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: maxFeePerGasWei,
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: gasLimitFloor
+            ),
+            swapPayload: makeGenericSwapPayload(quote: evmQuote)
+        )
+        let cosigner = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+        XCTAssertEqual(
+            cosigner.feeCrypto,
+            expectedFeeCrypto(weiFee: initiatorFeeWei),
+            "Initiator and co-signer must display the same network fee for SwapKit EVM routes"
+        )
+        // The fixture's 1 Gwei gasPrice is above the 0.593 Gwei oracle and its
+        // 210k gas beats the 40k floor — pin the reconciled bond explicitly.
+        XCTAssertEqual(initiatorFeeWei, BigInt(1_000_000_000) * BigInt(210_000))
+    }
+
     // MARK: - Helpers
 
     /// Mirrors the production formatting so the comparison is locale-independent:
@@ -109,18 +230,25 @@ final class JoinKeysignGasSwapFeeTests: XCTestCase {
         return Coin(asset: asset, address: "0xtest-\(ticker)", hexPublicKey: "")
     }
 
-    private func makeGenericSwapPayload(routeGas: Int64) -> SwapPayload {
-        let quote = EVMQuote(
+    private func makeEVMQuote(routeGas: Int64, gasPrice: String) -> EVMQuote {
+        EVMQuote(
             dstAmount: "1000000",
             tx: EVMQuote.Transaction(
                 from: "0xfrom",
                 to: "0xrouter",
                 data: "0xdeadbeef",
                 value: "1000000000000000",
-                gasPrice: "568000000",
+                gasPrice: gasPrice,
                 gas: routeGas
             )
         )
+    }
+
+    private func makeGenericSwapPayload(routeGas: Int64, gasPrice: String = "568000000") -> SwapPayload {
+        makeGenericSwapPayload(quote: makeEVMQuote(routeGas: routeGas, gasPrice: gasPrice))
+    }
+
+    private func makeGenericSwapPayload(quote: EVMQuote) -> SwapPayload {
         let generic = GenericSwapPayload(
             fromCoin: makeCoin(ticker: "ETH", decimals: 18, isNative: true),
             toCoin: makeCoin(ticker: "USDT", decimals: 6, isNative: false),

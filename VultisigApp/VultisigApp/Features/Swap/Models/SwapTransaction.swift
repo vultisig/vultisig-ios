@@ -23,6 +23,11 @@ struct SwapTransaction: Hashable {
     let fromAmount: Decimal
     let quote: SwapQuote
     let gas: BigInt
+    /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or before
+    /// the fee data loads). Carried alongside `gas` (= maxFeePerGas for EVM) so
+    /// the displayed fee can run the same `EVMSwapFee` reconciliation the
+    /// signer does — the stored floor can exceed the route gas on token routes.
+    let gasLimit: BigInt
     let thorchainFee: BigInt
     let vultDiscountBps: Int
     let referralDiscountBps: Int
@@ -57,6 +62,7 @@ extension SwapTransaction {
     func with(
         quote: SwapQuote? = nil,
         gas: BigInt? = nil,
+        gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
         vultDiscountBps: Int? = nil,
         referralDiscountBps: Int? = nil
@@ -67,6 +73,7 @@ extension SwapTransaction {
             fromAmount: fromAmount,
             quote: quote ?? self.quote,
             gas: gas ?? self.gas,
+            gasLimit: gasLimit ?? self.gasLimit,
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
@@ -88,12 +95,14 @@ extension SwapTransaction {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
     }
 
-    /// Network fee value shown on the verify/done screens. For EVM aggregator
-    /// swaps this is the signed-gas fee so the initiator matches the co-signer
-    /// (`JoinKeysignGasViewModel`). See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
-    /// Display-only: the insufficient-gas gate keeps using `fee`.
+    /// Network fee value shown on the verify/done screens. For EVM aggregator/
+    /// SwapKit routes this is the signed bond so the initiator matches the
+    /// co-signer (`JoinKeysignGasViewModel`) and the vault's signature. Also
+    /// what the verify screen's sufficiency re-validation checks against,
+    /// since the bond is the node's real admission requirement.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
     var displayedNetworkFeeWei: BigInt {
-        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var amountInCoinDecimal: BigInt {
@@ -256,6 +265,7 @@ extension SwapTransaction {
                 maxStreamingQuantity: nil
             )),
             gas: 0,
+            gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,

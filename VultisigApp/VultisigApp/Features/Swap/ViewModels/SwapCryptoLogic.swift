@@ -100,29 +100,29 @@ enum SwapCryptoLogic {
 
     // MARK: - EVM signed network fee (shared with the co-signer)
 
-    /// EVM swap network fee valued at the gas the transaction is actually signed
-    /// with: the conservative EIP-1559 ceiling (`maxFeePerGas`) times
-    /// `max(routeGas, gasLimit)`, where an aggregator route gas beats the
-    /// native-ETH gas floor. Shared by the initiator's fee display and the
-    /// co-signer (`JoinKeysignGasViewModel`) so both devices show the same
-    /// number. Display-only — never feeds the insufficient-gas gate.
-    static func evmSignedSwapNetworkFeeWei(maxFeePerGasWei: BigInt, routeGas: BigInt, gasLimit: BigInt) -> BigInt {
-        maxFeePerGasWei * max(routeGas, gasLimit)
-    }
-
-    /// Network fee value the initiator shows on the swap verify/done screens. For
-    /// EVM aggregator swaps it's the signed-gas fee (`maxFeePerGas ×
-    /// max(routeGas, gasLimit)`) so the initiator matches the co-signer; `gas`
-    /// carries `maxFeePerGas` for EVM. The initiator doesn't retain the stored
-    /// gas floor at display time, so `routeGas` (the signed gas for aggregator
-    /// routes) stands in for `gasLimit`. Everything else — native-protocol swaps,
-    /// or before the EIP-1559 fee has loaded — keeps the existing quote fee.
-    /// Display-only: the insufficient-gas validation keeps using `fee`.
-    static func displayedSwapNetworkFeeWei(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, fee: BigInt) -> BigInt {
+    /// Network fee value the initiator shows on the swap details/verify/done
+    /// screens. For EVM aggregator/SwapKit routes it's the SIGNED bond: the
+    /// shared `EVMSwapFee` reconciliation of the quote's own gas parameters
+    /// (`evmQuoteGasPriceWei`, `evmRouteGas`) with the fee oracle (`gas`
+    /// carries `maxFeePerGas`, `gasLimit` the oracle limit) — the same
+    /// calculator the signer and the co-signer (`JoinKeysignGasViewModel`)
+    /// consume, so both devices show what the vault commits to. Everything
+    /// else — native-protocol swaps, routes without an EVM quote gas, or
+    /// before the oracle fee has loaded (`gas == 0`) — keeps the existing
+    /// quote fee. The insufficient-gas validation checks against this same
+    /// value: the bond is what an EVM node requires the account to cover, so
+    /// validating against the smaller quote seed lets swaps through that the
+    /// node then rejects with "insufficient funds for gas".
+    static func displayedSwapNetworkFeeWei(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, gasLimit: BigInt, fee: BigInt) -> BigInt {
         guard feeCoin.chain.chainType == .EVM, gas > 0, let routeGas = quote?.evmRouteGas else {
             return fee
         }
-        return evmSignedSwapNetworkFeeWei(maxFeePerGasWei: gas, routeGas: routeGas, gasLimit: routeGas)
+        return EVMSwapFee.effective(
+            quoteGasPriceWei: quote?.evmQuoteGasPriceWei ?? .zero,
+            quoteGas: routeGas,
+            maxFeePerGasWei: gas,
+            gasLimit: gasLimit
+        ).feeWei
     }
 
     static func toAmountDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal {

@@ -101,29 +101,48 @@ final class SwapVerifyViewModel {
                     referralDiscountBps: result.referralDiscountBps
                 )
             }
+            // Fetch the oracle fee data BEFORE validating: for EVM aggregator/
+            // SwapKit routes the node admits a transaction only when the
+            // account covers the signed bond (gasLimit × maxFeePerGas + value),
+            // so sufficiency must be checked against the reconciled fee, not
+            // the provider's quote seed. If the oracle fetch fails, validate
+            // against the quote fee exactly as before — a flaky oracle must
+            // never block harder than today — and surface the fetch error
+            // afterwards, preserving the previous failure behavior.
+            var validationFee = updated.fee
+            var chainSpecificError: Error?
+            do {
+                let chainSpecific = try await interactor.fetchChainSpecific(
+                    fromCoin: updated.fromCoin,
+                    toCoin: updated.toCoin,
+                    fromAmount: updated.fromAmount,
+                    quote: updated.quote
+                )
+                updated = updated.with(
+                    gas: chainSpecific.gas,
+                    gasLimit: chainSpecific.gasLimit ?? .zero,
+                    thorchainFee: try await interactor.computeThorchainFee(
+                        chainSpecific: chainSpecific,
+                        fromCoin: updated.fromCoin,
+                        fromAmount: updated.fromAmount,
+                        vault: vault
+                    )
+                )
+                validationFee = updated.displayedNetworkFeeWei
+            } catch {
+                chainSpecificError = error
+            }
             if let balanceError = SwapCryptoLogic.balanceError(
                 fromCoin: updated.fromCoin,
                 feeCoin: updated.feeCoin,
                 fromAmount: updated.fromAmount.description,
-                fee: updated.fee
+                fee: validationFee
             ) {
                 throw balanceError
             }
-            let chainSpecific = try await interactor.fetchChainSpecific(
-                fromCoin: updated.fromCoin,
-                toCoin: updated.toCoin,
-                fromAmount: updated.fromAmount,
-                quote: updated.quote
-            )
-            updated = updated.with(
-                gas: chainSpecific.gas,
-                thorchainFee: try await interactor.computeThorchainFee(
-                    chainSpecific: chainSpecific,
-                    fromCoin: updated.fromCoin,
-                    fromAmount: updated.fromAmount,
-                    vault: vault
-                )
-            )
+            if let chainSpecificError {
+                throw chainSpecificError
+            }
             transaction = updated
             error = nil
         } catch {
