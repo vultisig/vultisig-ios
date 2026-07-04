@@ -20,6 +20,6 @@ enum SwapHaltGate {
         guard let entry = inbound.first(where: { $0.chain.caseInsensitiveCompare(chainName) == .orderedSame }) else {
             return false
         }
-        return entry.halted || entry.global_trading_paused || entry.chain_trading_paused
+        return entry.halted || (entry.global_trading_paused ?? false) || (entry.chain_trading_paused ?? false)
     }
 }

@@ -62,8 +62,8 @@ final class FunctionCallCosmosSwitch {
         let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
         if let match = addresses.first(where: { $0.chain.uppercased() == "GAIA" }) {
             let halted = match.halted
-            let globalPaused = match.global_trading_paused
-            let chainPaused = match.chain_trading_paused
+            let globalPaused = match.global_trading_paused ?? false
+            let chainPaused = match.chain_trading_paused ?? false
 
             if halted || globalPaused || chainPaused {
                 logger.warning("Chain is halted or paused. Cannot proceed with switch.")
