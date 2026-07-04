@@ -141,7 +141,7 @@ final class FunctionCallAddThorLP {
         // `toAddress` empty so `isTheFormValid` blocks submission — otherwise
         // signing proceeds with an empty destination and wallet-core rejects
         // it with the raw `Error_invalid_address` enum.
-        if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+        if inbound.halted || inbound.global_trading_paused ?? false || inbound.chain_trading_paused ?? false || inbound.chain_lp_actions_paused ?? false {
             customErrorMessage = String(format: "inboundPaused".localized, inbound.chain)
             return
         }
