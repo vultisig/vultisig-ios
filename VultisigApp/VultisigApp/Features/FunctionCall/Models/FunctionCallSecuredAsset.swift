@@ -97,7 +97,7 @@ final class FunctionCallSecuredAsset {
         // A halted/paused source chain has no usable inbound vault; leave
         // `toAddress` empty so the form blocks submission instead of signing
         // with an empty destination (raw `Error_invalid_address` at sign time).
-        if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+        if inbound.halted || inbound.global_trading_paused ?? false || inbound.chain_trading_paused ?? false || inbound.chain_lp_actions_paused ?? false {
             inboundStateError = String(format: "inboundPaused".localized, inbound.chain)
             updateErrorMessage()
             return

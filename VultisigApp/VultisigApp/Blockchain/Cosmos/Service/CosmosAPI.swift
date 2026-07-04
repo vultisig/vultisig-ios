@@ -22,6 +22,7 @@ struct CosmosAPI: TargetType {
         case broadcastTransaction(body: Data)
         case simulate(body: Data)
         case wasmTokenBalance(contractAddress: String, base64Payload: String)
+        case wasmTokenInfo(contractAddress: String)
         case ibcDenomTrace(hash: String)
         case denomMetadata(denom: String)
         case allDenomsMetadata
@@ -42,11 +43,12 @@ struct CosmosAPI: TargetType {
         case .simulate:
             return "/cosmos/tx/v1beta1/simulate"
         case .wasmTokenBalance(let contractAddress, let base64Payload):
-            // Base64 can include `/` and `=`, which the URL parser would
-            // otherwise treat as path separators / query delimiters.
-            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-            let encodedPayload = base64Payload.addingPercentEncoding(withAllowedCharacters: allowed) ?? base64Payload
-            return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
+            return Self.wasmSmartQueryPath(contractAddress: contractAddress, base64Payload: base64Payload)
+        case .wasmTokenInfo(let contractAddress):
+            // CW20 metadata query. The payload is the constant `{"token_info":{}}`
+            // smart query, matching the SDK's `getCw20MetaFromLCD`.
+            let base64Payload = Data("{\"token_info\":{}}".utf8).base64EncodedString()
+            return Self.wasmSmartQueryPath(contractAddress: contractAddress, base64Payload: base64Payload)
         case .ibcDenomTrace(let hash):
             return "/ibc/apps/transfer/v1/denom_traces/\(hash)"
         case .denomMetadata(let denom):
@@ -97,6 +99,15 @@ struct CosmosAPI: TargetType {
             return .requestPlain
         }
     }
+
+    /// Builds the `/cosmwasm/.../smart/{payload}` path for a wasm smart query.
+    /// Base64 can include `/` and `=`, which the URL parser would otherwise
+    /// treat as path separators / query delimiters, so `/` is percent-encoded.
+    private static func wasmSmartQueryPath(contractAddress: String, base64Payload: String) -> String {
+        let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        let encodedPayload = base64Payload.addingPercentEncoding(withAllowedCharacters: allowed) ?? base64Payload
+        return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
+    }
 }
 
 // MARK: - Response types
@@ -118,6 +129,20 @@ struct CosmosWasmTokenBalanceResponse: Decodable {
 
     struct BalanceData: Decodable {
         let balance: String
+    }
+}
+
+/// Response for a CW20 `{"token_info":{}}` smart query. The CW20 spec
+/// mandates all three fields, but they are decoded as optionals so a
+/// contract that answers the query with a partial/non-standard blob is
+/// treated as "not a CW20 token" instead of failing decode.
+struct CosmosCw20TokenInfoResponse: Decodable {
+    let data: TokenInfo
+
+    struct TokenInfo: Decodable {
+        let name: String?
+        let symbol: String?
+        let decimals: Int?
     }
 }
 

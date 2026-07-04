@@ -14,15 +14,24 @@ struct VaultNameValidator: FormFieldValidator {
     init() {
         let descriptor = FetchDescriptor<Vault>()
         let vaults = (try? Storage.shared.modelContext.fetch(descriptor)) ?? []
-        vaultNames = Set(vaults.map { $0.name.lowercased() })
+        self.init(existingNames: vaults.map(\.name))
+    }
+
+    init(existingNames: [String]) {
+        vaultNames = Set(existingNames.map { Self.normalize($0) })
     }
 
     func validate(value: String) throws {
-        guard !value.isEmpty else {
+        let name = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else {
             throw HelperError.runtimeError("enterVaultName".localized)
         }
-        guard !vaultNames.contains(value.lowercased()) else {
-            throw HelperError.runtimeError("vaultNameExists".localized.replacingOccurrences(of: "%s", with: value))
+        guard !vaultNames.contains(Self.normalize(name)) else {
+            throw HelperError.runtimeError("vaultNameExists".localized.replacingOccurrences(of: "%s", with: name))
         }
+    }
+
+    private static func normalize(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }

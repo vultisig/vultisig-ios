@@ -209,6 +209,12 @@ class CardanoHelper {
             ? UInt64(keysignPayload.toAmount)
             : Self.minLovelaceOnTokenOutput
 
+        // CIP-20 memo (label 674). When present, WalletCore commits
+        // blake2b-256(auxDataCbor) into the body at map key 7 and emits the
+        // aux CBOR as element [3] of the signed tx. The encoder is byte-parity
+        // pinned to the SDK golden vector so co-signers agree on the sighash.
+        let auxDataCbor = cip20AuxData(for: keysignPayload)
+
         // `byteFee` is a SHARED payload constant: the initiator computes a real
         // size-based fee once (see `CardanoHelper.estimateDynamicByteFee`) and
         // every co-signing device forces that exact value here. Seeding a
@@ -230,6 +236,9 @@ class CardanoHelper {
                 }
             }
             $0.ttl = ttl
+            if let auxDataCbor {
+                $0.auxiliaryData = auxDataCbor
+            }
         }
 
         // Add UTXOs to the input. Per-UTXO token data is carried on the wire
@@ -258,6 +267,17 @@ class CardanoHelper {
         }
 
         return input
+    }
+
+    /// Canonical CIP-20 auxiliary-data CBOR (label 674) for the payload memo,
+    /// or `nil` when there is no memo. Both the pre-sign input
+    /// (`CardanoSigningInput.auxiliaryData`) and the hand-built signed envelope
+    /// (element [3]) derive from this single source, so the body's key-7 hash
+    /// and the embedded aux bytes stay consistent — and byte-identical to the
+    /// SDK/Android/Extension co-signers.
+    static func cip20AuxData(for keysignPayload: KeysignPayload) -> Data? {
+        guard let memo = keysignPayload.memo, !memo.isEmpty else { return nil }
+        return CardanoCIP20.buildAuxData(memo: memo).auxDataCbor
     }
 
     /// Encode an unsigned integer as minimal big-endian bytes (matches
@@ -386,10 +406,17 @@ class CardanoHelper {
         // builds (AddressV2::isValid). Build the signed CBOR envelope by hand
         // from the pre-image body bytes — see CardanoSignedTxBuilder. The body
         // is embedded verbatim; the signature covers Blake2b of those bytes.
+        // When a CIP-20 memo is present, the pre-image body already carries the
+        // aux hash at key 7 (WalletCore committed it from `auxiliaryData`); we
+        // embed the same aux CBOR as element [3]. The body, witness, and aux
+        // bytes match AnySigner's native output; the envelope framing follows
+        // the SDK/mainnet-verified 4-element `[body, witness, is_valid, aux]`
+        // format (AnySigner uses the 3-element Shelley form — same txid).
         let signedTx = try CardanoSignedTxBuilder.build(
             txBody: preSigningOutput.data,
             publicKey: spendingKeyData,
-            signature: signature
+            signature: signature,
+            auxData: cip20AuxData(for: keysignPayload)
         )
 
         // Cardano txId IS Blake2b-256 of the body, which is exactly the
