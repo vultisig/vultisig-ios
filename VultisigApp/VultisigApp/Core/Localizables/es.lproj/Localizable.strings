@@ -586,6 +586,7 @@
 "joinKeysign" = "Unirse a Keysign";
 "joinKeysignCommitteeFailed" = "No se pudo unir al comité de keysign. Comprueba tu conexión e inténtalo de nuevo.";
 "joinReshare" = "Unirse al compartir";
+"joinReshareSubtitle" = "Recibiste una solicitud para compartir nuevamente desde otro dispositivo.";
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
@@ -931,10 +932,9 @@
 "resendNotification" = "Reenviar notificación";
 "resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";
-"reshareLabelDisclaimer" = "Para todas las acciones de compartir nuevamente, siempre se requiere el umbral de dispositivos.";
-"reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
 "reshareLabelTitle" = "Compartir nuevamente tu bóveda";
 "reshareVault" = "Recompartir caja fuerte con un nuevo comité";
+"reshareVaultSubtitle" = "Actualiza la configuración de tu bóveda. Agrega o elimina dispositivos, o actualiza las particiones.";
 "resharingLoaderTitle" = "Agregue dispositivos para incluir o deje dispositivos fuera para eliminar del Cofre";
 "resolvingRecipientName" = "Resolviendo nombre…";
 "restart" = "Por favor, reinicie la aplicación para aplicar los nuevos ajustes de idioma.";
@@ -1114,6 +1114,7 @@
 "standby" = "En Espera";
 "startFastVaultReshare" = "Iniciar compartir con Vultiserver";
 "startReshare" = "Iniciar compartir nuevamente";
+"startReshareSubtitle" = "Estás cambiando la configuración de dispositivos de esta bóveda.";
 "startScanning" = "Iniciar escaneo";
 "status" = "Estado";
 "storeBackupsSeparately" = "Almacena los respaldos por separado";

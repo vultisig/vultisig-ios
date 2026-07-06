@@ -584,6 +584,7 @@
 "joinKeysign" = "키사인 참여";
 "joinKeysignCommitteeFailed" = "Keysign 위원회 참여에 실패했습니다. 연결을 확인한 후 다시 시도하세요.";
 "joinReshare" = "재공유 참여";
+"joinReshareSubtitle" = "다른 기기에서 재공유 요청을 받았습니다.";
 "joinSend" = "전송 참여";
 "joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
@@ -929,10 +930,9 @@
 "resendNotification" = "알림 재전송";
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";
-"reshareLabelDisclaimer" = "모든 재공유 작업에는 항상 기기 임계값이 필요합니다.";
-"reshareLabelSubtitle" = "재공유는 볼트의 기기 수를 새로 고치고, 확장하거나 줄이는 데 사용할 수 있습니다.";
 "reshareLabelTitle" = "볼트 재공유";
 "reshareVault" = "새 기기로 볼트 재공유";
+"reshareVaultSubtitle" = "볼트 설정을 업데이트하세요. 기기를 추가 또는 제거하거나 셰어를 갱신하세요.";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
 "resolvingRecipientName" = "이름 확인 중…";
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
@@ -1078,6 +1078,7 @@
 "standby" = "대기 중";
 "startFastVaultReshare" = "Vultiserver로 재공유 시작";
 "startReshare" = "재공유 시작";
+"startReshareSubtitle" = "이 볼트의 기기 구성을 변경하고 있습니다.";
 "startScanning" = "스캔 시작";
 "status" = "상태";
 "storeBackupsSeparately" = "백업을 별도로 저장";

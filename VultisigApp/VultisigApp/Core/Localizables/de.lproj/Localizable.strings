@@ -586,6 +586,7 @@
 "joinKeysign" = "Keysign beitreten";
 "joinKeysignCommitteeFailed" = "Beitritt zum Keysign-Komitee fehlgeschlagen. Bitte überprüfe deine Verbindung und versuche es erneut.";
 "joinReshare" = "Erneutem Teilen beitreten";
+"joinReshareSubtitle" = "Sie haben eine Anfrage zum erneuten Teilen von einem anderen Gerät erhalten.";
 "joinSend" = "Senden beitreten";
 "joinSwap" = "Tausch beitreten";
 "joinTransactionSigning" = "Verbinden Sie die Transaktionsunterzeichnung";
@@ -931,10 +932,9 @@
 "resendNotification" = "Benachrichtigung erneut senden";
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Erneut teilen";
-"reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer der Schwellenwert der Geräte erforderlich.";
-"reshareLabelSubtitle" = "Das erneute Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelTitle" = "Teile deinen Tresor erneut";
 "reshareVault" = "Tresor mit neuen Geräten teilen";
+"reshareVaultSubtitle" = "Aktualisieren Sie Ihre Tresor-Einrichtung. Fügen Sie Geräte hinzu, entfernen Sie Geräte oder erneuern Sie die Shares.";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
 "resolvingRecipientName" = "Name wird aufgelöst…";
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
@@ -1114,6 +1114,7 @@
 "standby" = "Bereitschaft";
 "startFastVaultReshare" = "Erneutes Teilen mit Vultiserver starten";
 "startReshare" = "Erneutes Teilen starten";
+"startReshareSubtitle" = "Sie ändern die Geräte-Einrichtung dieses Tresors.";
 "startScanning" = "Scannen starten";
 "status" = "Status";
 "storeBackupsSeparately" = "Backups getrennt speichern";

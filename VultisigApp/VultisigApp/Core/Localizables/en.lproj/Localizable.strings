@@ -584,6 +584,7 @@
 "joinKeysign" = "Join Keysign";
 "joinKeysignCommitteeFailed" = "Failed to join the keysign committee. Please check your connection and try again.";
 "joinReshare" = "Join Reshare";
+"joinReshareSubtitle" = "You received a reshare request from another device.";
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
@@ -929,10 +930,9 @@
 "resendNotification" = "Resend notification";
 "resendNotificationIn" = "Resend notification in %@";
 "reshare" = "Reshare";
-"reshareLabelDisclaimer" = "For all Reshare actions the threshold of devices is always required.";
-"reshareLabelSubtitle" = "Reshare can be used to refresh, expand or reduce the amount of devices in a Vault.";
 "reshareLabelTitle" = "Reshare your vault";
 "reshareVault" = "Reshare vault with new devices";
+"reshareVaultSubtitle" = "Update your vault setup. Add or remove devices, or refresh shares.";
 "resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
 "resolvingRecipientName" = "Resolving name…";
 "restart" = "Please restart the app to apply the new language settings.";
@@ -1112,6 +1112,7 @@
 "standby" = "Standby";
 "startFastVaultReshare" = "Start Reshare with Vultiserver";
 "startReshare" = "Start Reshare";
+"startReshareSubtitle" = "You are changing this vault's device setup.";
 "startScanning" = "Start scanning";
 "status" = "Status";
 "storeBackupsSeparately" = "Store backups separately";

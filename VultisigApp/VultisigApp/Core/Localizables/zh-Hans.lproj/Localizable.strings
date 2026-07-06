@@ -586,6 +586,7 @@
 "joinKeysign" = "加入密钥签名";
 "joinKeysignCommitteeFailed" = "加入 keysign 委员会失败。请检查网络连接后重试。";
 "joinReshare" = "加入重新共享";
+"joinReshareSubtitle" = "您收到了来自其他设备的重新共享请求。";
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
@@ -931,10 +932,9 @@
 "resendNotification" = "重新发送通知";
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
-"reshareLabelDisclaimer" = "对于所有重新共享操作，始终需要达到设备阈值";
-"reshareLabelSubtitle" = "重新共享可用于刷新、扩展或减少保险库中的设备数量";
 "reshareLabelTitle" = "重新共享您的保险库";
 "reshareVault" = "使用新设备重新共享保险库";
+"reshareVaultSubtitle" = "更新您的保险库设置。添加或移除设备，或刷新份额。";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
 "resolvingRecipientName" = "正在解析名称…";
 "restart" = "请重新启动应用程序以应用新的语言设置";
@@ -1114,6 +1114,7 @@
 "standby" = "待机";
 "startFastVaultReshare" = "使用 Vultiserver 开始重新共享";
 "startReshare" = "开始重新共享";
+"startReshareSubtitle" = "您正在更改此保险库的设备设置。";
 "startScanning" = "开始扫描";
 "status" = "状态";
 "storeBackupsSeparately" = "分别存储备份";

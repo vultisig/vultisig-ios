@@ -586,6 +586,7 @@
 "joinKeysign" = "Pridružite se Keysign-u";
 "joinKeysignCommitteeFailed" = "Pridruživanje keysign odboru nije uspjelo. Provjeri vezu i pokušaj ponovno.";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
+"joinReshareSubtitle" = "Primili ste zahtjev za ponovno dijeljenje s drugog uređaja.";
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
@@ -931,10 +932,9 @@
 "resendNotification" = "Ponovo pošalji obavijest";
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";
-"reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
-"reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareVault" = "Ponovno podijelite sef s novim odborom";
+"reshareVaultSubtitle" = "Ažurirajte postavke svog trezora. Dodajte ili uklonite uređaje ili osvježite udjele.";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
 "resolvingRecipientName" = "Razrješavanje naziva…";
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
@@ -1114,6 +1114,7 @@
 "standby" = "U Pripravnosti";
 "startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "startReshare" = "Započni ponovno dijeljenje";
+"startReshareSubtitle" = "Mijenjate postavke uređaja ovog trezora.";
 "startScanning" = "Započni skeniranje";
 "status" = "Status";
 "storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";

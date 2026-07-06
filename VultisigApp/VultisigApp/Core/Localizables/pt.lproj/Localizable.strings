@@ -586,6 +586,7 @@
 "joinKeysign" = "Participar do Keysign";
 "joinKeysignCommitteeFailed" = "Não foi possível entrar no comité de keysign. Verifica a tua ligação e tenta novamente.";
 "joinReshare" = "Juntar-se ao compartilhamento";
+"joinReshareSubtitle" = "Você recebeu uma solicitação para compartilhar novamente de outro dispositivo.";
 "joinSend" = "Juntar-se ao Envio";
 "joinSwap" = "Participar da troca";
 "joinTransactionSigning" = "Junte -se à assinatura da transação";
@@ -931,10 +932,9 @@
 "resendNotification" = "Reenviar notificação";
 "resendNotificationIn" = "Reenviar notificação em %@";
 "reshare" = "Recompartilhar";
-"reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
-"reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareVault" = "Recompartilhar cofre com um novo comitê";
+"reshareVaultSubtitle" = "Atualize a configuração do seu cofre. Adicione ou remova dispositivos, ou renove as partes.";
 "resharingLoaderTitle" = "Adicione dispositivos para incluir ou deixe de fora para remover do Cofre";
 "resolvingRecipientName" = "Resolvendo nome…";
 "restart" = "Por favor, reinicie o aplicativo para aplicar as novas configurações de idioma.";
@@ -1114,6 +1114,7 @@
 "standby" = "Em Espera";
 "startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "startReshare" = "Iniciar compartilhamento novamente";
+"startReshareSubtitle" = "Você está alterando a configuração de dispositivos deste cofre.";
 "startScanning" = "Iniciar escaneamento";
 "status" = "Status";
 "storeBackupsSeparately" = "Armazene backups separadamente";

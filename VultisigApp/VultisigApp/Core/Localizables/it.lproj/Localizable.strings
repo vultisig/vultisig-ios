@@ -586,6 +586,7 @@
 "joinKeysign" = "Partecipa a Keysign";
 "joinKeysignCommitteeFailed" = "Impossibile unirsi al comitato di keysign. Controlla la connessione e riprova.";
 "joinReshare" = "Unisciti alla ricondivisione";
+"joinReshareSubtitle" = "Hai ricevuto una richiesta di ricondivisione da un altro dispositivo.";
 "joinSend" = "Unisciti a Invia";
 "joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
@@ -931,10 +932,9 @@
 "resendNotification" = "Rinvia notifica";
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Ricondividi";
-"reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
-"reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareVault" = "Ricondividi la cassaforte con un nuovo comitato";
+"reshareVaultSubtitle" = "Aggiorna la configurazione del tuo vault. Aggiungi o rimuovi dispositivi, oppure aggiorna le quote.";
 "resharingLoaderTitle" = "Aggiungi dispositivi per includerli o escludili per rimuoverli dalla Cassaforte";
 "resolvingRecipientName" = "Risoluzione del nome…";
 "restart" = "Si prega di riavviare l'app per applicare le nuove impostazioni della lingua.";
@@ -1114,6 +1114,7 @@
 "standby" = "In Standby";
 "startFastVaultReshare" = "Inizia la ricondivisione con Vultiserver";
 "startReshare" = "Inizia la ricondivisione";
+"startReshareSubtitle" = "Stai modificando la configurazione dei dispositivi di questo vault.";
 "startScanning" = "Avvia scansione";
 "status" = "Stato";
 "storeBackupsSeparately" = "Conserva i backup separatamente";
