@@ -34,6 +34,36 @@ enum RippleFee {
     }
 }
 
+/// Owner-aware XRPL account-reserve math. The reserve floor is
+/// `reserve_base + OwnerCount × reserve_inc` — every ledger object the account
+/// owns (trustline, offer, ticket, escrow, …) adds one increment. The floor
+/// applies to the Payment amount only; the transaction fee is exempt and may
+/// take the account below the reserve.
+/// - https://xrpl.org/docs/concepts/accounts/reserves
+enum RippleReserve {
+    /// Mainnet base reserve — 1 XRP (validator vote, Dec 2024). Last-resort
+    /// seed only; live values come from `server_state`.
+    static let seedReserveBaseDrops = BigInt(1_000_000)
+    /// Mainnet per-object owner reserve — 0.2 XRP (validator vote, Dec 2024).
+    /// Seed only, as above.
+    static let seedReserveIncDrops = BigInt(200_000)
+
+    /// Total reserved balance in drops: `reserve_base + OwnerCount × reserve_inc`.
+    /// Missing `server_state` fields fall back to the mainnet seeds; a missing
+    /// owner count counts as zero owned objects.
+    static func reservedDrops(ownerCount: Int?, reserveBase: Int?, reserveInc: Int?) -> BigInt {
+        let base = reserveBase.map { BigInt($0) } ?? seedReserveBaseDrops
+        let inc = reserveInc.map { BigInt($0) } ?? seedReserveIncDrops
+        return base + BigInt(ownerCount ?? 0) * inc
+    }
+
+    /// Spendable balance in drops: `max(total − reservedDrops, 0)`.
+    static func availableDrops(totalDrops: BigInt, ownerCount: Int?, reserveBase: Int?, reserveInc: Int?) -> BigInt {
+        let reserved = reservedDrops(ownerCount: ownerCount, reserveBase: reserveBase, reserveInc: reserveInc)
+        return max(totalDrops - reserved, BigInt(0))
+    }
+}
+
 class RippleService {
 
     static let shared = RippleService()
@@ -100,12 +130,13 @@ class RippleService {
             return "0"
         }
 
-        let ownerCount = BigInt(accountInfo?.result?.accountData?.ownerCount ?? 0)
-        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 1000000)
-        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 200000)
-
-        let reservedBalance = reservedBase + (ownerCount * reserveInc)
-        let availableBalance = max(totalBalance - reservedBalance, BigInt(0))
+        let validatedLedger = serverState?.result?.state?.validatedLedger
+        let availableBalance = RippleReserve.availableDrops(
+            totalDrops: totalBalance,
+            ownerCount: accountInfo?.result?.accountData?.ownerCount,
+            reserveBase: validatedLedger?.reserveBase,
+            reserveInc: validatedLedger?.reserveInc
+        )
 
         return availableBalance.description
     }
