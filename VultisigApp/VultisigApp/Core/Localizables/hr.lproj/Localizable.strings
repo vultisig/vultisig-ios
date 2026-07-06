@@ -323,6 +323,7 @@
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
 "destinationTag" = "Oznaka odredišta";
+"destinationTagFromXAddress" = "Uključena u X-adresu";
 "destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
 "destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
 "destinationValidator" = "Odredišni validator";

@@ -67,13 +67,14 @@ struct SendDetailsScreen: View {
                 // Same treatment for the XRP-only destination tag.
                 if !newValue.chain.supportsDestinationTag {
                     viewModel.destinationTag = ""
+                    viewModel.isDestinationTagLocked = false
                 }
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()
 
                 guard !viewModel.toAddress.isEmpty else {
-                    viewModel.addressSetupDone = false
+                    viewModel.onToAddressCleared()
                     return
                 }
 

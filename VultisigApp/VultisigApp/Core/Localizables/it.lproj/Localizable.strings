@@ -323,6 +323,7 @@
 "dependencies" = "Dipendenze";
 "destinationAddress" = "Indirizzo di destinazione";
 "destinationTag" = "Destination tag";
+"destinationTagFromXAddress" = "Incluso nell'indirizzo X";
 "destinationTagInvalidError" = "Il destination tag deve essere un numero intero tra 1 e 4294967295.";
 "destinationTagMemoConflictError" = "Il memo e il destination tag non corrispondono. Le transazioni XRP possono contenere un solo destination tag.";
 "destinationValidator" = "Validatore di destinazione";

@@ -323,6 +323,7 @@
 "dependencies" = "Abhängigkeiten";
 "destinationAddress" = "Zieladresse";
 "destinationTag" = "Destination Tag";
+"destinationTagFromXAddress" = "In der X-Adresse enthalten";
 "destinationTagInvalidError" = "Das Destination Tag muss eine ganze Zahl zwischen 1 und 4294967295 sein.";
 "destinationTagMemoConflictError" = "Memo und Destination Tag stimmen nicht überein. XRP-Transaktionen können nur ein Destination Tag enthalten.";
 "destinationValidator" = "Ziel-Validator";

@@ -323,6 +323,7 @@
 "dependencies" = "Dependencies";
 "destinationAddress" = "Destination Address";
 "destinationTag" = "Destination Tag";
+"destinationTagFromXAddress" = "Included in the X-address";
 "destinationTagInvalidError" = "Destination tag must be a whole number between 1 and 4294967295.";
 "destinationTagMemoConflictError" = "The memo and the destination tag don't match. XRP transactions can carry only one destination tag.";
 "destinationValidator" = "Destination Validator";

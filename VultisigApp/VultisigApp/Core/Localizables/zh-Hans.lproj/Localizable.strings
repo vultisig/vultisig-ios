@@ -323,6 +323,7 @@
 "dependencies" = "依赖项";
 "destinationAddress" = "目标地址";
 "destinationTag" = "目标标签";
+"destinationTagFromXAddress" = "已包含在 X 地址中";
 "destinationTagInvalidError" = "目标标签必须是 1 到 4294967295 之间的整数。";
 "destinationTagMemoConflictError" = "备忘录与目标标签不一致。XRP 交易只能携带一个目标标签。";
 "destinationValidator" = "目标验证人";

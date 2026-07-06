@@ -100,9 +100,16 @@ struct SendDetailsAdditionalSection: View {
                 addDestinationTagTitle
             }
 
-            DestinationTagTextField(destinationTag: $viewModel.destinationTag)
-                .frame(height: isDestinationTagExpanded ? nil : 0, alignment: .top)
-                .clipped()
+            VStack(alignment: .leading, spacing: 4) {
+                DestinationTagTextField(destinationTag: $viewModel.destinationTag)
+                    .disabled(viewModel.isDestinationTagLocked)
+
+                if viewModel.isDestinationTagLocked {
+                    getFieldTitle("destinationTagFromXAddress")
+                }
+            }
+            .frame(height: isDestinationTagExpanded ? nil : 0, alignment: .top)
+            .clipped()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

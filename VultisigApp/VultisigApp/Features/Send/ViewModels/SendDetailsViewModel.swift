@@ -61,6 +61,11 @@ final class SendDetailsViewModel {
     /// `validateRippleTagAndMemo()` and resolved against the memo by
     /// `resolvedDestinationTag` when the immutable transaction is built.
     var destinationTag: String = ""
+
+    /// True when `destinationTag` was derived from a pasted X-address —
+    /// the field is read-only then, because the tag is part of the address
+    /// the sender was given and editing it would misroute the deposit.
+    var isDestinationTagLocked: Bool = false
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
     var isStakingOperation: Bool = false
@@ -349,8 +354,61 @@ final class SendDetailsViewModel {
         isAddressResolved = nil
     }
 
+    /// XRP address seam: when the destination input is a mainnet X-address,
+    /// replace it with the embedded classic r-address (keeping the original
+    /// X string visible as the label, ENS-style) and autofill + lock the
+    /// Destination Tag if one is embedded. Runs on both the sync
+    /// format-validation path and the async resolution path, so paste, QR
+    /// scan, address book, and deeplinks are all covered. The classic
+    /// address is what reaches `SendTransaction`/`KeysignPayload` — verify,
+    /// the security scanner, and tx history all agree with what is signed,
+    /// and the signer's X-address/tag conflict error becomes unreachable.
+    private func normalizeRippleXAddressIfNeeded() {
+        guard coin.chain == .ripple else { return }
+        guard let decoded = try? RippleXAddress.decode(toAddress) else {
+            // The input is no longer the X-address that locked the tag —
+            // the derived tag belonged to the old destination, drop it.
+            if isDestinationTagLocked, toAddress != lastResolvedAddress {
+                isDestinationTagLocked = false
+                destinationTag = ""
+            }
+            return
+        }
+
+        let original = toAddress
+        toAddress = decoded.classicAddress
+        toAddressLabel = original
+        lastResolvedAddress = decoded.classicAddress
+
+        if let tag = decoded.tag {
+            destinationTag = String(tag)
+            isDestinationTagLocked = true
+        } else {
+            if isDestinationTagLocked {
+                destinationTag = ""
+            }
+            isDestinationTagLocked = false
+        }
+    }
+
+    /// Called when the destination field is cleared. Drops the resolution
+    /// bookkeeping and any X-address-derived tag so a stale locked tag
+    /// can't ride onto the next address the user enters — the empty-field
+    /// path never reaches `normalizeRippleXAddressIfNeeded()`, which is
+    /// where edits-away normally release the lock.
+    func onToAddressCleared() {
+        addressSetupDone = false
+        toAddressLabel = nil
+        lastResolvedAddress = nil
+        if isDestinationTagLocked {
+            isDestinationTagLocked = false
+            destinationTag = ""
+        }
+    }
+
     func validateToAddress() async -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
         do {
             let originalInput = toAddress
             let resolvedAddress = try await addressResolver(originalInput, coin.chain)
@@ -372,6 +430,7 @@ final class SendDetailsViewModel {
 
     func isValidAddressFormat() -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
         let isValid = AddressService.validateAddress(address: toAddress, chain: coin.chain)
         if isValid {
             showAddressAlert = false
@@ -826,6 +885,7 @@ final class SendDetailsViewModel {
         amountInFiat = ""
         memo = ""
         destinationTag = ""
+        isDestinationTagLocked = false
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false

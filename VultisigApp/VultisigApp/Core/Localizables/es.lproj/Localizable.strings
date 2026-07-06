@@ -323,6 +323,7 @@
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
 "destinationTag" = "Etiqueta de destino";
+"destinationTagFromXAddress" = "Incluida en la dirección X";
 "destinationTagInvalidError" = "La etiqueta de destino debe ser un número entero entre 1 y 4294967295.";
 "destinationTagMemoConflictError" = "El memorándum y la etiqueta de destino no coinciden. Las transacciones XRP solo pueden llevar una etiqueta de destino.";
 "destinationValidator" = "Validador destino";
