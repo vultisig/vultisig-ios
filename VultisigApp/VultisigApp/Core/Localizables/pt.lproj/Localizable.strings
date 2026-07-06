@@ -762,6 +762,8 @@
 "ok" = "OK";
 "oldBackupsStopWorkingDescription" = "Todos os arquivos .vult existentes se tornarão inválidos. Você precisará criar novos backups após compartilhar novamente.";
 "oldBackupsStopWorkingTitle" = "Backups antigos deixarão de funcionar";
+"oldBackupsWontWork" = "Backups antigos não funcionarão";
+"oldBackupsWontWorkDescription" = "Backups de configurações anteriores do cofre não podem ser usados. Apenas os backups criados durante esta configuração são válidos.";
 "on" = "na";
 "OnboardingCard1Text1" = "Diga olá para ";
 "OnboardingCard1Text2" = "partes do cofre, ";

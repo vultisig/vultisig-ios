@@ -760,6 +760,8 @@
 "ok" = "OK";
 "oldBackupsStopWorkingDescription" = "Any existing .vult files become invalid. You'll need to create fresh backups after resharing.";
 "oldBackupsStopWorkingTitle" = "Old backups will stop working";
+"oldBackupsWontWork" = "Old backups won't work";
+"oldBackupsWontWorkDescription" = "Backups from previous vault setups can't be used. Only backups created during this setup are valid.";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
 "OnboardingCard1Text2" = "vault shares, ";

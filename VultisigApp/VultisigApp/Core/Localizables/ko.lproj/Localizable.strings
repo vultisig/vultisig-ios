@@ -760,6 +760,8 @@
 "ok" = "확인";
 "oldBackupsStopWorkingDescription" = "기존 .vult 파일은 모두 무효가 됩니다. 재공유 후 새 백업을 만들어야 합니다.";
 "oldBackupsStopWorkingTitle" = "기존 백업은 더 이상 작동하지 않습니다";
+"oldBackupsWontWork" = "기존 백업은 사용할 수 없습니다";
+"oldBackupsWontWorkDescription" = "이전 볼트 설정의 백업은 사용할 수 없습니다. 이번 설정 중에 만든 백업만 유효합니다.";
 "on" = "켜짐";
 "OnboardingCard1Text1" = "새로운 ";
 "OnboardingCard1Text2" = "볼트 공유를 ";

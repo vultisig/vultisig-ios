@@ -762,6 +762,8 @@
 "ok" = "OK";
 "oldBackupsStopWorkingDescription" = "Tutti i file .vult esistenti diventano non validi. Dovrai creare nuovi backup dopo la ricondivisione.";
 "oldBackupsStopWorkingTitle" = "I vecchi backup smetteranno di funzionare";
+"oldBackupsWontWork" = "I vecchi backup non funzioneranno";
+"oldBackupsWontWorkDescription" = "I backup delle configurazioni precedenti del vault non possono essere utilizzati. Sono validi solo i backup creati durante questa configurazione.";
 "on" = "su";
 "OnboardingCard1Text1" = "Dì ciao a ";
 "OnboardingCard1Text2" = "quote della cassaforte, ";

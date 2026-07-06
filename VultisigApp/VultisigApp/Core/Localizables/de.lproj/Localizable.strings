@@ -762,6 +762,8 @@
 "ok" = "OK";
 "oldBackupsStopWorkingDescription" = "Alle vorhandenen .vult-Dateien werden ungültig. Nach dem erneuten Teilen müssen Sie neue Backups erstellen.";
 "oldBackupsStopWorkingTitle" = "Alte Backups funktionieren nicht mehr";
+"oldBackupsWontWork" = "Alte Backups funktionieren nicht mehr";
+"oldBackupsWontWorkDescription" = "Backups aus früheren Tresor-Einrichtungen können nicht verwendet werden. Nur Backups, die während dieser Einrichtung erstellt wurden, sind gültig.";
 "on" = "auf";
 "OnboardingCard1Text1" = "Sag Hallo zu ";
 "OnboardingCard1Text2" = "Tresoranteilen, ";

@@ -762,6 +762,8 @@
 "ok" = "DE ACUERDO";
 "oldBackupsStopWorkingDescription" = "Todos los archivos .vult existentes quedarán inválidos. Deberás crear nuevos respaldos después de compartir nuevamente.";
 "oldBackupsStopWorkingTitle" = "Los respaldos antiguos dejarán de funcionar";
+"oldBackupsWontWork" = "Los respaldos antiguos no funcionarán";
+"oldBackupsWontWorkDescription" = "Los respaldos de configuraciones anteriores de la bóveda no se pueden usar. Solo son válidos los respaldos creados durante esta configuración.";
 "on" = "en";
 "OnboardingCard1Text1" = "Di hola a ";
 "OnboardingCard1Text2" = "comparticiones de bóveda, ";

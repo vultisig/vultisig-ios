@@ -762,6 +762,8 @@
 "ok" = "确定";
 "oldBackupsStopWorkingDescription" = "所有现有的 .vult 文件将失效。重新共享后您需要创建新的备份。";
 "oldBackupsStopWorkingTitle" = "旧备份将失效";
+"oldBackupsWontWork" = "旧备份将无法使用";
+"oldBackupsWontWorkDescription" = "先前保险库设置的备份无法使用。只有在本次设置期间创建的备份才有效。";
 "on" = "在";
 "OnboardingCard1Text1" = "向";
 "OnboardingCard1Text2" = "保险库份额问好，";

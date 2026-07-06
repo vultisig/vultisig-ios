@@ -762,6 +762,8 @@
 "ok" = "U redu";
 "oldBackupsStopWorkingDescription" = "Sve postojeće .vult datoteke postaju nevažeće. Nakon ponovnog dijeljenja morat ćete izraditi nove sigurnosne kopije.";
 "oldBackupsStopWorkingTitle" = "Stare sigurnosne kopije prestat će raditi";
+"oldBackupsWontWork" = "Stare sigurnosne kopije neće raditi";
+"oldBackupsWontWorkDescription" = "Sigurnosne kopije iz prethodnih postavki trezora ne mogu se koristiti. Valjane su samo sigurnosne kopije izrađene tijekom ovih postavki.";
 "on" = "na";
 "OnboardingCard1Text1" = "Pozdravite ";
 "OnboardingCard1Text2" = "dijelove trezora, ";
