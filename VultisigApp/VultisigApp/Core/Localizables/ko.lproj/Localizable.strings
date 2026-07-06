@@ -1414,6 +1414,7 @@
 "wrongVaultTryAgain" = "잘못된 볼트 또는 쌍";
 "x" = "X (Twitter)";
 "xrpMemoNotDestinationTagError" = "XRP 거래는 텍스트 메모를 지원하지 않습니다. 거래소에 입금하는 경우 목적지 태그 필드에 숫자 태그를 입력하세요.";
+"xrpTagAndMemoAdvisory" = "태그와 메모를 함께 보내려면 모든 서명 기기가 최신 상태여야 합니다.";
 "yes" = "예";
 "yesterday" = "어제";
 "yieldClaimAmount" = "%@ 수령";

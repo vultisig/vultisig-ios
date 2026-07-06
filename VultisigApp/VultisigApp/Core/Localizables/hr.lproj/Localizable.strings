@@ -1451,6 +1451,7 @@
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
 "xrpMemoNotDestinationTagError" = "XRP transakcije ne podržavaju tekstualne bilješke. Ako uplaćujete na mjenjačnicu, unesite brojčanu oznaku u polje Oznaka odredišta.";
+"xrpTagAndMemoAdvisory" = "Slanje oznake i bilješke zajedno zahtijeva da svi vaši uređaji za potpisivanje budu ažurirani.";
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldClaimAmount" = "Preuzmi %@";

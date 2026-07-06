@@ -1451,6 +1451,7 @@
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
 "x" = "X (Twitter)";
 "xrpMemoNotDestinationTagError" = "Le transazioni XRP non supportano memo di testo. Se stai depositando su un exchange, inserisci il tag numerico nel campo Destination Tag.";
+"xrpTagAndMemoAdvisory" = "Inviare un tag e un memo insieme richiede che tutti i tuoi dispositivi di firma siano aggiornati.";
 "yes" = "Sì";
 "yesterday" = "Ieri";
 "yieldClaimAmount" = "Riscuoti %@";

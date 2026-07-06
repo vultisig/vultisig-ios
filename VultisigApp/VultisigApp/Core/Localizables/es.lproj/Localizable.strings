@@ -1451,6 +1451,7 @@
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "X (Twitter)";
 "xrpMemoNotDestinationTagError" = "Las transacciones XRP no admiten memorándums de texto. Si estás depositando en un exchange, introduce la etiqueta numérica en el campo Etiqueta de destino.";
+"xrpTagAndMemoAdvisory" = "Enviar una etiqueta y un memorándum juntos requiere que todos tus dispositivos de firma estén actualizados.";
 "yes" = "Sí";
 "yesterday" = "Ayer";
 "yieldClaimAmount" = "Reclamar %@";

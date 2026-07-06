@@ -1451,6 +1451,7 @@
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
 "x" = "x";
 "xrpMemoNotDestinationTagError" = "XRP-Transaktionen unterstützen keine Text-Memos. Bei einer Einzahlung an eine Börse geben Sie das numerische Tag im Feld „Destination Tag“ ein.";
+"xrpTagAndMemoAdvisory" = "Um ein Tag und ein Memo zusammen zu senden, müssen alle Ihre Signiergeräte auf dem neuesten Stand sein.";
 "yes" = "Ja";
 "yesterday" = "Gestern";
 "yieldClaimAmount" = "%@ beanspruchen";

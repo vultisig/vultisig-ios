@@ -168,6 +168,29 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertNil(RippleDestinationTag.displayTag(for: payload))
     }
 
+    // MARK: - Cosigner memo display (#4755 combo + memo-only)
+
+    func testDisplayMemoShowsGenuineTextMemo() {
+        // Combo: the co-signer sees BOTH the tag row AND the text memo it signs.
+        let combo = Self.makeRipplePayload(memo: "gift for alice", destinationTagField: 12345)
+        XCTAssertEqual(RippleDestinationTag.displayMemo(for: combo), "gift for alice")
+        XCTAssertEqual(RippleDestinationTag.displayTag(for: combo), 12345)
+
+        // Memo-only: text memo, no tag.
+        let memoOnly = Self.makeRipplePayload(memo: "invoice 42-b", destinationTagField: nil)
+        XCTAssertEqual(RippleDestinationTag.displayMemo(for: memoOnly), "invoice 42-b")
+        XCTAssertNil(RippleDestinationTag.displayTag(for: memoOnly))
+    }
+
+    func testDisplayMemoNilForNumericCarrierAndSwaps() {
+        // The numeric tag carrier (echo / legacy) is shown via the tag row, not
+        // as a memo.
+        XCTAssertNil(RippleDestinationTag.displayMemo(for: Self.makeRipplePayload(memo: "12345", destinationTagField: 12345)))
+        XCTAssertNil(RippleDestinationTag.displayMemo(for: Self.makeRipplePayload(memo: "777", destinationTagField: nil)))
+        // Swaps keep their own memo handling.
+        XCTAssertNil(RippleDestinationTag.displayMemo(for: Self.makeRipplePayload(memo: "=:ETH.ETH:0x1", destinationTagField: nil, withSwapPayload: true)))
+    }
+
     // MARK: - Proto round-trip (the wire the co-signer receives)
 
     func testDestinationTagSurvivesProtoRoundTrip() throws {

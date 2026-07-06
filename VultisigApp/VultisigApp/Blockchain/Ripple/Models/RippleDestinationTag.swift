@@ -75,6 +75,21 @@ enum RippleDestinationTag {
         }
         return payload.memo.flatMap(parseTag)
     }
+
+    /// Genuine on-chain TEXT memo to display for a plain XRP PAYMENT — the
+    /// tag+memo combo, or a memo-only send. Returns `nil` when the memo slot is
+    /// a numeric destination-tag carrier (echo / legacy workaround), for swaps,
+    /// and for non-XRP: those either surface via the Destination Tag row or keep
+    /// their own memo handling. Mirrors the signer, which routes exactly these
+    /// text memos to an on-chain `Memos` blob — so a co-signer sees the same
+    /// memo it is about to sign.
+    static func displayMemo(for payload: KeysignPayload) -> String? {
+        guard payload.coin.chain == .ripple, payload.swapPayload == nil else { return nil }
+        guard let memo = payload.memo, !memo.isEmpty else { return nil }
+        // A canonical uint32 decimal is a tag carrier, not text.
+        guard parseCanonical(memo) == nil else { return nil }
+        return memo
+    }
 }
 
 /// Typed, user-presentable rejection for XRP payloads whose memo slot
