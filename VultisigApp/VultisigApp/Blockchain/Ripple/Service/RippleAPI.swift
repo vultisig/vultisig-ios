@@ -13,6 +13,7 @@ import Foundation
 struct RippleAPI: TargetType {
     enum Endpoint {
         case submit(txBlob: String)
+        case tx(hash: String)
         case serverState
         case accountInfo(account: String)
     }
@@ -40,6 +41,14 @@ struct RippleAPI: TargetType {
         case .submit(let txBlob):
             return .requestCodable(
                 RippleRpcRequest(method: "submit", params: [RippleSubmitParams(txBlob: txBlob)]),
+                .jsonEncoding
+            )
+        case .tx(let hash):
+            return .requestCodable(
+                RippleRpcRequest(
+                    method: "tx",
+                    params: [RippleTxParams(transaction: hash, binary: false, apiVersion: 2)]
+                ),
                 .jsonEncoding
             )
         case .serverState:
@@ -73,6 +82,18 @@ struct RippleSubmitParams: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case txBlob = "tx_blob"
+    }
+}
+
+struct RippleTxParams: Encodable {
+    let transaction: String
+    let binary: Bool
+    let apiVersion: Int
+
+    enum CodingKeys: String, CodingKey {
+        case transaction
+        case binary
+        case apiVersion = "api_version"
     }
 }
 

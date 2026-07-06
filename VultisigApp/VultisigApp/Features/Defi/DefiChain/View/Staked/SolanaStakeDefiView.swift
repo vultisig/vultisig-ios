@@ -36,30 +36,47 @@ private enum SolanaStakeDefiFormatters {
     }()
 }
 
-struct SolanaStakeDefiView: View {
+struct SolanaStakeDefiView<EmptyState: View>: View {
     let coin: Coin
     let totalFiat: String
+    let isPositionEnabled: Bool
     @ObservedObject var viewModel: SolanaStakeDefiViewModel
     var onDelegate: (Coin) -> Void
     var onUnstake: (SolanaStakeAccountRow) -> Void
     var onWithdraw: (SolanaStakeAccountRow) -> Void
+    @ViewBuilder var emptyStateView: () -> EmptyState
 
-    // The total-staked card (and its "Delegate to New Validator" CTA) ALWAYS
-    // renders — Solana staking has no empty state, so a user with zero stake
-    // accounts can still start staking, and the card must never vanish on a
-    // pull-to-refresh or background load (cache-first: persist + refresh, never
-    // blank). The per-account list appears once the wallet holds stake accounts;
-    // only a first-ever cold load with no cached rows shows a non-blocking
-    // spinner beneath the card — a refresh of existing data leaves it in place.
+    // Gated on the per-vault position opt-in (`defiPositions[.solana].staking`),
+    // exactly like the THOR/Maya/Cosmos stake segments: until the user selects
+    // the SOL staking position under "Manage positions", only the empty-state
+    // banner shows. Once enabled, the total-staked card (and its "Delegate to
+    // New Validator" CTA) ALWAYS renders — a user with zero stake accounts can
+    // still start staking, and the card must never vanish on a pull-to-refresh
+    // or background load (cache-first: persist + refresh, never blank). The
+    // per-account list appears once the wallet holds stake accounts.
     var body: some View {
+        Group {
+            if !isPositionEnabled {
+                emptyStateView()
+            } else {
+                populatedState
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var populatedState: some View {
         VStack(spacing: 16) {
             totalStakedCard
             if !viewModel.rows.isEmpty {
                 stakeAccountsCard
             } else if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
+                // Genuine first-ever load (nothing seeded from the persisted
+                // snapshot): show the same skeleton placeholder the persisted
+                // THOR/Maya/TON stake path uses, not a bare spinner. Warm
+                // stores never reach this branch — the seed paints rows before
+                // any network call.
+                DefiChainStakedPositionSkeletonView()
             }
         }
     }
