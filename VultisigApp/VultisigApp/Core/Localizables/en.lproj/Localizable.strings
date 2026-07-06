@@ -31,6 +31,8 @@
 "advancedDescription" = "Reshare, manage security or sign messages.";
 "advancedSettings" = "Advanced Settings";
 "advancedSwap" = "Advanced swap";
+"allCosignersOnlineDescription" = "Every current device in your vault needs to participate in the reshare session.";
+"allCosignersOnlineTitle" = "All co-signers must be online";
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
@@ -117,6 +119,8 @@
 "balance" = "Balance";
 "balanceAvailable" = "Balance available:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Before you reshare";
+"beforeYouReshareSubtitle" = "Resharing regenerates your vault shares. There are a few things to know first.";
 "beforeYouStart" = "Before you start...";
 "belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
@@ -754,6 +758,8 @@
 "of" = "of";
 "off" = "Off";
 "ok" = "OK";
+"oldBackupsStopWorkingDescription" = "Any existing .vult files become invalid. You'll need to create fresh backups after resharing.";
+"oldBackupsStopWorkingTitle" = "Old backups will stop working";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
 "OnboardingCard1Text2" = "vault shares, ";

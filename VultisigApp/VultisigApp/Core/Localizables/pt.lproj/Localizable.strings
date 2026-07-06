@@ -31,6 +31,8 @@
 "advancedDescription" = "Recompartilhar, gerenciar segurança ou assinar mensagens.";
 "advancedSettings" = "Configurações avançadas";
 "advancedSwap" = "Swap avançado";
+"allCosignersOnlineDescription" = "Cada dispositivo atual do seu cofre precisa participar da sessão de compartilhamento.";
+"allCosignersOnlineTitle" = "Todos os cossignatários devem estar online";
 "allDevicesUpgradeTitle1" = "Certifique-se de que";
 "allDevicesUpgradeTitle2" = " todos os dispositivos iniciais estejam presentes ";
 "allDevicesUpgradeTitle3" = "ao fazer a atualização";
@@ -117,6 +119,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponível:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Antes de compartilhar novamente";
+"beforeYouReshareSubtitle" = "Compartilhar novamente regenera as partes do seu cofre. Há algumas coisas que você precisa saber primeiro.";
 "beforeYouStart" = "Antes de começar...";
 "belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor ou envie o saldo completo.";
 "biometricsFastSigning" = "Biometria assinatura rápida";
@@ -756,6 +760,8 @@
 "of" = "de";
 "off" = "Desligado";
 "ok" = "OK";
+"oldBackupsStopWorkingDescription" = "Todos os arquivos .vult existentes se tornarão inválidos. Você precisará criar novos backups após compartilhar novamente.";
+"oldBackupsStopWorkingTitle" = "Backups antigos deixarão de funcionar";
 "on" = "na";
 "OnboardingCard1Text1" = "Diga olá para ";
 "OnboardingCard1Text2" = "partes do cofre, ";

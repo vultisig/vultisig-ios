@@ -31,6 +31,8 @@
 "advancedDescription" = "重新共享、管理安全或签署消息";
 "advancedSettings" = "高级设置";
 "advancedSwap" = "高级兑换";
+"allCosignersOnlineDescription" = "保险库中的每台现有设备都需要参与重新共享会话。";
+"allCosignersOnlineTitle" = "所有共同签名者必须在线";
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
@@ -117,6 +119,8 @@
 "balance" = "余额";
 "balanceAvailable" = "可用余额：";
 "balanceInParentheses" = "( 余额: %@ %@ )";
+"beforeYouReshare" = "重新共享之前";
+"beforeYouReshareSubtitle" = "重新共享会重新生成您的保险库份额。请先了解以下事项。";
 "beforeYouStart" = "开始之前...";
 "belowExistentialDepositError" = "此次转账后您账户中的余额将低于最低留存额（生存性存款），网络将拒绝该交易。请减少金额或转出全部余额。";
 "biometricsFastSigning" = "生物识别快速签名";
@@ -756,6 +760,8 @@
 "of" = "的";
 "off" = "关闭";
 "ok" = "确定";
+"oldBackupsStopWorkingDescription" = "所有现有的 .vult 文件将失效。重新共享后您需要创建新的备份。";
+"oldBackupsStopWorkingTitle" = "旧备份将失效";
 "on" = "在";
 "OnboardingCard1Text1" = "向";
 "OnboardingCard1Text2" = "保险库份额问好，";

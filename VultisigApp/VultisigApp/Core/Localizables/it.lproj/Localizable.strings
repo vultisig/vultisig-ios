@@ -31,6 +31,8 @@
 "advancedDescription" = "Reshare, gestire i messaggi di sicurezza o firma.";
 "advancedSettings" = "Impostazioni avanzate";
 "advancedSwap" = "Swap avanzato";
+"allCosignersOnlineDescription" = "Ogni dispositivo attuale del tuo vault deve partecipare alla sessione di ricondivisione.";
+"allCosignersOnlineTitle" = "Tutti i cofirmatari devono essere online";
 "allDevicesUpgradeTitle1" = "Assicurati che";
 "allDevicesUpgradeTitle2" = " tutti i dispositivi iniziali siano presenti ";
 "allDevicesUpgradeTitle3" = "durante l’aggiornamento";
@@ -117,6 +119,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponibile:";
 "balanceInParentheses" = "( Saldo: %@ %@ )";
+"beforeYouReshare" = "Prima di ricondividere";
+"beforeYouReshareSubtitle" = "La ricondivisione rigenera le quote del tuo vault. Ci sono alcune cose da sapere prima.";
 "beforeYouStart" = "Prima di iniziare...";
 "belowExistentialDepositError" = "Questo invio lascerebbe sul tuo conto un saldo inferiore al minimo (deposito esistenziale), quindi la rete lo rifiuterebbe. Riduci l'importo o invia l'intero saldo.";
 "biometricsFastSigning" = "Biometria Firma rapida";
@@ -756,6 +760,8 @@
 "of" = "Di";
 "off" = "Disattivato";
 "ok" = "OK";
+"oldBackupsStopWorkingDescription" = "Tutti i file .vult esistenti diventano non validi. Dovrai creare nuovi backup dopo la ricondivisione.";
+"oldBackupsStopWorkingTitle" = "I vecchi backup smetteranno di funzionare";
 "on" = "su";
 "OnboardingCard1Text1" = "Dì ciao a ";
 "OnboardingCard1Text2" = "quote della cassaforte, ";

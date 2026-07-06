@@ -31,6 +31,8 @@
 "advancedDescription" = "Respaldar, administrar la seguridad o firmar mensajes.";
 "advancedSettings" = "Ajustes avanzados";
 "advancedSwap" = "Swap avanzado";
+"allCosignersOnlineDescription" = "Cada dispositivo actual de tu bóveda debe participar en la sesión de compartir nuevamente.";
+"allCosignersOnlineTitle" = "Todos los cofirmantes deben estar en línea";
 "allDevicesUpgradeTitle1" = "Asegúrate de que";
 "allDevicesUpgradeTitle2" = " todos los dispositivos iniciales estén presentes ";
 "allDevicesUpgradeTitle3" = "durante la actualización";
@@ -117,6 +119,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponible:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Antes de compartir nuevamente";
+"beforeYouReshareSubtitle" = "Compartir nuevamente regenera las particiones de tu bóveda. Hay algunas cosas que debes saber primero.";
 "beforeYouStart" = "Antes de comenzar...";
 "belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
@@ -756,6 +760,8 @@
 "of" = "de";
 "off" = "Desactivado";
 "ok" = "DE ACUERDO";
+"oldBackupsStopWorkingDescription" = "Todos los archivos .vult existentes quedarán inválidos. Deberás crear nuevos respaldos después de compartir nuevamente.";
+"oldBackupsStopWorkingTitle" = "Los respaldos antiguos dejarán de funcionar";
 "on" = "en";
 "OnboardingCard1Text1" = "Di hola a ";
 "OnboardingCard1Text2" = "comparticiones de bóveda, ";

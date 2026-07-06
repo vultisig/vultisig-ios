@@ -13,6 +13,7 @@ struct ReshareScreen: View {
 
     @State private var showJoinReshare = false
     @State private var shouldJoinKeygen = false
+    @State private var showBeforeYouReshareSheet = false
 
     var body: some View {
         Screen {
@@ -25,6 +26,12 @@ struct ReshareScreen: View {
             }
         }
         .screenTitle("")
+        .bottomSheet(isPresented: $showBeforeYouReshareSheet) {
+            BeforeYouReshareBottomSheet {
+                showBeforeYouReshareSheet = false
+                onStartReshareConfirmed()
+            }
+        }
         #if os(iOS)
         .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
             guard shouldNavigate else { return }
@@ -98,6 +105,10 @@ struct ReshareScreen: View {
     }
 
     private func onStartReshare() {
+        showBeforeYouReshareSheet = true
+    }
+
+    private func onStartReshareConfirmed() {
         router.navigate(to: KeygenRoute.peerDiscovery(
             tssType: .Reshare,
             vault: vault,

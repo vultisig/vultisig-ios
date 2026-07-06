@@ -31,6 +31,8 @@
 "advancedDescription" = "Popravite, upravljajte sigurnosnim ili potpisati poruke.";
 "advancedSettings" = "Napredne postavke";
 "advancedSwap" = "Napredni swap";
+"allCosignersOnlineDescription" = "Svaki trenutačni uređaj u vašem trezoru mora sudjelovati u sesiji ponovnog dijeljenja.";
+"allCosignersOnlineTitle" = "Svi supotpisnici moraju biti na mreži";
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
@@ -117,6 +119,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Dostupan saldo:";
 "balanceInParentheses" = "( Stanje: %@ %@ )";
+"beforeYouReshare" = "Prije ponovnog dijeljenja";
+"beforeYouReshareSubtitle" = "Ponovno dijeljenje ponovno stvara udjele vašeg trezora. Prvo trebate znati nekoliko stvari.";
 "beforeYouStart" = "Prije nego započnete...";
 "belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
@@ -756,6 +760,8 @@
 "of" = "od";
 "off" = "Isključeno";
 "ok" = "U redu";
+"oldBackupsStopWorkingDescription" = "Sve postojeće .vult datoteke postaju nevažeće. Nakon ponovnog dijeljenja morat ćete izraditi nove sigurnosne kopije.";
+"oldBackupsStopWorkingTitle" = "Stare sigurnosne kopije prestat će raditi";
 "on" = "na";
 "OnboardingCard1Text1" = "Pozdravite ";
 "OnboardingCard1Text2" = "dijelove trezora, ";
