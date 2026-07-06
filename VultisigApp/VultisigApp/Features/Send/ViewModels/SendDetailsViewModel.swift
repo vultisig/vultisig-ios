@@ -56,6 +56,11 @@ final class SendDetailsViewModel {
     var amount: String = ""
     var amountInFiat: String = ""
     var memo: String = ""
+
+    /// XRP-only destination tag, kept as the raw field text. Validated by
+    /// `validateRippleTagAndMemo()` and resolved against the memo by
+    /// `resolvedDestinationTag` when the immutable transaction is built.
+    var destinationTag: String = ""
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
     var isStakingOperation: Bool = false
@@ -666,6 +671,56 @@ final class SendDetailsViewModel {
         return validateERC20GasBalance()
     }
 
+    /// XRP tag/memo contract, resolved at the form seam so the failure is
+    /// actionable while the fields are still on screen:
+    /// - the Destination Tag field must be empty or a canonical uint32 decimal;
+    /// - the memo must be empty or numeric (the long-standing "type the tag
+    ///   into the memo" workaround keeps working) — text memos no longer have
+    ///   an on-chain XRP carrier, so they're rejected with copy steering the
+    ///   user to the tag field;
+    /// - both set with different values is a conflict (the wire carries one tag).
+    func validateRippleTagAndMemo() -> Bool {
+        guard coin.chain == .ripple else { return true }
+
+        var fieldTag: UInt32?
+        if !destinationTag.isEmpty {
+            guard let tag = RippleDestinationTag.parseTag(destinationTag) else {
+                setGeneralError(message: "destinationTagInvalidError")
+                return false
+            }
+            fieldTag = tag
+        }
+
+        if !memo.isEmpty {
+            guard RippleDestinationTag.parseCanonical(memo) != nil else {
+                setGeneralError(message: "xrpMemoNotDestinationTagError")
+                return false
+            }
+            guard let memoTag = RippleDestinationTag.parseTag(memo) else {
+                // Numeric but zero — same rejection as the field.
+                setGeneralError(message: "destinationTagInvalidError")
+                return false
+            }
+            if let fieldTag, memoTag != fieldTag {
+                setGeneralError(message: "destinationTagMemoConflictError")
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /// Effective XRP destination tag: the dedicated field wins; a canonical
+    /// numeric memo (legacy workaround) is honored when the field is empty.
+    /// Only meaningful after `validateRippleTagAndMemo()` passed.
+    var resolvedDestinationTag: UInt32? {
+        guard coin.chain == .ripple else { return nil }
+        if let tag = RippleDestinationTag.parseTag(destinationTag) {
+            return tag
+        }
+        return RippleDestinationTag.parseTag(memo)
+    }
+
     /// For ERC20-style non-native sends, gas is paid in the chain's native
     /// sibling. Reject if the vault doesn't hold enough of it.
     func validateERC20GasBalance() -> Bool {
@@ -692,6 +747,7 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
+        guard validateRippleTagAndMemo() else { return false }
         guard await validateAddressResolved() else { return false }
         return validateBalance()
     }
@@ -715,6 +771,11 @@ final class SendDetailsViewModel {
         guard amount.isValidDecimal(), !toAddress.isEmpty, !amountDecimal.isZero else {
             throw MakeTransactionError.invalidForm
         }
+        // XRP: once a tag resolved (field or legacy numeric memo), the tag is
+        // the single source of truth — blank the memo so Verify shows one
+        // honest "Destination Tag" row instead of a duplicated numeric memo.
+        let resolvedTag = resolvedDestinationTag
+        let effectiveMemo = (coin.chain == .ripple && resolvedTag != nil) ? "" : memo
         return SendTransaction(
             coin: coin,
             vault: vault,
@@ -723,7 +784,8 @@ final class SendDetailsViewModel {
             toAddressLabel: toAddressLabel,
             amount: amount,
             amountInFiat: amountInFiat,
-            memo: memo,
+            memo: effectiveMemo,
+            destinationTag: resolvedTag,
             gas: gas,
             fee: fee,
             feeMode: feeMode,
@@ -763,6 +825,7 @@ final class SendDetailsViewModel {
         amount = ""
         amountInFiat = ""
         memo = ""
+        destinationTag = ""
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false

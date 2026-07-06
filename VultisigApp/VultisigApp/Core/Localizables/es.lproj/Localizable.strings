@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
+"destinationTagInvalidError" = "La etiqueta de destino debe ser un número entero entre 1 y 4294967295.";
+"destinationTagMemoConflictError" = "El memorándum y la etiqueta de destino no coinciden. Las transacciones XRP solo pueden llevar una etiqueta de destino.";
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Almacene la parte de la bóveda de este dispositivo.";
@@ -1440,6 +1442,7 @@
 "wrongVaultSelectedDescription" = "El Vault que seleccionaste no coincide con la sesión de keygen. Por favor selecciona el Vault correcto.";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "X (Twitter)";
+"xrpMemoNotDestinationTagError" = "Las transacciones XRP no admiten memorándums de texto. Si estás depositando en un exchange, introduce la etiqueta numérica en el campo Etiqueta de destino.";
 "yes" = "Sí";
 "yesterday" = "Ayer";
 "yieldClaimAmount" = "Reclamar %@";

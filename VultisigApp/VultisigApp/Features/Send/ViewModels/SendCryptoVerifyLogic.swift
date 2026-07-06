@@ -172,15 +172,35 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - Keysign Payload
 
+    /// Memo slot of the keysign payload. XRP encodes the destination tag
+    /// here as a canonical uint32 decimal — the cross-platform wire contract
+    /// (`RippleDestinationTag`); every co-signer's Ripple builder parses a
+    /// numeric memo into wallet-core's `destinationTag`, so the bytes match
+    /// on every shipped platform version.
+    static func payloadMemo(tx: SendTransaction) -> String? {
+        if tx.coin.chain == .ripple, let tag = tx.destinationTag {
+            return String(tag)
+        }
+        return tx.memo.isEmpty ? nil : tx.memo
+    }
+
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
             let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
+
+            // Initiator-side gate on the XRP memo contract, mirrored by the
+            // signing helper on every device: fail here, before the ceremony,
+            // with the same typed error the co-signers would raise.
+            let memo = Self.payloadMemo(tx: tx)
+            if tx.coin.chain == .ripple {
+                _ = try RippleDestinationTag.validatePayloadMemo(memo)
+            }
 
             let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
-                memo: tx.memo.isEmpty ? nil : tx.memo,
+                memo: memo,
                 chainSpecific: chainSpecific,
                 wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault

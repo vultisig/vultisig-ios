@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "Izbriši sef";
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
+"destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
+"destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
@@ -1440,6 +1442,7 @@
 "wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
+"xrpMemoNotDestinationTagError" = "XRP transakcije ne podržavaju tekstualne bilješke. Ako uplaćujete na mjenjačnicu, unesite brojčanu oznaku u polje Oznaka odredišta.";
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldClaimAmount" = "Preuzmi %@";

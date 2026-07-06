@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "Elimina Cassaforte";
 "dependencies" = "Dipendenze";
 "destinationAddress" = "Indirizzo di destinazione";
+"destinationTagInvalidError" = "Il destination tag deve essere un numero intero tra 1 e 4294967295.";
+"destinationTagMemoConflictError" = "Il memo e il destination tag non corrispondono. Le transazioni XRP possono contenere un solo destination tag.";
 "destinationValidator" = "Validatore di destinazione";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Memorizza la condivisione Vault di questo dispositivo.";
@@ -1440,6 +1442,7 @@
 "wrongVaultSelectedDescription" = "Il Vault che hai selezionato non corrisponde alla sessione di keygen. Si prega di selezionare il Vault corretto.";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
 "x" = "X (Twitter)";
+"xrpMemoNotDestinationTagError" = "Le transazioni XRP non supportano memo di testo. Se stai depositando su un exchange, inserisci il tag numerico nel campo Destination Tag.";
 "yes" = "Sì";
 "yesterday" = "Ieri";
 "yieldClaimAmount" = "Riscuoti %@";

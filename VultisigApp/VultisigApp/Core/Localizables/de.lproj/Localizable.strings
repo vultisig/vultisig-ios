@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "Tresor löschen";
 "dependencies" = "Abhängigkeiten";
 "destinationAddress" = "Zieladresse";
+"destinationTagInvalidError" = "Das Destination Tag muss eine ganze Zahl zwischen 1 und 4294967295 sein.";
+"destinationTagMemoConflictError" = "Memo und Destination Tag stimmen nicht überein. XRP-Transaktionen können nur ein Destination Tag enthalten.";
 "destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
 "deviceBackupDescription" = "Speichern Sie die Gewölbeanteil dieses Geräts.";
@@ -1440,6 +1442,7 @@
 "wrongVaultSelectedDescription" = "Der von Ihnen ausgewählte Vault stimmt nicht mit der Keygen-Sitzung überein. Bitte wählen Sie den richtigen Vault aus.";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
 "x" = "x";
+"xrpMemoNotDestinationTagError" = "XRP-Transaktionen unterstützen keine Text-Memos. Bei einer Einzahlung an eine Börse geben Sie das numerische Tag im Feld „Destination Tag“ ein.";
 "yes" = "Ja";
 "yesterday" = "Gestern";
 "yieldClaimAmount" = "%@ beanspruchen";

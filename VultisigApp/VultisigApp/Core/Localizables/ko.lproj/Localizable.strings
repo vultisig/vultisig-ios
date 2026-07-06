@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "볼트 삭제";
 "dependencies" = "종속성";
 "destinationAddress" = "목적지 주소";
+"destinationTagInvalidError" = "목적지 태그는 1에서 4294967295 사이의 정수여야 합니다.";
+"destinationTagMemoConflictError" = "메모와 목적지 태그가 일치하지 않습니다. XRP 거래는 목적지 태그를 하나만 가질 수 있습니다.";
 "destinationValidator" = "도착 검증인";
 "device" = "기기";
 "deviceBackupDescription" = "이 기기의 볼트 공유를 저장합니다.";
@@ -1403,6 +1405,7 @@
 "wrongVaultSelectedDescription" = "선택한 볼트가 키젠 세션과 일치하지 않습니다. 올바른 볼트를 선택하세요.";
 "wrongVaultTryAgain" = "잘못된 볼트 또는 쌍";
 "x" = "X (Twitter)";
+"xrpMemoNotDestinationTagError" = "XRP 거래는 텍스트 메모를 지원하지 않습니다. 거래소에 입금하는 경우 목적지 태그 필드에 숫자 태그를 입력하세요.";
 "yes" = "예";
 "yesterday" = "어제";
 "yieldClaimAmount" = "%@ 수령";

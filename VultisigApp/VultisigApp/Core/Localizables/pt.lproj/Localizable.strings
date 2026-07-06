@@ -321,6 +321,8 @@
 "deleteVaultTitle" = "Deletar Cofre";
 "dependencies" = "Dependências";
 "destinationAddress" = "Endereço de destino";
+"destinationTagInvalidError" = "A tag de destino deve ser um número inteiro entre 1 e 4294967295.";
+"destinationTagMemoConflictError" = "O memorando e a tag de destino não coincidem. Transações XRP só podem levar uma tag de destino.";
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Armazene a participação do Vault deste dispositivo.";
@@ -1440,6 +1442,7 @@
 "wrongVaultSelectedDescription" = "O Vault que você selecionou não corresponde à sessão de keygen. Por favor, selecione o Vault correto.";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "x" = "x";
+"xrpMemoNotDestinationTagError" = "Transações XRP não suportam memorandos de texto. Se estiver depositando em uma exchange, insira a tag numérica no campo Tag de Destino.";
 "yes" = "Sim";
 "yesterday" = "Ontem";
 "yieldClaimAmount" = "Resgatar %@";

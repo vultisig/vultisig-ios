@@ -7,8 +7,11 @@
 
 import BigInt
 import Foundation
+import OSLog
 import Tss
 import WalletCore
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-helper")
 
 enum RippleHelper {
 
@@ -50,91 +53,108 @@ enum RippleHelper {
             throw HelperError.runtimeError("invalid public key data")
         }
 
-        // Check if we need to include a memo or destinationTag in the transaction
-        if let memoValue = keysignPayload.memo, !memoValue.isEmpty {
-            // Check if the memo is an integer (for destinationTag) or a string (for memo data)
-            if let destinationTag = UInt64(memoValue) {
-                // If it's an integer, use it as destinationTag with the standard operation
-                let operation = RippleOperationPayment.with {
-                    $0.destination = keysignPayload.toAddress
-                    $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
-                    $0.destinationTag = destinationTag
+        let destinationTag: UInt64?
+        if keysignPayload.swapPayload != nil {
+            // Swap payloads keep the legacy memo behavior byte-for-byte so
+            // mixed-version committees stay in agreement:
+            // - SwapKit XRP stringifies the resolved destination tag into the
+            //   memo slot → numeric memo becomes a wallet-core destinationTag;
+            // - THORChain swaps carry the protocol's text routing memo, which
+            //   must ride the on-chain `Memos` field for THORChain to read.
+            if let memoValue = keysignPayload.memo, !memoValue.isEmpty {
+                guard let numericTag = UInt64(memoValue) else {
+                    return try swapMemoSigningInput(
+                        keysignPayload: keysignPayload,
+                        memoValue: memoValue,
+                        gas: gas,
+                        sequence: sequence,
+                        lastLedgerSequence: lastLedgerSequence,
+                        publicKey: publicKey
+                    )
                 }
-
-                let input = RippleSigningInput.with {
-                    $0.fee = Int64(gas)
-                    $0.sequence = UInt32(sequence)  // from account info api
-                    $0.account = keysignPayload.coin.address
-                    $0.publicKey = publicKey.data
-                    $0.opPayment = operation
-                    $0.lastLedgerSequence = UInt32(lastLedgerSequence)
-                }
-
-                print("Creating XRP transaction with destinationTag: \(destinationTag)")
-                print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
-
-                return try input.serializedData()
+                destinationTag = numericTag
             } else {
-                // It's a string, use it as memo data
-                // Create a JSON transaction with memo included
-                let txJson: [String: Any] = [
-                    "TransactionType": "Payment",
-                    "Account": keysignPayload.coin.address,
-                    "Destination": keysignPayload.toAddress,
-                    "Amount": String(keysignPayload.toAmount.description),
-                    "Fee": String(gas),
-                    "Sequence": sequence,
-                    "LastLedgerSequence": lastLedgerSequence,
-                    "Memos": [
-                        [
-                            "Memo": [
-                                "MemoData": memoValue.data(using: .utf8)?.map { String(format: "%02hhx", $0) }.joined() ?? ""
-                            ]
-                        ]
-                    ]
-                ]
-
-                // Convert the JSON to a string
-                let jsonData = try JSONSerialization.data(withJSONObject: txJson, options: [])
-                guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-                    throw HelperError.runtimeError("Failed to create JSON string")
-                }
-
-                // Create input with raw_json
-                let input = RippleSigningInput.with {
-                    $0.fee = Int64(gas)
-                    $0.sequence = UInt32(sequence)
-                    $0.account = keysignPayload.coin.address
-                    $0.publicKey = publicKey.data
-                    $0.lastLedgerSequence = UInt32(lastLedgerSequence)
-                    $0.rawJson = jsonString
-                }
-
-                print("Creating XRP transaction with memo text: \(memoValue)\njsonString: \(jsonString)")
-                print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
-
-                return try input.serializedData()
+                destinationTag = nil
             }
         } else {
-            // Standard transaction without memo
-            let operation = RippleOperationPayment.with {
-                $0.destination = keysignPayload.toAddress
-                $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
-            }
-
-            let input = RippleSigningInput.with {
-                $0.fee = Int64(gas)
-                $0.sequence = UInt32(sequence)  // from account info api
-                $0.account = keysignPayload.coin.address
-                $0.publicKey = publicKey.data
-                $0.opPayment = operation
-                $0.lastLedgerSequence = UInt32(lastLedgerSequence)
-            }
-
-            print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
-
-            return try input.serializedData()
+            // Plain payments: the memo slot is the destination-tag carrier —
+            // it must be empty or a canonical uint32 decimal, and anything
+            // else rejects the payload on both sides of the ceremony (see
+            // `RippleDestinationTag`). This replaces the legacy fallback that
+            // turned non-numeric memos into an on-chain `Memos` blob, which
+            // silently dropped the tag and left exchange deposits uncredited.
+            destinationTag = try RippleDestinationTag.validatePayloadMemo(keysignPayload.memo).map(UInt64.init)
         }
+
+        let operation = RippleOperationPayment.with {
+            $0.destination = keysignPayload.toAddress
+            $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
+            if let destinationTag {
+                $0.destinationTag = destinationTag
+            }
+        }
+
+        let input = RippleSigningInput.with {
+            $0.fee = Int64(gas)
+            $0.sequence = UInt32(sequence)  // from account info api
+            $0.account = keysignPayload.coin.address
+            $0.publicKey = publicKey.data
+            $0.opPayment = operation
+            $0.lastLedgerSequence = UInt32(lastLedgerSequence)
+        }
+
+        logger.info("Creating XRP payment, destinationTag: \(destinationTag.map(String.init) ?? "none", privacy: .public), lastLedgerSequence: \(lastLedgerSequence)")
+
+        return try input.serializedData()
+    }
+
+    /// Legacy raw-JSON signing input carrying the memo as an on-chain XRPL
+    /// `Memos` entry. Reachable only for swap payloads — THORChain-family
+    /// swaps route via a text memo the protocol reads on-chain. Plain sends
+    /// never take this path anymore: a text memo there was the fund-loss
+    /// shape (tag typo → Memos blob → uncredited exchange deposit).
+    private static func swapMemoSigningInput(
+        keysignPayload: KeysignPayload,
+        memoValue: String,
+        gas: UInt64,
+        sequence: UInt64,
+        lastLedgerSequence: UInt64,
+        publicKey: PublicKey
+    ) throws -> Data {
+        let txJson: [String: Any] = [
+            "TransactionType": "Payment",
+            "Account": keysignPayload.coin.address,
+            "Destination": keysignPayload.toAddress,
+            "Amount": String(keysignPayload.toAmount.description),
+            "Fee": String(gas),
+            "Sequence": sequence,
+            "LastLedgerSequence": lastLedgerSequence,
+            "Memos": [
+                [
+                    "Memo": [
+                        "MemoData": memoValue.data(using: .utf8)?.map { String(format: "%02hhx", $0) }.joined() ?? ""
+                    ]
+                ]
+            ]
+        ]
+
+        let jsonData = try JSONSerialization.data(withJSONObject: txJson, options: [])
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw HelperError.runtimeError("Failed to create JSON string")
+        }
+
+        let input = RippleSigningInput.with {
+            $0.fee = Int64(gas)
+            $0.sequence = UInt32(sequence)
+            $0.account = keysignPayload.coin.address
+            $0.publicKey = publicKey.data
+            $0.lastLedgerSequence = UInt32(lastLedgerSequence)
+            $0.rawJson = jsonString
+        }
+
+        logger.info("Creating XRP swap transaction with text memo, lastLedgerSequence: \(lastLedgerSequence)")
+
+        return try input.serializedData()
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
