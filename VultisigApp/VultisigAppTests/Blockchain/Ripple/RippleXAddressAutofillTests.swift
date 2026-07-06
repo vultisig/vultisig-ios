@@ -36,45 +36,45 @@ final class RippleXAddressAutofillTests: XCTestCase {
         XCTAssertTrue(vm.isValidAddressFormat())
         XCTAssertEqual(vm.toAddress, classicAddress, "payload must carry the classic address, never the X form")
         XCTAssertEqual(vm.toAddressLabel, taggedXAddress, "original X-address stays visible as the label")
-        XCTAssertEqual(vm.destinationTag, "1")
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "1")
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testXAddressWithoutTagLeavesTagEditable() {
         let vm = makeRippleForm()
-        vm.destinationTag = "777"
+        vm.rippleTag.destinationTag = "777"
         vm.toAddress = untaggedXAddress
 
         XCTAssertTrue(vm.isValidAddressFormat())
         XCTAssertEqual(vm.toAddress, classicAddress)
         XCTAssertEqual(vm.toAddressLabel, untaggedXAddress)
-        XCTAssertEqual(vm.destinationTag, "777", "no embedded tag — the user's tag stays")
-        XCTAssertFalse(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "777", "no embedded tag — the user's tag stays")
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testXAddressOverridesPreviouslyTypedTag() {
         let vm = makeRippleForm()
-        vm.destinationTag = "999"
+        vm.rippleTag.destinationTag = "999"
         vm.toAddress = taggedXAddress
 
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertEqual(vm.destinationTag, "1", "the embedded tag wins and locks")
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "1", "the embedded tag wins and locks")
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testManualAddressEditAfterXAddressUnlocksAndClearsTag() {
         let vm = makeRippleForm()
         vm.toAddress = taggedXAddress
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
 
         // User replaces the address with an unrelated classic one — the
         // derived tag belonged to the old destination and must not ride along.
         vm.toAddress = otherClassicAddress
         XCTAssertTrue(vm.isValidAddressFormat())
         XCTAssertEqual(vm.toAddress, otherClassicAddress)
-        XCTAssertFalse(vm.isDestinationTagLocked)
-        XCTAssertEqual(vm.destinationTag, "")
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "")
     }
 
     func testRevalidatingNormalizedAddressKeepsLock() {
@@ -85,8 +85,8 @@ final class RippleXAddressAutofillTests: XCTestCase {
         // The screen re-runs format validation on the (now classic) address;
         // the lock and tag must survive.
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertEqual(vm.destinationTag, "1")
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "1")
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testZeroTagXAddressAutofillsButFailsTagValidation() {
@@ -97,8 +97,8 @@ final class RippleXAddressAutofillTests: XCTestCase {
         vm.toAddress = zeroTagXAddress
 
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertEqual(vm.destinationTag, "0")
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "0")
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
         XCTAssertFalse(vm.validateRippleTagAndMemo())
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
     }
@@ -112,8 +112,8 @@ final class RippleXAddressAutofillTests: XCTestCase {
         let resolved = await vm.validateToAddress()
         XCTAssertTrue(resolved)
         XCTAssertEqual(vm.toAddress, classicAddress)
-        XCTAssertEqual(vm.destinationTag, "1")
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "1")
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testNonRippleChainIgnoresXAddressSeam() {
@@ -122,7 +122,7 @@ final class RippleXAddressAutofillTests: XCTestCase {
 
         XCTAssertFalse(vm.isValidAddressFormat(), "an X-address is not a BTC address")
         XCTAssertEqual(vm.toAddress, taggedXAddress, "no normalization outside Ripple")
-        XCTAssertFalse(vm.isDestinationTagLocked)
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
     }
 
     func testClearingAddressReleasesLockAndDropsDerivedTag() {
@@ -133,18 +133,18 @@ final class RippleXAddressAutofillTests: XCTestCase {
         let vm = makeRippleForm()
         vm.toAddress = taggedXAddress
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
 
         vm.toAddress = ""
         vm.onToAddressCleared()
-        XCTAssertFalse(vm.isDestinationTagLocked)
-        XCTAssertEqual(vm.destinationTag, "")
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "")
         XCTAssertNil(vm.toAddressLabel)
 
         vm.toAddress = classicAddress
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertFalse(vm.isDestinationTagLocked, "bare classic re-entry must not revive the old tag")
-        XCTAssertEqual(vm.destinationTag, "")
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked, "bare classic re-entry must not revive the old tag")
+        XCTAssertEqual(vm.rippleTag.destinationTag, "")
     }
 
     func testValidateFormRejectsZeroTagXAddressOnPrefillPath() async {
@@ -164,17 +164,17 @@ final class RippleXAddressAutofillTests: XCTestCase {
         let passed = await vm.validateForm()
         XCTAssertFalse(passed)
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
-        XCTAssertEqual(vm.destinationTag, "0", "the embedded tag surfaced before rejection")
+        XCTAssertEqual(vm.rippleTag.destinationTag, "0", "the embedded tag surfaced before rejection")
     }
 
     func testResetClearsLock() {
         let vm = makeRippleForm()
         vm.toAddress = taggedXAddress
         XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertTrue(vm.isDestinationTagLocked)
+        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
 
         vm.reset(to: SendFormFixture.makeBTC())
-        XCTAssertFalse(vm.isDestinationTagLocked)
-        XCTAssertEqual(vm.destinationTag, "")
+        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
+        XCTAssertEqual(vm.rippleTag.destinationTag, "")
     }
 }

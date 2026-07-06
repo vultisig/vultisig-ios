@@ -53,7 +53,7 @@ final class RippleRequireDestGateTests: XCTestCase {
     func testRequireDestSkippedWhenTagPresent() async {
         let spy = ProviderSpy(result: .required)
         let vm = makeForm(spy: spy)
-        vm.destinationTag = "12345"
+        vm.rippleTag.destinationTag = "12345"
 
         let passed = await vm.validateRippleRequireDest()
         XCTAssertTrue(passed, "a present tag satisfies any RequireDest flag")
@@ -94,7 +94,7 @@ final class RippleRequireDestGateTests: XCTestCase {
 
         let passed = await vm.validateRippleRequireDest()
         XCTAssertFalse(passed, "first pass blocks pending explicit acknowledgment")
-        XCTAssertTrue(vm.showDestinationTagUnverifiedAlert)
+        XCTAssertTrue(vm.rippleTag.showDestinationTagUnverifiedAlert)
     }
 
     func testUnknownPassesAfterAcknowledgment() async {
@@ -145,7 +145,7 @@ final class RippleRequireDestGateTests: XCTestCase {
         let blocked = await vm.validateRippleRequireDest()
         XCTAssertFalse(blocked)
 
-        vm.destinationTag = "12345"
+        vm.rippleTag.destinationTag = "12345"
         let passed = await vm.validateRippleRequireDest()
         XCTAssertTrue(passed)
     }

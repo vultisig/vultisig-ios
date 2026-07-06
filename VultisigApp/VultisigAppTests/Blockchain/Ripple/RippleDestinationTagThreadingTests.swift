@@ -179,12 +179,36 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleTagFieldThreadsIntoTransaction() throws {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "12345"
+        vm.rippleTag.destinationTag = "12345"
 
         XCTAssertTrue(vm.validateRippleTagAndMemo())
         let tx = try vm.makeTransaction()
         XCTAssertEqual(tx.destinationTag, 12345)
         XCTAssertEqual(tx.memo, "")
+    }
+
+    @MainActor
+    func testManualTagThreadsEndToEndToSignedDestinationTag() throws {
+        // Verified mainnet case: a manually-typed tag 1234 on a plain classic
+        // address reaches the signed WalletCore Payment as DestinationTag=1234
+        // (memo blanked). Pins the whole seam — VM tag field → SendTransaction
+        // → payload memo → RippleHelper signing input — with the exact value.
+        let vm = Self.makeRippleForm()
+        vm.rippleTag.destinationTag = "1234"
+
+        XCTAssertTrue(vm.validateRippleTagAndMemo())
+        let tx = try vm.makeTransaction()
+        XCTAssertEqual(tx.destinationTag, 1234)
+        XCTAssertEqual(tx.memo, "")
+
+        let payloadMemo = SendCryptoVerifyLogic.payloadMemo(tx: tx)
+        XCTAssertEqual(payloadMemo, "1234")
+
+        let payload = Self.makeRipplePayload(memo: payloadMemo)
+        let inputData = try RippleHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try RippleSigningInput(serializedBytes: inputData)
+        XCTAssertEqual(input.opPayment.destinationTag, 1234)
+        XCTAssertTrue(input.rawJson.isEmpty, "tagged payments never take the rawJson path")
     }
 
     @MainActor
@@ -203,7 +227,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleTagAndMatchingMemoPass() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "42"
+        vm.rippleTag.destinationTag = "42"
         vm.memo = "42"
         XCTAssertTrue(vm.validateRippleTagAndMemo())
     }
@@ -211,7 +235,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleTagAndConflictingMemoBlocked() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "42"
+        vm.rippleTag.destinationTag = "42"
         vm.memo = "43"
         XCTAssertFalse(vm.validateRippleTagAndMemo())
         XCTAssertEqual(vm.errorMessage, "destinationTagMemoConflictError")
@@ -228,7 +252,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleLeadingZeroTagBlocked() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "0123"
+        vm.rippleTag.destinationTag = "0123"
         XCTAssertFalse(vm.validateRippleTagAndMemo())
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
     }
@@ -236,7 +260,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleTagAboveU32MaxBlocked() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "4294967296"
+        vm.rippleTag.destinationTag = "4294967296"
         XCTAssertFalse(vm.validateRippleTagAndMemo())
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
     }
@@ -244,7 +268,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testRippleZeroTagBlocked() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "0"
+        vm.rippleTag.destinationTag = "0"
         XCTAssertFalse(vm.validateRippleTagAndMemo())
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
     }
@@ -267,9 +291,9 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     @MainActor
     func testResetClearsDestinationTag() {
         let vm = Self.makeRippleForm()
-        vm.destinationTag = "12345"
+        vm.rippleTag.destinationTag = "12345"
         vm.reset(to: SendFormFixture.makeBTC())
-        XCTAssertEqual(vm.destinationTag, "")
+        XCTAssertEqual(vm.rippleTag.destinationTag, "")
     }
 
     // MARK: - Fixtures
