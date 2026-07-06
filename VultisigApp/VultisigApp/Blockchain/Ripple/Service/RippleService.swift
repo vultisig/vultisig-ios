@@ -62,6 +62,69 @@ enum RippleReserve {
         let reserved = reservedDrops(ownerCount: ownerCount, reserveBase: reserveBase, reserveInc: reserveInc)
         return max(totalDrops - reserved, BigInt(0))
     }
+
+    /// The activation minimum in whole XRP for a destination that must receive
+    /// at least `baseReserveDrops` to be created, formatted for user-facing
+    /// copy. Shared by the throwing Verify guard and the non-throwing send-form
+    /// check so the two can never present a different minimum.
+    static func minimumActivationXRP(baseReserveDrops: BigInt) -> String {
+        let minimumXRP = (Decimal(string: baseReserveDrops.description) ?? 1) / pow(10, 6)
+        return minimumXRP.description
+    }
+}
+
+/// Non-throwing, send-form counterpart to `validateDestinationActivation`.
+/// The Verify guard throws to block signing; the form needs a value it can
+/// render inline while the user types the amount, and it fails open — a lookup
+/// it can't complete shows no inline error, leaving the Verify guard as the
+/// fail-closed backstop.
+enum RippleReserveCheck: Equatable {
+    /// No inline error: the destination is already funded, or it is unfunded
+    /// but the entered amount already covers the base reserve.
+    case satisfied
+    /// The destination is unfunded and the entered amount is below the live
+    /// base reserve; `minimumXRP` is the minimum in whole XRP for the copy.
+    case belowMinimum(minimumXRP: String)
+    /// The destination could not be verified — fail open, show no inline error.
+    case unknown
+}
+
+/// Whether a destination account already exists on-ledger. Cached per address
+/// so the send form's amount re-validation doesn't re-query `account_info` on
+/// every keystroke — funded/unfunded is a property of the address, not the
+/// amount.
+enum RippleDestinationFunding {
+    case funded
+    case unfunded
+}
+
+/// A per-key cache of definitive destination funding verdicts. Deliberately
+/// simpler than `TTLCache`: a fresh entry (within `ttl`) is served without a
+/// network call, but an EXPIRED entry is never resurfaced when a refresh
+/// fails — the send-form caller needs a genuine "couldn't verify" signal
+/// (`.unknown`, fail open), not a possibly-wrong stale verdict. Only the
+/// caller's definitive results are ever stored.
+actor RippleDestinationFundingCache {
+    private struct Entry {
+        let value: RippleDestinationFunding
+        let fetchedAt: Date
+    }
+
+    private var entries: [String: Entry] = [:]
+
+    /// The stored verdict for `key` when it's still within `ttl`; otherwise
+    /// `nil` (the caller refreshes).
+    func cached(_ key: String, now: Date, ttl: TimeInterval) -> RippleDestinationFunding? {
+        guard let entry = entries[key], now.timeIntervalSince(entry.fetchedAt) < ttl else {
+            return nil
+        }
+        return entry.value
+    }
+
+    /// Store or replace the verdict for `key`. Also the test seam for seeding.
+    func store(_ key: String, value: RippleDestinationFunding, at: Date) {
+        entries[key] = Entry(value: value, fetchedAt: at)
+    }
 }
 
 /// Reserve values reported by `server_state`. Fields stay optional so a
@@ -98,6 +161,23 @@ class RippleService {
     /// for another after a runtime override change.
     static func reserveValuesCacheKey(for host: URL) -> String {
         "xrpl-reserve-values|\(host.absoluteString)"
+    }
+
+    /// Per-destination funding verdict, cached so the send form's amount
+    /// re-validation doesn't re-query `account_info` on every keystroke. Keyed
+    /// on a resolved host like the reserve cache: a custom RPC override can
+    /// point at a different network, so one endpoint's verdict must never be
+    /// served for another. Only definitive verdicts are stored, and — unlike
+    /// `TTLCache` — a failed refresh is NEVER served as stale: the form must
+    /// fail open (`.unknown`) on a lookup it can't complete, not resurface an
+    /// expired verdict. Internal (with the key) so tests can seed it.
+    let destinationFundingCache = RippleDestinationFundingCache()
+    private static let destinationFundingTTL: TimeInterval = 60 * 5
+
+    /// Cache key for a destination's funding verdict, host-scoped for the same
+    /// reason as `reserveValuesCacheKey`.
+    static func destinationFundingCacheKey(for host: URL, address: String) -> String {
+        "xrpl-destination-funding|\(host.absoluteString)|\(address)"
     }
 
     init(
@@ -236,8 +316,76 @@ class RippleService {
             reserveInc: reserveValues?.reserveInc
         )
         if amountDrops < baseReserve {
-            let minimumXRP = (Decimal(string: baseReserve.description) ?? 1) / pow(10, 6)
-            throw RippleSendError.destinationNotActivated(minimumXRP: minimumXRP.description)
+            throw RippleSendError.destinationNotActivated(
+                minimumXRP: RippleReserve.minimumActivationXRP(baseReserveDrops: baseReserve)
+            )
+        }
+    }
+
+    /// Non-throwing, send-form reserve check for a native XRP payment. Reuses
+    /// the same `account_info` lookup and `RippleReserve.reservedDrops(
+    /// ownerCount: 0, …)` as `validateDestinationActivation`, so the form's
+    /// minimum can never diverge from the Verify guard's. The funded/unfunded
+    /// verdict is cached per destination address; amount edits reuse it without
+    /// touching the node. Fails open: any lookup it can't complete returns
+    /// `.unknown` (no inline error) — the Verify guard is the fail-closed
+    /// backstop.
+    /// - Parameter forceRefresh: bypass the cached funding verdict and re-query
+    ///   `account_info` live. The while-typing path leaves this `false` (the
+    ///   cache spares the node on every keystroke); the Continue-time block
+    ///   passes `true` so its decision is always live and can never diverge
+    ///   from the Verify guard — e.g. a destination that funds mid-session must
+    ///   not stay blocked on a stale `.unfunded` verdict.
+    func destinationReserveShortfall(
+        address: String,
+        amountDrops: BigInt,
+        forceRefresh: Bool = false
+    ) async -> RippleReserveCheck {
+        let host = resolvedHost
+        let key = Self.destinationFundingCacheKey(for: host, address: address)
+        let now = Date()
+
+        let funding: RippleDestinationFunding
+        if !forceRefresh, let cached = await destinationFundingCache.cached(key, now: now, ttl: Self.destinationFundingTTL) {
+            funding = cached
+        } else {
+            do {
+                // Pin the lookup to the captured host so the verdict is stored
+                // under the same host-scoped key it was fetched from, even if a
+                // custom-RPC override changes mid-call.
+                let result = try await fetchAccountsInfo(for: address, host: host)?.result
+                if result?.accountData != nil {
+                    funding = .funded
+                } else if result?.error == "actNotFound" {
+                    funding = .unfunded
+                } else {
+                    // Any other account_data-less shape (rate limit, proxy
+                    // error page, malformed address) is unverifiable — fail
+                    // open, and do not cache, so a later attempt can retry.
+                    return .unknown
+                }
+                await destinationFundingCache.store(key, value: funding, at: now)
+            } catch {
+                // Transport failure — fail open, uncached (retryable).
+                return .unknown
+            }
+        }
+
+        switch funding {
+        case .funded:
+            return .satisfied
+        case .unfunded:
+            // OwnerCount is 0 by definition for an account being created; the
+            // base reserve comes from the same live → cache → seed chain the
+            // Verify guard uses, flattened to a non-throwing read here.
+            let reserveValues = (try? await fetchReserveValues()) ?? nil
+            let baseReserve = RippleReserve.reservedDrops(
+                ownerCount: 0,
+                reserveBase: reserveValues?.reserveBase,
+                reserveInc: reserveValues?.reserveInc
+            )
+            guard amountDrops < baseReserve else { return .satisfied }
+            return .belowMinimum(minimumXRP: RippleReserve.minimumActivationXRP(baseReserveDrops: baseReserve))
         }
     }
 
@@ -280,10 +428,14 @@ class RippleService {
         }
     }
 
-    func fetchAccountsInfo(for walletAddress: String) async throws -> RippleAccountResponse? {
+    /// Fetches `account_info`, optionally pinned to an explicit `host` so a
+    /// caller can keep one request consistent with other host-derived state
+    /// (e.g. a host-scoped cache key); `nil` resolves the override-aware host
+    /// per request as usual, matching `fetchServerState(host:)`.
+    func fetchAccountsInfo(for walletAddress: String, host: URL? = nil) async throws -> RippleAccountResponse? {
         do {
             let response = try await httpClient.request(
-                api(.accountInfo(account: walletAddress)),
+                RippleAPI(.accountInfo(account: walletAddress), host: host ?? resolvedHost),
                 responseType: RippleAccountResponse.self
             )
             return response.data
