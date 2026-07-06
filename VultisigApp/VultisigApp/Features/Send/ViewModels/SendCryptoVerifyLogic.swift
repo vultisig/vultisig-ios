@@ -102,8 +102,10 @@ struct SendCryptoVerifyLogic {
             }
 
             // Existential-deposit guard for chains that reap the *sender*
-            // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
+            // (DOT). It signs `transfer_keep_alive`, which fails on-chain
             // after the ceremony if the send would drop the sender below ED.
+            // Inert for XRP: its rawBalance is already reserve-net, so the
+            // balance checks above are the reserve guard.
             if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
                 return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }

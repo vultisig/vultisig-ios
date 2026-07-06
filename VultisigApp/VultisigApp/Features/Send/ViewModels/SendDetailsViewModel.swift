@@ -641,11 +641,13 @@ final class SendDetailsViewModel {
             return false
         }
 
-        // Existential-deposit guard for ED-bearing chains (DOT/XRP) that reap
+        // Existential-deposit guard for ED-bearing chains (DOT) that reap
         // the *sender*. Block here — before the keysign ceremony — rather than
         // letting `transfer_keep_alive` fail on-chain with the fee already
         // charged. Skipped for non-native tokens (ED applies to the native
-        // account, not token transfers).
+        // account, not token transfers). Inert for XRP: its rawBalance is
+        // already reserve-net, so the amount-exceeded check is the reserve
+        // guard and a remainder below 1 XRP spendable is valid on-chain.
         if coin.isNativeToken {
             if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: fee) {
                 setAmountError(message: "belowExistentialDepositError".localized)

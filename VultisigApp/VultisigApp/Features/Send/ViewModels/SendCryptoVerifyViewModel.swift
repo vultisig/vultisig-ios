@@ -112,7 +112,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 let balance = transaction.coin.rawBalance.toBigInt(decimals: transaction.coin.decimals)
                 // Reserve the existential deposit so a DOT max-send settles at
                 // `balance − fee − ED`; `transfer_keep_alive` rejects a transfer
-                // that would reap the sender. Zero for non-ED chains (incl. TAO).
+                // that would reap the sender. Zero for non-ED chains — including
+                // TAO (`transfer_allow_death`) and XRP, whose rawBalance is
+                // already reserve-net, so its max settles at `balance − fee`.
                 let existentialDeposit = SendCryptoLogic.existentialDeposit(for: transaction.coin)
                 let candidate = balance - feeResult.fee - existentialDeposit
                 if candidate > 0 {

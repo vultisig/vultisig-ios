@@ -66,22 +66,31 @@ enum SendCryptoLogic {
     /// don't reap. Scoped by `chain`, NOT `chainType`: Bittensor (TAO) shares
     /// `chainType == .Polkadot` with DOT but signs `transfer_allow_death`, so it
     /// permits full-balance sends and has no enforced ED here.
+    ///
+    /// XRP deliberately reserves nothing here: its `rawBalance` is already the
+    /// reserve-net available balance — owner-aware, computed live in
+    /// `RippleService.getBalance` via `RippleReserve` — so reserving a second
+    /// static 1 XRP double-counts the reserve and strands funds on MAX send.
+    /// The XRPL fee is exempt from the reserve floor, so MAX = available − fee
+    /// (landing exactly at the reserve is valid).
     static func existentialDeposit(for coin: Coin) -> BigInt {
         switch coin.chain {
         case .polkadot:
             return PolkadotHelper.defaultExistentialDeposit
-        case .ripple:
-            return RippleHelper.defaultExistentialDeposit
         default:
             return .zero
         }
     }
 
-    /// Polkadot + Ripple have an existential deposit: the chain reaps accounts
-    /// whose remaining balance falls below it (and the app signs
+    /// Polkadot has an existential deposit: the chain reaps accounts whose
+    /// remaining balance falls below it (and the app signs
     /// `transfer_keep_alive` on DOT, which the chain rejects outright when it
-    /// would reap the sender). Other chains never reap. Returns true when the
-    /// requested send would leave the *sender* below the existential deposit.
+    /// would reap the sender). Other chains never reap — XRPL included: its
+    /// reserve is a spending floor, not a deletion threshold, and it is
+    /// already netted out of `rawBalance`, so for XRP "would drop below the
+    /// reserve" is exactly `amount + fee > rawBalance`, which the
+    /// amount-exceeded checks block. Returns true when the requested send
+    /// would leave the *sender* below the existential deposit.
     static func canBeReaped(coin: Coin, amount: String, gas: BigInt) -> Bool {
         let existentialDeposit = existentialDeposit(for: coin)
         guard existentialDeposit > .zero else { return false }
@@ -161,8 +170,9 @@ enum SendCryptoLogic {
             // Reserve the existential deposit on chains that reap the sender (DOT
             // signs `transfer_keep_alive`, which fails outright if the send would
             // drop the sender below ED). Reserved on top of the fee so max-send
-            // settles at `balance − fee − ED`. Zero for every other chain,
-            // including Bittensor/TAO (`transfer_allow_death`).
+            // settles at `balance − fee − ED`. Zero for every other chain:
+            // Bittensor/TAO signs `transfer_allow_death`, and XRP's rawBalance
+            // is already reserve-net, so both settle at `balance − fee`.
             maxValue = coin.getMaxValue(fee + existentialDeposit(for: coin))
         }
         let digits = coin.decimals > 8 ? 8 : coin.decimals
