@@ -111,6 +111,65 @@ final class LimitMathTests: XCTestCase {
         }
     }
 
+    // MARK: - computeLim — underflow MUST fail loud (fund-safety)
+
+    func testComputeLimUnderflowingToZeroWithPositiveInputsThrows() {
+        // 1 wei source (18 decimals) at price 1 scales to LIM = 1e8 / 1e18, which
+        // truncates to 0. Both inputs are positive, so a `LIM=0` memo ("fill at
+        // ANY price") would be a fund-safety hazard — must THROW, not return 0.
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: BigInt(1), sourceDecimals: 18, targetPrice: 1)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
+    func testComputeLimUnderflowFromTinyPriceThrows() {
+        // Dust output from a very low target price against a high-decimal source.
+        XCTAssertThrowsError(
+            try computeLim(
+                sourceAmount: BigInt(1),
+                sourceDecimals: 18,
+                targetPrice: Decimal(string: "0.0001")!
+            )
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
+    func testComputeLimStillReturnsZeroForZeroSourceAmount() throws {
+        // A zero source amount is a separate precondition (rejected upstream by
+        // validation), not the positive-input underflow the guard targets — it
+        // must keep returning 0 without throwing.
+        let lim = try computeLim(sourceAmount: 0, sourceDecimals: 18, targetPrice: 1)
+        XCTAssertEqual(lim, BigInt(0))
+    }
+
+    // MARK: - limitOrderExpectedOutput (Verify / Done display amount)
+
+    func testLimitOrderExpectedOutputForOneBtcAt16() {
+        let out = limitOrderExpectedOutput(
+            sourceAmount: BigInt(100_000_000),
+            sourceDecimals: 8,
+            targetPrice: 16
+        )
+        XCTAssertEqual(out, Decimal(16))
+    }
+
+    func testLimitOrderExpectedOutputForFractionalPrice() {
+        let out = limitOrderExpectedOutput(
+            sourceAmount: BigInt("1000000000000000000"),
+            sourceDecimals: 18,
+            targetPrice: Decimal(string: "0.0625")!
+        )
+        XCTAssertEqual(out, Decimal(string: "0.0625")!)
+    }
+
+    func testLimitOrderExpectedOutputForZeroSourceIsZero() {
+        let out = limitOrderExpectedOutput(sourceAmount: 0, sourceDecimals: 8, targetPrice: 16)
+        XCTAssertEqual(out, Decimal(0))
+    }
+
     // MARK: - computeExpiryBlocks
 
     func testComputeExpiryBlocksFor12Hours() {

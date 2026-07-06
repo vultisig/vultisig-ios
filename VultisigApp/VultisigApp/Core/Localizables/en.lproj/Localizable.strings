@@ -642,6 +642,7 @@
 "limitSwap.confirmation.title" = "Place Limit Order";
 "limitSwap.done.bannerDetail" = "Track them in Transaction History under the Limit Orders tab.";
 "limitSwap.done.bannerTitle" = "Limit Orders";
+"limitSwap.error.limitAmountTooSmall" = "This order is too small to place at a limit price. Increase the amount or adjust the price and try again.";
 "limitSwap.error.nonNativeSource" = "Limit orders currently support native source assets only. Pick the chain's native coin and try again.";
 "limitSwap.error.targetPriceOverflow" = "Target price is too large. Enter a smaller price and try again.";
 "limitSwap.error.title" = "Couldn't place order";

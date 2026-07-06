@@ -258,6 +258,9 @@ struct LimitSwapEntryView: View {
             case .targetPriceOverflow:
                 logger.error("Place order rejected: target price overflowed LIM fixed-point")
                 vm.placeOrderError = .targetPriceOverflow
+            case .limitAmountTooSmall:
+                logger.error("Place order rejected: LIM truncated to zero (amount/price too small)")
+                vm.placeOrderError = .limitAmountTooSmall
             }
             return
         } catch {

@@ -644,6 +644,7 @@
 "limitSwap.confirmation.title" = "下达限价单";
 "limitSwap.done.bannerDetail" = "在交易历史的限价单标签下追踪它们。";
 "limitSwap.done.bannerTitle" = "限价单";
+"limitSwap.error.limitAmountTooSmall" = "此订单金额过小，无法设置限价。请增加数量或调整价格后重试。";
 "limitSwap.error.nonNativeSource" = "限价单目前仅支持原生源资产。请选择该链的原生币后重试。";
 "limitSwap.error.targetPriceOverflow" = "目标价格过大。请输入较小的价格后重试。";
 "limitSwap.error.title" = "无法下单";

@@ -21,6 +21,13 @@ enum LimitSwapMemoError: Error, Equatable {
     /// a silent fallback to `LIM=0` tells THORChain "fill at ANY price", the
     /// exact opposite of a limit order — a fund-safety hazard.
     case targetPriceOverflow
+    /// The order is so small that the LIM (minimum output) truncates to zero in
+    /// THORChain's 1e8 fixed-point — e.g. a dust source amount, or a very low
+    /// target price against a high-decimal source. A `LIM=0` memo means "fill at
+    /// ANY price"; the overflow guard covers the large-price direction, this
+    /// covers the underflow direction. Same fund-safety hazard, so it MUST also
+    /// fail loud rather than emit a price-blind order.
+    case limitAmountTooSmall
 }
 
 enum LimitSwapQuoteError: Error, Equatable {
@@ -47,6 +54,9 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     case memoTooLong(actual: Int, limit: Int)
     /// The target price overflowed when scaled to THORChain's fixed-point LIM.
     case targetPriceOverflow
+    /// The order's minimum output (LIM) truncates to zero — the amount/price is
+    /// too small to place a price-bound order.
+    case limitAmountTooSmall
     /// A non-native (ERC20-style) source asset was selected. The Phase 1
     /// limit-swap flow routes the source transfer straight to the THORChain
     /// router without an approve-first keysign, which the router would reject.
@@ -59,6 +69,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "memoTooLong-\(actual)-\(limit)"
         case .targetPriceOverflow:
             return "targetPriceOverflow"
+        case .limitAmountTooSmall:
+            return "limitAmountTooSmall"
         case .nonNativeSourceUnsupported:
             return "nonNativeSourceUnsupported"
         }
@@ -75,6 +87,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             )
         case .targetPriceOverflow:
             return "limitSwap.error.targetPriceOverflow".localized
+        case .limitAmountTooSmall:
+            return "limitSwap.error.limitAmountTooSmall".localized
         case .nonNativeSourceUnsupported:
             return "limitSwap.error.nonNativeSource".localized
         }

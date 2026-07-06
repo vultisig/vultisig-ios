@@ -42,22 +42,35 @@ func buildLimitSwapKeysignPayload(
     vault: Vault
 ) async throws -> KeysignPayload {
 
-    // Native RUNE / CACAO settle via `MsgDeposit` on the swap chain itself —
-    // no Asgard inbound vault, no destination address. The Cosmos signer
-    // ignores `toAddress` on `MsgDeposit` (chain-specific `isDeposit=true`
-    // controls the message type), but the payload struct still requires
-    // a value. Use the signer's own address as a placeholder, matching the
-    // SDK convention in `getSwapDestinationAddress` for native sources.
+    // Native RUNE settles via `MsgDeposit` on THORChain itself — no Asgard
+    // inbound vault, no destination address. The Cosmos signer ignores
+    // `toAddress` on `MsgDeposit` (chain-specific `isDeposit=true` controls the
+    // message type), but the payload struct still requires a value. Use the
+    // signer's own address as a placeholder, matching the SDK convention in
+    // `getSwapDestinationAddress` for native sources.
+    //
+    // The deposit branch is gated on THORChain-native specifically, NOT the
+    // shared `SwapCryptoLogic.isDeposit` (which also returns true for Maya /
+    // CACAO). Maya isn't THORChain-routable — the picker already excludes it
+    // via `isThorchainRoutable` — so a Maya coin reaching here is a bug; let it
+    // fall through to `thorchainInboundChainSymbol` and fail loud as
+    // `sourceChainNotRoutable` rather than build a cross-protocol MsgDeposit.
     let toAddress: String
-    if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin) {
+    if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin),
+       thorchainChainPrefix(for: sourceCoin.chain) == "THOR" {
         toAddress = sourceCoin.address
     } else {
         guard let chainSymbol = thorchainInboundChainSymbol(for: sourceCoin.chain) else {
             throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
         }
 
-        // Fetch THORChain inbound vault address. Filter halted / paused chains.
-        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
+        // Live, cache-bypassing inbound fetch. The sign-time halt gate re-checks
+        // halt status against a fresh fetch; the destination address selected
+        // here must come from that same live view, or we could sign to a
+        // vault/router the gate never validated (a stale cached inbound can lag
+        // a vault rotation by up to the 5-minute TTL). Fail closed: on a fetch
+        // error the list is empty and the `first(where:)` below throws.
+        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: true)
         guard let inbound = inbounds.first(where: { entry in
             // Missing pause flags read as "not paused" — same convention as
             // `SwapHaltGate.isHalted(chain:in:)` on the market path.

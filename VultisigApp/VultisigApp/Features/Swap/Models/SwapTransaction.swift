@@ -104,7 +104,18 @@ extension SwapTransaction {
     }
 
     var toAmountDecimal: Decimal {
-        SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
+        // Limit orders carry no market quote (`quote == nil`) — the limit-ness
+        // lives in the memo. Deriving the "you receive" amount from the quote
+        // would render 0 on the shared Verify / Done screens. Use the minimum
+        // output implied by the limit price instead.
+        if let limit = limitContext {
+            return limitOrderExpectedOutput(
+                sourceAmount: BigInt(limit.sourceAmount) ?? 0,
+                sourceDecimals: limit.sourceDecimals,
+                targetPrice: limit.targetPrice
+            )
+        }
+        return SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
     var router: String? {

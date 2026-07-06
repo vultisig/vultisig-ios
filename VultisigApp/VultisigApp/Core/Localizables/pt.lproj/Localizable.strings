@@ -644,6 +644,7 @@
 "limitSwap.confirmation.title" = "Colocar ordem limite";
 "limitSwap.done.bannerDetail" = "Acompanhe-as no Histórico de Transações na aba Ordens Limite.";
 "limitSwap.done.bannerTitle" = "Ordens Limite";
+"limitSwap.error.limitAmountTooSmall" = "Esta ordem é pequena demais para um preço limite. Aumente o valor ou ajuste o preço e tente novamente.";
 "limitSwap.error.nonNativeSource" = "As ordens limite atualmente suportam apenas ativos de origem nativos. Escolha a moeda nativa da chain e tente novamente.";
 "limitSwap.error.targetPriceOverflow" = "O preço-alvo é muito alto. Insira um preço menor e tente novamente.";
 "limitSwap.error.title" = "Não foi possível colocar a ordem";

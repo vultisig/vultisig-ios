@@ -31,7 +31,50 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
         throw LimitSwapMemoError.targetPriceOverflow
     }
     let denominator = BigInt(10).power(sourceDecimals)
-    return (sourceAmount * priceBig) / denominator
+    let lim = (sourceAmount * priceBig) / denominator
+
+    // Integer division truncates toward zero: a dust source amount or a very low
+    // target price against a high-decimal source can floor the LIM to 0 even
+    // though both inputs are positive. A `LIM=0` memo means "fill at ANY price"
+    // — the same hazard the overflow guard above prevents, from the underflow
+    // side. Fail loud instead of emitting a price-blind order. A zero source
+    // amount is a separate precondition (rejected upstream by
+    // `validateLimitSwapInputs`); it returns 0 here without throwing.
+    if lim <= 0, sourceAmount > 0, targetPrice > 0 {
+        throw LimitSwapMemoError.limitAmountTooSmall
+    }
+    return lim
+}
+
+/// The minimum output the placed order guarantees, in the target asset's
+/// natural units — i.e. the LIM the memo encodes, expressed for display.
+///
+/// Derived from the SAME truncated `computeLim` the signed memo uses (THORChain
+/// LIM is 1e8 fixed-point for the target asset), NOT a fresh full-precision
+/// `sourceAmount * targetPrice`. That matters on the Verify / Done screens: a
+/// full-precision figure could read slightly HIGHER than the order actually
+/// guarantees after fixed-point truncation + integer division — overstating a
+/// "minimum you receive". Reusing `computeLim` keeps display == memo exactly.
+///
+/// Non-throwing (a computed display property can't throw): returns 0 when
+/// `computeLim` rejects the order (overflow / dust underflow) — such an order
+/// can't be placed, so the Verify screen is never reached for it anyway.
+func limitOrderExpectedOutput(
+    sourceAmount: BigInt,
+    sourceDecimals: Int,
+    targetPrice: Decimal
+) -> Decimal {
+    guard let lim = try? computeLim(
+        sourceAmount: sourceAmount,
+        sourceDecimals: sourceDecimals,
+        targetPrice: targetPrice
+    ), let limDecimal = Decimal(string: lim.description) else {
+        return 0
+    }
+    var scaled = limDecimal
+    var natural = Decimal()
+    NSDecimalMultiplyByPowerOf10(&natural, &scaled, -8, .plain)
+    return natural
 }
 
 func computeExpiryBlocks(hours: Int) -> Int {

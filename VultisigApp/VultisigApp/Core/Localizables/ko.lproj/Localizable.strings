@@ -642,6 +642,7 @@
 "limitSwap.confirmation.title" = "지정가 주문 넣기";
 "limitSwap.done.bannerDetail" = "거래 내역의 지정가 주문 탭에서 확인하세요.";
 "limitSwap.done.bannerTitle" = "지정가 주문";
+"limitSwap.error.limitAmountTooSmall" = "이 주문은 지정가로 설정하기에 너무 작습니다. 수량을 늘리거나 가격을 조정한 후 다시 시도하세요.";
 "limitSwap.error.nonNativeSource" = "지정가 주문은 현재 네이티브 소스 자산만 지원합니다. 체인의 네이티브 코인을 선택한 후 다시 시도하세요.";
 "limitSwap.error.targetPriceOverflow" = "목표 가격이 너무 큽니다. 더 작은 가격을 입력한 후 다시 시도하세요.";
 "limitSwap.error.title" = "주문을 넣을 수 없습니다";
