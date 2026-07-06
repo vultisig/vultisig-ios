@@ -12,21 +12,24 @@ import Foundation
 /// - Checks `validated` field to confirm transaction finality
 /// - Parses `TransactionResult` to determine success/failure
 struct RippleTransactionStatusProvider: TransactionStatusProvider {
-    private let httpClient: HTTPClientProtocol
+    private let retrier: RippleRequestRetrier
 
-    init(httpClient: HTTPClientProtocol = HTTPClient()) {
-        self.httpClient = httpClient
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep
+    ) {
+        self.retrier = RippleRequestRetrier(httpClient: httpClient, sleep: sleep)
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
-            let response = try await httpClient.request(
+            let response = try await retrier.request(
                 RippleTransactionStatusAPI.getTx(txHash: query.txHash),
                 responseType: RippleTransactionStatusResponse.self
             )
 
             // Check for error response
-            if let error = response.data.error {
+            if let error = response.error {
                 if error == "txnNotFound" {
                     return TransactionStatusResult(
                         status: .notFound,
@@ -35,7 +38,7 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
                     )
                 }
                 // Other errors
-                let message = response.data.error_message ?? error
+                let message = response.error_message ?? error
                 return TransactionStatusResult(
                     status: .failed(reason: message),
                     blockNumber: nil,
@@ -44,7 +47,7 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
             }
 
             // Parse successful result
-            guard let result = response.data.result else {
+            guard let result = response.result else {
                 return TransactionStatusResult(
                     status: .notFound,
                     blockNumber: nil,
