@@ -250,7 +250,7 @@ private struct TestOracleError: Error {}
 /// in these tests.
 private struct StubSwapInteractor: SwapInteractor {
     var quote: SwapQuote?
-    var chainSpecific: BlockChainSpecific = .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil)
+    var chainSpecific: BlockChainSpecific = .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     var chainSpecificError: Error?
 
     func fetchQuote(
