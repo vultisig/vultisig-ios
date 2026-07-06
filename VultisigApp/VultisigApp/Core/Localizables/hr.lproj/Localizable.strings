@@ -224,6 +224,7 @@
 "connected" = "Povezano";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "continue" = "Nastavi";
+"continueAnyway" = "Svejedno nastavi";
 "continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
 "copyAddress" = "Kopiraj adresu";
 "correctAmountCheck" = "Iznos je točan";
@@ -326,6 +327,9 @@
 "destinationTagFromXAddress" = "Uključena u X-adresu";
 "destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
 "destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
+"destinationTagRequiredError" = "Ova adresa zahtijeva oznaku odredišta (uobičajeno za uplate na mjenjačnice). Unesite oznaku iz uputa za uplatu ili sredstva možda neće biti evidentirana.";
+"destinationTagUnverifiedTitle" = "Odredište nije moguće provjeriti";
+"destinationTagUnverifiedWarning" = "Nije moguće provjeriti zahtijeva li ova adresa oznaku odredišta. Ako uplaćujete na mjenjačnicu, dodajte oznaku prije nastavka.";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";

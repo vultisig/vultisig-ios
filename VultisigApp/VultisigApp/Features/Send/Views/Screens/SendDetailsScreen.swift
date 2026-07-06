@@ -206,6 +206,25 @@ struct SendDetailsScreen: View {
     }
 
     var tabs: some View {
+        tabsContent
+            // Fail-open half of the XRP RequireDest gate: the lookup
+            // couldn't confirm whether the destination needs a tag, so the
+            // user must explicitly accept the risk before the send proceeds.
+            .alert(
+                NSLocalizedString("destinationTagUnverifiedTitle", comment: ""),
+                isPresented: $viewModel.showDestinationTagUnverifiedAlert
+            ) {
+                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
+                Button(NSLocalizedString("continueAnyway", comment: "")) {
+                    viewModel.acknowledgeUnverifiedDestinationTag()
+                    Task { await validateForm() }
+                }
+            } message: {
+                Text(NSLocalizedString("destinationTagUnverifiedWarning", comment: ""))
+            }
+    }
+
+    var tabsContent: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 12) {

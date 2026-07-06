@@ -19,13 +19,15 @@ enum SendFormFixture {
         vault: Vault = makeVault(),
         interactor: SendInteractor? = nil,
         addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil,
         overrides: (SendDetailsViewModel) -> Void = { _ in }
     ) -> SendDetailsViewModel {
         let vm = SendDetailsViewModel(
             coin: coin,
             vault: vault,
             interactor: interactor ?? MockSendInteractor(),
-            addressResolver: addressResolver
+            addressResolver: addressResolver,
+            destinationTagRequirementProvider: destinationTagRequirementProvider
         )
         overrides(vm)
         return vm

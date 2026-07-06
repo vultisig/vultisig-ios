@@ -157,6 +157,51 @@ class RippleService {
             throw error
         }
     }
+
+    // MARK: - Destination-tag requirement (RequireDest)
+
+    /// AccountRoot `lsfRequireDestTag` flag: the account refuses payments
+    /// without a destination tag. Reference: xrpl.org AccountRoot flags.
+    static let lsfRequireDestTag = 0x00020000
+
+    /// Maps an `account_info` result onto a destination-tag requirement.
+    /// Pure so tests can pin the classification without the network.
+    static func classifyDestinationTagRequirement(result: RippleAccountResponse.Result?) -> RippleDestinationTagRequirement {
+        if result?.error == "actNotFound" {
+            // Unfunded destination: no AccountRoot exists, so it cannot set
+            // the flag. (Whether the send can fund it is the reserve
+            // check's concern, not this gate's.)
+            return .accountNotFound
+        }
+        guard let flags = result?.accountData?.flags else {
+            return .unknown
+        }
+        return (flags & lsfRequireDestTag) != 0 ? .required : .notRequired
+    }
+
+    /// Looks up whether `address` requires a destination tag. Never throws:
+    /// lookup failures classify as `.unknown` so the caller can decide the
+    /// fail-open/fail-closed posture explicitly.
+    func fetchDestinationTagRequirement(for address: String) async -> RippleDestinationTagRequirement {
+        do {
+            let response = try await fetchAccountsInfo(for: address)
+            return Self.classifyDestinationTagRequirement(result: response?.result)
+        } catch {
+            logger.error("fetchDestinationTagRequirement: \(error.localizedDescription)")
+            return .unknown
+        }
+    }
+}
+
+/// Whether an XRPL destination requires a destination tag on incoming
+/// payments (AccountRoot `lsfRequireDestTag`).
+enum RippleDestinationTagRequirement: Equatable {
+    case required
+    case notRequired
+    /// Destination account doesn't exist on-ledger (`actNotFound`).
+    case accountNotFound
+    /// Lookup failed or returned an unrecognized shape.
+    case unknown
 }
 
 enum RippleBroadcastError: Error, LocalizedError {
@@ -182,6 +227,10 @@ struct RippleAccountResponse: Codable {
         let queueData: QueueData?
         let status: String?
         let validated: Bool?
+        /// JSON-RPC error code string, e.g. `actNotFound` for accounts that
+        /// don't exist on-ledger. Previously undecoded — such responses
+        /// decoded as all-nil.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case accountData = "account_data"
@@ -189,6 +238,7 @@ struct RippleAccountResponse: Codable {
             case queueData = "queue_data"
             case status
             case validated
+            case error
         }
     }
 

@@ -224,6 +224,7 @@
 "connected" = "Connected";
 "connectingWithServer..." = "Connecting with server...";
 "continue" = "Continue";
+"continueAnyway" = "Continue Anyway";
 "continueThresholdOfTotal" = "Continue (%d-of-%d)";
 "copyAddress" = "Copy address";
 "correctAmountCheck" = "The amount is correct";
@@ -326,6 +327,9 @@
 "destinationTagFromXAddress" = "Included in the X-address";
 "destinationTagInvalidError" = "Destination tag must be a whole number between 1 and 4294967295.";
 "destinationTagMemoConflictError" = "The memo and the destination tag don't match. XRP transactions can carry only one destination tag.";
+"destinationTagRequiredError" = "This address requires a destination tag (common for exchange deposits). Enter the tag from your deposit instructions or the funds may not be credited.";
+"destinationTagUnverifiedTitle" = "Couldn't Verify Destination";
+"destinationTagUnverifiedWarning" = "Couldn't verify whether this address requires a destination tag. If you're depositing to an exchange, add the tag before continuing.";
 "destinationValidator" = "Destination Validator";
 "device" = "device";
 "deviceBackupDescription" = "Store the vault share of this device.";

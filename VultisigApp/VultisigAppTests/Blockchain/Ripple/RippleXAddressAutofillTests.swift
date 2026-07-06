@@ -147,6 +147,26 @@ final class RippleXAddressAutofillTests: XCTestCase {
         XCTAssertEqual(vm.destinationTag, "")
     }
 
+    func testValidateFormRejectsZeroTagXAddressOnPrefillPath() async {
+        // Prefill paths can reach validateForm() with a raw X-address that
+        // never went through the screen's format check. Address resolution
+        // (and its normalization seam) must run before the tag rule so an
+        // embedded tag 0 is autofilled and then REJECTED — not silently
+        // dropped into a tagless payment behind a displayed tag.
+        let xrp = SendFormFixture.makeCoin(.ripple, ticker: "XRP", decimals: 6, isNative: true, rawBalance: "100000000")
+        let vm = SendFormFixture.make(
+            coin: xrp,
+            destinationTagRequirementProvider: { _ in .notRequired }
+        )
+        vm.amount = "1.0"
+        vm.toAddress = zeroTagXAddress
+
+        let passed = await vm.validateForm()
+        XCTAssertFalse(passed)
+        XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
+        XCTAssertEqual(vm.destinationTag, "0", "the embedded tag surfaced before rejection")
+    }
+
     func testResetClearsLock() {
         let vm = makeRippleForm()
         vm.toAddress = taggedXAddress

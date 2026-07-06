@@ -33,6 +33,7 @@ final class SendDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
+    @ObservationIgnored private let destinationTagRequirementProvider: (String) async -> RippleDestinationTagRequirement
 
     // MARK: - Identity (immutable once set)
     let vault: Vault
@@ -66,6 +67,32 @@ final class SendDetailsViewModel {
     /// the field is read-only then, because the tag is part of the address
     /// the sender was given and editing it would misroute the deposit.
     var isDestinationTagLocked: Bool = false
+
+    /// Asks the screen to present the "couldn't verify whether this address
+    /// requires a destination tag" two-button confirm (Continue anyway /
+    /// Cancel) — the explicit-acknowledgment half of the fail-open posture.
+    var showDestinationTagUnverifiedAlert: Bool = false
+
+    /// Incremented when the RequireDest gate hard-blocks a tagless send so
+    /// the additional-fields section can expand the (empty, collapsed) tag
+    /// field the user now has to fill.
+    private(set) var destinationTagFieldNudge: Int = 0
+
+    /// Session-scoped cache of RequireDest lookups so repeated Continue
+    /// presses don't re-query. `.unknown` is never cached — a failed lookup
+    /// retries next time.
+    @ObservationIgnored private var destinationTagRequirementCache: [String: RippleDestinationTagRequirement] = [:]
+
+    /// Address the user explicitly accepted the unverified-RequireDest risk
+    /// for. Keyed by address so the acknowledgment can't leak onto a
+    /// different destination.
+    @ObservationIgnored private var unverifiedDestinationTagAckAddress: String?
+
+    /// Records the user's "Continue anyway" on the unverified-RequireDest
+    /// confirm for the current destination.
+    func acknowledgeUnverifiedDestinationTag() {
+        unverifiedDestinationTagAckAddress = toAddress
+    }
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
     var isStakingOperation: Bool = false
@@ -122,7 +149,8 @@ final class SendDetailsViewModel {
         vault: Vault,
         hasPreselectedCoin: Bool = false,
         interactor: SendInteractor = DefaultSendInteractor.live,
-        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput
+        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -130,6 +158,9 @@ final class SendDetailsViewModel {
         self.fromAddress = coin.address
         self.interactor = interactor
         self.addressResolver = addressResolver
+        self.destinationTagRequirementProvider = destinationTagRequirementProvider ?? { address in
+            await RippleService.shared.fetchDestinationTagRequirement(for: address)
+        }
     }
 
     func hydrate(from seed: SendDetailsSeed) {
@@ -780,6 +811,47 @@ final class SendDetailsViewModel {
         return RippleDestinationTag.parseTag(memo)
     }
 
+    /// RequireDest gate: a tagless XRP send to a destination whose
+    /// AccountRoot sets `lsfRequireDestTag` would be rejected by the ledger
+    /// (or worse, credited to nobody if the flag is off but the tag was
+    /// still needed by the exchange) — hard-block it here where the tag
+    /// field is still on screen. Lookup failure fails OPEN behind an
+    /// explicit per-address acknowledgment: XRPL public-RPC availability
+    /// must not become a hard dependency for every XRP send (the fee lookup
+    /// deliberately fails open on the same RPC), and the cohort this gate
+    /// protects — exchange deposit addresses — are funded, high-availability
+    /// accounts that resolve on the happy path.
+    func validateRippleRequireDest() async -> Bool {
+        guard coin.chain == .ripple else { return true }
+        // A present tag (field or legacy numeric memo) satisfies the flag.
+        guard resolvedDestinationTag == nil else { return true }
+
+        let requirement: RippleDestinationTagRequirement
+        if let cached = destinationTagRequirementCache[toAddress] {
+            requirement = cached
+        } else {
+            requirement = await destinationTagRequirementProvider(toAddress)
+            if requirement != .unknown {
+                destinationTagRequirementCache[toAddress] = requirement
+            }
+        }
+
+        switch requirement {
+        case .required:
+            setGeneralError(message: "destinationTagRequiredError")
+            destinationTagFieldNudge += 1
+            return false
+        case .notRequired, .accountNotFound:
+            return true
+        case .unknown:
+            if unverifiedDestinationTagAckAddress == toAddress {
+                return true
+            }
+            showDestinationTagUnverifiedAlert = true
+            return false
+        }
+    }
+
     /// For ERC20-style non-native sends, gas is paid in the chain's native
     /// sibling. Reject if the vault doesn't hold enough of it.
     func validateERC20GasBalance() -> Bool {
@@ -806,8 +878,14 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
-        guard validateRippleTagAndMemo() else { return false }
+        // Address resolution runs BEFORE the XRP tag/memo rule: it hosts the
+        // X-address normalization seam, which can autofill the tag field —
+        // validating the tag first would let an autofilled value (e.g. an
+        // embedded tag 0) skip validation on prefill paths that never went
+        // through the screen's format check.
         guard await validateAddressResolved() else { return false }
+        guard validateRippleTagAndMemo() else { return false }
+        guard await validateRippleRequireDest() else { return false }
         return validateBalance()
     }
 
@@ -886,6 +964,8 @@ final class SendDetailsViewModel {
         memo = ""
         destinationTag = ""
         isDestinationTagLocked = false
+        showDestinationTagUnverifiedAlert = false
+        unverifiedDestinationTagAckAddress = nil
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false

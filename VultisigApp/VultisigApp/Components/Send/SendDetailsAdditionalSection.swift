@@ -41,6 +41,13 @@ struct SendDetailsAdditionalSection: View {
                 isDestinationTagExpanded = true
             }
         }
+        .onChange(of: viewModel.destinationTagFieldNudge) { _, _ in
+            // RequireDest hard-block: surface the (empty, collapsed) field
+            // the user now has to fill.
+            withAnimation {
+                isDestinationTagExpanded = true
+            }
+        }
     }
 
     var addMemoTitle: some View {
