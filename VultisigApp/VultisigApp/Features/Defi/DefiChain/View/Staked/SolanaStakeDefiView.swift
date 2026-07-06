@@ -71,9 +71,12 @@ struct SolanaStakeDefiView<EmptyState: View>: View {
             if !viewModel.rows.isEmpty {
                 stakeAccountsCard
             } else if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
+                // Genuine first-ever load (nothing seeded from the persisted
+                // snapshot): show the same skeleton placeholder the persisted
+                // THOR/Maya/TON stake path uses, not a bare spinner. Warm
+                // stores never reach this branch — the seed paints rows before
+                // any network call.
+                DefiChainStakedPositionSkeletonView()
             }
         }
     }
