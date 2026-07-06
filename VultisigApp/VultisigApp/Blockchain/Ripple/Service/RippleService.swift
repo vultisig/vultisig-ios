@@ -39,7 +39,16 @@ class RippleService {
     static let shared = RippleService()
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
+
+    /// Direct HTTP client for the verify-by-hash `tx` lookup, which runs its
+    /// own bespoke retry loop (see `resolveSubmitByHash`).
     private let httpClient: HTTPClientProtocol
+
+    /// Executes requests with a bounded same-host retry on transient node
+    /// errors (`amendmentBlocked` and the node-unavailable family). Because the
+    /// resolved host is a load-balanced pool, a same-host retry routes to a
+    /// different (healthy) backend — no fallback host list is needed.
+    private let retrier: RippleRequestRetrier
 
     /// Resolves the Ripple custom RPC override. Injected so the API values are
     /// built from a dependency rather than a global reach-in; resolution happens
@@ -54,10 +63,12 @@ class RippleService {
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
         httpClient: HTTPClientProtocol = HTTPClient(),
+        sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep,
         verifyByHashBackoff: Duration = .seconds(2)
     ) {
         self.resolver = resolver
         self.httpClient = httpClient
+        self.retrier = RippleRequestRetrier(httpClient: httpClient, sleep: sleep)
         self.verifyByHashBackoff = verifyByHashBackoff
     }
 
@@ -74,12 +85,12 @@ class RippleService {
     }
 
     func broadcastTransaction(_ hex: String) async throws -> String {
-        let response = try await httpClient.request(
+        let response = try await retrier.request(
             api(.submit(txBlob: hex)),
             responseType: RippleSubmitResponse.self
         )
 
-        let result = response.data.result
+        let result = response.result
         let disposition = RippleSubmitDisposition.classify(
             engineResult: result?.engineResult,
             engineResultMessage: result?.engineResultMessage,
@@ -207,11 +218,10 @@ class RippleService {
 
     func fetchServerState() async throws -> RippleServerStateResponse? {
         do {
-            let response = try await httpClient.request(
+            return try await retrier.request(
                 api(.serverState),
                 responseType: RippleServerStateResponse.self
             )
-            return response.data
         } catch {
             logger.error("fetchServerState: \(error.localizedDescription)")
             throw error
@@ -220,11 +230,10 @@ class RippleService {
 
     func fetchAccountsInfo(for walletAddress: String) async throws -> RippleAccountResponse? {
         do {
-            let response = try await httpClient.request(
+            return try await retrier.request(
                 api(.accountInfo(account: walletAddress)),
                 responseType: RippleAccountResponse.self
             )
-            return response.data
         } catch {
             logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
@@ -255,6 +264,10 @@ struct RippleAccountResponse: Codable {
         let queueData: QueueData?
         let status: String?
         let validated: Bool?
+        /// Node-level error (e.g. `amendmentBlocked`) returned in an HTTP-200
+        /// body. Distinct from `actNotFound`, which is a valid "unfunded
+        /// account" outcome and is intentionally not retryable.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case accountData = "account_data"
@@ -262,6 +275,7 @@ struct RippleAccountResponse: Codable {
             case queueData = "queue_data"
             case status
             case validated
+            case error
         }
     }
 
@@ -331,9 +345,13 @@ struct RippleServerStateResponse: Codable {
 
     struct Result: Codable {
         let state: State?
+        /// Node-level error (e.g. `amendmentBlocked`) returned in an HTTP-200
+        /// body when the backend can't serve `server_state`.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case state
+            case error
         }
     }
 
@@ -360,4 +378,12 @@ struct RippleServerStateResponse: Codable {
             case reserveInc = "reserve_inc"
         }
     }
+}
+
+extension RippleAccountResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
+}
+
+extension RippleServerStateResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
 }

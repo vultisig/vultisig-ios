@@ -120,15 +120,23 @@ struct RippleSubmitResponse: Decodable {
         let engineResult: String?
         let engineResultMessage: String?
         let txJson: TxJson?
+        /// Node-level error (e.g. `amendmentBlocked`) returned in an HTTP-200
+        /// body when the backend can't process the request at all.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case engineResult = "engine_result"
             case engineResultMessage = "engine_result_message"
             case txJson = "tx_json"
+            case error
         }
 
         struct TxJson: Decodable {
             let hash: String?
         }
     }
+}
+
+extension RippleSubmitResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
 }
