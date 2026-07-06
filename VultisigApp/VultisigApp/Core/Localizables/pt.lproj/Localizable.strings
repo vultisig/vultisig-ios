@@ -1217,6 +1217,8 @@
 "thorchainAddress" = "Endereço THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token THORChain inválido. Use THOR.{SYMBOL}, ex.: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
+"thresholdNotMetDescription" = "Você está tentando reduzir o número de dispositivos de %1$d para %2$d, mas este cofre requer %3$d signatários ativos para permanecer seguro.";
+"thresholdNotMetTitle" = "Limite não atingido";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "timeout" = "Tempo esgotado";
 "title" = "Título";

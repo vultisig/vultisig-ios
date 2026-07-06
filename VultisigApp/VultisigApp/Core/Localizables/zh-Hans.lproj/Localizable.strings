@@ -1217,6 +1217,8 @@
 "thorchainAddress" = "THORChain 地址";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
+"thresholdNotMetDescription" = "您正在尝试将设备数量从 %1$d 台减少到 %2$d 台，但此保险库需要 %3$d 个活跃签名者才能保持安全。";
+"thresholdNotMetTitle" = "未达到阈值";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";
 "title" = "标题";

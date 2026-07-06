@@ -109,15 +109,7 @@ struct ReshareScreen: View {
     }
 
     private func onStartReshareConfirmed() {
-        router.navigate(to: KeygenRoute.peerDiscovery(
-            tssType: .Reshare,
-            vault: vault,
-            selectedTab: .secure,
-            fastSignConfig: nil,
-            keyImportInput: nil,
-            setupType: nil,
-            singleKeygenType: nil
-        ))
+        router.navigate(to: VaultRoute.reshareDeviceCount(vault: vault))
     }
 
     private func onJoinReshare() {

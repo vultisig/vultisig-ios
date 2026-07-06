@@ -1215,6 +1215,8 @@
 "thorchainAddress" = "THORChain Address";
 "thorchainCustomTokenInvalidFormat" = "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain is not enabled on this vault. Please enable THORChain to use this feature.";
+"thresholdNotMetDescription" = "You're trying to reduce the number of devices from %1$d to %2$d, but this vault requires %3$d active signers to stay secure.";
+"thresholdNotMetTitle" = "Threshold not met";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";
 "title" = "Title";

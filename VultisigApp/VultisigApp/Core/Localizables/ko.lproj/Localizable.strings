@@ -1180,6 +1180,8 @@
 "thorchainAddress" = "THORChain 주소";
 "thorchainCustomTokenInvalidFormat" = "잘못된 THORChain 토큰 형식입니다. THOR.{SYMBOL} 형식을 사용하세요. 예: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "이 볼트에서 THORChain이 활성화되어 있지 않습니다. 이 기능을 사용하려면 THORChain을 활성화하세요.";
+"thresholdNotMetDescription" = "기기 수를 %1$d개에서 %2$d개로 줄이려고 하지만, 이 볼트는 보안을 유지하기 위해 %3$d명의 활성 서명자가 필요합니다.";
+"thresholdNotMetTitle" = "임계값 미달";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
 "timeout" = "시간 초과";
 "title" = "제목";

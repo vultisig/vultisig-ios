@@ -1217,6 +1217,8 @@
 "thorchainAddress" = "Dirección de THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token de THORChain no válido. Usa THOR.{SYMBOL}, p. ej. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
+"thresholdNotMetDescription" = "Estás intentando reducir la cantidad de dispositivos de %1$d a %2$d, pero esta bóveda requiere %3$d firmantes activos para mantenerse segura.";
+"thresholdNotMetTitle" = "Umbral no alcanzado";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";
 "title" = "Título";

@@ -17,6 +17,7 @@ enum VaultRoute: Hashable {
     case allDevicesUpgrade(vault: Vault)
     case vaultShareBackups(vault: Vault)
     case reshare(vault: Vault)
+    case reshareDeviceCount(vault: Vault)
     case passwordHint(vault: Vault)
     case vaultDetails(vault: Vault, devicesInfo: [DeviceInfo])
     case renameVault(vault: Vault, vaults: [Vault], folders: [Folder])

@@ -1217,6 +1217,8 @@
 "thorchainAddress" = "THORChain adresa";
 "thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
+"thresholdNotMetDescription" = "Pokušavate smanjiti broj uređaja s %1$d na %2$d, ali ovaj trezor zahtijeva %3$d aktivnih potpisnika kako bi ostao siguran.";
+"thresholdNotMetTitle" = "Prag nije dosegnut";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";

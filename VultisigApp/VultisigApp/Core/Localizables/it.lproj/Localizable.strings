@@ -1217,6 +1217,8 @@
 "thorchainAddress" = "Indirizzo THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato del token THORChain non valido. Usa THOR.{SYMBOL}, ad es. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain non è abilitato su questo caveau. Abilita THORChain per utilizzare questa funzione.";
+"thresholdNotMetDescription" = "Stai cercando di ridurre il numero di dispositivi da %1$d a %2$d, ma questo vault richiede %3$d firmatari attivi per rimanere sicuro.";
+"thresholdNotMetTitle" = "Soglia non raggiunta";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";
 "title" = "Titolo";
