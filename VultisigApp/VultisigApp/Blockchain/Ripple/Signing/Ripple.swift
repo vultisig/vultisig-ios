@@ -209,7 +209,7 @@ enum RippleHelper {
 
         let result = SignedTransactionResult(
             rawTransaction: output.encoded.hexString,
-            transactionHash: "")
+            transactionHash: signedTransactionHash(signedBlob: output.encoded))
 
         return result
     }
