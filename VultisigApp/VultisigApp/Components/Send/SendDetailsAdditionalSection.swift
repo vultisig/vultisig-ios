@@ -11,6 +11,7 @@ struct SendDetailsAdditionalSection: View {
     @Bindable var viewModel: SendDetailsViewModel
 
     @State var isMemoExpanded = false
+    @State var isDestinationTagExpanded = false
 
     @EnvironmentObject var appViewModel: AppViewModel
 
@@ -21,10 +22,23 @@ struct SendDetailsAdditionalSection: View {
             if viewModel.coin.chain.supportsMemo {
                 addMemoField
             }
+            if viewModel.coin.chain.supportsDestinationTag {
+                addDestinationTagField
+            }
         }
         .onAppear {
             if !viewModel.memo.isEmpty {
                 isMemoExpanded = true
+            }
+            if !viewModel.destinationTag.isEmpty {
+                isDestinationTagExpanded = true
+            }
+        }
+        .onChange(of: viewModel.destinationTag) { _, newValue in
+            // Autofill (X-address paste) must surface the tag, not hide it
+            // behind a collapsed section.
+            if !newValue.isEmpty {
+                isDestinationTagExpanded = true
             }
         }
     }
@@ -33,19 +47,30 @@ struct SendDetailsAdditionalSection: View {
         HStack {
             getFieldTitle("addMemo")
             Spacer()
-            chevronIcon
+            chevronIcon(isExpanded: isMemoExpanded)
         }
         .onTapGesture {
             isMemoExpanded.toggle()
         }
     }
 
-    var chevronIcon: some View {
+    var addDestinationTagTitle: some View {
+        HStack {
+            getFieldTitle("addDestinationTag")
+            Spacer()
+            chevronIcon(isExpanded: isDestinationTagExpanded)
+        }
+        .onTapGesture {
+            isDestinationTagExpanded.toggle()
+        }
+    }
+
+    func chevronIcon(isExpanded: Bool) -> some View {
         Image(systemName: "chevron.down")
             .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
-            .rotationEffect(.degrees(isMemoExpanded ? 180 : 0))
-            .animation(.easeInOut, value: isMemoExpanded)
+            .rotationEffect(.degrees(isExpanded ? 180 : 0))
+            .animation(.easeInOut, value: isExpanded)
     }
 
     var addMemoField: some View {
@@ -60,6 +85,23 @@ struct SendDetailsAdditionalSection: View {
 
             MemoTextField(memo: $viewModel.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
+                .clipped()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    var addDestinationTagField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation {
+                    isDestinationTagExpanded.toggle()
+                }
+            } label: {
+                addDestinationTagTitle
+            }
+
+            DestinationTagTextField(destinationTag: $viewModel.destinationTag)
+                .frame(height: isDestinationTagExpanded ? nil : 0, alignment: .top)
                 .clipped()
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -95,6 +95,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .showIf(input.memo.isNotEmpty)
             }
 
+            if let destinationTag = input.destinationTag, destinationTag.isNotEmpty {
+                getValueCell(for: "destinationTag", with: destinationTag)
+                Separator()
+            }
+
             if let dictionary = input.memoFunctionDictionary, !dictionary.isEmpty {
                 ForEach(Array(dictionary.keys), id: \.self) { key in
                     if let value = dictionary[key] {

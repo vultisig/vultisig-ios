@@ -64,6 +64,10 @@ struct SendDetailsScreen: View {
                 if !newValue.chain.supportsMemo {
                     viewModel.memo = ""
                 }
+                // Same treatment for the XRP-only destination tag.
+                if !newValue.chain.supportsDestinationTag {
+                    viewModel.destinationTag = ""
+                }
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()

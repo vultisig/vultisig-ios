@@ -11,6 +11,7 @@
 "addChain" = "添加链";
 "addCoinLP" = "添加 %@ LP";
 "addCustomChains" = "添加自定义链";
+"addDestinationTag" = "添加目标标签";
 "addFolder" = "添加文件夹";
 "addFriendsReferral" = "添加好友推荐";
 "addingToken" = "正在添加代币...";
@@ -321,6 +322,7 @@
 "deleteVaultTitle" = "删除保险库";
 "dependencies" = "依赖项";
 "destinationAddress" = "目标地址";
+"destinationTag" = "目标标签";
 "destinationTagInvalidError" = "目标标签必须是 1 到 4294967295 之间的整数。";
 "destinationTagMemoConflictError" = "备忘录与目标标签不一致。XRP 交易只能携带一个目标标签。";
 "destinationValidator" = "目标验证人";
@@ -382,6 +384,7 @@
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";
 "enterAmountToUnmerge" = "输入解绑金额";
+"enterDestinationTag" = "输入目标标签";
 "enterHint" = "输入提示";
 "enterMemo" = "输入备忘录";
 "enterPassword" = "输入密码";

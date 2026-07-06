@@ -11,6 +11,7 @@
 "addChain" = "체인 추가";
 "addCoinLP" = "%@ LP 추가";
 "addCustomChains" = "커스텀 체인 추가";
+"addDestinationTag" = "목적지 태그 추가";
 "addFolder" = "폴더 추가";
 "addFriendsReferral" = "친구 추천 코드 추가";
 "addingToken" = "토큰 추가 중...";
@@ -321,6 +322,7 @@
 "deleteVaultTitle" = "볼트 삭제";
 "dependencies" = "종속성";
 "destinationAddress" = "목적지 주소";
+"destinationTag" = "목적지 태그";
 "destinationTagInvalidError" = "목적지 태그는 1에서 4294967295 사이의 정수여야 합니다.";
 "destinationTagMemoConflictError" = "메모와 목적지 태그가 일치하지 않습니다. XRP 거래는 목적지 태그를 하나만 가질 수 있습니다.";
 "destinationValidator" = "도착 검증인";
@@ -380,6 +382,7 @@
 "enterAddressHere" = "여기에 주소를 입력하세요";
 "enterAmount" = "금액 입력";
 "enterAmountToUnmerge" = "병합 해제할 금액 입력";
+"enterDestinationTag" = "목적지 태그 입력";
 "enterHint" = "힌트 입력";
 "enterMemo" = "메모 입력";
 "enterPassword" = "비밀번호 입력";

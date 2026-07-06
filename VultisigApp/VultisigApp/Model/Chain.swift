@@ -641,6 +641,14 @@ extension Chain {
         }
     }
 
+    /// Whether the Send flow's Destination Tag input should be exposed for
+    /// this chain. XRPL payments carry an optional 32-bit tag that custodial
+    /// services (exchanges) require to credit deposits to the right account —
+    /// only Ripple supports it.
+    var supportsDestinationTag: Bool {
+        self == .ripple
+    }
+
     static var keyImportEnabledChains: [Chain] {
         allCases.filter {
             switch $0 {

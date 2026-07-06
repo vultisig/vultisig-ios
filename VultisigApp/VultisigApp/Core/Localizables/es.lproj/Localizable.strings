@@ -11,6 +11,7 @@
 "addChain" = "Agregar cadena";
 "addCoinLP" = "Agregar %@ LP";
 "addCustomChains" = "Agregar chains personalizadas";
+"addDestinationTag" = "Agregar etiqueta de destino";
 "addFolder" = "Agregar carpeta";
 "addFriendsReferral" = "Agregar una referencia de amigos";
 "addingToken" = "Agregando token";
@@ -321,6 +322,7 @@
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
+"destinationTag" = "Etiqueta de destino";
 "destinationTagInvalidError" = "La etiqueta de destino debe ser un número entero entre 1 y 4294967295.";
 "destinationTagMemoConflictError" = "El memorándum y la etiqueta de destino no coinciden. Las transacciones XRP solo pueden llevar una etiqueta de destino.";
 "destinationValidator" = "Validador destino";
@@ -382,6 +384,7 @@
 "enterAddressHere" = "Ingresa la dirección aquí";
 "enterAmount" = "Ingresar Cantidad";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Introduce la etiqueta de destino";
 "enterHint" = "Introduce una pista";
 "enterMemo" = "Introduce el memo";
 "enterPassword" = "Introduce la contraseña";

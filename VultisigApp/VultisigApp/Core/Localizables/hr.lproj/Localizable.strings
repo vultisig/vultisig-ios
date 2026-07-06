@@ -11,6 +11,7 @@
 "addChain" = "Dodajte lanac";
 "addCoinLP" = "Dodaj %@ LP";
 "addCustomChains" = "Dodaj prilagođene chainove";
+"addDestinationTag" = "Dodaj oznaku odredišta";
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
@@ -321,6 +322,7 @@
 "deleteVaultTitle" = "Izbriši sef";
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
+"destinationTag" = "Oznaka odredišta";
 "destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
 "destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
 "destinationValidator" = "Odredišni validator";
@@ -382,6 +384,7 @@
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Unesite oznaku odredišta";
 "enterHint" = "Unesite savjet";
 "enterMemo" = "Unesite bilješku";
 "enterPassword" = "Unesite lozinku";
