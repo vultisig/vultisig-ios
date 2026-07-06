@@ -1352,6 +1352,7 @@
 "vaultNotImportedDescription" = "Please import the correct share.";
 "vaultNotImportedTitle" = "Vault is not loaded";
 "vaultPart" = "Vault Share";
+"vaultReshared" = "Vault reshared";
 "vaultRestoreFailed" = "Failed to restore vault";
 "vaults" = "Vaults";
 "vaultSelected" = "Vault selected";

@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "Si prega di importare la condivisione corretta.";
 "vaultNotImportedTitle" = "Il vault non è caricato";
 "vaultPart" = "Parte della cassaforte";
+"vaultReshared" = "Vault ricondiviso";
 "vaultRestoreFailed" = "Ripristino del caveau non riuscito";
 "vaults" = "Cassaforti";
 "vaultSelected" = "Vault selezionato";

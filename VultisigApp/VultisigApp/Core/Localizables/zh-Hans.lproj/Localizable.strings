@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "请导入正确的份额。";
 "vaultNotImportedTitle" = "保险库未加载";
 "vaultPart" = "保险库份额";
+"vaultReshared" = "保险库已重新共享";
 "vaultRestoreFailed" = "恢复保险库失败";
 "vaults" = "保险库";
 "vaultSelected" = "已选择保险库";

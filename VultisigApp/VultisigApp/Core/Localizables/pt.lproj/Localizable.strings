@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "Por favor, importe a parte correta.";
 "vaultNotImportedTitle" = "O cofre não está carregado";
 "vaultPart" = "Parte do cofre";
+"vaultReshared" = "Cofre compartilhado novamente";
 "vaultRestoreFailed" = "Falha ao restaurar o cofre";
 "vaults" = "Cofres";
 "vaultSelected" = "Vault selecionado";

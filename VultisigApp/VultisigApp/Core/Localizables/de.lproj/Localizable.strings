@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "Bitte importieren Sie den richtigen Anteil.";
 "vaultNotImportedTitle" = "Vault ist nicht geladen";
 "vaultPart" = "Tresorteil";
+"vaultReshared" = "Tresor erneut geteilt";
 "vaultRestoreFailed" = "Wiederherstellung des Tresors fehlgeschlagen";
 "vaults" = "Tresore";
 "vaultSelected" = "Vault ausgewählt";

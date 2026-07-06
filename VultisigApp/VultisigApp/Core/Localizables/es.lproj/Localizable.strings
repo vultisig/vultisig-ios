@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "Por favor, importe la parte correcta.";
 "vaultNotImportedTitle" = "La bóveda no está cargada";
 "vaultPart" = "Parte del cofre";
+"vaultReshared" = "Bóveda compartida nuevamente";
 "vaultRestoreFailed" = "No se pudo restaurar el almacén";
 "vaults" = "Cajas Fuertes";
 "vaultSelected" = "Bóveda seleccionada";

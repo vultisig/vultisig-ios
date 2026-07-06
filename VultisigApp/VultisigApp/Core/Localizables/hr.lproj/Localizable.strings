@@ -1354,6 +1354,7 @@
 "vaultNotImportedDescription" = "Molimo uvezite ispravan udio.";
 "vaultNotImportedTitle" = "Spremište nije učitano";
 "vaultPart" = "Dio trezora";
+"vaultReshared" = "Trezor ponovno podijeljen";
 "vaultRestoreFailed" = "Neuspješno vraćanje spremišta";
 "vaults" = "Sefovi";
 "vaultSelected" = "Odabrani trezor";

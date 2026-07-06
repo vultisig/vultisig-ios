@@ -1317,6 +1317,7 @@
 "vaultNotImportedDescription" = "올바른 공유를 가져오세요.";
 "vaultNotImportedTitle" = "볼트가 로드되지 않음";
 "vaultPart" = "볼트 공유";
+"vaultReshared" = "볼트 재공유 완료";
 "vaultRestoreFailed" = "볼트 복구 실패";
 "vaults" = "볼트";
 "vaultSelected" = "볼트 선택됨";
