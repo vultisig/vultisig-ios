@@ -1450,7 +1450,6 @@
 "wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
-"xrpMemoNotDestinationTagError" = "XRP 交易不支持文本备忘录。如果您向交易所充值，请在目标标签栏输入数字标签。";
 "xrpTagAndMemoAdvisory" = "同时发送目标标签和备注需要您的所有签名设备都为最新版本。";
 "yes" = "是";
 "yesterday" = "昨天";

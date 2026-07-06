@@ -108,7 +108,11 @@ enum RippleMemoError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidMemo:
-            return "xrpMemoNotDestinationTagError".localized
+            // Now that text memos are supported again, the only payload the
+            // signer rejects here is a zero / out-of-range destination tag —
+            // reuse the accurate form-side copy instead of the stale
+            // "text memos aren't supported" message.
+            return "destinationTagInvalidError".localized
         case .tagMemoConflict:
             return "destinationTagMemoConflictError".localized
         }

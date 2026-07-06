@@ -1448,7 +1448,6 @@
 "wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
 "x" = "X (Twitter)";
-"xrpMemoNotDestinationTagError" = "XRP transactions don't support text memos. If you're depositing to an exchange, enter the numeric tag in the Destination Tag field.";
 "xrpTagAndMemoAdvisory" = "Sending a tag and a memo together requires all your signing devices to be up to date.";
 "yes" = "Yes";
 "yesterday" = "Yesterday";

@@ -1450,7 +1450,6 @@
 "wrongVaultSelectedDescription" = "O Vault que você selecionou não corresponde à sessão de keygen. Por favor, selecione o Vault correto.";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "x" = "x";
-"xrpMemoNotDestinationTagError" = "Transações XRP não suportam memorandos de texto. Se estiver depositando em uma exchange, insira a tag numérica no campo Tag de Destino.";
 "xrpTagAndMemoAdvisory" = "Enviar uma tag e um memorando juntos exige que todos os seus dispositivos de assinatura estejam atualizados.";
 "yes" = "Sim";
 "yesterday" = "Ontem";
