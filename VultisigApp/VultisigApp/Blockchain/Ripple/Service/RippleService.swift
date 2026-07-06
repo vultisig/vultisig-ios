@@ -39,7 +39,7 @@ class RippleService {
     static let shared = RippleService()
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     /// Resolves the Ripple custom RPC override. Injected so the API values are
     /// built from a dependency rather than a global reach-in; resolution happens
@@ -47,8 +47,12 @@ class RippleService {
     /// live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
     }
 
     /// The override-aware XRPL host. Falls back to the default host when no
@@ -70,23 +74,20 @@ class RippleService {
         )
 
         let result = response.data.result
+        let disposition = RippleSubmitDisposition.classify(
+            engineResult: result?.engineResult,
+            engineResultMessage: result?.engineResultMessage,
+            hash: result?.txJson?.hash
+        )
 
-        // `tx_json.hash` is the deterministic hash of the exact blob we
-        // submitted; XRPL echoes it back regardless of the engine result. Track
-        // that hash even when the engine result isn't tesSUCCESS — tec* results
-        // are applied on-chain, and for a tef/tem/ter/tel rejection the status
-        // poller resolves the real outcome from this hash and surfaces the error
-        // on screen. The bug this guards against is returning the engine error
-        // *message* as the txid; a missing hash means we have nothing to track,
-        // so surface the engine result/message as the failure instead of
-        // persisting an empty string as a fake success.
-        guard let hash = result?.txJson?.hash, !hash.isEmpty else {
-            throw RippleBroadcastError.broadcastFailed(
-                code: result?.engineResult ?? "unknown",
-                message: result?.engineResultMessage
-            )
+        switch disposition {
+        case .accepted(let hash):
+            return hash
+        case .verifyByHash(let code, _, let message),
+             .rejected(let code, let message):
+            logger.error("broadcast rejected by XRPL: \(code, privacy: .public)")
+            throw RippleBroadcastError.broadcastFailed(code: code, message: message)
         }
-        return hash
     }
 
     func getBalance(address: String) async throws -> String {
