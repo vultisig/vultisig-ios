@@ -57,13 +57,15 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the merged commondata #93 commit on `main`, which adds
-    # `CosmosSpecific.gas_limit`: an optional per-tx signed gas limit derived
-    # from a `/cosmos/tx/v1beta1/simulate` estimate. It is part of the SignDoc,
-    # so the read/honor side is always-on and every co-signing device must apply
-    # it identically; when unset, peers fall back to the static per-chain gas
-    # limit. Enables relayed dynamic Cosmos gas estimation.
-    revision: 03e61a7454be7cebababb6b33708b85077962088
+    # TEMPORARY: pinned to the head of the commondata `feat/ripple-destination-tag`
+    # branch, which adds `RippleSpecific.destination_tag` (optional uint32) — the
+    # first-class XRPL DestinationTag field. Consumed here via dual-write: the
+    # initiator writes the tag into BOTH this field AND the legacy memo carrier,
+    # and signers prefer the field, falling back to the memo, so mixed-version
+    # device pairs stay byte-identical in MPC keysign. Re-pin to the merged `main`
+    # commit once that commondata PR lands (this branch stays draft until then).
+    # Supersedes the earlier pin at commondata #93's `CosmosSpecific.gas_limit`.
+    revision: b940d663d78f13f26a175048f3e7a47ea86811e2
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
