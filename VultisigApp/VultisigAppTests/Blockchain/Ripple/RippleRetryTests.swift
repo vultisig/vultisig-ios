@@ -289,7 +289,9 @@ final class RippleRetryTests: XCTestCase {
         stub.enqueue(Self.decode(RippleTransactionStatusResponse.self, Self.statusAmendmentBlockedBody))
         stub.enqueue(Self.decode(RippleTransactionStatusResponse.self, Self.statusConfirmedBody))
         let sleeper = RecordingSleeper()
-        let provider = RippleTransactionStatusProvider(httpClient: stub, sleep: sleeper.sleep)
+        let provider = RippleTransactionStatusProvider(
+            httpClient: stub, sleep: sleeper.sleep, resolver: NoOverrideResolver()
+        )
 
         let result = try await provider.checkStatus(
             query: TransactionStatusQuery(txHash: "ABC123", chain: .ripple)
@@ -299,6 +301,57 @@ final class RippleRetryTests: XCTestCase {
         XCTAssertEqual(stub.callCount, 2)
         XCTAssertEqual(sleeper.count, 1)
         assertSameHost(stub, expected: RippleAPI.defaultHost)
+    }
+
+    func testStatusLookupHttp404ReturnsNotFoundWithoutRetry() async throws {
+        // 404 is non-retryable; the provider maps it to .notFound as before.
+        let stub = SequencedHTTPClient()
+        stub.enqueueError(HTTPError.statusCode(404, Data()))
+        let sleeper = RecordingSleeper()
+        let provider = RippleTransactionStatusProvider(
+            httpClient: stub, sleep: sleeper.sleep, resolver: NoOverrideResolver()
+        )
+
+        let result = try await provider.checkStatus(
+            query: TransactionStatusQuery(txHash: "ABC123", chain: .ripple)
+        )
+
+        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(stub.callCount, 1, "404 must not be retried")
+    }
+
+    func testStatusLookupTxnNotFoundReturnsNotFoundWithoutRetry() async throws {
+        // txnNotFound is a real outcome, not a transient node fault.
+        let stub = SequencedHTTPClient()
+        stub.enqueue(Self.decode(RippleTransactionStatusResponse.self, Self.statusTxnNotFoundBody))
+        let sleeper = RecordingSleeper()
+        let provider = RippleTransactionStatusProvider(
+            httpClient: stub, sleep: sleeper.sleep, resolver: NoOverrideResolver()
+        )
+
+        let result = try await provider.checkStatus(
+            query: TransactionStatusQuery(txHash: "ABC123", chain: .ripple)
+        )
+
+        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(stub.callCount, 1, "txnNotFound must not be retried")
+    }
+
+    func testStatusLookupEngineFailureReturnsFailedWithoutRetry() async throws {
+        // A validated tx with a non-tesSUCCESS result is a real on-chain failure.
+        let stub = SequencedHTTPClient()
+        stub.enqueue(Self.decode(RippleTransactionStatusResponse.self, Self.statusEngineFailureBody))
+        let sleeper = RecordingSleeper()
+        let provider = RippleTransactionStatusProvider(
+            httpClient: stub, sleep: sleeper.sleep, resolver: NoOverrideResolver()
+        )
+
+        let result = try await provider.checkStatus(
+            query: TransactionStatusQuery(txHash: "ABC123", chain: .ripple)
+        )
+
+        XCTAssertEqual(result.status, .failed(reason: "tecUNFUNDED_PAYMENT"))
+        XCTAssertEqual(stub.callCount, 1, "an engine failure must not be retried")
     }
 
     // MARK: - Helpers
@@ -333,6 +386,10 @@ final class RippleRetryTests: XCTestCase {
     private static let statusAmendmentBlockedBody = #"{"result":{"error":"amendmentBlocked","status":"error"}}"#
     private static let statusConfirmedBody = #"""
     {"result":{"validated":true,"ledger_index":123,"meta":{"TransactionResult":"tesSUCCESS"}}}
+    """#
+    private static let statusTxnNotFoundBody = #"{"result":{"error":"txnNotFound","status":"error"}}"#
+    private static let statusEngineFailureBody = #"""
+    {"result":{"validated":true,"ledger_index":50,"meta":{"TransactionResult":"tecUNFUNDED_PAYMENT"}}}
     """#
 
     private static func decode<T: Decodable>(_: T.Type, _ json: String) -> T {

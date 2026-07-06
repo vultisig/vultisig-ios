@@ -13,18 +13,24 @@ import Foundation
 /// - Parses `TransactionResult` to determine success/failure
 struct RippleTransactionStatusProvider: TransactionStatusProvider {
     private let retrier: RippleRequestRetrier
+    /// Resolves the Ripple custom RPC override so the status lookup targets the
+    /// same host as broadcast/reads (`RippleService`).
+    private let resolver: RPCEndpointResolving
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
-        sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep
+        sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep,
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
     ) {
         self.retrier = RippleRequestRetrier(httpClient: httpClient, sleep: sleep)
+        self.resolver = resolver
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
+            let host = resolver.resolvedURL(for: .ripple, default: RippleAPI.defaultHost)
             let response = try await retrier.request(
-                RippleTransactionStatusAPI.getTx(txHash: query.txHash),
+                RippleTransactionStatusAPI.getTx(txHash: query.txHash, host: host),
                 responseType: RippleTransactionStatusResponse.self
             )
 
