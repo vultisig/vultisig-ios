@@ -427,12 +427,18 @@ extension VSRippleSpecific: @retroactive Codable {
         case sequence = "sequence"
         case gas
         case lastLedgerSequence = "last_ledger_sequence"
+        case destinationTag = "destination_tag"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(sequence, forKey: .sequence)
         try container.encode(gas, forKey: .gas)
         try container.encode(lastLedgerSequence, forKey: .lastLedgerSequence)
+        // Optional first-class tag: encode only when present so golden fixtures
+        // distinguish "no tag" (unset) from a real value.
+        if hasDestinationTag {
+            try container.encode(destinationTag, forKey: .destinationTag)
+        }
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -440,6 +446,9 @@ extension VSRippleSpecific: @retroactive Codable {
         sequence = try container.decode(UInt64.self, forKey: .sequence)
         gas = try container.decode(UInt64.self, forKey: .gas)
         lastLedgerSequence = try container.decode(UInt64.self, forKey: .lastLedgerSequence)
+        if let tag = try container.decodeIfPresent(UInt32.self, forKey: .destinationTag) {
+            destinationTag = tag
+        }
     }
 }
 extension VSTronSpecific: @retroactive Codable {
