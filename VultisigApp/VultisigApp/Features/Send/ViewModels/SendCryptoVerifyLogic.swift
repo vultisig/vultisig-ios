@@ -14,9 +14,14 @@ struct SendCryptoVerifyLogic {
     // MARK: - Dependencies
 
     let interactor: SendInteractor
+    private let rippleService: RippleService
 
-    init(interactor: SendInteractor = DefaultSendInteractor.live) {
+    init(
+        interactor: SendInteractor = DefaultSendInteractor.live,
+        rippleService: RippleService = .shared
+    ) {
         self.interactor = interactor
+        self.rippleService = rippleService
     }
 
     // MARK: - Fee Calculation
@@ -170,6 +175,28 @@ struct SendCryptoVerifyLogic {
 
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
+    }
+
+    // MARK: - Destination Validation
+
+    /// XRPL rejects a Payment that would create the destination account with
+    /// less than the base reserve (`tecNO_DST_INSUF_XRP`) — on-chain, after
+    /// the keysign ceremony, with the fee burned. Gate it here so the failure
+    /// surfaces before signing starts; no-op for every other chain. Matches
+    /// the guard the SDK and Android run at submit time.
+    func validateDestinationIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple, tx.coin.isNativeToken else { return }
+        do {
+            try await rippleService.validateDestinationActivation(
+                address: tx.toAddress,
+                amountDrops: tx.amountInRaw
+            )
+        } catch {
+            // The Verify screen's alert plumbing presents only `HelperError`
+            // (`error as? HelperError`), so rewrap — same convention as
+            // `buildKeysignPayload` — or the guard would block silently.
+            throw HelperError.runtimeError(error.localizedDescription)
+        }
     }
 
     // MARK: - Keysign Payload

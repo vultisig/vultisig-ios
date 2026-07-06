@@ -190,6 +190,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return prebuiltKeysignPayload
         }
 
+        try await logic.validateDestinationIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         return keysignPayload

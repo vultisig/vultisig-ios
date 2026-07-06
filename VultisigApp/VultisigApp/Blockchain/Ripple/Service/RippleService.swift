@@ -204,6 +204,43 @@ class RippleService {
         }
     }
 
+    /// Pre-ceremony guard for the destination account: an XRPL Payment that
+    /// would create the destination with less than the base reserve is
+    /// rejected on-chain (`tecNO_DST_INSUF_XRP`) — after the ceremony, with
+    /// the fee burned. Throws `RippleSendError.destinationNotActivated` when
+    /// the destination is unfunded and `amountDrops` is below the live base
+    /// reserve. A lookup failure also throws (fail closed, matching the
+    /// SDK/Android companions) so the ceremony never starts on an
+    /// unverifiable destination.
+    func validateDestinationActivation(address: String, amountDrops: BigInt) async throws {
+        let result = try await fetchAccountsInfo(for: address)?.result
+        guard result?.accountData == nil else {
+            return // Funded destination — any amount is valid.
+        }
+
+        // Only a definitive `actNotFound` means "unfunded". Any other
+        // account_data-less shape — rate limiting, a malformed address, a
+        // proxy error page decoding to all-nils — is an unverifiable
+        // destination and fails closed, exactly like a transport error.
+        guard result?.error == "actNotFound" else {
+            throw RippleSendError.destinationLookupFailed(code: result?.error ?? "unknown")
+        }
+
+        // The destination does not exist yet, so the payment must fund at
+        // least the base reserve. OwnerCount is 0 by definition for an
+        // account being created.
+        let reserveValues = try await fetchReserveValues()
+        let baseReserve = RippleReserve.reservedDrops(
+            ownerCount: 0,
+            reserveBase: reserveValues?.reserveBase,
+            reserveInc: reserveValues?.reserveInc
+        )
+        if amountDrops < baseReserve {
+            let minimumXRP = (Decimal(string: baseReserve.description) ?? 1) / pow(10, 6)
+            throw RippleSendError.destinationNotActivated(minimumXRP: minimumXRP.description)
+        }
+    }
+
     /// Resolves the fee (in drops) for an XRPL Payment.
     ///
     /// The XRPL reference fee is 10 drops; servers escalate it under load via
@@ -257,6 +294,27 @@ class RippleService {
     }
 }
 
+enum RippleSendError: Error, LocalizedError {
+    /// The destination account does not exist and the amount is below the
+    /// base reserve needed to create it. Carries the minimum in whole XRP,
+    /// ready for user-facing copy.
+    case destinationNotActivated(minimumXRP: String)
+    /// `account_info` answered without account data and without a definitive
+    /// `actNotFound` — the destination cannot be verified, so the send is
+    /// blocked (fail closed). Technical copy, same style as
+    /// `RippleBroadcastError`.
+    case destinationLookupFailed(code: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .destinationNotActivated(let minimumXRP):
+            return String(format: "xrpDestinationNotActivatedError".localized, minimumXRP)
+        case .destinationLookupFailed(let code):
+            return "XRP destination lookup failed (\(code))"
+        }
+    }
+}
+
 enum RippleBroadcastError: Error, LocalizedError {
     case broadcastFailed(code: String, message: String?)
 
@@ -280,6 +338,9 @@ struct RippleAccountResponse: Codable {
         let queueData: QueueData?
         let status: String?
         let validated: Bool?
+        /// rippled error token for failed lookups (HTTP 200 + error body),
+        /// e.g. `actNotFound` for a non-existent account.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case accountData = "account_data"
@@ -287,6 +348,7 @@ struct RippleAccountResponse: Codable {
             case queueData = "queue_data"
             case status
             case validated
+            case error
         }
     }
 
