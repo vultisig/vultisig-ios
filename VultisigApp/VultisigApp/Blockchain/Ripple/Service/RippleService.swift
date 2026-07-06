@@ -64,12 +64,19 @@ enum RippleReserve {
     }
 }
 
+/// Reserve values reported by `server_state`. Fields stay optional so a
+/// partial response still caches, with `RippleReserve` seeding the gaps.
+struct RippleReserveValues {
+    let reserveBase: Int?
+    let reserveInc: Int?
+}
+
 class RippleService {
 
     static let shared = RippleService()
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
-    private let httpClient: HTTPClientProtocol = HTTPClient()
+    private let httpClient: HTTPClientProtocol
 
     /// Resolves the Ripple custom RPC override. Injected so the API values are
     /// built from a dependency rather than a global reach-in; resolution happens
@@ -77,8 +84,28 @@ class RippleService {
     /// live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    /// Last-good `server_state` reserve values. Reserves change only by rare
+    /// validator vote, so a generous TTL is safe; `TTLCache` coalesces
+    /// concurrent refreshes and fails open to the last-good snapshot when a
+    /// refresh throws. Internal (not `private`) together with the key so tests
+    /// can seed stale entries via `setCached`.
+    let reserveValuesCache = TTLCache<String, RippleReserveValues>()
+    private static let reserveValuesTTL: TimeInterval = 60 * 60 * 24
+
+    /// Cache key for the reserve values, scoped to a resolved host: a custom
+    /// RPC override can point at a network with different reserves (e.g. a
+    /// testnet), so a snapshot cached for one endpoint must never be served
+    /// for another after a runtime override change.
+    static func reserveValuesCacheKey(for host: URL) -> String {
+        "xrpl-reserve-values|\(host.absoluteString)"
+    }
+
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
     }
 
     /// The override-aware XRPL host. Falls back to the default host when no
@@ -121,24 +148,60 @@ class RippleService {
 
     func getBalance(address: String) async throws -> String {
         async let accountInfoTask = fetchAccountsInfo(for: address)
-        async let serverStateTask = fetchServerState()
+        async let reserveValuesTask = fetchReserveValues()
 
-        let (accountInfo, serverState) = try await (accountInfoTask, serverStateTask)
+        // Only the account read is fatal — there is no balance without it. The
+        // reserve read has its own live → cache → seed fallback chain, so a
+        // transient `server_state` outage no longer fails the balance refresh
+        // (it only rethrows cancellation).
+        let accountInfo = try await accountInfoTask
+        let reserveValues = try await reserveValuesTask
 
         guard let totalBalanceStr = accountInfo?.result?.accountData?.balance,
               let totalBalance = BigInt(totalBalanceStr) else {
             return "0"
         }
 
-        let validatedLedger = serverState?.result?.state?.validatedLedger
         let availableBalance = RippleReserve.availableDrops(
             totalDrops: totalBalance,
             ownerCount: accountInfo?.result?.accountData?.ownerCount,
-            reserveBase: validatedLedger?.reserveBase,
-            reserveInc: validatedLedger?.reserveInc
+            reserveBase: reserveValues?.reserveBase,
+            reserveInc: reserveValues?.reserveInc
         )
 
         return availableBalance.description
+    }
+
+    /// Resolves the XRPL reserve values: live `server_state` → cached
+    /// last-good snapshot → `nil` (callers fall back to the `RippleReserve`
+    /// seeds). Mirrors the Solana min-delegation chain: the values are
+    /// validation/display inputs, never signing inputs, so serving a stale or
+    /// seeded snapshot is safe while failing the caller is not. The only error
+    /// that escapes is `CancellationError` — the caller is tearing down, and
+    /// a seeded value must not mask the cancel.
+    func fetchReserveValues() async throws -> RippleReserveValues? {
+        // Resolve the host once so the cache key and the fetch always agree —
+        // a custom-RPC change landing between two resolutions must not store
+        // one host's reserves under another host's key.
+        let host = resolvedHost
+        do {
+            return try await reserveValuesCache.value(
+                for: Self.reserveValuesCacheKey(for: host),
+                now: Date(),
+                ttl: Self.reserveValuesTTL
+            ) { [weak self] in
+                guard let self else {
+                    throw HelperError.runtimeError("RippleService deallocated")
+                }
+                let ledger = try await self.fetchServerState(host: host)?.result?.state?.validatedLedger
+                return RippleReserveValues(reserveBase: ledger?.reserveBase, reserveInc: ledger?.reserveInc)
+            }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            logger.warning("fetchReserveValues: no live or cached values, seeding defaults: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     /// Resolves the fee (in drops) for an XRPL Payment.
@@ -163,10 +226,14 @@ class RippleService {
         }
     }
 
-    func fetchServerState() async throws -> RippleServerStateResponse? {
+    /// Fetches `server_state`, optionally pinned to an explicit `host` so a
+    /// caller can keep one request consistent with other host-derived state
+    /// (e.g. the reserve cache key); `nil` resolves the override-aware host
+    /// per request as usual.
+    func fetchServerState(host: URL? = nil) async throws -> RippleServerStateResponse? {
         do {
             let response = try await httpClient.request(
-                api(.serverState),
+                RippleAPI(.serverState, host: host ?? resolvedHost),
                 responseType: RippleServerStateResponse.self
             )
             return response.data
