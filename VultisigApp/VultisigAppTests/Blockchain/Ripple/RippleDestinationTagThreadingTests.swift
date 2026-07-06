@@ -114,6 +114,49 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
 
+    // MARK: - Cosigner display resolution (field-preferred)
+
+    func testDisplayTagPrefersField() {
+        let payload = Self.makeRipplePayload(memo: "111", destinationTagField: 222)
+        XCTAssertEqual(RippleDestinationTag.displayTag(for: payload), 222)
+    }
+
+    func testDisplayTagFallsBackToCanonicalMemo() {
+        let payload = Self.makeRipplePayload(memo: "12345", destinationTagField: nil)
+        XCTAssertEqual(RippleDestinationTag.displayTag(for: payload), 12345)
+    }
+
+    func testDisplayTagNilForTaglessPayload() {
+        XCTAssertNil(RippleDestinationTag.displayTag(for: Self.makeRipplePayload(memo: nil, destinationTagField: nil)))
+    }
+
+    func testDisplayTagNilForNonCanonicalMemoWithoutField() {
+        // A text swap memo (no field) has no destination tag to display.
+        XCTAssertNil(RippleDestinationTag.displayTag(for: Self.makeRipplePayload(memo: "=:ETH.ETH:0x1", destinationTagField: nil)))
+    }
+
+    func testDisplayTagIgnoresZeroField() {
+        // A malformed present-0 field is not a displayable tag (and won't sign).
+        XCTAssertNil(RippleDestinationTag.displayTag(for: Self.makeRipplePayload(memo: nil, destinationTagField: 0)))
+    }
+
+    func testDisplayTagNilForSwapPayloads() {
+        // Swaps are out of scope for the Destination Tag row — the signer
+        // resolves swap tags from the memo with different (lenient) rules, and
+        // swaps keep their existing memo-row display. Neither a field nor a
+        // numeric memo promotes a swap to a tag row, so a displayed tag can
+        // never diverge from the signed one and a routing memo is never hidden.
+        XCTAssertNil(RippleDestinationTag.displayTag(for: Self.makeRipplePayload(memo: "=:ETH.ETH:0x1234:0/1/0", destinationTagField: 999, withSwapPayload: true)))
+        XCTAssertNil(RippleDestinationTag.displayTag(for: Self.makeRipplePayload(memo: "54321", destinationTagField: nil, withSwapPayload: true)))
+    }
+
+    func testDisplayTagZeroFieldDoesNotFallThroughToMemo() {
+        // A present field is terminal (mirrors the signer): a malformed 0 field
+        // is not displayable and must NOT fall back to a memo tag.
+        let payload = Self.makeRipplePayload(memo: "123", destinationTagField: 0)
+        XCTAssertNil(RippleDestinationTag.displayTag(for: payload))
+    }
+
     // MARK: - Proto round-trip (the wire the co-signer receives)
 
     func testDestinationTagSurvivesProtoRoundTrip() throws {

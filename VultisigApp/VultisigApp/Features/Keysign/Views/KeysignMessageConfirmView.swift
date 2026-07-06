@@ -15,6 +15,13 @@ struct KeysignMessageConfirmView: View {
             VStack(spacing: 24) {
                 let fees = viewModel.getCalculatedNetworkFee()
                 let lpDictionary = lpMemoDictionary(for: viewModel.keysignPayload)
+                // XRP destination tag the joiner will actually sign (field-
+                // preferred, else the canonical memo carrier). When present it
+                // owns a labeled row and the memo row is suppressed, so the tag
+                // is never shown as a numeric memo (mirrors the initiator, whose
+                // tag lives in a dedicated field, not the memo).
+                let rippleDestinationTag = viewModel.keysignPayload
+                    .flatMap { RippleDestinationTag.displayTag(for: $0) }
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
                         fromName: viewModel.vault.name,
@@ -22,7 +29,8 @@ struct KeysignMessageConfirmView: View {
                         toAddress: viewModel.keysignPayload?.toAddress ?? .empty,
                         network: viewModel.keysignPayload?.coin.chain.name ?? .empty,
                         networkImage: viewModel.keysignPayload?.coin.chain.logo ?? .empty,
-                        memo: viewModel.memo ?? .empty,
+                        memo: rippleDestinationTag != nil ? .empty : (viewModel.memo ?? .empty),
+                        destinationTag: rippleDestinationTag.map(String.init),
                         decodedFunctionSignature: viewModel.decodedFunctionSignature,
                         decodedFunctionArguments: viewModel.decodedFunctionArguments,
                         memoFunctionDictionary: lpDictionary,

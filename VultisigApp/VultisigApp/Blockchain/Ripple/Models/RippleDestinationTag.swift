@@ -52,6 +52,29 @@ enum RippleDestinationTag {
         }
         return tag
     }
+
+    /// Field-preferred destination tag for DISPLAY on the co-signer/verify
+    /// screen — scoped to plain XRP PAYMENTS, whose tag was previously shown as
+    /// a numeric memo. Non-throwing: yields `nil` (no row) when there's no
+    /// displayable tag. Returns `nil` for non-XRP.
+    ///
+    /// Swaps are intentionally excluded: their memo carries protocol routing
+    /// (THORChain text memo → on-chain Memos blob) or a SwapKit tag, the signer
+    /// resolves them from the memo with different rules, and they keep their
+    /// existing memo-row display unchanged — so a swap never gets a Destination
+    /// Tag row here (no risk of displaying a tag that differs from the signed
+    /// one, or of hiding a routing memo).
+    ///
+    /// A present field is terminal, mirroring the signer: a nonzero field is
+    /// the tag; a malformed 0 field is not displayable (and won't sign), so it
+    /// does NOT fall through to the memo.
+    static func displayTag(for payload: KeysignPayload) -> UInt32? {
+        guard payload.coin.chain == .ripple, payload.swapPayload == nil else { return nil }
+        if case .Ripple(_, _, _, let fieldTag) = payload.chainSpecific, let fieldTag {
+            return fieldTag == 0 ? nil : fieldTag
+        }
+        return payload.memo.flatMap(parseTag)
+    }
 }
 
 /// Typed, user-presentable rejection for XRP payloads whose memo slot
