@@ -74,7 +74,9 @@ struct AppMigrationService {
     /// Returns all registered migrations in order
     private func getAllMigrations() -> [AppMigration] {
         return [
-            THORChainDuplicateTokensMigration()
+            THORChainDuplicateTokensMigration(),
+            TonGramRebrandMigration(),
+            PromoBannerDismissalMigration()
         ]
     }
 }

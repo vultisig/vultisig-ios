@@ -87,7 +87,7 @@ final class QBTCSignDirectCosignByteEqualityTests: XCTestCase {
                 sequence: 123_456,
                 gas: 1,
                 transactionType: 0,
-                ibcDenomTrace: nil
+                ibcDenomTrace: nil, gasLimit: nil
             ),
             utxos: [],
             memo: memo,

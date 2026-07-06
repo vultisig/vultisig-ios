@@ -1,0 +1,138 @@
+//
+//  TronScreen.swift
+//  VultisigApp
+//
+//  Created for TRON Freeze/Unfreeze integration
+//
+
+import SwiftUI
+import BigInt
+
+struct TronScreen: View {
+    let vault: Vault
+
+    @StateObject private var model = TronViewModel()
+
+    var body: some View {
+        content
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .onAppear {
+                Task { await loadData() }
+            }
+    }
+
+    @ViewBuilder
+    var content: some View {
+        if model.missingTrx {
+            TronMissingTrxScreen()
+        } else {
+            Screen {
+                // Show dashboard immediately (cards show their own loading states)
+                TronDashboardView(vault: vault, model: model, onRefresh: { await loadData(forceRefresh: true) })
+            }
+            .screenTitle("tronTitle".localized)
+        }
+    }
+
+    private func loadData(forceRefresh: Bool = false) async {
+        // Check if vault has TRX
+        guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
+            await MainActor.run {
+                model.missingTrx = true
+                model.isLoading = false
+                model.isLoadingBalance = false
+                model.isLoadingResources = false
+            }
+            return
+        }
+
+        let address = trxCoin.address
+        let tronService = TronService.shared
+
+        // Serve fresh-cached data immediately without a spinner. Only show
+        // loading skeletons when the cache is cold/stale or an explicit
+        // refresh was requested.
+        let cachedAccount = forceRefresh ? nil : await tronService.cachedAccount(for: address)
+        let cachedResource = forceRefresh ? nil : await tronService.cachedAccountResource(for: address)
+
+        await MainActor.run {
+            model.missingTrx = false
+            model.error = nil
+            model.isLoading = cachedAccount == nil || cachedResource == nil
+            model.isLoadingBalance = cachedAccount == nil
+            model.isLoadingResources = cachedResource == nil
+        }
+
+        // Persist the frozen/unfreezing balance into `Coin.stakedBalance` so the
+        // DeFi portfolio main screen (which reads the persisted value) stays in
+        // sync with this live detail view instead of diverging.
+        await BalanceService.shared.updateBalance(for: trxCoin)
+
+        // Use structured concurrency for proper cancellation handling
+        await withTaskGroup(of: Void.self) { group in
+            // Task 1: Fetch account info (balance data)
+            group.addTask {
+                do {
+                    let account = try await tronService.getAccount(address: address, forceRefresh: forceRefresh)
+                    await MainActor.run {
+                        // Calculate available balance (in TRX, not SUN)
+                        let balanceSun = account.balance ?? 0
+                        self.model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
+
+                        // Parse frozen balances from frozenV2 array (Stake 2.0)
+                        self.model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
+                        self.model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
+
+                        // Parse unfreezing balance
+                        self.model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
+
+                        // Parse pending withdrawals
+                        self.model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
+                            guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
+                                return nil
+                            }
+                            let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
+                            let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
+                            return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
+                        }.sorted { $0.expirationDate < $1.expirationDate }
+
+                        self.model.isLoadingBalance = false
+                    }
+                } catch {
+                    if !(error is CancellationError) {
+                        await MainActor.run {
+                            self.model.error = error
+                            self.model.isLoadingBalance = false
+                        }
+                    }
+                }
+            }
+
+            // Task 2: Fetch resource info (bandwidth/energy)
+            group.addTask {
+                do {
+                    let resource = try await tronService.getAccountResource(address: address, forceRefresh: forceRefresh)
+                    await MainActor.run {
+                        self.model.availableBandwidth = resource.calculateAvailableBandwidth()
+                        self.model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
+                        self.model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
+                        self.model.totalEnergy = resource.EnergyLimit
+                        self.model.isLoadingResources = false
+                    }
+                } catch {
+                    if !(error is CancellationError) {
+                        await MainActor.run {
+                            self.model.error = error
+                            self.model.isLoadingResources = false
+                        }
+                    }
+                }
+            }
+        }
+
+        // Clear global loading state after task group completes
+        await MainActor.run { model.isLoading = false }
+    }
+}

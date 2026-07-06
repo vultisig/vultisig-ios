@@ -9,6 +9,9 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
+
+private let cardanoLogger = Logger(subsystem: "com.vultisig.app", category: "cardano-helper")
 
 /*
  Cardano UTXO Validation & Send Max Recommendations
@@ -147,10 +150,11 @@ class CardanoHelper {
         return (false, nil)
     }
 
-    /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`
-    /// (default `180_000` lovelace, matches SDK `cardanoDefaultFee`). The
-    /// real fee baked into the body comes from `AnySigner.plan(...)` at sign
-    /// time — this is the user-facing estimate.
+    /// Display fee for the Verify screen. Returns `chainSpecific.byteFee`, which
+    /// the initiator now populates with the real size-based fee
+    /// (`minFeeA*size + minFeeB`, via `estimateDynamicByteFee`). Every co-signer
+    /// forces this exact value into the body, so the displayed fee equals what
+    /// is actually signed.
     static func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
         guard case .Cardano(let byteFee, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
@@ -205,9 +209,21 @@ class CardanoHelper {
             ? UInt64(keysignPayload.toAmount)
             : Self.minLovelaceOnTokenOutput
 
-        // `forceFee` must be set before `AnySigner.plan(...)` — WalletCore's Cardano
-        // `doPlan()` reads it only during planning, so a size-derived fee here would
-        // diverge from the SDK/Windows body and break MPC sighash parity.
+        // CIP-20 memo (label 674). When present, WalletCore commits
+        // blake2b-256(auxDataCbor) into the body at map key 7 and emits the
+        // aux CBOR as element [3] of the signed tx. The encoder is byte-parity
+        // pinned to the SDK golden vector so co-signers agree on the sighash.
+        let auxDataCbor = cip20AuxData(for: keysignPayload)
+
+        // `byteFee` is a SHARED payload constant: the initiator computes a real
+        // size-based fee once (see `CardanoHelper.estimateDynamicByteFee`) and
+        // every co-signing device forces that exact value here. Seeding a
+        // non-zero `forceFee` before `AnySigner.plan(...)` makes WalletCore's
+        // Cardano `doPlan()` honor it verbatim, so `plan.fee == byteFee` and the
+        // body carries the same fee on every device — guaranteeing Blake2b
+        // sighash parity across iOS/Windows/Android regardless of any per-device
+        // planner differences. This matches the SDK resolver, which forces
+        // `byteFee` the same way.
         var input = CardanoSigningInput.with {
             $0.transferMessage = CardanoTransfer.with {
                 $0.toAddress = keysignPayload.toAddress
@@ -220,6 +236,9 @@ class CardanoHelper {
                 }
             }
             $0.ttl = ttl
+            if let auxDataCbor {
+                $0.auxiliaryData = auxDataCbor
+            }
         }
 
         // Add UTXOs to the input. Per-UTXO token data is carried on the wire
@@ -248,6 +267,17 @@ class CardanoHelper {
         }
 
         return input
+    }
+
+    /// Canonical CIP-20 auxiliary-data CBOR (label 674) for the payload memo,
+    /// or `nil` when there is no memo. Both the pre-sign input
+    /// (`CardanoSigningInput.auxiliaryData`) and the hand-built signed envelope
+    /// (element [3]) derive from this single source, so the body's key-7 hash
+    /// and the embedded aux bytes stay consistent — and byte-identical to the
+    /// SDK/Android/Extension co-signers.
+    static func cip20AuxData(for keysignPayload: KeysignPayload) -> Data? {
+        guard let memo = keysignPayload.memo, !memo.isEmpty else { return nil }
+        return CardanoCIP20.buildAuxData(memo: memo).auxDataCbor
     }
 
     /// Encode an unsigned integer as minimal big-endian bytes (matches
@@ -303,8 +333,50 @@ class CardanoHelper {
             throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
         }
         input.plan = plan
+        // Pin the planned fee into the body so the pre-image hash and the compile
+        // phase agree on identical bytes. Because `forceFee` was seeded above with
+        // the shared `byteFee`, `doPlan()` honors it and `plan.fee == byteFee` —
+        // the body carries the fee that every device forces identically.
         input.transferMessage.forceFee = plan.fee
         return try input.serializedData()
+    }
+
+    /// Fallback flat fee used only when the initiator's preliminary plan fails.
+    /// Mirrors the SDK's historical `cardanoDefaultFee`. It underpays bodies
+    /// above ~560 bytes, so it is a last resort — `estimateDynamicByteFee`
+    /// normally returns the real size-based fee.
+    static let fallbackByteFee: BigInt = 180_000
+
+    /// Compute the shared `byteFee` the INITIATOR seeds into the keysign payload.
+    ///
+    /// MPC requires every co-signing device to bake a byte-identical fee into the
+    /// Cardano body, or the Blake2b sighash diverges and signing fails. We make
+    /// the fee a single shared constant: the initiator runs a preliminary plan
+    /// over the selected UTXOs/outputs WITHOUT forcing the fee, lets WalletCore
+    /// derive the real size-based fee (`minFeeA*size + minFeeB`), and stores that
+    /// into `chainSpecific.byteFee`. Every co-signer (iOS/SDK/Windows/Android)
+    /// then forces that exact value, so the body fee is identical everywhere.
+    ///
+    /// A flat fee underpays any body above ~560 bytes (CNT / multi-input /
+    /// metadata sends), which the network rejects with `FeeTooSmallUTxO`; a
+    /// size-derived fee fixes that. If planning fails we fall back to the flat
+    /// `fallbackByteFee` (logged) rather than crashing the send flow.
+    static func estimateDynamicByteFee(keysignPayload: KeysignPayload) -> BigInt {
+        do {
+            let input = try getPreSignedInputData(keysignPayload: keysignPayload)
+            // Drop any seeded fee so the planner derives a size-based one.
+            var unforced = input
+            unforced.transferMessage.forceFee = 0
+            let plan: CardanoTransactionPlan = AnySigner.plan(input: unforced, coin: .cardano)
+            guard plan.error == .ok, plan.fee > 0 else {
+                cardanoLogger.warning("Cardano fee plan failed (error: \(String(describing: plan.error)), fee: \(plan.fee)); falling back to flat \(fallbackByteFee) lovelace")
+                return fallbackByteFee
+            }
+            return BigInt(plan.fee)
+        } catch {
+            cardanoLogger.warning("Cardano fee estimation threw (\(error.localizedDescription)); falling back to flat \(fallbackByteFee) lovelace")
+            return fallbackByteFee
+        }
     }
 
     static func getSignedTransaction(vaultHexPubKey: String,
@@ -334,10 +406,17 @@ class CardanoHelper {
         // builds (AddressV2::isValid). Build the signed CBOR envelope by hand
         // from the pre-image body bytes — see CardanoSignedTxBuilder. The body
         // is embedded verbatim; the signature covers Blake2b of those bytes.
+        // When a CIP-20 memo is present, the pre-image body already carries the
+        // aux hash at key 7 (WalletCore committed it from `auxiliaryData`); we
+        // embed the same aux CBOR as element [3]. The body, witness, and aux
+        // bytes match AnySigner's native output; the envelope framing follows
+        // the SDK/mainnet-verified 4-element `[body, witness, is_valid, aux]`
+        // format (AnySigner uses the 3-element Shelley form — same txid).
         let signedTx = try CardanoSignedTxBuilder.build(
             txBody: preSigningOutput.data,
             publicKey: spendingKeyData,
-            signature: signature
+            signature: signature,
+            auxData: cip20AuxData(for: keysignPayload)
         )
 
         // Cardano txId IS Blake2b-256 of the body, which is exactly the

@@ -63,7 +63,7 @@ struct PhoneCheckUpdateView: View {
     var checkUpdateLabel: some View {
         Text(NSLocalizedString("checkingForUpdate", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var tryAgainButton: some View {

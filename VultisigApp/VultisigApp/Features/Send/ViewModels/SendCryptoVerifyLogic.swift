@@ -82,7 +82,7 @@ struct SendCryptoVerifyLogic {
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
-        // The balance is already validated in TronFreezeView/TronUnfreezeView
+        // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
         let isTronStaking = tx.coin.chain == .tron && tx.isStakingOperation
 
@@ -99,6 +99,23 @@ struct SendCryptoVerifyLogic {
                 if totalAmount > balance {
                     return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
                 }
+            }
+
+            // Existential-deposit guard for chains that reap the *sender*
+            // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
+            // after the ceremony if the send would drop the sender below ED.
+            if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
+                return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
+            }
+
+            // Protocol minimum send floor (e.g. Cardano's ~1.4 ADA UTXO): a
+            // native send below it is silently dropped by the node. Mirror the
+            // Details-screen guard so the ceremony never starts on an amount the
+            // node rejects.
+            if SendCryptoLogic.isBelowMinimumSendAmount(coin: tx.coin, amount: tx.amount),
+               let minimum = tx.coin.chain.minimumSendAmount {
+                let minAmount = tx.coin.decimal(for: minimum).description
+                return BalanceValidationResult(isValid: false, errorMessage: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
             }
         } else if tx.coin.chain == .terraClassic
                     && TerraClassicTax.isBankDenom(
@@ -182,6 +199,23 @@ struct SendCryptoVerifyLogic {
                     chainSpecific: chainSpecific
                 )
                 return basePayload.withSignData(.signDirect(signDirect))
+            }
+
+            // Solana native-staking branch — the per-flow builder produced a
+            // `solanaStakingPayload`. Build the unsigned delegate transaction
+            // once (pinning the recent blockhash + derived stake-account
+            // address) and relay it via `signData = .signSolana`. The local-only
+            // `solanaStakingPayload` is also attached so the verify summary and
+            // the initiator's helper have the intent, but byte parity rides the
+            // relayed raw bytes — peer devices sign those without the payload.
+            if let solanaStakingPayload = tx.solanaStakingPayload {
+                let payloadWithStaking = basePayload.withSolanaStakingPayload(solanaStakingPayload)
+                let signSolana = try await SolanaStakingVerifyResolver.resolve(
+                    payload: solanaStakingPayload,
+                    basePayload: payloadWithStaking,
+                    coin: tx.coin
+                )
+                return payloadWithStaking.withSignData(.signSolana(signSolana))
             }
 
             return basePayload

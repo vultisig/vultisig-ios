@@ -7,31 +7,32 @@
 
 import Foundation
 
-/// Subscan API response for /api/scan/extrinsic
+/// JSON-RPC response for `chain_getBlock`.
+///
+/// `result.block` carries the signed block: `extrinsics` is the list of
+/// hex-encoded extrinsics in the block (each blake2b-256 hashed to match a tx
+/// hash), and `header.parentHash` links to the previous block so the status
+/// provider can walk the chain backwards. `error` is populated when the node
+/// rejects the call.
 struct PolkadotTransactionStatusResponse: Codable {
-    let code: Int  // 0 = success, non-zero = error
-    let message: String  // "Success" or error message
-    let data: PolkadotExtrinsicData?
+    let result: PolkadotBlockResult?
+    let error: PolkadotRPCError?
 
-    struct PolkadotExtrinsicData: Codable {
-        let extrinsic_hash: String?
-        let success: Bool  // true = successful, false = failed (only meaningful when pending = false)
-        let block_num: Int?  // Block number
-        let block_timestamp: Int?  // Unix timestamp
-        let call_module: String?  // e.g., "balances"
-        let call_module_function: String?  // e.g., "transfer"
-        let account_id: String?  // Sender address
-        let signature: String?
-        let nonce: Int?
-        let finalized: Bool?  // Whether the transaction is finalized
-        let pending: Bool?  // IMPORTANT: true = still being processed, false = completed
-        let error: PolkadotExtrinsicError?  // Present when success = false
-        let fee: String?
+    struct PolkadotBlockResult: Codable {
+        let block: PolkadotBlock
     }
 
-    struct PolkadotExtrinsicError: Codable {
-        let module: String?
-        let name: String?
-        let doc: [String]?  // Error description
+    struct PolkadotBlock: Codable {
+        let header: PolkadotBlockHeader
+        let extrinsics: [String]
+    }
+
+    struct PolkadotBlockHeader: Codable {
+        let parentHash: String
+    }
+
+    struct PolkadotRPCError: Codable {
+        let code: Int
+        let message: String
     }
 }

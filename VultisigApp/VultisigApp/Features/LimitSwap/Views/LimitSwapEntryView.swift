@@ -292,7 +292,8 @@ struct LimitSwapEntryView: View {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: limitFromCoin,
-            limitContext: record
+            limitContext: record,
+            advancedSettings: .default
         )
 
         router.navigate(to: SwapRoute.verify(

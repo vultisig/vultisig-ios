@@ -124,6 +124,16 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
+    func buildCustomRPCScreen(vault _: Vault) -> some View {
+        CustomRPCSelectChainScreen()
+    }
+
+    @ViewBuilder
+    func buildCustomRPCDetailScreen(chain: Chain) -> some View {
+        CustomRPCDetailScreen(chain: chain)
+    }
+
+    @ViewBuilder
     func buildOnChainSecurityScreen() -> some View {
         OnChainSecurityScreen()
     }

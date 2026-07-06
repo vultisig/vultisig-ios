@@ -20,6 +20,10 @@ protocol TransactionBuilder {
     /// the per-flow Cosmos staking builders (delegate, undelegate, redelegate,
     /// withdrawRewards); every other builder uses the default `nil`.
     var cosmosStakingPayload: CosmosStakingPayload? { get }
+    /// Solana native-staking operation intent. Populated only by the Solana
+    /// staking builders (delegate today); every other builder uses the default
+    /// `nil`.
+    var solanaStakingPayload: SolanaStakingPayload? { get }
 }
 
 extension TransactionBuilder {
@@ -27,6 +31,9 @@ extension TransactionBuilder {
     /// requirement defaulted means every existing `TransactionBuilder`
     /// conformer compiles unchanged.
     var cosmosStakingPayload: CosmosStakingPayload? { nil }
+
+    /// Default — only Solana staking builders override this.
+    var solanaStakingPayload: SolanaStakingPayload? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly. `gas` /
     /// `fee` and runtime-only fields default to the construction-time
@@ -49,12 +56,13 @@ extension TransactionBuilder {
             customGasLimit: nil,
             customByteFee: nil,
             sendMaxAmount: sendMaxAmount,
-            isStakingOperation: cosmosStakingPayload != nil,
+            isStakingOperation: cosmosStakingPayload != nil || solanaStakingPayload != nil,
             transactionType: transactionType,
             memoFunctionDictionary: memoFunctionDictionary.allItems(),
             wasmContractPayload: wasmContractPayload,
             feeCoin: SendTransaction.resolveFeeCoin(coin: coin, vault: vault),
-            cosmosStakingPayload: cosmosStakingPayload
+            cosmosStakingPayload: cosmosStakingPayload,
+            solanaStakingPayload: solanaStakingPayload
         )
     }
 }

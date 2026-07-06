@@ -17,8 +17,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          leave,
          custom,
          vote,
-         stake,
-         unstake,
          cosmosIBC,
          merge,
          unmerge,
@@ -43,10 +41,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Custom", comment: "")
         case .vote:
             return NSLocalizedString("Vote", comment: "")
-        case .stake:
-            return NSLocalizedString("Stake", comment: "")
-        case .unstake:
-            return NSLocalizedString("Unstake", comment: "")
         case .cosmosIBC:
             return NSLocalizedString("IBC Transfer", comment: "")
         case .merge:
@@ -89,11 +83,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                     .custom]
         case .dydx:
             return [.vote]
-        case .ton:
-            return [
-                .stake,
-                .unstake
-            ]
         case .gaiaChain:
             return [
                 .cosmosIBC,
@@ -124,8 +113,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .bondMaya
         case .dydx:
             return .vote
-        case .ton:
-            return .stake
         case .gaiaChain:
             return .theSwitch
         case .kujira:

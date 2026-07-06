@@ -47,7 +47,7 @@ struct ReferredCodeFormScreen: View {
                 textField
             }
         }
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var textField: some View {

@@ -36,4 +36,15 @@ struct HeroCoinAmount: Hashable {
     let amount: String
     let ticker: String
     let logo: String
+    /// Pre-formatted fiat value of `amount` (e.g. "$12.34"), rendered as a
+    /// sub-line under the amount. `nil` when no price is resolvable, or for
+    /// callers that intentionally omit fiat.
+    let fiat: String?
+
+    init(amount: String, ticker: String, logo: String, fiat: String? = nil) {
+        self.amount = amount
+        self.ticker = ticker
+        self.logo = logo
+        self.fiat = fiat
+    }
 }

@@ -26,6 +26,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
+    @Published var isApproveCorrect = false
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
@@ -45,6 +46,30 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// summary shows the real amount and recipient. Re-deriving from the USDC
     /// `transaction` would instead sign `transfer(MSCA, 0)` — a no-op.
     private let prebuiltKeysignPayload: KeysignPayload?
+
+    /// Exposes the pre-built payload to the verify summary so it can surface
+    /// payload-only context the display `transaction` doesn't carry — e.g. the
+    /// decoded sign-data (signDirect/signAmino/signSolana/…) detail rows.
+    var verifyKeysignPayload: KeysignPayload? { prebuiltKeysignPayload }
+
+    /// Whether the pre-built payload bundles an ERC-20 `approve` that will be
+    /// signed and broadcast before the main transaction (a first-time
+    /// allowance-gated deposit). Drives the extra confirmation checkbox on the verify screen,
+    /// mirroring the swap approve flow.
+    var isApproveRequired: Bool { prebuiltKeysignPayload?.approvePayload != nil }
+
+    /// Fiat value of the send amount for the verify header — the same price
+    /// source and empty-on-edge-case semantics as the co-sign summary
+    /// (`CryptoAmountFormatter.amountInFiat`): empty for a zero amount or when
+    /// no rate is available, never a misleading "$0.00". Derived live from the
+    /// coin's current rate rather than the Details screen's `amountInFiat`
+    /// input text, which is unformatted (no currency symbol), truncated typing
+    /// state. Independent of the fee calculation, so it stays visible while
+    /// `isCalculatingFee` blurs the fee row; a max-send amount adjustment
+    /// republishes `transaction` and recomputes this along with it.
+    var amountFiat: String {
+        CryptoAmountFormatter.amountInFiat(coin: transaction.coin, amount: transaction.amountDecimal)
+    }
 
     init(
         transaction: SendTransaction,
@@ -85,7 +110,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
             if transaction.sendMaxAmount && transaction.coin.isNativeToken {
                 let balance = transaction.coin.rawBalance.toBigInt(decimals: transaction.coin.decimals)
-                let candidate = balance - feeResult.fee
+                // Reserve the existential deposit so a DOT max-send settles at
+                // `balance − fee − ED`; `transfer_keep_alive` rejects a transfer
+                // that would reap the sender. Zero for non-ED chains (incl. TAO).
+                let existentialDeposit = SendCryptoLogic.existentialDeposit(for: transaction.coin)
+                let candidate = balance - feeResult.fee - existentialDeposit
                 if candidate > 0 {
                     let decimals = transaction.coin.decimals
                     let amountDecimal = Decimal(string: String(candidate)) ?? 0
@@ -134,6 +163,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var isValidForm: Bool {
+        if isApproveRequired {
+            return isAddressCorrect && isAmountCorrect && isApproveCorrect
+        }
         return isAddressCorrect && isAmountCorrect
     }
 

@@ -173,9 +173,15 @@ struct SwapDoneSummaryCard: View {
             if let transaction = fields.transaction {
                 if transaction.showTotalFees {
                     separator
-                    totalFees(transaction)
+                    if transaction.hasFeeBreakdown {
+                        totalFees(transaction)
+                        otherFees(transaction, expanded: showFees)
+                    } else {
+                        getCell(title: "totalFee", value: transaction.totalFeeString)
+                    }
+                } else {
+                    otherFees(transaction, expanded: true)
                 }
-                otherFees(transaction, expanded: transaction.showTotalFees ? showFees : true)
             } else if let networkFee = fields.cosignerNetworkFee {
                 separator
                 getCell(title: "networkFee", value: networkFee)
@@ -198,7 +204,9 @@ struct SwapDoneSummaryCard: View {
 
     private func totalFees(_ transaction: SwapTransaction) -> some View {
         Button {
-            showFees.toggle()
+            withAnimation(.easeInOut) {
+                showFees.toggle()
+            }
         } label: {
             HStack {
                 getCell(title: "totalFee", value: transaction.totalFeeString)
@@ -219,10 +227,12 @@ struct SwapDoneSummaryCard: View {
             Rectangle()
                 .frame(width: 1)
                 .foregroundStyle(Theme.colors.primaryAccent4)
+                .padding(.bottom, 16)
             expandableFees(transaction)
         }
         .frame(maxHeight: expanded ? nil : 0)
         .clipped()
+        .animation(.easeInOut, value: showFees)
     }
 
     private func expandableFees(_ transaction: SwapTransaction) -> some View {

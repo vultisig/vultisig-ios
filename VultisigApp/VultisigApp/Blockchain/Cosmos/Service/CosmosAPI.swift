@@ -20,7 +20,9 @@ struct CosmosAPI: TargetType {
         case spendableBalance(address: String)
         case accountNumber(address: String)
         case broadcastTransaction(body: Data)
+        case simulate(body: Data)
         case wasmTokenBalance(contractAddress: String, base64Payload: String)
+        case wasmTokenInfo(contractAddress: String)
         case ibcDenomTrace(hash: String)
         case denomMetadata(denom: String)
         case allDenomsMetadata
@@ -38,12 +40,15 @@ struct CosmosAPI: TargetType {
             return "/cosmos/auth/v1beta1/accounts/\(address)"
         case .broadcastTransaction:
             return "/cosmos/tx/v1beta1/txs"
+        case .simulate:
+            return "/cosmos/tx/v1beta1/simulate"
         case .wasmTokenBalance(let contractAddress, let base64Payload):
-            // Base64 can include `/` and `=`, which the URL parser would
-            // otherwise treat as path separators / query delimiters.
-            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-            let encodedPayload = base64Payload.addingPercentEncoding(withAllowedCharacters: allowed) ?? base64Payload
-            return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
+            return Self.wasmSmartQueryPath(contractAddress: contractAddress, base64Payload: base64Payload)
+        case .wasmTokenInfo(let contractAddress):
+            // CW20 metadata query. The payload is the constant `{"token_info":{}}`
+            // smart query, matching the SDK's `getCw20MetaFromLCD`.
+            let base64Payload = Data("{\"token_info\":{}}".utf8).base64EncodedString()
+            return Self.wasmSmartQueryPath(contractAddress: contractAddress, base64Payload: base64Payload)
         case .ibcDenomTrace(let hash):
             return "/ibc/apps/transfer/v1/denom_traces/\(hash)"
         case .denomMetadata(let denom):
@@ -67,7 +72,7 @@ struct CosmosAPI: TargetType {
 
     var method: HTTPMethod {
         switch endpoint {
-        case .broadcastTransaction:
+        case .broadcastTransaction, .simulate:
             return .post
         default:
             return .get
@@ -80,6 +85,10 @@ struct CosmosAPI: TargetType {
             // Signed Cosmos transactions arrive pre-serialized from the
             // keysign layer; pass the bytes through unchanged.
             return .requestData(body)
+        case .simulate(let body):
+            // `{"tx_bytes":"<base64 TxRaw>"}` — the unsigned tx carries a dummy
+            // signature; the node skips sig verification in simulate mode.
+            return .requestData(body)
         case .allDenomsMetadata:
             // Mirrors the SDK fallback list-fetch URL:
             // `?pagination.limit=1000`. The 1000 cap matches the SDK and is
@@ -89,6 +98,15 @@ struct CosmosAPI: TargetType {
         default:
             return .requestPlain
         }
+    }
+
+    /// Builds the `/cosmwasm/.../smart/{payload}` path for a wasm smart query.
+    /// Base64 can include `/` and `=`, which the URL parser would otherwise
+    /// treat as path separators / query delimiters, so `/` is percent-encoded.
+    private static func wasmSmartQueryPath(contractAddress: String, base64Payload: String) -> String {
+        let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        let encodedPayload = base64Payload.addingPercentEncoding(withAllowedCharacters: allowed) ?? base64Payload
+        return "/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(encodedPayload)"
     }
 }
 
@@ -111,6 +129,40 @@ struct CosmosWasmTokenBalanceResponse: Decodable {
 
     struct BalanceData: Decodable {
         let balance: String
+    }
+}
+
+/// Response for a CW20 `{"token_info":{}}` smart query. The CW20 spec
+/// mandates all three fields, but they are decoded as optionals so a
+/// contract that answers the query with a partial/non-standard blob is
+/// treated as "not a CW20 token" instead of failing decode.
+struct CosmosCw20TokenInfoResponse: Decodable {
+    let data: TokenInfo
+
+    struct TokenInfo: Decodable {
+        let name: String?
+        let symbol: String?
+        let decimals: Int?
+    }
+}
+
+/// Response for `/cosmos/tx/v1beta1/simulate`. We only consume
+/// `gas_info.gas_used` (a decimal string, e.g. `"95231"`) — the amount of gas
+/// the node actually consumed running the tx, which the initiator scales by a
+/// safety multiplier to derive the relayed gas limit.
+struct CosmosSimulateResponse: Decodable {
+    let gasInfo: GasInfo
+
+    struct GasInfo: Decodable {
+        let gasUsed: String
+
+        enum CodingKeys: String, CodingKey {
+            case gasUsed = "gas_used"
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case gasInfo = "gas_info"
     }
 }
 

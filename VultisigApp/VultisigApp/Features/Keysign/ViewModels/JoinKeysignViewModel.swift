@@ -53,6 +53,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var keysignCommittee = [String]()
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
+    @Published var isJoiningCommittee = false
     @Published var keysignPayload: KeysignPayload? = nil
     /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
@@ -73,6 +74,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedTokenAmount: String?
     @Published var decodedTokenTicker: String?
     @Published var decodedTokenLogo: String?
+    @Published var decodedTokenFiat: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
@@ -128,6 +130,8 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func joinKeysignCommittee() {
+        guard !isJoiningCommittee else { return }
+
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
         }
@@ -135,6 +139,7 @@ class JoinKeysignViewModel: ObservableObject {
             return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
 
+        isJoiningCommittee = true
         Utils.sendRequest(
             urlString: "\(serverURL)/\(sessionID)",
             method: "POST",
@@ -142,11 +147,12 @@ class JoinKeysignViewModel: ObservableObject {
             body: [localPartyID]
         ) { success in
             DispatchQueue.main.async {
+                self.isJoiningCommittee = false
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
                 } else {
-                    self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
+                    self.errorMsg = "joinKeysignCommitteeFailed".localized
                     self.status = .FailedToStart
                 }
             }
@@ -204,7 +210,7 @@ class JoinKeysignViewModel: ObservableObject {
                             self.logger.info("Keysign process has started successfully.")
                         }
                     } catch {
-                        self.errorMsg = "There was an issue processing the keysign start response. Please try again."
+                        self.errorMsg = "keysignStartResponseError".localized
                         self.status = .FailedToStart
                     }
                 }
@@ -214,7 +220,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.logger.info("Waiting for keysign to start. Please stand by.")
                 } else {
                     DispatchQueue.main.async {
-                        self.errorMsg = "Failed to verify keysign start. Error: \(error.localizedDescription)"
+                        self.errorMsg = String(format: "keysignStartVerifyFailed".localized, error.localizedDescription)
                         self.status = .FailedToStart
                     }
                 }
@@ -248,11 +254,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
-                self.errorMsg = "There is no messages to be signed"
+                self.errorMsg = "noMessagesToSign".localized
                 self.status = .FailedToStart
             }
         } catch {
-            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(error.localizedDescription)"
+            self.errorMsg = String(format: "prepareKeysignMessagesFailed".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -360,7 +366,7 @@ class JoinKeysignViewModel: ObservableObject {
                 Task { await driver.run() }
             }
         } catch {
-            self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeKeysignMessageError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -413,7 +419,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.keysignPayload = kp
             await self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
-            self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeKeysignMessageError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -433,7 +439,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.customMessagePayload = cmp
             self.prepareKeysignMessages(customMessagePayload: cmp)
         } catch {
-            self.errorMsg = "Error decoding custom message payload: \(error.localizedDescription)"
+            self.errorMsg = String(format: "decodeCustomMessagePayloadError".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
     }
@@ -475,6 +481,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.decodedTokenAmount = display?.amountText
             self.decodedTokenTicker = display?.ticker
             self.decodedTokenLogo = display?.logo
+            self.decodedTokenFiat = display?.fiat
             self.decodedTokenIsUnlimited = false
             return
         }
@@ -658,31 +665,7 @@ class JoinKeysignViewModel: ObservableObject {
     /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            switch sim {
-            case .transfer(let coin, _):
-                return .send(
-                    title: decodedFunctionName,
-                    coin: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: coin.ticker,
-                        logo: coin.logo
-                    )
-                )
-            case .swap(let from, let to, _, _):
-                return .swap(
-                    title: decodedFunctionName,
-                    from: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: from.ticker,
-                        logo: from.logo
-                    ),
-                    to: HeroCoinAmount(
-                        amount: sim.heroToAmountText ?? "",
-                        ticker: to.ticker,
-                        logo: to.logo
-                    )
-                )
-            }
+            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
         }
 
         // TON-side fallback: when the BOC decoder resolved a jetton hero we
@@ -693,7 +676,7 @@ class JoinKeysignViewModel: ObservableObject {
            !amount.isEmpty {
             return .send(
                 title: decodedFunctionName,
-                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo)
+                coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo, fiat: decodedTokenFiat)
             )
         }
 
@@ -751,6 +734,22 @@ class JoinKeysignViewModel: ObservableObject {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let fiatDecimal = payload.toCoin.fiat(decimal: payload.toAmountDecimal)
         return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    /// Fiat value of a plain send amount for the verify header, mirroring the
+    /// swap `getFromFiatAmount()` via the shared
+    /// `CryptoAmountFormatter.amountInFiat` (same `RateProvider` price source
+    /// as the fee, empty for zero-value sends or no rate). Additionally empty
+    /// for swaps (fiat is carried on the hero from/to rows) and for
+    /// contract-call / approval decodes (the amount row shows a decoded
+    /// token, not a coin transfer) — so nothing misleading renders.
+    func getAmountFiat() -> String {
+        guard let payload = keysignPayload,
+              payload.swapPayload == nil,
+              decodedTokenDisplay == nil else {
+            return .empty
+        }
+        return CryptoAmountFormatter.amountInFiat(coin: payload.coin, amount: payload.toAmountDecimal)
     }
 
 }

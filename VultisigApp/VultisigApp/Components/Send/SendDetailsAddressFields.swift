@@ -24,7 +24,7 @@ struct SendDetailsAddressFields: View {
         VStack(spacing: 12) {
             Text("from".localized)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             fromDetailsField
         }
@@ -34,11 +34,11 @@ struct SendDetailsAddressFields: View {
         VStack(alignment: .leading, spacing: 2) {
             if let vaultName = appViewModel.selectedVault?.name {
                 Text(vaultName)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
 
             Text(viewModel.fromAddress)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }

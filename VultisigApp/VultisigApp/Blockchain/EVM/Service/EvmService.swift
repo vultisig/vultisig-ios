@@ -188,8 +188,26 @@ enum EvmService {
         return try await (try service).fetchERC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
     }
 
+    func fetchERC20Balances(
+        contractAddresses: [String],
+        walletAddress: String,
+        multicall3Address: String,
+        includeNative: Bool
+    ) async throws -> (native: BigInt?, balances: [String: BigInt]) {
+        return try await (try service).fetchERC20Balances(
+            contractAddresses: contractAddresses,
+            walletAddress: walletAddress,
+            multicall3Address: multicall3Address,
+            includeNative: includeNative
+        )
+    }
+
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         return try await (try service).fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
+    }
+
+    func callContract(to: String, data: String) async throws -> String {
+        return try await (try service).callContract(to: to, data: data)
     }
 
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {

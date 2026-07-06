@@ -28,6 +28,7 @@ struct SwapCoinPickerView: View {
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var searchBarFocused: Bool = false
+    @State private var reloadTask: Task<Void, Never>?
 
     var showSelectChainHeader: Bool {
         #if os(macOS)
@@ -104,13 +105,18 @@ struct SwapCoinPickerView: View {
             // so the carousel never lands on an unselectable highlight.
             // The `onChange(of: selectedChain)` handler triggers
             // `reloadCoins()` automatically when the assignment lands, so
-            // we skip the redundant call here in that branch.
+            // we skip the redundant call here in that branch (the reseeded
+            // chain loads from cache; the limit picker's curated THORChain
+            // set doesn't depend on the SwapKit catalog refresh below).
             if let chainFilter,
                let current = selectedChain,
                !chainFilter(current) {
                 selectedChain = availableChains.first
             } else {
-                reloadCoins()
+                // First open per presentation forces a SwapKit catalog refresh so a
+                // stale token list (or one that missed the cold-launch fetch) is
+                // re-fetched. In-session chain re-selects stay on cached data.
+                reloadCoins(forceRefresh: true)
             }
         }
         .onChange(of: selectedChain) { _, _ in
@@ -135,7 +141,7 @@ struct SwapCoinPickerView: View {
 
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
@@ -212,7 +218,7 @@ struct SwapCoinPickerView: View {
                             .frame(height: 28)
                         Text(chain.name)
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                            .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
                             .fixedSize(horizontal: true, vertical: false)
                             .minimumScaleFactor(0.5)
                     }
@@ -248,10 +254,13 @@ struct SwapCoinPickerView: View {
         return base.filter(chainFilter)
     }
 
-    private func reloadCoins() {
-        Task {
+    private func reloadCoins(forceRefresh: Bool = false) {
+        // Cancel any in-flight load so a fast chain-switch superseding a cold
+        // fetch can't publish results for the wrong chain.
+        reloadTask?.cancel()
+        reloadTask = Task {
             guard let selectedChain else { return }
-            await viewModel.fetchCoins(chain: selectedChain)
+            await viewModel.fetchCoins(chain: selectedChain, forceRefresh: forceRefresh)
         }
     }
 

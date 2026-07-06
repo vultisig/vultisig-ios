@@ -56,7 +56,7 @@ struct SendDetailsAmountTextField: View {
     var selectorOvelay: some View {
         Circle()
             .frame(width: 32, height: 32)
-            .foregroundColor(Theme.colors.bgButtonTertiary)
+            .foregroundStyle(Theme.colors.bgButtonTertiary)
             .offset(y: isCryptoSelected ? -16 : 16)
     }
 
@@ -141,20 +141,20 @@ struct SendDetailsAmountTextField: View {
     private func getUnit(for unit: String) -> some View {
         Text(unit)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     private func getDescriptionText(for value: String) -> some View {
         Text(value)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
             .padding(.top, 8)
     }
 
     private func getSelector(for icon: String) -> some View {
         Image(systemName: icon)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .frame(width: 32, height: 32)
     }
 }

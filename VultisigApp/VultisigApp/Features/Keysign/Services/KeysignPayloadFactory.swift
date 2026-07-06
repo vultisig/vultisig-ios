@@ -41,6 +41,9 @@ struct KeysignPayloadFactory {
     ) async throws -> KeysignPayload {
 
         var utxos: [UtxoInfo] = []
+        // Mutable so Cardano can replace the placeholder `byteFee` with the real
+        // size-based fee once UTXOs are selected (see below).
+        var resolvedChainSpecific = chainSpecific
 
         switch chainSpecific {
         case .UTXO, .Cardano:
@@ -70,6 +73,27 @@ struct KeysignPayloadFactory {
             // Select appropriate UTXO selection method based on chain
             if coin.chain == .cardano {
                 utxos = try await selectCardanoUTXOs(keysignPayload: payload)
+                // As the initiator, compute the real size-based fee ONCE over the
+                // selected UTXOs/outputs and bake it into `byteFee`. This fee is a
+                // shared payload constant that every co-signing device forces
+                // identically, guaranteeing byte-identical Cardano body bytes (and
+                // thus Blake2b sighash parity) across iOS/SDK/Windows/Android. The
+                // upstream `fetchSpecific` seeds `byteFee` with a flat placeholder
+                // because UTXOs aren't selected yet; we replace it here.
+                if case .Cardano(_, let sendMaxAmount, let ttl) = chainSpecific {
+                    let feedPayload = makeCardanoFeePayload(
+                        coin: coin,
+                        toAddress: toAddress,
+                        amount: amount,
+                        memo: memo,
+                        ttl: ttl,
+                        sendMaxAmount: sendMaxAmount,
+                        utxos: utxos,
+                        vault: vault
+                    )
+                    let dynamicFee = CardanoHelper.estimateDynamicByteFee(keysignPayload: feedPayload)
+                    resolvedChainSpecific = .Cardano(byteFee: dynamicFee, sendMaxAmount: sendMaxAmount, ttl: ttl)
+                }
             } else {
                 utxos = try await selectUTXOs(keysignPayload: payload)
             }
@@ -83,7 +107,7 @@ struct KeysignPayloadFactory {
             coin: coin,
             toAddress: toAddress,
             toAmount: amount,
-            chainSpecific: chainSpecific,
+            chainSpecific: resolvedChainSpecific,
             utxos: utxos,
             memo: memo,
             swapPayload: swapPayload,
@@ -92,6 +116,47 @@ struct KeysignPayloadFactory {
             vaultLocalPartyID: vault.localPartyID,
             libType: (vault.libType ?? .GG20).toString(),
             wasmExecuteContractPayload: wasmExecuteContractPayload,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+    }
+
+    /// Build a transient payload carrying the selected Cardano UTXOs, used only
+    /// to run the initiator's preliminary fee plan (`estimateDynamicByteFee`).
+    /// `byteFee` is left at 0 so the planner derives a size-based fee. The memo
+    /// must be carried through: a CIP-20 memo grows the signed tx (aux-hash
+    /// entry in the body plus the aux CBOR in the envelope), and a fee planned
+    /// without it is below the network minimum for the tx that actually gets
+    /// signed — the node rejects the broadcast with `FeeTooSmallUTxO`.
+    /// Internal (not private) so the fee tests can pin this behavior.
+    func makeCardanoFeePayload(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        ttl: UInt64,
+        sendMaxAmount: Bool,
+        utxos: [UtxoInfo],
+        vault: Vault
+    ) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: amount,
+            chainSpecific: .Cardano(byteFee: 0, sendMaxAmount: sendMaxAmount, ttl: ttl),
+            utxos: utxos,
+            memo: memo,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
+            vaultLocalPartyID: vault.localPartyID,
+            libType: (vault.libType ?? .GG20).toString(),
+            wasmExecuteContractPayload: nil,
             tronTransferContractPayload: nil,
             tronTriggerSmartContractPayload: nil,
             tronTransferAssetContractPayload: nil,

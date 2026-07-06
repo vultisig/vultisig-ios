@@ -59,10 +59,12 @@ func buildLimitSwapKeysignPayload(
         // Fetch THORChain inbound vault address. Filter halted / paused chains.
         let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
         guard let inbound = inbounds.first(where: { entry in
+            // Missing pause flags read as "not paused" — same convention as
+            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
             entry.chain.uppercased() == chainSymbol.uppercased()
             && !entry.halted
-            && !entry.global_trading_paused
-            && !entry.chain_trading_paused
+            && !(entry.global_trading_paused ?? false)
+            && !(entry.chain_trading_paused ?? false)
         }) else {
             throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
         }

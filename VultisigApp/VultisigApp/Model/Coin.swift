@@ -140,6 +140,24 @@ class Coin: ObservableObject, Codable, Hashable {
         return balanceInFiatDecimal.formatToFiat()
     }
 
+    /// Whether a fiat rate is currently cached for this coin's display currency.
+    /// Warm starts always have rates (persisted in `RateProvider`); only a
+    /// first-ever cold start briefly lacks one until the first fetch returns.
+    var fiatRateAvailable: Bool {
+        RateProvider.shared.hasRate(for: self)
+    }
+
+    /// Fiat balance for display. Returns a placeholder instead of "$0.00" when the
+    /// crypto balance is non-zero but no rate has loaded yet, suppressing the
+    /// misleading zero-fiat frame on a cold start. Once a rate lands the real fiat
+    /// value renders.
+    var balanceInFiatForDisplay: String {
+        if balanceDecimal > 0 && !fiatRateAvailable {
+            return String.fiatPlaceholder
+        }
+        return balanceInFiat
+    }
+
     var chainType: ChainType {
         chain.type
     }
@@ -185,11 +203,15 @@ class Coin: ObservableObject, Codable, Hashable {
                 return "120000"
             }
         case .mantle:
-            // Mantle requires much higher gas limits
+            // Matches the Ethereum defaults: this is only the floor/fallback for
+            // a transfer when the real eth_estimateGas can't run. The earlier
+            // 250M value over-floored every send and blew up the displayed fee
+            // (Mantle native transfers estimate at ~21k). Swaps size gas via the
+            // separate defaultMantleSwapLimit, not this.
             if self.isNativeToken {
-                return "250000000"  // 250M gas
+                return "23000"
             } else {
-                return "250000000"  // 250M gas
+                return "120000"
             }
         case .zksync:
             return "200000"
@@ -212,7 +234,10 @@ class Coin: ObservableObject, Codable, Hashable {
         case .kujira:
             return "7500"
         case .osmosis:
-            return "7500"
+            // Osmosis enforces a non-zero network minimum fee; use the shared
+            // safe floor so the pre-fetch display fallback is never sub-floor
+            // and stays aligned with the floored send fee.
+            return String(CosmosFeeFloorConfig.minFeeFloor(for: .osmosis))
         case .gaiaChain:
             return "7500"
         case .dydx:
@@ -228,7 +253,10 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ripple:
             return RippleFee.maxFeeDrops.description
         case .akash:
-            return "3000" // 0.003 AKT Cosmos station uses something like that
+            // Akash enforces a 0.025 uakt/gas node minimum, so 3000 uakt was
+            // below the network floor for an ordinary send. Use the shared safe
+            // floor so the pre-fetch display fallback is never sub-floor.
+            return String(CosmosFeeFloorConfig.minFeeFloor(for: .akash))
         case .qbtc:
             return "2000"
         case .tron:

@@ -38,18 +38,27 @@ struct OneInchService {
         amount: String,
         from: String,
         isAffiliate: Bool,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int? = nil
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
 
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
+
+        // 1inch takes slippage as a percent string and accepts only 0–50%
+        // (0–5000 bps). `Auto` (nil) keeps the existing 0.5% default; a custom
+        // value is clamped into range before bps → percent conversion so an
+        // out-of-bounds input never triggers an avoidable quote failure.
+        let slippageValue = slippageBps
+            .map { min(max($0, 0), 5000) }
+            .map { Self.percentString(fromBps: $0) } ?? "0.5"
 
         let params = OneInchAPI.SwapParams(
             source: sourceAddress,
             destination: destinationAddress,
             amount: amount,
             from: from,
-            slippage: "0.5",
+            slippage: slippageValue,
             referrer: referrerAddress,
             fee: isAffiliate ? bps(for: vultTierDiscount) : 0
         )
@@ -110,5 +119,19 @@ struct OneInchService {
     func bps(for discount: Int) -> Double {
         let formattedDiscount = Double(discount) / 100.0
         return max(0, Self.referredFee - formattedDiscount)
+    }
+
+    /// Convert a basis-points slippage to the percent string 1inch expects
+    /// (e.g. 50 bps → "0.5", 300 bps → "3"), trimming trailing zeros.
+    static func percentString(fromBps bps: Int) -> String {
+        let percent = Decimal(bps) / 100
+        let number = NSDecimalNumber(decimal: percent)
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.usesGroupingSeparator = false
+        formatter.decimalSeparator = "."
+        return formatter.string(from: number) ?? "\(percent)"
     }
 }

@@ -7,8 +7,13 @@
 
 import Foundation
 
-enum SwapError: Error, LocalizedError {
+enum SwapError: Error, LocalizedError, Equatable {
     case routeUnavailable
+    case recipientRouteUnavailable
+    /// The built swap artifact does not target the intended external recipient
+    /// (the provider dropped/misused the recipient param). Raised by
+    /// `SwapRecipientVerifier` before signing so funds are never misdirected.
+    case recipientVerificationFailed
     case noLiquidityPool
     case tradingHalted
     case swapAmountTooSmall
@@ -19,6 +24,10 @@ enum SwapError: Error, LocalizedError {
         switch self {
         case .routeUnavailable:
             return "swapRouteNotAvailable".localized
+        case .recipientRouteUnavailable:
+            return "swapRecipientRouteNotAvailable".localized
+        case .recipientVerificationFailed:
+            return "swapRecipientVerificationFailed".localized
         case .noLiquidityPool:
             return "noLiquidityPool".localized
         case .tradingHalted:

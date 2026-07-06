@@ -51,6 +51,14 @@ enum CosmosStakingConfig {
     /// floor was raised to 400_000 with proportional fee. LUNC bumped to
     /// 2M for the same dual-record allowance, fee scaled to preserve the
     /// prior ~66.6667 uluna/gas ratio (133_333_334 / 2M).
+    ///
+    /// Akash is intentionally NOT in this table: iOS has no native Akash
+    /// staking flow today (Akash "staking" arrives via the dApp-injected
+    /// signing path, which is floored in `CosmosSignDataBuilder`). If Akash is
+    /// ever added here, its `feeAmount` MUST be `>= CosmosFeeFloorConfig
+    /// .minFeeFloor(.akash)` (25_000 uakt) — ideally derived from that table —
+    /// so the staking fee shares the same floor as send + dApp signing and can
+    /// never be set below Akash's 0.025 uakt/gas network minimum.
     static let table: [Chain: Entry] = [
         .terra: Entry(
             chainId: "phoenix-1",
@@ -86,7 +94,7 @@ enum CosmosStakingConfig {
         // balance preflight, validator bech32 preflight). `bondDenom` is
         // lowercase `qbtc` (8 decimals, NOT a micro-denom).
         //
-        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc-testnet are constant
+        // `min_gas_price` = 0 and `min_tx_fee` = 800 on qbtc are constant
         // / un-queryable ante values, so the fee floor is the flat `min_tx_fee`
         // (800) and the only dynamic dimension is the gas_limit. `gasLimit` is
         // 1_000_000: an on-device undelegate measured 401_486 gas (the prior
@@ -97,7 +105,7 @@ enum CosmosStakingConfig {
         // `feeAmount` is the 800 `min_tx_fee` floor (the prior 7_500 was the
         // carried-over generic Cosmos send default, ~9x the floor).
         .qbtc: Entry(
-            chainId: "qbtc-testnet",
+            chainId: QBTCChain.chainID,
             bondDenom: "qbtc",
             feeDenom: "qbtc",
             valoperHrp: "qbtcvaloper",

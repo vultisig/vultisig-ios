@@ -29,7 +29,13 @@ extension Coin {
         // as before the SwapKit integration shipped. Single point of
         // gating: every chain's switch arm below carries `.swapkit` as if
         // unconditionally enabled, and this filter prunes when needed.
-        let raw = naturalSwapProviders
+        return applyProviderGates(naturalSwapProviders)
+    }
+
+    /// Applies the SwapKit feature flag + the debug forced-provider gate to a
+    /// raw natural-provider list.
+    private func applyProviderGates(_ raw: [SwapProvider]) -> [SwapProvider] {
+        // SwapKit is opt-in behind the Settings → Advanced → "SwapKit" toggle.
         let afterSwapKitGate = SwapKitConfig.isFeatureEnabled
             ? raw
             : raw.filter { $0 != .swapkit }
@@ -58,6 +64,8 @@ extension Coin {
             return true
         case ("lifi", .lifi):
             return true
+        case ("jupiter", .jupiter):
+            return true
         case ("thorchain", .thorchain),
              ("thorchain", .thorchainChainnet),
              ("thorchain", .thorchainStagenet):
@@ -69,6 +77,15 @@ extension Coin {
         }
     }
 
+    /// The natural swap-provider list for a coin's chain, before the SwapKit
+    /// feature flag + forced-provider gates (`applyProviderGates`).
+    ///
+    /// THORChain / MayaChain are offered at the **chain** level — every token on
+    /// a supported EVM chain carries the native provider, and the live quote
+    /// decides the actual route: a real `Available` pool quotes through, anything
+    /// else loses to an aggregator or surfaces `routeUnavailable`. There is no
+    /// per-token allowlist here; token-level pool availability surfaces in the
+    /// picker via the native-pool `DestinationTokenProvider`s.
     private var naturalSwapProviders: [SwapProvider] {
         switch chain {
         case .mayaChain, .kujira:
@@ -81,47 +98,15 @@ extension Coin {
             // a provider — both rank against each other per quote.
             return [.mayachain, .swapkit]
         case .ethereum:
-            let defaultProviders: [SwapProvider] = [
-                .oneinch(chain),
-                .lifi,
-                .kyberswap(chain),
-                .swapkit
-            ]
-
-            var providers: [SwapProvider] = []
-
-            if thorEthTokens.contains(ticker) {
-                providers.append(.thorchain)
-            }
-
-            if mayaEthTokens.contains(ticker) {
-                providers.append(.mayachain)
-            }
-
-            return providers + defaultProviders
+            return [.thorchain, .mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .bscChain:
-            if thorBscTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .avalanche:
-            if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .arbitrum:
-            if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
-            }
+            return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .base:
-            if thorBaseTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
-            }
-            return [.oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
+            return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2:
             return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
         case .mantle:
@@ -170,9 +155,12 @@ extension Coin {
         case .gaiaChain:
             return [.thorchain]
         case .solana:
-            // Phase 1 chain — `.swapkit` enables EVM↔Solana and Solana↔EVM
-            // routes via NEAR Intents / Chainflip / etc.
-            return [.thorchain, .lifi, .swapkit]
+            // `.swapkit` enables EVM↔Solana / Solana↔EVM via NEAR Intents /
+            // Chainflip; `.jupiter` serves on-Solana token swaps (SOL↔SPL,
+            // SPL↔SPL). Jupiter is Solana-only and same-chain — cross-chain
+            // pairs drop it automatically via the `SwapCoinsResolver` from∩to
+            // intersection, and THORChain stays for SPL↔other-chain routes.
+            return [.thorchain, .jupiter, .lifi, .swapkit]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:
@@ -204,37 +192,15 @@ extension Coin {
 
     var isLifiFeesSupported: Bool {
         switch chain.chainType {
-        case .EVM:
+        case .EVM, .Solana:
+            // LI.FI now honours the `integrator`/`fee` params on Solana routes,
+            // so Solana swaps charge the same VULT-discounted affiliate fee as
+            // EVM. They were previously excluded because LI.FI rejected those
+            // params on Solana, which left Solana routes uncharged while the UI
+            // still displayed a fee — a display/charge mismatch.
             return true
         default:
             return false
         }
-    }
-}
-
-private extension Coin {
-
-    var mayaEthTokens: [String] {
-        return ["ETH", "USDC"]
-    }
-
-    var mayaArbTokens: [String] {
-        return ["ETH", "ARB", "USDC", "YUM", "TGT", "GLD", "USDT", "PEPE"]
-    }
-
-    var thorEthTokens: [String] {
-        return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX", "vTHOR"]
-    }
-
-    var thorBscTokens: [String] {
-        return ["BNB", "USDT", "USDC"]
-    }
-
-    var thorBaseTokens: [String] {
-        return ["ETH", "USDC", "CBBTC"]
-    }
-
-    var thorAvaxTokens: [String] {
-        return ["AVAX", "USDC", "USDT", "SOL"]
     }
 }

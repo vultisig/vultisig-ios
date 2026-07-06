@@ -144,14 +144,25 @@ struct FunctionTransactionScreen: View {
                 }
             case .cosmosDelegate(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
-                    CosmosDelegateTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: CosmosDelegateTransactionViewModel(coin: coin, vault: vault),
                         onVerify: onVerify
-                    )
+                    ) { isPresented, viewModel in
+                        StakingValidatorPickerScreen(
+                            isPresented: isPresented,
+                            selectedValidator: Binding(
+                                get: { viewModel.selectedValidator },
+                                set: { viewModel.selectedValidator = $0 }
+                            ),
+                            source: .cosmos(chain: coin.chain),
+                            chainTicker: coin.ticker,
+                            chainDecimals: coin.decimals
+                        )
+                    }
                 }
             case .cosmosUndelegate(let coin, let valAddr, let valMoniker, let staked):
                 resolvingCoin(coinMeta: coin) { coin in
-                    CosmosUndelegateTransactionScreen(
+                    StakingTransactionScreen(
                         viewModel: CosmosUndelegateTransactionViewModel(
                             coin: coin,
                             vault: vault,
@@ -160,7 +171,7 @@ struct FunctionTransactionScreen: View {
                             stakedBalance: staked
                         ),
                         onVerify: onVerify
-                    )
+                    ) { _, _ in EmptyView() }
                 }
             case .cosmosRedelegate(let coin, let valAddr, let valMoniker, let staked):
                 resolvingCoin(coinMeta: coin) { coin in
@@ -182,6 +193,49 @@ struct FunctionTransactionScreen: View {
                             coin: coin,
                             vault: vault,
                             candidates: validators
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .solanaDelegate(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    StakingTransactionScreen(
+                        viewModel: SolanaDelegateTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    ) { isPresented, viewModel in
+                        StakingValidatorPickerScreen(
+                            isPresented: isPresented,
+                            selectedValidator: Binding(
+                                get: { viewModel.selectedValidator },
+                                set: { viewModel.selectedValidator = $0 }
+                            ),
+                            source: .solana(),
+                            chainTicker: coin.ticker,
+                            chainDecimals: coin.decimals
+                        )
+                    }
+                }
+            case .tonStake(let coin, let poolAddress, let poolImplementation):
+                resolvingCoin(coinMeta: coin) { coin in
+                    TonStakeTransactionScreen(
+                        viewModel: TonStakeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            existingPoolAddress: poolAddress,
+                            existingPoolImplementation: poolImplementation
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .tonUnstake(let coin, let poolAddress, let poolImplementation, let stakedAmount):
+                resolvingCoin(coinMeta: coin) { coin in
+                    TonUnstakeTransactionScreen(
+                        viewModel: TonUnstakeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            poolAddress: poolAddress,
+                            poolImplementation: poolImplementation,
+                            stakedAmount: stakedAmount
                         ),
                         onVerify: onVerify
                     )

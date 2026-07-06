@@ -55,7 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     private static let removedChainMigrations: [String: Chain] = [
         "thorChainStagenet2": .thorChainStagenet,
         "thorChainChainnet": .thorChain,
-        "polygon": .polygonV2
+        "polygon": .polygonV2,
     ]
 
     init(from decoder: Decoder) throws {
@@ -75,7 +75,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self.rawValue)
+        try container.encode(rawValue)
     }
 
     enum MigrationKeys: String, CodingKey {
@@ -128,6 +128,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .bittensor: return "Bittensor"
         }
     }
+
     var feeUnit: String {
         switch self {
         case .thorChain, .thorChainChainnet, .thorChainStagenet: return "RUNE"
@@ -252,7 +253,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         if self == .qbtc {
             return .MLDSA
         }
-        switch self.chainType {
+        switch chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO, .Ripple, .Tron:
             return .ECDSA
         case .Solana, .Polkadot, .Sui, .Ton, .Cardano:
@@ -395,9 +396,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zksync:
             return 324
         case .solana:
-            return 1151111081099710
+            return 1_151_111_081_099_710
         case .ethereumSepolia:
-            return 11155111
+            return 11_155_111
         case .mantle:
             return 5000
         case .hyperliquid:
@@ -408,6 +409,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return nil
         }
     }
+
     var coinType: CoinType {
         switch self {
         case .bitcoin:
@@ -502,48 +504,48 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var isSwapAvailable: Bool {
         switch self {
         case .thorChain,
-                .thorChainChainnet,
-                .thorChainStagenet,
-                .mayaChain,
-                .gaiaChain,
-                .kujira,
-                .bitcoin,
-                .dogecoin,
-                .bitcoinCash,
-                .litecoin,
-                .dash,
-                .ripple,
-                .avalanche,
-                .base,
-                .bscChain,
-                .ethereum,
-                .optimism,
-                .polygon,
-                .arbitrum,
-                .blast,
-                .cronosChain,
-                .solana,
-                .zksync,
-                .zcash,
-                .mantle,
-                .hyperliquid,
-                .tron,
-                .cardano,
-                .sui,
-                .ton,
-                .polygonV2:
+             .thorChainChainnet,
+             .thorChainStagenet,
+             .mayaChain,
+             .gaiaChain,
+             .kujira,
+             .bitcoin,
+             .dogecoin,
+             .bitcoinCash,
+             .litecoin,
+             .dash,
+             .ripple,
+             .avalanche,
+             .base,
+             .bscChain,
+             .ethereum,
+             .optimism,
+             .polygon,
+             .arbitrum,
+             .blast,
+             .cronosChain,
+             .solana,
+             .zksync,
+             .zcash,
+             .mantle,
+             .hyperliquid,
+             .tron,
+             .cardano,
+             .sui,
+             .ton,
+             .polygonV2:
             return true
         case .polkadot,
-            .dydx,
-            .osmosis,
-            .terra,
-            .terraClassic,
-            .noble,
-            .akash,
-            .ethereumSepolia,
-            .sei,
-            .qbtc,
-            .bittensor:
+             .dydx,
+             .osmosis,
+             .terra,
+             .terraClassic,
+             .noble,
+             .akash,
+             .ethereumSepolia,
+             .sei,
+             .qbtc,
+             .bittensor:
             return false
         }
     }
@@ -566,6 +568,12 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         default:
             return false
         }
+    }
+
+    /// Solana native staking via the on-chain Stake program (delegate /
+    /// deactivate / withdraw). Only Solana today.
+    var isSolanaStakingChain: Bool {
+        self == .solana
     }
 
     var type: ChainType {
@@ -619,15 +627,14 @@ extension Chain {
     }
 
     /// Whether the Send flow's memo input should be exposed for this chain.
-    /// Currently every chain supports a memo at the protocol level except
-    /// Cardano — WalletCore doesn't yet expose CIP-20 auxiliary data fields,
-    /// so iOS Cardano signing silently drops anything the user types. Hiding
-    /// the input avoids the silent-drop bug until proper metadata support
-    /// lands. See #4326 (root) and #4377 (this mitigation); remove the
-    /// `.cardano` case here when #4326 closes.
+    /// Most chains carry a memo at the protocol level. The exception is Sui:
+    /// a transaction is a Programmable Transaction Block with no memo field, so
+    /// a typed memo would be silently dropped — hiding the input avoids that.
+    /// Cardano DOES support memos: they are attached on-chain as CIP-20
+    /// transaction metadata (label 674) via `CardanoSigningInput.auxiliaryData`.
     var supportsMemo: Bool {
         switch self {
-        case .cardano:
+        case .sui:
             return false
         default:
             return true

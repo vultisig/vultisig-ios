@@ -82,6 +82,15 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.customMessagePayload = customMessagePayload
         self.participantDiscovery = participantDiscovery
 
+        // For a fast vault the server co-signs automatically, so the manual
+        // peer-discovery screen must never appear. Flip to the fast-signing
+        // state synchronously, before any `await` below (mediator start,
+        // message generation, Solana blockhash refresh), otherwise the peer
+        // screen lingers for the duration of those calls.
+        if fastVaultPassword != nil {
+            self.status = .WaitingForFast
+        }
+
         if let presetSession {
             self.sessionID = presetSession.sessionId
             self.serviceName = presetSession.serviceName
@@ -115,7 +124,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 // both devices share the same hash. The claimer's QBTC
                 // address comes from this device's own vault.
                 let btcCoin = keysignPayload.coin
-                if let qbtcCoin = vault.nativeCoin(for: .qbtc),
+                // Resolve QBTC from this device's own vault, deriving it
+                // in-memory when the chain isn't enabled so both devices
+                // share the same claimer address (and thus the same hash).
+                if let qbtcCoin = try? QBTCClaimCoinResolver().resolve(vault: vault, chain: .qbtc),
                    let compressedPubkey = Data(hexString: btcCoin.hexPublicKey) {
                     do {
                         let hashes = try QBTCClaimHashes.computeAll(
@@ -172,11 +184,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
         if let fastVaultPassword, let coin {
             // when fast sign, always using relay server
             serverAddr = Endpoint.vultisigRelay
-
-            if vault.signers.count <= 3 {
-                // skip device lookup if possible
-                status = .WaitingForFast
-            }
 
             do {
                 try await fastVaultService.sign(

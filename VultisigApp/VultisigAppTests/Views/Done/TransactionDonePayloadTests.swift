@@ -10,10 +10,80 @@
 //  pin here is data integrity.
 //
 
+import BigInt
 import XCTest
 @testable import VultisigApp
 
 final class TransactionDonePayloadTests: XCTestCase {
+
+    // MARK: - Swap Done fee-breakdown gate
+    //
+    // `SwapDoneSummaryCard` offers the "Total fee" expand chevron only when
+    // `transaction.hasFeeBreakdown` is true. The chevron renders off
+    // `showTotalFees`, but the breakdown rows render off `showFees` / `showGas`
+    // — independent flags. When the total is non-zero but both components are
+    // suppressed the chevron used to expand an empty box (the reported bug), so
+    // the card now falls back to a plain non-tappable total row instead.
+
+    func testHasFeeBreakdownTrueWhenGasPresent() {
+        // Non-zero gas drives `showGas`, so the breakdown has a network-fee row
+        // to reveal — the chevron is meaningful and should be offered.
+        let transaction = makeThorchainTransaction(gas: BigInt(10_000))
+        XCTAssertTrue(transaction.showGas)
+        XCTAssertTrue(transaction.hasFeeBreakdown)
+    }
+
+    func testHasFeeBreakdownFalseWhenComponentsSuppressed() {
+        // Zero gas + a zero-fee quote => both `showGas` and `showFees` are
+        // false, so expanding would reveal nothing. The gate must be false so
+        // the card renders the total as a plain row with no chevron.
+        let transaction = makeThorchainTransaction(gas: 0)
+        XCTAssertFalse(transaction.showGas)
+        XCTAssertFalse(transaction.showFees)
+        XCTAssertFalse(transaction.hasFeeBreakdown)
+    }
+
+    private func makeThorchainTransaction(gas: BigInt) -> SwapTransaction {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        let quote = ThorchainSwapQuote(
+            dustThreshold: nil,
+            expectedAmountOut: "100000000",
+            expiry: 0,
+            fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
+            inboundAddress: "thor-inbound",
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
+            memo: "thor-memo",
+            notes: "",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
+            slippageBps: nil,
+            totalSwapSeconds: nil,
+            warning: "",
+            router: nil,
+            maxStreamingQuantity: nil
+        )
+        return SwapTransaction(
+            fromCoin: rune,
+            toCoin: btc,
+            fromAmount: 1.0,
+            quote: .thorchain(quote),
+            gas: gas,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: rune,
+            limitContext: nil,
+            advancedSettings: .default
+        )
+    }
+
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
+        let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
+        return Coin(asset: asset, address: "test-address-\(ticker)", hexPublicKey: "")
+    }
 
     func testSendDefaultsVerbToSend() {
         // Default-verb behaviour preserves the pre-refactor Send /

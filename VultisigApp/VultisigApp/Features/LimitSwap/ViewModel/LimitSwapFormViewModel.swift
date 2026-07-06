@@ -139,7 +139,11 @@ final class LimitSwapFormViewModel {
         let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
         var chains: Set<Chain> = [.thorChain]
         for entry in inbounds {
-            guard !entry.halted, !entry.global_trading_paused, !entry.chain_trading_paused else { continue }
+            // Missing pause flags read as "not paused" — same convention as
+            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
+            guard !entry.halted,
+                  !(entry.global_trading_paused ?? false),
+                  !(entry.chain_trading_paused ?? false) else { continue }
             if let chain = chainFromThorchainSymbol(entry.chain) {
                 chains.insert(chain)
             }

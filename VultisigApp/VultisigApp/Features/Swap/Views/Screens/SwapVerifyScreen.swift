@@ -122,12 +122,6 @@ struct SwapVerifyScreen: View {
                     )
                 }
 
-                separator
-                getValueCell(
-                    for: "vault",
-                    with: vault.name
-                )
-
                 if currentTransaction.showGas {
                     separator
                     getNetworkFeeCell(
@@ -155,6 +149,31 @@ struct SwapVerifyScreen: View {
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
+
+                if currentTransaction.advancedSettings.slippage != .auto {
+                    separator
+                    getValueCell(
+                        for: "slippageTolerance",
+                        with: currentTransaction.advancedSettings.slippage.displayValue
+                    )
+                }
+
+                separator
+                getValueCell(
+                    for: "vault",
+                    with: vault.name
+                )
+
+                // HIGH security tier: an external recipient is a different
+                // destination than the user's own address — it MUST be shown
+                // before signing, never applied silently.
+                if currentTransaction.hasExternalRecipient {
+                    separator
+                    getValueCell(
+                        for: "recipient",
+                        with: currentTransaction.recipientAddress
+                    )
+                }
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
@@ -170,7 +189,7 @@ struct SwapVerifyScreen: View {
     }
 
     /// Row shown only on limit orders, between the from/to summary and the
-    /// vault row. Matches Figma 74341:117861:
+    /// provider row. Matches Figma 74341:117861:
     /// "Target Price: 1 <toCoin> = <price> <fromCoin>"  ⏱  "<expiry>h"
     @ViewBuilder
     var limitTargetPriceRow: some View {
@@ -215,7 +234,7 @@ struct SwapVerifyScreen: View {
         Rectangle()
             .frame(width: 1)
             .frame(idealHeight: 80, maxHeight: 100)
-            .foregroundColor(Theme.colors.bgSurface2)
+            .foregroundStyle(Theme.colors.bgSurface2)
     }
 
     var summaryFromTo: some View {
@@ -245,7 +264,7 @@ struct SwapVerifyScreen: View {
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.primaryAccent4)
+            .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgSurface2)
             .cornerRadius(32)
@@ -258,7 +277,7 @@ struct SwapVerifyScreen: View {
             comment: ""
         ))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -321,6 +340,13 @@ struct SwapVerifyScreen: View {
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
+            // Fund-safety pre-flight: re-check live inbound (cache-bypassing) for
+            // the source chain before building the keysign payload. A confirmed
+            // halt sets verifyViewModel.error and aborts without navigating.
+            guard await verifyViewModel.isSourceChainSafeToSign() else {
+                await MainActor.run { signButtonDisabled = false }
+                return
+            }
             if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
                     router.navigate(to: SwapRoute.pair(
@@ -357,7 +383,7 @@ struct SwapVerifyScreen: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
@@ -368,7 +394,7 @@ struct SwapVerifyScreen: View {
             }
 
             Text(value)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             if let bracketValue {
                 Group {
@@ -376,7 +402,7 @@ struct SwapVerifyScreen: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -389,18 +415,18 @@ struct SwapVerifyScreen: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("networkFee", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(cryptoAmount)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
 
                 Text(fiatAmount)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
         }
@@ -421,28 +447,28 @@ struct SwapVerifyScreen: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("minPayout".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
                 Group {
                     Text(amount)
-                        .foregroundColor(Theme.colors.textPrimary) +
+                        .foregroundStyle(Theme.colors.textPrimary) +
                     Text(" ") +
                     Text(ticker)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 .font(Theme.fonts.bodyLMedium)
 
                 HStack(spacing: 0) {
                     Text(fiatValue)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     if let chain {
                         HStack(spacing: 2) {
                             Spacer()
 
                             Text(NSLocalizedString("on", comment: ""))
-                                .foregroundColor(Theme.colors.textTertiary)
+                                .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
                             Image(chain.logo)
@@ -450,7 +476,7 @@ struct SwapVerifyScreen: View {
                                 .frame(width: 12, height: 12)
 
                             Text(chain.name)
-                                .foregroundColor(Theme.colors.textPrimary)
+                                .foregroundStyle(Theme.colors.textPrimary)
                         }
                         .font(Theme.fonts.caption10)
                         .offset(x: 2)

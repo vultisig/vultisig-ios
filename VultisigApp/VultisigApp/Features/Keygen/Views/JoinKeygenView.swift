@@ -25,6 +25,7 @@ struct JoinKeygenView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var appViewModelLegacy: AppViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @Environment(\.router) var router
 
@@ -67,6 +68,8 @@ struct JoinKeygenView: View {
                 failToStartKeygen
             case .NoCameraAccess:
                 cameraErrorView
+            case .NoLocalNetworkPermission:
+                noLocalNetworkPermissionView
             }
         }
         .if(viewModel.status != .KeygenStarted) {
@@ -112,18 +115,20 @@ struct JoinKeygenView: View {
     var keygenErrorText: some View {
         Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
 
     @ViewBuilder
     var failToStartKeygen: some View {
         if let error = viewModel.error {
+            let presentation = presentation(for: error)
             ErrorView(
-                type: .warning,
-                title: error.errorTitle,
-                description: error.errorDescription,
-                buttonTitle: "tryAgain".localized
+                type: presentation.type,
+                title: presentation.title,
+                description: presentation.description,
+                buttonTitle: "tryAgain".localized,
+                rawError: presentation.rawError
             ) {
                 // Close the current screen
                 router.navigateBack()
@@ -133,6 +138,17 @@ struct JoinKeygenView: View {
                     homeViewModel.shouldShowScanner = true
                 }
             }
+        }
+    }
+
+    private func presentation(for error: JoinKeygenError) -> ErrorPresentation {
+        switch error {
+        case .vaultNameAlreadyExists:
+            return ErrorPresentation(.vaultNameInUse)
+        case .wrongVaultSelected, .vaultTypeMismatch:
+            return ErrorPresentation(.vaultNotLoaded)
+        case .failedToDecodeMessage(let details):
+            return ErrorPresentation.unknown(rawError: details)
         }
     }
 
@@ -155,17 +171,23 @@ struct JoinKeygenView: View {
             }
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
-        .onAppear {
+        .task {
             logger.info("Start to discover service")
-            viewModel.discoverService()
-
+            await viewModel.startLocalDiscovery()
+        }
+        .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
                 withAnimation {
                     showInformationNote = true
                 }
+            }
+        }
+        .onChange(of: serviceDelegate.didFailToResolve) { _, failed in
+            if failed {
+                viewModel.setStatus(status: .NoLocalNetworkPermission)
             }
         }
     }
@@ -200,7 +222,7 @@ struct JoinKeygenView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(Theme.colors.alertInfo)
+            .foregroundStyle(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -250,6 +272,13 @@ struct JoinKeygenView: View {
         NoCameraPermissionView()
     }
 
+    var noLocalNetworkPermissionView: some View {
+        NoLocalNetworkPermissionView {
+            serviceDelegate.reset()
+            viewModel.setStatus(status: .DiscoverService)
+        }
+    }
+
     var informationNote: some View {
         InformationNote()
             .padding(.bottom, 50)
@@ -260,7 +289,16 @@ struct JoinKeygenView: View {
     }
 
     var vaultsMismatchedError: some View {
-        SendCryptoVaultErrorView()
+        let presentation = ErrorPresentation(.vaultNotLoaded)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "changeVault".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModelLegacy.set(selectedVault: appViewModelLegacy.selectedVault, showingVaultSelector: true)
+        }
     }
 
     private func setData() {
@@ -284,11 +322,11 @@ struct JoinKeygenView: View {
     private func getKeygenCardContent(_ title: String) -> some View {
         VStack(spacing: 12) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title1)
 
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)
@@ -322,12 +360,28 @@ extension JoinKeygenView {
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(hideBackButton)
+        // iPhone relies on the system back button; on iPad the system control can
+        // be absent on this pushed screen, which trapped users on "Discovering".
+        // Render an explicit back button there (and hide the system one so there
+        // is never a duplicate) whenever a back affordance is expected.
+        .navigationBarBackButtonHidden(hideBackButton || showsIPadBackButton)
         .toolbar {
+            if showsIPadBackButton {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    NavigationBackButton()
+                }
+            }
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
         }
+    }
+
+    /// Show an explicit back button on iPad while a back affordance is expected —
+    /// i.e. everywhere except the terminal keygen run, and only when the flow
+    /// itself hasn't asked for the back button to be hidden.
+    private var showsIPadBackButton: Bool {
+        isIPadOS && !hideBackButton && viewModel.status != .KeygenStarted
     }
 
     var main: some View {

@@ -351,15 +351,16 @@ private extension ChainDetailScreen {
     func refreshQbtcEligibility() {
         guard QBTCConfig.isFeatureEnabled else { return }
         guard nativeCoin.chain == .bitcoin || nativeCoin.chain == .qbtc else { return }
-        let btcCoin: Coin?
-        if nativeCoin.chain == .bitcoin {
-            btcCoin = nativeCoin
-        } else {
-            btcCoin = vault.nativeCoin(for: .bitcoin)
-        }
-        guard let btcCoin else { return }
         let vaultPubKey = vault.pubKeyECDSA
-        Task { await qbtcEligibility.check(btcCoin: btcCoin, vaultPubKeyECDSA: vaultPubKey) }
+        let supportsClaim = vault.supportsQbtcClaim
+        Task { @MainActor in
+            guard let btcCoin = viewModel.qbtcClaimBitcoinCoin() else { return }
+            await qbtcEligibility.check(
+                btcCoin: btcCoin,
+                vaultPubKeyECDSA: vaultPubKey,
+                vaultSupportsClaim: supportsClaim
+            )
+        }
     }
 
     func updateBalances() async {

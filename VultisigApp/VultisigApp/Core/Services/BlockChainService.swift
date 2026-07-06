@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import OSLog
 import VultisigCommonData
 import WalletCore
 
@@ -15,6 +16,8 @@ struct BlockSpecificCacheItem {
     let date: Date
 }
 final class BlockChainService {
+
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockchain-service")
 
     static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
         return value * 2 + value / 2 // x2.5 fee
@@ -88,8 +91,13 @@ final class BlockChainService {
             return payload
         }
 
-        // Fetch fresh blockhash
-        guard let freshBlockhash = try await sol.fetchRecentBlockhash() else {
+        // Fetch a fresh FINALIZED blockhash. A `confirmed` blockhash can be
+        // unknown to the load-balanced proxy's broadcast node (preflight
+        // `BlockhashNotFound` even seconds after fetching it); a finalized,
+        // rooted blockhash is known to every node. This refresh runs right
+        // before the ceremony, so the ~13s finalized lag still leaves ample
+        // validity.
+        guard let freshBlockhash = try await sol.fetchFinalizedBlockhash() else {
             throw Errors.failToGetRecentBlockHash
         }
 
@@ -102,6 +110,19 @@ final class BlockChainService {
             toAddressPubKey: toAddressPubKey,
             hasProgramId: hasProgramId
         )
+
+        // Solana native staking: the relayed `signData = .signSolana` bytes
+        // (delegate / deactivate / withdraw / move) have the OLD blockhash baked
+        // in, and a plain rebuild drops BOTH `signData` and the local-only
+        // `solanaStakingPayload`. Without preserving them the keysign sees no
+        // staking intent and signs a plain transfer to the validator vote
+        // account. Preserve the staking payload across the chain-specific swap
+        // and rebuild the unsigned staking tx with the fresh blockhash.
+        if payload.solanaStakingPayload != nil {
+            let staked = payload.withChainSpecific(updatedChainSpecific)
+            let rawTransaction = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: staked)
+            return staked.withSignData(.signSolana(SignSolana(rawTransactions: [rawTransaction])))
+        }
 
         // Create and return updated payload with fresh blockhash
         return KeysignPayload(
@@ -191,16 +212,33 @@ final class BlockChainService {
         isDeposit: Bool,
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
+        customGasLimit: BigInt?,
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> BlockChainSpecific {
-        try await fetchSpecific(
+        // EVM sends must size gas against the *real* recipient before the
+        // keysign ceremony. Contract recipients, long memos, and chains with
+        // higher intrinsic costs (Mantle, Base) all exceed the flat
+        // 23000/120000 request default and would otherwise revert on-chain with
+        // the keysign already spent. A user-set custom limit wins; non-EVM
+        // chains pass through untouched.
+        let resolvedGasLimit = await resolveEVMSendGasLimit(
+            coin: coin,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            amount: amount,
+            memo: memo,
+            requestedGasLimit: gasLimit,
+            customGasLimit: customGasLimit
+        )
+
+        return try await fetchSpecific(
             for: coin,
             action: .transfer,
             sendMaxAmount: sendMaxAmount,
             isDeposit: isDeposit,
             transactionType: transactionType,
-            gasLimit: gasLimit,
+            gasLimit: resolvedGasLimit,
             fromAddress: fromAddress,
             toAddress: toAddress,
             memo: memo,
@@ -294,6 +332,72 @@ final class BlockChainService {
                      quote: String?) -> String {
         let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
         return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode) -\(quote ?? "")"
+    }
+}
+
+extension BlockChainService {
+    /// Resolve the gas limit for an EVM send.
+    ///
+    /// A user-set `customGasLimit` is honored exactly — the Send form lets the
+    /// user override the limit and that choice must win over estimation. With no
+    /// override, run `eth_estimateGas` against the *real* recipient (so contract
+    /// receivers and long memos are sized correctly) and floor at the per-chain
+    /// default. The estimate is used as-is, not inflated; if it isn't enough the
+    /// user can raise the limit in the gas settings. Non-EVM chains pass
+    /// `requestedGasLimit` through unchanged; if estimation fails the send still
+    /// proceeds on the floor.
+    ///
+    /// Shared by the keysign-payload build (`fetchSendBlockChainSpecific`) and
+    /// the Send form's fee display (`calculateEVMFee`) so both size gas the same
+    /// way.
+    func resolveEVMSendGasLimit(
+        coin: Coin,
+        fromAddress: String,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        requestedGasLimit: BigInt?,
+        customGasLimit: BigInt?
+    ) async -> BigInt? {
+        if let customGasLimit {
+            return customGasLimit
+        }
+
+        guard coin.chainType == .EVM else {
+            return requestedGasLimit
+        }
+
+        let floor = max(normalizeGasLimit(coin: coin, action: .transfer), requestedGasLimit ?? .zero)
+
+        // Without a recipient (e.g. early Send-form fee preview) there's nothing
+        // to simulate against.
+        guard !toAddress.isEmpty else {
+            return floor
+        }
+
+        do {
+            let service = try EvmService.getService(forChain: coin.chain)
+            let estimated: BigInt
+            if coin.isNativeToken {
+                estimated = try await service.estimateGasForEthTransaction(
+                    senderAddress: fromAddress,
+                    recipientAddress: toAddress,
+                    value: amount,
+                    memo: memo
+                )
+            } else {
+                estimated = try await service.estimateGasForERC20Transfer(
+                    senderAddress: fromAddress,
+                    contractAddress: coin.contractAddress,
+                    recipientAddress: toAddress,
+                    value: amount
+                )
+            }
+            return max(estimated, floor)
+        } catch {
+            logger.warning("EVM send gas estimation failed for \(coin.chain.name, privacy: .public); using default gas limit")
+            return floor
+        }
     }
 }
 
@@ -397,7 +501,17 @@ private extension BlockChainService {
                        toAddress: String?,
                        memo: String?,
                        feeMode: FeeMode,
-                       amount: BigInt?) async throws -> BlockChainSpecific {
+                       amount: BigInt?,
+                       signData: SignData? = nil) async throws -> BlockChainSpecific {
+        // dApp-supplied Sui PTBs (`signSui`) arrive already fully built: coins,
+        // gas budget and reference gas price are baked into the BCS bytes that
+        // the signing pipeline forwards verbatim. There are no construction
+        // inputs to fetch, so return an empty SuiSpecific instead of hitting
+        // the RPC (`getAllCoins` / reference-gas-price).
+        if case .signSui = signData {
+            return .Sui(referenceGasPrice: 0, coins: [], gasBudget: 0)
+        }
+
         switch coin.chain {
         case .zcash:
             // Resolve the live ZIP-243 branch id at build time so it travels
@@ -411,6 +525,11 @@ private extension BlockChainService {
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let ttl = try await cardano.calculateDynamicTTL()
+            // Placeholder fee only — UTXOs aren't selected yet here. The real
+            // size-based `byteFee` is computed once by the initiator in
+            // `KeysignPayloadFactory.buildTransfer` (via
+            // `CardanoHelper.estimateDynamicByteFee`) and forced identically by
+            // every co-signer for cross-platform MPC sighash parity.
             let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
@@ -697,13 +816,57 @@ private extension BlockChainService {
                 gas = 2500000000000000
             case .noble:
                 gas = 20000
-            case .akash:
-                gas = 3000
-            case .osmosis:
-                gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
             }
+
+            // Optionally simulate to derive a dynamic per-tx gas limit the
+            // initiator relays to co-signers (CosmosSpecific.gas_limit). Gated
+            // OFF by default (see CosmosGasEstimationConfig): the relayed limit
+            // is part of the SignDoc, so until every co-signer honors it the
+            // SignDocs would diverge and the MPC signature would fail. nil when
+            // the gate is off or simulation fails, in which case peers fall back
+            // to the static per-chain gas limit.
+            var dynamicGasLimit: UInt64?
+            if CosmosGasEstimationConfig.shouldSimulate(chain: coin.chain),
+               action == .transfer,
+               coin.isNativeToken,
+               let amount, amount > 0,
+               let toAddress, !toAddress.isEmpty {
+                dynamicGasLimit = await CosmosGasEstimator.estimateGasLimit(
+                    chain: coin.chain,
+                    hexPublicKey: coin.hexPublicKey,
+                    fromAddress: coin.address,
+                    toAddress: toAddress,
+                    amount: String(amount),
+                    memo: memo,
+                    accountNumber: accountNumber,
+                    sequence: sequence,
+                    service: service
+                )
+            }
+
+            // Enforce the per-chain Cosmos fee floor at the effective gas limit:
+            // the relayed dynamic limit when present, else the static per-chain
+            // limit. Akash and Osmosis charge a non-zero minimum gas price; a
+            // sub-floor fee is rejected on-chain with "insufficient fee" (this is
+            // what replaces the old inline Akash 3000 / Osmosis 25000 literals).
+            // Because chainSpecific.gas feeds both the displayed fee and the
+            // WalletCore signing input, flooring here keeps the shown and signed
+            // fee identical.
+            // Resolve the gas limit that computes the on-chain minimum fee: the
+            // relayed dynamic limit when present, else the static per-chain
+            // limit. If the static lookup is unavailable, fall back to 0 so the
+            // floor still runs — the absolute `minFeeFloor` keeps a floored chain
+            // from silently skipping its floor, and `flooredFee` is a no-op for
+            // unfloored chains.
+            let staticGasLimit = (try? CosmosHelperConfig.getConfig(forChain: coin.chain).gasLimit) ?? 0
+            let effectiveGasLimit = dynamicGasLimit ?? staticGasLimit
+            gas = CosmosFeeFloorConfig.flooredFee(
+                for: coin.chain,
+                computedFee: gas,
+                gasLimit: effectiveGasLimit
+            )
 
             // Terra Classic charges a proportional burn tax (~0.5%) on the send
             // amount, paid in the SEND denom on top of the base gas fee. We fold
@@ -731,7 +894,8 @@ private extension BlockChainService {
                 sequence: sequence,
                 gas: gas,
                 transactionType: transactionType.rawValue,
-                ibcDenomTrace: ibcDenomTrace
+                ibcDenomTrace: ibcDenomTrace,
+                gasLimit: dynamicGasLimit
             )
 
         case .ton:
@@ -856,6 +1020,10 @@ private extension BlockChainService {
             } catch {
                 return nil
             }
+        case .jupiter:
+            // Jupiter is Solana-only; the EVM-source guard above already returned
+            // nil before reaching here. Kept for switch exhaustiveness.
+            return nil
         case .none:
             return nil
         }

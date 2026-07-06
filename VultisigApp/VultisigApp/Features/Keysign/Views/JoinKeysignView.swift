@@ -51,13 +51,13 @@ struct JoinKeysignView: View {
             case .FailedToStart:
                 keysignFailedText
             case .VaultMismatch:
-                KeysignVaultMismatchErrorView()
+                vaultMismatchErrorView
             case .KeysignSameDeviceShare:
-                KeysignSameDeviceShareErrorView()
+                sameDeviceShareErrorView
             case .KeysignNoCameraAccess:
                 NoCameraPermissionView()
             case .VaultTypeDoesntMatch:
-                KeysignWrongVaultTypeErrorView()
+                wrongVaultTypeErrorView
             case .QBTCClaim:
                 if let driver = viewModel.qbtcClaimDriver {
                     QBTCClaimJoinView(driver: driver)
@@ -77,7 +77,7 @@ struct JoinKeysignView: View {
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
             }
@@ -119,14 +119,50 @@ struct JoinKeysignView: View {
     }
 
     var keysignFailedText: some View {
-        ErrorView(
-            type: .warning,
-            title: "failToStartKesign".localized,
-            description: viewModel.errorMsg,
-            buttonTitle: "tryAgain".localized
+        let presentation = ErrorPresentation.signing(rawError: viewModel.errorMsg)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "tryAgain".localized,
+            rawError: presentation.rawError
         ) {
             appViewModelLegacy.restart()
         }
+    }
+
+    var vaultMismatchErrorView: some View {
+        errorView(.vaultNotLoaded) {
+            appViewModelLegacy.set(selectedVault: appViewModelLegacy.selectedVault, showingVaultSelector: true)
+        }
+    }
+
+    var sameDeviceShareErrorView: some View {
+        errorView(.sameVaultShare, buttonTitle: "goToHomeView".localized) {
+            appViewModelLegacy.restart()
+        }
+    }
+
+    var wrongVaultTypeErrorView: some View {
+        errorView(.vaultTypeMismatch) {
+            appViewModelLegacy.set(selectedVault: appViewModelLegacy.selectedVault, showingVaultSelector: true)
+        }
+    }
+
+    func errorView(
+        _ kind: ErrorPresentation.Kind,
+        buttonTitle: String = "tryAgain".localized,
+        action: @escaping () -> Void
+    ) -> some View {
+        let presentation = ErrorPresentation(kind)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: buttonTitle,
+            rawError: presentation.rawError,
+            action: action
+        )
     }
 
     var keysignMessageConfirm: some View {

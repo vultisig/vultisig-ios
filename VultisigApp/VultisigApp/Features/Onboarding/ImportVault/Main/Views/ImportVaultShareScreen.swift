@@ -62,7 +62,7 @@ struct ImportVaultShareScreen: View {
     var instruction: some View {
         Text(NSLocalizedString("supportedFileTypesUpload", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 

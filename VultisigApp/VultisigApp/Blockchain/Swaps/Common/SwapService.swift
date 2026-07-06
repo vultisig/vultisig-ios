@@ -22,13 +22,11 @@ struct SwapService {
     /// and `vultisig-android` (`STREAMING_SLIPPAGE_THRESHOLD_BPS`).
     static let streamingSlippageThresholdBps = 100
 
-    /// Minimum-output tolerance (basis points) sent on every THORChain/Maya
-    /// quote request as `tolerance_bps`. The node bakes a real `LIM` into the
-    /// returned swap memo — `expected_amount_out × (1 − tolerance_bps/10_000)` —
-    /// so the signed memo carries a slippage floor instead of `LIM=0`
-    /// (unbounded). 100 bps (1%) is a conservative default aligned with the
-    /// streaming-upgrade threshold; there is no per-swap user slippage control.
-    static let defaultThorchainToleranceBps = 100
+    /// `Auto` slippage default. 0 → `tolerance_bps` is omitted, so the node sets
+    /// no `LIM` and never rejects the quote. A nonzero default blocks legitimate
+    /// swaps: the node gates `tolerance_bps` on the single-swap emit, so any swap
+    /// whose price impact exceeds it is refused. A user-set slippage overrides this.
+    static let defaultThorchainToleranceBps = 0
 
     func fetchQuote(
         amount: Decimal,
@@ -44,7 +42,9 @@ struct SwapService {
             toCoin: toCoin,
             isAffiliate: isAffiliate,
             referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: nil,
+            recipientAddress: nil
         ).best
     }
 
@@ -64,12 +64,36 @@ struct SwapService {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuotes {
-        let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+        // THORChain / MayaChain are offered at the chain level, so provider
+        // overlap here decides which native + aggregator routes are attempted;
+        // the live quote prunes a native route with no real pool.
+        let resolvedProviders = SwapCoinsResolver.resolveAllProviders(
+            fromCoin: fromCoin,
+            toCoin: toCoin
+        )
+
+        guard !resolvedProviders.isEmpty else {
+            throw SwapError.routeUnavailable
+        }
+
+        // When an external recipient is set, only routes that actually deliver to
+        // that address (THORChain/Maya, via the memo destination) may be ranked.
+        // Aggregators build the swap tx with the user's own address and silently
+        // ignore the recipient, so letting `selectBestQuote` pick one would send
+        // funds to self while the verify screen shows the external recipient
+        // (silent fund-misdirection). Filtering the candidate pool up front keeps
+        // the no-recipient path byte-identical (no recipient → no filtering).
+        let providers = Self.providersHonoringRecipient(resolvedProviders, recipientAddress: recipientAddress)
 
         guard !providers.isEmpty else {
-            throw SwapError.routeUnavailable
+            // An external recipient was requested but no recipient-honouring route
+            // exists for this pair — surface a clear error instead of silently
+            // routing to self.
+            throw SwapError.recipientRouteUnavailable
         }
 
         let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
@@ -83,7 +107,9 @@ struct SwapService {
                             toCoin: toCoin,
                             isAffiliate: isAffiliate,
                             referredCode: referredCode,
-                            vultTierDiscount: vultTierDiscount
+                            vultTierDiscount: vultTierDiscount,
+                            slippageBps: slippageBps,
+                            recipientAddress: recipientAddress
                         )
                         return Result<SwapQuote, Error>.success(quote)
                     } catch {
@@ -107,12 +133,53 @@ struct SwapService {
             return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
-        let firstError = results.compactMap { result -> Error? in
+        let errors = results.compactMap { result -> Error? in
             if case .failure(let error) = result { return error }
             return nil
-        }.first
+        }
 
-        throw firstError ?? SwapError.routeUnavailable
+        throw Self.surfacedQuoteError(from: errors) ?? SwapError.routeUnavailable
+    }
+
+    /// Pick which provider error to surface once every eligible provider failed
+    /// to produce a usable quote.
+    ///
+    /// SwapKit is an *optional* aggregator layered on top of the core routing
+    /// providers (THORChain/Maya/1inch/KyberSwap/LI.FI). Its failures must never
+    /// degrade the experience versus not having SwapKit at all. The motivating
+    /// case: SwapKit's `/v3/quote` AML screening intermittently returns
+    /// `addressScreeningFailed` ("Address screening failed — contact support")
+    /// when its screening provider has an outage. The providers run in parallel
+    /// and each failure is collected independently, so when that transient error
+    /// wins the task-completion race it gets surfaced as the user-facing error —
+    /// making a pair that routes fine elsewhere (e.g. ETH→GRT via KyberSwap) look
+    /// permanently broken and telling the user to "contact support".
+    ///
+    /// So prefer any non-SwapKit error: those come from the core providers and
+    /// describe the real routing outcome (no route, amount too small, etc.). Fall
+    /// back to a SwapKit error only when SwapKit was the sole provider attempted
+    /// (e.g. TON/Cardano/Sui pairs), where it's the only signal available.
+    static func surfacedQuoteError(from errors: [Error]) -> Error? {
+        let coreProviderErrors = errors.filter { !($0 is SwapKitError) }
+        return coreProviderErrors.first ?? errors.first
+    }
+
+    /// Restrict the candidate provider set so a quote can never be ranked/selected
+    /// for a route that won't honour the external recipient. With no external
+    /// recipient (`nil`/blank) the input set is returned unchanged — the
+    /// no-recipient quote path stays byte-identical. With an external recipient
+    /// set, only `honorsExternalRecipient` providers (THORChain/Maya) survive; the
+    /// aggregators are dropped because they'd silently send the swap output to the
+    /// user's own address.
+    static func providersHonoringRecipient(
+        _ providers: [SwapProvider],
+        recipientAddress: String?
+    ) -> [SwapProvider] {
+        let hasExternalRecipient = recipientAddress?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty == false
+        guard hasExternalRecipient else { return providers }
+        return providers.filter { $0.honorsExternalRecipient }
     }
 
     /// All rankable quotes sorted best→worst by net output in `toCoin` units — the same metric
@@ -132,16 +199,21 @@ struct SwapService {
 
     /// Width of the priority band, as a fraction of the best net output. Quotes whose net
     /// output lands within this band of the best are treated as effectively tied on rate, so
-    /// the higher-priority provider is preferred over a marginally larger raw output. 1%.
-    static let providerPreferenceBand: Decimal = 0.01
+    /// the higher-priority provider is preferred over a marginally larger raw output. 50bps.
+    static let providerPreferenceBand: Decimal = 0.005
 
     /// Pick the best quote across providers. The ranking metric is net output in `toCoin`
     /// units (every provider in a candidate set swaps to the same `toCoin`, so the
     /// destination amount is directly comparable). On top of that metric a banded
-    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (1%)
-    /// of the best net output, the highest-priority provider wins instead of the raw maximum.
-    /// This keeps near-tie routes on the more trusted/integrated provider without ever
-    /// trading away a materially better rate (anything outside the band loses on output).
+    /// provider-preference layer applies: among quotes within `providerPreferenceBand` (50bps)
+    /// of the best net output — economically equivalent on net output — a lower source-chain
+    /// gas cost wins first (same-chain EVM aggregators only, where `sourceGasWei` is exposed in
+    /// the same native-wei unit), then the highest-priority provider, then the higher net
+    /// output. The lower-gas check only fires when BOTH compared quotes expose `sourceGasWei`,
+    /// so a gas-unknown quote (THORChain/Maya/SwapKit cross-chain) never falsely wins it and
+    /// instead falls through to provider preference. This keeps near-tie routes on the cheaper
+    /// or more trusted route without ever trading away a materially better rate (anything
+    /// outside the band loses on output).
     /// Falls back to the first quote (priority order from `resolveAllProviders`) when no
     /// quote produces a comparable amount.
     ///
@@ -163,12 +235,17 @@ struct SwapService {
             return quotes.first
         }
 
-        // Quotes within the band of the best net output are treated as tied on rate; among
-        // those, prefer the higher-priority (lower index) provider. Tie-break inside the same
-        // priority by higher net output (defensive — a provider rarely appears twice).
+        // Quotes within the band of the best net output are treated as tied on rate. Among
+        // those, prefer (1) lower source-chain gas when BOTH quotes expose it in the same
+        // native-wei unit (same-chain EVM aggregators) — a gas-unknown quote must not win this
+        // check, so it falls through; then (2) the higher-priority (lower index) provider; then
+        // (3) higher net output (defensive — a provider rarely appears twice).
         let floor = best.1 * (1 - providerPreferenceBand)
         let inBand = ranked.filter { $0.1 >= floor }
         let picked = inBand.min { lhs, rhs in
+            if let lhsGas = lhs.0.sourceGasWei, let rhsGas = rhs.0.sourceGasWei, lhsGas != rhsGas {
+                return lhsGas < rhsGas
+            }
             let lhsPriority = priority(of: lhs.0)
             let rhsPriority = priority(of: rhs.0)
             if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
@@ -187,7 +264,10 @@ struct SwapService {
 
     /// Provider preference order for the banded selection. Lower index = preferred. Keyed off
     /// the enum case (not `displayName`, which can carry SwapKit sub-provider text). THORChain
-    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, LI.FI.
+    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, Jupiter, LI.FI.
+    /// Jupiter sits just above LI.FI so on-Solana token swaps prefer Jupiter (no aggregator
+    /// markup) when its net output is within the band, while LI.FI still wins when materially
+    /// better.
     private static func priority(of quote: SwapQuote) -> Int {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
@@ -200,8 +280,10 @@ struct SwapService {
             return 3
         case .oneinch:
             return 4
-        case .lifi:
+        case .jupiter:
             return 5
+        case .lifi:
+            return 6
         }
     }
 
@@ -212,7 +294,9 @@ struct SwapService {
         toCoin: Coin,
         isAffiliate: Bool,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
@@ -223,7 +307,9 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .thorchainChainnet:
             return try await fetchCrossChainQuote(
@@ -233,7 +319,9 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .thorchainStagenet:
             return try await fetchCrossChainQuote(
@@ -243,7 +331,9 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
@@ -253,7 +343,9 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -268,7 +360,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 isAffiliate: isAffiliate,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -282,7 +375,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .lifi:
             return try await fetchLiFiQuote(
@@ -290,7 +384,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         case .swapkit:
             return try await fetchSwapKitQuote(
@@ -298,7 +393,18 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps,
+                recipientAddress: recipientAddress
+            )
+        case .jupiter:
+            return try await fetchJupiterQuote(
+                service: JupiterService.shared,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
             )
         }
     }
@@ -312,7 +418,9 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         do {
             // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
@@ -320,13 +428,30 @@ private extension SwapService {
             // THORChain expects integer amounts - truncate any floating point residuals
             let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
 
+            // `Auto` (nil) keeps the conservative default tolerance; a custom
+            // slippage maps directly to `tolerance_bps`, which the node bakes
+            // into the returned memo's `LIM` floor.
+            let toleranceBps = slippageBps ?? Self.defaultThorchainToleranceBps
+
+            // External recipient (when set) becomes the swap's `destination` — the
+            // node encodes it into the returned memo, so the swapped funds land at
+            // the external address instead of the user's own. Defaults to the
+            // user's own destination address. For a THORChain secured-asset
+            // `toCoin` the mint settles on THORChain, so the destination must be a
+            // THORChain (`thor1…`) address — enforced here so a non-THORChain
+            // destination surfaces a clear error instead of a collapsed quote.
+            let destination = try Self.resolveThorchainDestination(
+                toCoin: toCoin,
+                recipientAddress: recipientAddress
+            )
+
             let rapidQuote = try await service.fetchSwapQuotes(
-                address: toCoin.address,
+                address: destination,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
-                toleranceBps: Self.defaultThorchainToleranceBps,
+                toleranceBps: toleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -344,12 +469,13 @@ private extension SwapService {
                 rapid: rapidQuote,
                 service: service,
                 provider: provider,
-                address: toCoin.address,
+                address: destination,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 referredCode: referredCode,
-                vultTierDiscount: vultTierDiscount
+                vultTierDiscount: vultTierDiscount,
+                toleranceBps: toleranceBps
             )
 
             switch service {
@@ -384,7 +510,8 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         isAffiliate: Bool,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
@@ -394,7 +521,8 @@ private extension SwapService {
             amount: String(rawAmount),
             from: fromCoin.address,
             isAffiliate: isAffiliate,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
         )
         return .oneinch(response.quote, fee: response.fee)
     }
@@ -405,7 +533,8 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let affiliateBps = vultTierDiscount >= 50 ? 0 : 50 - vultTierDiscount
         let rawAmount = fromCoin.raw(for: amount)
@@ -415,7 +544,8 @@ private extension SwapService {
             destination: toCoin.isNativeToken ? "" : toCoin.contractAddress,
             amount: String(rawAmount),
             from: fromCoin.address,
-            affiliateBps: affiliateBps
+            affiliateBps: affiliateBps,
+            slippageBps: slippageBps
         )
         return .kyberswap(quote, fee: fee)
     }
@@ -425,16 +555,17 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
         )
-        print("LiFi Quote: \(response.quote)")
         return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
 
@@ -443,11 +574,15 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuote {
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
-        // doesn't enable. Fails open if the cache can't be loaded so we don't
-        // silently disable the aggregator on a bad network day.
+        // doesn't enable. Fails CLOSED on the no-snapshot edge (throws
+        // `providerNotEnabled`) rather than offering routes that fail
+        // downstream; once a snapshot exists, `SwapKitProviderCache` serves it
+        // as last-good so a transient network blip doesn't disable SwapKit.
         let fromEnabled = await service.isChainEnabled(fromCoin.chain)
         let toEnabled = await service.isChainEnabled(toCoin.chain)
         guard fromEnabled, toEnabled else {
@@ -460,10 +595,22 @@ private extension SwapService {
         // server-side, but the API allows up to 1000 and the clamp guards
         // against any future loosening.
         let affiliateBps = max(0, min(1000, 50 - vultTierDiscount))
+        // SwapKit takes slippage as a percent (Double). `Auto` (nil) omits it so
+        // NEAR Intents can negotiate its own per-route slippage; a custom value
+        // converts bps → percent (e.g. 50 bps → 0.5).
+        let slippagePercent = slippageBps.map { Double($0) / 100 }
+        // External recipient (when set) becomes SwapKit's `destinationAddress`
+        // for both `/v3/quote` (AML screening + route discovery) and `/v3/swap`
+        // (the build that pins where the bought asset is delivered). Defaults to
+        // the user's own destination address. The echoed `destinationAddress` is
+        // verified against the recipient before signing (`SwapRecipientVerifier`).
+        let destination = recipientAddress ?? toCoin.address
         guard let route = try await service.fetchBestRoute(
             fromCoin: fromCoin,
             toCoin: toCoin,
             amount: amount,
+            destinationAddress: destination,
+            slippagePercent: slippagePercent,
             affiliateFeeBps: affiliateBps
         ) else {
             throw SwapKitError.routeFiltered
@@ -471,13 +618,71 @@ private extension SwapService {
         let response = try await service.buildSwapTx(
             routeId: route.routeId,
             sourceAddress: fromCoin.address,
-            destinationAddress: toCoin.address
+            destinationAddress: destination
         )
         return .swapkit(
             response,
             fee: service.inboundFee(from: response, fromCoin: fromCoin),
             subProvider: response.subProvider
         )
+    }
+
+    func fetchJupiterQuote(
+        service: JupiterService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vultTierDiscount: Int,
+        slippageBps: Int?
+    ) async throws -> SwapQuote {
+        let fromAmount = fromCoin.raw(for: amount)
+        let (quote, fee, platformFee) = try await service.fetchQuote(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
+        )
+        return .jupiter(quote, fee: fee, platformFee: platformFee)
+    }
+}
+
+// MARK: - THORChain swap destination
+
+extension SwapService {
+    /// Resolve the `destination` for a native THORChain/MAYAChain swap quote.
+    ///
+    /// The existing contract is preserved: an explicit external recipient (when
+    /// set) becomes the destination; otherwise it's the user's own receiving
+    /// address for `toCoin`.
+    ///
+    /// The one addition is a guard for THORChain **secured assets**. A secured
+    /// asset is minted *on THORChain* (quote memo `=:ETH-USDC:thor1…:0/1/0`), so
+    /// its destination must be a THORChain (`thor1…`) address. For a
+    /// `chain == .thorChain` `toCoin` that is exactly `toCoin.address` — derived
+    /// from the vault key, independent of the secured denom in `contractAddress`.
+    /// If that resolved destination is somehow not a THORChain address (e.g. an
+    /// empty or L1 `0x…` value), THORNode rejects the quote with "swap
+    /// destination address is not the same chain as the target asset"; we reject
+    /// it up front with a clear, message-bearing error instead of letting it
+    /// collapse into a generic `routeUnavailable`. Non-secured and external-
+    /// recipient paths are unchanged.
+    static func resolveThorchainDestination(toCoin: Coin, recipientAddress: String?) throws -> String {
+        let destination = recipientAddress ?? toCoin.address
+
+        if recipientAddress == nil,
+           THORChainHelper.isSecuredAsset(coin: toCoin),
+           !THORChainHelper.isValidThorchainAddress(destination, chain: toCoin.chain) {
+            throw SwapError.serverError(
+                message: String(
+                    format: "swapSecuredAssetInvalidDestination".localized,
+                    THORChainHelper.expectedAddressPrefix(for: toCoin.chain),
+                    destination.nilIfEmpty ?? "empty"
+                )
+            )
+        }
+
+        return destination
     }
 }
 
@@ -489,45 +694,69 @@ extension SwapService {
     /// a *temporary* condition the user can retry, distinct from a permanently
     /// unsupported pair, so it gets its own user-facing message rather than the
     /// generic "route not available" or a leaked raw upstream string.
-    private static let tradingHaltedMarkers = ["trading is halted", "trading halted"]
+    private static let tradingHaltedMarkers = [
+        "trading is halted",
+        "trading halted",
+        "trading paused",
+        "_trading_paused",
+        "is paused"
+    ]
 
     private static func isTradingHalted(_ message: String) -> Bool {
         tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
     }
 
+    /// Classify a native (THORChain/MAYAChain) quote-error body into a typed
+    /// `SwapError`, shared by both branches so Maya stops leaking dust-minimum /
+    /// missing-pool errors as a raw `.serverError`. Returns `nil` when the body
+    /// matches none of the known classes; the caller then applies its own
+    /// fallback (THORChain relays the server message, Maya relays the raw error).
+    private static func classifyNativeQuoteError(_ message: String) -> SwapError? {
+        if message.contains("not enough asset to pay for fees") ||
+            message.localizedCaseInsensitiveContains("zero emit asset") {
+            // "zero emit asset" means the input is below the dust/fee threshold —
+            // the same class as "not enough asset to pay for fees", surfaced as
+            // the retry-with-more message.
+            return .swapAmountTooSmall
+        }
+        if message.localizedCaseInsensitiveContains("invalid symbol") ||
+            message.localizedCaseInsensitiveContains("bad to asset") ||
+            message.localizedCaseInsensitiveContains("bad from asset") ||
+            message.localizedCaseInsensitiveContains("pool does not exist") {
+            // This typically means no liquidity pool exists for this token pair.
+            return .noLiquidityPool
+        }
+        return nil
+    }
+
     /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
     /// A trading halt is detected on any code so a paused chain surfaces as a
-    /// retryable message instead of `routeUnavailable`; otherwise the existing
-    /// code-3 classification (fees / unsupported pair / raw server message) and
-    /// the non-code-3 `routeUnavailable` fallback are preserved.
+    /// retryable message. Otherwise the known dust/fee/missing-pool classes are
+    /// mapped to their typed errors and anything else relays THORNode's own
+    /// message — so a specific, actionable failure (e.g. code 2 "swap
+    /// destination address is not the same chain as the target asset") is
+    /// diagnosable instead of collapsing into a generic `routeUnavailable`. Only
+    /// a truly empty message falls back to `routeUnavailable`.
     static func mapThorchainSwapError(_ error: ThorchainSwapError) -> SwapError {
         if isTradingHalted(error.message) {
             return .tradingHalted
         }
-        if error.code == 3 {
-            if error.message.contains("not enough asset to pay for fees") {
-                return .swapAmountTooSmall
-            } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
-                error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                error.message.localizedCaseInsensitiveContains("bad from asset") ||
-                error.message.localizedCaseInsensitiveContains("pool does not exist") {
-                // This typically means no liquidity pool exists for this token pair
-                return .noLiquidityPool
-            } else {
-                return .serverError(message: error.message)
-            }
+        if let classified = classifyNativeQuoteError(error.message) {
+            return classified
         }
-        return .routeUnavailable
+        return error.message.isEmpty ? .routeUnavailable : .serverError(message: error.message)
     }
 
     /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.
-    /// A trading halt surfaces as the retryable message; any other error keeps
-    /// the previous behaviour of relaying the raw upstream string.
+    /// A trading halt surfaces as the retryable message; the shared dust-minimum
+    /// / missing-pool classification (previously THORChain-only) now applies here
+    /// too, so those no longer leak as a raw `.serverError`. Anything unrecognised
+    /// keeps the previous behaviour of relaying the raw upstream string.
     static func mapMayachainSwapError(_ error: MayachainSwapError) -> SwapError {
         if isTradingHalted(error.error) {
             return .tradingHalted
         }
-        return .serverError(message: error.error)
+        return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
     }
 }
 
@@ -576,7 +805,7 @@ extension SwapService {
         switch provider {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
             return true
-        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit:
+        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
             return false
         }
     }
@@ -592,7 +821,8 @@ extension SwapService {
         toAsset: String,
         amount: String,
         referredCode: String,
-        vultTierDiscount: Int
+        vultTierDiscount: Int,
+        toleranceBps: Int = SwapService.defaultThorchainToleranceBps
     ) async -> ThorchainSwapQuote {
         guard Self.supportsStreamingFallback(provider) else {
             return rapid
@@ -619,7 +849,7 @@ extension SwapService {
                 amount: amount,
                 interval: 1,
                 streamingQuantity: streamingQuantity,
-                toleranceBps: Self.defaultThorchainToleranceBps,
+                toleranceBps: toleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )

@@ -599,6 +599,33 @@ extension SwapCryptoLogic {
             case .unsupported(let txType, _):
                 throw SwapKitError.unsupportedTxType(txType)
             }
+
+        case let .jupiter(evmQuote, _, _):
+            // Jupiter rides the proven SwapKit-Solana signing path: the base64
+            // Solana wire tx lives in `quote.tx.data`, routed via
+            // `SwapPayload.generic` to `SolanaSwaps`, which refreshes only the
+            // recent blockhash in place before signing (no instruction
+            // injection → MPC byte-parity). The affiliate fee ATA is provisioned
+            // off the signed path (see `JupiterService`); nothing here builds an
+            // instruction. Mirrors `buildEVMQuoteFromSwapKit`'s `.solana` branch.
+            let payload = GenericSwapPayload(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: amountInCoin,
+                toAmountDecimal: toDecimal,
+                quote: evmQuote,
+                provider: .jupiter
+            )
+            return try await keysignFactory.buildTransfer(
+                coin: fromCoin,
+                toAddress: evmQuote.tx.to,
+                amount: amountInCoin,
+                memo: nil,
+                chainSpecific: chainSpecific,
+                swapPayload: .generic(payload),
+                approvePayload: nil,
+                vault: vault
+            )
         }
     }
 

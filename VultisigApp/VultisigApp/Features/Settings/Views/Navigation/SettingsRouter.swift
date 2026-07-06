@@ -37,12 +37,6 @@ struct SettingsRouter {
             viewBuilder.buildCheckForUpdatesScreen()
         case .advancedSettings:
             viewBuilder.buildAdvancedSettingsScreen()
-        case .customRPC:
-            viewBuilder.buildCustomRPCListScreen()
-        case .customRPCDetail(let chain):
-            viewBuilder.buildCustomRPCDetailScreen(chain: chain)
-        case .vaultDetailQRCode(let vault):
-            viewBuilder.buildVaultDetailQRCodeScreen(vault: vault)
         }
     }
 }

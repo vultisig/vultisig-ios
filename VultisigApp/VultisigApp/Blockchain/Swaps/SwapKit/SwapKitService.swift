@@ -38,6 +38,7 @@ struct SwapKitService {
         fromCoin: Coin,
         toCoin: Coin,
         amount: Decimal,
+        destinationAddress: String? = nil,
         slippagePercent: Double? = nil,
         affiliateFeeBps: Int
     ) async throws -> SwapKitRoute? {
@@ -69,12 +70,16 @@ struct SwapKitService {
         // Letting SwapKit pick the per-provider default works for every pair
         // we've spike-tested. Override only when surfacing a user-tuned
         // slippage tolerance through the UI in a later phase.
+        // Destination defaults to the user's own address; an external recipient
+        // (when set) is passed here so SwapKit AML-screens it at quote time and
+        // discovers routes that can deliver to it.
+        let resolvedDestination = destinationAddress ?? toCoin.address
         let request = SwapKitQuoteRequest(
             sellAsset: assetIdentifier(for: fromCoin),
             buyAsset: assetIdentifier(for: toCoin),
             sellAmount: Self.formatSellAmount(amount),
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
-            destinationAddress: toCoin.address.isEmpty ? nil : toCoin.address,
+            destinationAddress: resolvedDestination.isEmpty ? nil : resolvedDestination,
             slippage: slippagePercent,
             providers: nil,
             affiliateFee: affiliateFeeBps
@@ -143,9 +148,10 @@ struct SwapKitService {
     }
 
     /// Whether SwapKit should be offered as a provider for `chain` based on
-    /// the cached `/v3/providers` snapshot. Falls back to "yes" when the cache
-    /// can't be loaded — `/v3/quote` will surface a useful error if the chain
-    /// is genuinely unsupported.
+    /// the cached `/v3/providers` snapshot. Fails CLOSED (returns "no") when
+    /// the snapshot can't be loaded at all — see `SwapKitProviderCache.isEnabled`
+    /// for the rationale and the last-good fallback that limits this to the
+    /// genuine no-data edge.
     func isChainEnabled(_ chain: Chain) async -> Bool {
         await providerCache.isEnabled(chain: chain)
     }
@@ -216,20 +222,25 @@ extension SwapKitService {
     /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
         if case let .evm(tx) = response.tx {
-            return evmNetworkFee(from: tx)
+            return evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken)
         }
         return inboundFeeFromWire(response: response, fromCoin: fromCoin)
     }
 
-    /// Realised EVM network fee = `gasPrice × gas` in wei, parsing the hex
-    /// `SwapKitEvmTx` fields exactly as the keysign path does. A zero/missing
-    /// `gas` falls back to `EVMHelper.defaultETHSwapGasUnit` so a route that
-    /// omits the limit still shows a representative fee instead of zero —
-    /// identical normalisation to `buildEVMQuoteFromSwapKit`.
-    func evmNetworkFee(from tx: SwapKitEvmTx) -> BigInt? {
+    /// EVM network fee = `gasPrice × gas` in wei, parsing the hex `SwapKitEvmTx`
+    /// fields. SwapKit's reported `tx.gas` is respected whenever it's present —
+    /// the same convention 1inch / Kyber / LI.FI use for their own `fee`. Only a
+    /// route that omits the limit (`gas == 0`) falls back to a default so the row
+    /// shows a representative fee instead of zero: native sources to the swap gas
+    /// unit, ERC-20 sources (which need a token approval) to the token-transfer
+    /// unit.
+    func evmNetworkFee(from tx: SwapKitEvmTx, isNativeSource: Bool) -> BigInt? {
         let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
         let parsedGas = BigInt(tx.gas.stripHexPrefix(), radix: 16) ?? .zero
-        let gas = parsedGas == .zero ? BigInt(EVMHelper.defaultETHSwapGasUnit) : parsedGas
+        let fallbackGas = isNativeSource
+            ? BigInt(EVMHelper.defaultETHSwapGasUnit)
+            : BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let gas = parsedGas == .zero ? fallbackGas : parsedGas
         let fee = gasPrice * gas
         return fee == .zero ? nil : fee
     }
@@ -255,16 +266,30 @@ extension SwapKitService {
     }
 }
 
+extension SwapKitService {
+    /// The protocol symbol SwapKit knows an asset by, which can differ from the
+    /// app's display ticker. The Toncoin → GRAM rebrand renamed only the
+    /// *display* ticker of the native TON coin; SwapKit still lists it as "TON"
+    /// (and doesn't support "GRAM"), so a GRAM-ticker'd native must swap as TON.
+    static func swapSymbol(chain: Chain, ticker: String, isNativeToken: Bool) -> String {
+        if chain == .ton, isNativeToken {
+            return "TON"
+        }
+        return ticker
+    }
+}
+
 private extension SwapKitService {
     /// SwapKit asset identifier format: `Chain.Ticker` for native tokens,
     /// `Chain.Ticker-Contract` for tokens with an on-chain contract address.
     /// See `api-contract.md` for the canonical chain prefix table.
     func assetIdentifier(for coin: Coin) -> String {
         let prefix = chainPrefix(for: coin.chain, fallback: coin.ticker)
+        let symbol = SwapKitService.swapSymbol(chain: coin.chain, ticker: coin.ticker, isNativeToken: coin.isNativeToken)
         if coin.isNativeToken || coin.contractAddress.isEmpty {
-            return "\(prefix).\(coin.ticker)"
+            return "\(prefix).\(symbol)"
         }
-        return "\(prefix).\(coin.ticker)-\(coin.contractAddress)"
+        return "\(prefix).\(symbol)-\(coin.contractAddress)"
     }
 
     func chainPrefix(for chain: Chain, fallback: String) -> String {

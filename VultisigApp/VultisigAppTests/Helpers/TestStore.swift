@@ -59,6 +59,8 @@ enum TestStore {
             StakePosition.self,
             LPPosition.self,
             CirclePosition.self,
+            YieldPosition.self,
+            YieldRedemptionRecord.self,
             DatabaseRate.self,
             CustomRPCOverride.self,
             LimitOrder.self

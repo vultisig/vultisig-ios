@@ -38,7 +38,7 @@ final class MockServiceTests: XCTestCase {
 
     func testMockBlockChainServiceReturnsStubbedSpecific() async throws {
         let mock = MockBlockChainService(
-            stubbedResult: .success(.Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil))
+            stubbedResult: .success(.Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil))
         )
 
         let specific = try await mock.fetchSwapBlockChainSpecific(
@@ -48,7 +48,7 @@ final class MockServiceTests: XCTestCase {
             quote: nil
         )
 
-        if case .Cosmos(let accountNumber, _, _, _, _) = specific {
+        if case .Cosmos(let accountNumber, _, _, _, _, _) = specific {
             XCTAssertEqual(accountNumber, 1)
         } else {
             XCTFail("Expected Cosmos variant")

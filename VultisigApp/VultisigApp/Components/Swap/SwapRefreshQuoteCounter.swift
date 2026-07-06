@@ -28,7 +28,7 @@ struct SwapRefreshQuoteCounter: View {
             Text(String(format: "%02d", timer))
         }
         .font(Theme.fonts.caption12)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var loader: some View {

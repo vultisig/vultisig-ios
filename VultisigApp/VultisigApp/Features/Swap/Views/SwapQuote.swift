@@ -17,6 +17,23 @@ enum SwapQuote: Hashable {
     case kyberswap(EVMQuote, fee: BigInt?)
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
+    /// Jupiter Solana swap. `EVMQuote.tx.data` carries the base64 Solana wire
+    /// transaction (mirrors the SwapKit-Solana shape); `platformFee` is the
+    /// VULT-scaled affiliate fee in `toCoin` units, subtracted in ranking.
+    case jupiter(EVMQuote, fee: BigInt?, platformFee: Decimal?)
+
+    /// True for the native-protocol routes (THORChain on any network, MayaChain)
+    /// that deposit into a THOR/Maya inbound vault, so a source-chain halt can
+    /// strand funds. Aggregator routes (1inch/LI.FI/KyberSwap/SwapKit) never
+    /// deposit into those vaults, so the halt gate must not apply to them.
+    var isNativeProtocolRoute: Bool {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return true
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+            return false
+        }
+    }
 
     var swapProviderId: SwapProviderId? {
         switch self {
@@ -30,6 +47,8 @@ enum SwapQuote: Hashable {
             return .lifi
         case .swapkit:
             return .swapkit
+        case .jupiter:
+            return .jupiter
         }
     }
 
@@ -39,7 +58,8 @@ enum SwapQuote: Hashable {
             return quote.router
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
-                .kyberswap(let quote, _):
+                .kyberswap(let quote, _),
+                .jupiter(let quote, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.targetAddress
@@ -50,7 +70,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.totalSwapSeconds
-        case .oneinch, .kyberswap, .lifi, .swapkit:
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -61,7 +81,8 @@ enum SwapQuote: Hashable {
             return quote.inboundAddress
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
-                .kyberswap(let quote, _):
+                .kyberswap(let quote, _),
+                .jupiter(let quote, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.inboundAddress ?? response.targetAddress
@@ -88,6 +109,8 @@ enum SwapQuote: Hashable {
             // The sub-provider (e.g. Chainflip) is carried on the payload for
             // routing/explorer links; the display name stays the clean brand.
             return "SwapKit"
+        case .jupiter:
+            return "Jupiter"
         }
     }
 
@@ -108,6 +131,8 @@ enum SwapQuote: Hashable {
             return "kyberswap"
         case .swapkit:
             return "swapkit"
+        case .jupiter:
+            return "jupiter"
         }
     }
 
@@ -121,6 +146,10 @@ enum SwapQuote: Hashable {
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
+        case .jupiter(_, _, let platformFee):
+            // Jupiter's affiliate platform fee is already denominated in toCoin
+            // units (taken from the output mint).
+            return platformFee ?? .zero
         case .oneinch, .kyberswap, .swapkit:
             // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
@@ -142,6 +171,20 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Source-chain gas cost in native wei (`gas × gasPrice`) for same-chain EVM
+    /// aggregator quotes. Used only as a tie-break among in-band quotes that both
+    /// expose it — same-unit source-native wei, no cross-asset price normalization.
+    /// `nil` for THORChain/Maya/SwapKit, which expose no router gas at quote time.
+    var sourceGasWei: BigInt? {
+        switch self {
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+            guard let gasPrice = BigInt(quote.tx.gasPrice), gasPrice > 0 else { return nil }
+            return BigInt(quote.tx.gas) * gasPrice
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit, .jupiter:
+            return nil
+        }
+    }
+
     var swapFeeTokenContract: String? {
         switch self {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
@@ -156,7 +199,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.memo
-        case .oneinch, .kyberswap, .lifi, .swapkit:
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -166,7 +209,7 @@ enum SwapQuote: Hashable {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             guard let slippageBps = quote.slippageBps else { return nil }
             return Decimal(slippageBps) / 10000
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi, .jupiter:
             return nil
         case .swapkit(let response, _, _):
             guard let impact = response.meta.priceImpact else { return nil }
@@ -178,7 +221,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.fees.total
-        case .oneinch, .kyberswap, .lifi, .swapkit:
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -207,6 +250,10 @@ enum SwapQuote: Hashable {
             hasher.combine(response)
             hasher.combine(fee)
             hasher.combine(subProvider)
+        case .jupiter(let quote, let fee, let platformFee):
+            hasher.combine(quote)
+            hasher.combine(fee)
+            hasher.combine(platformFee)
         }
     }
 }

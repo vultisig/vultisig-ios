@@ -26,6 +26,11 @@ struct SendChainSpecificRequest: Equatable {
     let isDeposit: Bool
     let transactionType: VSTransactionType
     let gasLimit: BigInt?
+    /// The user-pinned gas limit from the Send form's gas settings, when set.
+    /// Carried separately from `gasLimit` (which collapses custom/estimated/
+    /// default) so the chain-specific build can honor an explicit override
+    /// instead of overwriting it with a fresh estimate.
+    let customGasLimit: BigInt?
     let feeMode: FeeMode
     let fromAddress: String
 
@@ -38,6 +43,7 @@ struct SendChainSpecificRequest: Equatable {
         isDeposit: Bool,
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
+        customGasLimit: BigInt? = nil,
         feeMode: FeeMode,
         fromAddress: String
     ) {
@@ -49,6 +55,7 @@ struct SendChainSpecificRequest: Equatable {
         self.isDeposit = isDeposit
         self.transactionType = transactionType
         self.gasLimit = gasLimit
+        self.customGasLimit = customGasLimit
         self.feeMode = feeMode
         self.fromAddress = fromAddress
     }
@@ -63,6 +70,7 @@ struct SendChainSpecificRequest: Equatable {
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
             gasLimit: tx.gasLimit,
+            customGasLimit: tx.customGasLimit,
             feeMode: tx.feeMode,
             fromAddress: tx.fromAddress
         )
@@ -75,6 +83,7 @@ struct SendFeeEstimateRequest: Equatable {
     var coin: Coin { chainSpecific.coin }
     var fromAddress: String { chainSpecific.fromAddress }
     var gasLimit: BigInt? { chainSpecific.gasLimit }
+    var customGasLimit: BigInt? { chainSpecific.customGasLimit }
     var feeMode: FeeMode { chainSpecific.feeMode }
 
     init(chainSpecific: SendChainSpecificRequest) {
@@ -125,6 +134,11 @@ protocol SendInteractor {
 struct SendInteractorFeeResult: Equatable {
     let fee: BigInt
     let gas: BigInt
+    /// The gas limit the EVM fee was computed against — the real `eth_estimateGas`
+    /// result (padded/floored) or the user override. `nil` for non-EVM chains.
+    /// The Send form stores this as `estimatedGasLimit` so the displayed fee and
+    /// the editable gas-settings value reflect the estimate.
+    var gasLimit: BigInt? = nil
 }
 
 extension SendInteractor {
@@ -170,6 +184,7 @@ extension SendInteractor {
         isDeposit: Bool,
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
+        customGasLimit: BigInt? = nil,
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> SendInteractorFeeResult {
@@ -182,6 +197,7 @@ extension SendInteractor {
             isDeposit: isDeposit,
             transactionType: transactionType,
             gasLimit: gasLimit,
+            customGasLimit: customGasLimit,
             feeMode: feeMode,
             fromAddress: fromAddress
         )))

@@ -5,14 +5,12 @@
 //  Created by Gaston Mazzeo on 12/10/2025.
 //
 
-import BigInt
 import SwiftUI
 
 struct VultDiscountTiersScreen: View {
     @ObservedObject var vault: Vault
 
     @State private var activeTier: VultDiscountTier?
-    @State private var vultToken: Coin?
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
     @Environment(\.openURL) var openURL
@@ -24,11 +22,8 @@ struct VultDiscountTiersScreen: View {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        Image("vult-banner")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: 500)
-                            .padding(.bottom, 10)
+                        heroBanner
+                            .padding(.bottom, 4)
 
                         Text("vultDiscountTiersDescription".localized)
                             .font(Theme.fonts.bodySRegular)
@@ -39,7 +34,6 @@ struct VultDiscountTiersScreen: View {
                         ForEach(VultDiscountTier.allCases) { tier in
                             VultDiscountTierView(
                                 tier: tier,
-                                vultToken: vultToken,
                                 isActive: activeTier == tier,
                                 canUnlock: canUnlock(tier: tier)
                             ) {
@@ -68,7 +62,6 @@ struct VultDiscountTiersScreen: View {
         }
         .tierGated(presentedTier: $showTierSheet, vault: vault)
         .onLoad {
-            getVultToken()
             getVultTier()
             fetchVultTier()
         }
@@ -79,6 +72,41 @@ struct VultDiscountTiersScreen: View {
 }
 
 private extension VultDiscountTiersScreen {
+    var heroBanner: some View {
+        ZStack(alignment: .topTrailing) {
+            LinearGradient(
+                colors: [Theme.colors.bgSurface1, Theme.colors.primaryAccent1],
+                startPoint: .bottomLeading,
+                endPoint: .topTrailing
+            )
+            .overlay(
+                Image("vult-tiers-hero-coins")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 169)
+                    .offset(x: 8, y: -8),
+                alignment: .topTrailing
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("vultDiscountHeroTitle".localized)
+                    .font(Theme.fonts.title1)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Text("vultDiscountHeroSubtitle".localized)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(height: 139)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.white.opacity(0.09), lineWidth: 1)
+        )
+    }
+
     func onExpand(tier: VultDiscountTier) {
         withAnimation(.interpolatingSpring.delay(0.3)) {
             scrollProxy?.scrollTo(tier.name, anchor: .bottom)
@@ -98,23 +126,12 @@ private extension VultDiscountTiersScreen {
             let activeTier = await service.fetchDiscountTier(for: vault, cached: cached)
             await MainActor.run {
                 self.activeTier = activeTier
-                getVultToken()
             }
         }
     }
 
-    func getVultToken() {
-        self.vultToken = service.getVultToken(for: vault)
-    }
-
     func canUnlock(tier: VultDiscountTier) -> Bool {
-        let tiers = VultDiscountTier.allCases.sorted { $0.balanceToUnlock < $1.balanceToUnlock }
-        guard let currentIndex = tiers.firstIndex(where: { $0 == activeTier }) else {
-            return true
-        }
-
-        let tierIndex = tiers.firstIndex(where: { $0 == tier }) ?? 0
-        return tierIndex > currentIndex
+        VultDiscountTier.canUnlock(tier, active: activeTier)
     }
 }
 

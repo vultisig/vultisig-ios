@@ -27,6 +27,9 @@ enum QBTCClaimScreenState: Hashable {
 }
 
 enum QBTCClaimBlockedReason: Hashable {
+    /// The vault uses GG20 keyshares, which can't take part in the DKLS
+    /// BTC signing round the claim flow requires.
+    case unsupportedVaultType
     /// Chain returned `ClaimWithProofDisabled > 0`. Or query failed —
     /// fail-closed.
     case killSwitchClosed
@@ -104,24 +107,30 @@ final class QBTCClaimViewModel: ObservableObject {
     private let chainService: QBTCChainService
     private let blockchairService: BlockchairService
     private let sessionService: KeysignSessionService
+    private let coinResolver: QBTCClaimCoinResolver
     private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-vm")
 
     init(
         vault: Vault,
         chainService: QBTCChainService = QBTCChainService(),
         blockchairService: BlockchairService = .shared,
-        sessionService: KeysignSessionService = KeysignSessionService()
+        sessionService: KeysignSessionService = KeysignSessionService(),
+        coinResolver: QBTCClaimCoinResolver = QBTCClaimCoinResolver()
     ) {
         self.vault = vault
         self.chainService = chainService
         self.blockchairService = blockchairService
         self.sessionService = sessionService
+        self.coinResolver = coinResolver
     }
 
     // MARK: - Computed
 
-    var btcCoin: Coin? { vault.nativeCoin(for: .bitcoin) }
-    var qbtcCoin: Coin? { vault.nativeCoin(for: .qbtc) }
+    /// The BTC + QBTC coins the claim is derived from. Resolved once by
+    /// `load()` — an enabled native coin is used as-is, otherwise it's
+    /// derived in-memory from the vault's keys (the chain need not be
+    /// enabled). `nil` until `load()` resolves them.
+    private(set) var resolvedCoins: QBTCClaimCoinResolver.Coins?
 
     var totalSatsSelected: UInt64 {
         utxos
@@ -183,14 +192,31 @@ final class QBTCClaimViewModel: ObservableObject {
         }
         defer { isLoading = false }
 
-        guard let btcCoin else {
-            state = .blocked(reason: .missingCoin(chainName: "Bitcoin"))
+        // GG20 vaults can't run the DKLS BTC signing round the claim flow
+        // requires — block up front with a clear message instead of letting
+        // the user reach keysign and hit a cryptic DKLS retry failure.
+        guard vault.supportsQbtcClaim else {
+            state = .blocked(reason: .unsupportedVaultType)
             return
         }
-        guard qbtcCoin != nil else {
-            state = .blocked(reason: .missingCoin(chainName: "QBTC"))
+
+        // Resolve the BTC + QBTC coins. Neither chain has to be enabled —
+        // they're derived in-memory from the vault's keys when missing, so
+        // a quantum vault can claim regardless of which chains it has
+        // added. Only a genuine derivation failure (a non-quantum vault
+        // lacking the MLDSA-44 key for QBTC) still blocks.
+        let coins: QBTCClaimCoinResolver.Coins
+        do {
+            coins = try coinResolver.resolve(vault: vault)
+        } catch QBTCClaimCoinResolver.Error.derivationFailed(let chainName) {
+            state = .blocked(reason: .missingCoin(chainName: chainName))
+            return
+        } catch {
+            state = .blocked(reason: .missingCoin(chainName: Chain.qbtc.name))
             return
         }
+        resolvedCoins = coins
+        let btcCoin = coins.btc
 
         // Address-type guard — reject P2TR/testnet now rather than at
         // proof-service time.
@@ -270,14 +296,14 @@ final class QBTCClaimViewModel: ObservableObject {
             lastClaimError = "qbtcClaimEmptyPassword".localized
             return
         }
-        guard let btcCoin, let qbtcCoin else { return }
+        guard let coins = resolvedCoins else { return }
 
         let selected = utxos.filter { selectedIds.contains($0.id) }
         guard !selected.isEmpty else { return }
 
         pendingKeysignContext = QBTCClaimKeysignContext(
-            btcCoin: btcCoin,
-            qbtcCoin: qbtcCoin,
+            btcCoin: coins.btc,
+            qbtcCoin: coins.qbtc,
             selectedUtxos: selected,
             fastVaultPassword: password
         )
@@ -297,20 +323,20 @@ final class QBTCClaimViewModel: ObservableObject {
     /// context. On failure, surfaces the error in the selection
     /// banner so the user can retry.
     private func prepareSecureVaultPair() async {
-        guard let btcCoin, let qbtcCoin else { return }
+        guard let coins = resolvedCoins else { return }
         let selected = utxos.filter { selectedIds.contains($0.id) }
         guard !selected.isEmpty else { return }
 
         do {
             let session = try sessionService.newSession(vault: vault)
-            let payload = makeSecureVaultKeysignPayload(btcCoin: btcCoin)
+            let payload = makeSecureVaultKeysignPayload(btcCoin: coins.btc)
             try await sessionService.registerAsParticipant(session: session)
 
             pendingPairContext = QBTCClaimPairContext(
                 keysignPayload: payload,
                 session: session,
-                btcCoin: btcCoin,
-                qbtcCoin: qbtcCoin,
+                btcCoin: coins.btc,
+                qbtcCoin: coins.qbtc,
                 selectedUtxos: selected
             )
         } catch {

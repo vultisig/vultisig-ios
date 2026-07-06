@@ -29,7 +29,7 @@ struct VaultPairDetailCard: View {
                 Image("vultisig-logo")
                     .resizable()
                     .frame(width: 48, height: 48)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .padding(.top, 24)
             }
 
@@ -41,7 +41,7 @@ struct VaultPairDetailCard: View {
                 // Footer for sharing
                 Text("vultisig.com")
                     .font(Theme.fonts.bodyLMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .padding(.bottom, 24)
             }
         }
@@ -71,6 +71,10 @@ struct VaultPairDetailCard: View {
 
             vaultKeyRow(title: "ECDSA".localized, description: vault.pubKeyECDSA)
             vaultKeyRow(title: "EdDSA".localized, description: vault.pubKeyEdDSA)
+
+            if let publicKeyMLDSA44 = vault.publicKeyMLDSA44, !publicKeyMLDSA44.isEmpty {
+                vaultKeyRow(title: "MLDSA".localized, description: publicKeyMLDSA44)
+            }
         }
     }
 

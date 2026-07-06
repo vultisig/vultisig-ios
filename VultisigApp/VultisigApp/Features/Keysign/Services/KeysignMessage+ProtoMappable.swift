@@ -127,6 +127,12 @@ extension KeysignPayload: ProtoMappable {
         // see nil and simply sign the relayed message hashes without claim UX.
         self.qbtcClaimPayload = nil
 
+        // Solana staking intent is local-only — signing rides the wallet-core
+        // signing-input bytes relayed via `signData = .signSolana`, so the peer
+        // device sees nil and signs those raw bytes directly. No commondata
+        // change is needed for the delegate flow.
+        self.solanaStakingPayload = nil
+
         // `isQbtcClaim` round-trips: the peer needs to know this is a claim
         // so it can derive the claimer's QBTC address from its own vault
         // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash
@@ -440,7 +446,8 @@ extension BlockChainSpecific {
                 sequence: value.sequence,
                 gas: value.gas,
                 transactionType: value.transactionType.rawValue,
-                ibcDenomTrace: value.hasIbcDenomTraces ? CosmosIbcDenomTraceDenomTrace(path: value.ibcDenomTraces.path, baseDenom: value.ibcDenomTraces.baseDenom, height: value.ibcDenomTraces.latestBlock) : nil
+                ibcDenomTrace: value.hasIbcDenomTraces ? CosmosIbcDenomTraceDenomTrace(path: value.ibcDenomTraces.path, baseDenom: value.ibcDenomTraces.baseDenom, height: value.ibcDenomTraces.latestBlock) : nil,
+                gasLimit: value.hasGasLimit ? value.gasLimit : nil
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -472,10 +479,14 @@ extension BlockChainSpecific {
                 ]
             }
 
+            // dApp-supplied Sui PTBs (`signSui`) carry an empty SuiSpecific —
+            // the coins, gas budget and reference gas price are baked into the
+            // BCS bytes. proto3 serialises those unset numeric strings as "",
+            // so parse defensively: `BigInt(stringLiteral:)` traps on "".
             self = .Sui(
-                referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
+                referenceGasPrice: BigInt(value.referenceGasPrice) ?? 0,
                 coins: coinsArray,
-                gasBudget: BigInt(stringLiteral: value.gasBudget)
+                gasBudget: BigInt(value.gasBudget) ?? 0
             )
         case .tonSpecific(let value):
             self = .Ton(
@@ -545,7 +556,7 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType, let ibc):
+        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType, let ibc, let gasLimit):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
@@ -555,6 +566,9 @@ extension BlockChainSpecific {
                     $0.baseDenom = ibc?.baseDenom ?? ""
                     $0.path = ibc?.path ?? ""
                     $0.latestBlock = ibc?.height ?? "0"
+                }
+                if let gasLimit {
+                    $0.gasLimit = gasLimit
                 }
             })
         case .Solana(let recentBlockHash, let priorityFee, let priorityLimit, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):

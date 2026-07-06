@@ -133,6 +133,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signBitcoin = input.keysignPayload?.signBitcoin {
                     Separator()
                     SignBitcoinDisplayView(signBitcoin: signBitcoin)
+                } else if let signSui = input.keysignPayload?.signSui {
+                    Separator()
+                    SignSuiDisplayView(signSui: signSui)
                 }
             }
         }
@@ -224,6 +227,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         if let hero = input.hero {
             HeroContentView(content: hero)
                 .padding(.bottom, 8)
+        } else if input.keysignPayload?.signSui != nil {
+            // signSui payloads carry no to_address / to_amount — the amount is
+            // baked into the PTB bytes. Show a neutral title instead of a
+            // misleading "0 SUI" send card; the decoded PTB renders below.
+            Text("suiTransaction".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyMMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
         } else {
             VStack(spacing: 8) {
                 Text(NSLocalizedString("youreSending", comment: ""))
@@ -237,15 +249,13 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .frame(width: 24, height: 24)
                         .cornerRadius(32)
 
-                    Text(input.amount)
-                        .foregroundStyle(Theme.colors.textPrimary)
-
-                    Text(input.coinTicker)
-                        .foregroundStyle(Theme.colors.textTertiary)
-
-                    Spacer()
+                    CoinAmountFiatLabel(
+                        amount: input.amount,
+                        ticker: input.coinTicker,
+                        fiat: input.amountFiat
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .font(Theme.fonts.bodyLMedium)
             }
             .padding(.bottom, 8)
         }
@@ -316,6 +326,10 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     /// True when the hero doesn't already show a resolved amount/coin, so the
     /// "amount" detail row should render with the fallback `tokenDisplay` value.
     var shouldShowAmountRow: Bool {
+        // signSui carries no to_amount; the value lives in the PTB bytes.
+        if input.keysignPayload?.signSui != nil {
+            return false
+        }
         switch input.hero {
         case nil, .title:
             return true
@@ -339,6 +353,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             feeFiat: "US$ 0.10",
             coinImage: "rune",
             amount: "30",
+            amountFiat: "US$ 90.00",
             coinTicker: "RUNE",
             keysignPayload: nil
         ),
@@ -359,6 +374,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             feeFiat: "US$ 0.10",
             coinImage: "ltc",
             amount: "0.03",
+            amountFiat: "US$ 2.60",
             coinTicker: "LTC",
             keysignPayload: KeysignPayload(
                 coin: .example,
@@ -409,7 +425,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 coin: .example,
                 toAddress: "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
                 toAmount: 0,
-                chainSpecific: .Cosmos(accountNumber: 3367086, sequence: 42, gas: 7500, transactionType: 0, ibcDenomTrace: nil),
+                chainSpecific: .Cosmos(accountNumber: 3367086, sequence: 42, gas: 7500, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
                 utxos: [],
                 memo: nil,
                 swapPayload: nil,

@@ -126,9 +126,9 @@ enum TonSwapSimulator {
         }
     }
 
-    private static let nativeTonTicker = "TON"
+    private static let nativeTonTicker = "GRAM"
     private static let nativeTonDecimals = 9
-    private static let nativeTonLogo = "ton"
+    private static let nativeTonLogo = "gram"
 }
 
 // MARK: - TonAPI emulate response shapes

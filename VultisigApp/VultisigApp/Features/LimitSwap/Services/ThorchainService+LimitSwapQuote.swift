@@ -55,7 +55,11 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
             guard entry.chain.uppercased() == normalized else { return false }
             // Reject halted or paused chains — limit orders can't be placed
             // to a destination THORChain currently refuses to ingest.
-            guard !entry.halted, !entry.global_trading_paused, !entry.chain_trading_paused else {
+            // Missing pause flags read as "not paused" — same convention as
+            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
+            guard !entry.halted,
+                  !(entry.global_trading_paused ?? false),
+                  !(entry.chain_trading_paused ?? false) else {
                 return false
             }
             return true

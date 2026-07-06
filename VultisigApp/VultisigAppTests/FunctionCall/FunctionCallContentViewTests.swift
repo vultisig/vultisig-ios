@@ -28,8 +28,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .leave(FunctionCallLeave()),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .vote(FunctionCallVote()),
-            .stake(FunctionCallStake()),
-            .unstake(FunctionCallUnstake()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
             .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
             .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),

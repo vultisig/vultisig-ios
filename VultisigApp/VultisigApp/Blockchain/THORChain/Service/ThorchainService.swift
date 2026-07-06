@@ -14,7 +14,10 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
-    let httpClient: HTTPClientProtocol = HTTPClient()
+    /// Injectable so the sign-time halt gate is unit-testable with a stubbed
+    /// inbound response (same pattern as `MayachainService`); production uses
+    /// the default `HTTPClient`.
+    let httpClient: HTTPClientProtocol
 
     /// Resolves the THORChain custom RPC override. Injected so the API values
     /// are built from a dependency rather than a global reach-in; resolution
@@ -28,8 +31,12 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
     private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
     }
 
     /// The override-aware THORChain LCD host. Falls back to the default host
@@ -207,29 +214,44 @@ class ThorchainService: ThorchainSwapProvider {
         return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
     }
 
-    func fetchThorchainInboundAddress() async -> [InboundAddress] {
+    /// Fetch THORChain inbound addresses (halt flags + gas rates), cached 5 min.
+    /// Pass `bypassCache: true` for the sign-time halt re-check, which must never
+    /// read or write the cache — the decision needs a fresh, live value.
+    func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
         do {
-            let cacheKey = "thorchain-inbound-address"
-
-            if let cachedData = Utils.getCachedData(
-                cacheKey: cacheKey,
-                cache: cacheInboundAddresses,
-                timeInSeconds: 60 * 5
-            ) {
-                return cachedData
-            }
-
-            let response = try await httpClient.request(
-                mainnet(.inboundAddresses),
-                responseType: [InboundAddress].self
-            )
-            let inboundAddresses = response.data
-            self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
-            return inboundAddresses
+            return try await fetchThorchainInboundAddressOrThrow(bypassCache: bypassCache)
         } catch {
             logger.warning("JSON decoding error: \(error.localizedDescription)")
             return []
         }
+    }
+
+    /// Throwing variant of `fetchThorchainInboundAddress` for the sign-time
+    /// fund-safety gate, which must fail CLOSED: a transport/decode failure has
+    /// to propagate so the gate can block signing instead of misreading an empty
+    /// list as "not halted". The fail-soft `fetchThorchainInboundAddress` wraps
+    /// this for screen-level / FunctionCall callers that prefer an empty fallback.
+    func fetchThorchainInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
+        let cacheKey = "thorchain-inbound-address"
+
+        if !bypassCache,
+           let cachedData = Utils.getCachedData(
+               cacheKey: cacheKey,
+               cache: cacheInboundAddresses,
+               timeInSeconds: 60 * 5
+           ) {
+            return cachedData
+        }
+
+        let response = try await httpClient.request(
+            mainnet(.inboundAddresses),
+            responseType: [InboundAddress].self
+        )
+        let inboundAddresses = response.data
+        if !bypassCache {
+            self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
+        }
+        return inboundAddresses
     }
 
     func getTHORChainChainID() async throws -> String {
@@ -687,6 +709,9 @@ struct THORChainPoolResponse: Codable {
     let balanceAsset: String
     let balanceRune: String
     let assetTorPrice: String
+    /// Per-pool trading-halt flag from thornode `/thorchain/pools`. Optional so
+    /// the single-pool `/thorchain/pool/{asset}` decode path stays unaffected.
+    let tradingHalted: Bool?
 
     enum CodingKeys: String, CodingKey {
         case status
@@ -695,6 +720,7 @@ struct THORChainPoolResponse: Codable {
         case balanceAsset = "balance_asset"
         case balanceRune = "balance_rune"
         case assetTorPrice = "asset_tor_price"
+        case tradingHalted = "trading_halted"
     }
 }
 

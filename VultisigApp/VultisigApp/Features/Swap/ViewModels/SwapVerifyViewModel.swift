@@ -36,7 +36,10 @@ final class SwapVerifyViewModel {
     var isLoadingTransaction = false
     var timer: Int = 59
 
-    init(transaction: SwapTransaction, interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        transaction: SwapTransaction,
+        interactor: SwapInteractor = DefaultSwapInteractor.live
+    ) {
         self.transaction = transaction
         self.interactor = interactor
     }
@@ -83,6 +86,13 @@ final class SwapVerifyViewModel {
     }
 
     func refreshData(vault: Vault, referredCode: String) async {
+        // Limit orders have no market quote to refresh — fetching one here
+        // would attach a market quote to a limit transaction and break the
+        // `quote == nil` limit invariant (the signed artifact is the pre-built
+        // limit memo; a refreshed quote would only render misleading
+        // provider/fee rows). Covers the 60s ticker and the retry path.
+        guard !transaction.isLimit else { return }
+
         isLoadingFees = true
         defer { isLoadingFees = false }
 
@@ -92,7 +102,9 @@ final class SwapVerifyViewModel {
                 fromCoin: transaction.fromCoin,
                 toCoin: transaction.toCoin,
                 vault: vault,
-                referredCode: referredCode
+                referredCode: referredCode,
+                slippageBps: transaction.advancedSettings.slippage.bps,
+                recipientAddress: transaction.advancedSettings.externalRecipient
             )
             var updated = transaction
             if let result {
@@ -131,6 +143,21 @@ final class SwapVerifyViewModel {
             guard (error as? URLError)?.code != .cancelled else { return }
             logger.warning("Refresh quote error: \(error.localizedDescription)")
             self.error = error
+        }
+    }
+
+    /// Sign-time fund-safety gate: delegates the live inbound re-check to the
+    /// interactor (which owns the THORChain / Maya services), keeping this VM
+    /// free of any chain-service dependency. Returns `true` when it's safe to
+    /// sign; on a halt (or an unverifiable fetch) it sets `error` and returns
+    /// `false` so the caller does NOT build the payload or navigate.
+    func isSourceChainSafeToSign() async -> Bool {
+        do {
+            try await interactor.assertSourceChainNotHalted(transaction: transaction)
+            return true
+        } catch {
+            self.error = error
+            return false
         }
     }
 

@@ -454,6 +454,7 @@ final class SendDetailsViewModel {
                     isDeposit: self.isDeposit,
                     transactionType: self.transactionType,
                     gasLimit: self.gasLimit,
+                    customGasLimit: self.customGasLimit,
                     feeMode: self.feeMode,
                     fromAddress: self.fromAddress
                 )))
@@ -462,6 +463,9 @@ final class SendDetailsViewModel {
                 // `convertToFiat` without cancelling this task, so guard on it
                 // too or we'd clobber their input.
                 guard !Task.isCancelled, self.sendMaxAmount else { return }
+                if self.customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
+                    self.estimatedGasLimit = resolvedGasLimit
+                }
                 let refined = SendCryptoLogic.computeMaxAmount(coin: self.coin, fee: result.fee)
                 self.amount = refined
                 self.convertToFiat(newValue: refined, setMaxValue: true)
@@ -512,11 +516,18 @@ final class SendDetailsViewModel {
                 isDeposit: isDeposit,
                 transactionType: transactionType,
                 gasLimit: gasLimit,
+                customGasLimit: customGasLimit,
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )))
             gas = result.gas
             fee = result.fee
+            // Adopt the real estimate so the displayed fee, and the gas limit
+            // seeded into the gas-settings sheet, reflect it. A user override
+            // (customGasLimit) still wins via the `gasLimit` computed property.
+            if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
+                estimatedGasLimit = resolvedGasLimit
+            }
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
@@ -629,6 +640,29 @@ final class SendDetailsViewModel {
             setAmountError(message: "walletBalanceExceededError")
             return false
         }
+
+        // Existential-deposit guard for ED-bearing chains (DOT/XRP) that reap
+        // the *sender*. Block here — before the keysign ceremony — rather than
+        // letting `transfer_keep_alive` fail on-chain with the fee already
+        // charged. Skipped for non-native tokens (ED applies to the native
+        // account, not token transfers).
+        if coin.isNativeToken {
+            if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: fee) {
+                setAmountError(message: "belowExistentialDepositError".localized)
+                return false
+            }
+        }
+
+        // Some chains enforce a protocol minimum value on every output; a
+        // native send below it is silently dropped by the node. Match Android
+        // by blocking it here before the keysign ceremony.
+        if SendCryptoLogic.isBelowMinimumSendAmount(coin: coin, amount: amount),
+           let minimum = coin.chain.minimumSendAmount {
+            let minAmount = coin.decimal(for: minimum).description
+            setAmountError(message: String(format: "cardanoMinimumSendAmountError".localized, minAmount))
+            return false
+        }
+
         return validateERC20GasBalance()
     }
 

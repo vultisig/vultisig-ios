@@ -209,6 +209,38 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(generic.provider, .lifi)
     }
 
+    // MARK: - Jupiter (Solana)
+
+    func testJupiterPayloadIsGenericSolanaWithBase64InTxData() async throws {
+        let vault = makeVault()
+        let transaction = makeSolanaJupiterTransaction(
+            quote: .jupiter(
+                makeSolanaEVMQuote(base64: "AQIDBA=="),
+                fee: nil,
+                platformFee: Decimal(string: "0.5")
+            )
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: solanaChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+
+        XCTAssertNil(payload.memo, "Solana swaps don't use memos")
+        XCTAssertNil(payload.approvePayload, "Solana never needs an ERC20 approve")
+        XCTAssertEqual(payload.toAddress, "SoLoutputMint", "Jupiter toAddress is the cosmetic EVMQuote.tx.to (the output mint, as JupiterService sets it)")
+        guard case let .generic(generic) = payload.swapPayload else {
+            XCTFail("Expected .generic swapPayload"); return
+        }
+        XCTAssertEqual(generic.provider, .jupiter)
+        XCTAssertEqual(
+            generic.quote.tx.data, "AQIDBA==",
+            "Base64 Solana wire tx must ride verbatim in quote.tx.data (the SwapKit-Solana MPC path)"
+        )
+    }
+
     // MARK: - Swap-fee coin context
 
     func testKyberSwapPayloadCarriesDestinationTokenFeeContext() async throws {
@@ -382,7 +414,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: rune,
-            limitContext: nil
+            limitContext: nil,
+            advancedSettings: .default
         )
     }
 
@@ -399,7 +432,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: cacao,
-            limitContext: nil
+            limitContext: nil,
+            advancedSettings: .default
         )
     }
 
@@ -416,7 +450,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: eth,
-            limitContext: nil
+            limitContext: nil,
+            advancedSettings: .default
         )
     }
 
@@ -458,7 +493,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: eth,
-            limitContext: nil
+            limitContext: nil,
+            advancedSettings: .default
         )
     }
 
@@ -475,7 +511,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: eth,
-            limitContext: nil
+            limitContext: nil,
+            advancedSettings: .default
         )
     }
 
@@ -524,8 +561,54 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
+    private func makeSolanaJupiterTransaction(quote: SwapQuote) -> SwapTransaction {
+        let sol = makeContractCoin(.solana, ticker: "SOL", decimals: 9, isNative: true, contract: "")
+        let usdc = makeContractCoin(
+            .solana, ticker: "USDC", decimals: 6, isNative: false,
+            contract: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        )
+        return SwapTransaction(
+            fromCoin: sol,
+            toCoin: usdc,
+            fromAmount: 1.0,
+            quote: quote,
+            gas: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: sol,
+            limitContext: nil,
+            advancedSettings: .default
+        )
+    }
+
+    private func makeSolanaEVMQuote(base64: String) -> EVMQuote {
+        EVMQuote(
+            dstAmount: "1000000",
+            tx: EVMQuote.Transaction(
+                from: "SoLfromAddr",
+                to: "SoLoutputMint",
+                data: base64,
+                value: "0",
+                gasPrice: "0",
+                gas: 0
+            )
+        )
+    }
+
+    private func solanaChainSpecific() -> BlockChainSpecific {
+        .Solana(
+            recentBlockHash: "blockhash",
+            priorityFee: BigInt(0),
+            priorityLimit: BigInt(0),
+            fromAddressPubKey: nil,
+            toAddressPubKey: nil,
+            hasProgramId: false
+        )
+    }
+
     private func cosmosChainSpecific() -> BlockChainSpecific {
-        .Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil)
+        .Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     private func ethereumChainSpecific() -> BlockChainSpecific {

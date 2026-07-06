@@ -14,12 +14,15 @@ extension SwapQuote {
     ///
     /// - THORChain/Maya: `expectedAmountOut` is already net of inbound + swap + outbound fees.
     /// - 1inch/KyberSwap: `dstAmount` is net of swap fees.
-    /// - LiFi: `dstAmount` minus integrator fee (charged on the output side).
+    /// - LiFi: `dstAmount` is already net of the integrator fee, which LI.FI takes from the
+    ///   source token (`fromToken`) and reflects in `estimate.toAmount` (`included: true`).
     ///
-    /// Source-chain gas is intentionally excluded: aggregators on a given chain consume similar
-    /// gas (~200k units), so the destination output dominates the comparison. THORChain Router
-    /// gas on EVM is large but isn't exposed at quote time. A future refinement can subtract gas
-    /// once a native-token price lookup is wired in.
+    /// Source-chain gas is intentionally excluded from this destination-side metric: folding it
+    /// in would require a cross-asset price (source-native wei → destination token) the ranker
+    /// doesn't have, and it only applies to same-chain EVM aggregators — an asymmetric term that
+    /// would disadvantage THORChain/Maya (no router gas at quote time). Source gas is instead
+    /// applied as an in-band lower-gas tie-break in `selectBestQuote` via `sourceGasWei`, where
+    /// the two compared EVM quotes share the same native-wei unit and no price lookup is needed.
     func expectedNetToAmount(toCoin: Coin) -> Decimal? {
         switch self {
         case .thorchain(let quote),
@@ -30,15 +33,18 @@ extension SwapQuote {
             return raw / toCoin.thorswapMultiplier
 
         case .oneinch(let quote, _),
-             .kyberswap(let quote, _):
+             .kyberswap(let quote, _),
+             .lifi(let quote, _, _):
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
             return toCoin.decimal(for: raw)
 
-        case .lifi(let quote, _, let integratorFee):
+        case .jupiter(let quote, _, _):
+            // Jupiter `outAmount` is already net of the affiliate platform fee
+            // (Jupiter deducts the fee from the AMM output and reports it
+            // separately in `platformFee`), so it's the amount the user
+            // receives — same convention as LiFi above. Do NOT subtract again.
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
-            let amount = toCoin.decimal(for: raw)
-            let fee = amount * (integratorFee ?? 0)
-            return amount - fee
+            return toCoin.decimal(for: raw)
 
         case .swapkit(let response, _, _):
             // SwapKit's `expectedBuyAmount` is already a decimal string in

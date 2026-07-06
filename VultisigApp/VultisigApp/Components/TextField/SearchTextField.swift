@@ -39,7 +39,7 @@ struct SearchTextField: View {
             )
             TextField(placeholder, text: $value)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
@@ -75,7 +75,7 @@ struct SearchTextField: View {
             isFocused = false
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textSecondary)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
         .buttonStyle(.plain)
     }

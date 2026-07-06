@@ -62,6 +62,8 @@ struct KeysignDiscoveryView: View {
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
 
+    @EnvironmentObject var appViewModel: AppViewModel
+
     @State var isLoading = false
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
@@ -128,7 +130,16 @@ struct KeysignDiscoveryView: View {
     }
 
     var errorText: some View {
-        SendCryptoStartErrorView(errorText: viewModel.errorMessage)
+        let presentation = ErrorPresentation.signing(rawError: viewModel.errorMessage)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "tryAgain".localized,
+            rawError: presentation.rawError
+        ) {
+            appViewModel.restart()
+        }
     }
 
     var list: some View {

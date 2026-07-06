@@ -88,6 +88,11 @@ enum SwapCryptoLogic {
             default:
                 return fee ?? 0
             }
+        case let .jupiter(_, fee, _):
+            // Jupiter exposes no network fee at quote time; fall back to the
+            // Solana-source plan fee carried in `thorchainFee`
+            // (`chainSpecific.gas`), the same way Send computes it.
+            return fee ?? thorchainFee
         case nil:
             return .zero
         }
@@ -103,6 +108,12 @@ enum SwapCryptoLogic {
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
+            let amount = BigInt(quote.dstAmount) ?? BigInt.zero
+            return toCoin.decimal(for: amount)
+        case let .jupiter(quote, _, _):
+            // `outAmount` is already net of the affiliate fee (deducted from the
+            // output and reported separately), so it's what the user receives —
+            // same as LiFi above. Do NOT subtract the fee again.
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         case let .swapkit(response, _, _):
@@ -498,8 +509,12 @@ enum SwapCryptoLogic {
         formatter.negativePrefix = "-"
         guard let string = formatter.string(from: NSDecimalNumber(decimal: displayImpact)) else { return .empty }
 
+        // Three-tier quality rating aligned with `priceImpactColor`'s bands so
+        // the label and color always agree (Good / Average / High).
         if displayImpact > -0.01 {
             return "\(string) (\("swap.price_impact.good".localized))"
+        } else if displayImpact > -0.03 {
+            return "\(string) (\("swap.price_impact.average".localized))"
         } else {
             return "\(string) (\("swap.price_impact.high".localized))"
         }

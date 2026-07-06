@@ -54,6 +54,8 @@ struct VultisigApp: App {
         // so the swap coin picker can aggregate destination tokens from
         // every source. New providers register here.
         DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
+        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .thorchain))
+        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .mayachain))
     }
     var body: some Scene {
         WindowGroup {
@@ -85,6 +87,8 @@ struct VultisigApp: App {
             StakePosition.self,
             LPPosition.self,
             CirclePosition.self,
+            YieldPosition.self,
+            YieldRedemptionRecord.self,
             StoredPendingTransaction.self,
             VaultSettings.self,
             TransactionHistoryItem.self,

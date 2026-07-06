@@ -113,6 +113,21 @@ final class DefiBalanceServiceTests: XCTestCase {
         XCTAssertEqual(service.totalBalanceInFiat(for: .tron, vault: vault), .zero)
     }
 
+    func testTronTotalBalanceAndCountZeroWhenStakedBalanceUnset() throws {
+        // Default `Coin.stakedBalance` is the empty string (never refreshed).
+        // The DeFi main row must read $0.00 / 0 positions, not crash or inherit
+        // the wallet balance — this is exactly the stale state issue #4608 hits.
+        let trx = makeTronCoin(rawBalance: "100000000", stakedBalance: "")
+        vault.coins = [trx]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "tron", value: 0.5)
+        ])
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .tron, vault: vault), .zero)
+        XCTAssertTrue(service.totalBalanceInFiatString(for: .tron, vault: vault).contains("0"))
+        XCTAssertEqual(service.defiPositionCount(for: .tron, vault: vault), 0)
+    }
+
     private func makeTronCoin(rawBalance: String, stakedBalance: String) -> Coin {
         let trxMeta = CoinMeta.make(chain: .tron, ticker: "TRX", decimals: 6)
         let coin = Coin(asset: trxMeta, address: "TTronTestAddress", hexPublicKey: "")
@@ -120,6 +135,188 @@ final class DefiBalanceServiceTests: XCTestCase {
         coin.rawBalance = rawBalance
         coin.stakedBalance = stakedBalance
         return coin
+    }
+
+    // MARK: - Yield positions in the DeFi total
+
+    func testYieldBalanceSummedIntoYieldTotal() throws {
+        vault.coins = [makeUsdcCoin()]
+        vault.setDefiProvider(.circle, enabled: true)
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1)
+        ])
+        try YieldPositionStorageService().upsert(
+            providerID: .circle, depositedBalance: 250, nativeGasBalance: 0, redemptions: [], for: vault
+        )
+
+        XCTAssertEqual(
+            service.yieldTotalBalanceFiatDecimal(for: vault),
+            250,
+            "An enabled yield position's deposited USDC must be added to the DeFi total at the USDC rate."
+        )
+    }
+
+    func testYieldBalanceExcludedWhenProviderDisabled() throws {
+        vault.coins = [makeUsdcCoin()]
+        vault.setDefiProvider(.circle, enabled: false)
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1)
+        ])
+        try YieldPositionStorageService().upsert(
+            providerID: .circle, depositedBalance: 250, nativeGasBalance: 0, redemptions: [], for: vault
+        )
+
+        XCTAssertEqual(
+            service.yieldTotalBalanceFiatDecimal(for: vault),
+            .zero,
+            "A disabled provider's cached position must not inflate the DeFi total."
+        )
+    }
+
+    private func makeUsdcCoin() -> Coin {
+        let meta = CoinMeta.make(chain: .ethereum, ticker: "USDC", decimals: 6, isNativeToken: false)
+        let coin = Coin(asset: meta, address: "0xUSDCtestAddress", hexPublicKey: "")
+        coin.priceProviderId = "usd-coin"
+        return coin
+    }
+
+    // MARK: - Provider-array migration
+
+    func testLegacyFlagsMigrateIntoProviderArray() {
+        // A pre-refactor Circle user: isCircleEnabled true (default), unmigrated.
+        XCTAssertFalse(vault.didMigrateDefiProviders)
+        XCTAssertTrue(vault.isDefiProviderEnabled(.circle), "reads fall back to the legacy flag before backfill")
+
+        XCTAssertTrue(vault.migrateLegacyDefiProvidersIfNeeded())
+        XCTAssertTrue(vault.didMigrateDefiProviders)
+        XCTAssertEqual(vault.enabledDefiProviders, [DefiYieldProviderID.circle.rawValue], "the enabled Circle flag carries into the array")
+        XCTAssertFalse(vault.migrateLegacyDefiProvidersIfNeeded(), "migration runs exactly once")
+    }
+
+    func testSetDefiProviderTogglesArrayAndMigrates() {
+        vault.setDefiProvider(.circle, enabled: true)
+        XCTAssertTrue(vault.didMigrateDefiProviders)
+        XCTAssertTrue(vault.isDefiProviderEnabled(.circle))
+
+        vault.setDefiProvider(.circle, enabled: false)
+        XCTAssertFalse(vault.isDefiProviderEnabled(.circle))
+        XCTAssertFalse(vault.enabledDefiProviders.contains(DefiYieldProviderID.circle.rawValue))
+    }
+
+    // MARK: - TON nominator staking (issue #4653)
+
+    /// A real TON nominator stake (surfaced as a `StakePosition`) must contribute
+    /// to the DeFi total and count as a position WITHOUT enabling the per-coin
+    /// opt-in (`defiPositions[.ton].staking`) — mirrors Tron.
+    func testTonTotalBalanceFiatFromStakePositionWithoutOptIn() throws {
+        let tonMeta = TokensStore.ton
+        let ton = Coin(asset: tonMeta, address: "UQTonTestAddress", hexPublicKey: "")
+        ton.priceProviderId = tonMeta.priceProviderId
+        vault.coins = [ton]
+        // No `defiPositions[.ton].staking` entry: the position must still count.
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: tonMeta.priceProviderId, value: 2)
+        ])
+
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        let total = service.totalBalanceInFiat(for: .ton, vault: vault)
+        XCTAssertEqual(total, Decimal(10) * Decimal(2), "TON staked fiat must be staked amount × rate, ungated.")
+    }
+
+    func testTonPositionCountOneFromStakePositionWithoutOptIn() throws {
+        let tonMeta = TokensStore.ton
+        let ton = Coin(asset: tonMeta, address: "UQTonTestAddress", hexPublicKey: "")
+        vault.coins = [ton]
+
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 1, "A staked TON position counts without opt-in.")
+    }
+
+    func testTonPositionCountZeroWhenNoStake() {
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0)
+        XCTAssertEqual(service.totalBalanceInFiat(for: .ton, vault: vault), .zero)
+    }
+
+    func testTonPositionCountZeroWhenStakedAmountZero() throws {
+        let tonMeta = TokensStore.ton
+        let storage = DefiPositionsStorageService()
+        try storage.upsert(stake: [
+            StakePositionData(coin: tonMeta, type: .stake, amount: 0)
+        ], for: vault)
+
+        XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0, "A zero-amount placeholder is not a position.")
+    }
+
+    // MARK: - Solana native staking
+
+    private func makeSolanaCoin(rawBalance: String, stakedBalance: String) -> Coin {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+        let coin = Coin(asset: solMeta, address: "SoLTestAddress", hexPublicKey: "")
+        coin.priceProviderId = "solana"
+        coin.rawBalance = rawBalance
+        coin.stakedBalance = stakedBalance
+        return coin
+    }
+
+    /// Staked SOL (summed delegated lamports written to `Coin.stakedBalance`)
+    /// rolls into the DeFi total ungated — like Tron, no per-coin opt-in.
+    func testSolanaTotalBalanceFiatReadsStakedNotWallet() throws {
+        // 10 SOL wallet, 4 SOL delegated.
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "4000000000")
+        vault.coins = [sol]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
+        ])
+
+        let total = service.totalBalanceInFiat(for: .solana, vault: vault)
+        XCTAssertEqual(total, Decimal(4) * Decimal(3), "Solana DeFi fiat must be delegated SOL × rate, not wallet × rate.")
+        XCTAssertNotEqual(total, Decimal(10) * Decimal(3))
+    }
+
+    func testSolanaTotalBalanceFiatZeroWhenNoSolanaCoin() {
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+    }
+
+    func testSolanaTotalBalanceZeroWhenStakedBalanceUnset() throws {
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "")
+        vault.coins = [sol]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
+        ])
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    func testSolanaPositionCountOneWhenAnyStaked() {
+        let sol = makeSolanaCoin(rawBalance: "0", stakedBalance: "1")
+        vault.coins = [sol]
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 1)
+    }
+
+    func testSolanaPositionCountZeroWhenNoStake() {
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "0")
+        vault.coins = [sol]
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    /// The staking position picker resolves native SOL (no `TokensStore.sol`
+    /// static) from `TokenSelectionAssets`.
+    func testSolanaStakeCoinsResolvesNativeSol() {
+        let coins = DefiPositionsService().stakeCoins(for: .solana)
+        XCTAssertEqual(coins.count, 1)
+        let sol = try? XCTUnwrap(coins.first)
+        XCTAssertEqual(sol?.chain, .solana)
+        XCTAssertEqual(sol?.ticker, "SOL")
+        XCTAssertEqual(sol?.isNativeToken, true)
     }
 
     // MARK: - Position counts (Windows parity)

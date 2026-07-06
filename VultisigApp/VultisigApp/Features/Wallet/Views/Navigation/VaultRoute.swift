@@ -23,6 +23,8 @@ enum VaultRoute: Hashable {
     case deleteVault(vault: Vault, devicesInfo: [DeviceInfo])
     case advancedSettings(vault: Vault)
     case customMessage(vault: Vault)
+    case customRPC(vault: Vault)
+    case customRPCDetail(chain: Chain)
     case onChainSecurity
     case chainDetail(chain: Chain, vault: Vault)
     case defiChain(chain: Chain, vault: Vault)

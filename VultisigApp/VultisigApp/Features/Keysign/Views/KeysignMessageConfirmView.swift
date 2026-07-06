@@ -30,6 +30,9 @@ struct KeysignMessageConfirmView: View {
                         feeFiat: fees.feeFiat,
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,
                         amount: lpAmountTitle(for: viewModel.keysignPayload, lpDictionary: lpDictionary),
+                        // LP memos render a compound "<amt> <ticker> → <pool> LP"
+                        // title, so their fiat would be misleading — suppress it.
+                        amountFiat: lpDictionary == nil ? viewModel.getAmountFiat() : "",
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
                         hero: viewModel.heroContent,
@@ -41,9 +44,10 @@ struct KeysignMessageConfirmView: View {
                     securityScannerState: $viewModel.securityScannerState
                 )
 
-                PrimaryButton(title: "joinTransactionSigning") {
+                PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
                 }
+                .disabled(viewModel.isJoiningCommittee)
             }
             .task {
                 async let thor: Void = viewModel.loadThorchainID()

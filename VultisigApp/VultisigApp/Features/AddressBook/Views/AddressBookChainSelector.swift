@@ -17,7 +17,7 @@ struct AddressBookChainSelector: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 Text("chain".localized)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
                 ContainerView {
                     HStack {

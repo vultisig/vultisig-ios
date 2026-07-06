@@ -68,7 +68,7 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
     }
 
     func testEvmFeeFallsBackToDefaultGasUnitWhenGasZero() throws {
-        // A route that omits the gas limit (gas == 0) must still surface a
+        // A native route that omits the gas limit (gas == 0) must still surface a
         // representative fee using `EVMHelper.defaultETHSwapGasUnit`, mirroring
         // the keysign-path normalisation, rather than collapsing to zero.
         let tx = SwapKitEvmTx(
@@ -79,9 +79,40 @@ final class SwapKitServiceInboundFeeTests: XCTestCase {
             gas: "0x0",
             gasPrice: "0x3b9aca00" // 1 gwei
         )
-        let fee = service.evmNetworkFee(from: tx)
+        let fee = service.evmNetworkFee(from: tx, isNativeSource: true)
         let expected = BigInt(EVMHelper.defaultETHSwapGasUnit) * BigInt(1_000_000_000)
         XCTAssertEqual(fee, expected)
+    }
+
+    func testEvmFeeFallsBackToErc20UnitWhenGasZeroForTokenSource() throws {
+        // An ERC-20 route that omits the gas limit falls back to the token
+        // operation unit rather than the native swap unit.
+        let tx = SwapKitEvmTx(
+            from: "0xfrom",
+            to: "0xto",
+            value: "0",
+            data: "0x",
+            gas: "0x0",
+            gasPrice: "0x3b9aca00" // 1 gwei
+        )
+        let fee = service.evmNetworkFee(from: tx, isNativeSource: false)
+        let expected = BigInt(EVMHelper.defaultERC20TransferGasUnit) * BigInt(1_000_000_000)
+        XCTAssertEqual(fee, expected)
+    }
+
+    func testEvmFeeRespectsReportedGasWhenNonZero() throws {
+        // SwapKit's reported gas is respected verbatim when present — we don't
+        // floor or substitute it, even for an ERC-20 source.
+        let tx = SwapKitEvmTx(
+            from: "0xfrom",
+            to: "0xto",
+            value: "0",
+            data: "0x",
+            gas: "0x33450", // 210_000
+            gasPrice: "0x3b9aca00" // 1 gwei
+        )
+        let fee = service.evmNetworkFee(from: tx, isNativeSource: false)
+        XCTAssertEqual(fee, BigInt(210_000) * BigInt(1_000_000_000))
     }
 
     func testSolanaInboundFeeParsedAsLamports() throws {

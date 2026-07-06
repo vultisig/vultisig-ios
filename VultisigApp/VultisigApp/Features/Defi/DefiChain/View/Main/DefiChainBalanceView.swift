@@ -18,15 +18,10 @@ struct DefiChainBalanceView: View {
     @State private var balance: String = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(chain.name)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
-
-            Text("balance".localized)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.caption12)
-                .padding(.top, 12)
 
             HiddenBalanceText(balance)
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -34,8 +29,9 @@ struct DefiChainBalanceView: View {
                 .contentTransition(.numericText())
                 .animation(.interpolatingSpring, value: balance)
         }
+        .frame(height: 118)
+        .padding(.leading, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
         .background(backgroundView)
         .onAppear { updateBalance() }
         .onChange(of: vault) { _, _ in
@@ -56,54 +52,38 @@ struct DefiChainBalanceView: View {
             .inset(by: 0.5)
             .stroke(Color(hex: "34E6BF").opacity(0.17))
             .fill(gradientStyle)
-            .overlay(imageView, alignment: .trailing)
+            .overlay(imageView, alignment: .topTrailing)
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    var imageName: String {
+    var defiBanner: String? {
         switch chain {
         case .thorChain:
-            "thorchain-banner"
+            "thorchain-defi-banner"
         case .mayaChain:
-            "mayachain-banner"
+            "maya-defi-banner"
+        case .ton:
+            "ton-defi-banner"
+        case .terra, .terraClassic:
+            "terra-defi-banner"
         default:
-            ""
+            nil
         }
     }
 
     @ViewBuilder
     var imageView: some View {
-        switch chain {
-        case .terra, .terraClassic:
-            cosmosStakingIconOverlay(logo: "luna")
-        case .qbtc:
-            cosmosStakingIconOverlay(logo: "qbtc")
-        default:
-            Image(imageName)
+        if let defiBanner {
+            Image(defiBanner)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
+                .frame(width: 200, height: 200)
+                .offset(x: 35, y: -10)
+        } else {
+            DefiChainHeaderImageView(name: chain.logo)
+                .frame(width: 200, height: 200)
+                .offset(x: 35, y: -10)
         }
-    }
-
-    private func cosmosStakingIconOverlay(logo: String) -> some View {
-        ZStack {
-            Image(logo)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 130, height: 130)
-                .clipShape(Circle())
-
-            Circle()
-                .stroke(Theme.colors.alertSuccess.opacity(0.4), lineWidth: 2.2)
-                .frame(width: 130, height: 130)
-
-            Circle()
-                .stroke(Theme.colors.alertSuccess.opacity(0.25), lineWidth: 1)
-                .frame(width: 160, height: 160)
-                .shadow(color: Color(red: 0, green: 0.6, blue: 0.92).opacity(0.27), radius: 13.33278, x: 0, y: 0)
-        }
-        .offset(x: 0, y: 30)
-        .opacity(0.6)
     }
 
     var gradientStyle: some ShapeStyle {
@@ -122,7 +102,59 @@ struct DefiChainBalanceView: View {
     }
 }
 
+private struct DefiChainHeaderImageView: View {
+    let name: String
+
+    var body: some View {
+        ZStack {
+            image
+                .frame(width: 80, height: 80)
+                .clipShape(Circle())
+                .opacity(0.8)
+
+            outerCircle
+                .blur(radius: 5)
+
+            innerCircle
+                .blur(radius: 5)
+
+            innerCircle
+
+            outerCircle
+                .opacity(0.6)
+        }
+    }
+
+    var image: some View {
+        Image(name)
+            .resizable()
+            .scaledToFit()
+            .clipShape(Circle())
+    }
+
+    var outerCircle: some View {
+        image
+            .blur(radius: 10, opaque: true)
+            .blendMode(.screen)
+            .mask(Circle().stroke(.black, lineWidth: 1).frame(width: 145, height: 145))
+    }
+
+    var innerCircle: some View {
+        image
+            .blur(radius: 10, opaque: true)
+            .blendMode(.screen)
+            .mask(Circle().stroke(.black, lineWidth: 2).frame(width: 118, height: 118))
+    }
+}
+
 #Preview {
-    DefiChainBalanceView(vault: .example, chain: .thorChain)
-        .environmentObject(HomeViewModel())
+    Screen {
+        VStack {
+            DefiChainBalanceView(vault: .example, chain: .thorChain)
+            DefiChainBalanceView(vault: .example, chain: .mayaChain)
+            DefiChainBalanceView(vault: .example, chain: .solana)
+            DefiChainBalanceView(vault: .example, chain: .qbtc)
+        }
+    }
+    .environmentObject(HomeViewModel())
 }

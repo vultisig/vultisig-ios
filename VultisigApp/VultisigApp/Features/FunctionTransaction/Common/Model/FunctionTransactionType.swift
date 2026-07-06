@@ -21,6 +21,21 @@ enum FunctionTransactionType: Hashable {
     case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
     case cosmosRedelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
     case cosmosWithdrawRewards(coin: CoinMeta, validators: [CosmosWithdrawRewardsCandidate])
+    /// Solana native-staking delegate (stake). The user picks a validator vote
+    /// account and amount; the app builds + signs a create-and-delegate tx.
+    ///
+    /// Note: Solana unstake/withdraw are NOT routed here — they have no editable
+    /// field, so `DefiChainMainScreen` builds the tx and pushes straight to
+    /// Verify, skipping the confirm screen.
+    case solanaDelegate(coin: CoinMeta)
+    /// TON nominator-pool stake. `poolAddress`/`poolImplementation` are the
+    /// existing pool for add-more, or `nil` for a first-time stake (the picker
+    /// supplies the pool, whose implementation resolves the deposit comment).
+    case tonStake(coin: CoinMeta, poolAddress: String?, poolImplementation: String?)
+    /// TON nominator-pool unstake (full withdrawal). `poolAddress` is the
+    /// existing pool the position is staked into; `poolImplementation` resolves
+    /// the withdraw comment; `stakedAmount` is shown for confirmation.
+    case tonUnstake(coin: CoinMeta, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal)
 
     var coins: [CoinMeta] {
         switch self {
@@ -49,6 +64,12 @@ enum FunctionTransactionType: Hashable {
         case .cosmosRedelegate(let coin, _, _, _):
             return [coin]
         case .cosmosWithdrawRewards(let coin, _):
+            return [coin]
+        case .solanaDelegate(let coin):
+            return [coin]
+        case .tonStake(let coin, _, _):
+            return [coin]
+        case .tonUnstake(let coin, _, _, _):
             return [coin]
         }
     }

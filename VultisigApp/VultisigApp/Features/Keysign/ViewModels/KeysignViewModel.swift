@@ -111,6 +111,26 @@ class KeysignViewModel: ObservableObject {
         txid.isEmpty && !(keysignPayload?.skipBroadcast ?? false)
     }
 
+    /// Drives the keysign Rive animation's `progessPercentage` bar (0–100). The
+    /// bar fills as signing advances through its phases, mirroring the Android
+    /// client. Without an explicit value the bar stays empty regardless of the
+    /// flow (custom message and swap signing reported this), since nothing else
+    /// binds the property.
+    var signingProgress: Float {
+        switch status {
+        case .CreatingInstance:
+            return 0
+        case .KeysignECDSA:
+            return 33
+        case .KeysignEdDSA, .KeysignMLDSA:
+            return 66
+        case .KeysignFinished:
+            return 100
+        case .KeysignFailed, .KeysignRetryRequested, .KeysignVaultMismatch, .KeysignBroadcastUnconfirmed:
+            return 0
+        }
+    }
+
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo
@@ -204,31 +224,7 @@ class KeysignViewModel: ObservableObject {
     /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            switch sim {
-            case .transfer(let coin, _):
-                return .send(
-                    title: decodedFunctionName,
-                    coin: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: coin.ticker,
-                        logo: coin.logo
-                    )
-                )
-            case .swap(let from, let to, _, _):
-                return .swap(
-                    title: decodedFunctionName,
-                    from: HeroCoinAmount(
-                        amount: sim.heroAmountText,
-                        ticker: from.ticker,
-                        logo: from.logo
-                    ),
-                    to: HeroCoinAmount(
-                        amount: sim.heroToAmountText ?? "",
-                        ticker: to.ticker,
-                        logo: to.logo
-                    )
-                )
-            }
+            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
         }
 
         if didLoadSimulation,
@@ -911,7 +907,7 @@ class KeysignViewModel: ObservableObject {
                         self.txid = hash
 
                         // Store pending transaction for nonce tracking
-                        if case .Cosmos(_, let sequence, _, _, _) = keysignPayload.chainSpecific {
+                        if case .Cosmos(_, let sequence, _, _, _, _) = keysignPayload.chainSpecific {
                             PendingTransactionManager.shared.addPendingTransaction(
                                 txHash: hash,
                                 address: keysignPayload.coin.address,

@@ -14,7 +14,17 @@ struct TokenSearchService {
 
     private init() {}
 
+    /// Returns the chain's remote + preset token list, served from
+    /// `SwapTokenListCache` when fresh (instant, no network) and refetched via
+    /// `fetchUncached` otherwise. The cache is vault-independent — callers
+    /// re-merge the vault's held coins themselves on each open.
     func loadTokens(for chain: Chain) async throws -> [CoinMeta] {
+        try await SwapTokenListCache.shared.tokens(for: chain) {
+            try await self.fetchUncached(for: chain)
+        }
+    }
+
+    private func fetchUncached(for chain: Chain) async throws -> [CoinMeta] {
         guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
 
         do {

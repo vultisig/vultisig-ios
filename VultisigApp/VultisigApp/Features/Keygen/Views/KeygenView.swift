@@ -210,12 +210,7 @@ struct KeygenView: View {
     }
 
     var migrationFailedText: some View {
-        ErrorView(
-            type: .alert,
-            title: "migrationFailed".localized,
-            description: viewModel.keygenError,
-            buttonTitle: "retry".localized
-        ) {
+        keygenErrorView(title: "migrationFailed".localized) {
             dismiss()
         }
         .onAppear {
@@ -232,7 +227,7 @@ struct KeygenView: View {
             VStack(spacing: 24) {
                 VStack {
                     Text(NSLocalizedString("vaultCreated", comment: ""))
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
                     Text(NSLocalizedString("successfully", comment: ""))
                         .foregroundStyle(LinearGradient.primaryGradient)
                 }
@@ -271,25 +266,30 @@ struct KeygenView: View {
     }
 
     var migrateFailedText: some View {
-        ErrorView(
-            type: .alert,
-            title: "migrationFailed".localized,
-            description: viewModel.keygenError,
-            buttonTitle: "retry".localized
-        ) {
+        keygenErrorView(title: "migrationFailed".localized) {
             dismiss()
         }
     }
 
     var keygenFailedText: some View {
-        ErrorView(
-            type: .alert,
-            title: "keygenFailed".localized,
-            description: viewModel.keygenError,
-            buttonTitle: "retry".localized
-        ) {
+        keygenErrorView(title: "keygenFailed".localized) {
             dismiss()
         }
+    }
+
+    /// Friendly keygen failure: a recoverable network error surfaces the amber
+    /// "Network unstable" copy, anything else keeps the keygen-specific title
+    /// with a generic subtitle and the raw error tucked behind "Show exact error".
+    func keygenErrorView(title: String, action: @escaping () -> Void) -> some View {
+        let presentation = ErrorPresentation.keygen(title: title, rawError: viewModel.keygenError)
+        return ErrorView(
+            type: presentation.type,
+            title: presentation.title,
+            description: presentation.description,
+            buttonTitle: "retry".localized,
+            rawError: presentation.rawError,
+            action: action
+        )
     }
 
     var keygenReshareFailedText: some View {

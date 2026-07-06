@@ -8,6 +8,7 @@
 
 import BigInt
 import Foundation
+import OSLog
 
 struct DefaultSwapInteractor: SwapInteractor {
     let quote: QuoteServiceProtocol
@@ -15,6 +16,10 @@ struct DefaultSwapInteractor: SwapInteractor {
     let balance: BalanceServiceProtocol
     let fastVault: FastVaultServiceProtocol
     let tierResolver: SwapDiscountTierResolving
+    /// Inbound clients for the sign-time native-route halt re-check. Injected so
+    /// the gate is unit-testable; production uses the shared singletons.
+    var thorchainService: ThorchainService = .shared
+    var mayachainService: MayachainService = .shared
 
     static var live: SwapInteractor {
         DefaultSwapInteractor(
@@ -31,7 +36,9 @@ struct DefaultSwapInteractor: SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         guard !amount.isZero else { return nil }
         guard fromCoin != toCoin else {
@@ -60,7 +67,9 @@ struct DefaultSwapInteractor: SwapInteractor {
             toCoin: toCoin,
             isAffiliate: SwapCryptoLogic.isAffiliate,
             referredCode: referredCode,
-            vultTierDiscount: vultDiscountBps
+            vultTierDiscount: vultDiscountBps,
+            slippageBps: slippageBps,
+            recipientAddress: recipientAddress
         )
 
         return SwapQuoteResult(
@@ -99,13 +108,85 @@ struct DefaultSwapInteractor: SwapInteractor {
         )
     }
 
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
+        let inboundFetch: () async throws -> [InboundAddress]
+
+        if transaction.isLimit {
+            // Limit orders carry no market quote but always route through
+            // THORChain mainnet — apply the same fail-closed, cache-bypassing
+            // re-check as a `.thorchain` market quote. (`LimitSwapPayloadAssembler`
+            // additionally refuses halted/paused inbounds when it selects the
+            // vault, but that read can be cache-served; this is the live gate.)
+            inboundFetch = { [thorchainService] in
+                try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            }
+        } else {
+            guard let quote = transaction.quote, quote.isNativeProtocolRoute else { return }
+            switch quote {
+            case .mayachain:
+                inboundFetch = { [mayachainService] in
+                    try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+                }
+            case .thorchain:
+                inboundFetch = { [thorchainService] in
+                    try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
+            case .thorchainChainnet:
+                // Read inbound from the matching node, not mainnet, so the
+                // halt status reflects the network the quote actually routes on.
+                inboundFetch = {
+                    try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
+            case .thorchainStagenet:
+                inboundFetch = {
+                    try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
+            case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+                return
+            }
+        }
+
+        let sourceChain = transaction.fromCoin.chain
+        do {
+            let inbound = try await inboundFetch()
+            if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {
+                throw SwapError.tradingHalted
+            }
+        } catch let error as SwapError {
+            throw error
+        } catch {
+            // Fail closed: an unverifiable inbound re-check must not let a native
+            // deposit proceed. Surface the retryable halt message so the user can
+            // retry once the fetch recovers.
+            let logger = Logger(subsystem: "com.vultisig.app", category: "swap-interactor")
+            logger.warning("Sign-time halt re-check failed, blocking native route: \(error.localizedDescription, privacy: .public)")
+            throw SwapError.tradingHalted
+        }
+    }
+
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        let chainSpecific = try await fetchChainSpecific(
+        // Safety net (HIGH tier): before building anything signable, verify the
+        // finalised quote's on-chain output target actually equals the intended
+        // external recipient. No-op when no external recipient is set. A mismatch
+        // (provider dropped/misused the recipient param) throws and stops signing.
+        try SwapRecipientVerifier.verify(transaction: transaction)
+
+        let fetched = try await fetchChainSpecific(
             fromCoin: transaction.fromCoin,
             toCoin: transaction.toCoin,
             fromAmount: transaction.fromAmount,
             quote: transaction.quote
         )
+        // Honour a user-supplied EVM gas limit from advanced settings. Applied to
+        // the swap transaction only; the ERC-20 approval tx keeps its own
+        // estimate (a swap's ~200k limit would massively over-fund the ~46k
+        // approve). The override is a no-op on non-EVM chain-specific data.
+        let chainSpecific: BlockChainSpecific
+        if let gasLimit = transaction.advancedSettings.gasLimit {
+            chainSpecific = fetched.overridingEVMGasLimit(BigInt(gasLimit))
+        } else {
+            chainSpecific = fetched
+        }
         return try await SwapCryptoLogic.buildSwapKeysignPayload(
             transaction: transaction,
             chainSpecific: chainSpecific,
@@ -119,12 +200,5 @@ struct DefaultSwapInteractor: SwapInteractor {
 
     func warmDiscountTier(for vault: Vault) async {
         _ = await tierResolver.resolveTierForSession(for: vault)
-    }
-
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool {
-        guard let tier = await tierResolver.resolveTierForSession(for: vault) else {
-            return false
-        }
-        return tier >= .silver
     }
 }

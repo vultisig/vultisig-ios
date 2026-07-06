@@ -29,6 +29,17 @@ struct IOSToolbarView<Content: View>: View {
         contentContainer
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
+                // Glass group is declared before the plain group so glass
+                // trailing items render to the LEFT of plain ones (e.g. the
+                // swap advanced-settings glass button sits left of the custom
+                // countdown pill). Order within each group follows declaration.
+                ToolbarItemGroup(placement: .confirmationAction) {
+                    ForEach(Array(trailingGlassItems.enumerated()), id: \.offset) { _, item in
+                        item.content
+                            .environment(\.isNativeToolbarItem, true)
+                    }
+                }
+
                 trailingPlainToolbarItems
 
                 ToolbarItemGroup(placement: .cancellationAction) {
@@ -40,13 +51,6 @@ struct IOSToolbarView<Content: View>: View {
 
                 ToolbarItemGroup(placement: .principal) {
                     ForEach(Array(centerItems.enumerated()), id: \.offset) { _, item in
-                        item.content
-                            .environment(\.isNativeToolbarItem, true)
-                    }
-                }
-
-                ToolbarItemGroup(placement: .confirmationAction) {
-                    ForEach(Array(trailingGlassItems.enumerated()), id: \.offset) { _, item in
                         item.content
                             .environment(\.isNativeToolbarItem, true)
                     }

@@ -40,15 +40,17 @@ final class DestinationTokenRegistry {
     }
 
     /// Aggregate destination tokens from every registered provider for
-    /// `chain`.
+    /// `chain`. `forceRefresh` is forwarded to each provider so the picker's
+    /// first open per presentation can re-fetch catalogs while in-session
+    /// re-merges stay on cached data.
     ///
     /// Concurrency: providers are awaited sequentially — the picker
     /// already serialises on `MainActor`, and the registered-provider
     /// count is O(1-3) today. If that changes, swap to a `TaskGroup`.
-    func tokens(for chain: Chain) async -> [DestinationTokenBucket] {
+    func tokens(for chain: Chain, forceRefresh: Bool = false) async -> [DestinationTokenBucket] {
         var buckets: [DestinationTokenBucket] = []
         for provider in providers {
-            let bucket = await provider.tokens(for: chain)
+            let bucket = await provider.tokens(for: chain, forceRefresh: forceRefresh)
             buckets.append(bucket)
         }
         return buckets

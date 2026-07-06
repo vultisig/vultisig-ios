@@ -18,7 +18,9 @@ protocol SwapInteractor {
         fromCoin: Coin,
         toCoin: Coin,
         vault: Vault,
-        referredCode: String
+        referredCode: String,
+        slippageBps: Int?,
+        recipientAddress: String?
     ) async throws -> SwapQuoteResult?
 
     /// Chain-specific fee/nonce/blockhash data needed to assemble the keysign payload.
@@ -38,6 +40,13 @@ protocol SwapInteractor {
         vault: Vault
     ) async throws -> BigInt
 
+    /// Sign-time fund-safety gate: re-check the source chain's live inbound for a
+    /// native (THORChain / Maya) route immediately before building the keysign
+    /// payload, BYPASSING the inbound cache. Throws `SwapError.tradingHalted` when
+    /// the chain is halted or the live re-check can't be verified (fail-closed).
+    /// No-op for aggregator routes — they never deposit into a native inbound vault.
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws
+
     /// Fetches chain-specific data and builds the keysign payload for a finalised
     /// `SwapTransaction`. Used by Verify when the user signs.
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload
@@ -50,9 +59,26 @@ protocol SwapInteractor {
     /// wallet once per session. Called on screen load to warm the cache so the per-quote
     /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
     func warmDiscountTier(for vault: Vault) async
+}
 
-    /// Whether the vault meets the Silver `VultDiscountTier` minimum that gates
-    /// provider selection. Reads the same cached tier `warmDiscountTier` warms,
-    /// so it adds no extra network path.
-    func isProviderSelectionUnlocked(for vault: Vault) async -> Bool
+extension SwapInteractor {
+    /// Convenience for callers that re-quote an already-valid pair without
+    /// slippage / recipient overrides (e.g. the verify-screen refresh).
+    func fetchQuote(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault,
+        referredCode: String
+    ) async throws -> SwapQuoteResult? {
+        try await fetchQuote(
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            vault: vault,
+            referredCode: referredCode,
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+    }
 }

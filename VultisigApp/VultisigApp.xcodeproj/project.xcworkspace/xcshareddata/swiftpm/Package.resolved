@@ -32,7 +32,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "revision" : "5a72a86cb061dade165d42ad426ba3639fb9a877"
+        "revision" : "03e61a7454be7cebababb6b33708b85077962088"
       }
     },
     {
@@ -112,8 +112,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/walletcore-spm",
       "state" : {
-        "revision" : "d15efc71eda9f29dc183931276244e504bdf5716",
-        "version" : "4.3.19"
+        "revision" : "628900b25de367bdd48427040977f68b6882d8a0",
+        "version" : "4.7.1"
       }
     },
     {

@@ -19,7 +19,7 @@ struct KeysignCustomMessageConfirmView: View {
                 summary
                 button
             }
-            .foregroundColor(Theme.colors.textPrimary)
+            .foregroundStyle(Theme.colors.textPrimary)
             .task {
                 await viewModel.loadFunctionName()
             }
@@ -68,7 +68,7 @@ struct KeysignCustomMessageConfirmView: View {
         if let title = viewModel.decodedFunctionName {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }
@@ -97,7 +97,7 @@ struct KeysignCustomMessageConfirmView: View {
                 HStack(alignment: .center) {
                     Text(NSLocalizedString("message", comment: "") + ":")
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isMessageExpanded ? 180 : 0))
@@ -110,7 +110,7 @@ struct KeysignCustomMessageConfirmView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(formattedMessage)
                             .font(Theme.fonts.bodySMedium)
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .foregroundStyle(Theme.colors.textPrimary)
                             .textSelection(.enabled)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(16)
@@ -144,9 +144,10 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "joinKeysign") {
+        PrimaryButton(title: "joinKeysign", isLoading: viewModel.isJoiningCommittee) {
             viewModel.joinKeysignCommittee()
         }
+        .disabled(viewModel.isJoiningCommittee)
         .padding(20)
     }
 
@@ -160,7 +161,7 @@ struct KeysignCustomMessageConfirmView: View {
                 HStack(alignment: .center) {
                     Text("transactionDetails".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                     Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
@@ -192,11 +193,11 @@ struct KeysignCustomMessageConfirmView: View {
         return VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+                .foregroundStyle(Theme.colors.textTertiary)
             HStack(spacing: 6) {
                 Text(value)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(textColor)
+                    .foregroundStyle(textColor)
                 if isWarning {
                     Icon(named: "triangle-alert", color: textColor, size: 14)
                 }
@@ -212,6 +213,6 @@ struct KeysignCustomMessageConfirmView: View {
             Text(value)
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 }

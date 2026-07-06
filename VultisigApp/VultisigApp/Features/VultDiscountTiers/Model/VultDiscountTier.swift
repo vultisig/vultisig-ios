@@ -65,28 +65,57 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
         case .platinum:
             Color(hex: "33E6BF")
         case .diamond:
-            Color(hex: "9747FF")
+            Color(hex: "00CCFF")
         case .ultimate:
-            .black
+            Color(hex: "0F4594")
         }
     }
 
     var secondaryColor: Color {
         switch self {
-        case .bronze, .silver, .gold:
-            Color(hex: "3377D9").opacity(0.21)
+        case .bronze:
+            Color(hex: "993B1F")
+        case .silver:
+            Color(hex: "7D8B9E")
+        case .gold:
+            Color(hex: "997437")
         case .platinum:
             Color(hex: "4879FD")
         case .diamond:
-            Color(hex: "00CCFF")
+            Color(hex: "9747FF")
         case .ultimate:
-            .clear
+            Color(hex: "E8B762")
+        }
+    }
+
+    /// Localized perk-pill copy driven by the tier's discount data.
+    /// `.ultimate`'s `bpsDiscount` is `Int.max` (a sentinel), so it renders the
+    /// fee-waiver copy instead of a numeric bps value.
+    var discountPerkText: String {
+        switch self {
+        case .ultimate:
+            "noFee".localized
+        default:
+            String(format: "vultDiscount".localized, bpsDiscount)
         }
     }
 
     /// Returns the tier matching the given BPS discount, or nil if no match
     static func from(bpsDiscount: Int) -> VultDiscountTier? {
         allCases.first { $0.bpsDiscount == bpsDiscount }
+    }
+
+    /// Whether `tier` is unlockable given the vault's currently `active` tier.
+    /// Tiers are ranked by `balanceToUnlock` ascending. With no active tier the
+    /// user can buy into any tier; otherwise only tiers strictly above the
+    /// active one are unlockable — at-or-below tiers are already covered.
+    static func canUnlock(_ tier: VultDiscountTier, active: VultDiscountTier?) -> Bool {
+        let ranked = allCases.sorted { $0.balanceToUnlock < $1.balanceToUnlock }
+        guard let active, let activeIndex = ranked.firstIndex(of: active) else {
+            return true
+        }
+        let tierIndex = ranked.firstIndex(of: tier) ?? 0
+        return tierIndex > activeIndex
     }
 
     /// Ordering follows the `CaseIterable` declaration order
