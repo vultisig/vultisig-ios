@@ -203,3 +203,79 @@ final class RippleSubmitDispositionTests: XCTestCase {
         XCTAssertEqual(message, "Path could not send partial amount.")
     }
 }
+
+/// Pins the pure interpretation of the `tx` lookup that resolves a
+/// `.verifyByHash` disposition: only a validated ledger is final, a known
+/// but unvalidated transaction is in flight, and unusable responses carry
+/// no evidence about the transaction.
+final class RippleTxLookupOutcomeTests: XCTestCase {
+
+    func testValidatedTesSuccessIsValidatedSuccess() throws {
+        let response = try decodeTxResponse("""
+        {"result": {"hash": "ABC", "validated": true, "ledger_index": 99,
+                    "meta": {"TransactionResult": "tesSUCCESS", "TransactionIndex": 0},
+                    "status": "success"}}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .validatedSuccess)
+    }
+
+    func testValidatedNonTesIsValidatedFailureWithCode() throws {
+        let response = try decodeTxResponse("""
+        {"result": {"hash": "ABC", "validated": true, "ledger_index": 99,
+                    "meta": {"TransactionResult": "tecUNFUNDED_PAYMENT", "TransactionIndex": 0},
+                    "status": "success"}}
+        """)
+        XCTAssertEqual(
+            RippleTxLookupOutcome.interpret(response),
+            .validatedFailure(code: "tecUNFUNDED_PAYMENT")
+        )
+    }
+
+    func testValidatedWithoutMetaIsValidatedSuccess() throws {
+        let response = try decodeTxResponse("""
+        {"result": {"hash": "ABC", "validated": true, "status": "success"}}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .validatedSuccess)
+    }
+
+    func testKnownUnvalidatedIsPending() throws {
+        let response = try decodeTxResponse("""
+        {"result": {"hash": "ABC", "validated": false, "status": "success"}}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .pending)
+    }
+
+    func testResultLevelTxnNotFoundIsNotFound() throws {
+        let response = try decodeTxResponse("""
+        {"result": {"error": "txnNotFound", "error_code": 29,
+                    "error_message": "Transaction not found.", "status": "error"}}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .notFound)
+    }
+
+    func testTopLevelTxnNotFoundIsNotFound() throws {
+        let response = try decodeTxResponse("""
+        {"error": "txnNotFound", "error_code": 29, "error_message": "Transaction not found.", "status": "error"}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .notFound)
+    }
+
+    func testOtherLookupErrorIsNotFound() throws {
+        // A lookup failure that says nothing about the transaction (bad
+        // params, unsupported method) must not masquerade as evidence.
+        let response = try decodeTxResponse("""
+        {"result": {"error": "notImpl", "error_code": 38,
+                    "error_message": "Not implemented.", "status": "error"}}
+        """)
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .notFound)
+    }
+
+    func testMissingResultIsNotFound() throws {
+        let response = try decodeTxResponse("{}")
+        XCTAssertEqual(RippleTxLookupOutcome.interpret(response), .notFound)
+    }
+
+    private func decodeTxResponse(_ json: String) throws -> RippleTransactionStatusResponse {
+        try JSONDecoder().decode(RippleTransactionStatusResponse.self, from: Data(json.utf8))
+    }
+}

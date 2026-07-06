@@ -95,7 +95,121 @@ final class RippleBroadcastGatingTests: XCTestCase {
         }
     }
 
+    // MARK: - Verify-by-hash dedup (tefALREADY / tefPAST_SEQ / terQUEUED)
+
+    func testTefAlreadyResolvedAsSuccessWhenTxValidatedSuccess() async throws {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "tefALREADY", hash: Self.txHash)
+        client.txResults = [.success(Self.txJSON(validated: true, transactionResult: "tesSUCCESS"))]
+        let service = Self.makeService(client)
+
+        let hash = try await service.broadcastTransaction(Self.txBlob)
+
+        XCTAssertEqual(hash, Self.txHash)
+        XCTAssertEqual(client.submitCallCount, 1, "must not re-broadcast a duplicate submit")
+        XCTAssertEqual(client.txCallCount, 1)
+    }
+
+    func testTefAlreadyResolvedAsSuccessWhenTxKnownPending() async throws {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "tefALREADY", hash: Self.txHash)
+        client.txResults = [.success(Self.txJSON(validated: false))]
+        let service = Self.makeService(client)
+
+        let hash = try await service.broadcastTransaction(Self.txBlob)
+
+        XCTAssertEqual(hash, Self.txHash)
+        XCTAssertEqual(client.txCallCount, 1)
+    }
+
+    func testTerQueuedResolvedAsSuccessWhenTxKnownPending() async throws {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "terQUEUED", hash: Self.txHash)
+        client.txResults = [.success(Self.txJSON(validated: false))]
+        let service = Self.makeService(client)
+
+        let hash = try await service.broadcastTransaction(Self.txBlob)
+
+        XCTAssertEqual(hash, Self.txHash)
+        XCTAssertEqual(client.submitCallCount, 1)
+    }
+
+    func testTefAlreadySurfacesValidatedFailureCode() async {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "tefALREADY", hash: Self.txHash)
+        client.txResults = [.success(Self.txJSON(validated: true, transactionResult: "tecUNFUNDED_PAYMENT"))]
+        let service = Self.makeService(client)
+
+        do {
+            _ = try await service.broadcastTransaction(Self.txBlob)
+            XCTFail("Expected a validated on-chain failure to throw")
+        } catch let error as RippleBroadcastError {
+            XCTAssertTrue(error.localizedDescription.contains("tecUNFUNDED_PAYMENT"))
+            XCTAssertFalse(error.localizedDescription.contains("tefALREADY"))
+        } catch {
+            XCTFail("Expected RippleBroadcastError, got \(error)")
+        }
+    }
+
+    func testTefAlreadyThrowsOriginalCodeWhenTxNotFoundAfterRetries() async {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(
+            engineResult: "tefALREADY",
+            engineResultMessage: "The exact transaction was already in this ledger.",
+            hash: Self.txHash
+        )
+        client.txResults = [.success(Self.txNotFoundJSON())]
+        let service = Self.makeService(client)
+
+        do {
+            _ = try await service.broadcastTransaction(Self.txBlob)
+            XCTFail("Expected an unverifiable duplicate submit to throw the original code")
+        } catch let error as RippleBroadcastError {
+            XCTAssertTrue(error.localizedDescription.contains("tefALREADY"))
+            XCTAssertEqual(client.txCallCount, 3, "txnNotFound must be retried before giving up")
+        } catch {
+            XCTFail("Expected RippleBroadcastError, got \(error)")
+        }
+    }
+
+    func testTefAlreadyWithoutEchoedHashThrows() async {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "tefALREADY", hash: nil)
+        let service = Self.makeService(client)
+
+        do {
+            _ = try await service.broadcastTransaction(Self.txBlob)
+            XCTFail("Expected a duplicate submit without a hash to throw")
+        } catch let error as RippleBroadcastError {
+            XCTAssertTrue(error.localizedDescription.contains("tefALREADY"))
+            XCTAssertEqual(client.txCallCount, 0, "nothing to verify without a hash")
+        } catch {
+            XCTFail("Expected RippleBroadcastError, got \(error)")
+        }
+    }
+
+    func testDuplicateVerifyLookupErrorFallsThroughToOriginalError() async {
+        let client = RippleStubHTTPClient()
+        client.submitJSON = Self.submitJSON(engineResult: "tefPAST_SEQ", hash: Self.txHash)
+        client.txResults = [.failure(RippleStubHTTPClient.StubError.unavailable)]
+        let service = Self.makeService(client)
+
+        do {
+            _ = try await service.broadcastTransaction(Self.txBlob)
+            XCTFail("Expected lookup failures to fall through to the original engine code")
+        } catch let error as RippleBroadcastError {
+            XCTAssertTrue(error.localizedDescription.contains("tefPAST_SEQ"))
+            XCTAssertEqual(client.txCallCount, 3, "lookup errors count as failed attempts")
+        } catch {
+            XCTFail("Expected RippleBroadcastError, got \(error)")
+        }
+    }
+
     // MARK: - Fixtures
+
+    private static func makeService(_ client: RippleStubHTTPClient) -> RippleService {
+        RippleService(httpClient: client, verifyByHashBackoff: .zero)
+    }
 
     static func submitJSON(
         engineResult: String?,
@@ -120,6 +234,32 @@ final class RippleBroadcastGatingTests: XCTestCase {
         }
         return json
     }
+
+    static func txJSON(validated: Bool, transactionResult: String? = nil) -> String {
+        var result: [String: Any] = [
+            "hash": txHash,
+            "validated": validated,
+            "status": "success"
+        ]
+        if let transactionResult {
+            result["meta"] = ["TransactionResult": transactionResult, "TransactionIndex": 0]
+            result["ledger_index"] = 99
+        }
+        let body: [String: Any] = ["result": result]
+        guard let data = try? JSONSerialization.data(withJSONObject: body),
+              let json = String(data: data, encoding: .utf8) else {
+            XCTFail("Failed to build tx fixture")
+            return "{}"
+        }
+        return json
+    }
+
+    static func txNotFoundJSON() -> String {
+        """
+        {"result": {"error": "txnNotFound", "error_code": 29, \
+        "error_message": "Transaction not found.", "status": "error"}}
+        """
+    }
 }
 
 // MARK: - Test double
@@ -131,10 +271,14 @@ private final class RippleStubHTTPClient: HTTPClientProtocol, @unchecked Sendabl
 
     enum StubError: Error {
         case unexpectedRequest
+        case unavailable
     }
 
     var submitJSON: String = "{}"
+    /// Consumed one per `tx` call; the last entry repeats once exhausted.
+    var txResults: [Result<String, Error>] = []
     private(set) var submitCallCount = 0
+    private(set) var txCallCount = 0
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         await Task.yield()
@@ -142,6 +286,14 @@ private final class RippleStubHTTPClient: HTTPClientProtocol, @unchecked Sendabl
         case "submit":
             submitCallCount += 1
             return HTTPResponse(data: Data(submitJSON.utf8), response: Self.ok)
+        case "tx":
+            txCallCount += 1
+            guard !txResults.isEmpty else {
+                throw StubError.unexpectedRequest
+            }
+            let index = min(txCallCount - 1, txResults.count - 1)
+            let json = try txResults[index].get()
+            return HTTPResponse(data: Data(json.utf8), response: Self.ok)
         default:
             throw StubError.unexpectedRequest
         }

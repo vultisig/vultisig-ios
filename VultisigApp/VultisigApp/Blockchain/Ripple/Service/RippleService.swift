@@ -47,12 +47,18 @@ class RippleService {
     /// live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
 
+    /// Backoff between `tx` lookups while resolving a verify-by-hash submit;
+    /// injectable so tests run without delay.
+    private let verifyByHashBackoff: Duration
+
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
-        httpClient: HTTPClientProtocol = HTTPClient()
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        verifyByHashBackoff: Duration = .seconds(2)
     ) {
         self.resolver = resolver
         self.httpClient = httpClient
+        self.verifyByHashBackoff = verifyByHashBackoff
     }
 
     /// The override-aware XRPL host. Falls back to the default host when no
@@ -83,11 +89,77 @@ class RippleService {
         switch disposition {
         case .accepted(let hash):
             return hash
-        case .verifyByHash(let code, _, let message),
-             .rejected(let code, let message):
+        case .verifyByHash(let code, let hash, let message):
+            return try await resolveSubmitByHash(code: code, hash: hash, message: message)
+        case .rejected(let code, let message):
             logger.error("broadcast rejected by XRPL: \(code, privacy: .public)")
             throw RippleBroadcastError.broadcastFailed(code: code, message: message)
         }
+    }
+
+    /// Resolves a submit whose engine result says the transaction may already
+    /// be known to the network — a faster co-signing peer's broadcast of the
+    /// same signed blob landed first, or the server queued it for a future
+    /// ledger — by looking the echoed deterministic hash up with the `tx`
+    /// method against the same (override-aware) node the submit went to.
+    ///
+    /// `txnNotFound` is retried with a short backoff because cluster nodes can
+    /// lag a peer's submit by a few seconds; lookup errors count as failed
+    /// attempts for the same reason (the lookup is a safety net and must not
+    /// invent a new failure mode). If the transaction never shows up, the
+    /// ORIGINAL engine code is thrown — an unverified duplicate must never be
+    /// reported as a success.
+    private func resolveSubmitByHash(code: String, hash: String?, message: String?) async throws -> String {
+        guard let hash else {
+            throw RippleBroadcastError.broadcastFailed(code: code, message: message)
+        }
+
+        let maxAttempts = 3
+        for attempt in 1...maxAttempts {
+            do {
+                let response = try await httpClient.request(
+                    api(.tx(hash: hash)),
+                    responseType: RippleTransactionStatusResponse.self
+                )
+
+                switch RippleTxLookupOutcome.interpret(response.data) {
+                case .validatedSuccess:
+                    logger.info("\(code, privacy: .public) resolved as validated success: \(hash, privacy: .public)")
+                    return hash
+                case .pending:
+                    // Known to the network and in flight — return the hash and
+                    // let the status poller resolve the final outcome.
+                    logger.info("\(code, privacy: .public) resolved as in-flight: \(hash, privacy: .public)")
+                    return hash
+                case .validatedFailure(let validatedCode):
+                    // The transaction landed in a validated ledger with a final
+                    // non-success result — surface that real code.
+                    logger.error("\(code, privacy: .public) resolved as validated failure \(validatedCode, privacy: .public)")
+                    throw RippleBroadcastError.broadcastFailed(
+                        code: validatedCode,
+                        message: "The transaction was included in a validated ledger but did not succeed."
+                    )
+                case .notFound:
+                    break
+                }
+            } catch let error as RippleBroadcastError {
+                throw error
+            } catch {
+                logger.warning("verify-by-hash lookup failed (attempt \(attempt)/\(maxAttempts)): \(error.localizedDescription, privacy: .public)")
+            }
+
+            if attempt < maxAttempts {
+                do {
+                    try await Task.sleep(for: verifyByHashBackoff)
+                } catch {
+                    logger.warning("verify-by-hash backoff interrupted: \(error.localizedDescription, privacy: .public)")
+                    break
+                }
+            }
+        }
+
+        logger.error("verify-by-hash exhausted for \(code, privacy: .public): \(hash, privacy: .public) not found")
+        throw RippleBroadcastError.broadcastFailed(code: code, message: message)
     }
 
     func getBalance(address: String) async throws -> String {

@@ -67,3 +67,45 @@ enum RippleSubmitDisposition: Equatable {
         return .rejected(code: engineResult, message: engineResultMessage)
     }
 }
+
+/// Outcome of the `tx` lookup that resolves a `.verifyByHash` disposition.
+/// Mirrors `RippleTransactionStatusProvider`'s reading of the same response:
+/// only a validated ledger is final, a known-but-unvalidated transaction is
+/// in flight, and anything unusable counts as not found (the lookup is a
+/// safety net — it must never invent a new failure mode).
+enum RippleTxLookupOutcome: Equatable {
+    /// The transaction is in a validated ledger with `tesSUCCESS` — final success.
+    case validatedSuccess
+    /// The transaction is in a validated ledger with a non-tes result — final failure.
+    case validatedFailure(code: String)
+    /// The transaction is known to the server but not yet validated.
+    case pending
+    /// The transaction is unknown (`txnNotFound`), or the lookup response is
+    /// unusable and carries no evidence about the transaction.
+    case notFound
+
+    /// Pure interpretation of a `tx` method response.
+    static func interpret(_ response: RippleTransactionStatusResponse) -> RippleTxLookupOutcome {
+        guard response.error == nil,
+              let result = response.result,
+              result.status != "error",
+              result.error == nil else {
+            return .notFound
+        }
+
+        guard result.validated == true else {
+            return .pending
+        }
+
+        guard let meta = result.meta else {
+            // Validated but no meta (older transactions): treated as success,
+            // matching RippleTransactionStatusProvider.
+            return .validatedSuccess
+        }
+
+        if meta.TransactionResult == "tesSUCCESS" {
+            return .validatedSuccess
+        }
+        return .validatedFailure(code: meta.TransactionResult)
+    }
+}
