@@ -725,11 +725,10 @@ final class SendDetailsViewModel {
     /// XRP tag/memo contract, resolved at the form seam so the failure is
     /// actionable while the fields are still on screen:
     /// - the Destination Tag field must be empty or a canonical uint32 decimal;
-    /// - the memo must be empty or numeric (the long-standing "type the tag
-    ///   into the memo" workaround keeps working) — text memos no longer have
-    ///   an on-chain XRP carrier, so they're rejected with copy steering the
-    ///   user to the tag field;
-    /// - both set with different values is a conflict (the wire carries one tag).
+    /// - a TEXT memo is accepted again (restored on-chain memo support) — on its
+    ///   own, or riding alongside a tag as the tag+memo combo;
+    /// - a numeric memo alongside a DIFFERENT tag is a conflict (the wire would
+    ///   read two tags).
     func validateRippleTagAndMemo() -> Bool {
         guard coin.chain == .ripple else { return true }
 
@@ -828,11 +827,16 @@ final class SendDetailsViewModel {
         guard amount.isValidDecimal(), !toAddress.isEmpty, !amountDecimal.isZero else {
             throw MakeTransactionError.invalidForm
         }
-        // XRP: once a tag resolved (field or legacy numeric memo), the tag is
-        // the single source of truth — blank the memo so Verify shows one
-        // honest "Destination Tag" row instead of a duplicated numeric memo.
+        // XRP: keep only a genuine TEXT memo (the tag+memo combo, or a
+        // memo-only send). A numeric memo was either consumed as the tag
+        // (legacy "type the tag into the memo" workaround) or echoes the tag
+        // field, so it must NOT also ride as an on-chain memo — blank it so the
+        // tag is the single source of truth and Verify shows one honest row.
         let resolvedTag = resolvedDestinationTag
-        let effectiveMemo = (coin.chain == .ripple && resolvedTag != nil) ? "" : memo
+        let effectiveMemo: String = {
+            guard coin.chain == .ripple else { return memo }
+            return RippleDestinationTag.parseCanonical(memo) != nil ? "" : memo
+        }()
         return SendTransaction(
             coin: coin,
             vault: vault,

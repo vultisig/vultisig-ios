@@ -26,14 +26,12 @@ final class RippleDestinationTagViewModel {
     enum TagMemoValidation: Equatable {
         case valid
         case invalidTag
-        case memoNotTag
         case tagMemoConflict
 
         var errorKey: String? {
             switch self {
             case .valid: return nil
             case .invalidTag: return "destinationTagInvalidError"
-            case .memoNotTag: return "xrpMemoNotDestinationTagError"
             case .tagMemoConflict: return "destinationTagMemoConflictError"
             }
         }
@@ -133,10 +131,12 @@ final class RippleDestinationTagViewModel {
     // MARK: - Tag / memo contract
 
     /// XRP tag/memo contract:
-    /// - the tag field must be empty or a canonical uint32 decimal;
-    /// - the memo must be empty or canonical numeric (the legacy "type the
-    ///   tag into the memo" workaround), else it's steered to the tag field;
-    /// - both set with different values is a conflict (the wire carries one).
+    /// - the tag field must be empty or a canonical nonzero uint32 decimal;
+    /// - a TEXT memo is accepted — it rides on-chain as a Memos blob (memo-only
+    ///   send, or the tag+memo combo when a tag is also set);
+    /// - a NUMERIC memo is the legacy "type the tag into the memo" carrier: on
+    ///   its own it becomes the tag (zero rejected); alongside a tag field it
+    ///   must match that tag, else it's a conflict (the wire reads two tags).
     func validateTagAndMemo(memo: String) -> TagMemoValidation {
         var fieldTag: UInt32?
         if !destinationTag.isEmpty {
@@ -146,19 +146,20 @@ final class RippleDestinationTagViewModel {
             fieldTag = tag
         }
 
-        if !memo.isEmpty {
-            guard RippleDestinationTag.parseCanonical(memo) != nil else {
-                return .memoNotTag
+        guard !memo.isEmpty else { return .valid }
+
+        // A canonical uint32 decimal in the memo is a tag carrier, not text.
+        if let memoNumber = RippleDestinationTag.parseCanonical(memo) {
+            if let fieldTag {
+                // Tag field + numeric memo: only the echo (equal value) may ride
+                // alongside; a different number reads as a second tag.
+                return memoNumber == fieldTag ? .valid : .tagMemoConflict
             }
-            guard let memoTag = RippleDestinationTag.parseTag(memo) else {
-                // Numeric but zero — same rejection as the field.
-                return .invalidTag
-            }
-            if let fieldTag, memoTag != fieldTag {
-                return .tagMemoConflict
-            }
+            // No tag field: the numeric memo IS the tag — reject a zero tag.
+            return RippleDestinationTag.parseTag(memo) == nil ? .invalidTag : .valid
         }
 
+        // Genuine text memo — restored on-chain Memos support.
         return .valid
     }
 

@@ -406,11 +406,19 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     }
 
     @MainActor
-    func testPayloadMemoTagWinsOverMemoText() {
-        // Belt-and-braces: the form blocks this combination, but if a tag is
-        // present it owns the memo slot.
-        let tx = Self.makeSendTransaction(memo: "12345", destinationTag: 12345)
+    func testPayloadMemoEchoWhenTagOnly() {
+        // Tag-only send (blank memo): the memo slot echoes the tag's canonical
+        // decimal so a legacy memo-only co-signer rebuilds the identical tag.
+        let tx = Self.makeSendTransaction(memo: "", destinationTag: 12345)
         XCTAssertEqual(SendCryptoVerifyLogic.payloadMemo(tx: tx), "12345")
+    }
+
+    @MainActor
+    func testPayloadMemoTextRidesTheSlotForCombo() {
+        // Combo: a genuine text memo alongside a tag rides the memo slot as-is
+        // (the tag rides the first-class field, not the memo).
+        let tx = Self.makeSendTransaction(memo: "hello", destinationTag: 12345)
+        XCTAssertEqual(SendCryptoVerifyLogic.payloadMemo(tx: tx), "hello")
     }
 
     // MARK: - Dual-write (initiator sets BOTH carriers)
@@ -517,11 +525,41 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     }
 
     @MainActor
-    func testRippleTextMemoBlockedWithSteeringCopy() {
+    func testRippleTextMemoRestoredAsMemoOnly() throws {
+        // #4755: a plain XRP send accepts a text memo again — it threads through
+        // as a memo-only send (no tag), restoring the on-chain Memos capability.
         let vm = Self.makeRippleForm()
         vm.memo = "thanks for lunch"
-        XCTAssertFalse(vm.validateRippleTagAndMemo())
-        XCTAssertEqual(vm.errorMessage, "xrpMemoNotDestinationTagError")
+        XCTAssertTrue(vm.validateRippleTagAndMemo())
+        let tx = try vm.makeTransaction()
+        XCTAssertNil(tx.destinationTag)
+        XCTAssertEqual(tx.memo, "thanks for lunch")
+        XCTAssertEqual(SendCryptoVerifyLogic.payloadMemo(tx: tx), "thanks for lunch")
+    }
+
+    @MainActor
+    func testRippleTagAndTextMemoThreadsAsCombo() throws {
+        // #4755 combo: a tag field AND a genuine text memo both survive to the
+        // transaction — the tag rides the dedicated field, the text rides the
+        // memo slot.
+        let vm = Self.makeRippleForm()
+        vm.rippleTag.destinationTag = "12345"
+        vm.memo = "gift for alice"
+        XCTAssertTrue(vm.validateRippleTagAndMemo())
+        let tx = try vm.makeTransaction()
+        XCTAssertEqual(tx.destinationTag, 12345)
+        XCTAssertEqual(tx.memo, "gift for alice")
+        XCTAssertEqual(SendCryptoVerifyLogic.payloadMemo(tx: tx), "gift for alice")
+
+        // End to end: the combo builds a rawJson Payment carrying BOTH fields.
+        let chainSpecific = SendCryptoVerifyLogic.dualWritingRippleTag(
+            .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100), tag: tx.destinationTag
+        )
+        guard case .Ripple(_, _, _, let fieldTag) = chainSpecific else { return XCTFail("expected Ripple") }
+        let payload = Self.makeRipplePayload(memo: SendCryptoVerifyLogic.payloadMemo(tx: tx), destinationTagField: fieldTag)
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
+        XCTAssertTrue(input.rawJson.contains("DestinationTag"))
+        XCTAssertTrue(input.rawJson.contains("Memos"))
     }
 
     @MainActor

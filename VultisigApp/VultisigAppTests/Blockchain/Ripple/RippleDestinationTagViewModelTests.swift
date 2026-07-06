@@ -108,11 +108,25 @@ final class RippleDestinationTagViewModelTests: XCTestCase {
         XCTAssertEqual(vm.validateTagAndMemo(memo: ""), .invalidTag)
     }
 
-    func testValidateTagAndMemoTextMemoRejected() {
+    func testValidateTagAndMemoTextMemoAcceptedAsMemoOnly() {
+        // #4755: a text memo (no tag) is valid again — it rides on-chain as a
+        // Memos blob (memo-only send).
         let vm = RippleDestinationTagViewModel()
-        let outcome = vm.validateTagAndMemo(memo: "thanks for lunch")
-        XCTAssertEqual(outcome, .memoNotTag)
-        XCTAssertEqual(outcome.errorKey, "xrpMemoNotDestinationTagError")
+        XCTAssertEqual(vm.validateTagAndMemo(memo: "thanks for lunch"), .valid)
+    }
+
+    func testValidateTagAndMemoTagPlusTextMemoIsCombo() {
+        // #4755: a tag field alongside a genuine text memo is the valid combo.
+        let vm = RippleDestinationTagViewModel()
+        vm.destinationTag = "12345"
+        XCTAssertEqual(vm.validateTagAndMemo(memo: "gift for alice"), .valid)
+    }
+
+    func testValidateTagAndMemoZeroMemoRejected() {
+        // A numeric-canonical "0" memo (no tag) is the legacy tag carrier and a
+        // zero tag can't sign — still rejected.
+        let vm = RippleDestinationTagViewModel()
+        XCTAssertEqual(vm.validateTagAndMemo(memo: "0"), .invalidTag)
     }
 
     func testValidateTagAndMemoConflict() {
