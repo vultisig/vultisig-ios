@@ -83,11 +83,19 @@ enum RippleDestinationTag {
 /// join it (dApp/deeplink-originated payloads included).
 enum RippleMemoError: LocalizedError, Equatable {
     case invalidMemo(String)
+    /// A plain payment carried BOTH a first-class tag field AND a memo slot
+    /// holding a DIFFERENT canonical number — the two would read as conflicting
+    /// destination tags. Only reachable via a malformed/hand-crafted payload
+    /// (the form blocks it); the signer rejects it deterministically rather than
+    /// pick one.
+    case tagMemoConflict(tag: UInt32, memo: String)
 
     var errorDescription: String? {
         switch self {
         case .invalidMemo:
             return "xrpMemoNotDestinationTagError".localized
+        case .tagMemoConflict:
+            return "destinationTagMemoConflictError".localized
         }
     }
 }

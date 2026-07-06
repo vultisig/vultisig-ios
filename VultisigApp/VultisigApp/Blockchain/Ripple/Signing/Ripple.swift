@@ -63,9 +63,10 @@ enum RippleHelper {
             //   must ride the on-chain `Memos` field for THORChain to read.
             if let memoValue = keysignPayload.memo, !memoValue.isEmpty {
                 guard let numericTag = UInt64(memoValue) else {
-                    return try swapMemoSigningInput(
+                    return try memoSigningInput(
                         keysignPayload: keysignPayload,
                         memoValue: memoValue,
+                        destinationTag: nil,
                         gas: gas,
                         sequence: sequence,
                         lastLedgerSequence: lastLedgerSequence,
@@ -77,33 +78,82 @@ enum RippleHelper {
                 destinationTag = nil
             }
         } else if let fieldDestinationTag {
-            // Dual-write rollout: prefer the first-class RippleSpecific
-            // `destination_tag`. The initiator writes the same value into both
-            // this field and the memo carrier, so a co-signer that reads only
-            // the memo rebuilds an identical signing input — the pre-image hash
-            // matches across mixed-version device pairs. When the field is
-            // present it wins outright (the memo is not re-validated): a
-            // divergent memo can at worst fail the ceremony on a legacy peer,
-            // never produce a signature.
+            // Plain payment WITH a first-class tag field. The initiator
+            // dual-writes the tag into the field and populates the memo slot per
+            // the send it built (empty / echoed tag / real text). Resolve the
+            // pair deterministically so every device — new field-reader and old
+            // memo-only co-signer alike — either agrees on the bytes or fails
+            // the ceremony (never signs the wrong tx):
             //
-            // A present tag of 0 is rejected exactly as the memo path rejects
-            // "0": wallet-core serialises a 0 destinationTag identically to
-            // "no tag", so signing it would produce an UNTAGGED payment while a
-            // tag was displayed — the dishonest-signing shape the contract
-            // forbids. (No wallet-core signer can produce a tagged-0 payment on
-            // any platform, so a 0 field is always malformed.)
+            // - A present tag of 0 is rejected exactly as memo "0" is:
+            //   wallet-core serialises a 0 destinationTag identically to "no
+            //   tag", so signing it would send UNTAGGED while a tag was
+            //   displayed — the dishonest-signing shape the contract forbids.
             guard fieldDestinationTag != 0 else {
                 throw RippleMemoError.invalidMemo(String(fieldDestinationTag))
             }
-            destinationTag = UInt64(fieldDestinationTag)
+
+            if let memoValue = keysignPayload.memo, !memoValue.isEmpty {
+                if memoValue == String(fieldDestinationTag) {
+                    // Dual-write ECHO: the memo carries the tag's own canonical
+                    // decimal. Build a plain tag-only payment (NO Memos) — this
+                    // is byte-identical to the tag-only path an old memo-only
+                    // co-signer produces, keeping the committee in agreement.
+                    destinationTag = UInt64(fieldDestinationTag)
+                } else if RippleDestinationTag.parseCanonical(memoValue) != nil {
+                    // A DIFFERENT canonical number can't ride alongside the tag
+                    // (the memo slot would read as a second, conflicting tag on
+                    // a legacy peer). Reject deterministically.
+                    throw RippleMemoError.tagMemoConflict(tag: fieldDestinationTag, memo: memoValue)
+                } else {
+                    // COMBO: a genuine text memo alongside the tag. XRPL carries
+                    // both as independent fields; wallet-core's typed payment has
+                    // no memo slot, so build a rawJson Payment with BOTH the
+                    // DestinationTag and a Memos blob. (An OLD co-signer with no
+                    // field reads only the text memo → builds a Memos-only tx
+                    // without the tag → hash diverges → the ceremony fails safe.
+                    // Accepted mixed-version limitation, gated by a send-form
+                    // advisory.)
+                    return try memoSigningInput(
+                        keysignPayload: keysignPayload,
+                        memoValue: memoValue,
+                        destinationTag: fieldDestinationTag,
+                        gas: gas,
+                        sequence: sequence,
+                        lastLedgerSequence: lastLedgerSequence,
+                        publicKey: publicKey
+                    )
+                }
+            } else {
+                // Tag-only (empty memo).
+                destinationTag = UInt64(fieldDestinationTag)
+            }
+        } else if let memoValue = keysignPayload.memo, !memoValue.isEmpty {
+            // Plain payment, NO field — the memo slot is the source of truth
+            // (what every legacy platform reads):
+            if RippleDestinationTag.parseCanonical(memoValue) != nil {
+                // Numeric-canonical → the legacy "type the tag into the memo"
+                // tag carrier. Unchanged from before: a canonical nonzero value
+                // becomes the destinationTag; "0" is rejected.
+                destinationTag = try RippleDestinationTag.validatePayloadMemo(memoValue).map(UInt64.init)
+            } else {
+                // Genuine text → an on-chain `Memos` blob. This RESTORES the
+                // pre-#4749 memo-only capability (memo-only sends are
+                // byte-identical old-vs-new: no field on the wire, same text in
+                // the memo slot).
+                return try memoSigningInput(
+                    keysignPayload: keysignPayload,
+                    memoValue: memoValue,
+                    destinationTag: nil,
+                    gas: gas,
+                    sequence: sequence,
+                    lastLedgerSequence: lastLedgerSequence,
+                    publicKey: publicKey
+                )
+            }
         } else {
-            // Plain payments with no field: the memo slot is the destination-tag
-            // carrier — it must be empty or a canonical uint32 decimal, and
-            // anything else rejects the payload on both sides of the ceremony
-            // (see `RippleDestinationTag`). This replaces the legacy fallback
-            // that turned non-numeric memos into an on-chain `Memos` blob, which
-            // silently dropped the tag and left exchange deposits uncredited.
-            destinationTag = try RippleDestinationTag.validatePayloadMemo(keysignPayload.memo).map(UInt64.init)
+            // No field, no memo → plain untagged payment.
+            destinationTag = nil
         }
 
         let operation = RippleOperationPayment.with {
@@ -128,20 +178,30 @@ enum RippleHelper {
         return try input.serializedData()
     }
 
-    /// Legacy raw-JSON signing input carrying the memo as an on-chain XRPL
-    /// `Memos` entry. Reachable only for swap payloads — THORChain-family
-    /// swaps route via a text memo the protocol reads on-chain. Plain sends
-    /// never take this path anymore: a text memo there was the fund-loss
-    /// shape (tag typo → Memos blob → uncredited exchange deposit).
-    private static func swapMemoSigningInput(
+    /// Raw-JSON signing input carrying a text memo as an on-chain XRPL `Memos`
+    /// entry, optionally alongside a native `DestinationTag`. wallet-core's
+    /// typed `RippleOperationPayment` has no memo field, so any transaction that
+    /// must carry an on-chain memo has to go through rawJson.
+    ///
+    /// Two callers:
+    /// - **swaps** (`destinationTag == nil`) — THORChain-family swaps route via
+    ///   a text memo the protocol reads on-chain. This branch is byte-identical
+    ///   to the legacy `swapMemoSigningInput` (same key set), so swap signing is
+    ///   unchanged.
+    /// - **plain tag + memo combo** (`destinationTag != nil`) — a plain XRP send
+    ///   carrying BOTH a destination tag and a text memo (XRPL allows both as
+    ///   independent fields). Adds a numeric `DestinationTag` next to the Memos
+    ///   blob.
+    private static func memoSigningInput(
         keysignPayload: KeysignPayload,
         memoValue: String,
+        destinationTag: UInt32?,
         gas: UInt64,
         sequence: UInt64,
         lastLedgerSequence: UInt64,
         publicKey: PublicKey
     ) throws -> Data {
-        let txJson: [String: Any] = [
+        var txJson: [String: Any] = [
             "TransactionType": "Payment",
             "Account": keysignPayload.coin.address,
             "Destination": keysignPayload.toAddress,
@@ -157,6 +217,12 @@ enum RippleHelper {
                 ]
             ]
         ]
+        // Only inserted for the combo path, so the swap dict keeps the exact key
+        // set (and therefore byte-identical serialization) it has always had.
+        // XRPL `DestinationTag` is a numeric field — emit a JSON number.
+        if let destinationTag {
+            txJson["DestinationTag"] = destinationTag
+        }
 
         let jsonData = try JSONSerialization.data(withJSONObject: txJson, options: [])
         guard let jsonString = String(data: jsonData, encoding: .utf8) else {
@@ -172,7 +238,7 @@ enum RippleHelper {
             $0.rawJson = jsonString
         }
 
-        logger.info("Creating XRP swap transaction with text memo, lastLedgerSequence: \(lastLedgerSequence)")
+        logger.info("Creating XRP rawJson payment (memo\(destinationTag != nil ? " + tag" : "", privacy: .public)), lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
     }

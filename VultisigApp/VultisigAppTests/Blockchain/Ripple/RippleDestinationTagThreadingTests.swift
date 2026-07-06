@@ -96,22 +96,33 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertTrue(input.rawJson.isEmpty)
     }
 
-    func testTextMemoRejectsPayload() {
-        // Pre-change this silently became an on-chain Memos blob with NO
-        // destination tag — the uncredited-exchange-deposit shape.
-        for memo in ["tag:12345", "hello", "12345 ", "0123"] {
+    func testTextMemoRestoresMemosBlob() throws {
+        // #4755: a genuine text memo on a plain send (no tag field) is restored
+        // as an on-chain `Memos` blob — the pre-#4749 memo-only capability. It
+        // is byte-identical old-vs-new device: no field on the wire, same text
+        // in the memo slot, so every platform builds the same Memos-only tx.
+        // Anything that isn't a clean canonical uint32 (text, leading zeros,
+        // trailing space, > uint32-max) is treated as text.
+        for memo in ["tag:12345", "hello", "12345 ", "0123", "4294967296"] {
             let payload = Self.makeRipplePayload(memo: memo)
-            XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload), "expected rejection for \"\(memo)\"") { error in
-                XCTAssertEqual(error as? RippleMemoError, .invalidMemo(memo))
-            }
+            let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
+            XCTAssertFalse(input.rawJson.isEmpty, "text memo must ride an on-chain Memos blob for \"\(memo)\"")
+            XCTAssertTrue(input.rawJson.contains("Memos"))
+            XCTAssertEqual(input.opPayment.destinationTag, 0, "no destination tag for a text-memo-only send")
         }
     }
 
-    func testTagAboveU32MaxRejectsPayload() {
-        // Pre-change a 2^32..2^64 memo parsed as UInt64 and reached
-        // wallet-core, which failed the ceremony with a cryptic u32 error.
-        let payload = Self.makeRipplePayload(memo: "4294967296")
-        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
+    func testCanonicalMemoStillBecomesTagNotMemosBlob() throws {
+        // The counterpart: a numeric-canonical memo (no field) stays the legacy
+        // tag carrier, never a Memos blob. "0" is still rejected (zero tag).
+        let tagged = Self.makeRipplePayload(memo: "12345")
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: tagged))
+        XCTAssertEqual(input.opPayment.destinationTag, 12345)
+        XCTAssertTrue(input.rawJson.isEmpty)
+
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: Self.makeRipplePayload(memo: "0"))) { error in
+            XCTAssertEqual(error as? RippleMemoError, .invalidMemo("0"))
+        }
     }
 
     // MARK: - Cosigner display resolution (field-preferred)
@@ -254,27 +265,34 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertTrue(input.rawJson.isEmpty)
     }
 
-    func testFieldWinsOverConflictingMemo() throws {
-        // Deterministic conflict rule: when the field and memo disagree, the
-        // field wins outright (only reachable via a malformed payload — the
-        // initiator always dual-writes equal values). The signed tag is the
-        // field's value; the divergent memo is ignored.
+    func testFieldWithConflictingNumericMemoRejects() {
+        // #4755: a field tag alongside a DIFFERENT canonical number in the memo
+        // slot is a tag/memo conflict (the memo would read as a second tag).
+        // Reject deterministically — only reachable via a malformed payload; the
+        // form blocks it.
         let conflicting = Self.makeRipplePayload(memo: "111", destinationTagField: 222)
-        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: conflicting))
-        XCTAssertEqual(input.opPayment.destinationTag, 222, "the first-class field wins over a conflicting memo")
-        XCTAssertTrue(input.rawJson.isEmpty)
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: conflicting)) { error in
+            XCTAssertEqual(error as? RippleMemoError, .tagMemoConflict(tag: 222, memo: "111"))
+        }
     }
 
-    func testFieldWinsEvenWhenMemoIsNonCanonical() throws {
-        // Prefer-field short-circuits memo validation: a present field signs
-        // successfully even if the memo carrier is non-canonical. (An old
-        // memo-only peer would reject that memo and fail the ceremony — safe,
-        // never a bad signature.)
+    func testFieldWithTextMemoBuildsCombo() throws {
+        // #4755: a field tag alongside a genuine TEXT memo is the tag+memo combo
+        // — a rawJson Payment carrying BOTH DestinationTag and Memos. (An old
+        // memo-only peer reads only the text → builds a Memos-only tx without
+        // the tag → the ceremony fails safe. Accepted mixed-version limitation.)
         let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(
-            keysignPayload: Self.makeRipplePayload(memo: "not-a-tag", destinationTagField: 4321)
+            keysignPayload: Self.makeRipplePayload(memo: "gift for alice", destinationTagField: 4321)
         ))
-        XCTAssertEqual(input.opPayment.destinationTag, 4321)
-        XCTAssertTrue(input.rawJson.isEmpty)
+        XCTAssertFalse(input.rawJson.isEmpty, "combo must ride rawJson (no native memo slot)")
+        XCTAssertTrue(input.rawJson.contains("Memos"))
+        XCTAssertTrue(input.rawJson.contains("DestinationTag"))
+        XCTAssertEqual(input.opPayment.destinationTag, 0, "combo uses rawJson, not the typed opPayment tag")
+
+        // Prove the tag rode into the rawJson as the exact numeric value.
+        let json = try Self.decodeRawJson(input.rawJson)
+        XCTAssertEqual(json["DestinationTag"] as? Int, 4321)
+        XCTAssertNotNil(json["Memos"])
     }
 
     func testFieldPresentZeroRejectsPayload() {
@@ -295,6 +313,82 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         ))
         XCTAssertEqual(input.opPayment.destinationTag, 888)
         XCTAssertTrue(input.rawJson.isEmpty)
+    }
+
+    // MARK: - #4755 tag+memo combo + echo disambiguation (byte-parity)
+
+    func testEchoMemoBuildsTagOnlyByteIdenticalToFieldOnly() throws {
+        // The dual-write ECHO: field=12345 AND memo=="12345" (the tag's own
+        // canonical decimal) must build the SAME tag-only payment as the
+        // field-only / memo-only paths — NO Memos blob. Extends the byte-parity
+        // pin to the steady-state dual-write an initiator emits for a tag-only
+        // send.
+        let fieldOnly = Self.makeRipplePayload(memo: nil, destinationTagField: 12345)
+        let echo = Self.makeRipplePayload(memo: "12345", destinationTagField: 12345)
+
+        let fieldInput = try RippleHelper.getPreSignedInputData(keysignPayload: fieldOnly)
+        let echoInput = try RippleHelper.getPreSignedInputData(keysignPayload: echo)
+        XCTAssertEqual(echoInput, fieldInput, "the echo must serialize identically to the tag-only path")
+
+        let decoded = try RippleSigningInput(serializedBytes: echoInput)
+        XCTAssertEqual(decoded.opPayment.destinationTag, 12345)
+        XCTAssertTrue(decoded.rawJson.isEmpty, "the echo must NOT produce a numeric Memos blob")
+
+        XCTAssertEqual(
+            try RippleHelper.getPreSignedImageHash(keysignPayload: echo),
+            try RippleHelper.getPreSignedImageHash(keysignPayload: fieldOnly),
+            "the committee hash must match across field-only and echo"
+        )
+    }
+
+    func testEchoSwallowsTextMemoEqualToTagDecimal() throws {
+        // Accepted edge: a field tag N with a text memo that is literally the
+        // decimal "N" is indistinguishable from the echo and is swallowed as
+        // tag-only (no Memos). Documented + accepted.
+        let payload = Self.makeRipplePayload(memo: "5", destinationTagField: 5)
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
+        XCTAssertEqual(input.opPayment.destinationTag, 5)
+        XCTAssertTrue(input.rawJson.isEmpty, "memo \"5\" alongside tag 5 is swallowed as the echo — no Memos")
+    }
+
+    func testRawJsonHonorsDestinationTag() throws {
+        // FUND-CRITICAL: wallet-core's RippleOperationPayment has NO memo field,
+        // so the combo must go through rawJson. Prove rawJson's DestinationTag
+        // is encoded into the SIGNED bytes: a rawJson Payment with a tag hashes
+        // DIFFERENTLY from the same Payment without one, and two different tags
+        // sign differently. If wallet-core ignored the rawJson tag these would
+        // collide.
+        //
+        // We do NOT assert byte-equality with the native opPayment-tag path:
+        // wallet-core's typed builder stamps `Flags` (tfFullyCanonicalSig) on
+        // the Payment, while the rawJson path signs the JSON literally (exactly
+        // as the shipped swap rawJson path does, without that flag). The tag
+        // itself still serializes into the signed transaction — which is what
+        // this test pins.
+        let noTag = try Self.rawJsonTagOnlySigningInput(tag: nil)
+        let tag5 = try Self.rawJsonTagOnlySigningInput(tag: 5)
+        let tag6 = try Self.rawJsonTagOnlySigningInput(tag: 6)
+        XCTAssertNotEqual(try Self.preImageHash(noTag), try Self.preImageHash(tag5),
+                          "DestinationTag must enter the signed rawJson bytes")
+        XCTAssertNotEqual(try Self.preImageHash(tag5), try Self.preImageHash(tag6),
+                          "different destination tags must sign differently")
+    }
+
+    func testComboTagAffectsSignedBytes() throws {
+        // Differential proof the combo's DestinationTag enters the signed bytes:
+        // two combos identical except for the tag hash DIFFERENTLY; two identical
+        // except for the memo text hash DIFFERENTLY; and the combo differs from a
+        // memo-only send (the tag adds bytes). Together these prove BOTH fields
+        // are signed.
+        let comboTag5 = try RippleHelper.getPreSignedImageHash(keysignPayload: Self.makeRipplePayload(memo: "hi", destinationTagField: 5))
+        let comboTag6 = try RippleHelper.getPreSignedImageHash(keysignPayload: Self.makeRipplePayload(memo: "hi", destinationTagField: 6))
+        XCTAssertNotEqual(comboTag5, comboTag6, "the destination tag must affect the signed transaction")
+
+        let comboMemoA = try RippleHelper.getPreSignedImageHash(keysignPayload: Self.makeRipplePayload(memo: "aaa", destinationTagField: 5))
+        XCTAssertNotEqual(comboTag5, comboMemoA, "the memo text must affect the signed transaction")
+
+        let memoOnly = try RippleHelper.getPreSignedImageHash(keysignPayload: Self.makeRipplePayload(memo: "hi", destinationTagField: nil))
+        XCTAssertNotEqual(comboTag5, memoOnly, "the combo (tag+memo) must differ from a memo-only send")
     }
 
     // MARK: - Verify seam (SendTransaction → payload memo)
@@ -480,6 +574,50 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     // MARK: - Fixtures
 
     private static let destination = "rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh"
+    private static let account = "rPVMhWBsfF9iMXYj3aAzJVkPDTFNSyWdKy"
+    private static let publicKeyHex = "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+
+    private static func decodeRawJson(_ rawJson: String) throws -> [String: Any] {
+        let data = try XCTUnwrap(rawJson.data(using: .utf8))
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    private static func preImageHash(_ inputData: Data) throws -> Data {
+        let hashes = TransactionCompiler.preImageHashes(coinType: .xrp, txInputData: inputData)
+        let output = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        XCTAssertTrue(output.errorMessage.isEmpty, "wallet-core rejected the input: \(output.errorMessage)")
+        return output.dataHash
+    }
+
+    /// A rawJson Payment optionally carrying a numeric DestinationTag (no
+    /// Memos) — used to prove wallet-core's rawJson path encodes the tag into
+    /// the signed bytes.
+    private static func rawJsonTagOnlySigningInput(tag: UInt32?) throws -> Data {
+        let keyData = try XCTUnwrap(Data(hexString: publicKeyHex))
+        let publicKey = try XCTUnwrap(PublicKey(data: keyData, type: .secp256k1))
+        var txJson: [String: Any] = [
+            "TransactionType": "Payment",
+            "Account": account,
+            "Destination": destination,
+            "Amount": "1000000",
+            "Fee": "10",
+            "Sequence": 99,
+            "LastLedgerSequence": 12345678
+        ]
+        if let tag {
+            txJson["DestinationTag"] = tag
+        }
+        let jsonString = try XCTUnwrap(String(data: JSONSerialization.data(withJSONObject: txJson), encoding: .utf8))
+        let input = RippleSigningInput.with {
+            $0.fee = 10
+            $0.sequence = 99
+            $0.account = account
+            $0.publicKey = publicKey.data
+            $0.lastLedgerSequence = 12345678
+            $0.rawJson = jsonString
+        }
+        return try input.serializedData()
+    }
 
     @MainActor
     private static func makeRippleForm() -> SendDetailsViewModel {
