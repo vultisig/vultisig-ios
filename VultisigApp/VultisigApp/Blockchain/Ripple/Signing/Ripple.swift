@@ -34,7 +34,7 @@ enum RippleHelper {
         }
 
         guard
-            case .Ripple(let sequence, let gas, let lastLedgerSequence) = keysignPayload
+            case .Ripple(let sequence, let gas, let lastLedgerSequence, let fieldDestinationTag) = keysignPayload
                 .chainSpecific
         else {
             print("keysignPayload.chainSpecific is not Ripple")
@@ -76,12 +76,32 @@ enum RippleHelper {
             } else {
                 destinationTag = nil
             }
+        } else if let fieldDestinationTag {
+            // Dual-write rollout: prefer the first-class RippleSpecific
+            // `destination_tag`. The initiator writes the same value into both
+            // this field and the memo carrier, so a co-signer that reads only
+            // the memo rebuilds an identical signing input — the pre-image hash
+            // matches across mixed-version device pairs. When the field is
+            // present it wins outright (the memo is not re-validated): a
+            // divergent memo can at worst fail the ceremony on a legacy peer,
+            // never produce a signature.
+            //
+            // A present tag of 0 is rejected exactly as the memo path rejects
+            // "0": wallet-core serialises a 0 destinationTag identically to
+            // "no tag", so signing it would produce an UNTAGGED payment while a
+            // tag was displayed — the dishonest-signing shape the contract
+            // forbids. (No wallet-core signer can produce a tagged-0 payment on
+            // any platform, so a 0 field is always malformed.)
+            guard fieldDestinationTag != 0 else {
+                throw RippleMemoError.invalidMemo(String(fieldDestinationTag))
+            }
+            destinationTag = UInt64(fieldDestinationTag)
         } else {
-            // Plain payments: the memo slot is the destination-tag carrier —
-            // it must be empty or a canonical uint32 decimal, and anything
-            // else rejects the payload on both sides of the ceremony (see
-            // `RippleDestinationTag`). This replaces the legacy fallback that
-            // turned non-numeric memos into an on-chain `Memos` blob, which
+            // Plain payments with no field: the memo slot is the destination-tag
+            // carrier — it must be empty or a canonical uint32 decimal, and
+            // anything else rejects the payload on both sides of the ceremony
+            // (see `RippleDestinationTag`). This replaces the legacy fallback
+            // that turned non-numeric memos into an on-chain `Memos` blob, which
             // silently dropped the tag and left exchange deposits uncredited.
             destinationTag = try RippleDestinationTag.validatePayloadMemo(keysignPayload.memo).map(UInt64.init)
         }

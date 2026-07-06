@@ -114,6 +114,44 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
 
+    // MARK: - Proto round-trip (the wire the co-signer receives)
+
+    func testDestinationTagSurvivesProtoRoundTrip() throws {
+        // The co-signer never rebuilds the payload — it deserializes the proto
+        // the initiator serialized. Pin that a set field round-trips through
+        // the RippleSpecific proto so the field-preferring signer can read it.
+        let original: BlockChainSpecific = .Ripple(sequence: 5, gas: 10, lastLedgerSequence: 99, destinationTag: 4242)
+
+        guard case .rippleSpecific(let ripple) = original.mapToProtobuff() else {
+            return XCTFail("expected rippleSpecific oneof")
+        }
+        XCTAssertTrue(ripple.hasDestinationTag)
+        XCTAssertEqual(ripple.destinationTag, 4242)
+
+        guard case .Ripple(_, _, _, let tag) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
+            return XCTFail("expected Ripple case")
+        }
+        XCTAssertEqual(tag, 4242)
+    }
+
+    func testAbsentDestinationTagStaysUnsetOnTheWire() throws {
+        // Byte-parity guarantee for memo-only sends: with no field the proto
+        // leaves destination_tag UNSET, so an old memo-only co-signer sees the
+        // exact same RippleSpecific bytes it always did (the field is not even
+        // present to ignore).
+        let original: BlockChainSpecific = .Ripple(sequence: 5, gas: 10, lastLedgerSequence: 99, destinationTag: nil)
+
+        guard case .rippleSpecific(let ripple) = original.mapToProtobuff() else {
+            return XCTFail("expected rippleSpecific oneof")
+        }
+        XCTAssertFalse(ripple.hasDestinationTag, "no field → unset on the wire")
+
+        guard case .Ripple(_, _, _, let tag) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
+            return XCTFail("expected Ripple case")
+        }
+        XCTAssertNil(tag)
+    }
+
     // MARK: - Swap payloads keep the legacy memo contract
 
     func testSwapPayloadNumericMemoStillBecomesDestinationTag() throws {
@@ -138,18 +176,82 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertEqual(input.opPayment.destinationTag, 0)
     }
 
-    func testPreimageHashMatchesLegacyNumericMemoPayload() throws {
-        // Byte-parity pin: a payload whose memo slot carries the canonical
-        // tag hashes identically however the tag was sourced (dedicated
-        // field or legacy numeric memo) — the wire format did not move.
-        let fromTagField = Self.makeRipplePayload(memo: "999")
-        let legacyNumericMemo = Self.makeRipplePayload(memo: "999")
+    // MARK: - First-class field ⇄ memo byte parity (dual-write safety)
 
-        let lhs = try RippleHelper.getPreSignedImageHash(keysignPayload: fromTagField)
-        let rhs = try RippleHelper.getPreSignedImageHash(keysignPayload: legacyNumericMemo)
+    func testFieldSourcedTagProducesByteIdenticalInputToMemoFallback() throws {
+        // THE dual-write safety pin. A tag delivered via the first-class
+        // `RippleSpecific.destination_tag` field must produce a byte-identical
+        // pre-signed input (and pre-image hash) to the SAME tag delivered via
+        // the legacy memo carrier — proving a new-version signer (reads the
+        // field) and an old-version co-signer (reads only the memo) hash the
+        // exact same transaction in an MPC ceremony.
+        let viaField = Self.makeRipplePayload(memo: nil, destinationTagField: 12345)
+        let viaMemo = Self.makeRipplePayload(memo: "12345", destinationTagField: nil)
 
-        XCTAssertFalse(lhs.isEmpty)
-        XCTAssertEqual(lhs, rhs)
+        let fieldInput = try RippleHelper.getPreSignedInputData(keysignPayload: viaField)
+        let memoInput = try RippleHelper.getPreSignedInputData(keysignPayload: viaMemo)
+        XCTAssertEqual(fieldInput, memoInput, "field-sourced and memo-sourced tags must serialize identically")
+
+        let decoded = try RippleSigningInput(serializedBytes: fieldInput)
+        XCTAssertEqual(decoded.opPayment.destinationTag, 12345)
+        XCTAssertTrue(decoded.rawJson.isEmpty, "tagged payments never take the rawJson path")
+
+        let fieldHash = try RippleHelper.getPreSignedImageHash(keysignPayload: viaField)
+        let memoHash = try RippleHelper.getPreSignedImageHash(keysignPayload: viaMemo)
+        XCTAssertFalse(fieldHash.isEmpty)
+        XCTAssertEqual(fieldHash, memoHash, "the pre-image hash the committee signs must match")
+    }
+
+    func testFieldPreferredWhenBothCarriersAgree() throws {
+        // Dual-write steady state: both carriers set to the SAME value. The
+        // signer prefers the field; the built tag matches the memo-only build.
+        let both = Self.makeRipplePayload(memo: "777", destinationTagField: 777)
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: both))
+        XCTAssertEqual(input.opPayment.destinationTag, 777)
+        XCTAssertTrue(input.rawJson.isEmpty)
+    }
+
+    func testFieldWinsOverConflictingMemo() throws {
+        // Deterministic conflict rule: when the field and memo disagree, the
+        // field wins outright (only reachable via a malformed payload — the
+        // initiator always dual-writes equal values). The signed tag is the
+        // field's value; the divergent memo is ignored.
+        let conflicting = Self.makeRipplePayload(memo: "111", destinationTagField: 222)
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: conflicting))
+        XCTAssertEqual(input.opPayment.destinationTag, 222, "the first-class field wins over a conflicting memo")
+        XCTAssertTrue(input.rawJson.isEmpty)
+    }
+
+    func testFieldWinsEvenWhenMemoIsNonCanonical() throws {
+        // Prefer-field short-circuits memo validation: a present field signs
+        // successfully even if the memo carrier is non-canonical. (An old
+        // memo-only peer would reject that memo and fail the ceremony — safe,
+        // never a bad signature.)
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(
+            keysignPayload: Self.makeRipplePayload(memo: "not-a-tag", destinationTagField: 4321)
+        ))
+        XCTAssertEqual(input.opPayment.destinationTag, 4321)
+        XCTAssertTrue(input.rawJson.isEmpty)
+    }
+
+    func testFieldPresentZeroRejectsPayload() {
+        // A present field of 0 must reject exactly as memo "0" does: wallet-core
+        // encodes a 0 destinationTag identically to "no tag", so signing it
+        // would send UNTAGGED while a tag was displayed (dishonest signing).
+        let payload = Self.makeRipplePayload(memo: nil, destinationTagField: 0)
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload)) { error in
+            XCTAssertEqual(error as? RippleMemoError, .invalidMemo("0"))
+        }
+    }
+
+    func testMemoFallbackWhenFieldAbsent() throws {
+        // No field → the memo carrier is the source of truth (unchanged from
+        // the pre-field behavior, and what every legacy platform does).
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(
+            keysignPayload: Self.makeRipplePayload(memo: "888", destinationTagField: nil)
+        ))
+        XCTAssertEqual(input.opPayment.destinationTag, 888)
+        XCTAssertTrue(input.rawJson.isEmpty)
     }
 
     // MARK: - Verify seam (SendTransaction → payload memo)
@@ -338,7 +440,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         )
     }
 
-    private static func makeRipplePayload(memo: String?, withSwapPayload: Bool = false) -> KeysignPayload {
+    private static func makeRipplePayload(memo: String?, destinationTagField: UInt32? = nil, withSwapPayload: Bool = false) -> KeysignPayload {
         // Compressed secp256k1 generator point — a valid public key so the
         // signing-input builder gets past its key checks.
         let meta = CoinMeta(
@@ -374,7 +476,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
             coin: coin,
             toAddress: destination,
             toAmount: BigInt(1_000_000),
-            chainSpecific: .Ripple(sequence: 99, gas: 10, lastLedgerSequence: 12345678),
+            chainSpecific: .Ripple(sequence: 99, gas: 10, lastLedgerSequence: 12345678, destinationTag: destinationTagField),
             utxos: [],
             memo: memo,
             swapPayload: swapPayload,

@@ -501,7 +501,8 @@ extension BlockChainSpecific {
             self = .Ripple(
                 sequence: value.sequence,
                 gas: value.gas,
-                lastLedgerSequence: value.lastLedgerSequence
+                lastLedgerSequence: value.lastLedgerSequence,
+                destinationTag: value.hasDestinationTag ? value.destinationTag : nil
             )
         case .tronSpecific(let value):
             self = .Tron(
@@ -618,11 +619,16 @@ extension BlockChainSpecific {
                 $0.genesisHash = genesisHash
                 $0.gas = UInt64(gas ?? 0)
             })
-        case .Ripple(let sequence, let gas, let lastLedgerSequence):
+        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag):
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
                 $0.lastLedgerSequence = lastLedgerSequence
+                // Dual-write: the tag also rides the memo carrier; setting the
+                // first-class field is what a field-preferring signer reads.
+                if let destinationTag {
+                    $0.destinationTag = destinationTag
+                }
             })
 
         case .Tron(
