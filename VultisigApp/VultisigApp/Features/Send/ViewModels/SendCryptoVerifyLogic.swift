@@ -184,16 +184,35 @@ struct SendCryptoVerifyLogic {
         return tx.memo.isEmpty ? nil : tx.memo
     }
 
+    /// Dual-write half of the destination-tag rollout: copy the resolved tag
+    /// into the first-class `RippleSpecific.destination_tag` field in addition
+    /// to the memo carrier (`payloadMemo`). The tag is derived from the same
+    /// canonical memo value, so the two carriers can never disagree. A `nil`
+    /// tag leaves the field unset, which keeps memo-only sends byte-identical
+    /// for co-signers that don't read the field. No-op for non-Ripple.
+    static func dualWritingRippleTag(_ chainSpecific: BlockChainSpecific, tag: UInt32?) -> BlockChainSpecific {
+        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _) = chainSpecific else {
+            return chainSpecific
+        }
+        return .Ripple(
+            sequence: sequence,
+            gas: gas,
+            lastLedgerSequence: lastLedgerSequence,
+            destinationTag: tag
+        )
+    }
+
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
-            let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
+            var chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
             // Initiator-side gate on the XRP memo contract, mirrored by the
             // signing helper on every device: fail here, before the ceremony,
             // with the same typed error the co-signers would raise.
             let memo = Self.payloadMemo(tx: tx)
             if tx.coin.chain == .ripple {
-                _ = try RippleDestinationTag.validatePayloadMemo(memo)
+                let tag = try RippleDestinationTag.validatePayloadMemo(memo)
+                chainSpecific = Self.dualWritingRippleTag(chainSpecific, tag: tag)
             }
 
             let basePayload = try await interactor.buildKeysignPayload(

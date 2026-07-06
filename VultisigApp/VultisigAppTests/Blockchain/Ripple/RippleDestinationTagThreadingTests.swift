@@ -276,6 +276,42 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertEqual(SendCryptoVerifyLogic.payloadMemo(tx: tx), "12345")
     }
 
+    // MARK: - Dual-write (initiator sets BOTH carriers)
+
+    func testDualWriteSetsFieldFromResolvedTag() throws {
+        let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
+        let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: try RippleDestinationTag.validatePayloadMemo("12345"))
+        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        XCTAssertEqual(fieldTag, 12345)
+    }
+
+    @MainActor
+    func testDualWriteFieldEqualsMemoCarrier() throws {
+        // The dual-write invariant: the first-class field and the memo carrier
+        // hold the SAME value (both derived from the one resolved tag).
+        let tx = Self.makeSendTransaction(memo: "", destinationTag: 4242)
+        let memo = SendCryptoVerifyLogic.payloadMemo(tx: tx)
+        XCTAssertEqual(memo, "4242")
+
+        let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
+        let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: try RippleDestinationTag.validatePayloadMemo(memo))
+        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        XCTAssertEqual(fieldTag.map(String.init), memo, "field and memo carriers must hold the same value")
+    }
+
+    func testDualWriteLeavesFieldUnsetForTaglessSend() {
+        let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
+        let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: nil)
+        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        XCTAssertNil(fieldTag, "no tag → field unset → byte-identical for memo-only co-signers")
+    }
+
+    func testDualWriteNoOpForNonRipple() {
+        let base: BlockChainSpecific = .Ton(sequenceNumber: 1, expireAt: 2, bounceable: true, sendMaxAmount: false)
+        let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: 999)
+        guard case .Ton = written else { return XCTFail("non-Ripple must pass through unchanged") }
+    }
+
     // MARK: - Form seam (SendDetailsViewModel)
 
     @MainActor
