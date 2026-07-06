@@ -66,8 +66,7 @@ struct SendDetailsScreen: View {
                 }
                 // Same treatment for the XRP-only destination tag.
                 if !newValue.chain.supportsDestinationTag {
-                    viewModel.destinationTag = ""
-                    viewModel.isDestinationTagLocked = false
+                    viewModel.rippleTag.clearForUnsupportedChain()
                 }
             }
             .onChange(of: viewModel.toAddress) { _, _ in
@@ -206,13 +205,16 @@ struct SendDetailsScreen: View {
     }
 
     var tabs: some View {
-        tabsContent
+        // `@Bindable` on the nested sub-VM: a binding can't chain through the
+        // parent's `let rippleTag` (read-only key path), so bind locally.
+        @Bindable var rippleTag = viewModel.rippleTag
+        return tabsContent
             // Fail-open half of the XRP RequireDest gate: the lookup
             // couldn't confirm whether the destination needs a tag, so the
             // user must explicitly accept the risk before the send proceeds.
             .alert(
                 NSLocalizedString("destinationTagUnverifiedTitle", comment: ""),
-                isPresented: $viewModel.showDestinationTagUnverifiedAlert
+                isPresented: $rippleTag.showDestinationTagUnverifiedAlert
             ) {
                 Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
                 Button(NSLocalizedString("continueAnyway", comment: "")) {

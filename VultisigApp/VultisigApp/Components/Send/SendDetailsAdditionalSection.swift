@@ -30,18 +30,18 @@ struct SendDetailsAdditionalSection: View {
             if !viewModel.memo.isEmpty {
                 isMemoExpanded = true
             }
-            if !viewModel.destinationTag.isEmpty {
+            if !viewModel.rippleTag.destinationTag.isEmpty {
                 isDestinationTagExpanded = true
             }
         }
-        .onChange(of: viewModel.destinationTag) { _, newValue in
+        .onChange(of: viewModel.rippleTag.destinationTag) { _, newValue in
             // Autofill (X-address paste) must surface the tag, not hide it
             // behind a collapsed section.
             if !newValue.isEmpty {
                 isDestinationTagExpanded = true
             }
         }
-        .onChange(of: viewModel.destinationTagFieldNudge) { _, _ in
+        .onChange(of: viewModel.rippleTag.destinationTagFieldNudge) { _, _ in
             // RequireDest hard-block: surface the (empty, collapsed) field
             // the user now has to fill.
             withAnimation {
@@ -98,7 +98,10 @@ struct SendDetailsAdditionalSection: View {
     }
 
     var addDestinationTagField: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        // `@Bindable` on the nested sub-VM: a binding can't chain through the
+        // parent's `let rippleTag` (read-only key path), so bind locally.
+        @Bindable var rippleTag = viewModel.rippleTag
+        return VStack(alignment: .leading, spacing: 8) {
             Button {
                 withAnimation {
                     isDestinationTagExpanded.toggle()
@@ -108,10 +111,10 @@ struct SendDetailsAdditionalSection: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                DestinationTagTextField(destinationTag: $viewModel.destinationTag)
-                    .disabled(viewModel.isDestinationTagLocked)
+                DestinationTagTextField(destinationTag: $rippleTag.destinationTag)
+                    .disabled(rippleTag.isDestinationTagLocked)
 
-                if viewModel.isDestinationTagLocked {
+                if rippleTag.isDestinationTagLocked {
                     getFieldTitle("destinationTagFromXAddress")
                 }
             }

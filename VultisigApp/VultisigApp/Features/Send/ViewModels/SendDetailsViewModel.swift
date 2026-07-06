@@ -33,11 +33,15 @@ final class SendDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
-    @ObservationIgnored private let destinationTagRequirementProvider: (String) async -> RippleDestinationTagRequirement
 
     // MARK: - Identity (immutable once set)
     let vault: Vault
     let hasPreselectedCoin: Bool
+
+    /// XRP-only Destination Tag concern (field state, X-address autofill/lock
+    /// lifecycle, RequireDest gate). Read/bound through the parent so `@Observable`
+    /// tracks its nested state.
+    let rippleTag: RippleDestinationTagViewModel
 
     // MARK: - UI state (merged from the deleted UI-only SendDetailsViewModel)
     var selectedChain: Chain? = nil
@@ -58,40 +62,11 @@ final class SendDetailsViewModel {
     var amountInFiat: String = ""
     var memo: String = ""
 
-    /// XRP-only destination tag, kept as the raw field text. Validated by
-    /// `validateRippleTagAndMemo()` and resolved against the memo by
-    /// `resolvedDestinationTag` when the immutable transaction is built.
-    var destinationTag: String = ""
-
-    /// True when `destinationTag` was derived from a pasted X-address —
-    /// the field is read-only then, because the tag is part of the address
-    /// the sender was given and editing it would misroute the deposit.
-    var isDestinationTagLocked: Bool = false
-
-    /// Asks the screen to present the "couldn't verify whether this address
-    /// requires a destination tag" two-button confirm (Continue anyway /
-    /// Cancel) — the explicit-acknowledgment half of the fail-open posture.
-    var showDestinationTagUnverifiedAlert: Bool = false
-
-    /// Incremented when the RequireDest gate hard-blocks a tagless send so
-    /// the additional-fields section can expand the (empty, collapsed) tag
-    /// field the user now has to fill.
-    private(set) var destinationTagFieldNudge: Int = 0
-
-    /// Session-scoped cache of RequireDest lookups so repeated Continue
-    /// presses don't re-query. `.unknown` is never cached — a failed lookup
-    /// retries next time.
-    @ObservationIgnored private var destinationTagRequirementCache: [String: RippleDestinationTagRequirement] = [:]
-
-    /// Address the user explicitly accepted the unverified-RequireDest risk
-    /// for. Keyed by address so the acknowledgment can't leak onto a
-    /// different destination.
-    @ObservationIgnored private var unverifiedDestinationTagAckAddress: String?
-
     /// Records the user's "Continue anyway" on the unverified-RequireDest
-    /// confirm for the current destination.
+    /// confirm for the current destination. Forwards the parent-owned
+    /// `toAddress` to the tag sub-VM that owns the acknowledgment.
     func acknowledgeUnverifiedDestinationTag() {
-        unverifiedDestinationTagAckAddress = toAddress
+        rippleTag.acknowledge(toAddress: toAddress)
     }
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
@@ -158,9 +133,7 @@ final class SendDetailsViewModel {
         self.fromAddress = coin.address
         self.interactor = interactor
         self.addressResolver = addressResolver
-        self.destinationTagRequirementProvider = destinationTagRequirementProvider ?? { address in
-            await RippleService.shared.fetchDestinationTagRequirement(for: address)
-        }
+        self.rippleTag = RippleDestinationTagViewModel(requirementProvider: destinationTagRequirementProvider)
     }
 
     func hydrate(from seed: SendDetailsSeed) {
@@ -399,27 +372,18 @@ final class SendDetailsViewModel {
         guard let decoded = try? RippleXAddress.decode(toAddress) else {
             // The input is no longer the X-address that locked the tag —
             // the derived tag belonged to the old destination, drop it.
-            if isDestinationTagLocked, toAddress != lastResolvedAddress {
-                isDestinationTagLocked = false
-                destinationTag = ""
-            }
+            rippleTag.handleAddressChangedAway(isStillResolved: toAddress == lastResolvedAddress)
             return
         }
 
+        // Address fields are the parent's (shared with the ENS/name path); the
+        // tag/lock decision belongs to the XRP-only sub-VM.
         let original = toAddress
         toAddress = decoded.classicAddress
         toAddressLabel = original
         lastResolvedAddress = decoded.classicAddress
 
-        if let tag = decoded.tag {
-            destinationTag = String(tag)
-            isDestinationTagLocked = true
-        } else {
-            if isDestinationTagLocked {
-                destinationTag = ""
-            }
-            isDestinationTagLocked = false
-        }
+        rippleTag.applyDecodedTag(decoded.tag)
     }
 
     /// Called when the destination field is cleared. Drops the resolution
@@ -431,10 +395,7 @@ final class SendDetailsViewModel {
         addressSetupDone = false
         toAddressLabel = nil
         lastResolvedAddress = nil
-        if isDestinationTagLocked {
-            isDestinationTagLocked = false
-            destinationTag = ""
-        }
+        rippleTag.releaseLockedTag()
     }
 
     func validateToAddress() async -> Bool {
@@ -772,32 +733,11 @@ final class SendDetailsViewModel {
     func validateRippleTagAndMemo() -> Bool {
         guard coin.chain == .ripple else { return true }
 
-        var fieldTag: UInt32?
-        if !destinationTag.isEmpty {
-            guard let tag = RippleDestinationTag.parseTag(destinationTag) else {
-                setGeneralError(message: "destinationTagInvalidError")
-                return false
-            }
-            fieldTag = tag
+        guard let errorKey = rippleTag.validateTagAndMemo(memo: memo).errorKey else {
+            return true
         }
-
-        if !memo.isEmpty {
-            guard RippleDestinationTag.parseCanonical(memo) != nil else {
-                setGeneralError(message: "xrpMemoNotDestinationTagError")
-                return false
-            }
-            guard let memoTag = RippleDestinationTag.parseTag(memo) else {
-                // Numeric but zero — same rejection as the field.
-                setGeneralError(message: "destinationTagInvalidError")
-                return false
-            }
-            if let fieldTag, memoTag != fieldTag {
-                setGeneralError(message: "destinationTagMemoConflictError")
-                return false
-            }
-        }
-
-        return true
+        setGeneralError(message: errorKey)
+        return false
     }
 
     /// Effective XRP destination tag: the dedicated field wins; a canonical
@@ -805,10 +745,7 @@ final class SendDetailsViewModel {
     /// Only meaningful after `validateRippleTagAndMemo()` passed.
     var resolvedDestinationTag: UInt32? {
         guard coin.chain == .ripple else { return nil }
-        if let tag = RippleDestinationTag.parseTag(destinationTag) {
-            return tag
-        }
-        return RippleDestinationTag.parseTag(memo)
+        return rippleTag.resolvedTag(memo: memo)
     }
 
     /// RequireDest gate: a tagless XRP send to a destination whose
@@ -823,31 +760,14 @@ final class SendDetailsViewModel {
     /// accounts that resolve on the happy path.
     func validateRippleRequireDest() async -> Bool {
         guard coin.chain == .ripple else { return true }
-        // A present tag (field or legacy numeric memo) satisfies the flag.
-        guard resolvedDestinationTag == nil else { return true }
 
-        let requirement: RippleDestinationTagRequirement
-        if let cached = destinationTagRequirementCache[toAddress] {
-            requirement = cached
-        } else {
-            requirement = await destinationTagRequirementProvider(toAddress)
-            if requirement != .unknown {
-                destinationTagRequirementCache[toAddress] = requirement
-            }
-        }
-
-        switch requirement {
+        switch await rippleTag.validateRequireDest(toAddress: toAddress, memo: memo) {
+        case .satisfied:
+            return true
         case .required:
             setGeneralError(message: "destinationTagRequiredError")
-            destinationTagFieldNudge += 1
             return false
-        case .notRequired, .accountNotFound:
-            return true
-        case .unknown:
-            if unverifiedDestinationTagAckAddress == toAddress {
-                return true
-            }
-            showDestinationTagUnverifiedAlert = true
+        case .unverified:
             return false
         }
     }
@@ -962,10 +882,7 @@ final class SendDetailsViewModel {
         amount = ""
         amountInFiat = ""
         memo = ""
-        destinationTag = ""
-        isDestinationTagLocked = false
-        showDestinationTagUnverifiedAlert = false
-        unverifiedDestinationTagAckAddress = nil
+        rippleTag.reset()
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false
