@@ -286,6 +286,40 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         XCTAssertEqual(vm.rows.first?.isActionable, false)
     }
 
+    /// A legacy persisted row (pubkey embedded in the id but a nil
+    /// `stakeAccountPubkey` field — written by an earlier build) can't seed,
+    /// but one successful refresh must HEAL it via the apply() backfill so the
+    /// next screen entry paints cache-first instead of spinning.
+    func testRefreshHealsLegacyRowSoNextSeedPaints() async throws {
+        let legacy = StakePosition(
+            coin: solMeta,
+            type: .stake,
+            amount: 1,
+            stakeAccountPubkey: "A",
+            vault: vault
+        )
+        legacy.stakeAccountPubkey = nil
+        Storage.shared.modelContext.insert(legacy)
+        try Storage.shared.save()
+
+        let service = FakeStakingService(
+            accounts: [account(pubkey: "A", vote: "V1", stake: 1_000_000_000, activationEpoch: 700)],
+            validators: [validator(vote: "V1", commission: 5)]
+        )
+
+        // The poisoned row cannot seed — this entry still starts empty.
+        let first = makeViewModel(service: service)
+        XCTAssertTrue(first.rows.isEmpty)
+
+        await first.refresh(owner: "Owner", decimals: 9)
+        XCTAssertEqual(solanaPositions().first?.stakeAccountPubkey, "A", "apply() must backfill the legacy row.")
+
+        // A fresh VM (new screen entry) now paints from the healed snapshot.
+        let second = makeViewModel(service: service)
+        XCTAssertEqual(second.rows.count, 1)
+        XCTAssertEqual(second.rows.first?.id, "A")
+    }
+
     /// A successful refresh writes the per-account snapshot back to SwiftData.
     func testSuccessfulRefreshUpsertsSnapshot() async {
         let service = FakeStakingService(
