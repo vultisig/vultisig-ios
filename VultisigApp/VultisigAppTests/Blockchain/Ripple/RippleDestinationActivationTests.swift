@@ -5,8 +5,11 @@
 //  Covers the pre-ceremony destination-activation guard: an XRPL Payment that
 //  would create the destination account with less than the base reserve fails
 //  on-chain (tecNO_DST_INSUF_XRP) after the fee is burned, so the app blocks
-//  it before the keysign ceremony starts. Funded destinations pass untouched;
-//  a lookup failure fails closed, matching the SDK and Android companions.
+//  it before the keysign ceremony starts. Funded destinations pass untouched.
+//  The block fires only on proof the destination is unfunded (a definitive
+//  actNotFound): a transport/RPC lookup error or an exhausted node-error retry
+//  fails OPEN (the on-chain guard is the backstop), while a successful-but-
+//  uninterpretable response fails closed. A cancelled lookup propagates.
 //
 
 @testable import VultisigApp
@@ -124,6 +127,23 @@ final class RippleDestinationActivationTests: XCTestCase {
             XCTAssertNotNil(error.errorDescription, "the fail-closed message must be presentable")
         } catch {
             XCTFail("unexpected error type: \(error)")
+        }
+    }
+
+    func testDestinationLookupCancellationPropagates() async {
+        // A cancelled lookup (screen tearing down) must propagate as a cancel —
+        // never fail open OR closed, so the caller's cancellation contract holds.
+        let client = DestinationScriptedHTTPClient()
+        client.accountInfoResult = .failure(CancellationError())
+        let service = makeService(client: client)
+
+        do {
+            try await service.validateDestinationActivation(address: "rX", amountDrops: BigInt(10_000_000))
+            XCTFail("cancellation must propagate, not be swallowed")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
         }
     }
 

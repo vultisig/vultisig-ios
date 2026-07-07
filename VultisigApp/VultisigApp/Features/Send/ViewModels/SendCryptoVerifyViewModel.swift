@@ -164,6 +164,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
         guard prebuiltKeysignPayload == nil, !hasBalanceError else { return }
         do {
             try await logic.validateDestinationIfNeeded(tx: transaction)
+        } catch is CancellationError {
+            // The load pass was cancelled (screen tearing down) — leave the UI
+            // state untouched rather than flagging a spurious balance error.
+            return
         } catch {
             errorMessage = error.localizedDescription
             showAlert = true

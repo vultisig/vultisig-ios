@@ -81,6 +81,26 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         }
     }
 
+    func testRippleDestinationCancellationPropagatesNotRewrapped() async throws {
+        // A cancelled lookup must propagate as CancellationError, NOT be
+        // rewrapped as HelperError — otherwise the load-time guard would turn a
+        // torn-down screen into a spurious balance error.
+        let client = TrippingHTTPClient()
+        client.accountInfoResult = .failure(CancellationError())
+        let logic = makeLogic(client: client)
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6)
+        let tx = makeTransaction(coin: xrp, amount: "0.5")
+
+        do {
+            try await logic.validateDestinationIfNeeded(tx: tx)
+            XCTFail("cancellation must propagate")
+        } catch is CancellationError {
+            // expected — not rewrapped
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
     // MARK: - Fixtures
 
     private func makeLogic(client: HTTPClientProtocol) -> SendCryptoVerifyLogic {
