@@ -147,8 +147,8 @@ struct CustomTokenScreen: View {
     }
 
     /// Looks up token metadata for the current ``contractAddress`` by dispatching to the appropriate
-    /// chain-specific service (THORChain bank denom, Cardano, EVM, Solana, Tron, or TON). On success,
-    /// populates the token preview; on failure, sets the ``error`` state.
+    /// chain-specific service (THORChain bank denom, Cardano, Terra CW20, EVM, Solana, Tron, or TON).
+    /// On success, populates the token preview; on failure, sets the ``error`` state.
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
 
@@ -202,6 +202,30 @@ struct CustomTokenScreen: View {
                         contractAddress: metadata.assetId,
                         isNativeToken: false
                     )
+                self.token = coinMeta
+                self.tokenName = coinMeta.ticker
+                self.tokenSymbol = coinMeta.ticker
+                self.tokenDecimals = coinMeta.decimals
+                self.showTokenInfo = true
+                self.isLoading = false
+
+            } else if chain == .terra || chain == .terraClassic {
+
+                // Terra CW20 tokens are CosmWasm contracts; metadata comes from
+                // the `{"token_info":{}}` smart query on the selected chain's
+                // LCD. A wallet address or non-CW20 contract makes the LCD
+                // reject the query and resolves to not-found; transport
+                // failures (rate limit, network) throw into the shared catch
+                // below instead of masquerading as not-found. Curated catalog
+                // entries are preferred for the logo and price provider.
+                guard let coinMeta = try await Cw20CustomTokenResolver.resolve(
+                    contractAddress: contractAddress,
+                    chain: chain
+                ) else {
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+                    return
+                }
                 self.token = coinMeta
                 self.tokenName = coinMeta.ticker
                 self.tokenSymbol = coinMeta.ticker
@@ -280,6 +304,15 @@ struct CustomTokenScreen: View {
 
             }
 
+        } catch HTTPError.statusCode(429, _) {
+            // HTTPClient-based lookups (Terra CW20) surface rate limiting as a
+            // typed status-code error rather than an NSError with code 429.
+            self.error = RateLimitError()
+            self.isLoading = false
+        } catch is CancellationError {
+            // A cancelled lookup is not a failure the user needs to see;
+            // just stop the spinner.
+            self.isLoading = false
         } catch let error as NSError {
             // Check for rate limit error
             if error.code == 429 {
@@ -309,6 +342,8 @@ struct CustomTokenScreen: View {
     /// tokens are bank denoms, not pool assets), so we validate that shape rather than a
     /// `thor1…` account address — the shared `AddressService.validateAddress` is reserved
     /// for real send/receive addresses and must keep rejecting token identifiers.
+    /// For Terra and Terra Classic, the input is a CW20 contract address, validated by
+    /// bech32 shape (contract payloads differ from account addresses).
     /// Other chains validate the input as a contract/account address.
     /// Updates ``isValidAddress`` accordingly.
     /// - Parameter address: The raw input string.
@@ -317,6 +352,12 @@ struct CustomTokenScreen: View {
             isValidAddress = (try? CardanoAssetId.parse(address)) != nil
         } else if chain == .thorChain {
             isValidAddress = ThorchainCustomTokenResolver.isValidInput(address)
+        } else if chain == .terra || chain == .terraClassic {
+            // CW20 contract addresses are not account addresses (Terra 2
+            // contracts carry 32-byte payloads, and 20-byte Terra Classic
+            // contracts are shape-identical to wallets), so validate the
+            // bech32 contract shape instead of a send/receive address.
+            isValidAddress = Cw20CustomTokenResolver.isValidInput(address, chain: chain)
         } else {
             isValidAddress = AddressService.validateAddress(address: address, chain: chain)
         }

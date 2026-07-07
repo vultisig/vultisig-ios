@@ -627,16 +627,14 @@ extension Chain {
     }
 
     /// Whether the Send flow's memo input should be exposed for this chain.
-    /// Most chains carry a memo at the protocol level, with two exceptions:
-    /// Cardano — WalletCore doesn't yet expose CIP-20 auxiliary data fields,
-    /// so iOS Cardano signing silently drops anything the user types; and
-    /// Sui — a transaction is a Programmable Transaction Block with no memo
-    /// field, so a typed memo is likewise dropped. Hiding the input avoids
-    /// the silent-drop bug. See #4326 (root) and #4377 (this mitigation);
-    /// remove the `.cardano` case here when #4326 closes.
+    /// Most chains carry a memo at the protocol level. The exception is Sui:
+    /// a transaction is a Programmable Transaction Block with no memo field, so
+    /// a typed memo would be silently dropped — hiding the input avoids that.
+    /// Cardano DOES support memos: they are attached on-chain as CIP-20
+    /// transaction metadata (label 674) via `CardanoSigningInput.auxiliaryData`.
     var supportsMemo: Bool {
         switch self {
-        case .cardano, .sui:
+        case .sui:
             return false
         default:
             return true

@@ -284,12 +284,18 @@ struct DefiChainMainScreen: View {
     /// Solana native-staking stake-segment renderer. Per-stake-account rows;
     /// the user-facing actions route through the shared
     /// `FunctionTransactionType.solana*` cases — the function-call router takes
-    /// it from there. No claim action: Solana rewards auto-compound.
+    /// it from there. No claim action: Solana rewards auto-compound. Gated on
+    /// the per-vault position opt-in exactly like the Cosmos stake segment.
     private func solanaStakeView(coin: Coin) -> some View {
         let fiatAmount = RateProvider.shared.fiatBalance(value: solanaStakeViewModel.totalStaked, coin: coin)
+        let isPositionEnabled = vault.defiPositions
+            .first(where: { $0.chain == chain })?
+            .staking
+            .contains(where: { $0.ticker == coin.ticker }) ?? false
         return SolanaStakeDefiView(
             coin: coin,
             totalFiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            isPositionEnabled: isPositionEnabled,
             viewModel: solanaStakeViewModel,
             onDelegate: { coin in
                 onTransactionToPresent(.solanaDelegate(coin: coin.toCoinMeta()))
@@ -320,7 +326,8 @@ struct DefiChainMainScreen: View {
                     stakeAccount: stakeAccount.pubkey,
                     amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
                 ))
-            }
+            },
+            emptyStateView: { emptyStateView }
         )
     }
 

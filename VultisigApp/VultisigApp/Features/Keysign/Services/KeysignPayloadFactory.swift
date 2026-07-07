@@ -85,6 +85,7 @@ struct KeysignPayloadFactory {
                         coin: coin,
                         toAddress: toAddress,
                         amount: amount,
+                        memo: memo,
                         ttl: ttl,
                         sendMaxAmount: sendMaxAmount,
                         utxos: utxos,
@@ -127,11 +128,17 @@ struct KeysignPayloadFactory {
 
     /// Build a transient payload carrying the selected Cardano UTXOs, used only
     /// to run the initiator's preliminary fee plan (`estimateDynamicByteFee`).
-    /// `byteFee` is left at 0 so the planner derives a size-based fee.
-    private func makeCardanoFeePayload(
+    /// `byteFee` is left at 0 so the planner derives a size-based fee. The memo
+    /// must be carried through: a CIP-20 memo grows the signed tx (aux-hash
+    /// entry in the body plus the aux CBOR in the envelope), and a fee planned
+    /// without it is below the network minimum for the tx that actually gets
+    /// signed — the node rejects the broadcast with `FeeTooSmallUTxO`.
+    /// Internal (not private) so the fee tests can pin this behavior.
+    func makeCardanoFeePayload(
         coin: Coin,
         toAddress: String,
         amount: BigInt,
+        memo: String?,
         ttl: UInt64,
         sendMaxAmount: Bool,
         utxos: [UtxoInfo],
@@ -143,7 +150,7 @@ struct KeysignPayloadFactory {
             toAmount: amount,
             chainSpecific: .Cardano(byteFee: 0, sendMaxAmount: sendMaxAmount, ttl: ttl),
             utxos: utxos,
-            memo: nil,
+            memo: memo,
             swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,

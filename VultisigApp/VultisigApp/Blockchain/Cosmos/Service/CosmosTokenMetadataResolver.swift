@@ -21,6 +21,14 @@
 import Foundation
 import OSLog
 
+/// Validated CW20 token metadata as answered by a `{"token_info":{}}` wasm
+/// smart query: the fields a custom-token flow needs to build a `CoinMeta`.
+struct CosmosCw20TokenInfo: Equatable {
+    let name: String
+    let symbol: String
+    let decimals: Int
+}
+
 actor CosmosTokenMetadataResolver {
 
     static let shared = CosmosTokenMetadataResolver()
@@ -44,6 +52,7 @@ actor CosmosTokenMetadataResolver {
 
     private var metadataCache: [String: CachedTask<CosmosDenomMetadata>] = [:]
     private var traceCache: [String: CachedTask<CosmosIbcDenomTraceDenomTrace>] = [:]
+    private var cw20Cache: [String: CachedTask<CosmosCw20TokenInfo>] = [:]
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
@@ -140,11 +149,59 @@ actor CosmosTokenMetadataResolver {
         }
     }
 
+    /// Resolve CW20 token metadata (`name`, `symbol`, `decimals`) for a wasm
+    /// contract via the `{"token_info":{}}` smart query — the same lookup the
+    /// SDK's `getCw20MetaFromLCD` performs.
+    ///
+    /// Returns `nil` only when the address is *definitively* not a CW20 token:
+    /// the LCD rejects the smart query (wallet addresses, non-CW20 contracts,
+    /// unknown addresses) or the reply fails token_info validation. Transport
+    /// failures — rate limiting (HTTP 429), network errors, timeouts — THROW
+    /// instead: they say nothing about the address, and the caller's error UX
+    /// (rate-limit copy, retry) must not collapse into "token not found".
+    /// Failures are never cached either way: the entry is evicted so the next
+    /// call retries.
+    func cw20TokenInfo(chain: Chain, contractAddress: String) async throws -> CosmosCw20TokenInfo? {
+        let key = cacheKey(chain: chain, value: contractAddress)
+
+        if let cached = cw20Cache[key], !isExpired(storedAt: cached.storedAt) {
+            do {
+                if let value = try await cached.task.value {
+                    return value
+                }
+                cw20Cache.removeValue(forKey: key)
+                return nil
+            } catch {
+                cw20Cache.removeValue(forKey: key)
+                throw error
+            }
+        }
+
+        let httpClient = self.httpClient
+        let task = Task<CosmosCw20TokenInfo?, Error> {
+            try await Self.fetchCw20TokenInfo(httpClient: httpClient, chain: chain, contractAddress: contractAddress)
+        }
+        cw20Cache[key] = CachedTask(task: task, storedAt: Date())
+
+        do {
+            if let value = try await task.value {
+                return value
+            }
+            cw20Cache.removeValue(forKey: key)
+            return nil
+        } catch {
+            logger.warning("CW20 token_info lookup failed for \(contractAddress, privacy: .public) on \(chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            cw20Cache.removeValue(forKey: key)
+            throw error
+        }
+    }
+
     /// Public test seam. Production callers use the singleton and never
     /// need to flush.
     func clearCacheForTests() {
         metadataCache.removeAll()
         traceCache.removeAll()
+        cw20Cache.removeAll()
     }
 
     // MARK: - Decoders (pure)
@@ -222,6 +279,70 @@ actor CosmosTokenMetadataResolver {
             responseType: CosmosDenomMetadatasResponse.self
         )
         return list.data.metadatas?.first(where: { $0.base == denom })
+    }
+
+    /// Upper bound on accepted CW20 `decimals`. The value is contract-
+    /// controlled (untrusted), and downstream formatting computes
+    /// `BigInt(10).power(decimals)` — the same reason the ERC-20 metadata
+    /// resolver bounds decimals to this range. The CW20 spec types decimals
+    /// as `u8` and 18 is the de-facto ceiling for real tokens.
+    private static let cw20DecimalsRange = 0...36
+
+    /// HTTP statuses that signal a transient gateway/overload condition
+    /// rather than a verdict on the queried contract: request timeout, too
+    /// early, rate limited, bad gateway, service unavailable, gateway
+    /// timeout. These rethrow so the caller can show a retryable error.
+    /// Notably 500 is NOT here: Terra LCDs answer the smart query with 500
+    /// for wallet addresses and non-CW20 contracts, so it means not-found.
+    private static let transientHTTPStatuses: Set<Int> = [408, 425, 429, 502, 503, 504]
+
+    /// Fetches and validates a CW20 `token_info` response. Mirrors the SDK's
+    /// validation: the symbol must be non-empty after trimming and the
+    /// decimals an integer within ``cw20DecimalsRange``, otherwise the
+    /// contract is treated as not-a-CW20-token (`nil`). LCD error statuses
+    /// outside ``transientHTTPStatuses`` and unparseable replies also mean
+    /// not-a-CW20-token — that is how the LCD answers the smart query for
+    /// wallet addresses and non-CW20 contracts. Transient statuses and
+    /// network-layer errors propagate: they are transport failures, not a
+    /// verdict on the address.
+    private static func fetchCw20TokenInfo(
+        httpClient: HTTPClientProtocol,
+        chain: Chain,
+        contractAddress: String
+    ) async throws -> CosmosCw20TokenInfo? {
+        guard let config = try? CosmosServiceConfig.getConfig(forChain: chain),
+              let baseURL = config.baseURL else {
+            return nil
+        }
+
+        let response: HTTPResponse<CosmosCw20TokenInfoResponse>
+        do {
+            response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .wasmTokenInfo(contractAddress: contractAddress)),
+                responseType: CosmosCw20TokenInfoResponse.self
+            )
+        } catch HTTPError.statusCode(let code, let data) {
+            guard !transientHTTPStatuses.contains(code) else {
+                throw HTTPError.statusCode(code, data)
+            }
+            return nil
+        } catch HTTPError.decodingFailed {
+            return nil
+        }
+
+        let info = response.data.data
+        guard let symbol = info.symbol?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !symbol.isEmpty,
+              let decimals = info.decimals, cw20DecimalsRange.contains(decimals) else {
+            return nil
+        }
+
+        let name = info.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return CosmosCw20TokenInfo(
+            name: name.isEmpty ? symbol : name,
+            symbol: symbol,
+            decimals: decimals
+        )
     }
 
     private static func fetchIbcDenomTrace(

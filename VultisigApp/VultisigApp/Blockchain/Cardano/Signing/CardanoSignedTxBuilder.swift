@@ -20,7 +20,20 @@ enum CardanoSignedTxBuilder {
     static let publicKeyLength = 32
     static let signatureLength = 64
 
-    static func build(txBody: Data, publicKey: Data, signature: Data) throws -> Data {
+    /// Assemble the signed transaction array `[body, witness_set, is_valid,
+    /// auxiliary_data]`.
+    ///
+    /// - Parameter auxData: canonical CIP-20 auxiliary-data CBOR (label 674).
+    ///   When `nil` the envelope carries the `null` (`0xF6`) auxiliary-data
+    ///   sentinel, as before. When set, WalletCore's `TransactionCompiler` has
+    ///   already committed `blake2b-256(auxData)` into the body at map key 7, so
+    ///   the aux bytes are embedded verbatim as element [3]. The body, witness,
+    ///   and this aux element are byte-identical to what WalletCore's `AnySigner`
+    ///   emits; only the envelope framing differs — this SDK/mainnet-verified
+    ///   builder uses the 4-element `[body, witness, is_valid, aux]` array while
+    ///   `AnySigner` uses the 3-element Shelley `[body, witness, aux]`. The txid
+    ///   (`blake2b-256(body)`) is identical either way.
+    static func build(txBody: Data, publicKey: Data, signature: Data, auxData: Data? = nil) throws -> Data {
         guard publicKey.count == publicKeyLength else {
             throw CardanoSignedTxBuilderError.invalidPublicKeyLength(publicKey.count)
         }
@@ -29,13 +42,14 @@ enum CardanoSignedTxBuilder {
         }
 
         let witness = buildWitness(publicKey: publicKey, signature: signature)
+        let auxElement = auxData ?? Data([0xF6])
 
-        var output = Data(capacity: 1 + txBody.count + witness.count + 2)
+        var output = Data(capacity: 1 + txBody.count + witness.count + 1 + auxElement.count)
         output.append(0x84)
         output.append(txBody)
         output.append(witness)
         output.append(0xF5)
-        output.append(0xF6)
+        output.append(auxElement)
         return output
     }
 
