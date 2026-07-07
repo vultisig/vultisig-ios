@@ -73,54 +73,36 @@ enum TerraClassicTax {
     /// the signer denominates in `uusd`.
     static let uusdBaseGas: UInt64 = 225000
 
-    /// Base gas number for a Terra Classic send, in the SAME denom the signer
-    /// uses for the fee (see `TerraHelperStruct.getPreSignedInputData`). Bank
-    /// denoms (USTC / `uusd`) get the `uusd` base; everything else — native LUNC,
-    /// CW20 and IBC — gets the `uluna` base. Gating both this and the signed fee
-    /// denom on `isBankDenom` keeps the gas number and the fee denom in lockstep.
-    static func baseGas(contractAddress: String, isNativeToken: Bool) -> UInt64 {
-        isBankDenom(contractAddress: contractAddress, isNativeToken: isNativeToken)
-            ? uusdBaseGas
-            : ulunaBaseGas
-    }
-
-    /// The static gas limit that `ulunaBaseGas` / `uusdBaseGas` are priced at
-    /// (300k gas × the per-gas price). Mirrors `TerraHelperStruct.GasLimit`; the
-    /// signer re-derives the fee amount by scaling the base from this limit to
-    /// the effective (relayed) limit.
+    /// The gas limit that `ulunaBaseGas` / `uusdBaseGas` are priced at (300k gas
+    /// × the per-gas price). Mirrors `TerraHelperStruct.GasLimit`; `baseGas`
+    /// scales the per-gas price from this reference limit to the effective one.
     static let staticGasLimit: UInt64 = 300_000
 
-    /// Re-derive the Terra Classic send fee amount for a (possibly dynamic)
-    /// `gasLimit`, preserving any burn tax folded into the upstream `staticFee`.
+    /// Base gas fee for a Terra Classic send at `gasLimit`, in the SAME denom the
+    /// signer uses for the fee (see `TerraHelperStruct.getPreSignedInputData`).
+    /// Bank denoms (USTC / `uusd`) are priced off the `uusd` base; everything
+    /// else — native LUNC, CW20 and IBC — off the `uluna` base. Gating both this
+    /// and the signed fee denom on `isBankDenom` keeps the gas number and the fee
+    /// denom in lockstep.
     ///
-    /// The signer honors a relayed dynamic `gas_wanted` (`effectiveGasLimit`) but
-    /// `staticFee` (`chainSpecific.gas`) is priced for the static 300k limit, so
-    /// once the relayed limit exceeds 300k the signed fee undershoots Terra
-    /// Classic's `fee >= gas_wanted × price (+ tax)` ante check (on-chain
-    /// `code 13`). This scales the BASE gas portion with the gas limit at the
-    /// chain's per-gas price (`ulunaBaseGas` / `uusdBaseGas` are `price × 300k`,
-    /// so scaling by the limit ratio is `ceil(gasLimit × price)`), while the burn
-    /// tax — a fixed proportion of the SEND amount, independent of gas — is
-    /// carried over unchanged. At `gasLimit == staticGasLimit` it returns
-    /// `staticFee` verbatim, so the non-simulated path is byte-identical.
-    ///
-    /// Pure function of `staticFee`, the relayed limit and static constants, so
-    /// every co-signer derives the identical fee.
-    static func scaledSendFee(
-        staticFee: UInt64,
-        contractAddress: String,
-        isNativeToken: Bool,
-        gasLimit: UInt64
-    ) -> UInt64 {
-        let base = baseGas(contractAddress: contractAddress, isNativeToken: isNativeToken)
-        // Burn tax folded into `staticFee` upstream (0 for CW20 / IBC, which pay
-        // no folded tax). Guarded against underflow.
-        let tax = staticFee > base ? staticFee - base : 0
-        let scaledBase = CosmosGasPricedFee.scaled(
+    /// Terra Classic prices its fee as `gasLimit × pricePerGas`. `ulunaBaseGas` /
+    /// `uusdBaseGas` are `pricePerGas × staticGasLimit`, so scaling by the limit
+    /// ratio yields `ceil(gasLimit × pricePerGas)` — the ante handler's required
+    /// minimum at the signed `gas_wanted` — without hardcoding the per-gas price.
+    /// The signer honors a relayed dynamic `gas_wanted`, so pricing the base at
+    /// that same limit up front keeps the stored fee equal to the signed fee (and
+    /// the fee shown on Verify) instead of undershooting the ante check once the
+    /// dynamic limit exceeds 300k. At `gasLimit == staticGasLimit` it returns the
+    /// unscaled base, so the non-simulated path is byte-identical. Pure function
+    /// of the limit and static constants, so every co-signer derives it identically.
+    static func baseGas(contractAddress: String, isNativeToken: Bool, gasLimit: UInt64) -> UInt64 {
+        let base = isBankDenom(contractAddress: contractAddress, isNativeToken: isNativeToken)
+            ? uusdBaseGas
+            : ulunaBaseGas
+        return CosmosGasPricedFee.scaled(
             base: base,
             fromGasLimit: staticGasLimit,
             toGasLimit: gasLimit
         )
-        return scaledBase + tax
     }
 }

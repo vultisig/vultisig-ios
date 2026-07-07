@@ -797,29 +797,6 @@ private extension BlockChainService {
                 }
             }
 
-            // Chain-specific gas values
-            var gas: UInt64
-            switch coin.chain {
-            case .terraClassic:
-                // Base gas fee, denominated in the FEE denom the signer uses for
-                // this send (see TerraHelperStruct.getPreSignedInputData). Only a
-                // bank denom (USTC / uusd) pays its fee in its OWN denom, so it
-                // gets the uusd base; native LUNC, CW20 (`terra1…`) and IBC
-                // (`ibc/…`) all pay the fee in uluna and share the uluna base.
-                // Both this gas number and the signed fee denom are gated on the
-                // shared isBankDenom helper so they can't drift apart.
-                gas = TerraClassicTax.baseGas(
-                    contractAddress: coin.contractAddress,
-                    isNativeToken: coin.isNativeToken
-                )
-            case .dydx:
-                gas = 2500000000000000
-            case .noble:
-                gas = 20000
-            default:
-                gas = 7500
-            }
-
             // Optionally simulate to derive a dynamic per-tx gas limit the
             // initiator relays to co-signers (CosmosSpecific.gas_limit). Gated
             // OFF by default (see CosmosGasEstimationConfig): the relayed limit
@@ -844,6 +821,37 @@ private extension BlockChainService {
                     sequence: sequence,
                     service: service
                 )
+            }
+
+            // Chain-specific gas values
+            var gas: UInt64
+            switch coin.chain {
+            case .terraClassic:
+                // Base gas fee, denominated in the FEE denom the signer uses for
+                // this send (see TerraHelperStruct.getPreSignedInputData). Only a
+                // bank denom (USTC / uusd) pays its fee in its OWN denom, so it
+                // gets the uusd base; native LUNC, CW20 (`terra1…`) and IBC
+                // (`ibc/…`) all pay the fee in uluna and share the uluna base.
+                // Both this gas number and the signed fee denom are gated on the
+                // shared isBankDenom helper so they can't drift apart.
+                //
+                // Terra Classic prices its fee as `gasLimit × price`, and the
+                // signer signs the relayed dynamic `gas_wanted`, so price the base
+                // at that same effective limit (the relayed dynamic limit, else
+                // the static 300k) up front. That keeps the stored `gas` — which
+                // feeds both the Verify/keysign fee display and the signing input
+                // — equal to the signed fee, instead of a stale fixed-limit value.
+                gas = TerraClassicTax.baseGas(
+                    contractAddress: coin.contractAddress,
+                    isNativeToken: coin.isNativeToken,
+                    gasLimit: dynamicGasLimit ?? TerraClassicTax.staticGasLimit
+                )
+            case .dydx:
+                gas = 2500000000000000
+            case .noble:
+                gas = 20000
+            default:
+                gas = 7500
             }
 
             // Enforce the per-chain Cosmos fee floor at the effective gas limit:

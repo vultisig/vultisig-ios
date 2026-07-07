@@ -71,6 +71,7 @@ final class TransactionDonePayloadTests: XCTestCase {
             fromAmount: 1.0,
             quote: .thorchain(quote),
             gas: gas,
+            gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
