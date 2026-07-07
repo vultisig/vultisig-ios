@@ -110,6 +110,35 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         )
     }
 
+    func testUpsertSolanaStakeBackfillsMissingPubkeyOnLegacyRow() throws {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+
+        // A row written by an earlier build: the pubkey is embedded in the id
+        // suffix but the dedicated field is nil — the state that permanently
+        // broke the cache-first seed (which drops rows without a pubkey).
+        let legacy = StakePosition(
+            coin: solMeta,
+            type: .stake,
+            amount: 1,
+            stakeAccountPubkey: "LEGACY",
+            vault: vault
+        )
+        legacy.stakeAccountPubkey = nil
+        Storage.shared.modelContext.insert(legacy)
+        try Storage.shared.save()
+
+        // The id-keyed upsert matches the legacy row, so apply() runs — it must
+        // backfill the missing field so the next seed paints the row.
+        try service.upsert(solanaStake: [
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "LEGACY", activationState: "active")
+        ], for: vault)
+
+        let solana = vault.stakePositions.filter { $0.coin.chain == .solana }
+        XCTAssertEqual(solana.count, 1, "The legacy row is matched by id and updated, not duplicated.")
+        XCTAssertEqual(solana.first?.stakeAccountPubkey, "LEGACY")
+        XCTAssertEqual(solana.first?.amount, 2)
+    }
+
     func testNonSolanaStakePositionIDFormatUnchanged() throws {
         // Pins the historical coin-keyed id format so the optional Solana segment
         // can never drift a non-Solana id (which would orphan persisted rows).

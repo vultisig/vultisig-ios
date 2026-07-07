@@ -121,9 +121,12 @@ struct DefiChainSelectPositionsScreen: View {
         }
 
         // Mirror the enable/disable into persisted position rows so the user sees a row with its
-        // CTA immediately (zero amount) — the next refresh updates the amount.
+        // CTA immediately (zero amount) — the next refresh updates the amount. Solana is skipped:
+        // its rows are per-stake-account and discovered on-chain (`upsert(solanaStake:for:)`),
+        // so a coin-keyed zero row would alias every account onto one id, and its segment
+        // renders the total card + Delegate CTA without needing a placeholder row.
         let storage = DefiPositionsStorageService()
-        for added in newStaking.subtracting(previousStaking) {
+        for added in newStaking.subtracting(previousStaking) where added.chain != .solana {
             do {
                 try storage.addZero(stakeCoin: added, to: vault)
             } catch {

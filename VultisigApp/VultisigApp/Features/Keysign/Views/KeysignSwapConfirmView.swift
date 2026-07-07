@@ -31,11 +31,11 @@ struct KeysignSwapConfirmView: View {
             summaryTitle
             summaryFromTo
 
-            if let toAddress = viewModel.keysignPayload?.toAddress, !toAddress.isEmpty {
+            if let externalRecipient = viewModel.keysignPayload?.swapExternalRecipient {
                 separator
                 getValueCell(
                     for: "to",
-                    with: toAddress.truncatedAddress
+                    with: externalRecipient.truncatedAddress
                 )
             }
 
