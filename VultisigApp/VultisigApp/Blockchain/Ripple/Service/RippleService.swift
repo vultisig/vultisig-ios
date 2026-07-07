@@ -274,6 +274,17 @@ class RippleService {
                     throw HelperError.runtimeError("RippleService deallocated")
                 }
                 let ledger = try await self.fetchServerState(host: host)?.result?.state?.validatedLedger
+                // A server that is up but still syncing answers HTTP 200 with
+                // `validated_ledger == null`, so both reserve fields come back
+                // nil. Caching that fully-empty response would pin the seeds for
+                // the whole 24h TTL and never refetch, even after the node
+                // recovers. Throw instead so TTLCache keeps serving the last-good
+                // snapshot (or the caller seeds) and retries next time — a thrown
+                // error is not cached. A partial response with at least one real
+                // field is still worth caching, seeds filling the gap.
+                guard ledger?.reserveBase != nil || ledger?.reserveInc != nil else {
+                    throw HelperError.runtimeError("server_state returned no reserve values (validated_ledger unavailable)")
+                }
                 return RippleReserveValues(reserveBase: ledger?.reserveBase, reserveInc: ledger?.reserveInc)
             }
         } catch is CancellationError {
@@ -288,20 +299,38 @@ class RippleService {
     /// would create the destination with less than the base reserve is
     /// rejected on-chain (`tecNO_DST_INSUF_XRP`) — after the ceremony, with
     /// the fee burned. Throws `RippleSendError.destinationNotActivated` when
-    /// the destination is unfunded and `amountDrops` is below the live base
-    /// reserve. A lookup failure also throws (fail closed, matching the
-    /// SDK/Android companions) so the ceremony never starts on an
-    /// unverifiable destination.
+    /// the destination is unfunded (a definitive `actNotFound`) and
+    /// `amountDrops` is below the live base reserve.
+    ///
+    /// The block fires ONLY on proof the destination is unfunded. A transport
+    /// or RPC error (offline, timeout, 429/5xx, an exhausted node-error retry)
+    /// is NOT such proof: before this guard existed the same send to a funded
+    /// address proceeded, so a transient lookup failure must not start blocking
+    /// it — fail open and let the on-chain guard remain the backstop. Only a
+    /// successful-but-uninterpretable response (HTTP 200, no account data, no
+    /// `actNotFound`) fails closed, with a localized message.
     func validateDestinationActivation(address: String, amountDrops: BigInt) async throws {
-        let result = try await fetchAccountsInfo(for: address)?.result
+        let result: RippleAccountResponse.Result?
+        do {
+            result = try await fetchAccountsInfo(for: address)?.result
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            // Transport/RPC error — not evidence the destination is unfunded.
+            // Don't gate an otherwise-valid send behind a fresh, uncached
+            // account_info call whose transient failure would block it.
+            logger.warning("validateDestinationActivation: destination lookup failed, allowing send: \(error.localizedDescription)")
+            return
+        }
+
         guard result?.accountData == nil else {
             return // Funded destination — any amount is valid.
         }
 
-        // Only a definitive `actNotFound` means "unfunded". Any other
-        // account_data-less shape — rate limiting, a malformed address, a
-        // proxy error page decoding to all-nils — is an unverifiable
-        // destination and fails closed, exactly like a transport error.
+        // No account data: only a definitive `actNotFound` proves the account
+        // is unfunded. Any other account_data-less-but-successful shape (a
+        // proxy error page decoding to all-nils, an unexpected token) is
+        // unverifiable, so fail closed with a localized message.
         guard result?.error == "actNotFound" else {
             throw RippleSendError.destinationLookupFailed(code: result?.error ?? "unknown")
         }
@@ -316,7 +345,10 @@ class RippleService {
             reserveInc: reserveValues?.reserveInc
         )
         if amountDrops < baseReserve {
-            let minimumXRP = (Decimal(string: baseReserve.description) ?? 1) / pow(10, 6)
+            // drops → XRP. `toDecimal(decimals:)` only truncates, so divide to
+            // scale (the getMaxValue / SwapDetailsScreen idiom); reserves are
+            // always positive, so no fallback default is needed.
+            let minimumXRP = baseReserve.toDecimal(decimals: 6) / pow(10, 6)
             throw RippleSendError.destinationNotActivated(minimumXRP: minimumXRP.description)
         }
     }

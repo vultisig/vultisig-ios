@@ -74,37 +74,54 @@ final class RippleDestinationActivationTests: XCTestCase {
         }
     }
 
-    func testDestinationLookupFailureFailsClosed() async {
+    func testDestinationTransportErrorFailsOpen() async throws {
+        // A transport blip (offline, timeout, 429/5xx) is NOT proof the
+        // destination is unfunded. Before this guard existed the same send to a
+        // funded address proceeded, so a transient lookup failure must fail open
+        // rather than start blocking every native XRP send; the on-chain
+        // tecNO_DST_INSUF_XRP guard remains the backstop.
         let client = DestinationScriptedHTTPClient()
         client.accountInfoResult = .failure(URLError(.notConnectedToInternet))
         let service = makeService(client: client)
 
-        do {
-            try await service.validateDestinationActivation(address: "rUnknown", amountDrops: BigInt(10_000_000))
-            XCTFail("an unverifiable destination must block the ceremony (fail closed)")
-        } catch {
-            XCTAssertTrue(error is URLError)
-        }
+        // Must not throw — the send is allowed.
+        try await service.validateDestinationActivation(address: "rUnknown", amountDrops: BigInt(10_000_000))
     }
 
-    func testNonActNotFoundLookupErrorFailsClosedEvenAboveReserve() async {
-        // A rate-limit (or any RPC-level error) also decodes with no
-        // account_data — that is NOT proof the destination is unfunded, so it
-        // must fail closed rather than run the activation threshold.
+    func testDestinationRetryableRpcErrorFailsOpen() async throws {
+        // A retryable node error (rate-limit / stale pool backend) that survives
+        // the bounded same-host retry surfaces as a thrown RippleRetryError — a
+        // transport-class failure, not proof the destination is unfunded. Fail
+        // open, same as a raw transport error.
         let client = DestinationScriptedHTTPClient()
         client.accountInfoResult = .success(Data("""
         {"result":{"error":"slowDown","error_message":"You are placing too much load on the server.","status":"error"}}
         """.utf8))
         let service = makeService(client: client)
 
+        try await service.validateDestinationActivation(address: "rUnknown", amountDrops: BigInt(10_000_000))
+    }
+
+    func testAmbiguousLookupFailsClosedWithLocalizedError() async {
+        // HTTP 200, no account_data, and a non-retryable, non-actNotFound token
+        // (a malformed request, a proxy error page): a *successful* response the
+        // guard cannot interpret as funded or unfunded, so fail closed — with a
+        // localized, non-nil description.
+        let client = DestinationScriptedHTTPClient()
+        client.accountInfoResult = .success(Data("""
+        {"result":{"error":"invalidParams","error_message":"Invalid parameters.","status":"error"}}
+        """.utf8))
+        let service = makeService(client: client)
+
         do {
             try await service.validateDestinationActivation(address: "rUnknown", amountDrops: BigInt(10_000_000))
-            XCTFail("a non-actNotFound lookup error must block the ceremony (fail closed)")
+            XCTFail("an uninterpretable successful lookup must fail closed")
         } catch let error as RippleSendError {
             guard case .destinationLookupFailed(let code) = error else {
                 return XCTFail("unexpected RippleSendError: \(error)")
             }
-            XCTAssertEqual(code, "slowDown")
+            XCTAssertEqual(code, "invalidParams")
+            XCTAssertNotNil(error.errorDescription, "the fail-closed message must be presentable")
         } catch {
             XCTFail("unexpected error type: \(error)")
         }
@@ -113,7 +130,9 @@ final class RippleDestinationActivationTests: XCTestCase {
     // MARK: - Fixtures
 
     private func makeService(client: HTTPClientProtocol) -> RippleService {
-        RippleService(resolver: NoOverrideResolver(), httpClient: client)
+        // No-op sleeper so the bounded retry on retryable node errors runs
+        // without real backoff delays in the test.
+        RippleService(resolver: NoOverrideResolver(), httpClient: client, sleep: { _ in })
     }
 
     private func fundedAccountJSON(balance: String) -> Data {
