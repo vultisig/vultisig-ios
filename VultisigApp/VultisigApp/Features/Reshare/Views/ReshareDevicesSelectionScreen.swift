@@ -6,16 +6,14 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 /// Reshare step asking how many devices the new vault setup will use.
-/// Reuses the onboarding devices component and gates selections that
-/// would drop below the vault's required number of active signers.
+/// Reuses the shared devices selector and gates selections that would drop
+/// below the vault's required number of active signers.
 struct ReshareDevicesSelectionScreen: View {
     let vault: Vault
 
     @StateObject private var viewModel: ReshareDevicesSelectionViewModel
-    @State private var animationVM: RiveViewModel? = nil
 
     @Environment(\.router) var router
 
@@ -28,46 +26,22 @@ struct ReshareDevicesSelectionScreen: View {
     }
 
     var body: some View {
-        Screen {
-            VStack(spacing: 0) {
-                animationVM?.view()
-                    .frame(maxWidth: 400)
-                    .overlay(alignment: .bottom) {
-                        if !viewModel.isThresholdMet {
-                            thresholdWarningCard
-                        }
-                    }
-                Spacer()
-
-                VStack(spacing: 16) {
-                    tipView
-                    // Disabled while FastVault eligibility loads so the
-                    // 1-device path can't navigate with a stale default.
-                    PrimaryButton(
-                        title: "getStarted".localized,
-                        isLoading: viewModel.isLoading,
-                        action: onContinue
-                    )
-                    .disabled(!viewModel.isThresholdMet || viewModel.isLoading)
-                }
+        // Disabled while FastVault eligibility loads so the 1-device path
+        // can't navigate with a stale default.
+        DevicesSelectionView(
+            selectedIndex: $viewModel.selectedIndex,
+            tipText: "seedPhraseImportTip".localized,
+            buttonTitle: "getStarted".localized,
+            isLoading: viewModel.isLoading,
+            isButtonDisabled: !viewModel.isThresholdMet || viewModel.isLoading,
+            onContinue: onContinue
+        ) {
+            if !viewModel.isThresholdMet {
+                thresholdWarningCard
             }
-            .padding(.top, 64)
         }
-        .screenIgnoresTopEdge()
-        .screenBackground(.clear)
-        .background(DevicesSelectionBackground())
-        .onLoad(perform: onLoad)
         .task {
             await viewModel.load(vault: vault)
-        }
-    }
-
-    var tipView: some View {
-        HStack(spacing: 8) {
-            Icon(named: "lightbulb", size: 12)
-            Text("seedPhraseImportTip".localized)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.caption12)
         }
     }
 
@@ -100,20 +74,6 @@ struct ReshareDevicesSelectionScreen: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal, 24)
-    }
-
-    private func onLoad() {
-        animationVM = RiveViewModel(fileName: "devices_component")
-        animationVM?.fit = .layout
-
-        animationVM?.riveModel?.enableAutoBind { instance in
-            instance.numberProperty(fromPath: "Index")?.addListener { value in
-                viewModel.selectedIndex = Int(value)
-                #if os(iOS)
-                HapticFeedbackManager.shared.startHapticFeedback(duration: 0.1)
-                #endif
-            }
-        }
     }
 
     private func onContinue() {

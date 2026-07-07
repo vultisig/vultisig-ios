@@ -6,58 +6,22 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct OnboardingDevicesSelectionScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
 
     @State private var selectedDeviceCount: Int = 0
-    @State private var animationVM: RiveViewModel? = nil
 
     @Environment(\.router) var router
 
     var body: some View {
-        Screen {
-            VStack(spacing: 0) {
-                animationVM?.view()
-                    .frame(maxWidth: 400)
-                Spacer()
-
-                VStack(spacing: 16) {
-                    tipView
-                    PrimaryButton(title: "getStarted".localized, action: onContinue)
-                }
-            }
-            .padding(.top, 64)
-        }
-        .screenIgnoresTopEdge()
-        .screenBackground(.clear)
-        .background(background)
-        .onLoad(perform: onLoad)
-    }
-
-    var tipView: some View {
-        HStack(spacing: 8) {
-            Icon(named: "lightbulb", size: 12)
-            Text("seedPhraseImportTip".localized)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.caption12)
-        }
-    }
-
-    private func onLoad() {
-        animationVM = RiveViewModel(fileName: "devices_component")
-        animationVM?.fit = .layout
-
-        animationVM?.riveModel?.enableAutoBind { instance in
-            instance.numberProperty(fromPath: "Index")?.addListener { value in
-                selectedDeviceCount = Int(value)
-                #if os(iOS)
-                HapticFeedbackManager.shared.startHapticFeedback(duration: 0.1)
-                #endif
-            }
-        }
+        DevicesSelectionView(
+            selectedIndex: $selectedDeviceCount,
+            tipText: "seedPhraseImportTip".localized,
+            buttonTitle: "getStarted".localized,
+            onContinue: onContinue
+        )
     }
 
     private func onContinue() {
@@ -74,10 +38,6 @@ struct OnboardingDevicesSelectionScreen: View {
         }
 
         return .secure(numberOfDevices: selectedDeviceCount + 1)
-    }
-
-    var background: some View {
-        DevicesSelectionBackground()
     }
 }
 
