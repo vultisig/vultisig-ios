@@ -1438,6 +1438,8 @@
 "wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "The destination XRP account couldn't be verified (%@). Please try again.";
+"xrpDestinationNotActivatedError" = "The destination XRP address is not activated yet. A first transfer to it must be at least %@ XRP (the network base reserve). Increase the amount or double-check the address.";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
 "yieldClaimAmount" = "Claim %@";

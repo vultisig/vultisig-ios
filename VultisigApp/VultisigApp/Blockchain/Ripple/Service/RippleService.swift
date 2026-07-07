@@ -34,6 +34,43 @@ enum RippleFee {
     }
 }
 
+/// Owner-aware XRPL account-reserve math. The reserve floor is
+/// `reserve_base + OwnerCount × reserve_inc` — every ledger object the account
+/// owns (trustline, offer, ticket, escrow, …) adds one increment. The floor
+/// applies to the Payment amount only; the transaction fee is exempt and may
+/// take the account below the reserve.
+/// - https://xrpl.org/docs/concepts/accounts/reserves
+enum RippleReserve {
+    /// Mainnet base reserve — 1 XRP (validator vote, Dec 2024). Last-resort
+    /// seed only; live values come from `server_state`.
+    static let seedReserveBaseDrops = BigInt(1_000_000)
+    /// Mainnet per-object owner reserve — 0.2 XRP (validator vote, Dec 2024).
+    /// Seed only, as above.
+    static let seedReserveIncDrops = BigInt(200_000)
+
+    /// Total reserved balance in drops: `reserve_base + OwnerCount × reserve_inc`.
+    /// Missing `server_state` fields fall back to the mainnet seeds; a missing
+    /// owner count counts as zero owned objects.
+    static func reservedDrops(ownerCount: Int?, reserveBase: Int?, reserveInc: Int?) -> BigInt {
+        let base = reserveBase.map { BigInt($0) } ?? seedReserveBaseDrops
+        let inc = reserveInc.map { BigInt($0) } ?? seedReserveIncDrops
+        return base + BigInt(ownerCount ?? 0) * inc
+    }
+
+    /// Spendable balance in drops: `max(total − reservedDrops, 0)`.
+    static func availableDrops(totalDrops: BigInt, ownerCount: Int?, reserveBase: Int?, reserveInc: Int?) -> BigInt {
+        let reserved = reservedDrops(ownerCount: ownerCount, reserveBase: reserveBase, reserveInc: reserveInc)
+        return max(totalDrops - reserved, BigInt(0))
+    }
+}
+
+/// Reserve values reported by `server_state`. Fields stay optional so a
+/// partial response still caches, with `RippleReserve` seeding the gaps.
+struct RippleReserveValues {
+    let reserveBase: Int?
+    let reserveInc: Int?
+}
+
 class RippleService {
 
     static let shared = RippleService()
@@ -55,6 +92,22 @@ class RippleService {
     /// per request inside `api(_:)` so a runtime override change is picked up
     /// live (the shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
+
+    /// Last-good `server_state` reserve values. Reserves change only by rare
+    /// validator vote, so a generous TTL is safe; `TTLCache` coalesces
+    /// concurrent refreshes and fails open to the last-good snapshot when a
+    /// refresh throws. Internal (not `private`) together with the key so tests
+    /// can seed stale entries via `setCached`.
+    let reserveValuesCache = TTLCache<String, RippleReserveValues>()
+    private static let reserveValuesTTL: TimeInterval = 60 * 60 * 24
+
+    /// Cache key for the reserve values, scoped to a resolved host: a custom
+    /// RPC override can point at a network with different reserves (e.g. a
+    /// testnet), so a snapshot cached for one endpoint must never be served
+    /// for another after a runtime override change.
+    static func reserveValuesCacheKey(for host: URL) -> String {
+        "xrpl-reserve-values|\(host.absoluteString)"
+    }
 
     /// Backoff between `tx` lookups while resolving a verify-by-hash submit;
     /// injectable so tests run without delay.
@@ -175,23 +228,129 @@ class RippleService {
 
     func getBalance(address: String) async throws -> String {
         async let accountInfoTask = fetchAccountsInfo(for: address)
-        async let serverStateTask = fetchServerState()
+        async let reserveValuesTask = fetchReserveValues()
 
-        let (accountInfo, serverState) = try await (accountInfoTask, serverStateTask)
+        // Only the account read is fatal — there is no balance without it. The
+        // reserve read has its own live → cache → seed fallback chain, so a
+        // transient `server_state` outage no longer fails the balance refresh
+        // (it only rethrows cancellation).
+        let accountInfo = try await accountInfoTask
+        let reserveValues = try await reserveValuesTask
 
         guard let totalBalanceStr = accountInfo?.result?.accountData?.balance,
               let totalBalance = BigInt(totalBalanceStr) else {
             return "0"
         }
 
-        let ownerCount = BigInt(accountInfo?.result?.accountData?.ownerCount ?? 0)
-        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 1000000)
-        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 200000)
-
-        let reservedBalance = reservedBase + (ownerCount * reserveInc)
-        let availableBalance = max(totalBalance - reservedBalance, BigInt(0))
+        let availableBalance = RippleReserve.availableDrops(
+            totalDrops: totalBalance,
+            ownerCount: accountInfo?.result?.accountData?.ownerCount,
+            reserveBase: reserveValues?.reserveBase,
+            reserveInc: reserveValues?.reserveInc
+        )
 
         return availableBalance.description
+    }
+
+    /// Resolves the XRPL reserve values: live `server_state` → cached
+    /// last-good snapshot → `nil` (callers fall back to the `RippleReserve`
+    /// seeds). Mirrors the Solana min-delegation chain: the values are
+    /// validation/display inputs, never signing inputs, so serving a stale or
+    /// seeded snapshot is safe while failing the caller is not. The only error
+    /// that escapes is `CancellationError` — the caller is tearing down, and
+    /// a seeded value must not mask the cancel.
+    func fetchReserveValues() async throws -> RippleReserveValues? {
+        // Resolve the host once so the cache key and the fetch always agree —
+        // a custom-RPC change landing between two resolutions must not store
+        // one host's reserves under another host's key.
+        let host = resolvedHost
+        do {
+            return try await reserveValuesCache.value(
+                for: Self.reserveValuesCacheKey(for: host),
+                now: Date(),
+                ttl: Self.reserveValuesTTL
+            ) { [weak self] in
+                guard let self else {
+                    throw HelperError.runtimeError("RippleService deallocated")
+                }
+                let ledger = try await self.fetchServerState(host: host)?.result?.state?.validatedLedger
+                // A server that is up but still syncing answers HTTP 200 with
+                // `validated_ledger == null`, so both reserve fields come back
+                // nil. Caching that fully-empty response would pin the seeds for
+                // the whole 24h TTL and never refetch, even after the node
+                // recovers. Throw instead so TTLCache keeps serving the last-good
+                // snapshot (or the caller seeds) and retries next time — a thrown
+                // error is not cached. A partial response with at least one real
+                // field is still worth caching, seeds filling the gap.
+                guard ledger?.reserveBase != nil || ledger?.reserveInc != nil else {
+                    throw HelperError.runtimeError("server_state returned no reserve values (validated_ledger unavailable)")
+                }
+                return RippleReserveValues(reserveBase: ledger?.reserveBase, reserveInc: ledger?.reserveInc)
+            }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            logger.warning("fetchReserveValues: no live or cached values, seeding defaults: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Pre-ceremony guard for the destination account: an XRPL Payment that
+    /// would create the destination with less than the base reserve is
+    /// rejected on-chain (`tecNO_DST_INSUF_XRP`) — after the ceremony, with
+    /// the fee burned. Throws `RippleSendError.destinationNotActivated` when
+    /// the destination is unfunded (a definitive `actNotFound`) and
+    /// `amountDrops` is below the live base reserve.
+    ///
+    /// The block fires ONLY on proof the destination is unfunded. A transport
+    /// or RPC error (offline, timeout, 429/5xx, an exhausted node-error retry)
+    /// is NOT such proof: before this guard existed the same send to a funded
+    /// address proceeded, so a transient lookup failure must not start blocking
+    /// it — fail open and let the on-chain guard remain the backstop. Only a
+    /// successful-but-uninterpretable response (HTTP 200, no account data, no
+    /// `actNotFound`) fails closed, with a localized message.
+    func validateDestinationActivation(address: String, amountDrops: BigInt) async throws {
+        let result: RippleAccountResponse.Result?
+        do {
+            result = try await fetchAccountsInfo(for: address)?.result
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            // Transport/RPC error — not evidence the destination is unfunded.
+            // Don't gate an otherwise-valid send behind a fresh, uncached
+            // account_info call whose transient failure would block it.
+            logger.warning("validateDestinationActivation: destination lookup failed, allowing send: \(error.localizedDescription)")
+            return
+        }
+
+        guard result?.accountData == nil else {
+            return // Funded destination — any amount is valid.
+        }
+
+        // No account data: only a definitive `actNotFound` proves the account
+        // is unfunded. Any other account_data-less-but-successful shape (a
+        // proxy error page decoding to all-nils, an unexpected token) is
+        // unverifiable, so fail closed with a localized message.
+        guard result?.error == "actNotFound" else {
+            throw RippleSendError.destinationLookupFailed(code: result?.error ?? "unknown")
+        }
+
+        // The destination does not exist yet, so the payment must fund at
+        // least the base reserve. OwnerCount is 0 by definition for an
+        // account being created.
+        let reserveValues = try await fetchReserveValues()
+        let baseReserve = RippleReserve.reservedDrops(
+            ownerCount: 0,
+            reserveBase: reserveValues?.reserveBase,
+            reserveInc: reserveValues?.reserveInc
+        )
+        if amountDrops < baseReserve {
+            // drops → XRP. `toDecimal(decimals:)` only truncates, so divide to
+            // scale (the getMaxValue / SwapDetailsScreen idiom); reserves are
+            // always positive, so no fallback default is needed.
+            let minimumXRP = baseReserve.toDecimal(decimals: 6) / pow(10, 6)
+            throw RippleSendError.destinationNotActivated(minimumXRP: minimumXRP.description)
+        }
     }
 
     /// Resolves the fee (in drops) for an XRPL Payment.
@@ -216,10 +375,17 @@ class RippleService {
         }
     }
 
-    func fetchServerState() async throws -> RippleServerStateResponse? {
+    /// Fetches `server_state`, optionally pinned to an explicit `host` so a
+    /// caller can keep one request consistent with other host-derived state
+    /// (e.g. the reserve cache key); `nil` resolves the override-aware host
+    /// per request as usual.
+    func fetchServerState(host: URL? = nil) async throws -> RippleServerStateResponse? {
         do {
+            // Keep the explicit `host` (for reserve-cache-key consistency) and
+            // route through the retrier so a transient node error on the pool
+            // is retried against a healthy backend, same as the other reads.
             return try await retrier.request(
-                api(.serverState),
+                RippleAPI(.serverState, host: host ?? resolvedHost),
                 responseType: RippleServerStateResponse.self
             )
         } catch {
@@ -237,6 +403,27 @@ class RippleService {
         } catch {
             logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
+        }
+    }
+}
+
+enum RippleSendError: Error, LocalizedError {
+    /// The destination account does not exist and the amount is below the
+    /// base reserve needed to create it. Carries the minimum in whole XRP,
+    /// ready for user-facing copy.
+    case destinationNotActivated(minimumXRP: String)
+    /// `account_info` answered without account data and without a definitive
+    /// `actNotFound` — the destination cannot be verified, so the send is
+    /// blocked (fail closed). Technical copy, same style as
+    /// `RippleBroadcastError`.
+    case destinationLookupFailed(code: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .destinationNotActivated(let minimumXRP):
+            return String(format: "xrpDestinationNotActivatedError".localized, minimumXRP)
+        case .destinationLookupFailed(let code):
+            return String(format: "xrpDestinationLookupFailedError".localized, code)
         }
     }
 }
@@ -264,9 +451,10 @@ struct RippleAccountResponse: Codable {
         let queueData: QueueData?
         let status: String?
         let validated: Bool?
-        /// Node-level error (e.g. `amendmentBlocked`) returned in an HTTP-200
-        /// body. Distinct from `actNotFound`, which is a valid "unfunded
-        /// account" outcome and is intentionally not retryable.
+        /// rippled error token returned in an HTTP-200 error body. Two uses:
+        /// `actNotFound` marks a non-existent (unfunded) account — a valid
+        /// lookup outcome, intentionally not retryable — while node-level
+        /// tokens (e.g. `amendmentBlocked`) drive the transient-error retry.
         let error: String?
 
         enum CodingKeys: String, CodingKey {

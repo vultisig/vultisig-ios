@@ -212,10 +212,37 @@ final class SendValidationTests: XCTestCase {
         XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amountStr, gas: rawGas))
     }
 
-    func testCanBeReapedTrueForRippleWhenRemainderBelowExistentialDeposit() {
+    func testCanBeReapedFalseForRippleReserveNetBalance() {
+        // XRP's rawBalance is already reserve-net (owner-aware, computed live
+        // by RippleService via RippleReserve), so a partial send leaving less
+        // than 1 XRP *spendable* is valid on-chain — the full reserve still
+        // backs the account and XRPL never reaps. This flips the old
+        // expectation that pinned the double-count false positive.
         let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true,
-                           rawBalance: "11000000") // 11 XRP
-        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: xrp, amount: amount("10.999"), gas: BigInt(1)))
+                           rawBalance: "11000000") // 11 XRP spendable, reserve already netted out
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: xrp, amount: amount("10.999"), gas: BigInt(1)))
+    }
+
+    func testExistentialDepositZeroForRipple() {
+        // The send path must not re-reserve what the balance calc already
+        // subtracted — the owner-aware reserve lives in RippleReserve alone.
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true)
+        XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: xrp), .zero)
+    }
+
+    func testComputeMaxAmountForRippleSubtractsOnlyFee() {
+        // Acceptance: the MAX-send reserve equals the balance-calc reserve.
+        // Fixture models an OwnerCount > 0 account — total 12 XRP with a
+        // 1 + 5 × 0.2 = 2 XRP reserve nets rawBalance 8.6 XRP (drops are
+        // 6-decimals; getMaxValue truncates to 5 dp). With the reserve-net
+        // balance R and fee f, MAX == R − f exactly — no second static 1 XRP.
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true,
+                           rawBalance: "8600000")
+        let fee = BigInt(20) // drops
+        let maxAmount = SendCryptoLogic.computeMaxAmount(coin: xrp, fee: fee)
+        XCTAssertEqual(maxAmount.toDecimal(), amount("8.59998").toDecimal())
+        // And the max-send itself is never blocked as a reap.
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: xrp, amount: maxAmount, gas: fee))
     }
 
     // MARK: - isBelowMinimumSendAmount

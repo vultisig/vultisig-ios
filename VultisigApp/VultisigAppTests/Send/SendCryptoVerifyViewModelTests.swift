@@ -582,6 +582,51 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.transaction.gasLimit, BigInt(50_000))
     }
 
+    // MARK: - loadGasInfoForSending — XRP destination-activation guard (load-time)
+
+    func testLoadGasInfoBlocksUnfundedXrpDestinationOnLoad() async throws {
+        // 0.1 XRP (100,000 drops) to an unfunded (actNotFound) destination is
+        // below the 1 XRP base reserve, so on-chain the Payment fails with
+        // tecNO_DST_INSUF_XRP after the fee is burned. The load pass must
+        // surface that — error shown, Sign disabled — not defer it to the Sign
+        // tap.
+        let client = VerifyScriptedHTTPClient()
+        client.accountInfoResult = .success(Data("""
+        {"result":{"error":"actNotFound","error_code":19,"error_message":"Account not found.","status":"error","validated":false}}
+        """.utf8))
+        client.serverStateResult = .success(Data("""
+        {"result":{"state":{"load_base":256,"load_factor":256,"validated_ledger":{"base_fee":10,"reserve_base":1000000,"reserve_inc":200000}}}}
+        """.utf8))
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true, rawBalance: "100000000")
+        let tx = try makeTransaction(coin: xrp, amount: "0.1")
+        let rippleService = RippleService(resolver: NoOverrideResolver(), httpClient: client, sleep: { _ in })
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: MockSendInteractor(), rippleService: rippleService)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertTrue(vm.hasBalanceError, "an unfunded sub-reserve XRP destination must be flagged on load")
+        XCTAssertTrue(vm.showAlert)
+        XCTAssertFalse(vm.errorMessage.isEmpty, "the destination-activation copy must reach the alert")
+        XCTAssertTrue(vm.signButtonDisabled, "Sign must be disabled while the destination is invalid")
+    }
+
+    func testLoadGasInfoAllowsFundedXrpDestinationOnLoad() async throws {
+        // A funded destination (has account_data) accepts any amount — the
+        // load-time guard must not block it.
+        let client = VerifyScriptedHTTPClient()
+        client.accountInfoResult = .success(Data("""
+        {"result":{"account_data":{"Account":"rFunded","Balance":"20000000","OwnerCount":0,"Sequence":7},"status":"success","validated":true}}
+        """.utf8))
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true, rawBalance: "100000000")
+        let tx = try makeTransaction(coin: xrp, amount: "0.1")
+        let rippleService = RippleService(resolver: NoOverrideResolver(), httpClient: client, sleep: { _ in })
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: MockSendInteractor(), rippleService: rippleService)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertFalse(vm.hasBalanceError, "a funded XRP destination must not be blocked on load")
+    }
+
     // MARK: - validateForm
 
     func testValidateFormThrowsWhenChecksMissing() async throws {
@@ -836,3 +881,46 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Test doubles
+
+private struct NoOverrideResolver: RPCEndpointResolving {
+    // swiftlint:disable:next unused_parameter
+    func url(for chain: Chain) -> String? { nil }
+}
+
+// `async` is required by `HTTPClientProtocol`; the stub answers synchronously.
+// swiftlint:disable async_without_await
+
+/// Scripted HTTP client keyed on the `RippleAPI` endpoint, so the Verify-load
+/// destination lookup can be driven without the network.
+private final class VerifyScriptedHTTPClient: HTTPClientProtocol, @unchecked Sendable {
+
+    var accountInfoResult: Result<Data, Error> = .failure(URLError(.badServerResponse))
+    var serverStateResult: Result<Data, Error> = .failure(URLError(.badServerResponse))
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        guard let api = target as? RippleAPI else {
+            throw URLError(.unsupportedURL)
+        }
+        switch api.endpoint {
+        case .accountInfo:
+            return try respond(accountInfoResult)
+        case .serverState:
+            return try respond(serverStateResult)
+        case .submit, .tx:
+            throw URLError(.unsupportedURL)
+        }
+    }
+
+    private func respond(_ result: Result<Data, Error>) throws -> HTTPResponse<Data> {
+        let data = try result.get()
+        guard let url = URL(string: "https://xrplcluster.com"),
+              let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil) else {
+            throw URLError(.badURL)
+        }
+        return HTTPResponse(data: data, response: response)
+    }
+}
+
+// swiftlint:enable async_without_await

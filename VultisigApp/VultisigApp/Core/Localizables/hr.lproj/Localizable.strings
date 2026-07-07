@@ -1440,6 +1440,8 @@
 "wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
+"xrpDestinationLookupFailedError" = "Odredišni XRP račun nije bilo moguće provjeriti (%@). Pokušajte ponovno.";
+"xrpDestinationNotActivatedError" = "Odredišna XRP adresa još nije aktivirana. Prvi prijenos na nju mora iznositi najmanje %@ XRP (osnovna rezerva mreže). Povećajte iznos ili provjerite adresu.";
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldClaimAmount" = "Preuzmi %@";

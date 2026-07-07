@@ -1403,6 +1403,8 @@
 "wrongVaultSelectedDescription" = "선택한 볼트가 키젠 세션과 일치하지 않습니다. 올바른 볼트를 선택하세요.";
 "wrongVaultTryAgain" = "잘못된 볼트 또는 쌍";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "대상 XRP 계정을 확인할 수 없습니다 (%@). 다시 시도해 주세요.";
+"xrpDestinationNotActivatedError" = "대상 XRP 주소가 아직 활성화되지 않았습니다. 첫 송금은 최소 %@ XRP(네트워크 기본 준비금) 이상이어야 합니다. 금액을 늘리거나 주소를 다시 확인하세요.";
 "yes" = "예";
 "yesterday" = "어제";
 "yieldClaimAmount" = "%@ 수령";
