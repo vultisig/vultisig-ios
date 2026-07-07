@@ -87,6 +87,10 @@ final class SwapDetailsViewModel {
 
     var thorchainFee: BigInt = .zero
     var gas: BigInt = .zero
+    /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
+    /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
+    /// `gas` (= maxFeePerGas for EVM) so the displayed fee is the signed bond.
+    var gasLimit: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
 
@@ -413,6 +417,7 @@ final class SwapDetailsViewModel {
             fromAmount: fromAmount.toDecimal(),
             quote: quote,
             gas: gas,
+            gasLimit: gasLimit,
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
@@ -453,6 +458,16 @@ extension SwapDetailsViewModel {
 
     var fee: BigInt {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+    }
+
+    /// Network fee value shown on the details screen. For EVM aggregator/
+    /// SwapKit routes this is the signed bond so it matches the verify screen,
+    /// the co-signer, and the vault's signature. Also what the insufficient-gas
+    /// gate (`balanceError`) validates against, since the bond is the node's
+    /// real admission requirement.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
+    var displayedNetworkFeeWei: BigInt {
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var fromAmountDecimal: Decimal {
@@ -512,8 +527,13 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
     }
 
+    /// The sufficiency gate validates against the same fee the screen displays:
+    /// the reconciled signed bond for EVM aggregator/SwapKit routes (an EVM
+    /// node rejects any transaction whose account can't cover
+    /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
+    /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee)
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: displayedNetworkFeeWei)
     }
 
     var fromFiatAmount: String {
@@ -552,7 +572,7 @@ extension SwapDetailsViewModel {
     }
 
     var swapGasString: String {
-        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: displayedNetworkFeeWei)
     }
 
     var approveFeeString: String {
@@ -564,7 +584,7 @@ extension SwapDetailsViewModel {
     }
 
     var totalFeeString: String {
-        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
     var durationString: String {
@@ -647,6 +667,7 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
@@ -668,6 +689,7 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
@@ -776,6 +798,7 @@ private extension SwapDetailsViewModel {
             // A superseding edit cancelled this fetch — don't write stale fees.
             guard !Task.isCancelled else { return }
             gas = chainSpecific.gas
+            gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

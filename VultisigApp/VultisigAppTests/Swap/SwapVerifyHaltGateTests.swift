@@ -141,6 +141,7 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             fromAmount: 1,
             quote: quote ?? .mayachain(makeQuote()),
             gas: .zero,
+            gasLimit: .zero,
             thorchainFee: .zero,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
