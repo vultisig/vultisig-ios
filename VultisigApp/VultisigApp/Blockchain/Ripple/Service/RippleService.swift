@@ -76,7 +76,16 @@ class RippleService {
     static let shared = RippleService()
 
     private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
+
+    /// Direct HTTP client for the verify-by-hash `tx` lookup, which runs its
+    /// own bespoke retry loop (see `resolveSubmitByHash`).
     private let httpClient: HTTPClientProtocol
+
+    /// Executes requests with a bounded same-host retry on transient node
+    /// errors (`amendmentBlocked` and the node-unavailable family). Because the
+    /// resolved host is a load-balanced pool, a same-host retry routes to a
+    /// different (healthy) backend — no fallback host list is needed.
+    private let retrier: RippleRequestRetrier
 
     /// Resolves the Ripple custom RPC override. Injected so the API values are
     /// built from a dependency rather than a global reach-in; resolution happens
@@ -100,12 +109,20 @@ class RippleService {
         "xrpl-reserve-values|\(host.absoluteString)"
     }
 
+    /// Backoff between `tx` lookups while resolving a verify-by-hash submit;
+    /// injectable so tests run without delay.
+    private let verifyByHashBackoff: Duration
+
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
-        httpClient: HTTPClientProtocol = HTTPClient()
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep,
+        verifyByHashBackoff: Duration = .seconds(2)
     ) {
         self.resolver = resolver
         self.httpClient = httpClient
+        self.retrier = RippleRequestRetrier(httpClient: httpClient, sleep: sleep)
+        self.verifyByHashBackoff = verifyByHashBackoff
     }
 
     /// The override-aware XRPL host. Falls back to the default host when no
@@ -121,29 +138,92 @@ class RippleService {
     }
 
     func broadcastTransaction(_ hex: String) async throws -> String {
-        let response = try await httpClient.request(
+        let response = try await retrier.request(
             api(.submit(txBlob: hex)),
             responseType: RippleSubmitResponse.self
         )
 
-        let result = response.data.result
+        let result = response.result
+        let disposition = RippleSubmitDisposition.classify(
+            engineResult: result?.engineResult,
+            engineResultMessage: result?.engineResultMessage,
+            hash: result?.txJson?.hash
+        )
 
-        // `tx_json.hash` is the deterministic hash of the exact blob we
-        // submitted; XRPL echoes it back regardless of the engine result. Track
-        // that hash even when the engine result isn't tesSUCCESS — tec* results
-        // are applied on-chain, and for a tef/tem/ter/tel rejection the status
-        // poller resolves the real outcome from this hash and surfaces the error
-        // on screen. The bug this guards against is returning the engine error
-        // *message* as the txid; a missing hash means we have nothing to track,
-        // so surface the engine result/message as the failure instead of
-        // persisting an empty string as a fake success.
-        guard let hash = result?.txJson?.hash, !hash.isEmpty else {
-            throw RippleBroadcastError.broadcastFailed(
-                code: result?.engineResult ?? "unknown",
-                message: result?.engineResultMessage
-            )
+        switch disposition {
+        case .accepted(let hash):
+            return hash
+        case .verifyByHash(let code, let hash, let message):
+            return try await resolveSubmitByHash(code: code, hash: hash, message: message)
+        case .rejected(let code, let message):
+            logger.error("broadcast rejected by XRPL: \(code, privacy: .public)")
+            throw RippleBroadcastError.broadcastFailed(code: code, message: message)
         }
-        return hash
+    }
+
+    /// Resolves a submit whose engine result says the transaction may already
+    /// be known to the network — a faster co-signing peer's broadcast of the
+    /// same signed blob landed first, or the server queued it for a future
+    /// ledger — by looking the echoed deterministic hash up with the `tx`
+    /// method against the same (override-aware) node the submit went to.
+    ///
+    /// `txnNotFound` is retried with a short backoff because cluster nodes can
+    /// lag a peer's submit by a few seconds; lookup errors count as failed
+    /// attempts for the same reason (the lookup is a safety net and must not
+    /// invent a new failure mode). If the transaction never shows up, the
+    /// ORIGINAL engine code is thrown — an unverified duplicate must never be
+    /// reported as a success.
+    private func resolveSubmitByHash(code: String, hash: String?, message: String?) async throws -> String {
+        guard let hash else {
+            throw RippleBroadcastError.broadcastFailed(code: code, message: message)
+        }
+
+        let maxAttempts = 3
+        for attempt in 1...maxAttempts {
+            do {
+                let response = try await httpClient.request(
+                    api(.tx(hash: hash)),
+                    responseType: RippleTransactionStatusResponse.self
+                )
+
+                switch RippleTxLookupOutcome.interpret(response.data) {
+                case .validatedSuccess:
+                    logger.info("\(code, privacy: .public) resolved as validated success: \(hash, privacy: .public)")
+                    return hash
+                case .pending:
+                    // Known to the network and in flight — return the hash and
+                    // let the status poller resolve the final outcome.
+                    logger.info("\(code, privacy: .public) resolved as in-flight: \(hash, privacy: .public)")
+                    return hash
+                case .validatedFailure(let validatedCode):
+                    // The transaction landed in a validated ledger with a final
+                    // non-success result — surface that real code.
+                    logger.error("\(code, privacy: .public) resolved as validated failure \(validatedCode, privacy: .public)")
+                    throw RippleBroadcastError.broadcastFailed(
+                        code: validatedCode,
+                        message: "The transaction was included in a validated ledger but did not succeed."
+                    )
+                case .notFound:
+                    break
+                }
+            } catch let error as RippleBroadcastError {
+                throw error
+            } catch {
+                logger.warning("verify-by-hash lookup failed (attempt \(attempt)/\(maxAttempts)): \(error.localizedDescription, privacy: .public)")
+            }
+
+            if attempt < maxAttempts {
+                do {
+                    try await Task.sleep(for: verifyByHashBackoff)
+                } catch {
+                    logger.warning("verify-by-hash backoff interrupted: \(error.localizedDescription, privacy: .public)")
+                    break
+                }
+            }
+        }
+
+        logger.error("verify-by-hash exhausted for \(code, privacy: .public): \(hash, privacy: .public) not found")
+        throw RippleBroadcastError.broadcastFailed(code: code, message: message)
     }
 
     func getBalance(address: String) async throws -> String {
@@ -269,11 +349,13 @@ class RippleService {
     /// per request as usual.
     func fetchServerState(host: URL? = nil) async throws -> RippleServerStateResponse? {
         do {
-            let response = try await httpClient.request(
+            // Keep the explicit `host` (for reserve-cache-key consistency) and
+            // route through the retrier so a transient node error on the pool
+            // is retried against a healthy backend, same as the other reads.
+            return try await retrier.request(
                 RippleAPI(.serverState, host: host ?? resolvedHost),
                 responseType: RippleServerStateResponse.self
             )
-            return response.data
         } catch {
             logger.error("fetchServerState: \(error.localizedDescription)")
             throw error
@@ -282,11 +364,10 @@ class RippleService {
 
     func fetchAccountsInfo(for walletAddress: String) async throws -> RippleAccountResponse? {
         do {
-            let response = try await httpClient.request(
+            return try await retrier.request(
                 api(.accountInfo(account: walletAddress)),
                 responseType: RippleAccountResponse.self
             )
-            return response.data
         } catch {
             logger.error("fetchAccountsInfo: \(error.localizedDescription)")
             throw error
@@ -338,8 +419,10 @@ struct RippleAccountResponse: Codable {
         let queueData: QueueData?
         let status: String?
         let validated: Bool?
-        /// rippled error token for failed lookups (HTTP 200 + error body),
-        /// e.g. `actNotFound` for a non-existent account.
+        /// rippled error token returned in an HTTP-200 error body. Two uses:
+        /// `actNotFound` marks a non-existent (unfunded) account — a valid
+        /// lookup outcome, intentionally not retryable — while node-level
+        /// tokens (e.g. `amendmentBlocked`) drive the transient-error retry.
         let error: String?
 
         enum CodingKeys: String, CodingKey {
@@ -418,9 +501,13 @@ struct RippleServerStateResponse: Codable {
 
     struct Result: Codable {
         let state: State?
+        /// Node-level error (e.g. `amendmentBlocked`) returned in an HTTP-200
+        /// body when the backend can't serve `server_state`.
+        let error: String?
 
         enum CodingKeys: String, CodingKey {
             case state
+            case error
         }
     }
 
@@ -447,4 +534,12 @@ struct RippleServerStateResponse: Codable {
             case reserveInc = "reserve_inc"
         }
     }
+}
+
+extension RippleAccountResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
+}
+
+extension RippleServerStateResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
 }

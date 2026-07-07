@@ -203,9 +203,29 @@ enum RippleHelper {
 
         let result = SignedTransactionResult(
             rawTransaction: output.encoded.hexString,
-            transactionHash: "")
+            transactionHash: signedTransactionHash(signedBlob: output.encoded))
 
         return result
+    }
+
+    /// XRPL "transaction identifying hash": SHA-512Half (the first 32 bytes of
+    /// SHA-512) over the 4-byte `TXN\0` prefix (`HashPrefix::transactionID`,
+    /// `0x54584E00`) concatenated with the serialized *signed* transaction blob.
+    /// Rendered as uppercase hex — the canonical XRPL rendering, and the same
+    /// value the `submit`/`tx` endpoints echo back as `tx_json.hash`.
+    ///
+    /// Derived purely from the already-signed output bytes; no signing input,
+    /// pre-image, or TSS state is involved.
+    ///
+    /// An empty blob yields an empty string so the hash-keyed keysign safety
+    /// nets stay disarmed rather than keying off a meaningless prefix-only hash.
+    ///
+    /// Reference: https://xrpl.org/docs/references/protocol/data-types/hash-prefixes
+    static func signedTransactionHash(signedBlob: Data) -> String {
+        guard !signedBlob.isEmpty else { return "" }
+        let transactionIDPrefix = Data([0x54, 0x58, 0x4E, 0x00]) // "TXN\0"
+        let digest = Data(Hash.sha512(data: transactionIDPrefix + signedBlob).prefix(32))
+        return digest.toHexString().uppercased()
     }
 
 }
