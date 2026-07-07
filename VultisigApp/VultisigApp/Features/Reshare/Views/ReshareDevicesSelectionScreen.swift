@@ -31,7 +31,7 @@ struct ReshareDevicesSelectionScreen: View {
         DevicesSelectionView(
             selectedIndex: $viewModel.selectedIndex,
             tipText: "seedPhraseImportTip".localized,
-            buttonTitle: "getStarted".localized,
+            buttonTitle: "continue".localized,
             isLoading: viewModel.isLoading,
             isButtonDisabled: !viewModel.isThresholdMet || viewModel.isLoading,
             onContinue: onContinue

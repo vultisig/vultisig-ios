@@ -79,8 +79,8 @@ struct ReshareScreen: View {
     var glow: some View {
         EllipticalGradient(
             stops: [
-                Gradient.Stop(color: Color(hex: "084BFF").opacity(0.5), location: 0.00),
-                Gradient.Stop(color: Color(hex: "084BFF").opacity(0), location: 1.00)
+                Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0.5), location: 0.00),
+                Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0), location: 1.00)
             ],
             center: UnitPoint(x: 0.5, y: 0.5)
         )
