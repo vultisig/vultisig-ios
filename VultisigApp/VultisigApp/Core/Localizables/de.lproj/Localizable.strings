@@ -1450,7 +1450,6 @@
 "wrongVaultSelectedDescription" = "Der von Ihnen ausgewählte Vault stimmt nicht mit der Keygen-Sitzung überein. Bitte wählen Sie den richtigen Vault aus.";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
 "x" = "x";
-"xrpTagAndMemoAdvisory" = "Um ein Tag und ein Memo zusammen zu senden, müssen alle Ihre Signiergeräte auf dem neuesten Stand sein.";
 "yes" = "Ja";
 "yesterday" = "Gestern";
 "yieldClaimAmount" = "%@ beanspruchen";

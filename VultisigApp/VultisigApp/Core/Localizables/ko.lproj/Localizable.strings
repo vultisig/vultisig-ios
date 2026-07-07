@@ -1413,7 +1413,6 @@
 "wrongVaultSelectedDescription" = "선택한 볼트가 키젠 세션과 일치하지 않습니다. 올바른 볼트를 선택하세요.";
 "wrongVaultTryAgain" = "잘못된 볼트 또는 쌍";
 "x" = "X (Twitter)";
-"xrpTagAndMemoAdvisory" = "태그와 메모를 함께 보내려면 모든 서명 기기가 최신 상태여야 합니다.";
 "yes" = "예";
 "yesterday" = "어제";
 "yieldClaimAmount" = "%@ 수령";

@@ -25,9 +25,6 @@ struct SendDetailsAdditionalSection: View {
             if viewModel.coin.chain.supportsDestinationTag {
                 addDestinationTagField
             }
-            if showsTagAndMemoAdvisory {
-                tagAndMemoAdvisory
-            }
         }
         .onAppear {
             if !viewModel.memo.isEmpty {
@@ -123,32 +120,6 @@ struct SendDetailsAdditionalSection: View {
             }
             .frame(height: isDestinationTagExpanded ? nil : 0, alignment: .top)
             .clipped()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// A tag+memo combo requires every signing device to be up to date (an old
-    /// co-signer reads only the memo slot and drops the tag). Non-blocking
-    /// advisory — the send still proceeds. Fires only for the REAL combo the
-    /// signer builds: a valid tag AND a genuine TEXT memo. A numeric memo is
-    /// either the tag echo or the legacy carrier — `makeTransaction` strips it
-    /// to a tag-only send, so it must not trip the advisory.
-    private var showsTagAndMemoAdvisory: Bool {
-        viewModel.coin.chain.supportsDestinationTag
-            && RippleDestinationTag.parseTag(viewModel.rippleTag.destinationTag) != nil
-            && !viewModel.memo.isEmpty
-            && RippleDestinationTag.parseCanonical(viewModel.memo) == nil
-    }
-
-    private var tagAndMemoAdvisory: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "info.circle")
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Text(NSLocalizedString("xrpTagAndMemoAdvisory", comment: ""))
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

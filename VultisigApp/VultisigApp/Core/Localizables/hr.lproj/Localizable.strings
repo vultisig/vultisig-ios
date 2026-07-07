@@ -1450,7 +1450,6 @@
 "wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
-"xrpTagAndMemoAdvisory" = "Slanje oznake i bilješke zajedno zahtijeva da svi vaši uređaji za potpisivanje budu ažurirani.";
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldClaimAmount" = "Preuzmi %@";

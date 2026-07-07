@@ -1450,7 +1450,6 @@
 "wrongVaultSelectedDescription" = "El Vault que seleccionaste no coincide con la sesión de keygen. Por favor selecciona el Vault correcto.";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "X (Twitter)";
-"xrpTagAndMemoAdvisory" = "Enviar una etiqueta y un memorándum juntos requiere que todos tus dispositivos de firma estén actualizados.";
 "yes" = "Sí";
 "yesterday" = "Ayer";
 "yieldClaimAmount" = "Reclamar %@";

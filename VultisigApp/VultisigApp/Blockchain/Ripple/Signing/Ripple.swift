@@ -112,8 +112,7 @@ enum RippleHelper {
                     // DestinationTag and a Memos blob. (An OLD co-signer with no
                     // field reads only the text memo → builds a Memos-only tx
                     // without the tag → hash diverges → the ceremony fails safe.
-                    // Accepted mixed-version limitation, gated by a send-form
-                    // advisory.)
+                    // Accepted mixed-version limitation.)
                     return try memoSigningInput(
                         keysignPayload: keysignPayload,
                         memoValue: memoValue,
