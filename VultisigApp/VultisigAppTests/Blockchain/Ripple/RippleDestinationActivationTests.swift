@@ -181,7 +181,7 @@ private final class DestinationScriptedHTTPClient: HTTPClientProtocol, @unchecke
             return try respond(accountInfoResult)
         case .serverState:
             return try respond(serverStateResult)
-        case .submit:
+        case .submit, .tx:
             throw URLError(.unsupportedURL)
         }
     }

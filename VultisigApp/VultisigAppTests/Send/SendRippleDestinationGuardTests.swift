@@ -159,7 +159,7 @@ private final class TrippingHTTPClient: HTTPClientProtocol, @unchecked Sendable 
             return try respond(accountInfoResult)
         case .serverState:
             return try respond(serverStateResult)
-        case .submit:
+        case .submit, .tx:
             throw URLError(.unsupportedURL)
         }
     }
