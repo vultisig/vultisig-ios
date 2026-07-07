@@ -54,11 +54,31 @@ final class CustomMessageSignatureTests: XCTestCase {
 
     func testEdDSA_validSignature_returnsReversedRSHex() {
         let vm = makeVM(keyType: .EdDSA)
-        // TSS delivers r and s in little-endian; getSignature() reverses each.
+        // TSS delivers r and s as big-endian scalars; getSignature() reverses
+        // each into a 32-byte little-endian half. Both halves here are already
+        // full width, so only the byte-order reversal applies.
+        let r = "0102" + String(repeating: "00", count: 30)
+        let s = "0304" + String(repeating: "00", count: 30)
+        vm.signatures["msg"] = makeTssResponse(r: r, s: s)
+
+        // reversed(0102·00×30) = 00×30·0201, reversed(0304·00×30) = 00×30·0403
+        let expected = String(repeating: "00", count: 30) + "0201"
+            + String(repeating: "00", count: 30) + "0403"
+        XCTAssertEqual(vm.customMessageSignature(), expected)
+    }
+
+    func testEdDSA_shortComponentIsZeroPaddedTo32Bytes() {
+        let vm = makeVM(keyType: .EdDSA)
+        // A scalar whose big-endian form lost a high-order zero byte (tss-lib
+        // emits `bigInt.Bytes()`) must be padded to a full 32-byte half, not
+        // reversed short — otherwise the assembled signature is under 64 bytes
+        // and fails verification.
         vm.signatures["msg"] = makeTssResponse(r: "0102", s: "0304")
 
-        // reversed(0102) = 0201, reversed(0304) = 0403 → concatenated
-        XCTAssertEqual(vm.customMessageSignature(), "02010403")
+        let sig = vm.customMessageSignature()
+        // Two 32-byte halves → 64 bytes → 128 hex chars.
+        XCTAssertEqual(sig.count, 128)
+        XCTAssertEqual(sig.hasPrefix("0201"), true)
     }
 
     func testEdDSA_emptySignatures_returnsEmpty() {
@@ -79,8 +99,9 @@ final class CustomMessageSignatureTests: XCTestCase {
         vm.signatures["msg"] = makeTssResponse(r: "aabb", s: "ccdd", recoveryID: "01")
 
         let sig = vm.customMessageSignature()
-        // EdDSA result is exactly 4 bytes (no recovery ID byte).
-        XCTAssertEqual(sig.count, 8)
+        // EdDSA result is R || S (two 32-byte halves = 64 bytes) with no trailing
+        // recovery-ID byte — ECDSA would append one.
+        XCTAssertEqual(sig.count, 128)
     }
 
     // MARK: - MLDSA
