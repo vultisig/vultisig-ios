@@ -25,7 +25,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     MARKETING_VERSION: "1.41"
-    CURRENT_PROJECT_VERSION: "64"
+    CURRENT_PROJECT_VERSION: "65"
     ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
@@ -66,7 +66,12 @@ packages:
     revision: 03e61a7454be7cebababb6b33708b85077962088
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
-    exactVersion: 4.7.0
+    # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
+    # 628900b25d…, walletcore-spm main), which adds the Cardano
+    # `CardanoSigningInput.auxiliaryData` field this feature needs. Do NOT use
+    # `exactVersion: 4.7.0` — that tag is mis-cut and resolves to the old
+    # 4.6.13 commit (6fe770f97…).
+    exactVersion: 4.7.1
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation
     from: 0.9.0

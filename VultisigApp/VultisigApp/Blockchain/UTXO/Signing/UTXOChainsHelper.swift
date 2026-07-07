@@ -47,6 +47,77 @@ class UTXOChainsHelper {
         plan.branchID = try zcashBranchID(keysignPayload: keysignPayload)
     }
 
+    /// Max non-ZIP-317 re-plans before giving up raising the Zcash fee.
+    /// Matches the SDK's cap so every co-signing device fails identically
+    /// instead of diverging on the plan.
+    private static let maxZcashFeeBumps = 5
+
+    /// Plan the transaction, guarding Zcash plans against WalletCore's
+    /// underpaying ZIP-317 mode. Every other coin plans directly.
+    private func planTransaction(_ input: inout BitcoinSigningInput) throws -> BitcoinTransactionPlan {
+        guard coin == .zcash else {
+            return AnySigner.plan(input: input, coin: coin)
+        }
+        return try planZcashConventionalFee(&input)
+    }
+
+    /// Produce a Zcash plan whose fee meets the ZIP-317 conventional fee.
+    ///
+    /// WalletCore's `zip0317` planner sizes an OP_RETURN output as a flat ~34
+    /// bytes and ignores `byteFee`, so memo transactions (MayaChain-routed
+    /// swaps carry the swap instruction in an OP_RETURN; sends with memo too)
+    /// plan one logical action short — e.g. 15,000 zats where the network
+    /// requires 20,000 — with no way to raise the fee in that mode. When the
+    /// `zip0317` plan underpays the byte-accurate conventional fee, re-plan
+    /// with `zip0317` off — where WalletCore honours `byteFee` — and bump
+    /// `byteFee` until the fee clears. Plain (no-memo) sends already meet the
+    /// fee and keep the `zip0317` plan.
+    ///
+    /// An empty plan (no selected UTXOs) is returned untouched: coin selection
+    /// produced nothing (insufficient funds), and that flow owns the outcome.
+    ///
+    /// Byte-parity port of the SDK's `planZcashConventionalFee` — every
+    /// co-signing device must derive the same plan or the MPC preimage
+    /// digests diverge and keysign fails. Keep in lockstep with the SDK.
+    private func planZcashConventionalFee(_ input: inout BitcoinSigningInput) throws -> BitcoinTransactionPlan {
+        let memoSize = input.outputOpReturn.count
+
+        func conventionalFee(for plan: BitcoinTransactionPlan) -> Int64 {
+            ZcashConventionalFee.conventionalFee(
+                inputCount: plan.utxos.count,
+                outputSizes: ZcashConventionalFee.transparentOutputSizes(change: plan.change, memoSize: memoSize)
+            )
+        }
+
+        // An empty plan has no shape to charge for; leave the fee flow to the caller.
+        func meetsConventionalFee(_ plan: BitcoinTransactionPlan) -> Bool {
+            plan.utxos.isEmpty || plan.fee >= conventionalFee(for: plan)
+        }
+
+        let zipPlan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        if meetsConventionalFee(zipPlan) {
+            return zipPlan
+        }
+
+        input.zip0317 = false
+        var byteFee: Int64 = 1
+        var plan = zipPlan
+        for _ in 0..<Self.maxZcashFeeBumps {
+            input.byteFee = byteFee
+            plan = AnySigner.plan(input: input, coin: coin)
+            if meetsConventionalFee(plan) {
+                return plan
+            }
+
+            // byteFee mode scales fee linearly with vsize; derive the byteFee that
+            // clears the conventional fee for this plan's (byteFee-independent) vsize.
+            let plannerVsize = plan.fee > 0 ? plan.fee / byteFee : 1
+            byteFee = max(ZcashConventionalFee.ceilDiv(conventionalFee(for: plan), plannerVsize), byteFee + 1)
+        }
+
+        throw HelperError.runtimeError("Failed to meet the Zcash minimum network fee (ZIP-317): planned \(plan.fee) zats, required \(conventionalFee(for: plan))")
+    }
+
     static func getHelper(coin: Coin) -> UTXOChainsHelper? {
         switch coin.chainType {
         case .UTXO:
@@ -121,8 +192,8 @@ class UTXOChainsHelper {
         input.hashType = BitcoinScript.hashTypeForCoin(coinType: coin)
         input.useMaxAmount = sendMaxAmount
         // Zcash enforces ZIP-317: the fee must cover the tx's logical actions,
-        // not just its byte size. Enable it so the planner below computes a
-        // conforming fee and the node doesn't reject the swap broadcast.
+        // not just its byte size. `planTransaction` starts from this mode and
+        // re-plans when WalletCore's ZIP-317 fee underpays for memo txs.
         input.zip0317 = coin == .zcash
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)
@@ -159,7 +230,7 @@ class UTXOChainsHelper {
             input.utxo.append(utxo)
         }
 
-        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        var plan = try planTransaction(&input)
         try applyZcashBranchID(to: &plan, keysignPayload: keysignPayload)
 
         input.plan = plan
@@ -179,9 +250,9 @@ class UTXOChainsHelper {
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)
             // Zcash enforces ZIP-317 fees: the fee must cover the tx's logical
-            // actions, not just its byte size. Enabling this lets WalletCore's
-            // planner compute a conforming fee and avoids node rejection
-            // ("tx unpaid action limit exceeds limit of 0").
+            // actions, not just its byte size. `planTransaction` starts from
+            // this mode and re-plans when WalletCore's ZIP-317 fee underpays
+            // for memo txs ("tx unpaid action limit exceeds limit of 0").
             $0.zip0317 = coin == .zcash
             $0.coinType = coin.rawValue
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
@@ -229,7 +300,7 @@ class UTXOChainsHelper {
 
     func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) throws -> Data {
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        var plan = try planTransaction(&input)
 
         // Check for transaction plan errors
         if plan.error != .ok {
@@ -243,13 +314,12 @@ class UTXOChainsHelper {
     }
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
-        let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
         // The branch id only affects the ZIP-243 sighash digest, not the
         // planned amount/fee/change this method exposes for fee display, so it
         // is deliberately not set here (avoids forcing an RPC resolve on the
         // fee-preview path).
-        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-        return plan
+        return try planTransaction(&input)
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
@@ -298,10 +368,10 @@ class UTXOChainsHelper {
         }
     }
     func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
-        let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
         // Placeholder tx for Blockaid analysis: only plan amount/change are read
         // below, so the ZIP-243 branch id (sighash-only) is irrelevant here.
-        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        let plan = try planTransaction(&input)
 
         // Build raw transaction manually using plan data
         var rawTx = Data()

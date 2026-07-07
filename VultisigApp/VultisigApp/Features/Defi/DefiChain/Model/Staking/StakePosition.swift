@@ -165,9 +165,17 @@ final class StakePosition {
     }
 
     /// Updates everything except the lookup key (`coin`) and the persistent `id`.
-    /// `stakeAccountPubkey` is part of the `id`, so it is intentionally NOT
-    /// reassigned here (a matched row already shares it).
+    /// `stakeAccountPubkey` is only BACKFILLED when missing: rows written by an
+    /// earlier build carry the pubkey in the `id` suffix but a nil field, which
+    /// permanently broke the cache-first seed (`seedFromPersistedSnapshot`
+    /// drops rows without a pubkey) because the id-keyed upsert always matched
+    /// and this method never healed the field. The upsert matches by `id` and
+    /// the `id` embeds the pubkey, so the DTO's value is by construction the
+    /// same suffix — a non-nil field is never rewritten.
     func apply(_ dto: StakePositionData) {
+        if stakeAccountPubkey?.isEmpty != false {
+            stakeAccountPubkey = dto.stakeAccountPubkey
+        }
         type = dto.type
         amount = dto.amount
         availableToUnstake = dto.availableToUnstake
