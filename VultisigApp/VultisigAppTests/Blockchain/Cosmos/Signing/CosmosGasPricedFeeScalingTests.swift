@@ -5,19 +5,22 @@
 //  Regression tests for the Terra Classic / dYdX insufficient-fee bug.
 //
 //  These chains sign a DYNAMIC `gas_wanted` (the relayed simulated limit) but
-//  their fee AMOUNT (`chainSpecific.gas`) is priced for the static per-chain
-//  limit and is NOT re-derived by `CosmosFeeFloorConfig.flooredFee` (they are
-//  absent from that table). Once the simulated limit exceeds the static one the
-//  signed fee undershoots the ante handler's `fee >= gas_wanted × min gas price`
-//  check and the tx is rejected on-chain ("insufficient fee", code 13).
+//  their fee AMOUNT is priced per unit of gas and is NOT re-derived by
+//  `CosmosFeeFloorConfig.flooredFee` (they are absent from that table). If the
+//  amount stays priced at the static per-chain limit while the simulated limit
+//  exceeds it, the signed fee undershoots the ante handler's
+//  `fee >= gas_wanted × min gas price` check and the tx is rejected on-chain
+//  ("insufficient fee", code 13) — and the amount shown on Verify no longer
+//  matches the signed one.
 //
-//  The fix re-derives the fee amount from the same `effectiveGasLimit` that gets
-//  signed by scaling the (known-sufficient) static amount by the gas-limit ratio
-//  — `ceil(base × effectiveGasLimit / staticGasLimit)` — while preserving any
-//  burn tax folded in for Terra Classic. At the static limit the re-derivation
-//  returns the static amount verbatim, so the non-simulated path is byte
-//  identical, and it is a pure function of the relayed limit + static constants,
-//  so co-signers stay byte-parity consistent.
+//  Terra Classic pins the base to the effective (relayed dynamic, else static)
+//  gas limit up front in `TerraClassicTax.baseGas` (called by BlockChainService),
+//  so `chainSpecific.gas` is the final fee: the signer echoes it verbatim and the
+//  Verify/keysign screens display it directly. dYdX still re-derives its amount
+//  in its signer via `CosmosGasPricedFee.scaled`. Both use `ceil(base ×
+//  effectiveGasLimit / staticGasLimit)`; at the static limit it returns the base
+//  verbatim (non-simulated path byte-identical), and it is a pure function of the
+//  relayed limit + static constants, so co-signers stay byte-parity consistent.
 //
 
 @testable import VultisigApp
@@ -52,51 +55,45 @@ final class CosmosGasPricedFeeScalingTests: XCTestCase {
         XCTAssertEqual(CosmosGasPricedFee.scaled(base: 100, fromGasLimit: 0, toGasLimit: 500), 100)
     }
 
-    // MARK: - TerraClassicTax.scaledSendFee (base scales, folded burn tax preserved)
+    // MARK: - TerraClassicTax.baseGas (base priced at the effective gas limit)
 
-    func testTerraScaledFeeStaticLimitIsByteIdentical() {
-        // At the static 300k limit the re-derived amount MUST equal the upstream
-        // static value exactly (base + folded tax), for every token class.
-        let luncStatic = TerraClassicTax.ulunaBaseGas + 5_000 // base + burn tax
+    func testBaseGasAtStaticLimitIsUnscaled() {
+        // At the static 300k limit the base is unscaled, for every token class,
+        // so the non-simulated path is byte-identical to the pre-fix fee.
         XCTAssertEqual(
-            TerraClassicTax.scaledSendFee(staticFee: luncStatic, contractAddress: "", isNativeToken: true, gasLimit: 300_000),
-            luncStatic
+            TerraClassicTax.baseGas(contractAddress: "", isNativeToken: true, gasLimit: 300_000),
+            TerraClassicTax.ulunaBaseGas
         )
-        let ustcStatic = TerraClassicTax.uusdBaseGas + 3_000
         XCTAssertEqual(
-            TerraClassicTax.scaledSendFee(staticFee: ustcStatic, contractAddress: "uusd", isNativeToken: false, gasLimit: 300_000),
-            ustcStatic
+            TerraClassicTax.baseGas(contractAddress: "uusd", isNativeToken: false, gasLimit: 300_000),
+            TerraClassicTax.uusdBaseGas
         )
     }
 
-    func testTerraNativeScaledFeeScalesBaseKeepsTax() {
-        // LUNC: base 8_497_500 + burn tax 5_000. Scaling to 390k must scale ONLY
-        // the base (28.325/gas) and carry the tax through unchanged.
-        let tax: UInt64 = 5_000
-        let staticFee = TerraClassicTax.ulunaBaseGas + tax
-        let fee = TerraClassicTax.scaledSendFee(staticFee: staticFee, contractAddress: "", isNativeToken: true, gasLimit: 390_000)
-        XCTAssertEqual(fee, 11_046_750 + tax)
-        // Satisfies the chain's `fee >= gas_wanted × price + tax` check…
-        XCTAssertGreaterThanOrEqual(fee, 11_046_750 + tax)
-        // …which the OLD static amount did NOT (this is the bug).
-        XCTAssertLessThan(staticFee, 11_046_750 + tax)
+    func testBaseGasNativeScalesWithLimit() {
+        // LUNC base 8_497_500 (= 300k × 28.325 uluna/gas) priced at 390k = × 1.3.
+        let scaled = TerraClassicTax.baseGas(contractAddress: "", isNativeToken: true, gasLimit: 390_000)
+        XCTAssertEqual(scaled, 11_046_750)
+        // …which exceeds the pre-fix static base that undershot the ante check.
+        XCTAssertGreaterThan(scaled, TerraClassicTax.ulunaBaseGas)
     }
 
-    func testTerraBankDenomScaledFeeUsesUusdBase() {
-        // USTC (uusd) is priced at the uusd base (0.75/gas), NOT the uluna base.
-        let tax: UInt64 = 3_000
-        let staticFee = TerraClassicTax.uusdBaseGas + tax // 225_000 + 3_000
-        let fee = TerraClassicTax.scaledSendFee(staticFee: staticFee, contractAddress: "uusd", isNativeToken: false, gasLimit: 360_000)
-        // 225_000 × 360k/300k = 270_000, + 3_000 tax.
-        XCTAssertEqual(fee, 270_000 + tax)
+    func testBaseGasBankDenomUsesUusdBase() {
+        // USTC (uusd) is priced at the uusd base (0.75/gas), NOT the uluna base:
+        // 225_000 × 360k/300k = 270_000.
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: "uusd", isNativeToken: false, gasLimit: 360_000),
+            270_000
+        )
     }
 
-    func testTerraCW20ScaledFeeHasNoTax() {
-        // CW20 (terra1…) pays its fee in uluna with no folded tax, so the whole
-        // amount scales.
+    func testBaseGasCW20UsesUlunaBase() {
+        // CW20 (terra1…) pays its fee in uluna, so it shares the uluna base.
         let cw20 = "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26"
-        let fee = TerraClassicTax.scaledSendFee(staticFee: TerraClassicTax.ulunaBaseGas, contractAddress: cw20, isNativeToken: false, gasLimit: 390_000)
-        XCTAssertEqual(fee, 11_046_750)
+        XCTAssertEqual(
+            TerraClassicTax.baseGas(contractAddress: cw20, isNativeToken: false, gasLimit: 390_000),
+            11_046_750
+        )
     }
 
     // MARK: - Terra Classic signing input (end-to-end via TerraHelperStruct)
@@ -151,17 +148,18 @@ final class CosmosGasPricedFeeScalingTests: XCTestCase {
         return try CosmosSigningInput(serializedBytes: inputData).fee
     }
 
-    func testTerraClassicSimulatedLimitScalesSignedFeeAmount() throws {
-        // A simulated relayed limit above 300k: the signed gas_wanted rises to
-        // 390k and the fee amount must scale with it (base 28.325/gas + tax),
-        // instead of staying at the short static value that caused code 13.
+    func testTerraClassicSignerEchoesPricedFeeAmount() throws {
+        // With a simulated limit above 300k the initiator prices `gas` at that
+        // limit up front (base 28.325/gas @390k + tax), so the signer echoes it
+        // verbatim and honors the relayed 390k gas_wanted — no longer the short
+        // static value that caused code 13.
         let tax: UInt64 = 5_000
-        let staticGas = TerraClassicTax.ulunaBaseGas + tax
-        let fee = try terraFee(coin: luncCoin(), gas: staticGas, gasLimit: 390_000)
+        let pricedGas = 11_046_750 + tax // TerraClassicTax.baseGas(@390k) + burn tax
+        let fee = try terraFee(coin: luncCoin(), gas: pricedGas, gasLimit: 390_000)
 
         XCTAssertEqual(fee.gas, 390_000, "signed gas_wanted must be the relayed limit")
         let amount = UInt64(fee.amounts.first?.amount ?? "0") ?? 0
-        XCTAssertEqual(amount, 11_046_750 + tax, "fee amount must track the signed gas_wanted")
+        XCTAssertEqual(amount, pricedGas, "fee amount must be `gas` verbatim")
         XCTAssertGreaterThanOrEqual(amount, fee.gas * 28_325 / 1_000 + tax,
                                     "fee must satisfy gas_wanted × 28.325 uluna/gas + tax")
         XCTAssertEqual(fee.amounts.first?.denom, "uluna")
@@ -184,20 +182,22 @@ final class CosmosGasPricedFeeScalingTests: XCTestCase {
         XCTAssertEqual(nilInput, staticInput, "nil and explicit static limit must yield byte-identical SignDoc input")
     }
 
-    func testTerraClassicBankDenomScalesSignedFeeAmount() throws {
-        // USTC (uusd bank denom): fee is denominated in uusd and scales off the
-        // uusd base, preserving the folded burn tax.
+    func testTerraClassicBankDenomSignerEchoesPricedFee() throws {
+        // USTC (uusd bank denom): fee is denominated in uusd. The initiator
+        // prices `gas` off the uusd base at the effective limit (preserving the
+        // folded burn tax); the signer echoes it in uusd.
         let meta = CoinMeta(chain: .terraClassic, ticker: "USTC", logo: "ustc", decimals: 6, priceProviderId: "", contractAddress: "uusd", isNativeToken: false)
         let coin = Coin(asset: meta, address: "terra1from", hexPublicKey: "02" + String(repeating: "0", count: 64))
         let tax: UInt64 = 3_000
-        let staticGas = TerraClassicTax.uusdBaseGas + tax
+        let pricedGas = 270_000 + tax // TerraClassicTax.baseGas(uusd, @360k) + burn tax
 
-        let fee = try terraFee(coin: coin, gas: staticGas, gasLimit: 360_000)
+        let fee = try terraFee(coin: coin, gas: pricedGas, gasLimit: 360_000)
         XCTAssertEqual(fee.gas, 360_000)
-        XCTAssertEqual(UInt64(fee.amounts.first?.amount ?? "0"), 270_000 + tax)
+        XCTAssertEqual(UInt64(fee.amounts.first?.amount ?? "0"), pricedGas)
         XCTAssertEqual(fee.amounts.first?.denom, "uusd")
 
-        // Non-simulated path unchanged.
+        // Non-simulated path: `gas` echoed verbatim.
+        let staticGas = TerraClassicTax.uusdBaseGas + tax
         let nilFee = try terraFee(coin: coin, gas: staticGas, gasLimit: nil)
         XCTAssertEqual(UInt64(nilFee.amounts.first?.amount ?? "0"), staticGas)
     }
@@ -205,9 +205,10 @@ final class CosmosGasPricedFeeScalingTests: XCTestCase {
     func testPlainTerraFeeAmountStaysFlatRegardlessOfRelayedLimit() throws {
         // Plain Terra (phoenix-1) pays a FLAT fee, not `gasLimit × price`, so a
         // relayed limit must move the signed gas_wanted but NOT the fee amount.
-        // TerraHelperStruct serves both Terra and Terra Classic; only Terra
-        // Classic re-derives. (Guards the `.terraClassic` gate and mirrors the
-        // pinned ChainHelperTests Terra hashes.)
+        // The signer echoes `gas` verbatim, and plain Terra's `gas` is the flat
+        // fee (never repriced by TerraClassicTax.baseGas), so a relayed limit
+        // leaves the amount unchanged. (Mirrors the pinned ChainHelperTests
+        // Terra hashes.)
         let meta = CoinMeta(chain: .terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "", contractAddress: "", isNativeToken: true)
         let coin = Coin(asset: meta, address: "terra1from", hexPublicKey: "02" + String(repeating: "0", count: 64))
         let gas: UInt64 = 7_500
