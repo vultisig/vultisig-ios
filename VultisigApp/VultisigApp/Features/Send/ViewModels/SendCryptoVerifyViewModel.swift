@@ -140,7 +140,14 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // Keep isLoading true across the async destination guard so Sign
             // stays disabled until the load-time validation fully settles —
             // otherwise Sign briefly re-enables while account_info is in flight.
-            await validateDestinationActivationIfNeeded()
+            try await validateDestinationActivationIfNeeded()
+            isLoading = false
+        } catch is CancellationError {
+            // The load pass was cancelled/superseded. Abort quietly — don't
+            // flag an error and don't mark the load complete; just release the
+            // transient flags. Cancellation propagates here instead of being
+            // swallowed mid-guard, so a cancelled load doesn't read as success.
+            isCalculatingFee = false
             isLoading = false
         } catch {
             print("DEBUG: Error calculating fee: \(error)")
@@ -160,14 +167,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// logic guards on the chain, so nothing hits the network) and for
     /// pre-built-payload flows; skipped when a balance error already owns the
     /// alert so the two guards don't stack.
-    private func validateDestinationActivationIfNeeded() async {
+    private func validateDestinationActivationIfNeeded() async throws {
         guard prebuiltKeysignPayload == nil, !hasBalanceError else { return }
         do {
             try await logic.validateDestinationIfNeeded(tx: transaction)
         } catch is CancellationError {
-            // The load pass was cancelled (screen tearing down) — leave the UI
-            // state untouched rather than flagging a spurious balance error.
-            return
+            // Propagate — a cancelled load must abort the whole load pass (its
+            // caller returns without running post-load work), not be swallowed
+            // here and not become a spurious balance error.
+            throw CancellationError()
         } catch {
             errorMessage = error.localizedDescription
             showAlert = true
