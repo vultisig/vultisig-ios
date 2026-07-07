@@ -8,10 +8,16 @@
 import Foundation
 
 enum RippleTransactionStatusAPI: TargetType {
-    case getTx(txHash: String)
+    /// The resolved XRPL host (override-aware) is baked in by the provider so
+    /// the status lookup uses the SAME host as broadcast/reads — a same-host
+    /// retry then stays on the user's configured node, not the default pool.
+    case getTx(txHash: String, host: URL)
 
     var baseURL: URL {
-        URL(string: "https://xrplcluster.com")!
+        switch self {
+        case .getTx(_, let host):
+            return host
+        }
     }
 
     var path: String {
@@ -24,7 +30,7 @@ enum RippleTransactionStatusAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .getTx(let txHash):
+        case .getTx(let txHash, _):
             // XRP Ledger JSON-RPC format
             let body: [String: Any] = [
                 "method": "tx",
