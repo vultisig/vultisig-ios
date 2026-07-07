@@ -87,6 +87,29 @@ final class RippleReserveFallbackTests: XCTestCase {
         XCTAssertEqual(client.serverStateCallCount, 1, "reserve values are a rare-vote constant — one fetch per TTL window")
     }
 
+    func testGetBalanceDoesNotCacheAllNilServerState() async throws {
+        // A server that is up but still syncing answers HTTP 200 with
+        // `validated_ledger == null`, so both reserve fields are nil. That
+        // fully-empty response must NOT be cached as authoritative for the 24h
+        // TTL — caching it would pin the seeds and never refetch, even after the
+        // node recovers. getBalance seeds this time and refetches next time.
+        let client = RippleScriptedHTTPClient()
+        client.accountInfoResult = .success(accountInfoJSON(balance: "10000000", ownerCount: 0))
+        client.serverStateResult = .success(Data("""
+        {"result":{"state":{"load_base":256,"load_factor":256,"validated_ledger":null}}}
+        """.utf8))
+        let service = makeService(client: client)
+
+        let first = try await service.getBalance(address: "rSender")
+        let second = try await service.getBalance(address: "rSender")
+
+        // 10 XRP − seed 1 XRP base reserve (ownerCount 0) = 9 XRP, both times.
+        XCTAssertEqual(first, "9000000")
+        XCTAssertEqual(second, "9000000")
+        XCTAssertEqual(client.serverStateCallCount, 2,
+                       "an all-nil server_state must not be cached — each refresh refetches until real values arrive")
+    }
+
     func testReserveValuesCacheIsScopedToResolvedHost() async throws {
         let client = RippleScriptedHTTPClient()
         client.accountInfoResult = .success(accountInfoJSON(balance: "10000000", ownerCount: 0))
@@ -170,7 +193,7 @@ private final class RippleScriptedHTTPClient: HTTPClientProtocol, @unchecked Sen
         case .serverState:
             queue.sync { _serverStateCalls += 1 }
             return try respond(serverStateResult)
-        case .submit:
+        case .submit, .tx:
             throw URLError(.unsupportedURL)
         }
     }

@@ -74,11 +74,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
     init(
         transaction: SendTransaction,
         interactor: SendInteractor = DefaultSendInteractor.live,
-        prebuiltKeysignPayload: KeysignPayload? = nil
+        prebuiltKeysignPayload: KeysignPayload? = nil,
+        rippleService: RippleService = .shared
     ) {
         self.transaction = transaction
         self.interactor = interactor
-        self.logic = SendCryptoVerifyLogic(interactor: interactor)
+        self.logic = SendCryptoVerifyLogic(interactor: interactor, rippleService: rippleService)
         self.prebuiltKeysignPayload = prebuiltKeysignPayload
     }
 
@@ -134,15 +135,52 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
 
             isCalculatingFee = false
-            isLoading = false
 
             validateBalanceWithFee()
+            // Keep isLoading true across the async destination guard so Sign
+            // stays disabled until the load-time validation fully settles —
+            // otherwise Sign briefly re-enables while account_info is in flight.
+            try await validateDestinationActivationIfNeeded()
+            isLoading = false
+        } catch is CancellationError {
+            // The load pass was cancelled/superseded. Abort quietly — don't
+            // flag an error and don't mark the load complete; just release the
+            // transient flags. Cancellation propagates here instead of being
+            // swallowed mid-guard, so a cancelled load doesn't read as success.
+            isCalculatingFee = false
+            isLoading = false
         } catch {
             print("DEBUG: Error calculating fee: \(error)")
             errorMessage = error.localizedDescription
             showAlert = true
             isCalculatingFee = false
             isLoading = false
+        }
+    }
+
+    /// Load-time destination-activation guard. XRPL rejects a Payment that
+    /// would create the destination account with less than the base reserve
+    /// (`tecNO_DST_INSUF_XRP`) — on-chain, after the ceremony, with the fee
+    /// burned. Run it in the same load pass as the amount/balance checks so an
+    /// unfunded sub-reserve destination shows the error and disables Sign on
+    /// load, not only when Sign is tapped. No-op for every non-XRP send (the
+    /// logic guards on the chain, so nothing hits the network) and for
+    /// pre-built-payload flows; skipped when a balance error already owns the
+    /// alert so the two guards don't stack.
+    private func validateDestinationActivationIfNeeded() async throws {
+        guard prebuiltKeysignPayload == nil, !hasBalanceError else { return }
+        do {
+            try await logic.validateDestinationIfNeeded(tx: transaction)
+        } catch is CancellationError {
+            // Propagate — a cancelled load must abort the whole load pass (its
+            // caller returns without running post-load work), not be swallowed
+            // here and not become a spurious balance error.
+            throw CancellationError()
+        } catch {
+            errorMessage = error.localizedDescription
+            showAlert = true
+            isAmountCorrect = false
+            hasBalanceError = true
         }
     }
 

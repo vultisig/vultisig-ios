@@ -266,12 +266,21 @@ final class DefiBalanceServiceTests: XCTestCase {
         return coin
     }
 
+    /// Enables the per-vault SOL staking opt-in, mirroring what
+    /// `DefiChainSelectPositionsScreen` persists on save.
+    private func enableSolanaStaking(for coin: Coin) {
+        vault.defiPositions = [
+            DefiPositions(chain: .solana, bonds: [], staking: [coin.toCoinMeta()], lps: [])
+        ]
+    }
+
     /// Staked SOL (summed delegated lamports written to `Coin.stakedBalance`)
-    /// rolls into the DeFi total ungated — like Tron, no per-coin opt-in.
+    /// rolls into the DeFi total once the staking position is opted in.
     func testSolanaTotalBalanceFiatReadsStakedNotWallet() throws {
         // 10 SOL wallet, 4 SOL delegated.
         let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "4000000000")
         vault.coins = [sol]
+        enableSolanaStaking(for: sol)
         try RateProvider.shared.save(rates: [
             Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
         ])
@@ -285,9 +294,24 @@ final class DefiBalanceServiceTests: XCTestCase {
         XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
     }
 
+    /// Without the per-vault staking opt-in the delegated balance must not
+    /// leak into the DeFi roll-up — the exact semantic the THOR/Maya/Cosmos
+    /// segments already have.
+    func testSolanaTotalBalanceAndCountZeroWithoutPositionOptIn() throws {
+        let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "4000000000")
+        vault.coins = [sol]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
+        ])
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
     func testSolanaTotalBalanceZeroWhenStakedBalanceUnset() throws {
         let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "")
         vault.coins = [sol]
+        enableSolanaStaking(for: sol)
         try RateProvider.shared.save(rates: [
             Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 3)
         ])
@@ -299,12 +323,14 @@ final class DefiBalanceServiceTests: XCTestCase {
     func testSolanaPositionCountOneWhenAnyStaked() {
         let sol = makeSolanaCoin(rawBalance: "0", stakedBalance: "1")
         vault.coins = [sol]
+        enableSolanaStaking(for: sol)
         XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 1)
     }
 
     func testSolanaPositionCountZeroWhenNoStake() {
         let sol = makeSolanaCoin(rawBalance: "10000000000", stakedBalance: "0")
         vault.coins = [sol]
+        enableSolanaStaking(for: sol)
         XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
     }
 

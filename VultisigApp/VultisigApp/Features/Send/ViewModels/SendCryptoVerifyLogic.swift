@@ -191,6 +191,12 @@ struct SendCryptoVerifyLogic {
                 address: tx.toAddress,
                 amountDrops: tx.amountInRaw
             )
+        } catch is CancellationError {
+            // A cancelled lookup (the screen is tearing down, or the load pass
+            // was superseded) must propagate as a cancel — never be rewrapped
+            // into a destination error that the load-time guard would surface
+            // as a spurious balance error.
+            throw CancellationError()
         } catch {
             // The Verify screen's alert plumbing presents only `HelperError`
             // (`error as? HelperError`), so rewrap — same convention as

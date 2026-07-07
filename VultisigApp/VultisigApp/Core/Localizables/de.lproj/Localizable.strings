@@ -1440,6 +1440,7 @@
 "wrongVaultSelectedDescription" = "Der von Ihnen ausgewählte Vault stimmt nicht mit der Keygen-Sitzung überein. Bitte wählen Sie den richtigen Vault aus.";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
 "x" = "x";
+"xrpDestinationLookupFailedError" = "Das XRP-Zielkonto konnte nicht überprüft werden (%@). Bitte versuchen Sie es erneut.";
 "xrpDestinationNotActivatedError" = "Die XRP-Zieladresse ist noch nicht aktiviert. Eine erste Überweisung an sie muss mindestens %@ XRP betragen (die Basisreserve des Netzwerks). Erhöhen Sie den Betrag oder überprüfen Sie die Adresse.";
 "yes" = "Ja";
 "yesterday" = "Gestern";

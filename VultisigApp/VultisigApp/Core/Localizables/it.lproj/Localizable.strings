@@ -1440,6 +1440,7 @@
 "wrongVaultSelectedDescription" = "Il Vault che hai selezionato non corrisponde alla sessione di keygen. Si prega di selezionare il Vault corretto.";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "Impossibile verificare l'account XRP di destinazione (%@). Riprova.";
 "xrpDestinationNotActivatedError" = "L'indirizzo XRP di destinazione non è ancora attivato. Un primo trasferimento deve essere di almeno %@ XRP (la riserva base della rete). Aumenta l'importo o verifica l'indirizzo.";
 "yes" = "Sì";
 "yesterday" = "Ieri";

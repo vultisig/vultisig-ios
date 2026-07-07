@@ -184,6 +184,39 @@ struct KeysignPayload: Codable, Hashable {
         )
     }
 
+    /// The address a swap ultimately delivers to, but only when the user
+    /// directed the output somewhere other than their own address on the
+    /// destination chain (the advanced-settings "external recipient"). `nil`
+    /// for the common case where funds return to the user's own address — there
+    /// is nothing meaningful to surface — and for swaps whose real output
+    /// target can't be recovered from the peer-visible payload.
+    ///
+    /// A swap confirmation must derive the destination here rather than show
+    /// `toAddress`: for a swap `toAddress` is the provider's router / inbound
+    /// contract, never a user-facing destination.
+    var swapExternalRecipient: String? {
+        guard let swapPayload else { return nil }
+
+        // THORChain / Maya bake the destination into the swap memo's DESTADDR
+        // field — the only provider family whose real output target is
+        // recoverable from the peer-visible payload today. Generic (1inch /
+        // Kyber / LiFi / Jupiter) bury it in opaque router calldata and never
+        // honor an external recipient; SwapKit's lives inside `txPayload`.
+        switch swapPayload {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            break
+        case .generic, .swapkit:
+            return nil
+        }
+
+        guard let memo,
+              let destination = SwapRecipientVerifier.memoDestination(from: memo),
+              !SwapRecipientVerifier.addressesMatch(destination, swapPayload.toCoin.address) else {
+            return nil
+        }
+        return destination
+    }
+
     var signAmino: SignAmino? {
         guard case let .signAmino(amino) = signData else {
             return nil
