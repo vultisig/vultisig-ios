@@ -423,7 +423,7 @@ enum RippleSendError: Error, LocalizedError {
         case .destinationNotActivated(let minimumXRP):
             return String(format: "xrpDestinationNotActivatedError".localized, minimumXRP)
         case .destinationLookupFailed(let code):
-            return "XRP destination lookup failed (\(code))"
+            return String(format: "xrpDestinationLookupFailedError".localized, code)
         }
     }
 }

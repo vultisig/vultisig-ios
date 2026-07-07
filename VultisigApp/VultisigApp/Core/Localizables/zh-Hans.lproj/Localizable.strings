@@ -1440,6 +1440,7 @@
 "wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
+"xrpDestinationLookupFailedError" = "无法验证目标 XRP 账户 (%@)。请重试。";
 "xrpDestinationNotActivatedError" = "目标 XRP 地址尚未激活。首次向其转账必须至少为 %@ XRP（网络基础准备金）。请增加金额或核对地址。";
 "yes" = "是";
 "yesterday" = "昨天";
