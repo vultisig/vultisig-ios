@@ -15,12 +15,6 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-hel
 
 enum RippleHelper {
 
-    /*
-     https://xrpl.org/docs/concepts/accounts/reserves
-     Ripple deletes your account if less than 1 XRP
-     */
-    static let defaultExistentialDeposit: BigInt = pow(10, 6).description.toBigInt() // 1 XRP
-
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // For XRP swaps, we use the same logic as regular transactions but with swap memo
         return try getPreSignedInputData(keysignPayload: keysignPayload)

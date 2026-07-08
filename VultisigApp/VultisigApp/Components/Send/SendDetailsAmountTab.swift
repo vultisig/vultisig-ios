@@ -39,6 +39,10 @@ struct SendDetailsAmountTab: View {
                     errorText
                 }
 
+                if let reserveWarning = viewModel.destinationReserveWarning {
+                    reserveWarningText(reserveWarning)
+                }
+
                 percentageButtons
                 balanceSection
                 additionalOptionsSection
@@ -125,6 +129,16 @@ struct SendDetailsAmountTab: View {
 
     var errorText: some View {
         Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: ""))
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.alertWarning)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // Inline early-feedback warning for a native XRP send to an unfunded
+    // destination below the base reserve. The message is already localized and
+    // formatted by the VM, so render it directly (not via NSLocalizedString).
+    func reserveWarningText(_ message: String) -> some View {
+        Text(message)
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)

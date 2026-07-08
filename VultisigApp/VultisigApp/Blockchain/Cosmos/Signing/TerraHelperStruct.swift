@@ -29,30 +29,14 @@ struct TerraHelperStruct {
         // they must resolve to the identical limit.
         let effectiveGasLimit = relayedGasLimit ?? GasLimit
 
-        // Re-derive the fee AMOUNT from the same effectiveGasLimit that gets
-        // signed. Terra Classic prices its fee as `gasLimit × price (+ burn
-        // tax)` (`TerraClassicTax.baseGas`), so the static `gas` amount in
-        // chainSpecific is priced for the static 300k limit; when a relayed
-        // simulated limit is honored above 300k the amount must scale with it, or
-        // the signed fee undershoots Terra Classic's `fee >= gas_wanted × price
-        // (+ tax)` ante check ("insufficient fee"). Byte-identical to
-        // `String(gas)` when no limit is relayed (effectiveGasLimit == 300k), so
-        // the non-simulated path is unchanged.
-        //
-        // Plain Terra (phoenix-1) is NOT priced this way — it pays a flat fee
-        // comfortably above its minimum gas price — so its amount stays the
-        // static `gas` value, keeping the signed bytes unchanged for it.
-        let feeAmount: String
-        if chain == .terraClassic {
-            feeAmount = String(TerraClassicTax.scaledSendFee(
-                staticFee: gas,
-                contractAddress: keysignPayload.coin.contractAddress,
-                isNativeToken: keysignPayload.coin.isNativeToken,
-                gasLimit: effectiveGasLimit
-            ))
-        } else {
-            feeAmount = String(gas)
-        }
+        // `gas` already carries the fee AMOUNT priced for the same
+        // effectiveGasLimit that gets signed: Terra Classic prices its fee as
+        // `gasLimit × price (+ burn tax)`, and the initiator pins the base to the
+        // effective (relayed dynamic, else 300k) limit up front
+        // (`TerraClassicTax.baseGas` in BlockChainService). Plain Terra
+        // (phoenix-1) pays a flat fee. Either way the signed amount is `gas`
+        // verbatim, matching the fee shown on the Verify screen.
+        let feeAmount = String(gas)
 
         if
             let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),

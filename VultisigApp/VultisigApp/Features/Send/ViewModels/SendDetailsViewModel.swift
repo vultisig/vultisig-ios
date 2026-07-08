@@ -33,6 +33,7 @@ final class SendDetailsViewModel {
     @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
+    @ObservationIgnored private let rippleService: RippleService
 
     // MARK: - Identity (immutable once set)
     let vault: Vault
@@ -93,6 +94,15 @@ final class SendDetailsViewModel {
     var showAddressAlert: Bool = false
     var showAmountAlert: Bool = false
 
+    /// Inline, non-blocking-while-typing warning shown under the amount field
+    /// when a native XRP send targets an unfunded destination for less than
+    /// the live base reserve. Kept separate from the sync alert-style
+    /// `errorMessage` so the async, self-clearing check can't race the
+    /// synchronous validators. Holds already-formatted copy (render directly,
+    /// not through `NSLocalizedString`). Complements — never replaces — the
+    /// Verify-screen guard, which stays the fail-closed backstop.
+    var destinationReserveWarning: String? = nil
+
     // MARK: - Address-resolution + form-validity flags
 
     /// Whether the most recent `validateToAddress()` succeeded. Mirrors
@@ -112,6 +122,7 @@ final class SendDetailsViewModel {
 
     // MARK: - Cancellation
     @ObservationIgnored private var addressResolutionTask: Task<Void, Never>?
+    @ObservationIgnored private var reserveCheckTask: Task<Void, Never>?
 
     /// Background fee refine for the native-coin Max path. Exposed so the UI
     /// (and tests) can observe / await the optimistic-fill → refine settle.
@@ -125,7 +136,8 @@ final class SendDetailsViewModel {
         hasPreselectedCoin: Bool = false,
         interactor: SendInteractor = DefaultSendInteractor.live,
         addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
-        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil,
+        rippleService: RippleService = .shared
     ) {
         self.coin = coin
         self.vault = vault
@@ -134,6 +146,7 @@ final class SendDetailsViewModel {
         self.interactor = interactor
         self.addressResolver = addressResolver
         self.rippleTag = RippleDestinationTagViewModel(requirementProvider: destinationTagRequirementProvider)
+        self.rippleService = rippleService
     }
 
     func hydrate(from seed: SendDetailsSeed) {
@@ -625,6 +638,112 @@ final class SendDetailsViewModel {
         }
     }
 
+    // MARK: - Destination base-reserve (XRP inline check)
+
+    /// Preconditions for the inline XRP base-reserve check: native XRP, a
+    /// well-formed destination address, and a non-zero amount entered — the
+    /// issue's "only when the address is resolved AND an amount is entered".
+    /// Gating on the current address's format validity (a pure, side-effect-free
+    /// check) rather than the UI's `addressSetupDone` flag keeps the lookup from
+    /// firing against a stale/half-typed destination while the address resolver
+    /// is still in flight.
+    private var shouldCheckDestinationReserve: Bool {
+        coin.chain == .ripple
+            && coin.isNativeToken
+            && !toAddress.isEmpty
+            && AddressService.validateAddress(address: toAddress, chain: coin.chain)
+            && !amount.isEmpty
+            && !amountDecimal.isZero
+    }
+
+    /// Debounced inline base-reserve check for native XRP sends to unfunded
+    /// destinations. Cancels any in-flight check; clears the warning
+    /// synchronously when the preconditions don't hold; otherwise schedules
+    /// the lookup after a short debounce (shorter than the 1s address resolver
+    /// since amount typing is faster — the per-address funding verdict is
+    /// cached in `RippleService`, so amount edits don't re-hit the node).
+    func debouncedValidateDestinationReserve() {
+        reserveCheckTask?.cancel()
+        guard shouldCheckDestinationReserve else {
+            destinationReserveWarning = nil
+            return
+        }
+        reserveCheckTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(0.5))
+            guard let self, !Task.isCancelled else { return }
+            await self.updateDestinationReserveWarning()
+        }
+    }
+
+    /// While-typing entry point: runs the check only when the preconditions
+    /// hold, updating `destinationReserveWarning`.
+    func updateDestinationReserveWarning() async {
+        guard shouldCheckDestinationReserve else {
+            destinationReserveWarning = nil
+            return
+        }
+        // While-typing feedback tolerates the cached funding verdict.
+        _ = await runDestinationReserveCheck(forceRefresh: false)
+    }
+
+    /// Runs the reserve check for the current destination + amount and updates
+    /// `destinationReserveWarning`. Reuses the same copy the Verify guard would
+    /// present. Fails open: `.unknown` clears the warning (the Verify guard is
+    /// the fail-closed backstop). Returns the verdict so `validateForm()` can
+    /// block Continue on a genuine shortfall.
+    @discardableResult
+    private func runDestinationReserveCheck(forceRefresh: Bool) async -> RippleReserveCheck {
+        // Snapshot the inputs so a result that arrives after the form moved on
+        // (a newer amount/address, a chain switch, or a reset/cancel while the
+        // lookup was in flight) can't write a stale warning. The verdict is
+        // still returned for the Continue-path block decision, which is
+        // computed from these same inputs.
+        let address = toAddress
+        let amountDrops = amountInRaw
+        let chain = coin.chain
+
+        let check = await rippleService.destinationReserveShortfall(
+            address: address,
+            amountDrops: amountDrops,
+            forceRefresh: forceRefresh
+        )
+
+        guard !Task.isCancelled,
+              toAddress == address,
+              amountInRaw == amountDrops,
+              coin.chain == chain else {
+            return check
+        }
+
+        switch check {
+        case .belowMinimum(let minimumXRP):
+            destinationReserveWarning = String(format: "xrpDestinationNotActivatedError".localized, minimumXRP)
+        case .satisfied, .unknown:
+            destinationReserveWarning = nil
+        }
+        return check
+    }
+
+    /// Continue-time rule: block a native XRP send that is definitively below
+    /// the destination's base reserve — the same threshold the Verify guard
+    /// enforces, surfaced one screen earlier. Address resolution and a non-zero
+    /// amount are already guaranteed by the preceding rules, so this doesn't
+    /// re-gate on `addressSetupDone`. Fails open on `.unknown` (a node outage
+    /// never bricks the form — the Verify guard blocks there instead).
+    func validateDestinationReserve() async -> Bool {
+        guard coin.chain == .ripple, coin.isNativeToken,
+              !toAddress.isEmpty, !amountDecimal.isZero else {
+            return true
+        }
+        // Force a live lookup so the block decision always matches the Verify
+        // guard (a destination funded mid-session must not stay blocked on a
+        // cached `.unfunded` verdict).
+        if case .belowMinimum = await runDestinationReserveCheck(forceRefresh: true) {
+            return false
+        }
+        return true
+    }
+
     // MARK: - Mediator lifecycle
 
     /// Stops the keysign Mediator service when leaving the Send flow.
@@ -697,11 +816,13 @@ final class SendDetailsViewModel {
             return false
         }
 
-        // Existential-deposit guard for ED-bearing chains (DOT/XRP) that reap
+        // Existential-deposit guard for ED-bearing chains (DOT) that reap
         // the *sender*. Block here — before the keysign ceremony — rather than
         // letting `transfer_keep_alive` fail on-chain with the fee already
         // charged. Skipped for non-native tokens (ED applies to the native
-        // account, not token transfers).
+        // account, not token transfers). Inert for XRP: its rawBalance is
+        // already reserve-net, so the amount-exceeded check is the reserve
+        // guard and a remainder below 1 XRP spendable is valid on-chain.
         if coin.isNativeToken {
             if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: fee) {
                 setAmountError(message: "belowExistentialDepositError".localized)
@@ -805,7 +926,8 @@ final class SendDetailsViewModel {
         guard await validateAddressResolved() else { return false }
         guard validateRippleTagAndMemo() else { return false }
         guard await validateRippleRequireDest() else { return false }
-        return validateBalance()
+        guard validateBalance() else { return false }
+        return await validateDestinationReserve()
     }
 
     // MARK: - Hand-off
@@ -878,6 +1000,9 @@ final class SendDetailsViewModel {
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
     func reset(to newCoin: Coin) {
+        reserveCheckTask?.cancel()
+        reserveCheckTask = nil
+        destinationReserveWarning = nil
         coin = newCoin
         fromAddress = newCoin.address
         toAddress = ""

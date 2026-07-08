@@ -14,9 +14,14 @@ struct SendCryptoVerifyLogic {
     // MARK: - Dependencies
 
     let interactor: SendInteractor
+    private let rippleService: RippleService
 
-    init(interactor: SendInteractor = DefaultSendInteractor.live) {
+    init(
+        interactor: SendInteractor = DefaultSendInteractor.live,
+        rippleService: RippleService = .shared
+    ) {
         self.interactor = interactor
+        self.rippleService = rippleService
     }
 
     // MARK: - Fee Calculation
@@ -102,8 +107,10 @@ struct SendCryptoVerifyLogic {
             }
 
             // Existential-deposit guard for chains that reap the *sender*
-            // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
+            // (DOT). It signs `transfer_keep_alive`, which fails on-chain
             // after the ceremony if the send would drop the sender below ED.
+            // Inert for XRP: its rawBalance is already reserve-net, so the
+            // balance checks above are the reserve guard.
             if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
                 return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }
@@ -168,6 +175,34 @@ struct SendCryptoVerifyLogic {
 
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
+    }
+
+    // MARK: - Destination Validation
+
+    /// XRPL rejects a Payment that would create the destination account with
+    /// less than the base reserve (`tecNO_DST_INSUF_XRP`) — on-chain, after
+    /// the keysign ceremony, with the fee burned. Gate it here so the failure
+    /// surfaces before signing starts; no-op for every other chain. Matches
+    /// the guard the SDK and Android run at submit time.
+    func validateDestinationIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple, tx.coin.isNativeToken else { return }
+        do {
+            try await rippleService.validateDestinationActivation(
+                address: tx.toAddress,
+                amountDrops: tx.amountInRaw
+            )
+        } catch is CancellationError {
+            // A cancelled lookup (the screen is tearing down, or the load pass
+            // was superseded) must propagate as a cancel — never be rewrapped
+            // into a destination error that the load-time guard would surface
+            // as a spurious balance error.
+            throw CancellationError()
+        } catch {
+            // The Verify screen's alert plumbing presents only `HelperError`
+            // (`error as? HelperError`), so rewrap — same convention as
+            // `buildKeysignPayload` — or the guard would block silently.
+            throw HelperError.runtimeError(error.localizedDescription)
+        }
     }
 
     // MARK: - Keysign Payload
