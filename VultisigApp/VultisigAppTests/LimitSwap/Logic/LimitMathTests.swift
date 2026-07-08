@@ -145,6 +145,38 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(0))
     }
 
+    // MARK: - computeLim — negative inputs MUST fail loud (fund-safety)
+
+    func testComputeLimNegativeSourceAmountThrows() {
+        // A negative source amount would produce a NEGATIVE LIM that slips past
+        // the `lim <= 0` underflow guard (which requires both inputs positive).
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: BigInt(-100_000_000), sourceDecimals: 8, targetPrice: 16)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
+    func testComputeLimNegativeTargetPriceThrows() {
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: -16)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
+    func testComputeLimNegativeBothInputsThrows() {
+        XCTAssertThrowsError(
+            try computeLim(
+                sourceAmount: BigInt(-100_000_000),
+                sourceDecimals: 8,
+                targetPrice: Decimal(string: "-0.5")!
+            )
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
     // MARK: - limitOrderExpectedOutput (Verify / Done display amount)
 
     func testLimitOrderExpectedOutputForOneBtcAt16() {

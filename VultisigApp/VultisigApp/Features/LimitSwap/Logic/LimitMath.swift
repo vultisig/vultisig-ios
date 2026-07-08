@@ -17,6 +17,19 @@ import Foundation
 /// `LimitSwapMemoError.targetPriceOverflow` instead so the place-order flow
 /// surfaces the error rather than placing a price-blind swap.
 func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal) throws -> BigInt {
+    // Reject NEGATIVE inputs up-front. A negative source amount or target price
+    // produces a NEGATIVE LIM that sails straight past the `lim <= 0` underflow
+    // guard below (which only fires when BOTH inputs are strictly positive), so
+    // THORChain would receive a nonsensical negative minimum-out — a fund-safety
+    // hazard from the invalid-input side, mirroring the overflow/underflow
+    // guards. A zero source amount stays a separate upstream precondition
+    // (rejected by `validateLimitSwapInputs`) and still returns 0 without
+    // throwing, so callers that display an expected output before the user has
+    // typed an amount are unaffected.
+    guard sourceAmount >= 0, targetPrice >= 0 else {
+        throw LimitSwapMemoError.limitAmountTooSmall
+    }
+
     var price = targetPrice
     var scaled = Decimal()
     NSDecimalMultiplyByPowerOf10(&scaled, &price, 8, .plain)
