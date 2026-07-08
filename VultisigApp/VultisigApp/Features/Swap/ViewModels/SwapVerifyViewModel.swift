@@ -170,6 +170,14 @@ final class SwapVerifyViewModel {
             // is pre-built on the entry screen. Everything else (route to
             // pair → keysign → done) is shared with the market path.
             if let limitContext = transaction.limitContext {
+                // HIGH tier: run the same recipient safety-net the market path
+                // runs in `DefaultSwapInteractor.buildSwapKeysignPayload`, which
+                // the direct limit builder would otherwise skip. Limit orders
+                // never set an external recipient today, so this is a defensive
+                // no-op — but it keeps the limit deposit on the same fund-safety
+                // gate and fails closed if a future change ever attaches an
+                // external recipient without a verifiable output target.
+                try SwapRecipientVerifier.verify(transaction: transaction)
                 return try await buildLimitSwapKeysignPayload(
                     sourceCoin: transaction.fromCoin,
                     targetCoin: transaction.toCoin,
