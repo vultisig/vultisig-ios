@@ -28,8 +28,19 @@ enum LimitSwapAssemblyError: Error, Equatable {
 /// **Implementation detail:** `BlockChainService.fetchSwapBlockChainSpecific`
 /// is the granular swap-shaped fetch on main (post-refactor PR #4332).
 /// Passing `quote: nil` matches the limit-order shape (no market quote
-/// exists) and `estimateSwapGasLimit` short-circuits to `nil` for that
-/// case, so the downstream call never touches `fromAmount`.
+/// exists) so the downstream call never touches `fromAmount`.
+///
+/// **Native-EVM gas limit (signing-path, maintainer-review):** with `quote:
+/// nil`, `estimateSwapGasLimit` returns `nil` and `fetchSwapBlockChainSpecific`
+/// falls back to `normalizeGasLimit(.swap)` = `defaultETHSwapGasUnit` (600000).
+/// The MARKET native-EVM THORChain deposit — the byte-identical operation, only
+/// the memo prefix differs (`=>` vs `=<`) — instead uses
+/// `defaultERC20TransferGasUnit` (120000) via `estimateSwapGasLimit(.thorchain)`.
+/// We align the limit deposit to that same 120000 (`limitDepositChainSpecific`)
+/// so the two paths gas the identical deposit identically and the limit path
+/// doesn't over-reserve 5× the fee headroom. This changes ONLY the EVM gas-limit
+/// field (via `overridingEVMGasLimit`); maxFeePerGas / priority / nonce are
+/// untouched. It is a no-op for non-EVM and token sources.
 ///
 /// **Phase 1 scope:** native source coins only. ERC20 sources require an
 /// approval-keysign-first flow that's deferred to Phase 2.
@@ -90,12 +101,13 @@ func buildLimitSwapKeysignPayload(
         }
     }
 
-    let chainSpecific = try await BlockChainService.shared.fetchSwapBlockChainSpecific(
+    let fetchedSpecific = try await BlockChainService.shared.fetchSwapBlockChainSpecific(
         fromCoin: sourceCoin,
         toCoin: targetCoin,
         fromAmount: sourceCoin.decimal(for: sourceAmount),
         quote: nil
     )
+    let chainSpecific = limitDepositChainSpecific(fetchedSpecific, sourceCoin: sourceCoin)
 
     let factory = KeysignPayloadFactory()
     return try await factory.buildTransfer(
@@ -108,6 +120,22 @@ func buildLimitSwapKeysignPayload(
         approvePayload: nil,
         vault: vault
     )
+}
+
+/// Aligns a native-EVM limit deposit's gas limit with the market native-EVM
+/// THORChain deposit (`estimateSwapGasLimit(.thorchain)` = 120000). See the long
+/// comment on `buildLimitSwapKeysignPayload` for the full rationale + the
+/// signing-path maintainer-review flag.
+///
+/// Pure so the gas-limit decision is unit-testable without a network fetch.
+/// Changes ONLY the EVM gas-limit field (via `overridingEVMGasLimit`); a no-op
+/// for non-EVM chains and for non-native (token) EVM sources — token sources are
+/// Phase 2 and never reach here.
+func limitDepositChainSpecific(_ specific: BlockChainSpecific, sourceCoin: Coin) -> BlockChainSpecific {
+    guard sourceCoin.chainType == .EVM, sourceCoin.isNativeToken else {
+        return specific
+    }
+    return specific.overridingEVMGasLimit(BigInt(EVMHelper.defaultERC20TransferGasUnit))
 }
 
 /// Maps an iOS `Chain` to the THORChain inbound-address `chain` field.
