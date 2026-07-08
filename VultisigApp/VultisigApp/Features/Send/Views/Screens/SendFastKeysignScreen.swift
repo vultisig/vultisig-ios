@@ -20,7 +20,7 @@ struct SendFastKeysignScreen: View {
     let tx: SendTransaction
     let retrySignal: SendRetrySignal
     let fastVaultPassword: String
-    @StateObject var viewModel = SendKeysignViewModel()
+    @StateObject private var viewModel = SendKeysignViewModel()
     /// The payload the bootstrap actually signed. It can differ from the
     /// route's `keysignPayload` (e.g. Solana blockhash refresh), so the
     /// done screen shows the signed payload, matching the paired path.

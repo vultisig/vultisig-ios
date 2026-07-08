@@ -19,7 +19,7 @@ struct SwapFastKeysignScreen: View {
     let transaction: SwapTransaction
     let retrySignal: SwapRetrySignal
     let fastVaultPassword: String
-    @State var viewModel: SwapKeysignViewModel
+    @State private var viewModel: SwapKeysignViewModel
 
     init(
         vault: Vault,
