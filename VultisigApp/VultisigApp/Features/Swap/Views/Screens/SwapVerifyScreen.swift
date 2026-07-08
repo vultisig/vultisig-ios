@@ -301,13 +301,28 @@ struct SwapVerifyScreen: View {
             }
             if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
-                    router.navigate(to: SwapRoute.pair(
-                        vaultPubKeyECDSA: vault.pubKeyECDSA,
-                        transaction: currentTransaction,
-                        retrySignal: retrySignal,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    ))
+                    // Fast vaults sign server-side with no peer to pair with,
+                    // so route straight into keysign (the bootstrap runs there)
+                    // and skip the pairing screen. A present fast password is
+                    // the fast-sign signal; an empty one means paired-sign,
+                    // which keeps the QR pairing screen.
+                    if let fastPassword = fastVaultPassword.nilIfEmpty {
+                        router.navigate(to: SwapRoute.fastKeysign(
+                            vaultPubKeyECDSA: vault.pubKeyECDSA,
+                            keysignPayload: payload,
+                            transaction: currentTransaction,
+                            retrySignal: retrySignal,
+                            fastVaultPassword: fastPassword
+                        ))
+                    } else {
+                        router.navigate(to: SwapRoute.pair(
+                            vaultPubKeyECDSA: vault.pubKeyECDSA,
+                            transaction: currentTransaction,
+                            retrySignal: retrySignal,
+                            keysignPayload: payload,
+                            fastVaultPassword: nil
+                        ))
+                    }
                 }
             }
             await MainActor.run { signButtonDisabled = false }

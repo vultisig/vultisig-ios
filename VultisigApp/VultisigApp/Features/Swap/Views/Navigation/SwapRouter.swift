@@ -32,6 +32,16 @@ struct SwapRouter {
                     fastVaultPassword: fastVaultPassword
                 )
             }
+        case .fastKeysign(let vaultPubKeyECDSA, let keysignPayload, let transaction, let retrySignal, let fastVaultPassword):
+            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
+                buildFastKeysignScreen(
+                    vault: vault,
+                    keysignPayload: keysignPayload,
+                    transaction: transaction,
+                    retrySignal: retrySignal,
+                    fastVaultPassword: fastVaultPassword
+                )
+            }
         case .keysign(let input, let transaction, let retrySignal):
             buildKeysignScreen(input: input, transaction: transaction, retrySignal: retrySignal)
         case .done(let vaultPubKeyECDSA, let hash, let approveHash, let chain, let transaction, let progressLink):
@@ -71,6 +81,23 @@ struct SwapRouter {
             transaction: transaction,
             retrySignal: retrySignal,
             keysignPayload: keysignPayload,
+            fastVaultPassword: fastVaultPassword
+        )
+    }
+
+    @ViewBuilder
+    func buildFastKeysignScreen(
+        vault: Vault,
+        keysignPayload: KeysignPayload,
+        transaction: SwapTransaction,
+        retrySignal: SwapRetrySignal,
+        fastVaultPassword: String
+    ) -> some View {
+        SwapFastKeysignScreen(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            transaction: transaction,
+            retrySignal: retrySignal,
             fastVaultPassword: fastVaultPassword
         )
     }

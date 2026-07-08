@@ -12,6 +12,7 @@ enum SwapRoute: Hashable {
     case root(fromCoinID: String?, toCoinID: String?, vaultPubKeyECDSA: String)
     case verify(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vaultPubKeyECDSA: String)
     case pair(vaultPubKeyECDSA: String, transaction: SwapTransaction, retrySignal: SwapRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
+    case fastKeysign(vaultPubKeyECDSA: String, keysignPayload: KeysignPayload, transaction: SwapTransaction, retrySignal: SwapRetrySignal, fastVaultPassword: String)
     case keysign(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal)
     case done(vaultPubKeyECDSA: String, hash: String, approveHash: String?, chain: Chain, transaction: SwapTransaction, progressLink: String?)
 }
