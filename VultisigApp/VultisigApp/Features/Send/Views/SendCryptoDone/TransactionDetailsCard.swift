@@ -14,17 +14,27 @@ import SwiftUI
 
 struct TransactionDetailsCard: View {
     @Environment(\.router) var router
-    @Environment(\.modelContext) var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+
+    @Query private var addressBookItems: [AddressBookItem]
 
     let input: TransactionDonePayload
 
-    @State private var navigateToAddressBook = false
-    @State private var canShowAddressBook: Bool = false
-    @State private var addressCountBeforeNavigation: Int = 0
-
+    /// Show the "add to address book" button only for sends to a
+    /// destination that isn't already a vault (`toAlias == nil`) and isn't
+    /// yet in the address book. Backed by a live `@Query`, so when
+    /// `AddAddressBookScreen` saves the entry into the same `modelContext`
+    /// the query updates reactively and the button hides on return — no
+    /// manual count polling or app restart needed.
     private var showAddressBookButton: Bool {
-        input.isSend && canShowAddressBook
+        guard input.isSend, input.toAlias == nil else { return false }
+        let destinationChainType = AddressBookChainType(coinMeta: input.coin.toCoinMeta())
+        let normalizedAddress = input.toAddress.lowercased()
+        let isInAddressBook = addressBookItems.contains {
+            $0.address.lowercased() == normalizedAddress &&
+            AddressBookChainType(coinMeta: $0.coinMeta) == destinationChainType
+        }
+        return !isInAddressBook
     }
 
     var body: some View {
@@ -84,40 +94,6 @@ struct TransactionDetailsCard: View {
                 }
             }
         }
-        .onLoad {
-            let address = input.toAddress.lowercased()
-            let coinChainType = AddressBookChainType(coinMeta: input.coin.toCoinMeta())
-            let allItemsDescriptor = FetchDescriptor<AddressBookItem>()
-            let allItems = try? modelContext.fetch(allItemsDescriptor)
-            let isInAddressBook = allItems?.contains {
-                $0.address.lowercased() == address &&
-                AddressBookChainType(coinMeta: $0.coinMeta) == coinChainType
-            } ?? false
-
-            // Suppress "add to address book" if destination belongs to any vault or is already in address book
-            canShowAddressBook = !isInAddressBook && input.toAlias == nil
-        }
-        .onChange(of: navigateToAddressBook) { _, shouldNavigate in
-            if shouldNavigate {
-                // Store address count before navigation
-                let allAddressesDescriptor = FetchDescriptor<AddressBookItem>()
-                addressCountBeforeNavigation = (try? modelContext.fetch(allAddressesDescriptor).count) ?? 0
-
-                router.navigate(to: SettingsRoute.addAddressBook(
-                    address: input.toAddress,
-                    chain: .init(coinMeta: input.coin.toCoinMeta())
-                ))
-                navigateToAddressBook = false
-            } else if addressCountBeforeNavigation > 0 {
-                // Check if address was added when returning from navigation
-                let allAddressesDescriptor = FetchDescriptor<AddressBookItem>()
-                let currentCount = (try? modelContext.fetch(allAddressesDescriptor).count) ?? 0
-                if currentCount > addressCountBeforeNavigation {
-                    appViewModel.restart()
-                    addressCountBeforeNavigation = 0
-                }
-            }
-        }
     }
 
     private var separator: some View {
@@ -127,7 +103,10 @@ struct TransactionDetailsCard: View {
 
     private var addToAddressBookButton: some View {
         Button {
-            navigateToAddressBook = true
+            router.navigate(to: SettingsRoute.addAddressBook(
+                address: input.toAddress,
+                chain: .init(coinMeta: input.coin.toCoinMeta())
+            ))
         } label: {
             HStack(spacing: 6) {
                 Icon(named: "plus", color: Theme.colors.alertSuccess, size: 16)
