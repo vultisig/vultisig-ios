@@ -653,6 +653,8 @@
 "limitSwap.executeWhen" = "Izvrši kada";
 "limitSwap.executeWhen.headerIsWorth" = "vrijedi";
 "limitSwap.executeWhen.headerWhenOne" = "Kada 1";
+"limitSwap.executeWhen.marketReference" = "Tržište %@";
+"limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Istek";
 "limitSwap.expiry.12h" = "12h";
 "limitSwap.expiry.24h" = "24h";

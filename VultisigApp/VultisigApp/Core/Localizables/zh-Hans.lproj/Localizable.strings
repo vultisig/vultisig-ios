@@ -653,6 +653,8 @@
 "limitSwap.executeWhen" = "执行条件";
 "limitSwap.executeWhen.headerIsWorth" = "价值达到";
 "limitSwap.executeWhen.headerWhenOne" = "当 1";
+"limitSwap.executeWhen.marketReference" = "市场 %@";
+"limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "到期";
 "limitSwap.expiry.12h" = "12h";
 "limitSwap.expiry.24h" = "24h";

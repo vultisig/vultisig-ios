@@ -653,6 +653,8 @@
 "limitSwap.executeWhen" = "Ausführen wenn";
 "limitSwap.executeWhen.headerIsWorth" = "wert ist";
 "limitSwap.executeWhen.headerWhenOne" = "Wenn 1";
+"limitSwap.executeWhen.marketReference" = "Markt %@";
+"limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Ablauf";
 "limitSwap.expiry.12h" = "12h";
 "limitSwap.expiry.24h" = "24h";
