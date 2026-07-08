@@ -71,13 +71,15 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
     }
 
     /// Interpret a `/thorchain/mimir/key/<KEY>` response body. THORChain returns
-    /// the value as a bare integer; only `1` means ENABLED. Anything else — `0`,
-    /// `2` (market-only), `-1` (unset), quotes, surrounding whitespace, empty or
-    /// unparseable bodies — fails CLOSED. Pure + static so it is unit-testable
-    /// without a network round-trip.
+    /// the value as a **bare integer** (verified: the endpoint responds `1`, not
+    /// `"1"`). Only an exact `1` — after trimming surrounding whitespace/newlines
+    /// — means ENABLED. Everything else fails CLOSED: `0`, `2` (market-only),
+    /// `-1` (unset), a quoted `"1"`, `Int`-lenient variants (`+1`, `01`), decimals
+    /// (`1.0`), empty, or unparseable. Deliberately NOT `Int`-parsed: on a HIGH-
+    /// tier availability gate an over-broad accept set is worse than a rare
+    /// false-block. Pure + static so it is unit-testable without a round-trip.
     static func parseMimirEnabled(_ data: Data) -> Bool {
         guard let raw = String(data: data, encoding: .utf8) else { return false }
-        let trimmed = raw.trimmingCharacters(in: CharacterSet(charactersIn: " \n\r\t\"'"))
-        return Int(trimmed) == 1
+        return raw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
     }
 }

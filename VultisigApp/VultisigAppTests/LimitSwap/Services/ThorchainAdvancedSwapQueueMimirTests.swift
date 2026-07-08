@@ -24,9 +24,19 @@ final class ThorchainAdvancedSwapQueueMimirTests: XCTestCase {
         XCTAssertTrue(parse("\t1\r\n"))
     }
 
-    func testEnabledToleratesQuotedValue() {
-        // Defensive: a proxy that JSON-stringifies the value must not false-block.
-        XCTAssertTrue(parse("\"1\""))
+    func testDisabledWhenValueIsQuoted() {
+        // The real endpoint returns a bare `1`, never `"1"`. A quoted value is an
+        // unexpected shape, so fail CLOSED rather than accept it.
+        XCTAssertFalse(parse("\"1\""))
+        XCTAssertFalse(parse("'1'"))
+    }
+
+    func testDisabledForIntLenientVariants() {
+        // Must not accept `Int`-parse-equivalent forms of 1.
+        XCTAssertFalse(parse("+1"))
+        XCTAssertFalse(parse("01"))
+        XCTAssertFalse(parse("1 1"))
+        XCTAssertFalse(parse("1.0"))
     }
 
     func testDisabledWhenBodyIsZero() {
