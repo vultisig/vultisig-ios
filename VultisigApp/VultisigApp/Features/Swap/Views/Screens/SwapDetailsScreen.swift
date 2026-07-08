@@ -14,8 +14,10 @@ struct SwapDetailsScreen: View {
     @StateObject private var referredViewModel = ReferredViewModel()
     @StateObject private var keyboardObserver = KeyboardObserver()
 
-    @State private var buttonRotated = false
     @State private var showErrorTooltip = false
+    /// Limit-mode quote-refresh countdown, surfaced from the limit body via
+    /// `LimitQuoteCountdownKey` so the shared tab-row badge can render it.
+    @State private var limitQuoteCountdown: Int?
     /// Local Market/Limit tab state. The Limit branch lives entirely
     /// inside `LimitSwapModeBody` (which owns its own form view model and
     /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
@@ -33,11 +35,15 @@ struct SwapDetailsScreen: View {
         @Bindable var vm = detailsViewModel
         Screen {
             VStack(alignment: .leading, spacing: 16) {
-                swapModeTabs
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .fixedSize()
-                    .showIf(settingsViewModel.limitSwapEnabled)
+                HStack(spacing: 8) {
+                    swapModeTabs
+                        .fixedSize()
+                    Spacer(minLength: 8)
+                    tabRowCountdown
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .showIf(settingsViewModel.limitSwapEnabled)
 
                 switch selectedSwapMode {
                 case .market:
@@ -56,6 +62,9 @@ struct SwapDetailsScreen: View {
             }
         }
         .screenTitle("swap".localized)
+        .onPreferenceChange(LimitQuoteCountdownKey.self) { seconds in
+            limitQuoteCountdown = seconds
+        }
         .crossPlatformSheet(isPresented: $vm.showAdvancedSettingsSheet) {
             AdvancedSwapSheet(
                 isPresented: $vm.showAdvancedSettingsSheet,
@@ -196,8 +205,10 @@ struct SwapDetailsScreen: View {
                     )
                     .transition(.opacity)
                 } else {
-                    swapButton
-                        .transition(.opacity)
+                    SwapAssetsButton(isLoading: detailsViewModel.isLoadingQuotes) {
+                        handleSwapTap()
+                    }
+                    .transition(.opacity)
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
@@ -244,32 +255,6 @@ struct SwapDetailsScreen: View {
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: nil
         )
-    }
-
-    var swapButton: some View {
-        Button {
-            handleSwapTap()
-        } label: {
-            swapLabel
-        }
-        .background(Circle().fill(Theme.colors.bgPrimary))
-        .overlay(Circle().stroke(Theme.colors.bgSurface2))
-    }
-
-    var swapLabel: some View {
-        ZStack {
-            if detailsViewModel.isLoadingQuotes {
-                CircularProgressIndicator(size: 20)
-            } else {
-                Icon(named: "arrow-bottom-top", color: Theme.colors.textPrimary, size: 18)
-            }
-        }
-        .frame(width: 34, height: 34)
-        .background(Circle().fill(Theme.colors.bgButtonTertiary))
-        .padding(2)
-        .background(Circle().fill(Theme.colors.bgPrimary))
-        .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-        .animation(.spring, value: buttonRotated)
     }
 
     var filler: some View {
@@ -331,8 +316,28 @@ struct SwapDetailsScreen: View {
 
     @ViewBuilder
     var refreshCounter: some View {
-        if detailsViewModel.showRefreshCounter {
+        // When the Market/Limit tab row is visible (limit swap enabled) the
+        // countdown lives in that row via `tabRowCountdown`; keep the toolbar
+        // counter only for the flag-off market layout, which has no tab row.
+        if !settingsViewModel.limitSwapEnabled, detailsViewModel.showRefreshCounter {
             SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
+        }
+    }
+
+    /// Shared quote-refresh countdown in the Market/Limit tab row. Market mode
+    /// feeds `SwapDetailsViewModel.timer`; limit mode feeds the value surfaced
+    /// from the limit body via `LimitQuoteCountdownKey`.
+    @ViewBuilder
+    var tabRowCountdown: some View {
+        switch selectedSwapMode {
+        case .market:
+            if detailsViewModel.showRefreshCounter {
+                SwapQuoteCountdownBadge(seconds: detailsViewModel.timer)
+            }
+        case .limit:
+            if let seconds = limitQuoteCountdown {
+                SwapQuoteCountdownBadge(seconds: seconds)
+            }
         }
     }
 
@@ -439,7 +444,6 @@ struct SwapDetailsScreen: View {
 
     private func handleSwapTap() {
         detailsViewModel.error = nil
-        buttonRotated.toggle()
         detailsViewModel.switchCoins(vault: vault, referredCode: referredViewModel.savedReferredCode)
         let fromChain = detailsViewModel.fromChain
         detailsViewModel.fromChain = detailsViewModel.toChain

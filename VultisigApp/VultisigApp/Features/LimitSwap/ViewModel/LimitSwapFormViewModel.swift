@@ -63,22 +63,10 @@ final class LimitSwapFormViewModel {
 
     /// Seconds remaining until the next automatic market-price refresh. Mirrors
     /// the market Verify screen's ~60s quote cadence; the view drives the 1s
-    /// tick and the header renders it as a "0:SS" countdown ring.
+    /// tick and the shared tab-row badge renders it as a "0:SS" countdown ring
+    /// (via `LimitQuoteCountdownKey`).
     var quoteRefreshCountdown: Int = LimitSwapFormViewModel.quoteRefreshInterval
     static let quoteRefreshInterval = 60
-
-    /// `mm:ss` label for the countdown ring (e.g. `0:36`).
-    var quoteRefreshCountdownLabel: String {
-        let seconds = max(0, quoteRefreshCountdown)
-        return String(format: "%d:%02d", seconds / 60, seconds % 60)
-    }
-
-    /// Fraction (0…1) of the refresh interval elapsed — drives the ring's trim.
-    var quoteRefreshProgress: Double {
-        guard Self.quoteRefreshInterval > 0 else { return 0 }
-        let remaining = Double(max(0, quoteRefreshCountdown)) / Double(Self.quoteRefreshInterval)
-        return 1 - remaining
-    }
 
     /// User-facing error raised while assembling / pre-flighting the order in
     /// "Place Order" (memo byte-cap overflow, target-price overflow). Drives an
