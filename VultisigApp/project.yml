@@ -57,15 +57,12 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # TEMPORARY: pinned to the head of the commondata `feat/ripple-destination-tag`
-    # branch, which adds `RippleSpecific.destination_tag` (optional uint32) — the
-    # first-class XRPL DestinationTag field. Consumed here via dual-write: the
-    # initiator writes the tag into BOTH this field AND the legacy memo carrier,
-    # and signers prefer the field, falling back to the memo, so mixed-version
-    # device pairs stay byte-identical in MPC keysign. Re-pin to the merged `main`
-    # commit once that commondata PR lands (this branch stays draft until then).
-    # Supersedes the earlier pin at commondata #93's `CosmosSpecific.gas_limit`.
-    revision: b940d663d78f13f26a175048f3e7a47ea86811e2
+    # Pinned to the merged `main` commit that adds `RippleSpecific.destination_tag`
+    # (optional uint32) — the first-class XRPL DestinationTag field. Consumed here
+    # via dual-write: the initiator writes the tag into BOTH this field AND the
+    # legacy memo carrier, and signers prefer the field, falling back to the memo,
+    # so mixed-version device pairs stay byte-identical in MPC keysign.
+    revision: 2b92938e269ab44d735dabb30b1779a254f42143
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
