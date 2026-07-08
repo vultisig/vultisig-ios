@@ -42,6 +42,9 @@ struct LimitSwapBodyView: View {
     @State private var focusedSection: FocusedSection?
     @State private var sourceAmountText: String = ""
     @State private var priceText: String = ""
+    /// Mirrors the market swap: reset to `true` on a manual amount edit so the
+    /// shared `SwapPercentageButtons` clears its selected-pill highlight.
+    @State private var showAllPercentageButtons = true
 
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
@@ -90,6 +93,7 @@ struct LimitSwapBodyView: View {
                                 fromCoin: fromCoin,
                                 toCoin: toCoin,
                                 sourceAmountText: $sourceAmountText,
+                                showAllPercentageButtons: $showAllPercentageButtons,
                                 onPickFromAsset: onPickFromAsset,
                                 onPickToAsset: onPickToAsset,
                                 onSwapAssets: onSwapAssets
@@ -150,6 +154,8 @@ struct LimitSwapBodyView: View {
         }
         .onChange(of: sourceAmountText) { _, newText in
             vm.amountChanged(parseAmount(newText, decimals: vm.draft.fromAsset.decimals))
+            // A manual edit clears the selected-percentage highlight (market parity).
+            showAllPercentageButtons = true
         }
         .onChange(of: priceText) { _, newText in
             let parsed = parsePrice(newText)
@@ -203,6 +209,37 @@ struct LimitSwapBodyView: View {
         formatter.usesGroupingSeparator = false
         return formatter.string(from: NSDecimalNumber(decimal: value))
             ?? NSDecimalNumber(decimal: value).stringValue
+    }
+}
+
+// MARK: - Keyboard accessory
+//
+// The limit form's decimal-pad fields (Sell amount, target price) have no
+// return key, so they need a Done accessory to dismiss — the same mechanism the
+// market swap uses (`SwapPercentageButtons` + `hideKeyboard()`). The Sell field
+// passes the shared percentage buttons as leading content; the price field
+// passes none (Done only).
+
+private extension View {
+    @ViewBuilder
+    func limitKeyboardAccessory<Leading: View>(
+        @ViewBuilder leading: @escaping () -> Leading
+    ) -> some View {
+        #if os(iOS)
+        toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                leading()
+                Spacer()
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text("done".localized)
+                }
+            }
+        }
+        #else
+        self
+        #endif
     }
 }
 
@@ -270,6 +307,9 @@ private struct LimitPriceDisplay: View {
         }
         .frame(maxWidth: .infinity, minHeight: 180)
         .padding(.vertical, 8)
+        // Done-only keyboard accessory for the decimal-pad target-price field
+        // (no percentages — the target price isn't balance-derived).
+        .limitKeyboardAccessory { EmptyView() }
     }
 
     @ViewBuilder
@@ -526,6 +566,7 @@ private struct LimitAssetSwapForm: View {
     let fromCoin: Coin
     let toCoin: Coin
     @Binding var sourceAmountText: String
+    @Binding var showAllPercentageButtons: Bool
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
     let onSwapAssets: () -> Void
@@ -543,6 +584,16 @@ private struct LimitAssetSwapForm: View {
                     usdPricePerUnit: Decimal(fromCoin.price),
                     onPickAsset: onPickFromAsset
                 )
+                // Reuse the market swap's percentage buttons + Done accessory on
+                // the Sell amount keyboard. Attached to the row (an ancestor of
+                // the field) so it scopes to the sell amount's editing session.
+                .limitKeyboardAccessory {
+                    SwapPercentageButtons(
+                        show100: !fromCoin.isNativeToken,
+                        showAllPercentageButtons: $showAllPercentageButtons,
+                        onTap: handleSellPercentage
+                    )
+                }
 
                 LimitAssetRow(
                     kind: .buy,
@@ -561,6 +612,14 @@ private struct LimitAssetSwapForm: View {
                 onSwapAssets()
             }
         }
+    }
+
+    /// Sets the Sell amount to `pct`% of the source balance. Assigns the field
+    /// text (its `onChange` funnels the value into `draft.sourceAmount`); the
+    /// balance math + formatting live in the VM (market parity).
+    private func handleSellPercentage(_ pct: Int) {
+        showAllPercentageButtons = false
+        sourceAmountText = vm.sourceAmountText(forPercentage: pct, of: fromCoin)
     }
 
     /// Buy amount preview — the VM derives it from the signed `computeLim`
