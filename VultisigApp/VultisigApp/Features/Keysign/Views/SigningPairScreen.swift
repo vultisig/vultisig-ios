@@ -27,7 +27,7 @@ struct SigningPairScreen: View {
             sendPreviewOverride: context.sendPreviewOverride(payload: keysignPayload),
             swapTransaction: context.swapTransaction
         ) { input in
-            router.navigate(to: SigningRoute.keysign(input: input, context: context))
+            router.navigate(to: SigningRoute.keysign(.ready(input: input, context: context)))
         }
     }
 }

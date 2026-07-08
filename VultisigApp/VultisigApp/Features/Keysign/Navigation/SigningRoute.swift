@@ -5,9 +5,10 @@
 //  Shared tail-end signing route for every keysign-side flow (Send, Swap,
 //  FunctionCall). The signing screens (`PairScreen`, `KeysignView`,
 //  `DoneScreen`) are already single shared components; this collapses the
-//  `pair → fastKeysign → keysign → done` ROUTING that each flow used to
-//  re-declare in its own `*Route` enum + builder + router. Each flow's
-//  per-flow `verify` screen navigates INTO these cases.
+//  `pair → keysign → done` ROUTING that each flow used to re-declare in its own
+//  `*Route` enum + builder + router. Each flow's per-flow `verify` screen
+//  navigates INTO these cases. The former `.fastKeysign` + `.keysign(input:)`
+//  routes are merged into one `.keysign(SigningKeysignRoute)`.
 //
 //  The flow-specific variance is folded behind two value enums so no flow
 //  loses any data:
@@ -24,9 +25,23 @@
 
 enum SigningRoute: Hashable {
     case pair(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String?)
-    case fastKeysign(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String)
-    case keysign(input: KeysignInput, context: SigningTxContext)
+    case keysign(SigningKeysignRoute)
     case done(DoneKind)
+}
+
+/// The two keysign entry modes, merged from the former `.fastKeysign` +
+/// `.keysign(input:)` routes into one `.keysign` case. Route-safe to exactly
+/// the same degree as before: `.ready` carries the post-pairing `KeysignInput`
+/// (as `.keysign(input:)` always did), and `.fast` carries only the
+/// `SigningTxContext` + payload + password (as `.fastKeysign` did). No NEW live
+/// `@Model` `Vault` rides the route — the router resolves the live vault on
+/// `MainActor` and builds the (non-Hashable) `KeysignStartInput` at the screen
+/// boundary.
+enum SigningKeysignRoute: Hashable {
+    /// Paired: committee already known after pairing.
+    case ready(input: KeysignInput, context: SigningTxContext)
+    /// Fast vault: the view-model runs the relay-session bootstrap first.
+    case fast(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String)
 }
 
 /// Flow-specific transaction identity threaded from `verify` through

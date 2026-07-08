@@ -23,10 +23,8 @@ struct SigningRouter {
         switch route {
         case .pair(let context, let keysignPayload, let fastVaultPassword):
             pairScreen(context: context, keysignPayload: keysignPayload, fastVaultPassword: fastVaultPassword)
-        case .fastKeysign(let context, let keysignPayload, let fastVaultPassword):
-            fastKeysignScreen(context: context, keysignPayload: keysignPayload, fastVaultPassword: fastVaultPassword)
-        case .keysign(let input, let context):
-            keysignScreen(input: input, context: context)
+        case .keysign(let keysignRoute):
+            keysignScreen(keysignRoute)
         case .done(let kind):
             doneScreen(kind: kind)
         }
@@ -51,41 +49,25 @@ struct SigningRouter {
 
     @MainActor
     @ViewBuilder
-    private func fastKeysignScreen(
-        context: SigningTxContext,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String
-    ) -> some View {
-        if let vault = resolveVault(for: context) {
-            switch context {
-            case .send(_, let tx, let retry), .functionCall(_, let tx, let retry):
-                SendFastKeysignScreen(
-                    vault: vault,
-                    keysignPayload: keysignPayload,
-                    tx: tx,
-                    retrySignal: retry,
-                    fastVaultPassword: fastVaultPassword
-                )
-            case .swap(_, let transaction, let retry):
-                SwapFastKeysignScreen(
-                    vault: vault,
-                    keysignPayload: keysignPayload,
-                    transaction: transaction,
-                    retrySignal: retry,
-                    fastVaultPassword: fastVaultPassword
+    private func keysignScreen(_ route: SigningKeysignRoute) -> some View {
+        switch route {
+        case .ready(let input, let context):
+            // Paired: the KeysignInput (committee known) drives the ceremony.
+            SigningKeysignScreen(source: .ready(input), context: context)
+        case .fast(let context, let keysignPayload, let fastVaultPassword):
+            // Fast: resolve the live vault on MainActor and build the fast
+            // KeysignStartInput here so no live @Model rides the route.
+            if let vault = resolveVault(for: context) {
+                SigningKeysignScreen(
+                    source: .fast(
+                        vault: vault,
+                        keysignPayload: keysignPayload,
+                        customMessagePayload: nil,
+                        fastVaultPassword: fastVaultPassword
+                    ),
+                    context: context
                 )
             }
-        }
-    }
-
-    @MainActor
-    @ViewBuilder
-    private func keysignScreen(input: KeysignInput, context: SigningTxContext) -> some View {
-        switch context {
-        case .send(_, let tx, let retry), .functionCall(_, let tx, let retry):
-            SendKeysignScreen(input: input, tx: tx, retrySignal: retry)
-        case .swap(_, let transaction, let retry):
-            SwapKeysignScreen(input: input, transaction: transaction, retrySignal: retry)
         }
     }
 

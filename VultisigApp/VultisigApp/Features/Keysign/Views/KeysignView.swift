@@ -341,6 +341,10 @@ struct KeysignView: View {
 
         transferViewModel.hash = viewModel.txid
         transferViewModel.approveHash = viewModel.approveTxid
+        // Hand over the payload the ceremony actually signed (the fast bootstrap
+        // can refresh it, e.g. Solana blockhash) so the done route shows the
+        // SIGNED payload — replaces the old onKeysignInputResolved callback.
+        transferViewModel.updateResolvedKeysignPayload(viewModel.keysignPayload)
         transferViewModel.moveToNextView()
     }
 }

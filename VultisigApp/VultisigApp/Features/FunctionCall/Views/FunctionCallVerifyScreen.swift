@@ -153,11 +153,11 @@ struct FunctionCallVerifyScreen: View {
                         retry: SendRetrySignal()
                     )
                     if let fastPassword = fastVaultPassword.nilIfEmpty {
-                        router.navigate(to: SigningRoute.fastKeysign(
+                        router.navigate(to: SigningRoute.keysign(.fast(
                             context: context,
                             keysignPayload: result,
                             fastVaultPassword: fastPassword
-                        ))
+                        )))
                     } else {
                         router.navigate(to: SigningRoute.pair(
                             context: context,
