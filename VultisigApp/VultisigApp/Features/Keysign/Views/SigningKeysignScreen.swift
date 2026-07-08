@@ -10,7 +10,10 @@
 //  retry, and (swap only) `stopMediator` by `SigningTxContext`.
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "signing-keysign")
 
 struct SigningKeysignScreen: View {
     @Environment(\.router) var router
@@ -43,13 +46,19 @@ struct SigningKeysignScreen: View {
     }
 
     private func navigateToDone() {
-        guard let hash = coordinator.hash else { return }
+        guard let hash = coordinator.hash else {
+            logger.error("keysignFinished fired but coordinator.hash is nil; cannot navigate to done")
+            return
+        }
 
         switch context {
         case .send(let vault, let tx, _), .functionCall(let vault, let tx, _):
             // The signed payload (possibly bootstrap-refreshed) drives the chain
             // and the done payload, matching the former paired/fast Send screens.
-            guard let payload = coordinator.resolvedKeysignPayload else { return }
+            guard let payload = coordinator.resolvedKeysignPayload else {
+                logger.error("keysignFinished fired but resolvedKeysignPayload is nil; cannot navigate to send done")
+                return
+            }
             router.navigate(to: SigningRoute.done(.send(
                 vault: vault,
                 hash: hash,

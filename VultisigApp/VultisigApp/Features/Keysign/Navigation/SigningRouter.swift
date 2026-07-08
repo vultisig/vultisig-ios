@@ -12,8 +12,11 @@
 //  SwiftData `@Model` never rides through the `NavigationPath`.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "signing-router")
 
 struct SigningRouter {
 
@@ -108,10 +111,25 @@ struct SigningRouter {
         }
     }
 
+    // Sole source of a nil vault on the shared signing route (Send/FunctionCall
+    // carry the live vault). Log every nil path so a stale/deleted-vault route —
+    // which otherwise renders a blank pair/keysign/done screen — is diagnosable.
     @MainActor
     private func lookupVault(pubKeyECDSA: String) -> Vault? {
-        guard let context = Storage.shared.modelContext else { return nil }
+        guard let context = Storage.shared.modelContext else {
+            logger.error("Vault lookup failed: no modelContext; signing screen will not render")
+            return nil
+        }
         let descriptor = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == pubKeyECDSA })
-        return (try? context.fetch(descriptor))?.first
+        do {
+            guard let vault = try context.fetch(descriptor).first else {
+                logger.error("Vault lookup found no vault for the routed key; signing screen will not render")
+                return nil
+            }
+            return vault
+        } catch {
+            logger.error("Vault lookup fetch failed: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 }
